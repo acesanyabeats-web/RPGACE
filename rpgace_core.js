@@ -19931,6 +19931,19 @@ RPGACE.register('bookworm', {
 
   TRIGGER_PREFIXES: ['bookworm:', 'study this book:'],
 
+  // UI14 Phase 1 (Sep 2026) — a real, module-scope one-shot suppression
+  // flag. showPage() ALWAYS fires a real 'page:show' hook, even when the
+  // named page is already active (confirmed by direct read of the
+  // showPage wrap at rpgace_core.js's own FUNCTION WRAPPERS section) — so
+  // ui._showReader's own call to dashDeck._openPage('bookworm-widget')
+  // (needed to land on #page-bookworm for real when entering the reader
+  // from OUTSIDE it, e.g. a dashboard glance item or UI12's Resume
+  // button) would otherwise immediately re-trigger the page:show listener
+  // below and undo the very reader state _showReader is in the middle of
+  // setting up. Set true right before that one call, read-and-cleared by
+  // the listener itself — real, deterministic, not a guessed timing fix.
+  _bookwormPageShowSuppress: false,
+
   // July 23 — _injectBibliographySection() used to also run unconditionally
   // 1700ms after every boot AND on every page:show->research, regardless of
   // active tab - one of the real contributors found to the reported 12-23s
@@ -19950,6 +19963,21 @@ RPGACE.register('bookworm', {
     });
     RPGACE.hooks.on('research:tab-active', function(key) {
       if (key === 'biblio') self._injectBibliographySection();
+    });
+    // UI14 Phase 1 (Sep 2026) — real reset for the book-reading flow's
+    // own permanent #bookworm-reader container: a GENUINE fresh arrival
+    // at Bookworm's picker (via a real nav button, not one of
+    // _showReader's own internal page-anchoring calls) should always show
+    // the picker, never a stale reading view left over from a prior
+    // visit. The suppress flag is the one real signal that tells the two
+    // apart — see its own module-scope comment above for why it exists.
+    RPGACE.hooks.on('page:show', function(name) {
+      if (name !== RPGACE.CONFIG.pages.bookworm) return;
+      if (self._bookwormPageShowSuppress) { self._bookwormPageShowSuppress = false; return; }
+      var reader = document.getElementById('bookworm-reader');
+      if (reader) reader.style.display = 'none';
+      var widget = document.getElementById('bookworm-widget');
+      if (widget) widget.style.display = '';
     });
   },
 
@@ -20997,6 +21025,84 @@ RPGACE.register('bookworm', {
   // ============================================================
   ui: {
 
+    // ── UI14 Phase 1 (Sep 2026) — the real, permanent page-resident      ──
+    // ── reader container all 7 chapter-flow render states below share.   ──
+    // Real /interrogation scope (records/2026-09/ui14_dashdeck_popup_
+    // audit_spec_2026-09-04.txt): Bookworm's own chapter-reading flow
+    // (TOC found -> chapter list -> read/add-text/insight-review ->
+    // waiting-for-next-insight) used to spawn a fresh dashDeck._popup()
+    // overlay per state, stacking on top of whatever page showed
+    // underneath — including, after UI11, potentially the real
+    // #page-bookworm itself. This is the exact "crammed interface"
+    // UI10/12/13 already fixed one level up (the book-PICKER); this
+    // fixes the one level down (the actual reading experience once
+    // inside a chosen book). A real record-detail view of a specific
+    // book, revisited across many sessions — the same shape UI12's own
+    // Resume-button logic already assumes exists.
+    _ensureReaderContainer: function() {
+      var existing = document.getElementById('bookworm-reader');
+      if (existing) return existing;
+      var page = document.getElementById('page-bookworm');
+      if (!page) return null;
+      var wrap = document.createElement('div');
+      wrap.id = 'bookworm-reader';
+      wrap.style.cssText = 'display:none;background:rgba(155,89,182,0.03);border:1px solid rgba(155,89,182,0.12);border-radius:12px;padding:18px 22px;';
+      var eyebrowEl = document.createElement('div');
+      eyebrowEl.id = 'bookworm-reader-eyebrow';
+      eyebrowEl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(155,89,182,0.6);margin-bottom:3px;';
+      var titleEl = document.createElement('div');
+      titleEl.id = 'bookworm-reader-title';
+      titleEl.className = 'section-title';
+      titleEl.style.cssText = 'font-size:14px;margin-bottom:14px;';
+      var boxEl = document.createElement('div');
+      boxEl.id = 'bookworm-reader-box';
+      wrap.appendChild(eyebrowEl); wrap.appendChild(titleEl); wrap.appendChild(boxEl);
+      page.appendChild(wrap);
+      return wrap;
+    },
+
+    // Real render-target swap every one of the 7 render-state functions
+    // below calls to get its content box, replacing each one's own
+    // former dashDeck._popup({...}) call. Real, checkable state decides
+    // the branch taken — never a guess about "was I called from inside
+    // or outside the reader": if the reader is ALREADY the visible
+    // state (an internal transition, e.g. clicking a chapter row, or
+    // Approve/Reject advancing to the next insight), this just clears
+    // and repopulates the SAME real page element in place, no page nav
+    // at all. If it is NOT already showing (a fresh entry — a book card
+    // click while the picker is visible, a dashboard glance item, UI12's
+    // Resume button), it does the one real page-anchoring dance first:
+    // ensure #page-bookworm is genuinely active via the same real
+    // dashDeck._openPage('bookworm-widget') every other nav route
+    // already uses (rule 8), suppressing this module's own page:show
+    // reset listener for that one self-triggered call (see the
+    // _bookwormPageShowSuppress field's own comment), then hide the
+    // picker widget and reveal the reader.
+    _showReader: function(eyebrow, title) {
+      var self = RPGACE.modules.bookworm;
+      self.ui._ensureReaderContainer();
+      var reader = document.getElementById('bookworm-reader');
+      if (!reader) { console.warn('[bookworm] #page-bookworm missing, cannot show reader'); return null; }
+      var alreadyShowing = reader.style.display !== 'none';
+      if (!alreadyShowing) {
+        self._bookwormPageShowSuppress = true;
+        RPGACE.modules.dashDeck._openPage('bookworm-widget');
+        var widget = document.getElementById('bookworm-widget');
+        if (widget) widget.style.display = 'none';
+        reader.style.display = '';
+      }
+      document.getElementById('bookworm-reader-eyebrow').textContent = eyebrow || '';
+      document.getElementById('bookworm-reader-title').textContent = title || '';
+      var box = document.getElementById('bookworm-reader-box');
+      box.innerHTML = '';
+      // Reset any inline style a PRIOR render state left on this shared node
+      // (e.g. _renderWaitingForNextInsight's textAlign:center) - box is reused
+      // across every state now instead of being a fresh popup box each time,
+      // so a style set by one state would otherwise silently leak into the next.
+      box.removeAttribute('style');
+      return box;
+    },
+
     // ── Entry point: the main Oracle chat, not just the Dashboard widget ──
     // July 17, added per direct request ("include oracle in ai advisor as
     // an input too") - same TRIGGER_PREFIXES/window.sendChat-wrap pattern
@@ -21361,13 +21467,8 @@ RPGACE.register('bookworm', {
     _renderStructureFound: function(book, chapters) {
       var self = RPGACE.modules.bookworm;
       var tt = RPGACE.modules.taxonomyTree;
-      var pop = RPGACE.modules.dashDeck._popup({
-        dim: '0.94', width: '600px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.3)',
-        accent: 'rgba(155,89,182,0.6)', eyebrow: '📚 Contents Found — ' + book.title,
-        title: chapters.length + ' chapters extracted from the table of contents:', noDefaultClose: true,
-      });
-      var overlay = pop.overlay, box = pop.box;
-      overlay.id = 'bookworm-overlay';
+      var box = self.ui._showReader('📚 Contents Found — ' + book.title, chapters.length + ' chapters extracted from the table of contents:');
+      if (!box) return;
 
       var list = document.createElement('div');
       list.style.cssText = 'max-height:45vh;overflow-y:auto;margin-bottom:16px;';
@@ -21391,13 +21492,13 @@ RPGACE.register('bookworm', {
       var startBtn = document.createElement('button');
       startBtn.textContent = '▶ Start Chapter 1';
       startBtn.style.cssText = 'width:100%;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-      startBtn.onclick = function() { overlay.remove(); self.logic._openCurrentChapter(book.id); };
+      startBtn.onclick = function() { self.logic._openCurrentChapter(book.id); };
       box.appendChild(startBtn);
 
       var closeBtn = document.createElement('button');
       closeBtn.textContent = 'Exit to Dashboard';
       closeBtn.style.cssText = 'display:block;width:100%;margin-top:8px;padding:8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-      closeBtn.onclick = function() { overlay.remove(); self.ui._goToDashboard(); };
+      closeBtn.onclick = function() { self.ui._goToDashboard(); };
       box.appendChild(closeBtn);
     },
 
@@ -21414,13 +21515,8 @@ RPGACE.register('bookworm', {
     // ── Chapter list: tick per chapter + click-to-jump to any of them ──
     _renderChapterList: function(book, chapters) {
       var self = RPGACE.modules.bookworm;
-      var pop = RPGACE.modules.dashDeck._popup({
-        dim: '0.94', width: '600px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.3)',
-        accent: 'rgba(155,89,182,0.6)', eyebrow: '📖 ' + book.title,
-        title: 'Chapters — tap any to jump straight there', noDefaultClose: true,
-      });
-      var overlay = pop.overlay, box = pop.box;
-      overlay.id = 'bookworm-overlay';
+      var box = self.ui._showReader('📖 ' + book.title, 'Chapters — tap any to jump straight there');
+      if (!box) return;
 
       var list = document.createElement('div');
       list.style.cssText = 'max-height:60vh;overflow-y:auto;margin-bottom:16px;';
@@ -21451,7 +21547,6 @@ RPGACE.register('bookworm', {
         row.appendChild(tickEl); row.appendChild(textWrap);
 
         row.onclick = function() {
-          overlay.remove();
           if (c.status === 'complete') {
             self.ui._renderChapterSummary(book, c);
           } else if (!c.raw_text) {
@@ -21469,7 +21564,7 @@ RPGACE.register('bookworm', {
       var closeBtn = document.createElement('button');
       closeBtn.textContent = 'Exit to Dashboard';
       closeBtn.style.cssText = 'display:block;width:100%;padding:8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-      closeBtn.onclick = function() { overlay.remove(); self.ui._goToDashboard(); };
+      closeBtn.onclick = function() { self.ui._goToDashboard(); };
       box.appendChild(closeBtn);
     },
 
@@ -21480,13 +21575,8 @@ RPGACE.register('bookworm', {
     _renderChapterSummary: function(book, chapter) {
       var self = RPGACE.modules.bookworm;
       var tt = RPGACE.modules.taxonomyTree;
-      var pop = RPGACE.modules.dashDeck._popup({
-        dim: '0.94', width: '600px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.3)',
-        accent: 'rgba(155,89,182,0.6)', eyebrow: '✅ ' + book.title,
-        title: chapter.chapter_title, noDefaultClose: true,
-      });
-      var overlay = pop.overlay, box = pop.box;
-      overlay.id = 'bookworm-overlay';
+      var box = self.ui._showReader('✅ ' + book.title, chapter.chapter_title);
+      if (!box) return;
 
       var insights = chapter.insights || [];
       var list = document.createElement('div');
@@ -21545,26 +21635,21 @@ RPGACE.register('bookworm', {
       var backBtn = document.createElement('button');
       backBtn.textContent = '← Back to chapter list';
       backBtn.style.cssText = 'width:100%;padding:9px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:8px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
-      backBtn.onclick = function() { overlay.remove(); self.logic._openBook(book.id); };
+      backBtn.onclick = function() { self.logic._openBook(book.id); };
       box.appendChild(backBtn);
 
       var closeBtn = document.createElement('button');
       closeBtn.textContent = 'Exit to Dashboard';
       closeBtn.style.cssText = 'display:block;width:100%;padding:8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-      closeBtn.onclick = function() { overlay.remove(); self.ui._goToDashboard(); };
+      closeBtn.onclick = function() { self.ui._goToDashboard(); };
       box.appendChild(closeBtn);
     },
 
     // ── Chapter read view: full text, then a single "I've read this" button ──
     _renderChapterRead: function(book, chapter) {
       var self = RPGACE.modules.bookworm;
-      var pop = RPGACE.modules.dashDeck._popup({
-        dim: '0.94', width: '640px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.3)',
-        accent: 'rgba(155,89,182,0.6)', eyebrow: '📖 ' + book.title,
-        title: chapter.chapter_title, noDefaultClose: true,
-      });
-      var overlay = pop.overlay, box = pop.box;
-      overlay.id = 'bookworm-overlay';
+      var box = self.ui._showReader('📖 ' + book.title, chapter.chapter_title);
+      if (!box) return;
 
       var textBox = document.createElement('div');
       textBox.style.cssText = 'white-space:pre-wrap;font-size:12px;color:rgba(226,226,236,0.7);line-height:1.7;background:rgba(255,255,255,0.02);border-radius:8px;padding:14px;margin-bottom:16px;max-height:50vh;overflow-y:auto;';
@@ -21612,7 +21697,6 @@ RPGACE.register('bookworm', {
         // still surface as a toast even though the overlay's already gone;
         // RPGACE.utils.toast isn't tied to this overlay's lifetime.
         RPGACE.utils.toast('📖 Analyzing "' + chapter.chapter_title + '" in the background - check back via the book\'s chapter list when ready.', '#9B6EC8', 4500);
-        overlay.remove();
         self.ui._goToDashboard();
         self.logic._analyzeChapter(book, chapter).catch(function(e) {
           RPGACE.utils.toast('Error analyzing "' + chapter.chapter_title + '": ' + e.message, '#CC4A4A', 4500);
@@ -21629,13 +21713,13 @@ RPGACE.register('bookworm', {
       var backBtn = document.createElement('button');
       backBtn.textContent = '← Back to chapter list';
       backBtn.style.cssText = 'width:100%;padding:9px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:8px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-top:8px;margin-bottom:8px;';
-      backBtn.onclick = function() { overlay.remove(); self.logic._openBook(book.id); };
+      backBtn.onclick = function() { self.logic._openBook(book.id); };
       box.appendChild(backBtn);
 
       var closeBtn = document.createElement('button');
       closeBtn.textContent = 'Exit to Dashboard';
       closeBtn.style.cssText = 'display:block;width:100%;margin-top:8px;padding:8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-      closeBtn.onclick = function() { overlay.remove(); self.ui._goToDashboard(); };
+      closeBtn.onclick = function() { self.ui._goToDashboard(); };
       box.appendChild(closeBtn);
     },
 
@@ -21645,13 +21729,8 @@ RPGACE.register('bookworm', {
     // ── transcribe/copy it from their physical copy.                     ──
     _renderAddChapterText: function(book, chapter) {
       var self = RPGACE.modules.bookworm;
-      var pop = RPGACE.modules.dashDeck._popup({
-        dim: '0.94', width: '560px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.3)',
-        accent: 'rgba(155,89,182,0.6)', eyebrow: '📖 ' + book.title,
-        title: chapter.chapter_title, noDefaultClose: true,
-      });
-      var overlay = pop.overlay, box = pop.box;
-      overlay.id = 'bookworm-overlay';
+      var box = self.ui._showReader('📖 ' + book.title, chapter.chapter_title);
+      if (!box) return;
 
       var sub = document.createElement('div');
       sub.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.4);margin-bottom:14px;';
@@ -21691,7 +21770,6 @@ RPGACE.register('bookworm', {
 
         addBtn.disabled = true; addBtn.textContent = '⏳ Saving...';
         RPGACE.sb.secureWrite('bookworm_chapters', 'update', { raw_text: text }, 'id=eq.' + chapter.id).then(function() {
-          overlay.remove();
           self.logic._openCurrentChapter(book.id);
         }).catch(function(e) {
           addBtn.disabled = false; addBtn.textContent = '✍️ Save this chapter\'s text';
@@ -21705,13 +21783,13 @@ RPGACE.register('bookworm', {
       var backBtn = document.createElement('button');
       backBtn.textContent = '← Back to chapter list';
       backBtn.style.cssText = 'width:100%;padding:9px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:8px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
-      backBtn.onclick = function() { overlay.remove(); self.logic._openBook(book.id); };
+      backBtn.onclick = function() { self.logic._openBook(book.id); };
       box.appendChild(backBtn);
 
       var closeBtn = document.createElement('button');
       closeBtn.textContent = 'Exit to Dashboard';
       closeBtn.style.cssText = 'display:block;width:100%;padding:8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-      closeBtn.onclick = function() { overlay.remove(); self.ui._goToDashboard(); };
+      closeBtn.onclick = function() { self.ui._goToDashboard(); };
       box.appendChild(closeBtn);
     },
 
@@ -21736,14 +21814,8 @@ RPGACE.register('bookworm', {
         return;
       }
 
-      var pop = RPGACE.modules.dashDeck._popup({
-        dim: '0.94', width: '560px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.3)',
-        accent: 'rgba(155,89,182,0.6)',
-        eyebrow: '📖 ' + book.title + ' — ' + chapter.chapter_title + ' — Insight ' + (idx + 1) + '/' + insights.length,
-        noDefaultClose: true,
-      });
-      var overlay = pop.overlay, box = pop.box;
-      overlay.id = 'bookworm-overlay';
+      var box = self.ui._showReader('📖 ' + book.title, chapter.chapter_title + ' — Insight ' + (idx + 1) + '/' + insights.length);
+      if (!box) return;
 
       if (!insight.fits) {
         var unplaceableBox = document.createElement('div');
@@ -21795,7 +21867,6 @@ RPGACE.register('bookworm', {
         // moved on to a later insight, so a blind write here could clobber
         // a leaf-creation result that landed first.
         self.logic._patchChapterInsightAt(chapter.id, idx, function() { return newInsight; }, { current_insight_index: idx + 1 }).catch(function() {});
-        overlay.remove();
         self.ui._renderInsightReview(book, newChapter);
       };
 
@@ -21843,13 +21914,13 @@ RPGACE.register('bookworm', {
       var backBtn = document.createElement('button');
       backBtn.textContent = '← Back to chapter list';
       backBtn.style.cssText = 'width:100%;padding:9px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:8px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-top:10px;margin-bottom:8px;';
-      backBtn.onclick = function() { overlay.remove(); self.logic._openBook(book.id); };
+      backBtn.onclick = function() { self.logic._openBook(book.id); };
       box.appendChild(backBtn);
 
       var closeBtn = document.createElement('button');
       closeBtn.textContent = 'Exit to Dashboard';
       closeBtn.style.cssText = 'display:block;width:100%;margin-top:10px;padding:8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-      closeBtn.onclick = function() { overlay.remove(); self.ui._goToDashboard(); };
+      closeBtn.onclick = function() { self.ui._goToDashboard(); };
       box.appendChild(closeBtn);
     },
 
@@ -21860,11 +21931,8 @@ RPGACE.register('bookworm', {
     // 13-insight chapter took ~7 minutes before the FIRST insight appeared.
     _renderWaitingForNextInsight: function(book, chapter) {
       var self = RPGACE.modules.bookworm;
-      var pop = RPGACE.modules.dashDeck._popup({
-        dim: '0.94', width: '480px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.3)', noDefaultClose: true,
-      });
-      var overlay = pop.overlay, box = pop.box;
-      overlay.id = 'bookworm-overlay';
+      var box = self.ui._showReader('📖 ' + book.title, 'Analyzing next insight...');
+      if (!box) return;
       box.style.textAlign = 'center';
       var msg = document.createElement('div');
       msg.textContent = '⏳ Still analyzing the next insight in the background...';
@@ -21894,13 +21962,13 @@ RPGACE.register('bookworm', {
       var backBtn = document.createElement('button');
       backBtn.textContent = '← Back to chapter list';
       backBtn.style.cssText = 'width:100%;padding:9px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:8px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
-      backBtn.onclick = function() { stopped = true; overlay.remove(); self.logic._openBook(book.id); };
+      backBtn.onclick = function() { stopped = true; self.logic._openBook(book.id); };
       box.appendChild(backBtn);
 
       var closeBtn = document.createElement('button');
       closeBtn.textContent = 'Exit to Dashboard';
       closeBtn.style.cssText = 'padding:8px 16px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(226,226,236,0.4);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-      closeBtn.onclick = function() { stopped = true; overlay.remove(); self.ui._goToDashboard(); };
+      closeBtn.onclick = function() { stopped = true; self.ui._goToDashboard(); };
       box.appendChild(closeBtn);
 
       var idx = chapter.current_insight_index || 0;
@@ -21912,7 +21980,6 @@ RPGACE.register('bookworm', {
           var fresh = rows && rows[0];
           if (!fresh) return;
           if ((fresh.insights || []).length > idx || fresh.analysis_complete) {
-            overlay.remove();
             self.ui._renderInsightReview(book, fresh);
             return;
           }
