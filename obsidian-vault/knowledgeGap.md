@@ -3,13 +3,13 @@ module_name: "knowledgeGap"
 kind: module
 river_number: 9
 river_name: "River IX — The Mirror and the Far Shore"
-source_lines: "12830-13044"
+source_lines: "16412-16800"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # knowledgeGap
 
-`rpgace_core.js:12830-13044`
+`rpgace_core.js:16412-16800`
 
 Member of [[09 — River IX — The Mirror and the Far Shore.md|River IX — The Mirror and the Far Shore]].
 

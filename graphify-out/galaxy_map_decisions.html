@@ -130,25 +130,48 @@ details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>A real 🗑 button on a Content Intelligence report card — routes through the shared `_deleteUnified()` path.</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>Shows a real popup ("Delete Report" + "Save URL to bibliography?") with 2 real choices — the onDecide callback branches on which button was pressed, never a bare JS `confirm()`.</p></div>
   
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 10810-10828)</div><pre>
-  /* ── Confirmation popup ─────────────────────────── */
-  _confirm: function(title, url, card, onDecide) {
-    var ov = document.createElement('div');
-    ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:10001;display:flex;align-items:center;justify-content:center;font-family:Rajdhani,sans-serif;';
-    var box = document.createElement('div');
-    box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(226,84,84,0.3);border-radius:10px;padding:24px 28px;width:min(360px,90vw);';
-    function el(tag, css, txt) { var e=document.createElement(tag); e.style.cssText=css||''; if(txt!==undefined)e.textContent=txt; return e; }
-    box.appendChild(el('div','font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:6px;','Delete Report'));
-    box.appendChild(el('div','font-size:11px;color:rgba(226,226,236,0.4);margin-bottom:16px;line-height:1.4;', title.length&gt;65?title.substring(0,65)+'...':title));
-    box.appendChild(el('div','font-size:13px;font-weight:600;color:rgba(226,226,236,0.85);margin-bottom:8px;','Save URL to bibliography?'));
-    box.appendChild(el('div','font-size:10px;color:rgba(201,168,76,0.55);margin-bottom:18px;font-family:monospace;word-break:break-all;', url?(url.length&gt;60?url.substring(0,60)+'...':url):'No URL'));
-    var row = el('div','display:flex;gap:8px;flex-wrap:wrap;');
-    function mkb(label, bg, bd, col, saveBib) {
-      var b = el('button','flex:1;min-width:80px;background:'+bg+';border:1px solid '+bd+';color:'+col+';border-radius:6px;padding:9px 10px;cursor:pointer;font-family:Rajdhani,sans-serif;font-size:12px;font-weight:700;', label);
-      b.onclick = function(){ ov.remove(); onDecide(saveBib); };
-      return b;
-    }
-    row.appendChild(mkb('Yes, save it','rgba(61,170,110,0.12)','rgba(61,170,110,0.35)','rgba(61,170,110,0.9)', true));</pre></div>
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 13765-13806)</div><pre>    _confirm: function(title, url, card, onDecide) {
+      var ov = document.createElement('div');
+      ov.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.65);z-index:10001;display:flex;align-items:center;justify-content:center;font-family:Rajdhani,sans-serif;';
+      var box = document.createElement('div');
+      box.style.cssText = 'background:#0f0f1a;border:1px solid rgba(226,84,84,0.3);border-radius:10px;padding:24px 28px;width:min(360px,90vw);';
+      function el(tag, css, txt) { var e=document.createElement(tag); e.style.cssText=css||''; if(txt!==undefined)e.textContent=txt; return e; }
+      box.appendChild(el('div','font-size:14px;font-weight:700;color:#D4DAF5;margin-bottom:6px;','Delete Report'));
+      box.appendChild(el('div','font-size:11px;color:rgba(226,226,236,0.4);margin-bottom:16px;line-height:1.4;', title.length&gt;65?title.substring(0,65)+'...':title));
+      box.appendChild(el('div','font-size:13px;font-weight:600;color:rgba(226,226,236,0.85);margin-bottom:8px;','Save URL to bibliography?'));
+      box.appendChild(el('div','font-size:10px;color:rgba(201,168,76,0.55);margin-bottom:18px;font-family:monospace;word-break:break-all;', url?(url.length&gt;60?url.substring(0,60)+'...':url):'No URL'));
+      var row = el('div','display:flex;gap:8px;flex-wrap:wrap;');
+      function mkb(label, bg, bd, col, saveBib) {
+        var b = el('button','flex:1;min-width:80px;background:'+bg+';border:1px solid '+bd+';color:'+col+';border-radius:6px;padding:9px 10px;cursor:pointer;font-family:Rajdhani,sans-serif;font-size:12px;font-weight:700;', label);
+        b.onclick = function(){ ov.remove(); onDecide(saveBib); };
+        return b;
+      }
+      row.appendChild(mkb('Yes, save it','rgba(61,170,110,0.12)','rgba(61,170,110,0.35)','rgba(61,170,110,0.9)', true));
+      row.appendChild(mkb('No, just delete','rgba(226,84,84,0.1)','rgba(226,84,84,0.3)','rgba(226,84,84,0.8)', false));
+      var cancel = el('button','background:none;border:1px solid rgba(255,255,255,0.1);color:rgba(226,226,236,0.3);border-radius:6px;padding:9px 14px;cursor:pointer;font-family:Rajdhani,sans-serif;font-size:12px;font-weight:700;','Cancel');
+      cancel.onclick = function(){ ov.remove(); };
+      row.appendChild(cancel);
+      box.appendChild(row);
+      ov.appendChild(box);
+      document.body.appendChild(ov);
+    },
+
+    /* ── Bibliography section in Encyclopedia tab ── */
+    // Aug 23 2026 - repointed off localStorage onto a real live Supabase read
+    // of the shared `bibliography` table, filtered to LINK rows only
+    // (book_id=is.null). Completed books (book_id NOT NULL) are deliberately
+    // excluded here: they already have their own real coverage in Chronicles
+    // (careerStatCard) and in Bookworm's own Bibliography panel, so listing
+    // them a third time would just duplicate that.
+    //
+    // Same visual shape as before (header + count, one row per source, a Clear
+    // affordance) - the only structural change is that it is now async, so it
+    // renders a Loading state first, matching bookworm._injectBibliographySection's
+    // own already-established fetch-then-fill pattern rather than inventing a
+    // second one.
+    //
+    // force=true rebuilds an already-present section in place (used after a
+    // real save/delete) instead of the old bare "already exists, bail" guard.</pre></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-intelDelete">🔽 intelDelete._confirm() — Current Series</a>
   <a class="mod-chip" href="galaxy_map_level6.html#m-intelDelete">🔬 every branch in intelDelete — Branch Ledger</a>
 </div><div class="dpcard" id="dp-video-summary-delete">
@@ -156,15 +179,26 @@ details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>Same 🗑 delete action as intelDelete — this is the REAL fallback branch when `intelDelete._deleteUnified` isn't available, using a bare browser `confirm()` instead of the richer popup.</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>A plain `window.confirm()` — real, but honestly the least-informative gate in this whole category (no context shown beyond the title). Real, minor future cleanup candidate: route this through `intelDelete._confirm` directly instead of the JS-native fallback.</p></div>
   
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 12694-12702)</div><pre>    } else if (window.confirm('Delete "' + title + '"?')) {
-      var arr = this._reports();
-      arr.splice(found.idx, 1);
-      try { localStorage.setItem('rpgace_intel_insights', JSON.stringify(arr)); } catch (e) {}
-      self._render();
-    }
-  },
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 15818-15837)</div><pre>    _delete: function(key, card) {
+      var self = RPGACE.modules.videoSummary;
+      var found = self._findByKey(key);
+      if (!found) { if (card) card.remove(); return; }
+      var title = self._cleanTitle(found.entry);
+      var del = RPGACE.modules.intelDelete;
+      if (del && del._deleteUnified) {
+        del._deleteUnified(found.entry, title, card, null);
+      } else if (window.confirm('Delete "' + title + '"?')) {
+        var arr = self._reports();
+        arr.splice(found.idx, 1);
+        try { localStorage.setItem('rpgace_intel_insights', JSON.stringify(arr)); } catch (e) {}
+        self._render();
+      }
+    },
 
-  // On-demand retro-analysis for pre-per-insight-loop videos (confirmed</pre></div>
+    // On-demand retro-analysis for pre-per-insight-loop videos (confirmed
+    // answer: per video, never bulk). Sequential silentPropose chain - the
+    // unified scored engine does the placement + justification + score;
+    // proposals land in the Dashboard review queue like any other.</pre></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-videoSummary">🔽 videoSummary._delete() — Current Series</a>
   <a class="mod-chip" href="galaxy_map_level6.html#m-videoSummary">🔬 every branch in videoSummary — Branch Ledger</a>
 </div><div class="dpcard" id="dp-conidpot-delete">
@@ -172,11 +206,15 @@ details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>A real 🗑 button rendered per-row inside the Idea Bank list.</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>A plain `confirm()` — real, same minimal-context shape as videoSummary's.</p></div>
   
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 24288-24292)</div><pre>              if (confirm('Delete "' + row.title + '"?')) {
-                RPGACE.sb.secureWrite('conid_pot', 'delete', null, 'id=eq.' + row.id)
-                  .then(function() { self._refreshIdeaBank(filter || 'All'); });
-              }
-            }},</pre></div>
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 29168-29176)</div><pre>                if (!cpl || !cpl._openObsRawIntake) { RPGACE.utils.toast('Content Pipeline module not available', '#CC4A4A', 2500); return; }
+                cpl._openObsRawIntake(row, function() { self._refreshIdeaBank(filter || 'All'); });
+              }},
+              { label: '🗑', color: 'rgba(226,84,84,0.6)', action: function() {
+                if (confirm('Delete "' + row.title + '"?')) {
+                  RPGACE.sb.secureWrite('conid_pot', 'delete', null, 'id=eq.' + row.id)
+                    .then(function() { self._refreshIdeaBank(filter || 'All'); });
+                }
+              }},</pre></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-conidPot">🔽 conidPot._refreshIdeaBank() — Current Series</a>
   <a class="mod-chip" href="galaxy_map_level6.html#m-conidPot">🔬 every branch in conidPot — Branch Ledger</a>
 </div><div class="dpcard" id="dp-bookworm-delete">
@@ -184,25 +222,17 @@ details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>A real 🗑 button that must be clicked TWICE within 3 seconds (`armed` flips true, button relabels "❌ Confirm", a real `setTimeout` resets it) — the original CLAUDE.md rule 8 precedent this whole category is named after.</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>No popup at all — the confirm IS the second click itself, a real, cheap alternative to a modal for a single destructive action.</p></div>
   
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 16268-16286)</div><pre>            topRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;';
-            var nameEl = document.createElement('div');
-            nameEl.textContent = book.title;
-            nameEl.style.cssText = 'font-size:12px;font-weight:600;color:#D4DAF5;flex:1;';
-            // Delete button - real request after duplicate/dud books piled
-            // up in this list from earlier detection-bug retries (each
-            // retry creates a genuinely new book row, nothing gets
-            // cleaned up automatically). Two clicks required (arms, then
-            // confirms) since deletion isn't reversible - no separate
-            // popup needed for something this low-risk-but-permanent.
-            var delBtn = document.createElement('button');
-            delBtn.textContent = '🗑';
-            delBtn.title = 'Delete this book';
-            delBtn.style.cssText = 'background:none;border:none;color:rgba(226,84,84,0.4);cursor:pointer;font-size:13px;padding:2px 4px;flex-shrink:0;';
-            var armed = false;
-            delBtn.onclick = function(e) {
-              e.stopPropagation();
-              if (!armed) {
-                armed = true;</pre></div>
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 21376-21386)</div><pre>              var delBtn = document.createElement('button');
+              delBtn.textContent = '🗑';
+              delBtn.title = 'Delete this book';
+              delBtn.style.cssText = 'background:none;border:none;color:rgba(226,84,84,0.4);cursor:pointer;font-size:13px;padding:2px 4px;flex-shrink:0;';
+              var armed = false;
+              delBtn.onclick = function(e) {
+                e.stopPropagation();
+                if (!armed) {
+                  armed = true;
+                  delBtn.textContent = '❌ Confirm';
+                  delBtn.style.color = '#CC4A4A';</pre></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-bookworm">🔽 bookworm._refreshWidget() — Current Series</a>
   <a class="mod-chip" href="galaxy_map_level6.html#m-bookworm">🔬 every branch in bookworm — Branch Ledger</a>
 </div></div>
@@ -214,7 +244,7 @@ details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>Shown automatically after `decidePlacementScored()` (a real curated core-logic point in its own right — see the Decision Matrix for the full scoring logic) returns a real placement candidate.</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>A real popup showing Oracle's own proposed attach point + new steps, with explicit onAccept/onReject callbacks — nothing writes to taxonomy_tree without this gate, per rule 4.</p></div>
   <div class="dblock"><div class="dlabel">Also a curated core-logic decision point</div><p><a href="galaxy_map_decision_matrix.html#d-placement-scored">🧠 See the full real scoring/logic write-up on the Decision Matrix →</a></p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 14805-14805)</div><pre>  _showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject) {</pre></div>
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 19241-19241)</div><pre>    _showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject) {</pre></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-phylumPath">🔽 phylumPath._showPlacementConfirm() — Current Series</a>
   <a class="mod-chip" href="galaxy_map_level6.html#m-phylumPath">🔬 every branch in phylumPath — Branch Ledger</a>
 </div><div class="dpcard" id="dp-article-confirm">
@@ -222,7 +252,7 @@ details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>Shown when `_insertNewSteps()` (a real curated core-logic point in its own right — the dedup-extend decision, written up in full on the Decision Matrix) finds a real near-duplicate and proposes extending the existing leaf's own article instead of creating a new one.</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>Same real checkpoint pattern as `_showPlacementConfirm`, simpler — an existing leaf's content is about to be regenerated, so this gate specifically protects against overwriting real prior content on a bad match.</p></div>
   <div class="dblock"><div class="dlabel">Also a curated core-logic decision point</div><p><a href="galaxy_map_decision_matrix.html#d-dedup-extend">🧠 See the full real scoring/logic write-up on the Decision Matrix →</a></p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 15357-15357)</div><pre>  _showArticleConfirm: function(node, articleTitle, text, onApprove, onDeny) {</pre></div>
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 19323-19323)</div><pre>    _showArticleConfirm: function(node, articleTitle, text, onApprove, onDeny) {</pre></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-phylumPath">🔽 phylumPath._showArticleConfirm() — Current Series</a>
   <a class="mod-chip" href="galaxy_map_level6.html#m-phylumPath">🔬 every branch in phylumPath — Branch Ledger</a>
 </div><div class="dpcard" id="dp-accept-phylumpath-proposal">
@@ -230,7 +260,7 @@ details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>The real "✅ Accept" button on a pending row inside the "🌳 Taxonomy & Review" dashboard card's popup.</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>A real, separate SECOND checkpoint from `_showPlacementConfirm` above — this one clears a `taxonomy_proposals` row that was already staged (not a live in-the-moment placement), matching rule 4's "or staging through taxonomy_proposals → review queue" alternate path.</p></div>
   
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 9677-9677)</div><pre>  _acceptPhylumPathProposal: function(p) {</pre></div>
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 11500-11500)</div><pre>    _acceptPhylumPathProposal: function(p) {</pre></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-taxonomyReviewQueue">🔽 taxonomyReviewQueue._acceptPhylumPathProposal() — Current Series</a>
   <a class="mod-chip" href="galaxy_map_level6.html#m-taxonomyReviewQueue">🔬 every branch in taxonomyReviewQueue — Branch Ledger</a>
 </div><div class="dpcard" id="dp-accept-concept-fusion">
@@ -238,7 +268,7 @@ details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>The real "✅ Accept" button on a pending `taxonomy_links` row — the exact real gate River VI/VIII's own `human_confirm_gate`-tagged RIVER_FLOWS edges describe at the river level.</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>Same real accept/reject review-queue mechanism as the proposal row above, scoped to fusion-link bridges instead of new-leaf placements.</p></div>
   
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 9703-9703)</div><pre>  _acceptConceptFusion: function(p) {</pre></div>
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 11534-11534)</div><pre>    _acceptConceptFusion: function(p) {</pre></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-taxonomyReviewQueue">🔽 taxonomyReviewQueue._acceptConceptFusion() — Current Series</a>
   <a class="mod-chip" href="galaxy_map_level6.html#m-taxonomyReviewQueue">🔬 every branch in taxonomyReviewQueue — Branch Ledger</a>
 </div><div class="dpcard" id="dp-edit-phylumpath-proposal">
@@ -246,7 +276,7 @@ details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>A real "✏️ Edit" button alongside Accept/Reject on a pending proposal row.</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>Real, distinct from a bare accept/reject — lets Alex correct Oracle's own proposed placement before it commits, rather than only a binary yes/no.</p></div>
   
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 9741-9741)</div><pre>  _editPhylumPathProposal: function(p) {</pre></div>
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 11586-11586)</div><pre>    _editPhylumPathProposal: function(p) {</pre></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-taxonomyReviewQueue">🔽 taxonomyReviewQueue._editPhylumPathProposal() — Current Series</a>
   <a class="mod-chip" href="galaxy_map_level6.html#m-taxonomyReviewQueue">🔬 every branch in taxonomyReviewQueue — Branch Ledger</a>
 </div></div>
@@ -258,7 +288,7 @@ details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>The real standalone "Undo" button on a music_video ConID card (Aug 6 UX pass — paired with a "revert progress" checkbox, default unchecked = edit-in-place).</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>A plain `confirm()`, but with real, specific consequence text in the message itself ("deletes the creative-doc output that stage produced... cannot be undone") — more informative than the bare delete-confirms above despite using the same native browser dialog.</p></div>
   
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 21151-21151)</div><pre>    if (!confirm('Undo ConID #' + row.con_id + '\'s last completed stage?\n\nThis reverts its status back to "' + target + '" and deletes the creative-doc output that stage produced. This cannot be undone.')) return;</pre></div>
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 25719-25719)</div><pre>      if (!confirm('Undo ConID #' + row.con_id + '\'s last completed stage?\n\nThis reverts its status back to "' + target + '" and deletes the creative-doc output that stage produced. This cannot be undone.')) return;</pre></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-contentProductionLive">🔽 contentProductionLive._undoLastStage() — Current Series</a>
   <a class="mod-chip" href="galaxy_map_level6.html#m-contentProductionLive">🔬 every branch in contentProductionLive — Branch Ledger</a>
 </div></div>

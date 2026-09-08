@@ -3,13 +3,13 @@ module_name: "scheduleOracle"
 kind: module
 river_number: 3
 river_name: "River III — The Oracle Current"
-source_lines: "9929-10190"
+source_lines: "12477-12953"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # scheduleOracle
 
-`rpgace_core.js:9929-10190`
+`rpgace_core.js:12477-12953`
 
 Member of [[03 — River III — The Oracle Current.md|River III — The Oracle Current]].
 
@@ -17,10 +17,6 @@ Member of [[03 — River III — The Oracle Current.md|River III — The Oracle 
 
 - **UI**: renders real output, takes real input.
 - **Oracle**: 2 real call site(s) (sendToOracle/callOracle/fillGaps).
-
-## Calls into
-
-- → [[taxonomyTree.md|taxonomyTree]]
 
 ## Hook signals received
 

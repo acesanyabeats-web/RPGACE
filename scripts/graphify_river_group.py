@@ -1717,13 +1717,48 @@ def parse_module_functions(module_name, core_js_path: Path = CORE_JS):
     return funcs
 
 
+def _is_passthrough_span(block_lines, start_i, end_i):
+    """Real, Sep 8 2026 fix (found via /Routine's own evidence pass,
+    checking whether the Galaxy Map had gone stale relative to G53 —
+    the 60-module ui/logic restructure, finished Sep 2-3, never
+    reflected in a regen since). G53 gave every split module a thin
+    top-level pass-through per relocated function, preserving the exact
+    external API (`name: function(args) { return this.ui.name(args); },`
+    or `...this.logic.name(args)...`) — confirmed by direct grep, always
+    this single-line shape, no exception found across a full-project
+    sample. Detects that shape so the real caller below can prefer a
+    module's genuine nested implementation over this trivial forwarder."""
+    text = '\n'.join(block_lines[start_i:end_i + 1]).strip()
+    if len(text.splitlines()) > 2:
+        return False
+    return bool(re.search(r'return\s+this\.(?:ui|logic)\.\w+\s*\(', text))
+
+
 def _function_line_spans(module_name, core_js_path: Path = CORE_JS):
     """Real {func_name: (abs_start_line, abs_end_line)}, 1-indexed and
     inclusive at both ends — factored out of _function_bodies() below,
     G87 (Aug 26 2026), so a second real consumer (compute_boot_task_
     by_function(), which needs to resolve a bare global line number back
     to its enclosing function) can reuse the exact same span logic
-    rather than re-deriving it a 2nd time (rule 8)."""
+    rather than re-deriving it a 2nd time (rule 8).
+
+    Real, Sep 8 2026 fix — a G53-split module now has TWO real
+    occurrences of the same function name: its genuine implementation
+    (nested inside `ui: {...}`/`logic: {...}`) and a thin top-level
+    pass-through preserving the old external API. The straightforward
+    "last occurrence wins" dict-overwrite this used to do silently kept
+    whichever occurred LAST in source order — and G53's own consistent
+    convention puts the pass-throughs LAST (as the module's own public
+    surface, listed after its real ui/logic sections) — so every split
+    module's real body was being discarded in favor of its 1-line
+    forwarder. Measured project-wide before shipping this fix: 358 of
+    453 real function bodies across 41 of 45 Level-3-tracked modules
+    were affected. Now: every real occurrence of a name is collected,
+    and the first NON-pass-through one is preferred; only if every
+    occurrence for a name is pass-through-shaped (should not happen
+    given G53's own discipline, kept as a defensive fallback so a
+    function is never silently dropped from the inventory) does the
+    first occurrence get used, exactly matching the pre-fix behavior."""
     ranges = parse_module_ranges(core_js_path)
     if module_name not in ranges:
         return {}
@@ -1738,10 +1773,16 @@ def _function_line_spans(module_name, core_js_path: Path = CORE_JS):
         name = _module_def_line_match(line)
         if name and name in funcs:
             def_lines.append((i, name))
-    spans = {}
+    candidates = {}
     for idx, (start_i, fname) in enumerate(def_lines):
         end_i = def_lines[idx + 1][0] if idx + 1 < len(def_lines) else len(block_lines)
-        spans[fname] = (s + start_i, s + end_i - 1)
+        span = (s + start_i, s + end_i - 1)
+        is_pt = _is_passthrough_span(block_lines, start_i, end_i - 1)
+        candidates.setdefault(fname, []).append((span, is_pt))
+    spans = {}
+    for fname, occurrences in candidates.items():
+        real = [span for span, is_pt in occurrences if not is_pt]
+        spans[fname] = real[0] if real else occurrences[0][0]
     return spans
 
 
@@ -1769,15 +1810,26 @@ def compute_module_function_flow(module_name, core_js_path: Path = CORE_JS):
     module — the function-grain sibling of compute_intra_river_flow()
     (rule 8, same technique, one level deeper). For each of the
     module's own real functions (_function_bodies()), greps that
-    function's own real source body for a literal `self.<sibling>(` or
-    `<moduleName>.<sibling>(` call to another function in the same
-    module. Returns [(from_func, to_func), ...].
+    function's own real source body for a literal `self.<sibling>(`,
+    `self.ui.<sibling>(`/`self.logic.<sibling>(` (Sep 8 2026, G53-aware
+    fix — see below), or `<moduleName>.<sibling>(` call to another
+    function in the same module. Returns [(from_func, to_func), ...].
 
     Real, honest scope limit, same shape as the module-level version:
     only DIRECT same-module calls are caught. A call reached through
     RPGACE.hooks.fire(), a callback passed by reference, or a dynamic
     property lookup is invisible here — an absence is not proof no
-    real relationship exists, only that no direct call was found."""
+    real relationship exists, only that no direct call was found.
+
+    Real, Sep 8 2026 fix, same /Routine evidence pass that fixed
+    _function_line_spans()'s pass-through-shadowing bug above: G53's own
+    dominant real cross-namespace call convention is
+    `self.ui.<fn>(`/`self.logic.<fn>(` (175 real occurrences project-
+    wide, confirmed by direct grep) — a call form the original bare
+    `self.<sibling>(` pattern cannot match at all, since there's a real
+    `.ui.`/`.logic.` segment in between. Every one of these real edges
+    was invisible to this detector until now, for every one of the 56
+    real G53-split modules."""
     bodies = _function_bodies(module_name, core_js_path)
     funcs = list(bodies.keys())
     edges = []
@@ -1786,7 +1838,9 @@ def compute_module_function_flow(module_name, core_js_path: Path = CORE_JS):
             if other == fname:
                 continue
             if re.search(r'\bself\.' + re.escape(other) + r'\s*\(', body) or \
-               re.search(re.escape(module_name) + r'\.' + re.escape(other) + r'\s*\(', body):
+               re.search(r'\bself\.(?:ui|logic)\.' + re.escape(other) + r'\s*\(', body) or \
+               re.search(re.escape(module_name) + r'\.' + re.escape(other) + r'\s*\(', body) or \
+               re.search(re.escape(module_name) + r'\.(?:ui|logic)\.' + re.escape(other) + r'\s*\(', body):
                 edges.append((fname, other))
     return edges
 

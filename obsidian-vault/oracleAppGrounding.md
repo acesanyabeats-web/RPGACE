@@ -3,19 +3,19 @@ module_name: "oracleAppGrounding"
 kind: module
 river_number: 3
 river_name: "River III — The Oracle Current"
-source_lines: "8088-8473"
+source_lines: "9492-9983"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # oracleAppGrounding
 
-`rpgace_core.js:8088-8473`
+`rpgace_core.js:9492-9983`
 
 Member of [[03 — River III — The Oracle Current.md|River III — The Oracle Current]].
 
 ## Real touch evidence
 
-- **UI**: renders real output, no direct input.
+- **UI**: no direct output, no direct input.
 - **Supabase**: 4 real touch(es) across oracle_module_anatomy, system_updates, taxonomy_proposals.
 
 ## Calls into

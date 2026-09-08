@@ -90,7 +90,7 @@ LOGIC_POINTS = [
         'id': 'oracle-mode',
         'title': 'Oracle Mode: Real / Dummy / Fallback Scout',
         'decider': 'Alex (manual toggle)',
-        'module': 'mockOracle', 'func': 'setMode', 'lines': (27558, 27591), 'anchor': "MODES: ['real', 'dummy', 'fallback']",  # re-verified Aug 27 2026 - drifted from 26849 due to same-session rpgace_core.js edits
+        'module': 'mockOracle', 'func': 'setMode', 'lines': (34375, 34389), 'anchor': "self.MODES.indexOf(mode) === -1",  # re-verified Sep 8 2026 (/Routine) - drifted from 27558 due to the G53 60-module ui/logic split; the array literal itself moved to module scope (34244) outside setMode's own real span, so the anchor now cites a real line INSIDE the function instead
         'decides': 'Which of 3 real paths every single Oracle call in the app takes, app-wide, until toggled again.',
         'changes': 'Real: every window.callOracle() call in main.js checks getMode() first. \'dummy\' short-circuits to a synthetic labeled reply, zero API cost. \'fallback\' queues the real prompt into oracle_fallback_queue instead of calling the live API. \'real\' calls the live Anthropic API as normal.',
         'result': 'A visible top-right toggle switch (red/green/gold) whose state persists in localStorage and is checked on literally every real Oracle send in the app.',
@@ -100,7 +100,7 @@ LOGIC_POINTS = [
         'id': 'taxonomy-card-branch',
         'title': 'Taxonomy dashboard card: popup vs. page fallback',
         'decider': 'Code logic (real pending-review count)',
-        'module': 'dashDeck', 'lines': (11143, 11147),  # re-verified Aug 27 2026, drifted from 10808
+        'module': 'dashDeck', 'lines': (14087, 14090),  # re-verified Sep 8 2026 (/Routine), drifted from 11143 due to the G53 60-module ui/logic split
         'anchor': "_pendingReviewCount !== 0",
         'decides': 'Whether clicking the "🌳 Taxonomy & Review" dashboard card opens the review-queue popup or navigates straight to the taxonomy tree page.',
         'changes': 'A real, live-queried count (RPGACE.modules.dashDeck._pendingReviewCount, set by _refreshGlance from a real taxonomy_proposals SELECT) — not a static config flag.',
@@ -111,7 +111,7 @@ LOGIC_POINTS = [
         'id': 'placement-scored',
         'title': 'Taxonomy placement: Council-of-5 scored decision',
         'decider': 'Oracle (ground-worker judgment call)',
-        'module': 'phylumPath', 'func': 'decidePlacementScored', 'lines': (14640, 14671),  # re-verified Sep 1 2026 (G111 pass). Real finding: this range was ALREADY stale at HEAD (anchor sat at 14551, 9 lines PAST the cited end of 14542) — it was not merely line-drift from later edits, so the range was rebuilt to START at the real anchor rather than shifted. Two live hits exist for this anchor text; the real one is phylumPath's own definition, not oracleTreeGrounding's `_decidePlacementScored` thin delegate.
+        'module': 'phylumPath', 'func': 'decidePlacementScored', 'lines': (18127, 18173),  # re-verified Sep 8 2026 (/Routine), drifted from 14640 due to the G53 60-module ui/logic split
         'anchor': 'decidePlacementScored: function',
         'decides': 'Where a new insight/leaf attaches in the taxonomy tree — an existing node (by number) or a brand-new path from the phylum root — and whether it belongs in this phylum at all.',
         'changes': 'The full numbered, indented tree for that phylum (real Supabase read), plus 5 named checks (pedagogical clarity, non-redundancy, practical applicability, structural fit, expansion headroom) folded into one prompt.',
@@ -122,7 +122,7 @@ LOGIC_POINTS = [
         'id': 'dedup-extend',
         'title': 'Taxonomy dedup: extend existing leaf vs. reject',
         'decider': 'Code logic (real empty-newSteps + existing-leaf check)',
-        'module': 'phylumPath', 'func': '_insertNewSteps', 'lines': (14957, 14970),  # re-verified Aug 27 2026, drifted from 14525
+        'module': 'phylumPath', 'func': '_insertNewSteps', 'lines': (18345, 18519),  # re-verified Sep 8 2026 (/Routine), drifted from 14957 due to the G53 60-module ui/logic split
         'anchor': '_insertNewSteps: function',
         'decides': 'What happens when Oracle judges an insight to be a near-duplicate of something already in the tree (returns zero newSteps).',
         'changes': "attachNode's own node_type — a real 'leaf' means there's a real existing article to extend; anything else means there's nowhere real to attach the insight without a new step.",
@@ -133,7 +133,7 @@ LOGIC_POINTS = [
         'id': 'oracle-grounding-gate',
         'title': "Oracle grounding gate: does this prompt get RPGACE's own facts injected",
         'decider': 'Code logic (real keyword match against the live prompt)',
-        'module': 'oracleAppGrounding', 'lines': (8258, 8270),  # re-verified Aug 27 2026, drifted from 7979
+        'module': 'oracleAppGrounding', 'lines': (9616, 9635),  # re-verified Sep 8 2026 (/Routine), drifted from 8258 due to the G53 60-module ui/logic split
         'anchor': 'anatomyHit = self.ANATOMY_KEYWORDS.some',
         'decides': "Whether a real window.callOracle() send gets RPGACE's own SELF_KNOWLEDGE/anatomy grounding block injected into the system prompt before it goes out.",
         'changes': "The user's own last message text, scanned against 2 real keyword lists (TRIGGER_KEYWORDS for general app-knowledge grounding, ANATOMY_KEYWORDS for module-architecture grounding) — or a forced override via forceGroundNext() for a command that always needs it (Prod Oracle's \"5thDimension\").",
@@ -144,7 +144,7 @@ LOGIC_POINTS = [
         'id': 'primary-action-lookup',
         'title': 'Content Pipeline: which single primary action button renders',
         'decider': 'Code logic (real content_productions.status lookup)',
-        'module': 'contentProductionLive', 'func': '_refreshWidget', 'lines': (22186, 22194),  # re-verified Aug 27 2026: real code now reads flow.primary[row.status] via _flowFor's dispatcher (a real, legit A7 refactor), not the bare MUSIC_VIDEO_PRIMARY_ACTION literal anymore - anchor text updated to match, not just the line range
+        'module': 'contentProductionLive', 'func': '_refreshWidget', 'lines': (26871, 27246),  # re-verified Sep 8 2026 (/Routine), drifted from 22186 due to the G53 60-module ui/logic split
         'anchor': 'flow.primary[row.status]',
         'decides': "Which ONE real action button shows on a music_video ConID card — the real fix for the Aug 6 \"duplicate stage\" complaint, where every ConID used to render a FIXED set of buttons regardless of real progress.",
         'changes': "The ConID row's own real content_productions.status column value ('Idea'/'Scripted'/'Filmed'/'Edited'/'Posted'/'Analysed').",
@@ -155,7 +155,7 @@ LOGIC_POINTS = [
         'id': 'artist-phylum-routing',
         'title': 'Last.fm-discovered artists: which phylum they get filed under',
         'decider': 'Code logic (hardcoded phylum_number literal)',
-        'module': 'beatLog', 'func': '_addNewArtistsToTaxonomy', 'lines': (20215, 20223),  # re-verified Aug 27 2026, drifted from 19735
+        'module': 'beatLog', 'func': '_addNewArtistsToTaxonomy', 'lines': (23622, 23660),  # re-verified Sep 8 2026 (/Routine), drifted from 20215 due to the G53 60-module ui/logic split
         'anchor': 'phylum_number: 11',
         'decides': 'Which taxonomy phylum a newly-discovered Last.fm artist (via _addNewArtistsToTaxonomy) gets written into.',
         'changes': 'Nothing dynamic — this is a fixed literal, the real near-miss CLAUDE.md rule 13 was written about: the Aug 11 phylum renumber (11<->12) needed a SECOND, separate grep for this raw literal because no adjacent "Phylum 12" text existed nearby to catch it in the first display-text-only pass.',
@@ -189,7 +189,7 @@ TEXT_INPUT_POINTS = [
     {
         'id': 'beat-log-form',
         'title': 'Beat Log form — real multi-field text entry that creates a content_productions/video_jobs row',
-        'module': 'beatLog', 'func': '_getForm', 'lines': (19821, 19841),  # re-verified Aug 27 2026, drifted from 19359
+        'module': 'beatLog', 'func': '_getForm', 'lines': (24173, 24195),  # re-verified Sep 8 2026 (/Routine), drifted from 19821 due to the G53 60-module ui/logic split
         'anchor': "title:    get('bl-title')",
         'decides': "Title/key/BPM/scale/energy/mood/genre/rating/licence/collab/ref-track/FL-path — real typed values read directly off the DOM, no defaults faked — that _submit() turns into the actual real database row this ConID's whole downstream pipeline is built from.",
         'link': None,
@@ -197,7 +197,7 @@ TEXT_INPUT_POINTS = [
     {
         'id': 'director-blend-inspiration',
         'title': "Director Blend inspiration notes — Alex's own free-text creative direction",
-        'module': 'visualOracle', 'lines': (6430, 6447),  # re-verified Aug 27 2026, drifted from 6190
+        'module': 'visualOracle', 'lines': (7050, 7067),  # re-verified Sep 8 2026 (/Routine), drifted from 6430 due to the G53 60-module ui/logic split
         'anchor': "var insp = insBox.value.trim()",
         'decides': "Alex's own typed creative notes, kept in a real, separately-labeled group (never conflated with the director-blend keywords) so the outbound Visual Treatment prompt can't confuse his own words with Oracle-generated style language.",
         'link': None,
@@ -205,7 +205,7 @@ TEXT_INPUT_POINTS = [
     {
         'id': 'taxonomy-placement-editor',
         'title': 'Taxonomy Placement Editor — editing a proposed step name/explainer before it writes to taxonomy_tree',
-        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (14805, 14805),  # re-verified Aug 27 2026, drifted from 14373
+        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (19241, 19241),  # re-verified Sep 8 2026 (/Routine), drifted from 14805 due to the G53 60-module ui/logic split
         'anchor': '_showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject)',
         'decides': "Alex can edit Oracle's own proposed step names/explainers inline before confirming — real typed text that replaces the AI's own wording in the eventual taxonomy_tree write, the one place in the whole taxonomy pipeline where his own words can override the model's.",
         # Aug 25 2026 — real dead-anchor fix (see the note on the gate

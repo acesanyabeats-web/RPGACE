@@ -173,7 +173,7 @@ DECISIONS_BY_MODULE = _dm_by_module(_dm_build_unified())
 PLAIN_ENGLISH = {
     ('careerStatCard', '_detailFor'): {
         'anchor': '  _detailFor: function(it) {',
-        'lines': (26497, 26521),
+        'lines': (32495, 32658),  # re-verified Sep 8 2026 (/Routine), drifted from 26497 due to the G53 60-module ui/logic split
         'headline': 'Turns one row of raw history into the four sentences the career card actually shows you.',
         'input': 'One activity item — a plain object with a `type` string ("proposal", "journal", "beat", and so on) and `row`, the untouched database record it came from.',
         'does': 'It is one long sorting exercise. For each kind of activity it knows where that kind keeps its real information, and it digs the same four answers out of a differently-shaped record every time: what was done, what the outcome was, where it ended up, and why it mattered. Most of the dense-looking conditions are it trying several likely fields in order and settling for the first one that is actually filled in — an accepted taxonomy proposal, for instance, might carry its description as an insight text, a new branch name, or the first line of its explainers, depending on which part of the app created it.',
@@ -183,7 +183,7 @@ PLAIN_ENGLISH = {
     },
     ('contentProductionLive', '_openProductionPanel'): {
         'anchor': '  _openProductionPanel: function() {',
-        'lines': (22560, 22567),
+        'lines': (27372, 27724),  # re-verified Sep 8 2026 (/Routine), drifted from 22560 due to the G53 60-module ui/logic split
         'headline': 'Opens the slide-in Production Panel for whichever ConID is currently selected — and builds a different panel depending on what kind of content it is.',
         'input': 'Nothing passed in. It reads the currently-active ConID off the module itself, then fetches that production\'s real `content_type` from Supabase.',
         'does': 'First it refuses to open twice (if the panel is already on screen it stops immediately). Then it builds the panel shell by hand in code — header, close button, scrolling body — and only after the database answers does it decide which set of phases to draw: a tutorial gets the original 3-phase recording flow, a music video gets the 4-phase reference/direction/script/video flow, and OBS raw footage gets its own 4-stage flow. Almost all the branching this function is scored on is that fork, plus the many small "does this ConID already have a script / a treatment / a video job" checks that decide which buttons are live.',
@@ -193,7 +193,7 @@ PLAIN_ENGLISH = {
     },
     ('refCorpus', 'findMatches'): {
         'anchor': '  findMatches: function(bpm, mood, scale, energy, genre) {',
-        'lines': (20805, 20838),
+        'lines': (25315, 25369),  # re-verified Sep 8 2026 (/Routine), drifted from 20805 due to the G53 60-module ui/logic split
         'headline': 'Given a beat\'s tags, scores every reference track in the corpus and returns the closest ones.',
         'input': 'Five values off the beat: BPM, mood, scale, energy and genre. Missing BPM defaults to 130 and missing energy to 3, so it never fails on a half-filled form.',
         'does': 'Pulls the most recent 200 reference tracks and gives each one a score. Tempo is worth the most: within 5 BPM scores 4, within 10 scores 3, within 15 scores 1, and anything further away actively loses 2 points. A matching mood or genre adds 3 each, a matching scale adds 2, and an energy rating within one step adds 2. Anything that ends up at zero or below is dropped, and what is left comes back sorted best-first.',
@@ -203,7 +203,7 @@ PLAIN_ENGLISH = {
     },
     ('visualOracle', '_saveDocToProduction'): {
         'anchor': '  _saveDocToProduction: function(docSlug, text, productionId, videoJobId) {',
-        'lines': (6542, 6561),
+        'lines': (7237, 7376),  # re-verified Sep 8 2026 (/Routine), drifted from 6542 due to the G53 60-module ui/logic split
         'headline': 'Files a document Oracle just produced onto the right ConID, and moves that ConID forward a stage if the document warrants it.',
         'input': 'A slug naming which document this is (`visual_treatment`, `obs_script`, `captions`), the document text itself, and the ids of the production and video job it belongs to.',
         'does': 'If there is no production to attach to it stops loudly with a visible warning rather than silently dropping the document. Otherwise it reads the production\'s existing documents, adds this one under its slug, and then checks whether arriving should also advance the ConID\'s stage: a visual treatment or an OBS script moves it from Idea to Scripted, and captions move it all the way to Posted. Every one of those checks is deliberately forward-only — it will never drag a ConID backwards past a stage it has genuinely already reached.',
@@ -213,7 +213,7 @@ PLAIN_ENGLISH = {
     },
     ('conidPot', '_quickDetectPhyla'): {
         'anchor': '  _quickDetectPhyla: function(text) {',
-        'lines': (24386, 24395),
+        'lines': (28660, 28671),  # re-verified Sep 8 2026 (/Routine), drifted from 24386 due to the G53 60-module ui/logic split
         'headline': 'A free, instant guess at which taxonomy phyla an idea belongs to — plain keyword spotting, no AI involved.',
         'input': 'One string: the text of a content idea.',
         'does': 'Lowercases it and checks for a handful of giveaway words. Drums, 808 or kick suggests phylum 2; mix, EQ or compress suggests 4; FL Studio, plugin or VST suggests 6; tutorial, teach or learn suggests 12; YouTube, Instagram or content suggests 13. It returns whichever numbers matched, and an empty list is a perfectly normal answer.',

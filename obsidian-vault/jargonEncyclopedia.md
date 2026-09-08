@@ -3,13 +3,13 @@ module_name: "jargonEncyclopedia"
 kind: module
 river_number: 7
 river_name: "River VII — The Library Current"
-source_lines: "26747-26816"
+source_lines: "33071-33255"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # jargonEncyclopedia
 
-`rpgace_core.js:26747-26816`
+`rpgace_core.js:33071-33255`
 
 Member of [[07 — River VII — The Library Current.md|River VII — The Library Current]].
 

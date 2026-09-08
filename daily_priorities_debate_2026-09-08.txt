@@ -1,0 +1,192 @@
+RPGACE /Routine — Daily Priorities Debate
+2026-09-08 (Tuesday, ~1am UK / 08:50 UTC session start)
+Gap since last session: Sep 5 -> Sep 8 (3 days, Alex confirmed away).
+
+======================================================================
+STEP 1 — TEAM 1's EVIDENCE PASS (GODMODE)
+======================================================================
+
+Real evidence gathered before drafting anything:
+- git log/branch: clean, on main, HEAD = f6a6da4 (the Sep 5 /Bedtime
+  commit). No commits landed while Alex was away (expected — nothing
+  runs unattended in this project by design).
+- Session-start checks, all clean/quiet:
+  oracle_dev_suggestions new=0, graphify_jobs undrained=0,
+  system_map_flags flagged=0, ceo_plan_items purple=0.
+  error_log active=2 — SAME 2 rows as the last session (toast()-sourced
+  "App froze for 669ms"/"Oracle is still answering", both already known,
+  both already scoped as F2's own deliberately-deferred freeze-watch-
+  threshold decision — not new, not actionable without Alex's own call).
+- Reverse-timeline check (did Alex do anything directly in the app while
+  away): journal/chronicles_finance/content_productions/taxonomy_
+  proposals-reviewed/taxonomy_links/smoke_test_items-verified/quest_log
+  all show ZERO rows since Sep 5 — consistent with "away," nothing to
+  reconcile from that side.
+- smoke_test_items: the one standing flag (videoSummary, needs_confirm_
+  highlight=true) is unchanged since the Sep 4 /Routine — still needs
+  Alex's own hand re-test, not resolvable by a session alone.
+- ceo_plan_items: 16 real active (red/yellow) rows across 5 plans, all
+  individually evidence-checked this pass (not skimmed):
+    F0/F1/F2/F9/UI2/UI14/G41/G109/A10: yellow, built, genuinely gated on
+      Alex's own hand-test/decision, no further code work available.
+    F7/A10: deliberately, explicitly deferred by Alex's own direct words
+      (F7: "prune it once the system around oracle is fully developed";
+      A10: needs a real paid API key, Tier 3, his call).
+    F13: red but explicitly gated by its OWN evidence ("run once F1-F2/
+      F8-F10 are genuinely closed... not before, a benchmark taken mid-
+      triage would just restate today's own findings back") — still
+      gated, F1/F2 deliberately stay yellow.
+    W7/W10: red, deliberately deferred (Alex's own Aug 23 confirm: real
+      Phase 1 usage data needed first, "he plans to hand-test Phase 1
+      soon" — the real forcing function, not yet arrived).
+    F12: red, GENUINELY UNGATED — "the 5 setTimeout handler violations
+      flagged Aug 22 were never investigated... no real target threshold
+      has been set" (distinct from F2, which is the logging/threshold
+      DECISION; F12 is the actual perf work). Real, buildable-without-
+      Alex candidate.
+
+- REAL FINDING, not on the original backlog — found by checking whether
+  the Galaxy Map / graphify pipeline had gone stale relative to G53
+  (the 60-module ui/logic restructure, finished Sep 2-3). Per the
+  standing rule (`/update-logging-system` artifact 10: "run the free
+  --code-only rebuild whenever rpgace_core.js's structure changes"),
+  this should have run after G53 — it hasn't. Last regen: Sep 1
+  (commit 4cdfc29, G110-G113), BEFORE G53 shipped.
+
+  Checked whether this staleness is cosmetic or a real defect, not
+  assumed either way — read `graphify_river_group.py`'s own function-
+  inventory parser (`parse_module_functions`) directly. Root cause,
+  CONFIRMED via live Python execution against the real current
+  rpgace_core.js, not speculated:
+
+  G53 gave every split module a real top-level PASS-THROUGH stub
+  (`_showDetails: function(row, onSaved) { return this.ui._showDetails(
+  row, onSaved); },`) alongside its real nested implementation inside
+  `ui: {...}`/`logic: {...}`. `parse_module_functions()` scans the whole
+  module block for `name: function(` lines and DEDUPES BY FIRST
+  OCCURRENCE — since the trivial pass-through always appears BEFORE the
+  real nested implementation in source order, the parser silently keeps
+  the WRONG (1-2 line, content-free) body and discards the real one.
+
+  Measured, project-wide, not a guess:
+    41 of 45 real LEVEL3_MODULES affected
+    358 real function bodies currently showing as trivial 1-2-line
+      pass-through stubs instead of their genuine implementation
+    Only 95 function bodies across the whole Galaxy Map's Current(L3)/
+      Level 6/call-chain data are still showing real content
+  (spot-checked on beatLog: 17 of 19, 89%, affected — not a one-off).
+
+  Real consequence: Current(L3)'s per-module function detail, Level 6's
+  exhaustive branch ledger, `compute_module_function_flow()`'s intra-
+  module call-chain edges, and the UI-output/input evidence bubbles are
+  ALL currently reading content-free stub bodies instead of real logic
+  for the large majority of the app's own functions — including
+  whatever Oracle's own architecture-anatomy grounding or a future
+  session cross-references from these pages. A silent, large-scale,
+  currently-live accuracy regression, not a stale-but-harmless doc.
+
+======================================================================
+STEP 2 — TEAM 2's COUNTER-CASE
+======================================================================
+
+Team 2's real case: this project's OWN most-repeated standing risk
+(named across nearly every recent patch note and CLAUDE.md's own
+"Hand-testing" bullet) is that G53 touched all 60 real modules with
+ZERO integrated post-restructure regression check, and F0/F2/UI14
+Phase 1 shipped on top of that with only per-feature headless tests —
+never one pass that boots the WHOLE app and clicks through its major
+surfaces in sequence. A silent live-app wiring regression (a click that
+throws, a panel that never renders) would be a genuinely worse outcome
+than a documentation page showing the wrong function body — Team 1's
+new finding is real, but it's a map inaccuracy, not a live-app defect.
+Team 2's case: a full-app headless regression sweep should outrank the
+Galaxy Map fix, not just follow it.
+
+======================================================================
+STEP 3-4 — /DEBATE + /5THDIMENSION RECONCILIATION
+======================================================================
+
+Both real, neither manufactured. Reconciled on this project's own
+established `/drift` grading vocabulary: a CONFIRMED, MEASURED, currently
+-live defect (358 wrong function bodies, right now, today) is MATERIAL
+by definition — it is not a risk or a possibility, it is happening. The
+regression-sweep risk Team 2 names is real but currently unconfirmed —
+no evidence of an actual live-app break has surfaced in 3 sessions of
+scoped testing since G53 finished. Per this project's own standing
+practice (a confirmed defect outranks an unconfirmed risk of comparable
+scope), the Galaxy Map fix stays #1 — but Team 2's case is strong enough
+that the regression sweep moves up to #2, ahead of net-new feature work
+(F12, UI14 Phase 2), rather than sitting further down the list.
+
+Checked against Alex's real stated goals: the governing 48-hour rule
+("does this result in a beat made or video posted") technically favors
+neither item directly — both are infrastructure-integrity work, which
+CLAUDE.md's own standing exception explicitly covers ("RPGACE
+infrastructure itself is exempt — building the system that builds beats
+counts"). Both stay in scope.
+
+======================================================================
+STEP 5 — FINAL COUNCIL OF 5 LOCK-IN: TODAY'S TOP 10
+======================================================================
+
+1. Fix the Galaxy Map's function-body parser (pass-through-vs-real
+   dedup) and re-verify against several G53-split modules before
+   touching the full pipeline. CONFIRMED defect, 358 wrong bodies,
+   41/45 modules affected — highest real value, comparatively cheap fix.
+
+2. Re-run the full Galaxy Map regeneration pipeline (all real page
+   scripts + Obsidian export) with the fix in place — idempotency,
+   div/link-balance, and real anchor-citation drift all re-verified
+   (G53 shifted every line number in the file; hand-cited anchors in
+   Decision Matrix / Load Dimension / etc. are a real, separate risk
+   this same regen run will either confirm safe or fail loud on).
+
+3. Full-app headless regression sweep: boot the real deployed app,
+   click through its major pages/panels (Dashboard, Bookworm's new
+   reader flow, Content Pipeline, Taxonomy & Review, Oracle Control's
+   overlay, Quest Board) in one continuous pass, zero console errors —
+   closes the standing "no integrated check since G53" risk Team 2
+   named, addressed together rather than per-feature only.
+
+4. F12: investigate the 5 unaddressed "setTimeout handler took Nms"
+   console violations flagged Aug 22 and never touched — real, scoped,
+   buildable perf work with its own clean ceo_plan_items row.
+
+5. UI14 Phase 2: a real /interrogation pass to formally scope the
+   10-item convert-candidate catalogue (Taxonomy Review recent-
+   proposals, Knowledge Gaps list, Morning Brief dashboard, ConID
+   Manage Deliverables/Post Details/Generate Video/OpenMontage/
+   Captions, Chronicles recent-activity, Jargon Encyclopedia browse,
+   Fallback Scout Scouted-Now-Answered) and build the first slice.
+
+6. `/perspective` coverage re-check for any real actor whose function-
+   level baseline may have gone stale or incomplete post-G53 (the ui/
+   logic split changed which functions exist at which qualified name) —
+   a real, cheap follow-on to item 1/2's own finding.
+
+7. Cross-doc drift spot-check: does session_lessons.html/smoke_test.html/
+   manual.html cite anything now provably wrong post-G53 that the
+   earlier Sep 5 /Bedtime pass didn't catch (that pass checked
+   interconnection_map.md/CLAUDE.md specifically, not these three).
+
+8. Formally close the 2 active-but-benign error_log toast rows with a
+   real explanatory note (both already known/non-actionable per F2's
+   own stated scope) so they stop reading as fresh "active" noise on
+   every future session-start check.
+
+9. A real, explicit re-check of F13's own gating condition (is it
+   closer to being met now that F0/F2/UI14 Phase 1 have shipped, even
+   though F1/F2 deliberately stay yellow) — likely still gated, but
+   worth a fresh, honest look rather than assumed stale.
+
+10. Real, explicit drop-list — named, not silently dropped:
+    F7 (Alex's own direct deferral — wait for the Oracle-orchestration
+      system to mature first); W7/W10 (deliberately gated on Alex's own
+      Phase-1 hand-test, no forcing function has arrived); A10/G41
+      remaining scope (Tier 3 — a real paid API key, Alex's call); the
+      standing hand-test-debt backlog (~70 of 99 smoke_test rows, his
+      own time budget to set); the dead `loadDemoShifts` onclick button,
+      Composio key rotation, and the swipe-gesture freeze (all
+      explicitly need Alex's own direct input, unchanged this session).
+
+Executing item 1 immediately — this is a planning pass, not a stall.

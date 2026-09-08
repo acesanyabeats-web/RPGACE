@@ -3,13 +3,13 @@ module_name: "taxonomyTree"
 kind: module
 river_number: 8
 river_name: "River VIII — The Confluence Pool"
-source_lines: "13046-13815"
+source_lines: "16802-17635"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # taxonomyTree
 
-`rpgace_core.js:13046-13815`
+`rpgace_core.js:16802-17635`
 
 Member of [[08 — River VIII — The Confluence Pool.md|River VIII — The Confluence Pool]].
 
@@ -28,7 +28,6 @@ Member of [[08 — River VIII — The Confluence Pool.md|River VIII — The Conf
 - ← [[encSync.md|encSync]]
 - ← [[encTaxonomyLink.md|encTaxonomyLink]]
 - ← [[phylumPath.md|phylumPath]]
-- ← [[scheduleOracle.md|scheduleOracle]]
 - ← [[taxonomyReviewQueue.md|taxonomyReviewQueue]]
 - ← [[videoSummary.md|videoSummary]]
 

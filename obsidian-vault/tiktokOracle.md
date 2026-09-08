@@ -3,13 +3,13 @@ module_name: "tiktokOracle"
 kind: module
 river_number: 3
 river_name: "River III — The Oracle Current"
-source_lines: "5624-5754"
+source_lines: "5779-6004"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # tiktokOracle
 
-`rpgace_core.js:5624-5754`
+`rpgace_core.js:5779-6004`
 
 Member of [[03 — River III — The Oracle Current.md|River III — The Oracle Current]].
 

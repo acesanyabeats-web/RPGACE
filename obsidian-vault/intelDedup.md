@@ -3,13 +3,13 @@ module_name: "intelDedup"
 kind: module
 river_number: 12
 river_name: "River XII — The Research & Intel Stream"
-source_lines: "12120-12251"
+source_lines: "15348-15546"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # intelDedup
 
-`rpgace_core.js:12120-12251`
+`rpgace_core.js:15348-15546`
 
 Member of [[12 — River XII — The Research & Intel Stream.md|River XII — The Research & Intel Stream]].
 

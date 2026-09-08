@@ -3,13 +3,13 @@ module_name: "encSync"
 kind: module
 river_number: 7
 river_name: "River VII — The Library Current"
-source_lines: "7697-7792"
+source_lines: "8814-8931"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # encSync
 
-`rpgace_core.js:7697-7792`
+`rpgace_core.js:8814-8931`
 
 Member of [[07 — River VII — The Library Current.md|River VII — The Library Current]].
 

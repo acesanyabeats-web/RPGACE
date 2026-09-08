@@ -3,13 +3,13 @@ module_name: "pathRouter"
 kind: module
 river_number: 2
 river_name: "River II — The Great Confluence"
-source_lines: "26818-26895"
+source_lines: "33257-33489"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # pathRouter
 
-`rpgace_core.js:26818-26895`
+`rpgace_core.js:33257-33489`
 
 Member of [[02 — River II — The Great Confluence.md|River II — The Great Confluence]].
 
