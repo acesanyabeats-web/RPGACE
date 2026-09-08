@@ -1,0 +1,96 @@
+G11 continuation — main.js's remaining non-onclick functions
+Real /interrogation, 2026-09-08, via /Routine's "turn more blues into reds" ask.
+
+======================================================================
+REAL EVIDENCE FIRST — the stale figure this item was carrying
+======================================================================
+
+G11's own Aug 14 evidence said "main.js's own remaining ~116 non-onclick
+functions stay explicitly NOT started." Re-verified directly against the
+live file rather than trusted (rule 1) — that figure was itself stale:
+
+- The real legacy main.js block (rpgace_core.js lines 24-4712, the
+  `/* ===LEGACY:mainjs=== */` ... `/* ===END:LEGACY:mainjs=== */` markers
+  from the Aug 20 merge) contains 165 real distinct top-level function
+  declarations (`function X(...)`, `const/let/var X = function`, or a
+  bare `window.X = function` at column 0), counted by direct scan, not
+  estimated.
+- perspective_reports already has 47 real `onclick_feature` rows. Cross-
+  referenced against the 165: only 27 of those 47 names resolve to an
+  actual top-level declaration inside the legacy block itself — the
+  other 20 (checkPassword, sendChatWithImage, syncIntelData, quickPrompt,
+  and 16 more) resolve elsewhere: some are `global.X = function` inside a
+  wrapper (a syntax shape a plain top-level scan doesn't match),
+  `syncIntelData` specifically is a real `window.X` override living
+  INSIDE an rpgace_core.js module (line 9028/15511 — the documented
+  "main.js defines an original/stub, a module's init() reassigns
+  window.X" convention), and `quickPrompt` resolves via
+  `quickActions.ui._setup()`'s own runtime DOM-patch, never a static
+  declaration anywhere (the already-known, already-documented pattern).
+- Real, current remainder: **138 legacy main.js functions have zero
+  perspective_reports coverage of any scope_level** — not 116. The old
+  figure was off by 22, in the direction of undercounting.
+
+**Honest caveat on this count, stated plainly rather than oversold**:
+this is a real, direct-evidence estimate from a quick top-level-pattern
+scan for THIS interrogation's scoping purposes, not a claim to have
+replicated the more careful parsing the actual generator script
+(`perspective_generate_onclick_features.py`, or its successor) will do
+when it runs for real. The true final list may differ by a small margin
+once that script's own real detection runs — same as the module-scope
+and onclick-feature slices before it, where the real generator was the
+authoritative source, not a pre-pass estimate.
+
+======================================================================
+SCOPE, PER G11'S OWN ALREADY-ESTABLISHED PATTERN — no new design needed
+======================================================================
+
+This item is a real, well-defined CONTINUATION of an already-proven,
+twice-executed generator-script approach (module scope: 44/44, Aug 14;
+onclick-feature scope: 47/47, Aug 14) — not a new kind of build. The two
+real precedents already answer every structural question a fresh feature
+would need interrogated:
+
+1. **Generator pattern**: a new `scripts/perspective_generate_mainjs_functions.py`
+   (or extending the existing onclick-features generator, whichever the
+   real code shape favors once written), pulling from the SAME already-
+   computed real detection data the Galaxy Map/graphify_river_group.py
+   itself uses — never fabricated, matching both prior rounds exactly.
+2. **Batch size**: do the real remaining ~138 in one generator pass, same
+   as both precedents (44 in one pass, 47 in one pass) — a mechanical,
+   evidence-sourced Supabase insert carries genuinely low risk (read-only
+   detection + an additive perspective_reports write, zero live-app code
+   touched), so splitting into smaller batches would add real ceremony
+   without a real risk it's protecting against.
+3. **smoke_test.html**: per G13's own already-decided design principle
+   (Aug 14, explicitly reasoned through for the module-scope rows) —
+   these new rows do NOT auto-populate smoke_test.html. That doc stays
+   hand-tickable, grown from real completed work Alex can actually click-
+   test, never buried under a wall of internal main.js-function rows he
+   has no practical way to verify one at a time. Same discipline, no new
+   decision required.
+4. **Real, honest quality note carried forward from precedent**: generated
+   reports are more mechanical/templated than a hand-written one — an
+   already-documented, already-accepted tradeoff (rule 4/11: exhaustive
+   hand-writing would cost enormously more for marginal gain over a real,
+   evidence-sourced template), not re-litigated here.
+
+======================================================================
+WHY THIS ITEM STAYS SCOPED AS "MODULE-LEVEL/FUNCTION-LEVEL PERSPECTIVE
+COVERAGE," NOT A LIVE-APP CHANGE
+======================================================================
+
+Explicitly, this item produces real Supabase `perspective_reports` rows
+(a documentation/self-awareness baseline layer) — it does not touch
+`rpgace_core.js`'s real running code, `index.html`, or any live behavior.
+Real value: closes G11's own remaining real gap (feature-scope coverage
+for the whole app, not just modules and onclick handlers), gives
+`/colourgradient`'s purple-regression check and `error_log`'s cascade
+(G109) a real baseline to read for every one of these 138 functions that
+currently has none, and gives `cartographer`'s Baseline Reconciliation
+138 more real citations to cross-check against.
+
+`ceo_plan_items` G11: blue -> red, real scope locked (138 real functions,
+generator-script approach, no auto-populate to smoke_test.html). Ready
+to build on a real "yes build" confirmation — not executed in this same
+pass, matching Alex's own literal ask ("turn more blues into reds").
