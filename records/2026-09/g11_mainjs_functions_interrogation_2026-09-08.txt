@@ -94,3 +94,37 @@ currently has none, and gives `cartographer`'s Baseline Reconciliation
 generator-script approach, no auto-populate to smoke_test.html). Ready
 to build on a real "yes build" confirmation — not executed in this same
 pass, matching Alex's own literal ask ("turn more blues into reds").
+
+======================================================================
+REAL, SUPERSEDING CORRECTION — Sep 8 2026, same day, during the actual
+build (Alex: "yes build")
+======================================================================
+
+Every "138 remaining" / "138 real functions" figure above is STALE, kept
+here as historical record per this project's own doc-discipline (same
+precedent as CLAUDE.md's Aug 11 phylum renumber note), not corrected in
+place.
+
+The real, corrected figures, found by the generator script itself
+(scripts/perspective_generate_mainjs_functions.py) reusing the project's
+own existing shared _mainjs_function_bodies() (graphify_river_group.py)
+instead of re-deriving detection a second time — exactly the discipline
+rule 8 exists to enforce, and exactly what caught this:
+
+  - 219 total real legacy-block functions (not 165 — this interrogation's
+    own quick one-off scan used a regex requiring the bare word `function`
+    at line-start, silently missing every `async function name(...)`
+    declaration)
+  - 43 already covered by an existing perspective_reports row of any
+    scope_level (not 27 — _mainjs_function_bodies() was ALSO extended
+    this same pass to catch `const/let/var name = function` and bare
+    `window.name = function` shapes it had previously missed, which
+    resolved 16 more of the 47 onclick_feature scope_id names into the
+    legacy block that this interrogation's scan couldn't see)
+  - 176 real new perspective_reports rows generated and applied (not 138)
+
+All 176 rows applied and independently verified via a real
+`SELECT count(*) FROM perspective_reports WHERE scope_level=
+'mainjs_function'` check after every chunk, final count 176/176.
+ceo_plan_items G11 moved red -> yellow with the real corrected evidence.
+Full account: patch_notes.html's Sep 8 card, this same date.

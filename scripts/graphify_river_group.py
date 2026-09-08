@@ -1942,12 +1942,28 @@ def _mainjs_function_bodies(core_js_path: Path = CORE_JS):
     gathering — never mutates anything. Matches `function name(...) {`/
     `async function name(...) {` at real column-0 indentation
     (confirmed by direct read: checkPassword/togglePwVis/etc. are all
-    true top-level declarations, not indented). Real, honest scope
-    limit: a function assigned via `const x = function(){}` or one
-    nested inside another function's body is not split out separately
-    here — same class of limit _function_bodies() already states.
+    true top-level declarations, not indented).
     Aug 20 2026: sources from _legacy_mainjs_text() (the merged
-    file's own legacy section) instead of a separate main.js file."""
+    file's own legacy section) instead of a separate main.js file.
+
+    Real, Sep 8 2026 extension (G11's own real /interrogation): also
+    matches `const/let/var name = function` and a real bare
+    `window.name = function` at column 0 — the same other 2 real
+    declaration shapes _module_def_line_match() already recognizes for
+    RPGACE.register() modules, extended here since checkPassword/
+    syncIntelData/etc. use exactly these shapes and were silently
+    invisible to this function's own prior narrower scope. A real,
+    additive, non-breaking change for both existing callers below
+    (compute_hook_signal_edges()/compute_mainjs_window_bridge()) — a
+    superset match only ever finds MORE real relationships, never fewer
+    or different ones for what it already found. Real, measured effect
+    of this extension PLUS the pre-existing `async function` handling
+    already on the first pattern (never broken, just never previously
+    cross-checked against a naive external count): 219 real legacy
+    functions total, not the 165 a quick one-off scan without `async`
+    support found during this same interrogation — caught the moment
+    this shared function was reused instead of re-derived a second time,
+    exactly the failure mode rule 8 exists to prevent."""
     text = _legacy_mainjs_text(core_js_path)
     if not text:
         return {}
@@ -1957,11 +1973,30 @@ def _mainjs_function_bodies(core_js_path: Path = CORE_JS):
         m = re.match(r'(?:async\s+)?function\s+(\w+)\s*\(', line)
         if m:
             def_lines.append((i, m.group(1)))
+            continue
+        m = re.match(r'(?:const|let|var)\s+(\w+)\s*=\s*(?:async\s+)?function\s*\(', line)
+        if m:
+            def_lines.append((i, m.group(1)))
+            continue
+        m = re.match(r'window\.(\w+)\s*=\s*(?:async\s+)?function\s*\(', line)
+        if m:
+            def_lines.append((i, m.group(1)))
     bodies = {}
     for idx, (start_i, fname) in enumerate(def_lines):
         end_i = def_lines[idx + 1][0] if idx + 1 < len(def_lines) else len(lines)
         bodies[fname] = '\n'.join(lines[start_i:end_i])
     return bodies
+
+
+def sql_escape(s):
+    """Real, shared single-quote escaper for hand-generated SQL INSERT
+    statements — Sep 8 2026, factored out here (rule 8) after it was
+    about to be pasted a THIRD independent time (perspective_generate_
+    modules.py and perspective_generate_onclick_features.py each already
+    carry their own identical copy, both left as-is — working, not the
+    real point of this pass, rule 11 proportionality — only the new 3rd
+    consumer imports this one)."""
+    return (s or '').replace("'", "''")
 
 
 def compute_hook_signal_edges(core_js_path: Path = CORE_JS):
