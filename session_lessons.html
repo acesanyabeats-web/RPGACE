@@ -58,6 +58,20 @@
 
   <div class="card">
     <div class="card-top">
+      <div class="card-title">G116: due diligence on a small ask ("update Galaxy Map to represent this build") surfaced a real, separate, 2-week-old rule-numbering collision — fixed inline rather than filed away</div>
+      <div class="card-date">Sep 9 2026</div>
+    </div>
+    <span class="trigger discipline-catch">Found while checking the next available R-number, before writing R27</span>
+    <div class="block scope"><b>Prompt scope</b>Alex: "now update galaxy map to represent these changes, I want every update on new build to portray through galaxy map for updated structures... /interrogation and /CEO with /drift /paranoia and /commit-archaeologist and council of 5 summing everything for me" — reconciling Sep 8's G11 continuation (176 real <code>perspective_reports</code> rows for main.js legacy functions) against the Galaxy Map, plus a new standing rule so future builds don't need to be reminded.</div>
+    <div class="block obstacle"><b>Obstacle</b>Before writing the new standing rule as CEO SKILL.md's next R-number, a grep of every <code>**R[0-9]+</code> occurrence turned up TWO rules both minted as <code>R23</code> — the real original (Aug 22, oversight-doc logging discipline) and an unrelated Matrix/bubble-system rule (Aug 26) that should have been R26. <code>CLAUDE.md</code> and <code>patch_notes.html</code> both cited the WRONG (Matrix) rule as "R23" in their own G89-closure bullets; only <code>Summary/SKILL.md</code> had cited the real original correctly.</div>
+    <div class="block reasoning"><b>Reasoning</b>This wasn't the task Alex asked for — he asked for a Galaxy Map update, not a rule-numbering audit. But CLAUDE.md rule 11 ("fix cheap findings inline") and the Galaxy Development Framework's own R11 (opportunistic nearby-fix discipline) both cover exactly this case: a real, already-found defect that costs almost nothing to fix in the same pass, versus filing it away and hoping a future session rediscovers it. Silently building R27 next to a still-colliding R23 would have left a real, load-bearing numbering bug sitting there for someone else to trip over later, exactly the kind of thing this project's own numbering rules exist to prevent.</div>
+    <div class="block solution"><b>Solution</b>Renumbered the Matrix rule R23→R26 with an inline correction note explaining the collision and its fix; added the real new rule as R27 (future builds trigger a matching Galaxy Map update in the same pass, not a deferred follow-up); corrected the two wrong "R23" citations in <code>CLAUDE.md</code> and <code>patch_notes.html</code> to point at R26. Verified no other R-number was reused by re-sorting the full grep output after the fix.</div>
+    <div class="block rule"><b>Resulting rule</b>Any task that adds a new numbered item to an existing sequential list (an R-rule, a G-plan-item, a phylum number, a version string) should grep the FULL existing sequence before minting the next number, not just check the highest number seen recently — a duplicate can hide anywhere in the list, not only at the tail, and citations elsewhere in the repo can silently propagate the wrong one once it exists. Same underlying discipline as CLAUDE.md rule 13's "two separate greps" lesson (display text vs. raw literal), applied here to sequence integrity instead of renumbering completeness.</div>
+  </div>
+
+
+  <div class="card">
+    <div class="card-top">
       <div class="card-title">UI14 Phase 1: a shared reused DOM node (not a fresh popup box every time) meant one render-state's own inline style could silently leak into the next state — solved by fixing the container, not the one instance</div>
       <div class="card-date">Sep 5 2026</div>
     </div>
