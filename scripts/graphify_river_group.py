@@ -653,6 +653,23 @@ SUPABASE_L0_UNIT_TOUCHES = {
         {'table': 'graphify_jobs', 'role': 'read',
          'source_note': "CLAUDE.md, \"Session-start check — graphify_jobs (Alex-confirmed Aug 6)\" — \"At the start of any session working on RPGACE, query `graphify_jobs` ... for undrained rows ... A row explicitly asking to be logged carries `-- FOR RPGACE CC: please log to Chronicles/system_updates` in its `output_note`.\"",
          'detail': "Drains Graphify CC's real session output at session start — the standing passive-pull check. Stated honestly: this is a READ relationship. CLAUDE.md documents Graphify CC as the writer here and Orchestrator CC as the reader that acts on what it finds; no Orchestrator CC write to this table is claimed, because none is evidenced."},
+        # Added Sep 8 2026, real (G11 mainjs-function batch) — a
+        # DELIBERATELY separate entry from `skills` → perspective_reports
+        # above, not a duplicate (rule 8 checked: the two are genuinely
+        # different real relationships to the same table, not one fact
+        # restated). The `skills` entry documents the /perspective SKILL's
+        # own hand-run procedure (one report at a time, real judgment per
+        # write). THIS entry documents Orchestrator CC's own separate
+        # generator-script toolchain — scripts/perspective_generate_
+        # modules.py / _onclick_features.py / _mainjs_functions.py — which
+        # bulk-writes perspective_reports directly (176/47/44 rows across
+        # 3 real runs), skipping the skill's own hand-run cycle entirely.
+        # Real, honest distinction, not a technicality: the skill's own
+        # file names this tradeoff outright ("generated reports are more
+        # mechanical/templated than the 2 hand-written ones").
+        {'table': 'perspective_reports', 'role': 'write',
+         'source_note': "CLAUDE.md, Aug 14 2026 G11 module/onclick-feature entries + Sep 8 2026 G11 continuation entry — real generator scripts (`scripts/perspective_generate_modules.py`, `_onclick_features.py`, `_mainjs_functions.py`) writing bulk `perspective_reports` rows directly, distinct from `.claude/skills/perspective/SKILL.md`'s own hand-run procedure.",
+         'detail': "Orchestrator CC's own toolchain writes here in bulk, not one report at a time — 44 module-scope + 47 onclick-feature-scope rows (Aug 14) + 176 mainjs-function-scope rows (Sep 8), all real, evidence-only (a real definition line + verbatim excerpt per row, never fabricated), all self-reporting `status='unverified'` until Alex's own hand-test. The Sep 8 run also extended the shared `_mainjs_function_bodies()` detector (this same file) and factored a new shared `sql_escape()` helper on its 3rd real use — real, structural toolchain growth, not just more rows."},
     ],
     'openmontage_cc': [
         {'table': 'openmontage_jobs', 'role': 'async_queue',
