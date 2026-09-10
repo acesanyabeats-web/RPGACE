@@ -1,0 +1,207 @@
+HABITS / COOKING domain — CEO Loop 1 compiled interrogation spec
+Compiled 2026-09-10, via /Routine → real GODMODE evidence pass + 2-round /interrogation
+(AskUserQuestion) + a real mid-interrogation correction from Alex.
+Status: NOT approved for build. This is the Loop-1 "compile → report" deliverable.
+Nothing has been built. Per the source handover doc's own explicit instruction, no
+implementation code has been written from this document.
+
+================================================================================
+1. THE HANDOVER DOCUMENT ITSELF DID NOT DESCRIBE THIS REPOSITORY
+================================================================================
+
+Alex opened this /Routine with a "RPGACE — HABITS Domain Handover" document that
+described: React/Next + TypeScript, a governing `principles-and-workflow.md` +
+`overview.md` doc pair, a "strict domain ordering" rule (FOUNDATION→CONFIG→ORACLE→
+LEARNING→SCHEDULE→CONTENT→JOURNAL→SYSTEM), a `generate-recipe-tab.ts` script, and
+an already-built Supabase schema (`recipes`/`ingredients`/`recipe_ingredients`/
+`ingredient_prices`).
+
+Real evidence check (direct file/grep/Supabase-schema query, not assumed) confirmed
+NONE of this exists in the real repo (acesanyabeats-web/RPGACE) or the real Supabase
+project (gripopghczmrbrhqtqbm):
+  - No `principles-and-workflow.md`, no `overview.md` anywhere in the repo.
+  - No "domain ordering" rule anywhere in CLAUDE.md (the real governing doc).
+  - `package.json` has exactly 2 deps (archiver, terser) — zero React/Next/TypeScript.
+    RPGACE's real, deliberately-chosen architecture is one script (`rpgace_core.js`),
+    zero build step, zero npm at runtime — explicitly defended against a React
+    proposal once already (Aintergration Worked Precedent 1, July 20).
+  - No `.ts`/`.tsx` file anywhere in the repo.
+  - Zero of `recipes`/`ingredients`/`recipe_ingredients`/`ingredient_prices` exist in
+    the live Supabase schema.
+
+Asked Alex directly whether this meant a wrong document, a real intended pivot, or
+"keep the concept, drop the fictional stack." His first answer was "it's a real
+pivot I'm planning." Two more interrogation rounds followed under that premise
+(new-stack framing, new-repo-vs-same-repo framing) — then Alex corrected directly,
+mid-turn: "no not new app, i want it in rpgace app using existing ui so i have my
+day to day planned out in all things i need to do."
+
+**Real, final resolution**: no pivot. No new stack. The HABITS/Cooking CONCEPT
+(domain, Cooking module first, four touchpoints, the ingredient/pricing data idea)
+is real and wanted. The technical framing in the original handover (React/Next/TS/
+new-repo) does not apply and should be discarded entirely. Everything below is
+scoped to RPGACE's real, existing architecture.
+
+================================================================================
+2. RESOLVED FORKS (Alex's real answers, verbatim intent preserved)
+================================================================================
+
+Q1 — generic-to-HABITS now, or cooking-specific with genericization deferred?
+  Still genuinely open — see Section 4, item 1.
+
+Q2 — ORACLE recipe generation, live-per-view vs. cached?
+  RESOLVED: generate via the existing Oracle chat pipeline (reuse `callOracle`/
+  `sendChat`, no new API route), let Alex iterate live in chat, then an explicit
+  "Save" action writes ONE JOURNAL entry. A recipe is NOT regenerated on every
+  view. Separately, later, Alex can mark a saved JOURNAL recipe entry "cooked" —
+  a real status transition on the same row, not a second generation, not a second
+  entry. ("generated and cooked by me — can make journal save when i press save,
+  then in journal can mark as cooked.")
+
+Q3 — SCHEDULE integration, (a) internal step-sequencing or (b) real calendar/shift
+     collision-checking?
+  RESOLVED: both, eventually. Build (a) first (self-contained, no external data
+  dependency — a recipe's own steps/gaps/durations). (b) is confirmed wanted too
+  but is a genuinely separate, bigger integration (real read access to shift/
+  calendar data) — does not block (a) shipping first. ("both, ... (a) recommended
+  to start, (b) real calendar/shift collision-checking [also wanted]")
+
+Q4 — domain ordering rule blocking HABITS as a cross-cutting domain?
+  MOOT — the rule doesn't exist in real RPGACE. No sign-off needed on a rule that
+  isn't real. RPGACE's actual cross-cutting-domain precedent (Rivers I-XVII +
+  Galaxy Map) already treats this as normal.
+
+Q5 — does the 48-hour-rule justification hold?
+  RECOMMENDATION (not yet explicitly confirmed by Alex, flagged as still open):
+  treat HABITS as exempt-adjacent, same class as "RPGACE infrastructure itself is
+  exempt" — it's a new domain-plus-UI-pattern, not a single habit-tracking feature,
+  and Alex's own stated goal ("so i have my day to day planned out in all things i
+  need to do") reads as infrastructure for daily execution, not a side quest.
+
+Q6 (raised during interrogation, not in the original handover) — repo/stack
+     boundary: separate app/repo, or inside the existing app?
+  RESOLVED, by direct correction: INSIDE the existing RPGACE app and repo, using
+  the existing UI conventions (dashDeck popups, style.css tokens, the
+  `RPGACE.register()` module pattern) — no new stack, no new repo, no new Claude
+  Code session/Total-systems peer.
+
+Q7 (raised during interrogation) — "the shift scanner... we need to resume [it]"
+  RESOLVED as a real, SEPARATE, NOT-YET-BUILT idea: OCR/photo-scanning a
+  photographed work rota into the schedule. This is NOT the same as `shiftSync`
+  (the real, live, already-shipped cross-device shift-data-sync module) — no code
+  for rota-image-OCR exists anywhere in the repo. Logged as its own real backlog
+  item (Section 5) — a SCHEDULE-domain idea, not a HABITS/Cooking blocker, and not
+  scoped or spec'd here since it needs its own real interrogation (what OCR
+  provider/method, what triggers the scan, how a misread gets corrected before
+  it's trusted as a real shift).
+
+================================================================================
+3. REAL TECHNICAL GROUNDING CHECKED THIS PASS
+================================================================================
+
+- JOURNAL schema (real, live columns): id, created_at, title, date, content,
+  source. Flat — no structured per-domain JSON field, no entry-type discriminator.
+  Storing a recipe as a JOURNAL entry needs either (a) a real, small additive
+  migration (an `entry_type`/`domain` column, a `status` column for the
+  saved→cooked transition — matching the exact discriminator pattern already used
+  elsewhere, e.g. `content_productions.content_type`, `bibliography.book_id IS
+  NULL/NOT NULL`) or (b) storing the recipe as formatted text in `content` with no
+  schema change and tracking "cooked" status via a bolt-on mechanism. Given Alex's
+  explicit "mark as cooked" ask implies a real, queryable status (not just prose),
+  the additive-columns path is the recommended one — small, reversible, matches
+  established project convention, avoids inventing a second ad hoc "is this cooked"
+  signal outside the row itself.
+- `questEngine`'s static quest catalog and `ORACLE_SYS`'s own system prompt already
+  reference gym/budget as flavor text/generic goals ("get fit and build great
+  habits") — real, if thin, precedent that HABITS-adjacent concepts already sit in
+  RPGACE's own voice. "Cooking" appears nowhere yet.
+- `chronicles_finance` (a real, existing personal-visibility finance ledger) is a
+  genuine, existing partial precedent for whatever BUDGET eventually becomes — a
+  real rule-8 concern to flag now so a future BUDGET module doesn't duplicate it
+  blind.
+- No `ceo_plans` row for HABITS/cooking/gym/budget existed before this session.
+
+================================================================================
+4. STILL GENUINELY OPEN — needs Alex's own answer, not a guessed default
+================================================================================
+
+1. Generic-to-HABITS now, or cooking-specific with genericization deferred to when
+   GYM is actually built? Recommendation: cooking-specific now, matching RPGACE's
+   own established "prove the pattern once for real, generalize later" precedent
+   (e.g. Phylum 11 was the proof-of-concept before the other phyla were restructured
+   the same way) — building a generic four-touchpoint abstraction before a second
+   real module exists to validate it risks over-engineering against a guessed shape.
+2. The 48-hour-rule exemption (Q5 above) — recommendation given, not yet confirmed.
+3. The ingredient/pricing data layer (recipes/ingredients/recipe_ingredients/
+   ingredient_prices + the cost/stale-price/low-value-buy views) needs to be BUILT
+   FRESH in the real Supabase project — it does not exist yet, despite the original
+   handover describing it as already there. Worth Alex confirming he still wants
+   that specific shape (junction table + per-supermarket pricing + generated
+   unit_price + shelf-life/leftover-usability flags) now that it's understood to be
+   new work, not already-done work being wired up.
+4. CONFIG touchpoint specifics: which unit/shop preferences exactly, and whether
+   HABITS gets its own settings section or folds into the existing config module's
+   current layout.
+
+================================================================================
+5. LOGGED SEPARATELY, NOT PART OF THIS BUILD
+================================================================================
+
+- OCR/photo-scan rota-to-schedule feature (Section 2, Q7). Real, wanted, needs its
+  own interrogation before any build. Not a HABITS/Cooking dependency.
+
+================================================================================
+6. RECOMMENDED BUILD ORDER (Loop 2, once Alex approves this spec)
+================================================================================
+
+Phase 1 — CONFIG + data layer: HABITS module toggle, unit/shop preference fields;
+  create the real `recipes`/`ingredients`/`recipe_ingredients`/`ingredient_prices`
+  tables + the 3 real views (cost totals, stale-price flags, low-value-buy flags).
+  Self-contained, no dependency on the other 3 touchpoints.
+
+Phase 2 — ORACLE: a new `RPGACE.register('cookingOracle', ...)` (or folded into an
+  existing Oracle-adjacent module, TBD at build time) that reuses the existing
+  `callOracle`/`sendChat` pipeline to generate a recipe (ingredients + scalable
+  servings + step-by-step method + timer cues) in a fixed structure, plus a native
+  vanilla-JS rendering component (cards/serving-scaler/timers) built the same way
+  every other structured-content view in RPGACE already is (`bookworm`'s reader,
+  `visualOracle`'s treatment-doc rendering) — never a React component.
+
+Phase 3 — JOURNAL: the additive migration from Section 3 (entry_type/status
+  columns), the real "Save" write path, and the "mark as cooked" status-flip UI.
+
+Phase 4 — SCHEDULE (a): internal step-sequencing for multi-stage/gapped recipes
+  (oxtail's 3hr simmer, flan's 4hr chill) — self-contained to the recipe object.
+
+Phase 5 — SCHEDULE (b), deferred slightly behind Phase 4: real calendar/shift
+  collision-checking. Needs its own real scoping pass (what "collision" means
+  concretely, which existing SCHEDULE data it reads) before build.
+
+Each phase should get the same Truth Check / oversight-doc-logging discipline
+every other RPGACE build gets — this is real, multi-session CEO-framework-scale
+work (5 phases, 4 touchpoints, a new Supabase schema), not a single-session Tier 2
+feature.
+
+================================================================================
+7. WHAT WAS EXPLICITLY NOT DONE THIS PASS
+================================================================================
+
+- No code written.
+- No Supabase migration applied.
+- A provisional-basis `ceo_plans` row ("HABITS Domain — Cooking Module") plus 5
+  `ceo_plan_items` (H1-H5, all red/provisional) were logged so the plan has a real
+  Supabase anchor for future sessions — nothing in it is authorized to build.
+- The 4 still-open items in Section 4 were not resolved with a guessed default.
+
+================================================================================
+8. A REAL PROCESS INCIDENT WORTH RECORDING (not part of the spec content itself)
+================================================================================
+
+While committing this file the first time, the session's local git ref for `main`
+was found to be a stale checkout — 4 commits behind `origin/main` (a real instance
+of CLAUDE.md's own rule 14 landmine: a harness-level branch/ref state can drift
+without an explicit checkout command). The first write of this file was lost when
+the working tree was reconciled back to the stale local `main` rather than
+`origin/main`. Fixed by fetching `origin/main` directly and fast-forwarding local
+`main` onto it (verified clean, no divergent commits) before rewriting this file
+and committing. Logged in session_lessons.html.
