@@ -257,6 +257,35 @@ tagging requirement; H4 retitled/rescoped to single-recipe timeline rendering;
 new H6 inserted (red, provisional) with the full resolved scope above.
 
 ================================================================================
+8b. REAL ADDENDUM, SAME DAY — ingredient-frequency / eating-trend tracking (H1)
+================================================================================
+
+Alex: "we will also have a supabase table for each individual ingredient to see
+what ingredients cover what percentage of accepted recipes to learn long term
+trends on what I eat."
+
+Real rule-8 check before building anything: the already-planned recipes/
+ingredients/recipe_ingredients tables (H1) already hold everything needed to
+compute this — a NEW dedicated table would just be a second, syncable-out-of-date
+copy of a number those tables can already answer. Recommended and logged instead:
+a 4th real view on H1, `ingredient_frequency` — % of ACTUALLY-COOKED recipes each
+ingredient appears in, plus a time-bucketed version for a genuine long-term trend
+(not just a static snapshot). Matches the exact same live-view-over-duplicate-
+table precedent already governing the other 3 planned views (cost totals,
+stale-price flags, low-value-buy).
+
+One real fork resolved via AskUserQuestion: "accepted recipes" = recipes Alex has
+actually marked COOKED (the real H3 status transition), not merely saved to
+JOURNAL — this is genuine eating history, matching his own stated goal ("what I
+eat") literally rather than a broader "recipes I liked the look of" dataset.
+
+Real, concrete dependency this surfaces on H3: the saved→cooked transition needs
+a real `cooked_at` TIMESTAMP (not just a boolean flag) and a real FK from the
+journal entry back to its source `recipes` row — both required for the trend
+view to bucket by real date rather than just report a static current percentage.
+H1 and H3 evidence updated in Supabase to reflect this.
+
+================================================================================
 9. A REAL PROCESS INCIDENT WORTH RECORDING (not part of the spec content itself)
 ================================================================================
 
