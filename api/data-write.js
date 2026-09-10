@@ -128,6 +128,17 @@ const ALLOWED_TABLES = new Set([
   // construction. intelDelete/deleteEncEntry/clearEncyclopedia are the
   // real write paths (a fire-and-forget insert on delete).
   'intel_reanalysis_pool',
+  // 2026-09-10 - HABITS/Cooking domain, H1. Created anon_read_only/
+  // authenticated_all FROM THE START (same "flip RLS first, then allowlist"
+  // by construction as oracle_actions/quest_log above). cookingOracle is the
+  // one real write path. ingredient_prices/ingredients/recipe_ingredients
+  // are Alex's own manually-entered price/ingredient data, never Oracle-
+  // generated - same human-source discipline as chronicles_finance.
+  'recipes',
+  'ingredients',
+  'recipe_ingredients',
+  'ingredient_prices',
+  'habits_config',
 ]);
 
 async function handleBundleDeliverables(req, res, serviceKey) {
