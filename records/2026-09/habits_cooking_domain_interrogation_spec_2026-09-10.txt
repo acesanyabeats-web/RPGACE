@@ -194,7 +194,70 @@ feature.
 - The 4 still-open items in Section 4 were not resolved with a guessed default.
 
 ================================================================================
-8. A REAL PROCESS INCIDENT WORTH RECORDING (not part of the spec content itself)
+8. REAL ADDENDUM, SAME DAY — kitchen-session scheduler (H4 rescoped, new H6)
+================================================================================
+
+Alex refined the SCHEDULE touchpoint with a real, richer requirement, invoking
+/interrogation + /drift + /paranoia + /restructure + /CEO + Council of 5 +
+/free-for-all-debate-as-needed. Real /misunderstanding-repair restatement given
+back to Alex first and confirmed correct before proceeding (no changes requested).
+
+**The real ask, resolved**: when batch-prepping several recipes for the week in
+one kitchen session, minimize TOTAL elapsed time spent in the kitchen by filling
+one recipe's passive/dead time (a simmer, a bake, a chill) with another recipe's
+(or the same recipe's) active work — the only hard constraint is never
+double-booking Alex's own hands/attention. This is a real interval/resource
+scheduling problem, not scope creep on H4's original "one recipe's own gaps"
+framing — H4 undersold the real scope, a legitimate Loop-1 refinement since
+nothing was built/approved yet.
+
+Real /drift finding: H4 as originally logged ("self-contained to the recipe
+object") does not cover cross-recipe interleaving. Fixed by rescoping H4 to what
+it was always meant to cover (rendering one recipe's own timeline) and splitting
+the genuinely new, bigger cross-recipe optimizer into a new item, H6.
+
+Real /paranoia-shaped evidence check: grepped rpgace_core.js for any existing
+gap-detection/interval-scheduling/makespan logic — none exists anywhere. This is
+genuinely new work, not a dedup risk (rule 3/8 satisfied).
+
+4 real forks resolved via AskUserQuestion, all Alex's own answers:
+1. Equipment capacity IS a real constrained resource, not unconstrained hands-only:
+   oven = 2 slots, stovetop = 4 burner slots (used in practice as 1 wok/1 simmer
+   pot/2 smaller sauce pots, modeled as 4 generic slots for v1 — burner
+   size/type distinction flagged as a possible future refinement, not core to v1).
+2. Cross-recipe interleaving confirmed BOTH directions (recipe A's dead time can
+   be filled by recipe B's active prep, and vice versa) — this is the whole point
+   of batching several recipes into one session.
+3. Output is a real, reviewable/editable PROPOSED schedule, never auto-followed
+   with no review step — matches RPGACE's standing AI-proposes/human-confirms
+   convention (rule 4/7: a wrong computed order could waste real time or food).
+4. Sequencing confirmed: step-type tagging (prep-before-cooking/actual-cooking/
+   prep-while-cooking/baking, each with an active duration and, where
+   applicable, a trailing passive duration) ships as part of H2 (ORACLE recipe
+   generation) now. The actual N-recipe interleaving optimizer is its own later
+   phase (new H6), built only once H2's step-type data model is validated
+   against real generated recipes — same "prove the pattern once, then build the
+   bigger thing on top" discipline already used for the generic-vs-cooking-
+   specific fork in Section 4.
+
+Real recommended algorithmic approach for H6, stated now so it isn't guessed at
+build time: a proportionate GREEDY interval-packing heuristic (schedule the
+longest-passive-lead-time recipe first, fill its dead time with the next
+recipe's active chain, etc.) — NOT a full general constraint solver. A perfectly
+optimal general solution is NP-hard-shaped (this is a real job-shop-scheduling-
+class problem); a good heuristic matches real professional kitchen practice
+(the same "start the long thing first, fill gaps as you go" instinct a real
+chef uses) and RPGACE's own zero-dependency, keep-it-simple precedent. Flagged
+as a recommendation for whoever builds H6, not a decision made now — no code
+has been written.
+
+Supabase updated same pass: H1 evidence gained the real oven(2)/stovetop(4)
+capacity fields as a CONFIG requirement; H2 evidence gained the real step-type
+tagging requirement; H4 retitled/rescoped to single-recipe timeline rendering;
+new H6 inserted (red, provisional) with the full resolved scope above.
+
+================================================================================
+9. A REAL PROCESS INCIDENT WORTH RECORDING (not part of the spec content itself)
 ================================================================================
 
 While committing this file the first time, the session's local git ref for `main`
