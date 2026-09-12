@@ -297,3 +297,70 @@ the working tree was reconciled back to the stale local `main` rather than
 `origin/main`. Fixed by fetching `origin/main` directly and fast-forwarding local
 `main` onto it (verified clean, no divergent commits) before rewriting this file
 and committing. Logged in session_lessons.html.
+
+================================================================================
+10. REAL H6 INTERROGATION, Sep 12 2026 — the gate condition is now real evidence,
+    not just a plan; 4 forks resolved via AskUserQuestion
+================================================================================
+
+/misunderstanding-repair check run first, per Alex's own invocation of
+/interrogation + /drift + /paranoia together: Alex hand-cooked a real recipe
+(rendang curry) generated through the shipped H2 pipeline, and confirmed the
+step-tagging (cooking methods + dead time) rendered correctly. This is the exact
+real-world validation Section 8 named as H6's own build gate ("built only once
+H2's step-type data model is validated against real generated recipes") — the
+gate is now satisfied by real evidence, not assumption. Restated back to Alex
+and confirmed correct before proceeding (no changes requested).
+
+/drift check against the Section 8 baseline (RATIFIED-in-spirit: a Loop-1 spec
+Alex has directly reviewed/refined twice already, though the whole HABITS
+ceo_plans row remains basis='provisional' in Supabase pending H6 itself being
+built): Alex's current ask (pick a 2nd recipe to fill dead time; add "schedule
+cook time" + "add another recipe" under Save to Journal) is the SAME real scope
+Section 8 already resolved — VERDICT: on track, no MINOR/MATERIAL/CAPTURED
+finding. Two genuinely new sub-questions surfaced by this concrete ask that
+Section 8 didn't cover (storage shape for a multi-recipe session; whether
+"schedule cook time" touches the real Agenda/H5) — both are real refinements to
+an already-approved scope, not scope creep, same "Loop-1 refinement before
+anything's built" latitude Section 8 itself used.
+
+4 real forks resolved via AskUserQuestion, all Alex's own answers:
+1. Confirmed: this is H6 exactly as scoped in Section 8, nothing more.
+2. Data model: a NEW dedicated table, `planned_cooks` (recipe_ids array,
+   scheduled_at, the computed interleaved-schedule JSON). Each component recipe
+   still gets its OWN `journal` row (entry_type='recipe') so H3's cooked_at/FK
+   contract and the H1 ingredient_frequency view keep working per-recipe,
+   unchanged — `planned_cooks` is a real, additive linking/scheduling layer on
+   top, never a replacement for the existing per-recipe journal shape.
+3. "Schedule cook time" pushes a real row into `rpgace_agendas` (the same table
+   Alex's actual day-to-day Agenda already reads via `scheduleToCalendar`/
+   AGENDA_CACHE_KEY) — plain date/time only, matching CLAUDE.md's "in RPGACE app
+   using existing UI" correction and Alex's own stated purpose ("so I have my
+   day to day planned out"). Real, deliberate scope line: NO shift/calendar
+   conflict-checking yet — that is H5, confirmed to stay a separate, later,
+   unstarted item, matching his own earlier "internal sequencing first"
+   answer. A future H5 pass can read `planned_cooks.scheduled_at` directly
+   against real shift data once it's built; nothing here blocks that.
+4. Review/edit power on the computed schedule: v1 ships READ-ONLY proposed
+   schedule + Accept (matches the existing director-blend/EDL accept-or-
+   regenerate pattern, rule 8 — no new UI paradigm). Alex's own answer, verbatim
+   intent: "1 but 2 looks promising" — a real, later, NOT-built enhancement
+   (a fully editable/reorderable timeline) is logged as a genuine future
+   want, not guessed into v1 scope.
+
+Real, honest BLOCKER found before any build could start: the Supabase MCP
+connector is auth-gated this session (confirmed via ToolSearch returning zero
+Supabase tools, and an explicit "requires authentication... call `claude mcp`
+or /mcp in an interactive session" notice) — the SAME real gap first surfaced
+at the tail of the Sep 10 build and reconfirmed at the Sep 12 /Routine open.
+This blocks the real, additive `planned_cooks` migration and any live
+`rpgace_agendas`/`recipes` query the build needs to verify against. Per rule 1
+(never guess at schema) and rule 4 (real evidence before writing code against
+unverified state), NO code was written against the new table this pass — the
+resolved spec above is the real, durable Loop-1-refinement record; the actual
+Loop 2 build (migration + `cookingOracle` UI/logic for recipe-pairing, the
+review/accept screen, the Agenda push) is queued to start the moment Supabase
+access is restored, not attempted blind.
+
+`ceo_plan_items` H6 should be updated (evidence: this section) the moment
+Supabase reconnects — it cannot be updated live this pass for the same reason.
