@@ -22368,7 +22368,15 @@ RPGACE.register('config', {
       // the app to know. Table is read-often/tiny, not write-heavy in the
       // app's own sense, but the same "never guaranteed fresh" problem
       // applies - excluded from caching for the same reason as the others.
-      var noCache = ['content_productions','conid_pot','journal','intel_jobs','rpgace_shifts','chronicles_finance','system_updates'];
+      // pantry_stock added Sep 13 2026 (H7, real bug found via a headless-
+      // Chromium test of the new shopping-list code, not guessed): its
+      // cache key never varies per ingredient/session, so a fresh
+      // pantry_stock write via ui._showPantry's add-stock flow could sit
+      // behind up to 60s of stale cached reads the next time a shopping
+      // list is generated from _loadPantry - a genuinely wrong have/not-
+      // have split, not just a display-lag annoyance, same real-world-
+      // decision-correctness reasoning as rpgace_shifts below.
+      var noCache = ['content_productions','conid_pot','journal','intel_jobs','rpgace_shifts','chronicles_finance','system_updates','pantry_stock'];
       if (noCache.indexOf(table) !== -1) return _origSelect(table, params);
       var cached = RPGACE.cache.get(cacheKey);
       if (cached) return Promise.resolve(cached);
@@ -36133,6 +36141,14 @@ RPGACE.register('cookingOracle', {
       settingsBtn.onclick = function() { pop.close(); self.ui._showSettings(cfg); };
       box.appendChild(settingsBtn);
 
+      // H7 (shopping/pantry, Sep 13 2026) — reachable from the same entry
+      // point as Habits Settings, not buried inside a session-in-progress.
+      var pantryBtn = document.createElement('button');
+      pantryBtn.textContent = '📦 Pantry';
+      pantryBtn.style.cssText = 'width:100%;padding:8px;margin-top:6px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      pantryBtn.onclick = function() { pop.close(); self.ui._showPantry(); };
+      box.appendChild(pantryBtn);
+
       // H6 - if a cook session is already in progress, offer a real way
       // back to it instead of only forward into another fresh generation
       // (this form is reachable mid-session via the session builder's own
@@ -36214,6 +36230,56 @@ RPGACE.register('cookingOracle', {
       };
       renderIngredients();
       scaleInput.oninput = renderIngredients;
+
+      // H9 (calories/macros, Sep 13 2026) — real /interrogation confirmed
+      // recipe-level only for now (no daily log). Explicit button, not a
+      // silent boot-time lookup — resolves/creates each ingredient row,
+      // looks up + caches any real USDA nutrition still missing (never
+      // re-queried once cached, Alex's own explicit ask), then computes a
+      // best-effort total from whatever's actually known.
+      var nutHeading = document.createElement('div');
+      nutHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;';
+      nutHeading.textContent = 'Nutrition (estimate)';
+      box.appendChild(nutHeading);
+
+      var nutBox = document.createElement('div');
+      nutBox.style.cssText = 'font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.6;';
+      nutBox.textContent = 'Not yet looked up.';
+      box.appendChild(nutBox);
+
+      var nutBtn = document.createElement('button');
+      nutBtn.textContent = '🔎 Estimate Nutrition';
+      nutBtn.style.cssText = 'width:100%;padding:8px;margin-bottom:18px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      nutBtn.onclick = function() {
+        nutBtn.disabled = true;
+        nutBtn.textContent = '⏳ Looking up (USDA FoodData Central)...';
+        self.logic._ensureNutrition(recipe.ingredients || [], function(err, totals) {
+          nutBtn.disabled = false;
+          nutBtn.textContent = '🔎 Re-check Nutrition';
+          if (err) { nutBox.textContent = '⚠️ ' + err; return; }
+          var perServing = function(v) { var s = parseFloat(scaleInput.value) || recipe.servings_base || 1; return Math.round(v / s); };
+          if (totals.noKey) {
+            nutBox.textContent = '⚠️ USDA nutrition lookup isn\'t configured yet (no API key set) — showing whatever\'s already cached from prior recipes: '
+              + Math.round(totals.kcal) + ' kcal total (' + perServing(totals.kcal) + '/serving), based on '
+              + totals.resolvedCount + ' of ' + totals.totalCount + ' ingredients.';
+            return;
+          }
+          nutBox.innerHTML = '';
+          var line1 = document.createElement('div');
+          line1.style.cssText = 'color:var(--text);font-weight:700;';
+          line1.textContent = Math.round(totals.kcal) + ' kcal total · ' + perServing(totals.kcal) + ' kcal/serving';
+          var line2 = document.createElement('div');
+          line2.textContent = 'Protein ' + Math.round(totals.protein) + 'g · Carbs ' + Math.round(totals.carbs) + 'g · Fat ' + Math.round(totals.fat) + 'g (total)';
+          var line3 = document.createElement('div');
+          line3.style.cssText = 'margin-top:4px;font-size:11px;';
+          line3.textContent = 'Based on ' + totals.resolvedCount + ' of ' + totals.totalCount + ' ingredients with known nutrition'
+            + (totals.resolvedCount < totals.totalCount ? ' — the rest weren\'t found in USDA\'s database.' : '.');
+          nutBox.appendChild(line1);
+          nutBox.appendChild(line2);
+          nutBox.appendChild(line3);
+        });
+      };
+      box.appendChild(nutBtn);
 
       var stepHeading = document.createElement('div');
       stepHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;';
@@ -36444,6 +36510,33 @@ RPGACE.register('cookingOracle', {
       };
       box.appendChild(genNewBtn);
 
+      // H7 (shopping list, Sep 13 2026) — generated straight from this
+      // in-progress session (real evidence: "when I'm planning a cook, I
+      // need to buy ingredients" — before scheduling, not after), so a
+      // shopping_lists row can exist with planned_cook_id still null;
+      // _acceptSchedule below best-effort back-links it once a real
+      // planned_cooks row exists (same pattern as its own agenda_id link).
+      var shopBtn = document.createElement('button');
+      shopBtn.textContent = sess.shoppingListId ? '🛒 View shopping list' : '🛒 Generate shopping list';
+      shopBtn.style.cssText = 'width:100%;padding:9px;margin-bottom:8px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      shopBtn.onclick = function() {
+        if (sess.shoppingListId) { pop.close(); self.ui._showShoppingList(sess.shoppingListId); return; }
+        shopBtn.disabled = true;
+        shopBtn.textContent = '⏳ Building list...';
+        self.logic._generateShoppingList(sess, function(err, listId) {
+          if (err) {
+            shopBtn.disabled = false;
+            shopBtn.textContent = '🛒 Generate shopping list';
+            RPGACE.utils.toast('⚠️ ' + err, '#CC4A4A', 4000);
+            return;
+          }
+          sess.shoppingListId = listId;
+          pop.close();
+          self.ui._showShoppingList(listId);
+        });
+      };
+      box.appendChild(shopBtn);
+
       var schedBtn = document.createElement('button');
       schedBtn.textContent = '📅 Schedule cook time';
       schedBtn.style.cssText = 'width:100%;padding:11px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);border-radius:8px;color:var(--gold);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
@@ -36525,7 +36618,20 @@ RPGACE.register('cookingOracle', {
       box.appendChild(loadingMsg);
 
       self.logic._loadConfig(function(cfg) {
-        var idList = sess.recipeIds.map(function(id) { return '"' + id + '"'; }).join(',');
+        // Real, confirmed bug fixed Sep 13 2026 — this line's own quoted-
+        // UUID technique ('"'+id+'"') is invalid inside a PostgREST `in.()`
+        // filter embedded in a URL: raw double-quote characters are not
+        // valid URL characters, and fetch() rejects the whole request
+        // outright with "Failed to fetch" before any network attempt is
+        // even made — found via a real headless-Chromium test of the new
+        // H7 shopping-list code (which had copied this exact pattern), not
+        // caught by this function's own earlier "headless-Chromium
+        // verified, zero JS errors" claim (that test's mock never actually
+        // exercised a real browser URL-parse of this string). Fixed to
+        // match this project's own established, already-working `in.()`
+        // precedent used everywhere else (taxonomy_tree/bibliography/etc,
+        // rule 8) — plain comma-joined UUIDs, no quoting.
+        var idList = sess.recipeIds.join(',');
         RPGACE.sb.select('recipes', 'select=id,title,steps&id=in.(' + idList + ')')
           .then(function(rows) {
             loadingMsg.remove();
@@ -36618,6 +36724,302 @@ RPGACE.register('cookingOracle', {
       });
     },
 
+    // ============================================================
+    // H7/H8 — shopping list, pantry, price logging, Sep 13 2026.
+    // Real record: records/2026-09/habits_shopping_pantry_calories_spec_
+    // 2026-09-13.txt (4 forks resolved via AskUserQuestion).
+    // ============================================================
+
+    _showPantry: function() {
+      var self = RPGACE.modules.cookingOracle;
+      var pop = RPGACE.modules.dashDeck._popup({
+        width: '480px', scroll: true, eyebrow: '📦 PANTRY', title: 'What you have in stock',
+        borderColor: 'rgba(76,175,130,0.3)',
+      });
+      var box = pop.box;
+      var loadingMsg = document.createElement('div');
+      loadingMsg.style.cssText = 'font-size:12px;color:var(--muted);';
+      loadingMsg.textContent = 'Loading pantry...';
+      box.appendChild(loadingMsg);
+
+      var addHeading = document.createElement('div');
+      addHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin:16px 0 8px;';
+      addHeading.textContent = 'Add / adjust stock';
+
+      var nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.placeholder = 'Ingredient name';
+      nameInput.style.cssText = 'width:100%;margin-bottom:6px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;padding:7px 10px;box-sizing:border-box;';
+
+      var qtyRow = document.createElement('div');
+      qtyRow.style.cssText = 'display:flex;gap:6px;margin-bottom:8px;';
+      var qtyInput = document.createElement('input');
+      qtyInput.type = 'number';
+      qtyInput.placeholder = 'Quantity';
+      qtyInput.style.cssText = 'flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;padding:7px 10px;';
+      var unitInput = document.createElement('input');
+      unitInput.type = 'text';
+      unitInput.placeholder = 'unit (g, ml, count...)';
+      unitInput.style.cssText = 'flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;padding:7px 10px;';
+      qtyRow.appendChild(qtyInput);
+      qtyRow.appendChild(unitInput);
+
+      var errBox = document.createElement('div');
+      errBox.style.cssText = 'font-size:12px;color:#CC4A4A;margin-bottom:8px;display:none;';
+
+      var addBtn = document.createElement('button');
+      addBtn.textContent = '+ Set stock';
+      addBtn.style.cssText = 'width:100%;padding:9px;background:rgba(76,175,130,0.12);border:1px solid rgba(76,175,130,0.35);border-radius:8px;color:var(--green);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+
+      var renderList = function() {
+        RPGACE.sb.select('pantry_stock', 'select=ingredient_id,quantity,unit,ingredients(name)&order=updated_at.desc')
+          .then(function(rows) {
+            if (loadingMsg.parentNode) loadingMsg.remove();
+            Array.prototype.slice.call(box.querySelectorAll('.pantry-row')).forEach(function(el) { el.remove(); });
+            (rows || []).forEach(function(r) {
+              var row = document.createElement('div');
+              row.className = 'pantry-row';
+              row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;';
+              var lbl = document.createElement('span');
+              lbl.textContent = (r.ingredients && r.ingredients.name) || '(unknown)';
+              var right = document.createElement('span');
+              right.style.color = 'var(--muted)';
+              right.textContent = (r.quantity != null ? r.quantity : 0) + ' ' + (r.unit || '');
+              row.appendChild(lbl);
+              row.appendChild(right);
+              box.insertBefore(row, addHeading);
+            });
+            if (!rows || !rows.length) {
+              var empty = document.createElement('div');
+              empty.className = 'pantry-row';
+              empty.style.cssText = 'font-size:12px;color:var(--muted);';
+              empty.textContent = 'Nothing tracked yet — add stock below.';
+              box.insertBefore(empty, addHeading);
+            }
+          })
+          .catch(function(e) {
+            loadingMsg.textContent = '⚠️ Could not load pantry: ' + (e.message || 'unknown error');
+          });
+      };
+
+      box.appendChild(addHeading);
+      box.appendChild(nameInput);
+      box.appendChild(qtyRow);
+      box.appendChild(errBox);
+      box.appendChild(addBtn);
+
+      addBtn.onclick = function() {
+        var name = nameInput.value.trim();
+        var qty = parseFloat(qtyInput.value);
+        var unit = unitInput.value.trim() || null;
+        if (!name || isNaN(qty)) {
+          errBox.textContent = '⚠️ Enter a name and a real quantity';
+          errBox.style.display = 'block';
+          return;
+        }
+        errBox.style.display = 'none';
+        addBtn.disabled = true;
+        self.logic._resolveIngredientFull(name, function(err, row) {
+          if (err) {
+            addBtn.disabled = false;
+            errBox.textContent = '⚠️ ' + err;
+            errBox.style.display = 'block';
+            return;
+          }
+          RPGACE.sb.secureWrite('pantry_stock', 'insert', {
+            ingredient_id: row.id, quantity: qty, unit: unit, updated_at: new Date().toISOString(),
+          }, null, 'ingredient_id')
+            .then(function() {
+              addBtn.disabled = false;
+              nameInput.value = ''; qtyInput.value = ''; unitInput.value = '';
+              RPGACE.utils.toast('📦 Pantry updated', '#4caf82', 2000);
+              renderList();
+            })
+            .catch(function(e) {
+              addBtn.disabled = false;
+              errBox.textContent = '⚠️ ' + (e.message || 'save failed');
+              errBox.style.display = 'block';
+            });
+        });
+      };
+
+      renderList();
+    },
+
+    _showShoppingList: function(listId) {
+      var self = RPGACE.modules.cookingOracle;
+      var pop = RPGACE.modules.dashDeck._popup({
+        width: '560px', scroll: true, eyebrow: '🛒 SHOPPING LIST', title: 'Ingredients for this cook',
+        borderColor: 'rgba(76,175,130,0.3)',
+      });
+      var box = pop.box;
+      var loadingMsg = document.createElement('div');
+      loadingMsg.style.cssText = 'font-size:12px;color:var(--muted);';
+      loadingMsg.textContent = 'Loading list...';
+      box.appendChild(loadingMsg);
+
+      var renderItems = function() {
+        RPGACE.sb.select('shopping_list_items', 'select=id,ingredient_id,needed_amount,needed_unit,have_amount,to_buy_amount,bought,ingredients(name)&list_id=eq.' + listId + '&order=bought.asc')
+          .then(function(rows) {
+            box.innerHTML = ''; // full re-render each time — keeps this simple and correct
+
+            var needHeading = document.createElement('div');
+            needHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;';
+            needHeading.textContent = 'Need to buy';
+            box.appendChild(needHeading);
+
+            var needRows = (rows || []).filter(function(r) { return !r.bought && (r.to_buy_amount || 0) > 0; });
+            if (!needRows.length) {
+              var doneMsg = document.createElement('div');
+              doneMsg.style.cssText = 'font-size:12px;color:var(--muted);margin-bottom:14px;';
+              doneMsg.textContent = 'Nothing left to buy on this list.';
+              box.appendChild(doneMsg);
+            }
+            needRows.forEach(function(r) {
+              var row = document.createElement('div');
+              row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;';
+              var lbl = document.createElement('span');
+              lbl.textContent = ((r.ingredients && r.ingredients.name) || '?') + ' — need ' + r.to_buy_amount + ' ' + (r.needed_unit || '')
+                + (r.have_amount ? ' (have ' + r.have_amount + ' already)' : '');
+              var btn = document.createElement('button');
+              btn.textContent = '✅ Mark bought';
+              btn.style.cssText = 'padding:5px 10px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);border-radius:6px;color:var(--gold);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+              btn.onclick = function() { self.ui._showPriceEntryPopup(r, renderItems); };
+              row.appendChild(lbl);
+              row.appendChild(btn);
+              box.appendChild(row);
+            });
+
+            var haveOnlyRows = (rows || []).filter(function(r) { return !r.bought && (r.to_buy_amount || 0) <= 0; });
+            if (haveOnlyRows.length) {
+              var haveHeading = document.createElement('div');
+              haveHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;';
+              haveHeading.textContent = 'Already have enough';
+              box.appendChild(haveHeading);
+              haveOnlyRows.forEach(function(r) {
+                var row = document.createElement('div');
+                row.style.cssText = 'font-size:12px;color:var(--muted);padding:4px 0;';
+                row.textContent = '📦 ' + ((r.ingredients && r.ingredients.name) || '?') + ' — have ' + r.have_amount + ' ' + (r.needed_unit || '');
+                box.appendChild(row);
+              });
+            }
+
+            var boughtRows = (rows || []).filter(function(r) { return r.bought; });
+            if (boughtRows.length) {
+              var boughtHeading = document.createElement('div');
+              boughtHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;';
+              boughtHeading.textContent = 'Already bought';
+              box.appendChild(boughtHeading);
+              boughtRows.forEach(function(r) {
+                var row = document.createElement('div');
+                row.style.cssText = 'font-size:12px;color:var(--muted);padding:4px 0;';
+                row.textContent = '✅ ' + ((r.ingredients && r.ingredients.name) || '?');
+                box.appendChild(row);
+              });
+            }
+          })
+          .catch(function(e) {
+            box.innerHTML = '';
+            box.appendChild(self.ui._errNode('Could not load shopping list: ' + (e.message || 'unknown error')));
+          });
+      };
+      renderItems();
+    },
+
+    // Real, evidence-resolved fork (section 2, Q2): "One but with pop up to
+    // show selected, but with redo button if I find something better" — one
+    // combined tick-bought -> price-entry flow, never a second screen.
+    // Nothing writes until Confirm — Redo just clears the just-entered
+    // fields so a better find at the shop can be re-entered cleanly.
+    _showPriceEntryPopup: function(item, onDone) {
+      var self = RPGACE.modules.cookingOracle;
+      var pop = RPGACE.modules.dashDeck._popup({
+        width: '420px', eyebrow: '💷 LOG PURCHASE', title: (item.ingredients && item.ingredients.name) || 'Ingredient',
+        borderColor: 'rgba(201,168,76,0.3)',
+      });
+      var box = pop.box;
+
+      var mkInput = function(placeholder, type) {
+        var i = document.createElement('input');
+        i.type = type || 'text';
+        i.placeholder = placeholder;
+        i.style.cssText = 'width:100%;margin-bottom:8px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;padding:7px 10px;box-sizing:border-box;';
+        box.appendChild(i);
+        return i;
+      };
+
+      var brandInput = mkInput('Brand (optional)');
+      var storeInput = mkInput('Store');
+      self.logic._loadConfig(function(cfg) { if (cfg && cfg.default_shop && !storeInput.value) storeInput.value = cfg.default_shop; });
+
+      var weightRow = document.createElement('div');
+      weightRow.style.cssText = 'display:flex;gap:6px;margin-bottom:8px;';
+      var weightInput = document.createElement('input');
+      weightInput.type = 'number';
+      weightInput.placeholder = 'Pack size';
+      weightInput.style.cssText = 'flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;padding:7px 10px;';
+      var unitInput = document.createElement('input');
+      unitInput.type = 'text';
+      unitInput.placeholder = 'unit';
+      unitInput.value = item.needed_unit || '';
+      unitInput.style.cssText = 'flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;padding:7px 10px;';
+      weightRow.appendChild(weightInput);
+      weightRow.appendChild(unitInput);
+      box.appendChild(weightRow);
+
+      var priceInput = mkInput('Price paid (£)', 'number');
+
+      var errBox = document.createElement('div');
+      errBox.style.cssText = 'font-size:12px;color:#CC4A4A;margin-bottom:8px;display:none;';
+      box.appendChild(errBox);
+
+      var btnRow = document.createElement('div');
+      btnRow.style.cssText = 'display:flex;gap:8px;';
+
+      var redoBtn = document.createElement('button');
+      redoBtn.textContent = '↺ Redo';
+      redoBtn.title = 'Clear these fields to re-enter — found something better?';
+      redoBtn.style.cssText = 'flex:1;padding:9px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      redoBtn.onclick = function() {
+        brandInput.value = ''; weightInput.value = ''; priceInput.value = '';
+        errBox.style.display = 'none';
+        // store + unit deliberately kept — usually still correct on a redo
+      };
+
+      var confirmBtn = document.createElement('button');
+      confirmBtn.textContent = '✅ Confirm';
+      confirmBtn.style.cssText = 'flex:2;padding:9px;background:rgba(76,175,130,0.12);border:1px solid rgba(76,175,130,0.35);border-radius:8px;color:var(--green);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      confirmBtn.onclick = function() {
+        var brand = brandInput.value.trim() || null;
+        var store = storeInput.value.trim();
+        var packSize = parseFloat(weightInput.value);
+        var unit = unitInput.value.trim() || null;
+        var price = parseFloat(priceInput.value);
+        if (!store || isNaN(packSize) || packSize <= 0 || isNaN(price) || price < 0) {
+          errBox.textContent = '⚠️ Enter a store, a real pack size, and a real price';
+          errBox.style.display = 'block';
+          return;
+        }
+        errBox.style.display = 'none';
+        confirmBtn.disabled = true; redoBtn.disabled = true;
+        self.logic._recordPurchase(item, { brand: brand, store: store, packSize: packSize, unit: unit, price: price }, function(err) {
+          if (err) {
+            confirmBtn.disabled = false; redoBtn.disabled = false;
+            errBox.textContent = '⚠️ ' + err;
+            errBox.style.display = 'block';
+            return;
+          }
+          RPGACE.utils.toast('💷 Purchase logged', '#4caf82', 2200);
+          pop.close();
+          if (onDone) onDone();
+        });
+      };
+
+      btnRow.appendChild(redoBtn);
+      btnRow.appendChild(confirmBtn);
+      box.appendChild(btnRow);
+    },
+
   },
 
   // ============================================================
@@ -36657,8 +37059,9 @@ RPGACE.register('cookingOracle', {
         + 'actual_cooking (active, hands-on, heat applied), prep_while_cooking (active work that fits inside a PASSIVE window - your own or a step that runs unattended), '
         + 'or baking (goes in the oven - a brief active load/unload moment plus a passive oven-time duration). '
         + 'For each step give an active_duration_min (minutes you must actively attend to it) and, where the step then runs unattended, a passive_duration_min (minutes it keeps going with zero attention needed - a simmer, a bake, a chill). '
+        + 'For each ingredient, also estimate its real total weight in grams at the stated amount/unit (e.g. "2 tbsp olive oil" is roughly 27g) — this is used to compute real nutrition later, so give your best honest estimate even for odd units like "1 clove" or "1 chicken thigh". '
         + 'Then, on its own final line, output exactly: RECIPE_JSON: followed by a compact JSON object in the shape '
-        + '{"title":"...","servings_base":' + (servings || 4) + ',"ingredients":[{"name":"...","amount":<number>,"unit":"..."}],'
+        + '{"title":"...","servings_base":' + (servings || 4) + ',"ingredients":[{"name":"...","amount":<number>,"unit":"...","grams_estimate":<number>}],'
         + '"steps":[{"order":1,"type":"prep_before_cooking","description":"...","active_duration_min":<number>,"passive_duration_min":<number>}]}. '
         + 'Ingredient names must be simple, generic, singular/lowercase (e.g. "garlic clove" not "3 cloves of fresh garlic") so they can be tracked consistently across recipes.';
 
@@ -36705,6 +37108,112 @@ RPGACE.register('cookingOracle', {
         .catch(function(e) { cb(e.message || 'ingredient lookup failed'); });
     },
 
+    // H9 (calories/macros, Sep 13 2026) — same case-insensitive resolve-or-
+    // create as _resolveIngredient above, but returns the FULL cached-
+    // nutrition row too (not just an id) — a separate function rather than
+    // changing _resolveIngredient's own contract, since _save above already
+    // relies on that one resolving to a bare id (rule 4 — don't touch a
+    // working call site's contract to serve a new, unrelated caller).
+    _resolveIngredientFull: function(name, cb) {
+      var norm = String(name || '').trim().toLowerCase();
+      if (!norm) { cb('ingredient with no name'); return; }
+      RPGACE.sb.select('ingredients', 'name=eq.' + encodeURIComponent(norm) + '&select=id,kcal_per_100g,protein_g_per_100g,carbs_g_per_100g,fat_g_per_100g&limit=1')
+        .then(function(rows) {
+          if (rows && rows[0] && rows[0].id) { cb(null, rows[0]); return; }
+          RPGACE.sb.secureWrite('ingredients', 'insert', { name: norm })
+            .then(function(data) {
+              var row = Array.isArray(data) ? data[0] : data;
+              if (!row || !row.id) throw new Error('ingredient insert returned no row');
+              cb(null, { id: row.id, kcal_per_100g: null, protein_g_per_100g: null, carbs_g_per_100g: null, fat_g_per_100g: null });
+            })
+            .catch(function(e) { cb(e.message || 'ingredient resolve failed'); });
+        })
+        .catch(function(e) { cb(e.message || 'ingredient lookup failed'); });
+    },
+
+    // Real server-side USDA FoodData Central relay (api/oracle.js's own
+    // 'usda-lookup' action — dormant until USDA_FDC_API_KEY exists, same
+    // gated-scaffold pattern as the Fish Audio actions already in that
+    // file). Uses the global fetch() wrap authGate already installs (every
+    // /api/* call gets the real auth header automatically — no manual
+    // header here, matching every other direct /api/oracle caller in this
+    // file, e.g. oracleProviderMode's own external-provider branch).
+    _lookupNutrition: function(name, cb) {
+      fetch('/api/oracle', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'usda-lookup', name: name }),
+      })
+        .then(function(res) {
+          return res.text().then(function(text) {
+            var data;
+            try { data = JSON.parse(text); } catch (e) { throw new Error('USDA lookup returned non-JSON: ' + text.slice(0, 100)); }
+            if (!res.ok) throw new Error(data.error || ('USDA lookup error ' + res.status));
+            cb(null, data);
+          });
+        })
+        .catch(function(e) { cb(e.message || 'USDA lookup failed'); });
+    },
+
+    // Resolves every real ingredient in a not-yet-saved recipe (create-or-
+    // find, same as _save's own path), looks up + caches real USDA
+    // nutrition for any still missing (Alex's own explicit "save the data
+    // in supabase once so can always access" — never re-queried once
+    // cached), then sums a best-effort total from whatever's actually
+    // known. Per-ingredient lookup failures (no key configured, no USDA
+    // match) never abort the whole computation — each ingredient either
+    // contributes or is honestly excluded, reflected in resolvedCount/
+    // totalCount rather than silently guessed.
+    _ensureNutrition: function(ingredients, cb) {
+      var list = ingredients || [];
+      if (!list.length) { cb(null, { kcal: 0, protein: 0, carbs: 0, fat: 0, resolvedCount: 0, totalCount: 0, noKey: false }); return; }
+      var results = new Array(list.length);
+      var pending = list.length;
+      var noKeyEver = false;
+
+      var finish = function() {
+        var kcal = 0, protein = 0, carbs = 0, fat = 0, resolvedCount = 0;
+        results.forEach(function(r, i) {
+          var grams = (typeof list[i].grams_estimate === 'number') ? list[i].grams_estimate : null;
+          if (!r || grams == null || r.kcal_per_100g == null) return;
+          var factor = grams / 100;
+          kcal += (r.kcal_per_100g || 0) * factor;
+          protein += (r.protein_g_per_100g || 0) * factor;
+          carbs += (r.carbs_g_per_100g || 0) * factor;
+          fat += (r.fat_g_per_100g || 0) * factor;
+          resolvedCount++;
+        });
+        cb(null, { kcal: kcal, protein: protein, carbs: carbs, fat: fat, resolvedCount: resolvedCount, totalCount: list.length, noKey: noKeyEver });
+      };
+
+      var self = RPGACE.modules.cookingOracle;
+      list.forEach(function(ing, i) {
+        self.logic._resolveIngredientFull(ing.name, function(err, row) {
+          if (err) { results[i] = null; pending--; if (pending === 0) finish(); return; }
+          if (row.kcal_per_100g != null) { results[i] = row; pending--; if (pending === 0) finish(); return; }
+          self.logic._lookupNutrition(ing.name, function(lerr, data) {
+            if (lerr) {
+              if (/USDA_FDC_API_KEY is not configured/.test(lerr)) noKeyEver = true;
+              results[i] = row; pending--; if (pending === 0) finish(); return;
+            }
+            if (!data || !data.matched) { results[i] = row; pending--; if (pending === 0) finish(); return; }
+            var patch = {
+              kcal_per_100g: data.kcal_per_100g, protein_g_per_100g: data.protein_g_per_100g,
+              carbs_g_per_100g: data.carbs_g_per_100g, fat_g_per_100g: data.fat_g_per_100g,
+              nutrition_source: 'usda', nutrition_cached_at: new Date().toISOString(),
+            };
+            RPGACE.sb.secureWrite('ingredients', 'update', patch, 'id=eq.' + row.id)
+              .then(function() {
+                row.kcal_per_100g = data.kcal_per_100g; row.protein_g_per_100g = data.protein_g_per_100g;
+                row.carbs_g_per_100g = data.carbs_g_per_100g; row.fat_g_per_100g = data.fat_g_per_100g;
+              })
+              .catch(function() { /* real save failure — this ingredient just stays uncached this pass, not fatal to the rest */ })
+              .then(function() { results[i] = row; pending--; if (pending === 0) finish(); });
+          });
+        });
+      });
+    },
+
     _save: function(recipe, rawText, cb) {
       var self = RPGACE.modules.cookingOracle;
       var ingredients = recipe.ingredients || [];
@@ -36744,7 +37253,7 @@ RPGACE.register('cookingOracle', {
           if (!row || !row.id) throw new Error('recipe insert returned no row');
           recipeId = row.id;
           var riPayload = ingredients.map(function(ing, i) {
-            return { recipe_id: recipeId, ingredient_id: resolvedIds[i], amount: ing.amount, unit: ing.unit || null };
+            return { recipe_id: recipeId, ingredient_id: resolvedIds[i], amount: ing.amount, unit: ing.unit || null, grams_estimate: (typeof ing.grams_estimate === 'number') ? ing.grams_estimate : null };
           });
           return RPGACE.sb.secureWrite('recipe_ingredients', 'insert', riPayload);
         })
@@ -36775,6 +37284,117 @@ RPGACE.register('cookingOracle', {
       }, 'id=eq.' + journalId)
         .then(function() { cb(null); })
         .catch(function(e) { cb(e.message || 'mark-cooked failed'); });
+    },
+
+    // ============================================================
+    // H7/H8 — shopping list, pantry, price logging, Sep 13 2026.
+    // Real record: records/2026-09/habits_shopping_pantry_calories_spec_
+    // 2026-09-13.txt (4 forks resolved via AskUserQuestion).
+    // ============================================================
+
+    _loadPantry: function(cb) {
+      RPGACE.sb.select('pantry_stock', 'select=ingredient_id,quantity,unit')
+        .then(function(rows) {
+          var byId = {};
+          (rows || []).forEach(function(r) { byId[r.ingredient_id] = r; });
+          cb(byId);
+        })
+        .catch(function() { cb({}); });
+    },
+
+    // Real, honest scope (section 4): grouped by (ingredient_id, unit) pair,
+    // never force-summed across mismatched units — "2 cloves garlic" +
+    // "50g garlic" stay 2 separate lines rather than an invented
+    // conversion. Pantry have_amount only counts when its own tracked unit
+    // matches this line's unit, same conservative discipline (rule 7 —
+    // fail honest, never quietly wrong).
+    _generateShoppingList: function(sess, cb) {
+      var self = RPGACE.modules.cookingOracle;
+      if (!sess || !sess.recipeIds || !sess.recipeIds.length) { cb('no recipes in this session yet'); return; }
+      // Plain comma-joined UUIDs, no quoting — matches this project's own
+      // established, working `in.()` precedent (taxonomy_tree/bibliography/
+      // etc). See the real bug note on _showSchedulePreview's own idList
+      // line above for why a quoted variant breaks fetch() outright.
+      var idList = sess.recipeIds.join(',');
+      RPGACE.sb.select('recipe_ingredients', 'select=ingredient_id,amount,unit&recipe_id=in.(' + idList + ')')
+        .then(function(rows) {
+          if (!rows || !rows.length) { cb('no ingredients found for this session\'s recipes'); return; }
+          var groups = {};
+          rows.forEach(function(r) {
+            var key = r.ingredient_id + '|' + (r.unit || '');
+            if (!groups[key]) groups[key] = { ingredient_id: r.ingredient_id, unit: r.unit || null, amount: 0 };
+            groups[key].amount += (typeof r.amount === 'number' ? r.amount : 0);
+          });
+          var groupList = Object.keys(groups).map(function(k) { return groups[k]; });
+          self.logic._loadPantry(function(pantryByIngredient) {
+            RPGACE.sb.secureWrite('shopping_lists', 'insert', { planned_cook_id: null, status: 'open' })
+              .then(function(data) {
+                var listRow = Array.isArray(data) ? data[0] : data;
+                if (!listRow || !listRow.id) throw new Error('shopping list insert returned no row');
+                var itemsPayload = groupList.map(function(g) {
+                  var have = 0;
+                  var pantryRow = pantryByIngredient[g.ingredient_id];
+                  if (pantryRow && pantryRow.unit === g.unit) have = pantryRow.quantity || 0;
+                  var toBuy = Math.max(0, g.amount - have);
+                  return {
+                    list_id: listRow.id, ingredient_id: g.ingredient_id,
+                    needed_amount: g.amount, needed_unit: g.unit,
+                    have_amount: have, to_buy_amount: toBuy, bought: false,
+                  };
+                });
+                return RPGACE.sb.secureWrite('shopping_list_items', 'insert', itemsPayload).then(function() { return listRow.id; });
+              })
+              .then(function(listId) { cb(null, listId); })
+              .catch(function(e) { cb(e.message || 'shopping list save failed'); });
+          });
+        })
+        .catch(function(e) { cb(e.message || 'could not load session ingredients'); });
+    },
+
+    // The real, combined tick-bought -> price-log moment (section 2, Q2).
+    // Writes ingredient_prices (real, permanent purchase history — the
+    // table already has zero unique constraint beyond its PK, confirmed
+    // real evidence, so insert-only already gives real price-over-time
+    // tracking with no schema change needed), flips the shopping-list item
+    // to bought, and best-effort tops up pantry_stock — ONLY when the
+    // purchased unit matches this item's own tracked unit (same
+    // conservative, never-silently-wrong discipline as the grouping above).
+    _recordPurchase: function(item, entry, cb) {
+      var unitPrice = entry.packSize > 0 ? (entry.price / entry.packSize) : null;
+      RPGACE.sb.secureWrite('ingredient_prices', 'insert', {
+        ingredient_id: item.ingredient_id,
+        supermarket: entry.store,
+        brand: entry.brand,
+        pack_size: entry.packSize,
+        pack_unit: entry.unit,
+        pack_price: entry.price,
+        unit_price: unitPrice,
+        price_updated_at: new Date().toISOString(),
+      })
+        .then(function(data) {
+          var priceRow = Array.isArray(data) ? data[0] : data;
+          var priceId = priceRow && priceRow.id ? priceRow.id : null;
+          return RPGACE.sb.secureWrite('shopping_list_items', 'update', { bought: true, ingredient_price_id: priceId }, 'id=eq.' + item.id);
+        })
+        .then(function() {
+          if (entry.unit && item.needed_unit && entry.unit.toLowerCase() === item.needed_unit.toLowerCase()) {
+            return RPGACE.sb.select('pantry_stock', 'select=quantity&ingredient_id=eq.' + item.ingredient_id + '&limit=1')
+              .then(function(rows) {
+                var current = (rows && rows[0] && typeof rows[0].quantity === 'number') ? rows[0].quantity : 0;
+                var newQty = current + entry.packSize;
+                return RPGACE.sb.secureWrite('pantry_stock', 'insert', {
+                  ingredient_id: item.ingredient_id, quantity: newQty, unit: entry.unit, updated_at: new Date().toISOString(),
+                }, null, 'ingredient_id');
+              });
+          }
+          // Real, honest note — not silently swallowed, just not blocking
+          // the real outcome already written above (the price log + bought
+          // flip): a unit mismatch means the pantry can't be safely topped
+          // up without guessing a conversion.
+          console.warn('[cookingOracle] pantry not updated — purchased unit "' + entry.unit + '" does not match tracked unit "' + item.needed_unit + '" for this ingredient');
+        })
+        .then(function() { cb(null); })
+        .catch(function(e) { cb(e.message || 'purchase log failed'); });
     },
 
     // ============================================================
@@ -36946,6 +37566,14 @@ RPGACE.register('cookingOracle', {
           if (agendaEntry && agendaEntry.id) {
             RPGACE.sb.secureWrite('planned_cooks', 'update', { agenda_id: agendaEntry.id }, 'id=eq.' + row.id)
               .catch(function(e) { console.warn('[cookingOracle] planned_cooks.agenda_id back-link failed:', e.message); });
+          }
+          // H7 — same best-effort back-link pattern, the other direction:
+          // a shopping list generated earlier in this session (real
+          // evidence: buying happens BEFORE scheduling) now gets linked to
+          // the real planned_cooks row that just landed.
+          if (sess.shoppingListId) {
+            RPGACE.sb.secureWrite('shopping_lists', 'update', { planned_cook_id: row.id }, 'id=eq.' + sess.shoppingListId)
+              .catch(function(e) { console.warn('[cookingOracle] shopping_lists.planned_cook_id back-link failed:', e.message); });
           }
           cb(null, row.id);
         })

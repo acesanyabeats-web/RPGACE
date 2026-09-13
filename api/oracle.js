@@ -149,6 +149,55 @@ async function callFishAudioTTS({ text, voiceId, format }) {
   return { audioBase64: buf.toString('base64'), format: format || 'mp3' };
 }
 
+// H9 (HABITS/Cooking, Sep 13 2026 — records/2026-09/
+// habits_shopping_pantry_calories_spec_2026-09-13.txt) — recipe-level
+// calorie/macro data, Alex's own confirmed source: USDA FoodData Central
+// (free, no paid tier, no ongoing cost — genuinely different posture from
+// Fish Audio's scaffold above, but the SAME dormant-until-a-real-key
+// pattern, since a key still has to exist before this can be called).
+// Client caches whatever this returns onto `ingredients` (kcal_per_100g
+// etc, Alex's own explicit "save the data in supabase once so can always
+// access") — never re-queried for an ingredient already resolved.
+const USDA_FDC_SEARCH_URL = 'https://api.nal.usda.gov/fdc/v1/foods/search';
+
+async function lookupUsdaNutrition({ name }) {
+  const key = process.env.USDA_FDC_API_KEY;
+  if (!key) {
+    throw new Error(
+      'USDA nutrition lookup was requested but USDA_FDC_API_KEY is not configured yet — ' +
+      'a free key takes seconds at https://fdc.nal.usda.gov/api-key-signup (no paid tier, ' +
+      'no ongoing cost); Alex activates this himself, on his own timing.'
+    );
+  }
+  if (!name) throw new Error('USDA lookup: no ingredient name provided');
+  const url = USDA_FDC_SEARCH_URL + '?api_key=' + encodeURIComponent(key)
+    + '&query=' + encodeURIComponent(name) + '&pageSize=1&dataType=' + encodeURIComponent('Foundation,SR Legacy');
+  const resp = await fetch(url);
+  if (!resp.ok) {
+    const errText = await resp.text().catch(() => '');
+    throw new Error(`USDA FoodData Central error: ${errText.slice(0, 300)}`);
+  }
+  const data = await resp.json();
+  const food = data && Array.isArray(data.foods) ? data.foods[0] : null;
+  if (!food) return { matched: false };
+  const nutrients = food.foodNutrients || [];
+  // Real care taken here: USDA sometimes lists BOTH an Energy(KCAL) and an
+  // Energy(kJ) row — matching on name alone risks silently picking the
+  // wrong unit's number, so energy is gated on unitName === 'KCAL' too.
+  const energy = nutrients.find(x => (x.nutrientName || '').toLowerCase().includes('energy') && (x.unitName || '').toUpperCase() === 'KCAL');
+  const protein = nutrients.find(x => (x.nutrientName || '').toLowerCase().includes('protein'));
+  const carbs = nutrients.find(x => (x.nutrientName || '').toLowerCase().includes('carbohydrate'));
+  const fat = nutrients.find(x => (x.nutrientName || '').toLowerCase().includes('total lipid'));
+  return {
+    matched: true,
+    fdcDescription: food.description || name,
+    kcal_per_100g: energy ? energy.value : null,
+    protein_g_per_100g: protein ? protein.value : null,
+    carbs_g_per_100g: carbs ? carbs.value : null,
+    fat_g_per_100g: fat ? fat.value : null,
+  };
+}
+
 async function callFishAudioASR({ audioBase64, language }) {
   const key = process.env.FISH_AUDIO_API_KEY;
   if (!key) {
@@ -210,7 +259,7 @@ export default async function handler(req, res) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured');
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const { messages, system, maxTokens, max_tokens, model, stream, provider, action, text, voiceId, format, audioBase64, language } = body;
+    const { messages, system, maxTokens, max_tokens, model, stream, provider, action, text, voiceId, format, audioBase64, language, name } = body;
     const tokens = maxTokens || max_tokens || 1000;
     const useModel = model || MODEL;
     const hasImages = messages && messages.some(m =>
@@ -230,6 +279,10 @@ export default async function handler(req, res) {
     }
     if (action === 'fish-asr') {
       const result = await callFishAudioASR({ audioBase64, language });
+      return res.status(200).json(result);
+    }
+    if (action === 'usda-lookup') {
+      const result = await lookupUsdaNutrition({ name });
       return res.status(200).json(result);
     }
 

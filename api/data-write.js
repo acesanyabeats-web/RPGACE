@@ -144,6 +144,14 @@ const ALLOWED_TABLES = new Set([
   // first, then allowlist" by construction as recipes/ingredients above).
   // cookingOracle.logic._acceptSchedule is the one real write path.
   'planned_cooks',
+  // 2026-09-13 - HABITS/Cooking H7/H8 (shopping list, pantry, price
+  // logging). Created anon_read_only/authenticated_all FROM THE START (same
+  // "flip RLS first, then allowlist" by construction as every other HABITS
+  // table above). cookingOracle.logic._generateShoppingList/_recordPurchase/
+  // ui._showPantry's add-stock handler are the real write paths.
+  'pantry_stock',
+  'shopping_lists',
+  'shopping_list_items',
 ]);
 
 async function handleBundleDeliverables(req, res, serviceKey) {
