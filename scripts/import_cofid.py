@@ -99,13 +99,23 @@ def find_header_row(sheet, max_scan=10):
 
 
 def match_column(headers, hints, kcal_needs_kcal_unit=False):
+    """`hints` is a list of ALTERNATIVE candidate phrases (OR-matched) — a
+    header matches if it contains ANY one of them, never all of them. Real
+    bug found and fixed Sep 2026: this used to require every hint to co-occur
+    (`all(...)`), which silently broke food_group (hints ["food group",
+    "group"]) against the real 2021 CoFID header, literally just "Group" —
+    "food group" never occurs as a substring of "group", so every row's
+    food_group silently came back null despite real values existing in the
+    file. kcal's own AND requirement (energy + kcal must both be present, to
+    avoid matching the adjacent Energy-in-kJ column) is a real, deliberate
+    exception, handled separately below and untouched by this fix."""
     for i, h in enumerate(headers):
         hl = h.lower()
         if kcal_needs_kcal_unit:
             if "energy" in hl and "kcal" in hl:
                 return i
             continue
-        if all(hint in hl for hint in hints):
+        if any(hint in hl for hint in hints):
             return i
     return None
 
@@ -136,10 +146,28 @@ def sql_escape(s):
 
 
 def main():
-    if len(sys.argv) != 2:
-        print("Usage: python3 scripts/import_cofid.py /path/to/CoFID.xlsx", file=sys.stderr)
+    if len(sys.argv) < 2:
+        print(
+            "Usage: python3 scripts/import_cofid.py /path/to/CoFID.xlsx "
+            "[output_prefix] [source_tag]\n"
+            "  output_prefix — filename prefix for the emitted .sql batches "
+            "(default: cofid_import). Use a distinct prefix per real source "
+            "file so a second run doesn't silently overwrite the first's "
+            "output — e.g. 'cofid_main' vs 'cofid_legacy'.\n"
+            "  source_tag — value written into cofid_foods.source for every "
+            "row from this file (default: cofid). Real CoFID ships as two "
+            "genuinely separate, non-overlapping real files (confirmed by "
+            "direct food-code comparison, zero overlap) — the current 2021 "
+            "integrated dataset, and a legacy 'oldFoods' file covering real "
+            "foods dropped from the 2021 print edition but still real, "
+            "valid entries. Tag them distinctly (e.g. 'cofid' vs "
+            "'cofid_legacy') so this provenance isn't lost.",
+            file=sys.stderr,
+        )
         sys.exit(1)
     src = Path(sys.argv[1])
+    out_prefix = sys.argv[2] if len(sys.argv) > 2 else "cofid_import"
+    source_tag = sys.argv[3] if len(sys.argv) > 3 else "cofid"
     if not src.exists():
         print(f"ERROR: file not found: {src}", file=sys.stderr)
         sys.exit(1)
@@ -191,23 +219,23 @@ def main():
     for i in range(0, len(rows), BATCH_SIZE):
         batch = rows[i:i + BATCH_SIZE]
         batch_num += 1
-        out_path = out_dir / f"cofid_import_batch_{batch_num:03d}.sql"
+        out_path = out_dir / f"{out_prefix}_batch_{batch_num:03d}.sql"
         values_sql = []
         for (name, group, kcal, protein, carbs, fat) in batch:
             def num(v):
                 return "null" if v is None else str(v)
             group_sql = "null" if not group else f"'{sql_escape(group)}'"
             values_sql.append(
-                f"('{sql_escape(name)}', {group_sql}, {num(kcal)}, {num(protein)}, {num(carbs)}, {num(fat)}, 'cofid')"
+                f"('{sql_escape(name)}', {group_sql}, {num(kcal)}, {num(protein)}, {num(carbs)}, {num(fat)}, '{sql_escape(source_tag)}')"
             )
         sql = (
             "insert into cofid_foods (food_name, food_group, kcal_per_100g, protein_g_per_100g, carbs_g_per_100g, fat_g_per_100g, source) values\n"
             + ",\n".join(values_sql) + ";\n"
         )
         out_path.write_text(sql, encoding="utf-8")
-        print(f"Wrote {out_path} ({len(batch)} rows)")
+        print(f"Wrote {out_path} ({len(batch)} rows, source='{source_tag}')")
 
-    print(f"\nDone. {batch_num} SQL batch file(s) written to {out_dir}/cofid_import_batch_*.sql")
+    print(f"\nDone. {batch_num} SQL batch file(s) written to {out_dir}/{out_prefix}_batch_*.sql")
     print("Next: run each file's SQL via a Claude Code session with Supabase MCP access (execute_sql).")
 
 
