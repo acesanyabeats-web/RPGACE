@@ -1,0 +1,169 @@
+HABITS domain — Shopping List + Pantry + Price History + Calories
+CEO Loop 1 spec, Sep 13 2026
+================================================================================
+
+1. THE REAL ASK, VERBATIM
+================================================================================
+
+Alex, following up on the shipped H1-H6 Cooking build (recipes/journal/
+kitchen-session scheduler): "So when I'm planning a cook, I need to buy
+ingredients - so I make a shopping list - it should have have/not have
+division of ingredients needed, then I go buy ingredients - input
+weight/quantity and price of each. This will show long term price changes
+and difference in price based on brand and store etc. Counting calories
+would also be awesome as I do like the gym, still can't go yet though coz
+of my hand injury."
+
+Real, up-front evidence check (rule 1) before any question was asked:
+grepped rpgace_core.js for "shopping"/"grocery"/"shop_list" - zero hits.
+Confirmed nothing shopping-list-shaped exists; `default_shop` in
+habits_config is a plain text field (which shop you usually use), not a
+list generator.
+
+Direct Supabase schema read of `ingredients`/`ingredient_prices`/
+`recipe_ingredients`/`recipes`/`habits_config` found:
+- `ingredient_prices` ALREADY has almost the exact shape this ask needs:
+  ingredient_id, supermarket, pack_size, pack_unit, pack_price, unit_price,
+  shelf_life_days, storage_type, leftover_usable, price_updated_at. Zero
+  rows exist yet (0 real purchases logged) - this table was built as part
+  of H1 but has never been written to.
+- Real, load-bearing finding: `ingredient_prices` has NO unique constraint
+  beyond its own primary key (confirmed via `pg_constraint` - only the PK
+  and the ingredient_id FK exist). This means the table ALREADY naturally
+  supports real price HISTORY simply by inserting a new row per purchase
+  rather than updating one in place - no schema change needed to get
+  "long term price changes" tracking; the design was already right, it
+  was just never fed real data.
+- Real gap found: no `brand` column exists anywhere - Alex's own ask names
+  brand explicitly ("difference in price based on brand and store").
+  `shelf_life_days`/`storage_type`/`leftover_usable` all exist but are
+  unused by any real code - these look like they were built anticipating
+  a pantry-stock feature that was never finished.
+- No `pantry`/stock-tracking table exists at all - "have/not have" has
+  nothing to check against currently.
+- No calorie/macro columns exist on `ingredients` or `recipe_ingredients`,
+  and no `nutrition_source`/cache table exists anywhere.
+
+2. REAL FORKS RESOLVED VIA ASKUSERQUESTION
+================================================================================
+
+Q1 - Pantry ("have/not have") mechanism:
+Answer: real persistent pantry-stock table (Recommended option), not a
+per-list manual tick. Confirms the unused shelf_life_days/leftover_usable
+columns were correctly anticipating this.
+
+Q2 - Is ticking a shopping-list item bought THE price-logging moment?
+Answer, verbatim: "One but with pop up to show selected, but with redo
+button if I find something better." Confirmed: one combined flow (tick
+bought -> popup asks for brand/store/weight/price -> writes
+ingredient_prices + tops up pantry), but the popup must carry a real
+"Redo" button that clears the just-entered fields for re-entry BEFORE
+final save - covers the real in-store scenario of picking one product,
+spotting a better price/brand nearby, and correcting the entry without
+backing all the way out of the flow. This is a real, cheap UI addition
+(a reset button on the popup's own local form state), not a second screen.
+
+Q3 - Where calorie/macro data comes from:
+Answer, verbatim: "I think 2 but save the data in supabase once so can
+always access." Option 2 was USDA FoodData Central (a real, free,
+no-cost federal nutrition database) - confirmed over Oracle-estimation
+or fully-manual entry. The "save once" instruction is Alex's own explicit
+rule-8-shaped ask: cache each ingredient's matched nutrition data
+permanently in Supabase the first time it's looked up, never re-query
+USDA for an ingredient already resolved.
+
+Q4 - Calorie tracking scope, right now:
+Answer: recipe-level only (Recommended) - total + per-serving
+calories/macros shown on the recipe card. No daily log/goals yet, since
+he's not training currently (hand injury) - explicitly deferred to a
+later item once that's relevant again, not built now.
+
+3. REAL, HONEST TECHNICAL WRINKLE - FLAGGED, NOT GUESSED
+================================================================================
+
+USDA FoodData Central's nutrition figures are per 100g of a food. RPGACE's
+own `recipe_ingredients.amount`/`unit` are whatever unit Oracle generated
+the recipe with (could be "2 tbsp", "1 clove", "200g" - not guaranteed to
+already be grams). Converting an arbitrary recipe unit into a gram figure
+that can be multiplied against a per-100g USDA number is a real, separate
+problem from just "look up the ingredient."
+
+Two honest options, put to Alex directly rather than picked for him:
+(a) When Oracle generates a recipe (the existing RECIPE_JSON call, zero
+    extra API cost), also ask it to estimate a real gram-equivalent for
+    each ingredient line alongside its existing amount/unit - reuses the
+    exact mechanism already generating the recipe, no new call.
+(b) Do the USDA lookup and math on a best-effort basis using only common
+    unit-to-gram approximations (tbsp/tsp/cup/clove tables) with no
+    per-recipe estimate - cheaper, but real inaccuracy on anything not in
+    a standard conversion table (e.g. "1 chicken thigh").
+
+Also needs a real answer: get a free USDA FoodData Central API key now
+(instant, free sign-up at https://fdc.nal.usda.gov/api-key-signup, added
+as a Vercel env var - unlike Fish Audio, there is no paid tier or ongoing
+cost to weigh here), or hold the calorie half as a dormant scaffold like
+the Fish Audio pattern until Alex says go.
+
+4. REAL PROPOSED SCOPE (Loop 1 draft, nothing built yet)
+================================================================================
+
+New Supabase tables (all additive, anon_read_only/authenticated_all from
+the start, matching every other HABITS table's posture):
+
+- `pantry_stock` (ingredient_id FK, quantity, unit, updated_at) - one row
+  per ingredient currently in stock. Decremented when a recipe is marked
+  cooked (consumes its recipe_ingredients amounts), topped up when a
+  purchase is logged.
+- `shopping_lists` (id, planned_cook_id FK -> planned_cooks, created_at,
+  status) - reuses H6's real planned_cooks session directly (rule 8,
+  never a second parallel "recipe set" concept) - a single-recipe shop is
+  just a session of one.
+- `shopping_list_items` (list_id FK, ingredient_id FK, needed_amount,
+  needed_unit, have_amount, to_buy_amount, bought boolean,
+  ingredient_price_id FK nullable -> the real purchase row once logged).
+- `ingredient_prices` gains one additive column: `brand text`.
+- `ingredients` gains real nutrition columns: `kcal_per_100g`,
+  `protein_g_per_100g`, `carbs_g_per_100g`, `fat_g_per_100g`,
+  `nutrition_source` ('usda'|'manual'), `nutrition_cached_at` - direct
+  columns on the existing 1:1 ingredient row, not a new join table
+  (`ingredient_prices` is 1:many per ingredient by design - price varies
+  by store/time; nutrition per ingredient does not, so it belongs on the
+  ingredient itself).
+
+New/extended UI in `cookingOracle` (ui/logic split, matching the existing
+G53 convention):
+- "🛒 Generate shopping list" on a planned_cooks session - aggregates
+  every recipe's own recipe_ingredients, checks pantry_stock for
+  have/not-have, computes to_buy_amount, writes shopping_lists +
+  shopping_list_items.
+- The shopping list view itself - have/not-have split, tick to mark
+  bought -> the combined price-entry popup (brand/store/weight/price +
+  Redo button per Q2) -> writes ingredient_prices + tops up pantry_stock.
+- Recipe card gains a real Nutrition section (kcal/protein/carbs/fat,
+  total + per serving), computed from recipe_ingredients x ingredients'
+  cached nutrition columns.
+- A new server-side USDA lookup (folds into an existing api/*.js action
+  branch, per the standing Vercel-12-function-cap landmine - never a new
+  physical file) - resolves an ingredient name to USDA nutrition data,
+  caches it onto the ingredients row, never re-queried once cached.
+
+5. WHAT THIS EXPLICITLY DOES NOT DO YET
+================================================================================
+
+- No daily calorie log or targets (Q4, deliberately deferred).
+- No price-change ALERTING (a "this went up 20%" notification) - the raw
+  history data will support building that later, not built now.
+- No automatic brand/store recommendation ("buy X, it's cheaper here") -
+  that is a real, separate future idea once real price history exists to
+  reason over, not guessed at with zero data.
+
+6. STILL OPEN - NEEDS ALEX'S REAL ANSWER, NOT A GUESS
+================================================================================
+
+(1) Which of the 2 unit-normalization options in Section 3 (Oracle
+    estimates grams at generation time vs. a static conversion table)?
+(2) Get the free USDA API key now, or hold the calorie half dormant like
+    the Fish Audio scaffold until he says go?
+
+Nothing in this spec is authorized to build until these 2 are answered
+and the overall scope is confirmed.
