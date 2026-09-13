@@ -139,6 +139,11 @@ const ALLOWED_TABLES = new Set([
   'recipe_ingredients',
   'ingredient_prices',
   'habits_config',
+  // 2026-09-12 - HABITS/Cooking H6 (multi-recipe kitchen-session scheduler).
+  // Created anon_read_only/authenticated_all FROM THE START (same "flip RLS
+  // first, then allowlist" by construction as recipes/ingredients above).
+  // cookingOracle.logic._acceptSchedule is the one real write path.
+  'planned_cooks',
 ]);
 
 async function handleBundleDeliverables(req, res, serviceKey) {
