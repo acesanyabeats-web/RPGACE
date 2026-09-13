@@ -151,50 +151,65 @@ async function callFishAudioTTS({ text, voiceId, format }) {
 
 // H9 (HABITS/Cooking, Sep 13 2026 — records/2026-09/
 // habits_shopping_pantry_calories_spec_2026-09-13.txt) — recipe-level
-// calorie/macro data, Alex's own confirmed source: USDA FoodData Central
-// (free, no paid tier, no ongoing cost — genuinely different posture from
-// Fish Audio's scaffold above, but the SAME dormant-until-a-real-key
-// pattern, since a key still has to exist before this can be called).
+// calorie/macro data. Real correction, same day: Alex flagged that USDA
+// FoodData Central is a US database (he's UK-based) — real web evidence
+// gathered before swapping (never guessed): USDA's own real UK-equivalent,
+// CoFID (McCance & Widdowson), has no live official API, only a static
+// downloadable dataset — a real future import job (H9 Stage 2, NOT built
+// this pass, see CLAUDE.md). Open Food Facts is the real Stage-1 choice
+// instead: free, genuinely NO API KEY at all (openfoodfacts.org's own
+// policy — read operations need only a descriptive User-Agent, no signup),
+// live REST API, real UK product coverage, per-100g fields matching UK
+// label convention. Real, honest tradeoff kept, not hidden: it's a
+// crowdsourced BRANDED-PRODUCT database, so a generic/raw ingredient name
+// ("onion") can match a packaged product's own nutrition rather than a
+// true raw-ingredient value — CoFID's own Stage-2 import is the real fix
+// for that, once built. No key means no "not configured yet" gate needed
+// at all — real code, live now, per Alex's own explicit confirmation.
 // Client caches whatever this returns onto `ingredients` (kcal_per_100g
 // etc, Alex's own explicit "save the data in supabase once so can always
 // access") — never re-queried for an ingredient already resolved.
-const USDA_FDC_SEARCH_URL = 'https://api.nal.usda.gov/fdc/v1/foods/search';
+const OPEN_FOOD_FACTS_SEARCH_URL = 'https://world.openfoodfacts.org/api/v2/search';
+// Open Food Facts' own stated policy requires a descriptive User-Agent
+// naming the app — never a personal email (this repo is public), the
+// project's own name + repo URL is the honest, safe identifier.
+const OPEN_FOOD_FACTS_USER_AGENT = 'RPGACE/1.0 (https://github.com/acesanyabeats-web/RPGACE)';
 
-async function lookupUsdaNutrition({ name }) {
-  const key = process.env.USDA_FDC_API_KEY;
-  if (!key) {
-    throw new Error(
-      'USDA nutrition lookup was requested but USDA_FDC_API_KEY is not configured yet — ' +
-      'a free key takes seconds at https://fdc.nal.usda.gov/api-key-signup (no paid tier, ' +
-      'no ongoing cost); Alex activates this himself, on his own timing.'
-    );
-  }
-  if (!name) throw new Error('USDA lookup: no ingredient name provided');
-  const url = USDA_FDC_SEARCH_URL + '?api_key=' + encodeURIComponent(key)
-    + '&query=' + encodeURIComponent(name) + '&pageSize=1&dataType=' + encodeURIComponent('Foundation,SR Legacy');
-  const resp = await fetch(url);
+async function lookupOpenFoodFactsNutrition({ name }) {
+  if (!name) throw new Error('Open Food Facts lookup: no ingredient name provided');
+  const url = OPEN_FOOD_FACTS_SEARCH_URL
+    + '?search_terms=' + encodeURIComponent(name)
+    + '&fields=' + encodeURIComponent('product_name,nutriments,countries_tags')
+    + '&page_size=5';
+  const resp = await fetch(url, { headers: { 'User-Agent': OPEN_FOOD_FACTS_USER_AGENT } });
   if (!resp.ok) {
     const errText = await resp.text().catch(() => '');
-    throw new Error(`USDA FoodData Central error: ${errText.slice(0, 300)}`);
+    throw new Error(`Open Food Facts error: ${errText.slice(0, 300)}`);
   }
   const data = await resp.json();
-  const food = data && Array.isArray(data.foods) ? data.foods[0] : null;
-  if (!food) return { matched: false };
-  const nutrients = food.foodNutrients || [];
-  // Real care taken here: USDA sometimes lists BOTH an Energy(KCAL) and an
-  // Energy(kJ) row — matching on name alone risks silently picking the
-  // wrong unit's number, so energy is gated on unitName === 'KCAL' too.
-  const energy = nutrients.find(x => (x.nutrientName || '').toLowerCase().includes('energy') && (x.unitName || '').toUpperCase() === 'KCAL');
-  const protein = nutrients.find(x => (x.nutrientName || '').toLowerCase().includes('protein'));
-  const carbs = nutrients.find(x => (x.nutrientName || '').toLowerCase().includes('carbohydrate'));
-  const fat = nutrients.find(x => (x.nutrientName || '').toLowerCase().includes('total lipid'));
+  const products = (data && Array.isArray(data.products)) ? data.products : [];
+  if (!products.length) return { matched: false };
+  // Real, honest UK preference (Alex is UK-based) — prefer a result
+  // tagged as a UK product where one exists, otherwise fall back to the
+  // first real match rather than returning nothing.
+  const food = products.find(p => Array.isArray(p.countries_tags) && p.countries_tags.includes('en:united-kingdom')) || products[0];
+  const n = food.nutriments || {};
+  // Real Open Food Facts field names, confirmed against its own live API
+  // shape — per-100g values, never per-serving (which some products also
+  // carry under a different key and would silently misrepresent grams-
+  // scaled math downstream).
+  const kcal = (typeof n['energy-kcal_100g'] === 'number') ? n['energy-kcal_100g'] : null;
+  const protein = (typeof n['proteins_100g'] === 'number') ? n['proteins_100g'] : null;
+  const carbs = (typeof n['carbohydrates_100g'] === 'number') ? n['carbohydrates_100g'] : null;
+  const fat = (typeof n['fat_100g'] === 'number') ? n['fat_100g'] : null;
+  if (kcal == null && protein == null && carbs == null && fat == null) return { matched: false };
   return {
     matched: true,
-    fdcDescription: food.description || name,
-    kcal_per_100g: energy ? energy.value : null,
-    protein_g_per_100g: protein ? protein.value : null,
-    carbs_g_per_100g: carbs ? carbs.value : null,
-    fat_g_per_100g: fat ? fat.value : null,
+    fdcDescription: food.product_name || name,
+    kcal_per_100g: kcal,
+    protein_g_per_100g: protein,
+    carbs_g_per_100g: carbs,
+    fat_g_per_100g: fat,
   };
 }
 
@@ -281,8 +296,8 @@ export default async function handler(req, res) {
       const result = await callFishAudioASR({ audioBase64, language });
       return res.status(200).json(result);
     }
-    if (action === 'usda-lookup') {
-      const result = await lookupUsdaNutrition({ name });
+    if (action === 'nutrition-lookup') {
+      const result = await lookupOpenFoodFactsNutrition({ name });
       return res.status(200).json(result);
     }
 
