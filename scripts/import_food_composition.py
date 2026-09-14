@@ -54,6 +54,24 @@ Usage:
                         whose name contains TEXT (case-insensitive). Omit for
                         a single-sheet file or to use the workbook's active
                         sheet.
+    --name-col/--group-col/--kcal-col/--protein-col/--carbs-col/--fat-col TEXT
+                        — explicit override: match this EXACT real header
+                        text (case-insensitive, never a substring) instead
+                        of the shared fuzzy hint lists. Use when a real
+                        header is known ahead of time but too short/
+                        ambiguous to trust a fuzzy match against (e.g. a
+                        bare 'CHO' header, which is also a real substring of
+                        'cholesterol' — the China food-composition dataset
+                        hits exactly this; 'englishName' vs the Chinese-
+                        language 'foodName' column is another real case).
+    --energy-is-kj     — the matched kcal column is actually real energy in
+                        KILOJOULES (converted /4.184, standard Atwater
+                        factor). Real, deliberate flag, not a guess: IFCT
+                        2017's own bare 'enerc' column is kJ, not kcal, per
+                        real INFOODS convention — confirmed empirically
+                        against a known value (raw milled rice) before this
+                        flag was added, after a first import run silently
+                        wrote 1491 kcal/100g for rice (should be ~356).
 
 Output:
     scripts/<prefix>_batch_NNN.sql  (one or more files, ~500 rows each) —
@@ -77,8 +95,19 @@ BATCH_SIZE = 500
 FOOD_NAME_HINTS = ["food name", "foodname", "food_name", "food item", "name of food"]
 FOOD_GROUP_HINTS = ["food group", "group", "category"]
 KCAL_STRICT_HINTS = None  # handled specially below (energy+kcal AND-match)
-KCAL_LOOSE_HINTS = ["kcal", "energy (kcal)", "enerc_kcal", "enerc"]
-PROTEIN_HINTS = ["protein", "procnt"]
+KCAL_LOOSE_HINTS = ["kcal", "energy (kcal)", "enerc_kcal"]
+# Real, deliberate EXCLUSION, found and fixed importing IFCT 2017 (caught by
+# a real spot-check against a known value, not assumed): a bare 'enerc' is
+# NOT a safe kcal hint — real INFOODS convention (confirmed empirically:
+# IFCT's own 'enerc' for "Rice, raw, milled" reads 1491, and 1491/4.184 =
+# 356.4, matching rice's real known ~356 kcal/100g almost exactly) is that
+# ENERC alone means ENERGY IN KILOJOULES, not kcal — only ENERC_KCAL (with
+# the suffix) is real kcal. A source whose kcal column really is a bare
+# 'enerc'/'energy'-only header (kJ) needs --kcal-col + --energy-is-kj,
+# never a loose auto-match, since guessing wrong here silently writes a
+# real, wrong number (kJ mislabeled as kcal is 4.184x too high) rather than
+# failing loud — the one thing this whole script's design exists to avoid.
+PROTEIN_HINTS = ["protein", "procnt", "protcnt"]
 CARBS_HINTS = ["carbohydrate", "carb", "choavldf", "chocdf"]
 FAT_HINTS = ["fat", "fatce", "lipid"]
 
@@ -146,17 +175,29 @@ def load_rows_csv(path):
     return rows
 
 
-def find_header_row(all_rows, max_scan=10):
+def find_header_row(all_rows, max_scan=10, name_col_override=None):
+    """Real, honest gotcha found importing IFCT 2017 (whose real food-name
+    header is a bare 'name' — too short/generic for FOOD_NAME_HINTS to
+    safely include as a permanent hint, real reasoning in --name-col's own
+    docstring): header-row DETECTION is a separate step from header-row
+    COLUMN SELECTION, and both need to agree on what counts as a match. If
+    `--name-col` is given, search for THAT exact text too (never only the
+    shared hint list), or a real file whose name header needs an override
+    would also fail at this earlier step before the override ever gets a
+    chance to run."""
+    search_terms = list(FOOD_NAME_HINTS)
+    if name_col_override:
+        search_terms.append(name_col_override.strip().lower())
     for idx in range(min(max_scan, len(all_rows))):
         row = [str(c or "").strip().lower() for c in all_rows[idx]]
-        if any(any(hint in cell for hint in FOOD_NAME_HINTS) for cell in row):
+        if any(cell in search_terms or any(hint in cell for hint in FOOD_NAME_HINTS) for cell in row):
             return idx, [str(c or "").strip() for c in all_rows[idx]]
     raise SystemExit(
         f"ERROR: no header row found in the first {max_scan} rows containing "
-        f"any of {FOOD_NAME_HINTS}. This file's real layout doesn't match "
+        f"any of {search_terms}. This file's real layout doesn't match "
         "this script's assumption — inspect it by hand and, if the real "
-        "header wording differs, add it to FOOD_NAME_HINTS above rather "
-        "than guessing a row index."
+        "header wording differs, add it to FOOD_NAME_HINTS above (or pass "
+        "--name-col) rather than guessing a row index."
     )
 
 
@@ -187,6 +228,21 @@ def load_rows_xlsx(path, sheet_hint):
     return all_rows
 
 
+def find_exact_column(headers, wanted):
+    """Explicit override — exact (case-insensitive) header match, never a
+    substring/fuzzy match. Used when a real file's own headers are known
+    ahead of time but too short/ambiguous for the shared hint lists to
+    trust blindly (e.g. a bare 'CHO' header, which is a real substring of
+    'cholesterol' too — the China food-composition CSV hits exactly this)."""
+    for i, h in enumerate(headers):
+        if str(h).strip().lower() == wanted.strip().lower():
+            return i
+    raise SystemExit(
+        f"ERROR: --col override '{wanted}' does not exactly match any real "
+        f"header. Real headers seen: {headers}"
+    )
+
+
 def main():
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     sheet_hint = None
@@ -194,6 +250,28 @@ def main():
         i = sys.argv.index("--sheet-hint")
         if i + 1 < len(sys.argv):
             sheet_hint = sys.argv[i + 1]
+
+    # Real, explicit per-field overrides — bypass fuzzy hint-matching
+    # entirely when the real header text is known ahead of time (from
+    # inspecting the file by hand) but is short/ambiguous enough that a
+    # generic hint would risk matching the WRONG real column (e.g. 'CHO'
+    # vs 'cholesterol'). Each takes the exact real header text, matched
+    # case-insensitively but never as a substring. Omit any of these to
+    # fall back to the shared fuzzy hint lists as before.
+    overrides = {}
+    for flag, key in [
+        ("--name-col", "name"), ("--group-col", "group"),
+        ("--kcal-col", "kcal"), ("--protein-col", "protein"),
+        ("--carbs-col", "carbs"), ("--fat-col", "fat"),
+    ]:
+        if flag in sys.argv:
+            i = sys.argv.index(flag)
+            if i + 1 < len(sys.argv):
+                overrides[key] = sys.argv[i + 1]
+    # Real unit-safety flag, see KCAL_LOOSE_HINTS' own comment above — pass
+    # this whenever the matched kcal column is actually real energy in
+    # kilojoules (INFOODS' bare ENERC convention), never guessed silently.
+    energy_is_kj = "--energy-is-kj" in sys.argv
 
     if len(args) < 2:
         print(__doc__, file=sys.stderr)
@@ -215,15 +293,15 @@ def main():
     else:
         raise SystemExit(f"ERROR: unsupported file type '{src.suffix}' — expected .csv, .xlsx, or .xls")
 
-    header_row_idx, headers = find_header_row(all_rows)
+    header_row_idx, headers = find_header_row(all_rows, name_col_override=overrides.get("name"))
     print(f"Header row {header_row_idx}: {headers}")
 
-    col_name = match_column(headers, FOOD_NAME_HINTS)
-    col_group = match_column(headers, FOOD_GROUP_HINTS)
-    col_kcal = match_kcal_column(headers)
-    col_protein = match_column(headers, PROTEIN_HINTS)
-    col_carbs = match_column(headers, CARBS_HINTS)
-    col_fat = match_column(headers, FAT_HINTS)
+    col_name = find_exact_column(headers, overrides["name"]) if "name" in overrides else match_column(headers, FOOD_NAME_HINTS)
+    col_group = find_exact_column(headers, overrides["group"]) if "group" in overrides else match_column(headers, FOOD_GROUP_HINTS)
+    col_kcal = find_exact_column(headers, overrides["kcal"]) if "kcal" in overrides else match_kcal_column(headers)
+    col_protein = find_exact_column(headers, overrides["protein"]) if "protein" in overrides else match_column(headers, PROTEIN_HINTS)
+    col_carbs = find_exact_column(headers, overrides["carbs"]) if "carbs" in overrides else match_column(headers, CARBS_HINTS)
+    col_fat = find_exact_column(headers, overrides["fat"]) if "fat" in overrides else match_column(headers, FAT_HINTS)
 
     missing = [n for n, c in [
         ("food_name", col_name), ("kcal", col_kcal),
@@ -248,6 +326,8 @@ def main():
             continue
         group = str(row[col_group] or "").strip() if (col_group is not None and col_group < len(row)) else None
         kcal = parse_number(row[col_kcal]) if col_kcal < len(row) else None
+        if kcal is not None and energy_is_kj:
+            kcal = round(kcal / 4.184, 1)  # real, standard kJ->kcal (Atwater) conversion factor
         protein = parse_number(row[col_protein]) if col_protein < len(row) else None
         carbs = parse_number(row[col_carbs]) if col_carbs < len(row) else None
         fat = parse_number(row[col_fat]) if col_fat < len(row) else None
