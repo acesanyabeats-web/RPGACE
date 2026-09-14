@@ -152,6 +152,15 @@ const ALLOWED_TABLES = new Set([
   'pantry_stock',
   'shopping_lists',
   'shopping_list_items',
+  // 2026-09-14 - general Wishlist/Shopping module (Alex's own ask: "future
+  // purchases... plan out total budget"). Created anon_read_only/
+  // authenticated_all FROM THE START (same "flip RLS first, then allowlist"
+  // by construction as every HABITS table above) - a standalone module, NOT
+  // part of HABITS/Cooking, since these are general future purchases
+  // (batteries, a wok, FIFA 27), not ingredients. shoppingWishlist is the
+  // one real write path.
+  'wishlist_items',
+  'wishlist_config',
 ]);
 
 async function handleBundleDeliverables(req, res, serviceKey) {
