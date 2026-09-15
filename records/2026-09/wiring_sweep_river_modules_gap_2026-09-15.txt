@@ -1,0 +1,156 @@
+MODULE/FUNCTION WIRING SWEEP — DEEPER PASS
+Sep 15 2026 (same day, same session as the representative-pass record,
+records/2026-09/galaxy_map_doc_drift_representative_pass_2026-09-15.txt)
+
+=== ALEX'S FOLLOW-UP (verbatim) ===
+
+"go deeper on the module/function wiring sweep now"
+
+=== METHOD ===
+
+The representative pass earlier this session verified 2 headline COUNTS
+(module count, page count). This pass goes deeper on actual WIRING —
+which modules call which, and whether the Galaxy Map's own real module-
+to-river-to-page pipeline is currently correct.
+
+First attempt: a hand-rolled Python regex script
+(scratchpad/wiring_sweep.py) to extract module boundaries and build a
+cross-module call graph from scratch. This immediately hit the same
+false-positive class CLAUDE.md already documents for the module-count
+grep (a comment at rpgace_core.js:11245-11250 literally contains the
+text "/* ===MODULE:x=== */" as a quoted documentation example,
+corrupting a naive marker-pairing algorithm).
+
+That comment also referenced a real, existing function —
+`parse_module_ranges()` — already built and proven in
+`scripts/graphify_river_group.py` across the full G1-G109 Galaxy Map
+build. Per rule 8 (eliminate deduplication gaps), abandoned the
+hand-rolled reimplementation and used the real existing tooling
+instead: `parse_module_ranges()`, `RIVER_MODULES`, `LEVEL3_MODULES`,
+and `compute_intra_river_flow()` (a real, documented 4-signal wiring
+detector — direct RPGACE.modules.X calls, window.X wrap-chains, shared
+RPGACE.utils convergence points, and DOM-level triggering — already
+built and iterated on across G13/G25/G49).
+
+=== ROOT-CAUSE FINDING ===
+
+`LEVEL3_MODULES = set(m for mods in RIVER_MODULES.values() for m in
+mods)` (graphify_river_group.py:1657) — derived DIRECTLY from
+`RIVER_MODULES`. Any real `RPGACE.register()` module absent from
+`RIVER_MODULES` gets no river, no `LEVEL3_MODULES` membership, and no
+Current(L3) Galaxy Map page, full stop — independent of whether the
+generated HTML pages have been regenerated recently.
+
+Computed the real diff: 58 live registered modules (see the earlier
+record for the grep pattern) vs. RIVER_MODULES' 45 listed names. 13 in
+the gap. `graphify_river_group.py`'s own comment (lines 400-417)
+documents 9 of these as deliberate cross-cutting exclusions with real
+reasoning (config/dashDeck/leftNav/pwaInstall/perfWatch/quickActions/
+docsLinks/suppressQuestPopup/errorLog — errorLog itself is a real,
+self-documented instance of this exact gap, found Aug 12, unreconciled
+until Aug 22, a real admitted 10-day window). The remaining 4:
+`cookingOracle`, `shoppingWishlist`, `oracleControl`, `questEngine`.
+
+Checked each of the 4 against the live rendered Galaxy Map (all 21
+`graphify-out/galaxy_map*.html` files):
+
+- `questEngine`: DOES appear (galaxy_map_current.html) despite having
+  no RIVER_MODULES entry — a later comment in the same script (line
+  4657) claims this is deliberate ("config/dashDeck/errorLog/
+  questEngine and friends... real modules with real evidence and no
+  river home by design"). Real, checkable inconsistency found: this
+  claim is NOT reflected in the canonical documented-exclusions comment
+  at lines 400-417, which is supposed to be the one authoritative
+  reasoned list and does not mention questEngine at all. And unlike the
+  genuinely cross-cutting exclusions (nav/popup/config/UI infra),
+  questEngine is a real FEATURE domain (Quest Board Supabase
+  persistence, built Aug 23-24) — its cross-cutting classification is
+  asserted in one comment, not obviously justified, and not corroborated
+  by the doc that's supposed to justify every exclusion. Flagged, not
+  resolved — a real open question for whoever next touches this table,
+  not decided here.
+
+- `cookingOracle` (HABITS, shipped Sep 10 2026): **100% absent from all
+  21 Galaxy Map pages** — not even as a cross-cutting orphan on the
+  infra-drilldown pages (galaxy_map_supabase.html/galaxy_map_oracle.html,
+  which DO scan every module via `parse_module_ranges()` regardless of
+  river membership, per graphify_river_group.py:2267's own comment).
+  This means the whole pipeline (export -> recolor -> river-group) has
+  genuinely not been re-run since before Sep 10 — a real violation of
+  `update-logging-system` artifact 10's mandatory sequence (every
+  code-structure change re-runs the pipeline), not caught until now.
+
+- `shoppingWishlist` (shipped Sep 14 2026): same finding, same cause —
+  100% absent from all 21 pages, same unregenerated-pipeline root cause.
+
+- `oracleControl` (G41, shipped ~Aug 26 2026): a DIFFERENT, narrower
+  gap. DOES appear on 5 pages (galaxy_map.html, galaxy_map_connectors.html,
+  galaxy_map_decision_matrix.html, galaxy_map_load.html,
+  galaxy_map_supabase.html) as a cross-cutting orphan — meaning it WAS
+  captured by a real regeneration that ran sometime after it shipped.
+  But it still has zero RIVER_MODULES entry, so it still has no river
+  and no Current(L3) page even now. A fresh regeneration alone would
+  NOT fix this — someone has to actually add a RIVER_MODULES entry for
+  it first, which means picking a real river (a genuine judgment call:
+  oracleControl is part of the Oracle command/action-dispatch family,
+  River III's existing Oracle cluster is the obvious candidate, but
+  this wasn't decided here, deliberately, since river assignment is
+  real Galaxy Map build content, not mechanical verification).
+
+=== THE RECURRING BUG CLASS ===
+
+"Ship a new RPGACE.register() module -> forget to add it to
+RIVER_MODULES" is not a one-off. It is now confirmed to have hit:
+  1. errorLog (added Aug 12, unreconciled until Aug 22 — self-documented
+     in the script's own comment, a real 10-day gap, since fixed)
+  2. oracleControl (added ~Aug 26, still unreconciled as of this pass —
+     a real 3-week-plus gap, not yet fixed)
+  3. cookingOracle + shoppingWishlist (added Sep 10/14, still
+     unreconciled as of this pass — the whole regeneration pipeline
+     hasn't run since, a compounding second failure on top of the same
+     root gap)
+
+This is exactly the shape of problem Alex's original "cached grep"
+request was naming — a doc/tooling artifact that's supposed to reflect
+the live app silently falling behind it, repeatedly, with no mechanism
+catching it until someone goes looking by hand.
+
+=== FIX APPLIED THIS PASS ===
+
+Extended the Sep 15 "Session-start check — Galaxy Map headline facts"
+in CLAUDE.md with a 3rd cheap check: every real registered module
+should appear in RIVER_MODULES or its documented exclusion list — a
+one-line `comm -23` command comparing live grep output against the
+real RIVER_MODULES table. This exact check, run at any point since Aug
+12/26/Sep 10/Sep 14, would have caught each of the 3 still-open gaps
+the moment it happened, instead of letting them accumulate silently
+for up to 3+ weeks.
+
+=== NOT DONE THIS PASS, DELIBERATELY ===
+
+- Did not assign real rivers to cookingOracle/shoppingWishlist/
+  oracleControl, and did not re-run the Galaxy Map pipeline. River
+  assignment is a genuine judgment call (which river each module
+  actually belongs in), not a mechanical fix, and actually building it
+  out is real Galaxy Map surface-area work — currently under the
+  standing Sep 15 pause (verification/detection work is exempt per
+  Alex's own Q2 answer earlier this session; building new Galaxy Map
+  content is not). Logged to `system_map_flags` (id
+  e71ce5fb-74a9-4209-9659-e5f0f24127ef) for Alex's real decision.
+- Did not resolve the questEngine documentation inconsistency (is its
+  cross-cutting classification actually correct, or was it just
+  asserted once without the same scrutiny errorLog/config/dashDeck got)
+  — flagged in the same system_map_flags row, not decided here.
+- Did not run compute_intra_river_flow() end-to-end against the
+  currently-listed 45 RIVER_MODULES to check whether THEIR wiring
+  claims still hold (a further, real "go deeper" slice, genuinely
+  larger — proportionate to leave for a future pass rather than
+  grinding through all 12 rivers' worth of claimed edges in this one).
+
+=== HAND-ROLLED SCRIPT DISCARDED ===
+
+`scratchpad/wiring_sweep.py` (the initial regex-based attempt) is not
+committed to the repo — it duplicated real, already-proven tooling
+(`parse_module_ranges`/`compute_intra_river_flow`) with real known bugs
+(comment-embedded marker false-positives) the existing tooling had
+already solved. Left in the session scratchpad only, per rule 8.
