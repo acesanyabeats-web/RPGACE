@@ -1,0 +1,88 @@
+PERSPECTIVE FULL COVERAGE (RIVERS + MODULES) — /CEO LOOP 1
+Sep 15 2026
+
+=== ALEX'S ASK (verbatim) ===
+"now i want all elements and pages at each river, module and function to
+answer the same questions and perspective reports to be made as done for
+orchestrator cc and openmontage cc to determine role etc. i need all of
+this to have such descriptions to help understand the system and make
+update and knowledge on infrastructure more clear."
+
+=== REAL EVIDENCE GATHERED BEFORE ASKING ===
+
+perspective_reports live counts (queried directly, not assumed):
+  galaxy         4 active   (Tier A — done)
+  node          17 active   (Tier A — done, grew from the pilot's 13)
+  l0_unit       13 (10 confirmed, 2 unverified, 1 superseded — the new
+                 6-facet profile format Alex means by "as done for
+                 orchestrator cc and openmontage cc")
+  module        44 active   (of 58 real registered rpgace_core.js
+                 modules — 14 missing, listed below)
+  river          0          (never built — /perspective's own Step 1
+                 rule: a river is NOT an actor, gets a synthesis of its
+                 modules' reports, never a first-person self-report)
+  mainjs_function 176, ALL status='unverified' — legacy scaffold, label
+                 itself stale since main.js was merged into
+                 rpgace_core.js Aug 20 2026
+  onclick_feature 47, ALL status='unverified' — same scaffold generation
+  decision        10, ALL status='unverified' — same scaffold generation
+
+14 real modules with zero perspective_reports row: config, cookingOracle,
+dashDeck, docsLinks, errorLog, leftNav, oracleControl, oracleProviderMode,
+perfWatch, pwaInstall, questEngine, quickActions, shoppingWishlist,
+suppressQuestPopup.
+
+Real function-level scale check: ~387 function-property definitions in
+rpgace_core.js alone (rough grep), before counting the legacy main.js
+content merged into the same file, before onclick handlers. Genuinely
+hundreds — full function-level coverage is many-session work, not a
+single pass.
+
+Standing pause check (Sep 15 2026, CLAUDE.md's own Galaxy Map bullet):
+"A real pause on new Galaxy Map/Dimension items is now in effect until
+the verification-debt and product-debt backlogs move." Checked directly,
+not assumed: reference_tracks.scale/genre is STILL 0/32 populated (zero
+movement); smoke_test_items moved only 27->28 of 99 confirmed since the
+pause was declared (essentially no movement). The pause condition has
+NOT been met.
+
+=== REAL /interrogation (4 questions, AskUserQuestion, all answered) ===
+
+Q1 — pause conflict, given product debt hasn't moved: Alex answered
+"Proceed with a bounded scope only" — rivers + the 14 missing modules,
+NOT the full hundreds-of-functions sweep. Real, deliberate middle path:
+gets real new coverage without repeating the exact Galaxy-Map-vs-product-
+debt imbalance the pause was built to stop.
+
+Q2 — river format, given /perspective's own non-actor rule conflicts
+with the literal ask: Alex answered "Keep the synthesis convention" — a
+river gets a real third-person compiled synthesis of its already-written
+module reports, never a fake first-person voice.
+
+Q3 — function scope: Alex answered "Modules + rivers now, functions
+later" — function-level reports become a real opportunistic tail
+(written whenever a module/feature is genuinely being touched for other
+work), matching /perspective's own Tier C/D design exactly. The 233
+existing stale/unverified scaffold rows are NOT touched this pass
+(a real, separate future item — verifying/relabeling them is its own
+bounded task, not silently folded into this one).
+
+Q4 — CEO tracking: Alex answered "Yes, run it as a real /CEO plan" —
+this compile file + a real ceo_plans/ceo_plan_items datasheet.
+
+=== REAL, BOUNDED SCOPE THIS PLAN COVERS ===
+
+26 real items:
+  - 14 module-level perspective_reports rows (the real gap found above)
+  - 12 river-level synthesis reports (one per live river, I-XII —
+    compiled from each river's already-written module reports via
+    RIVER_MODULES, third-person, per the non-actor rule)
+
+Explicitly NOT in scope this pass (real, named, not silently dropped):
+  - Function-level reports (hundreds) — opportunistic future work
+  - The 233 stale mainjs_function/onclick_feature/decision rows —
+    a real, separate future verification pass
+  - Retired rivers XIII-XVII — zero real modules by design, a river
+    synthesis has nothing to compile there; already covered by their
+    own real RIVER_RETIRED metadata + the Archived cluster shipped
+    earlier this session

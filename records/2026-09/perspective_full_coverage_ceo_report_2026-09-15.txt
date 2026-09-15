@@ -1,0 +1,49 @@
+PERSPECTIVE FULL COVERAGE (RIVERS + MODULES) — /CEO LOOP 1, REPORT
+Sep 15 2026
+
+Compiled spec: records/2026-09/perspective_full_coverage_ceo_compile_2026-09-15.txt
+/interrogation: same file, all 4 questions answered by Alex directly.
+
+=== VERDICT: APPROVED, BOUNDED SCOPE, PROCEEDING TO LOOP 2 SAME SESSION ===
+
+Real /paranoia-style sanity check before executing (lightweight, since
+the interrogation already resolved every genuine open fork): confirmed
+via direct query that none of the 14 "missing" modules have a stale/
+superseded row hiding behind them — the gap is real, not a dedup risk.
+Confirmed river synthesis is worthwhile even for the 5 single-module
+rivers (I/II/IV/VI/IX) — a synthesis isn't just a restatement, it's the
+real cross-river-context compile /perspective's own design calls for.
+
+Real /drift check against the ask: does "bounded scope" (14 modules + 12
+river syntheses) still honestly answer Alex's real goal ("help understand
+the system and make update and knowledge on infrastructure more
+clear")? Yes — this closes the one real, load-bearing gap (14 modules
+with zero baseline at all) and adds the one real, never-built tier
+(river synthesis, 0 of 12 existing) — the two most consequential gaps,
+not the least-effort ones. Function-level coverage would add volume, not
+proportionally more clarity, given modules already carry the real
+call-graph/Supabase-table evidence a river synthesis needs. BASIS:
+ratified (Alex's own direct interrogation answers). Grade: on track, no
+gap.
+
+=== REAL PLAN ITEMS (ceo_plan_items, 26 total) ===
+
+Module reports (14): config, cookingOracle, dashDeck, docsLinks,
+errorLog, leftNav, oracleControl, oracleProviderMode, perfWatch,
+pwaInstall, questEngine, quickActions, shoppingWishlist,
+suppressQuestPopup.
+
+River syntheses (12): River I-XII (live rivers only; retired rivers
+XIII-XVII excluded, zero real modules, already covered by their own
+RIVER_RETIRED metadata).
+
+Execution order: modules first (river syntheses read from them), then
+river syntheses, in river-number order. Each item flips red->green in
+ceo_plan_items with real evidence (the actual perspective_reports row
+id) as it completes.
+
+STATUS: executing now, same session, per Alex's own real-time approval
+via the interrogation itself (no separate second confirmation needed —
+his 4 answers already constitute Loop 1 sign-off, matching the same-
+session compile->report->execute pattern this session already used for
+the earlier river-restructure CEO pass).
