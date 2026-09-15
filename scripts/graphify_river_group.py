@@ -368,11 +368,11 @@ RIVER_RETIRED = {
     },
     16: {
         'reason': 'Zero real modules — real dispatch/session history (dated backlog .txt/.md at repo root). Honest gap, not force-mapped: no single L0 unit is a clean 1:1 successor for "every dated file at repo root." Orchestrator CC\'s own unit is the closest real relationship (real Total-systems dispatch history with OpenMontage CC/Graphify CC lives there), but it does not cover the river\'s full original file-path membership.',
-        'superseded_by': [('Orchestrator CC (partial — Total-systems dispatch history only)', 'galaxy_map_orchestrator_openmontage.html#unit-orchestrator_cc')],
+        'superseded_by': [('Orchestrator CC (partial — Total-systems dispatch history only)', 'galaxy_map_orchestrator_cc.html')],
     },
     17: {
         'reason': 'Zero real modules — the actual scripts/config that build/ship/graph the Total system (including the very scripts that generate this graph and the Obsidian vault). Honest gap, not force-mapped: no L0 unit represents "dev tooling" as its own real actor. Orchestrator CC is the closest real relationship (it is the session that runs this tooling), but tooling itself was never promoted to a unit.',
-        'superseded_by': [('Orchestrator CC (partial — runs this tooling)', 'galaxy_map_orchestrator_openmontage.html#unit-orchestrator_cc')],
+        'superseded_by': [('Orchestrator CC (partial — runs this tooling)', 'galaxy_map_orchestrator_cc.html')],
     },
 }
 
@@ -1204,13 +1204,16 @@ def compute_l0_unit_supabase_inter(unit_id):
             # Shared with the FIRST shared table's own infra facet, so
             # clicking here glows both units' matching table rows.
             'share_key': f"sb-{shared[0]}",
-            # Sep 15 2026 — real fix: was a bare page link (lands at the
-            # top, showing BOTH units mixed); now points at OTHER's own
-            # real anchor specifically, matching galaxy_map.py's
-            # CC_UNIT_LINK (mirrored here, not imported — galaxy_map.py
-            # imports FROM this file, so the reverse would be circular;
-            # same reasoning L0_UNIT_LABEL's own comment already states).
-            'link': (f'galaxy_map_orchestrator_openmontage.html#unit-{other}'
+            # Sep 15 2026, real 2nd correction — the first fix pointed at
+            # a shared-page anchor; Alex's own direct words made clear he
+            # wanted genuinely separate pages, not sections on one file
+            # ("its still not 2 separate pages, just on one with more
+            # devision"). Now points at OTHER's own real, separate page
+            # (mirrored here, not imported — galaxy_map.py imports FROM
+            # this file, so the reverse would be circular; same reasoning
+            # L0_UNIT_LABEL's own comment already states).
+            'link': ({'orchestrator_cc': 'galaxy_map_orchestrator_cc.html',
+                      'openmontage_cc': 'galaxy_map_openmontage_cc.html'}[other]
                      if {unit_id, other} == {'orchestrator_cc', 'openmontage_cc'} else _SB_PAGE),
         })
     return out
@@ -4288,8 +4291,16 @@ DIMENSION_PAGES = [
      'Real skill-to-skill invocation edges, plus each skill’s AI/UI/backend axes.'),
     ('galaxy_map_alex_path.html', '🧑', 'Alex’s Decision Path', 'inter',
      'Each dashboard card’s real flow, and the real Y/N fork Alex actually hits.'),
-    ('galaxy_map_orchestrator_openmontage.html', '🛰️', 'Orchestrator ↔ OpenMontage', 'inter',
-     'Real async dispatch history between the two Claude Code sessions.'),
+    # Sep 15 2026, real 2nd correction — was one combined entry for one
+    # shared page; Alex's own direct words made clear he wanted genuinely
+    # separate pages ("its still not 2 separate pages, just on one with
+    # more devision"), so this is now 2 real entries, matching the exact
+    # precedent G99 already set for Oracle/Connectors (each real actor
+    # promoted out of a shared grouping into its own dedicated page).
+    ('galaxy_map_orchestrator_cc.html', '🧭', 'Orchestrator CC', 'inter',
+     'Real full profile (role/input/processing/output/contribution/stakeholders) + shared dispatch history with OpenMontage CC.'),
+    ('galaxy_map_openmontage_cc.html', '🎬', 'OpenMontage CC', 'inter',
+     'Real full profile (role/input/processing/output/contribution/stakeholders) + shared dispatch history with Orchestrator CC.'),
     ('galaxy_map_oversight_sync.html', '📚', 'Oversight Sync', 'inter',
      'Which oversight doc gets touched, in what order, during a push or ritual.'),
     ('galaxy_map_loops.html', '🔄', 'Loops', 'meta',

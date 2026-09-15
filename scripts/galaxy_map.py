@@ -326,17 +326,16 @@ EXTERNAL_AI_ACTORS = [
 # rather than borrowing one.
 CC_UNIT_CONNECTOR = {'openmontage_cc': 'OpenMontage', 'graphify_cc': 'Graphify CC'}
 CC_UNIT_LINK = {
-    # Sep 15 2026 real fix — both anchors used to be missing or asymmetric
-    # (orchestrator_cc had none here, and UNIT_BUBBLE_SYSTEM below
-    # separately hardcoded a bare #cat-sharedinfra that only orchestrator_cc
-    # actually had; openmontage_cc had no anchor anywhere, landing at the
-    # page top showing BOTH units mixed — confirmed the real bug behind
-    # Alex's own complaint: "i click openmontage bubble at level 0, its
-    # only openmontage infra"). Each CC unit now gets its own real,
-    # dedicated anchor (galaxy_map_orchestrator_openmontage.py's new
-    # build_actor_section()) showing ONLY that unit's own profile.
-    'orchestrator_cc': 'galaxy_map_orchestrator_openmontage.html#unit-orchestrator_cc',
-    'openmontage_cc': 'galaxy_map_orchestrator_openmontage.html#unit-openmontage_cc',
+    # Sep 15 2026, real 2nd correction — the first same-day fix put both
+    # units on the SAME physical file with 2 anchored sections; Alex's
+    # own direct words: "its still not 2 separate pages, just on one
+    # with more devision." Fixed for real: galaxy_map_orchestrator_
+    # openmontage.py now writes 2 genuinely separate HTML files (one
+    # Python source, rule 8 — the render logic/JOBS data stay single-
+    # sourced; only the OUTPUT is split), each showing ONLY that unit's
+    # own real profile.
+    'orchestrator_cc': 'galaxy_map_orchestrator_cc.html',
+    'openmontage_cc': 'galaxy_map_openmontage_cc.html',
     'graphify_cc': 'galaxy_map_externals.html',
 }
 

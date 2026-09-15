@@ -12,11 +12,11 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[scheduleFixes]] — `rpgace_core.js:31218-31289`
-- [[shiftSync]] — `rpgace_core.js:31014-31216`
-- [[agendaReminder]] — `rpgace_core.js:12278-12475`
-- [[morningBrief]] — `rpgace_core.js:29265-29740`
-- [[journalQoL]] — `rpgace_core.js:31562-31862`
+- [[scheduleFixes]] — `rpgace_core.js:31274-31345`
+- [[shiftSync]] — `rpgace_core.js:31070-31272`
+- [[agendaReminder]] — `rpgace_core.js:12312-12509`
+- [[morningBrief]] — `rpgace_core.js:29321-29796`
+- [[journalQoL]] — `rpgace_core.js:31618-31918`
 
 ## Flows into
 

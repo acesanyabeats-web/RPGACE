@@ -14,7 +14,7 @@ source: "graphify_river_group.py — real, not guessed"
 > Zero real modules — real dispatch/session history (dated backlog .txt/.md at repo root). Honest gap, not force-mapped: no single L0 unit is a clean 1:1 successor for "every dated file at repo root." Orchestrator CC's own unit is the closest real relationship (real Total-systems dispatch history with OpenMontage CC/Graphify CC lives there), but it does not cover the river's full original file-path membership.
 >
 > **See instead:**
-> - Orchestrator CC (partial — Total-systems dispatch history only) — `graphify-out/galaxy_map_orchestrator_openmontage.html#cat-sharedinfra`
+> - Orchestrator CC (partial — Total-systems dispatch history only) — `graphify-out/galaxy_map_orchestrator_cc.html`
 
 ## Real role
 

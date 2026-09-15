@@ -3,13 +3,13 @@ module_name: "oracleFetchGuard"
 kind: module
 river_number: 3
 river_name: "River III — The Oracle Current"
-source_lines: "10195-10257"
+source_lines: "10229-10291"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # oracleFetchGuard
 
-`rpgace_core.js:10195-10257`
+`rpgace_core.js:10229-10291`
 
 Member of [[03 — River III — The Oracle Current.md|River III — The Oracle Current]].
 

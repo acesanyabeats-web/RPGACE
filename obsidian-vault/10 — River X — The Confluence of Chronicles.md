@@ -12,8 +12,9 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[chroniclesLog]] — `rpgace_core.js:32700-33069`
-- [[careerStatCard]] — `rpgace_core.js:32057-32698`
+- [[chroniclesLog]] — `rpgace_core.js:32756-33128`
+- [[careerStatCard]] — `rpgace_core.js:32113-32754`
+- [[shoppingWishlist]] — `rpgace_core.js:38662-39111`
 
 ## Flows into
 

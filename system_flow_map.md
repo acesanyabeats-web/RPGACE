@@ -647,7 +647,7 @@ flowchart TD
 
 ## 14. Total-Systems Dispatch — `openmontage_jobs` / `graphify_jobs` Queues — added Aug 20/21 2026 (G56)
 
-Real, hand-written pipeline doc — the real, asynchronous cross-repo/cross-session handoff mechanism named "Total" (Aug 4). Cross-linked from `graphify-out/galaxy_map_orchestrator_openmontage.html` (G29) and the L0 map's Orchestrator CC / External AI units.
+Real, hand-written pipeline doc — the real, asynchronous cross-repo/cross-session handoff mechanism named "Total" (Aug 4). Cross-linked from `graphify-out/galaxy_map_orchestrator_cc.html` / `graphify-out/galaxy_map_openmontage_cc.html` (G29, real Sep 15 2026 2-page split) and the L0 map's Orchestrator CC / External AI units.
 
 ```mermaid
 flowchart TD

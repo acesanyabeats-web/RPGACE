@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RPGACE — Galaxy Map (Orchestrator CC)</title>
+<style>
+  :root { --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; --purple:#9B59B6; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(ellipse at 50% 30%, #17101a 0%, #050508 70%);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif}
+  .hero{padding:36px 24px 16px;text-align:center}
+  .hero .eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--purple);margin-bottom:8px}
+  .hero h1{font-family:Georgia,serif;font-size:26px;color:#fff;margin-bottom:8px}
+  .hero p{color:var(--dim);font-size:12px;max-width:820px;margin:0 auto}
+  .msection{max-width:1000px;margin:0 auto;padding:24px}
+  .constraint{max-width:1000px;margin:0 auto 20px;padding:14px 18px;background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.3);border-radius:10px;font-size:11.5px;line-height:1.6;color:#e0c0c0}
+  .jgrid{display:flex;flex-direction:column;gap:12px}
+  .jcard{background:rgba(255,255,255,0.03);border:1px solid rgba(155,89,182,0.18);border-radius:10px;padding:14px 18px}
+  .jhead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .jhead h3{font-size:13px;color:#fff}
+  .jstatus{font-size:9.5px;font-weight:700;text-transform:uppercase}
+  .jmeta{display:flex;gap:10px;font-size:9.5px;color:var(--dim);margin:4px 0 8px}
+  .jkind{color:var(--purple);font-weight:700}
+  .jsummary{font-size:11px;line-height:1.6;color:#c8c8d8}
+  .jid{font-size:9px;color:#5a5a68;margin-top:8px}
+  .l0block{max-width:1000px;margin:0 auto 26px}
+  .l0block h2{font-family:Georgia,serif;font-size:15px;color:#fff;margin-bottom:6px}
+  .l0block .l0intro{font-size:11px;line-height:1.6;color:#c8c8d8;margin-bottom:12px}
+  .l0list{list-style:none;margin-top:6px}
+  .l0list li{font-size:10.5px;line-height:1.7;color:#c8c8d8}
+  code{font-family:'Cascadia Code','Fira Mono',monospace;background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:3px}
+  .tbl-link{text-decoration:none}
+  .tbl-link code{color:var(--purple);border-bottom:1px dotted currentColor}
+  .tbl-link:hover code{border-bottom-style:solid}
+  .tbl-none{color:var(--dim)}
+  a{color:var(--purple)}
+  .toggle-row{display:flex;gap:8px;margin:6px 0 14px}
+  .toggle-btn{padding:6px 14px;border-radius:14px;font-size:10.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid rgba(255,255,255,0.1)}
+  .toggle-btn.active{background:var(--gold);color:#1a1608;border-color:var(--gold)}
+  .view{display:none} .view.active{display:block}
+  .tables{display:flex;flex-direction:column;gap:12px}
+  .table-section{background:rgba(255,255,255,0.03);border:1px solid rgba(155,89,182,0.18);border-radius:12px;padding:14px 16px}
+  .tblgroup-head{font-family:Georgia,serif;font-size:12.5px;font-weight:700;letter-spacing:.3px;color:var(--dim);margin:16px 0 8px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08)}
+  .tblgroup-head:first-child{margin-top:0;padding-top:0;border-top:none}
+  .tblgroup-head.noncode{color:#8a8a9a}
+  .thead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px}
+  .tdot{width:10px;height:10px;border-radius:50%;background:var(--purple)}
+  .thead h2{font-family:Georgia,serif;font-size:14px;color:#fff}
+  .tcount{font-size:9.5px;color:var(--dim);margin-left:auto}
+  .rivers,.mods{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+  .touches{margin-top:6px;font-size:10.5px}
+  .touches summary{cursor:pointer;color:var(--dim)}
+  .touch-row{padding:3px 0 3px 10px;color:#a8a8b8;font-size:10.5px}
+  .note{max-width:1000px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}
+  .actor-section{max-width:1000px;margin:0 auto 34px}
+  .other-link{max-width:1000px;margin:0 auto 20px;text-align:center}
+  .other-link a{display:inline-block;padding:8px 18px;border-radius:16px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.3);font-size:11.5px;font-weight:700;text-decoration:none}
+  .ahead{display:flex;align-items:center;gap:14px;margin-bottom:16px}
+  .aicon{font-size:34px;line-height:1}
+  .ahead h2{font-family:Georgia,serif;font-size:20px;color:#fff}
+  .atagline{font-size:11px;color:var(--purple);font-weight:700;margin-top:2px}
+  .facets{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}
+  .facet{background:rgba(255,255,255,0.03);border:1px solid rgba(155,89,182,0.18);border-radius:10px;padding:13px 15px}
+  .facet:nth-child(5),.facet:nth-child(6){grid-column:1 / -1}
+  .fhead{font-size:11px;font-weight:700;color:#fff;margin-bottom:6px}
+  .fbody{font-size:11px;line-height:1.65;color:#c8c8d8}
+  .fbody .l0list{margin-top:4px;margin-bottom:6px}
+  @media (max-width:700px){ .facets{grid-template-columns:1fr} .facet:nth-child(5),.facet:nth-child(6){grid-column:auto} }
+
+.idd{max-width:1400px;margin:12px auto 0;padding:0 24px}
+.idd-crumb{display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:11px;font-weight:700;padding:8px 10px;margin-bottom:12px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px}
+.idd-crumb span{padding:3px 9px;border-radius:10px;background:rgba(255,255,255,0.05);color:#8a8a9a}
+.idd-crumb span.on{color:#0a0a0f;background:#C9A84C}
+.idd-crumb .idd-sep{background:none;padding:0;color:#55555f}
+.idd-lvl{margin-bottom:16px}
+.idd-lbl{font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#8a8a9a;margin-bottom:8px}
+.idd-row{display:flex;flex-wrap:wrap;gap:10px}
+.idd-bub{--c:#8a8a9a;min-width:190px;flex:0 1 230px;background:rgba(255,255,255,0.03);border:2px solid var(--c);border-radius:16px;padding:11px 13px;cursor:pointer;transition:transform .15s,background .15s}
+.idd-bub:hover{transform:translateY(-2px);background:rgba(255,255,255,0.07)}
+.idd-bub.on{background:color-mix(in srgb, var(--c) 18%, transparent);box-shadow:0 0 0 2px var(--c)}
+.idd-bub b{display:block;font-size:12px;color:var(--c)}
+.idd-bub span{display:block;font-size:10.5px;color:#E2E2EC;margin-top:2px}
+.idd-bub em{display:block;font-style:normal;font-size:9px;color:#8a8a9a;margin-top:5px}
+.idd-pane{display:none}
+.idd-pane.on{display:block}
+.idd-hint{font-size:10.5px;color:#8a8a9a;padding:6px 2px}
+.canvas-wrap{overflow-x:auto}
+.idd .idd-river,.idd .idd-mod{transition:opacity .15s}
+.idd .idd-river:hover,.idd .idd-mod:hover{opacity:0.8}
+.idd .idd-river.on circle:first-of-type,.idd .idd-mod.on circle:first-of-type{stroke-width:4.5}
+.idd-mig{display:block;text-decoration:none;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.12);border-left:3px solid var(--c,#C9A84C);border-radius:10px;padding:9px 12px;min-width:230px;flex:0 1 300px;transition:background .15s}
+.idd-mig:hover{background:rgba(201,168,76,0.1)}
+.idd-mig b{display:block;font-size:11px;color:#fff;font-family:'Cascadia Code','Fira Mono',monospace}
+.idd-mig .idd-res{display:block;font-size:9.5px;color:#8a8a9a;margin-top:4px;line-height:1.5}
+.idd-mig .idd-jump{display:block;font-size:9px;font-weight:700;color:#C9A84C;margin-top:6px}
+.idd-mig.idd-dead{cursor:default;opacity:0.8}
+.idd-mig.idd-dead .idd-jump{color:#8a8a9a}
+
+
+.dim-index{max-width:1180px;margin:18px auto 26px;padding:0 24px}
+.dim-index h2{font-family:Georgia,serif;font-size:19px;color:#fff;margin-bottom:4px;text-align:center}
+.dim-index .dim-sub{font-size:11px;color:#8a8a9a;text-align:center;margin-bottom:14px;line-height:1.6}
+.dim-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.dim-card{display:block;text-decoration:none;background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.1);border-left-width:3px;border-radius:10px;padding:11px 13px;transition:background .15s,border-color .15s}
+.dim-card:hover{background:rgba(255,255,255,0.07)}
+.dim-card .dim-name{font-size:12.5px;font-weight:700;color:#E2E2EC;margin-bottom:3px}
+.dim-card .dim-desc{font-size:10px;color:#8a8a9a;line-height:1.55}
+.dim-card .dim-kind{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;opacity:.9}
+
+
+.fc-bar{display:flex;gap:8px;align-items:center;margin:0 0 10px;flex-wrap:wrap}
+.fc-btn{padding:5px 14px;border-radius:14px;font-size:10.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:#8a8a9a;border:1px solid rgba(255,255,255,0.12);user-select:none}
+.fc-btn:hover{background:rgba(255,255,255,0.09)}
+.fc-btn.active{background:#C9A84C;color:#1a1608;border-color:#C9A84C}
+.fc-pick{display:none;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+.fc-pick-btn{padding:4px 11px;border-radius:10px;font-size:9.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.04);border:1.5px solid var(--c,#8a8a9a);color:var(--c,#8a8a9a);user-select:none}
+.fc-pick-btn:hover{background:color-mix(in srgb, var(--c,#8a8a9a) 14%, transparent)}
+.fc-pick-btn.on{background:var(--c,#8a8a9a);color:#0a0a0f}
+.fc-pick-hint{font-size:10px;color:#6a6a78;padding:2px 0 8px;width:100%}
+/* (a) Infra-drilldown pages: Choice is the existing pane click-through
+   (zero change); Full force-opens every real pane at once. */
+.fc-scope.mode-full .idd-pane{display:block !important}
+.fc-scope.mode-full .idd-hint{display:none}
+/* (b) Level 2/3 evidence-bubble picker: Full shows every real
+   `.ev-group` at once (today's existing behaviour, unchanged); Choice
+   shows only the one currently picked. */
+.fc-scope.mode-choice .fc-pick{display:flex}
+.fc-scope.mode-choice .ev-group{display:none}
+.fc-scope.mode-choice .ev-group.picked{display:inline}
+/* An .ev-group wrapping a plain HTML block (Level 3's Tier 2 panels)
+   needs block, not inline, or its own padding/border render squeezed
+   to content width — a real HTML div and an SVG <g> both match
+   `.ev-group.picked` above, so this more-specific override (2 classes
+   + a tag qualifier beats 2 classes alone) fixes the div case only,
+   leaving the SVG <g> case governed by the rule above unchanged. */
+.fc-scope.mode-choice div.ev-group.picked{display:block}
+
+.gside-toggle{position:fixed;top:50%;left:0;transform:translateY(-50%);z-index:10001;background:#C9A84C;color:#1a1a1f;border:none;border-radius:0 8px 8px 0;padding:16px 6px;font-size:13px;cursor:pointer;writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:1.5px;font-weight:700;box-shadow:2px 0 10px rgba(0,0,0,0.4)}
+.gside-toggle:hover{background:#ddbb5c}
+.gside-nav{position:fixed;top:0;left:-300px;width:280px;height:100vh;overflow-y:auto;background:#0a0a0f;border-right:1px solid rgba(255,255,255,0.12);z-index:10000;transition:left .2s ease;padding:18px 16px 40px;box-shadow:4px 0 28px rgba(0,0,0,0.55)}
+.gside-nav.open{left:0}
+.gside-nav h3{font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#8a8a9a;margin:20px 0 8px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.07)}
+.gside-nav h3:first-child{margin-top:0;padding-top:0;border-top:none}
+.gside-def{font-size:10px;color:#7a7a88;line-height:1.6;margin-bottom:10px}
+.gside-level{display:block;text-decoration:none;padding:7px 9px;border-radius:7px;margin-bottom:2px}
+.gside-level:hover{background:rgba(255,255,255,0.05)}
+.gside-level.active{background:rgba(201,168,76,0.16)}
+.gside-level b{display:block;font-size:12.5px;color:#E2E2EC}
+.gside-level span{display:block;font-size:9px;color:#6a6a78;margin-top:2px}
+.gside-dim{display:block;text-decoration:none;padding:6px 9px;border-radius:7px;margin-bottom:2px;border-left:2px solid transparent}
+.gside-dim:hover{background:rgba(255,255,255,0.05)}
+.gside-dim.active{background:rgba(201,168,76,0.16)}
+.gside-dim b{display:block;font-size:11.5px;color:#E2E2EC}
+.gside-dim .gside-kind{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.gside-dim .gside-desc{display:block;font-size:9px;color:#6a6a78;line-height:1.5;margin-top:1px}
+.gside-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:9999;display:none}
+.gside-backdrop.open{display:block}
+/* G101 real correction — Levels is the one main category; each level's
+   own genuinely-relevant Dimension pages nest directly beneath it. */
+.gside-levelgroup{margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.gside-levelgroup:last-child{border-bottom:none}
+.gside-nested{margin:2px 0 2px 14px;padding-left:8px;border-left:1px solid rgba(255,255,255,0.08)}
+.gside-subhead{font-size:8.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#55555f;margin:6px 0 2px 14px}
+.gside-river{display:block;text-decoration:none;padding:4px 9px;border-radius:6px;margin-bottom:1px;border-left:2px solid transparent;font-size:10.5px}
+.gside-river:hover{background:rgba(255,255,255,0.05)}
+.gside-river b{font-weight:400;color:#b8b8c4}
+.gside-rivers{max-height:320px;overflow-y:auto}
+.gside-river-mod{margin-left:14px;font-size:9.5px;opacity:.85}
+.gside-river-mod b{color:#8a8a98}
+.gside-river-empty{color:#55555f;font-style:italic;padding:2px 9px 4px}
+
+details.doc-methodology{max-width:1000px;margin:24px auto 40px;padding:0 24px}
+details.doc-methodology > summary{cursor:pointer;list-style:none;font-size:10px;font-weight:700;
+  letter-spacing:.7px;text-transform:uppercase;color:#6a6a78;padding:6px 0;
+  border-top:1px solid rgba(255,255,255,0.07)}
+details.doc-methodology > summary::-webkit-details-marker{display:none}
+details.doc-methodology > summary::before{content:'▶ ';font-size:8px}
+details.doc-methodology[open] > summary::before{content:'▼ '}
+details.doc-methodology > summary:hover{color:#C9A84C}
+details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
+</style>
+</head>
+<body>
+<button class="gside-toggle" type="button" aria-label="Open Galaxy Map navigation">MAP ▸</button><div class="gside-backdrop"></div><nav class="gside-nav"><h3>🌌 Levels</h3><div class="gside-def">A Dimension is a real cross-cutting facet — the same modules and functions, seen through one lens. Deliberately <b>multi-membership</b>: a module can sit in several at once, which is exactly why a Dimension is never a numbered River (a River is a strict one-module-one-home partition). Nested under whichever Level(s) it's genuinely relevant to, not a separate category.</div><div class="gside-levelgroup"><a class="gside-level" href="galaxy_map.html"><b>🌌 L0</b></a><div class="gside-subhead">🌌 Dimensions</div><div class="gside-nested"><a class="gside-dim" href="galaxy_map_decision_matrix.html" style="border-left-color:#8a8a9a" title="Meta — synthesis across several dimensions"><b>🚦 Decision Matrix</b> <span class="gside-kind" style="color:#8a8a9a">🧭 meta</span><span class="gside-desc">Every real decision — gates, curated core logic, text inputs — by river.</span></a><a class="gside-dim" href="galaxy_map_dimensions.html" style="border-left-color:#8a8a9a" title="Meta — synthesis across several dimensions"><b>🧭 Dimensions Matrix</b> <span class="gside-kind" style="color:#8a8a9a">🧭 meta</span><span class="gside-desc">Which modules are multi-home across every other dimension.</span></a><a class="gside-dim" href="galaxy_map_loops.html" style="border-left-color:#8a8a9a" title="Meta — synthesis across several dimensions"><b>🔄 Loops</b> <span class="gside-kind" style="color:#8a8a9a">🧭 meta</span><span class="gside-desc">Real cycles across direct calls, cross-module event signals, and shared Supabase tables.</span></a></div></div><div class="gside-levelgroup"><a class="gside-level" href="galaxy_map_river.html"><b>🏛️ L1</b><span>Infra</span></a><div class="gside-subhead">🌊 Rivers</div><div class="gside-nested gside-rivers"><a class="gside-river" href="galaxy_map_module.html#river-1" style="border-left-color:#cc4a4a"><b>🌊 River I</b></a><a class="gside-river" href="galaxy_map_module.html#river-2" style="border-left-color:#4a8ccc"><b>🌊 River II</b></a><a class="gside-river" href="galaxy_map_module.html#river-3" style="border-left-color:#c9a84c"><b>🌊 River III</b></a><a class="gside-river" href="galaxy_map_module.html#river-4" style="border-left-color:#9b6ec8"><b>🌊 River IV</b></a><a class="gside-river" href="galaxy_map_module.html#river-5" style="border-left-color:#4caf82"><b>🌊 River V</b></a><a class="gside-river" href="galaxy_map_module.html#river-6" style="border-left-color:#e8c96a"><b>🌊 River VI</b></a><a class="gside-river" href="galaxy_map_module.html#river-7" style="border-left-color:#cc7a3a"><b>🌊 River VII</b></a><a class="gside-river" href="galaxy_map_module.html#river-8" style="border-left-color:#5588ee"><b>🌊 River VIII</b></a><a class="gside-river" href="galaxy_map_module.html#river-9" style="border-left-color:#e05555"><b>🌊 River IX</b></a><a class="gside-river" href="galaxy_map_module.html#river-10" style="border-left-color:#868db8"><b>🌊 River X</b></a><a class="gside-river" href="galaxy_map_module.html#river-11" style="border-left-color:#3a4570"><b>🌊 River XI</b></a><a class="gside-river" href="galaxy_map_module.html#river-12" style="border-left-color:#4A90E2"><b>🌊 River XII</b></a><a class="gside-river" href="galaxy_map_module.html#river-13" style="border-left-color:#2ABFB0"><b>🌊 River XIII</b></a><a class="gside-river" href="galaxy_map_module.html#river-14" style="border-left-color:#E2A83D"><b>🌊 River XIV</b></a><a class="gside-river" href="galaxy_map_module.html#river-15" style="border-left-color:#d4daf5"><b>🌊 River XV</b></a><a class="gside-river" href="galaxy_map_module.html#river-16" style="border-left-color:#20263a"><b>🌊 River XVI</b></a><a class="gside-river" href="galaxy_map_module.html#river-17" style="border-left-color:#2a3050"><b>🌊 River XVII</b></a></div><div class="gside-subhead">🌌 Dimensions</div><div class="gside-nested"><a class="gside-dim" href="galaxy_map_decisions.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>🗑️ Decisions — Human Gates</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">The real human-confirm gates before a destructive or taxonomy write.</span></a><a class="gside-dim" href="galaxy_map_level6.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>🔬 Branch Ledger</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">Exhaustive, mechanical if/else/switch branch extraction, listed not narrated.</span></a><a class="gside-dim" href="galaxy_map_supabase.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>💉 Supabase</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">Every real client-side Supabase table touch, by level/river/module.</span></a><a class="gside-dim" href="galaxy_map_externals.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>🔌 Externals</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">Whether each external connector genuinely touches real UI AND real backend.</span></a><a class="gside-dim" href="galaxy_map_load.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>⏳ Load Dimension</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">What actually triggers a load: boot task, page nav, or on-demand click.</span></a></div></div><div class="gside-levelgroup"><a class="gside-level" href="galaxy_map_module.html"><b>🌊 L2</b><span>Modules + Inter</span></a><div class="gside-subhead">🌊 Rivers &amp; Modules</div><div class="gside-nested gside-rivers"><a class="gside-river" href="galaxy_map_module.html#river-1" style="border-left-color:#cc4a4a"><b>🌊 River 1: River I</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-authGate"><b>🔽 authGate</b></a><a class="gside-river" href="galaxy_map_module.html#river-2" style="border-left-color:#4a8ccc"><b>🌊 River 2: River II</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-pathRouter"><b>🔽 pathRouter</b></a><a class="gside-river" href="galaxy_map_module.html#river-3" style="border-left-color:#c9a84c"><b>🌊 River 3: River III</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-agentsIntoOracle"><b>🔽 agentsIntoOracle</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-cookingOracle"><b>🔽 cookingOracle</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-feynman"><b>🔽 feynman</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-instaOraclePanel"><b>🔽 instaOraclePanel</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-mockOracle"><b>🔽 mockOracle</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-oracleAppGrounding"><b>🔽 oracleAppGrounding</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-oracleControl"><b>🔽 oracleControl</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-oracleDevBridge"><b>🔽 oracleDevBridge</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-oracleFetchGuard"><b>🔽 oracleFetchGuard</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-oracleProviderMode"><b>🔽 oracleProviderMode</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-oracleTreeGrounding"><b>🔽 oracleTreeGrounding</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-prodOraclePanel"><b>🔽 prodOraclePanel</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-scheduleOracle"><b>🔽 scheduleOracle</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-tiktokOracle"><b>🔽 tiktokOracle</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-youtubeOracle"><b>🔽 youtubeOracle</b></a><a class="gside-river" href="galaxy_map_module.html#river-4" style="border-left-color:#9b6ec8"><b>🌊 River 4: River IV</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-bookworm"><b>🔽 bookworm</b></a><a class="gside-river" href="galaxy_map_module.html#river-5" style="border-left-color:#4caf82"><b>🌊 River 5: River V</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-agendaReminder"><b>🔽 agendaReminder</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-journalQoL"><b>🔽 journalQoL</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-morningBrief"><b>🔽 morningBrief</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-scheduleFixes"><b>🔽 scheduleFixes</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-shiftSync"><b>🔽 shiftSync</b></a><a class="gside-river" href="galaxy_map_module.html#river-6" style="border-left-color:#e8c96a"><b>🌊 River 6: River VI</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-phylumPath"><b>🔽 phylumPath</b></a><a class="gside-river" href="galaxy_map_module.html#river-7" style="border-left-color:#cc7a3a"><b>🌊 River 7: River VII</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-encSync"><b>🔽 encSync</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-encTaxonomyLink"><b>🔽 encTaxonomyLink</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-encyclopediaQoL"><b>🔽 encyclopediaQoL</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-jargonEncyclopedia"><b>🔽 jargonEncyclopedia</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-refCorpus"><b>🔽 refCorpus</b></a><a class="gside-river" href="galaxy_map_module.html#river-8" style="border-left-color:#5588ee"><b>🌊 River 8: River VIII</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-taxonomyReviewQueue"><b>🔽 taxonomyReviewQueue</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-taxonomySync"><b>🔽 taxonomySync</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-taxonomyTree"><b>🔽 taxonomyTree</b></a><a class="gside-river" href="galaxy_map_module.html#river-9" style="border-left-color:#e05555"><b>🌊 River 9: River IX</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-knowledgeGap"><b>🔽 knowledgeGap</b></a><a class="gside-river" href="galaxy_map_module.html#river-10" style="border-left-color:#868db8"><b>🌊 River 10: River X</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-careerStatCard"><b>🔽 careerStatCard</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-chroniclesLog"><b>🔽 chroniclesLog</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-shoppingWishlist"><b>🔽 shoppingWishlist</b></a><a class="gside-river" href="galaxy_map_module.html#river-11" style="border-left-color:#3a4570"><b>🌊 River 11: River XI</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-beatLog"><b>🔽 beatLog</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-conidPot"><b>🔽 conidPot</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-contentProductionLive"><b>🔽 contentProductionLive</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-contentRepurpose"><b>🔽 contentRepurpose</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-videoPipeline"><b>🔽 videoPipeline</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-videoSummary"><b>🔽 videoSummary</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-visualOracle"><b>🔽 visualOracle</b></a><a class="gside-river" href="galaxy_map_module.html#river-12" style="border-left-color:#4A90E2"><b>🌊 River 12: River XII</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-ciAutoPropose"><b>🔽 ciAutoPropose</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-intelBatchList"><b>🔽 intelBatchList</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-intelDedup"><b>🔽 intelDedup</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-intelDelete"><b>🔽 intelDelete</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-researchTabs"><b>🔽 researchTabs</b></a><a class="gside-river" href="galaxy_map_module.html#river-13" style="border-left-color:#2ABFB0"><b>🌊 River 13: River XIII</b></a><span class="gside-river gside-river-mod gside-river-empty">— no modules —</span><a class="gside-river" href="galaxy_map_module.html#river-14" style="border-left-color:#E2A83D"><b>🌊 River 14: River XIV</b></a><span class="gside-river gside-river-mod gside-river-empty">— no modules —</span><a class="gside-river" href="galaxy_map_module.html#river-15" style="border-left-color:#d4daf5"><b>🌊 River 15: River XV</b></a><span class="gside-river gside-river-mod gside-river-empty">— no modules —</span><a class="gside-river" href="galaxy_map_module.html#river-16" style="border-left-color:#20263a"><b>🌊 River 16: River XVI</b></a><span class="gside-river gside-river-mod gside-river-empty">— no modules —</span><a class="gside-river" href="galaxy_map_module.html#river-17" style="border-left-color:#2a3050"><b>🌊 River 17: River XVII</b></a><span class="gside-river gside-river-mod gside-river-empty">— no modules —</span></div><div class="gside-subhead">🌌 Dimensions</div><div class="gside-nested"><a class="gside-dim" href="galaxy_map_skill_network.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>🕸️ Skills</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Real skill-to-skill invocation edges, plus each skill’s AI/UI/backend axes.</span></a><a class="gside-dim" href="galaxy_map_alex_path.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>🧑 Alex’s Decision Path</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Each dashboard card’s real flow, and the real Y/N fork Alex actually hits.</span></a><a class="gside-dim active" href="galaxy_map_orchestrator_cc.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>🧭 Orchestrator CC</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Real full profile (role/input/processing/output/contribution/stakeholders) + shared dispatch history with OpenMontage CC.</span></a><a class="gside-dim" href="galaxy_map_openmontage_cc.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>🎬 OpenMontage CC</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Real full profile (role/input/processing/output/contribution/stakeholders) + shared dispatch history with Orchestrator CC.</span></a><a class="gside-dim" href="galaxy_map_oversight_sync.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>📚 Oversight Sync</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Which oversight doc gets touched, in what order, during a push or ritual.</span></a><a class="gside-dim" href="galaxy_map_local_pipeline.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>🖥️ Local Analysis Pipeline</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">local_server.py + Whisper + a direct Anthropic call, as one cluster on Alex’s own machine.</span></a></div></div><div class="gside-levelgroup"><a class="gside-level" href="galaxy_map_current.html"><b>🔽 Current (L3)</b><span>Currents</span></a></div></nav>
+<div class="hero">
+  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Orchestrator CC (G29, real Sep 15 2026 restructure)</div>
+  <h1>🧭 Orchestrator CC</h1>
+  <p>This unit's own real full profile — role, input received, how it processes the input, where output goes further, river/module/function contribution, external/inter stakeholders — plus its own Shared Infrastructure drilldown. Its real dispatch history with OpenMontage CC (the only other unit it exchanges real data with) sits further down, on its own — see the link above for OpenMontage CC's own separate page.</p>
+  <p>Full real pipeline logic (queue → poll → real work → update → session-start check → report, as a Mermaid diagram): <a href="../system_flow_map.md">system_flow_map.md §14</a>, added Aug 20/21 2026 (G56).</p>
+</div>
+<div class="constraint">⚠️ <b>No live session-to-session link exists.</b> openmontage_jobs is an async Supabase queue, confirmed directly via list_sessions (5feb76ed's own real finding) — every row below is a real, asynchronous message, never a synchronous call.</div>
+<div class="other-link">→ <a href="galaxy_map_openmontage_cc.html">View OpenMontage CC's own separate page</a></div>
+<div class="msection">
+  <div class="actor-section" id="unit-orchestrator_cc"><div class="ahead"><span class="aicon">🧭</span><div><h2>Orchestrator CC</h2><div class="atagline">Planner / Orchestrator — this session</div></div></div><div class="facets"><div class="facet"><div class="fhead">🎭 Role</div><div class="fbody">The real planner/orchestrator across RPGACE Total Systems. Decides what to build and directs work: real evidence-gathering, dispatch-writing, RPGACE-side schema/UI/doc work. Cannot literally invoke OpenMontage CC's skills or reach into its repo — <code>add_repo</code> refuses cross-owner adds, and a session is permanently tied to its starting repo's owner.</div></div><div class="facet"><div class="fhead">📥 Input received</div><div class="fbody">Real prompts and decisions from Alex, plus a real, standing set of passive session-start pulls — undrained <code>graphify_jobs</code> rows, <code>oracle_dev_suggestions</code>, active <code>error_log</code> rows, flagged <code>system_map_flags</code> rows.</div></div><div class="facet"><div class="fhead">⚙️ How it processes the input</div><div class="fbody">Runs the Judgment Funnel / <code>/CEO</code> planning loop on whatever Alex asks: evidence-gather (GODMODE/<code>/scope</code>) → scrutinize (Council of 5) → execute (Omnitrix — Opus builds, Sonnet reviews) → verify (<code>/Engineer</code> Stage 5 Truth Check) → log.</div></div><div class="facet"><div class="fhead">📤 Where output goes further</div><div class="fbody">Writes real dispatch rows into <code>openmontage_jobs</code> (async, never live) and standalone system-state rows for cross-cutting decisions that aren't a single video job; writes/updates <code>total_system_members</code>; writes <code>perspective_reports</code> in bulk via its own generator-script toolchain (267 real rows across 3 runs as of Sep 8 2026); logs to patch_notes.html/Chronicles (<code>system_updates</code>) and the <code>ceo_plans</code>/<code>ceo_plan_items</code>/<code>ceo_reports</code> datasheet.</div></div><div class="facet"><div class="fhead">🌊 River / module / function contribution</div><div class="fbody">4 real 💉 Infra facet(s) · 4 real 🔗 Inter facet(s) on the <a href="galaxy_map.html">L0 map</a>. Real tables touched:<ul class="l0list"><li><a class="tbl-link" href="galaxy_map_supabase.html#tbl-openmontage_jobs" title="Where this table is actually read and written"><code>openmontage_jobs</code></a> — async queue (reads + writes)</li><li><code class="tbl-none" title="No client-side module touch and no oversight-doc fetch — the Supabase page has no section for this table">total_system_members</code> — reads + writes</li><li><code class="tbl-none" title="No client-side module touch and no oversight-doc fetch — the Supabase page has no section for this table">graphify_jobs</code> — reads</li><li><a class="tbl-link" href="galaxy_map_supabase.html#tbl-perspective_reports" title="Where this table is actually read and written"><code>perspective_reports</code></a> — writes</li></ul>Full river/module/function drilldown is the Shared Infrastructure block below.</div></div><div class="facet"><div class="fhead">🤝 External / inter stakeholders</div><div class="fbody"><b>Alex</b> — every Tier-3 decision routes through him, no exceptions. <b>OpenMontage CC</b> — via <code>openmontage_jobs</code>, the only real channel (no live session-to-session link exists). <b>Graphify CC</b> — reads <code>graphify_jobs</code> at session start, a passive pull since Graphify CC cannot write to Chronicles directly. <b>Oracle</b> — drives its own grounding/self-knowledge text. <b>Skills</b> — executes the standing protocols. <b>Oversight Docs</b> — the real destination of nearly everything this unit writes.</div></div></div><div class="l0block" id="cat-sharedinfra-orchestrator_cc"><h2>🗄️ Shared Infrastructure — Rivers/Modules Touching the Same Tables</h2><p class="l0intro">Every real table Orchestrator CC genuinely touches (same source as its own L0 Infra facets), cross-referenced against every rpgace_core.js river/module/function that touches that SAME table — real, live-code infrastructure sharing, not the dispatch-history narrative below.</p><p class="l0intro">2 of 4 real Orchestrator CC table(s) have NO rpgace_core.js touch at all — they are reached only by real non-code Total-system actors (a separate Claude Code session, a curated write), never client-side app code: <code>graphify_jobs</code>, <code>total_system_members</code>.</p><div class="toggle-row" data-scope="orchestrator_cc"><div class="toggle-btn active" data-view="table">📊 Table view</div><div class="toggle-btn" data-view="map">🌌 Map view</div></div><div class="view active" id="view-table-orchestrator_cc"><h3 class="tblgroup-head">🗄️ Real code-verified Infra (2)</h3><div class="tables"><section class="table-section" id="tbl-orchestrator_cc-openmontage_jobs">
+  <div class="thead"><span class="tdot"></span><h2>🗄️ openmontage_jobs</h2>
+    <span class="tcount">4 real function touch(es)</span></div>
+  <div class="rivers"><a class="tbl-link" href="galaxy_map_module.html#river-11"><code>🌊 River XI</code></a></div>
+  <div class="mods"><a class="tbl-link" href="galaxy_map_current.html#mod-contentProductionLive"><code>🔽 contentProductionLive</code></a></div>
+  <details class="touches"><summary>Every real touch (module.function → detail)</summary><div class="touch-row">contentProductionLive._generateVideo() — <code>insert</code></div><div class="touch-row">contentProductionLive._refreshWidget() — <code>del</code></div><div class="touch-row">contentProductionLive._simulateOpenMontageResponse() — <code>insert</code></div><div class="touch-row">contentProductionLive._viewOpenMontageJob() — <code>select</code></div></details>
+</section><section class="table-section" id="tbl-orchestrator_cc-perspective_reports">
+  <div class="thead"><span class="tdot"></span><h2>🗄️ perspective_reports</h2>
+    <span class="tcount">1 real function touch(es)</span></div>
+  <div class="rivers"><span class="tbl-none">cross-cutting, no river</span></div>
+  <div class="mods"><code class="tbl-none">errorLog</code></div>
+  <details class="touches"><summary>Every real touch (module.function → detail)</summary><div class="touch-row">errorLog._insertWithCascade() — <code>select</code></div></details>
+</section></div><h3 class="tblgroup-head noncode">⚙️ Non-code Infra — real Total-system actors only, no rpgace_core.js touch (2)</h3><div class="tables"><section class="table-section" id="tbl-orchestrator_cc-graphify_jobs">
+  <div class="thead"><span class="tdot"></span><h2>🗄️ graphify_jobs</h2>
+    <span class="tcount">0 real function touch(es)</span></div>
+  <div class="rivers"></div>
+  <div class="mods"><span class="tbl-none">no rpgace_core.js module touches this table</span></div>
+  
+</section><section class="table-section" id="tbl-orchestrator_cc-total_system_members">
+  <div class="thead"><span class="tdot"></span><h2>🗄️ total_system_members</h2>
+    <span class="tcount">0 real function touch(es)</span></div>
+  <div class="rivers"></div>
+  <div class="mods"><span class="tbl-none">no rpgace_core.js module touches this table</span></div>
+  
+</section></div></div><div class="view" id="view-map-orchestrator_cc"><div class="idd fc-scope mode-full"><div class="idd-crumb"><span class="on">🧭 Orchestrator CC</span><span class="idd-sep">→</span><span class="idd-c1">pick a river</span><span class="idd-sep">→</span><span class="idd-c2"></span></div><div class="idd-lvl"><div class="idd-lbl">Level 1 · rivers that really touch Orchestrator CC — 1 of 17 real rivers qualify</div><div class="canvas-wrap"><svg viewBox="0 0 1180 221" width="100%" style="max-width:1180px;display:block;margin:0 auto"><defs><filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter><filter id="edgeglow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.4" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter><marker id="arrow-3a4570" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3a4570"/></marker><marker id="xstart-3a4570" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6"><path d="M1,1 L9,9 M9,1 L1,9" stroke="#3a4570" stroke-width="2" fill="none"/></marker><marker id="arrow-8a8a9a" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8a8a9a"/></marker><marker id="xstart-8a8a9a" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6"><path d="M1,1 L9,9 M9,1 L1,9" stroke="#8a8a9a" stroke-width="2" fill="none"/></marker><marker id="arrow-c9a84c" viewBox="0 0 10 10" refX="8.5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#C9A84C"/></marker><marker id="xstart-c9a84c" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="6" markerHeight="6"><path d="M1,1 L9,9 M9,1 L1,9" stroke="#C9A84C" stroke-width="2" fill="none"/></marker></defs><path d="M 529.6230228085248 129.7227417055124 Q 555.9033038363649 104.76948469215971 571.2825308050884 71.95489061694413" fill="none" stroke="#3a4570" stroke-width="1.8" opacity="0.85" stroke-dasharray="5,4" filter="url(#edgeglow)" marker-start="url(#xstart-3a4570)" marker-end="url(#arrow-3a4570)"/><path d="M 650.3769771914752 129.7227417055124 Q 634.9977502227517 96.90814763029682 608.7174691949116 71.95489061694413" fill="none" stroke="#8a8a9a" stroke-width="1.8" opacity="0.85" stroke-dasharray="5,4" filter="url(#edgeglow)" marker-start="url(#xstart-8a8a9a)" marker-end="url(#arrow-8a8a9a)"/><g class="idd-river" data-river="11" data-crumb="River XI" style="cursor:pointer"><title>River XI — 1 mod · 4 fn · 1 table(s)</title><circle cx="515.0" cy="150" r="25" fill="#0f0f1a" stroke="#3a4570" stroke-width="2.5"/><text x="515.0" y="155" text-anchor="middle" font-size="15">🌊</text><text x="515.0" y="188" text-anchor="middle" font-size="9.5" fill="#3a4570" font-weight="700">River XI</text><text x="515.0" y="199" text-anchor="middle" font-size="8" fill="#8a8a9a">1 mod · 4 fn · 1 table(…</text></g><g class="idd-river" data-river="orphan" data-crumb="Cross-cutting (no river)" style="cursor:pointer"><title>Cross-cutting (no river) — 1 mod · 1 fn · 1 table(s)</title><circle cx="665.0" cy="150" r="25" fill="#0f0f1a" stroke="#8a8a9a" stroke-width="2.5"/><text x="665.0" y="155" text-anchor="middle" font-size="15">⚙️</text><text x="665.0" y="188" text-anchor="middle" font-size="9.5" fill="#8a8a9a" font-weight="700">Cross-cutting (n…</text><text x="665.0" y="199" text-anchor="middle" font-size="8" fill="#8a8a9a">1 mod · 1 fn · 1 table(…</text></g><g><circle cx="590.0" cy="46" r="32" fill="#0f0f1a" stroke="#C9A84C" stroke-width="3" filter="url(#glow)"/><text x="590.0" y="52" text-anchor="middle" font-size="19">🧭</text><text x="590.0" y="94" text-anchor="middle" font-size="10.5" fill="#C9A84C" font-weight="700">Orchestrator CC</text></g></svg></div></div><div class="idd-lvl idd-l2"><div class="idd-lbl">Level 2 · modules in that river with a real touch</div><div class="idd-hint">Pick a river above.</div><div class="idd-pane" data-river="11"><div class="canvas-wrap"><svg viewBox="0 0 1180 221" width="100%" style="max-width:1180px;display:block;margin:0 auto"><path d="M 590.0 125.0 Q 596.72 101.5 590.0 78.0" fill="none" stroke="#3a4570" stroke-width="1.8" opacity="0.85" stroke-dasharray="5,4" filter="url(#edgeglow)" marker-start="url(#xstart-3a4570)" marker-end="url(#arrow-3a4570)"/><g class="idd-mod" data-mod="contentProductionLive" data-crumb="contentProductionLive" style="cursor:pointer"><title>contentProductionLive — 4 fn · 1 table(s)</title><circle cx="590.0" cy="150" r="25" fill="#0f0f1a" stroke="#3a4570" stroke-width="2.5"/><text x="590.0" y="155" text-anchor="middle" font-size="15">🔽</text><text x="590.0" y="188" text-anchor="middle" font-size="9.5" fill="#3a4570" font-weight="700">contentProductio…</text><text x="590.0" y="199" text-anchor="middle" font-size="8" fill="#8a8a9a">4 fn · 1 table(s)</text></g><g><circle cx="590.0" cy="46" r="32" fill="#0f0f1a" stroke="#3a4570" stroke-width="3" filter="url(#glow)"/><text x="590.0" y="52" text-anchor="middle" font-size="19">🌊</text><text x="590.0" y="94" text-anchor="middle" font-size="10.5" fill="#3a4570" font-weight="700">Content Production Live</text></g></svg></div></div><div class="idd-pane" data-river="orphan"><div class="canvas-wrap"><svg viewBox="0 0 1180 221" width="100%" style="max-width:1180px;display:block;margin:0 auto"><path d="M 590.0 125.0 Q 596.72 101.5 590.0 78.0" fill="none" stroke="#8a8a9a" stroke-width="1.8" opacity="0.85" stroke-dasharray="5,4" filter="url(#edgeglow)" marker-start="url(#xstart-8a8a9a)" marker-end="url(#arrow-8a8a9a)"/><g class="idd-mod" data-mod="errorLog" data-crumb="errorLog" style="cursor:pointer"><title>errorLog — 1 fn · 1 table(s)</title><circle cx="590.0" cy="150" r="25" fill="#0f0f1a" stroke="#8a8a9a" stroke-width="2.5"/><text x="590.0" y="155" text-anchor="middle" font-size="15">🔽</text><text x="590.0" y="188" text-anchor="middle" font-size="9.5" fill="#8a8a9a" font-weight="700">errorLog</text><text x="590.0" y="199" text-anchor="middle" font-size="8" fill="#8a8a9a">1 fn · 1 table(s)</text></g><g><circle cx="590.0" cy="46" r="32" fill="#0f0f1a" stroke="#8a8a9a" stroke-width="3" filter="url(#glow)"/><text x="590.0" y="52" text-anchor="middle" font-size="19">⚙️</text><text x="590.0" y="94" text-anchor="middle" font-size="10.5" fill="#8a8a9a" font-weight="700">Cross-cutting (no river)</text></g></svg></div></div></div><div class="idd-lvl idd-l3"><div class="idd-lbl">Level 3 · the real Currents (functions) that touch — each is a migration bubble out to that module's own Current Series section</div><div class="idd-hint">Pick a module above.</div><div class="idd-pane" data-mod="contentProductionLive"><div class="canvas-wrap"><svg viewBox="0 0 1180 221" width="100%" style="max-width:1180px;display:block;margin:0 auto"><path d="M 387.6930771182012 139.51075546536478 Q 477.1424781343618 105.5683933642214 560.9528612887025 59.42623300433306" fill="none" stroke="#3a4570" stroke-width="1.8" opacity="0.85" stroke-dasharray="5,4" filter="url(#edgeglow)" marker-start="url(#xstart-3a4570)" marker-end="url(#arrow-3a4570)"/><path d="M 529.6230228085248 129.7227417055124 Q 555.9033038363649 104.76948469215971 571.2825308050884 71.95489061694413" fill="none" stroke="#3a4570" stroke-width="1.8" opacity="0.85" stroke-dasharray="5,4" filter="url(#edgeglow)" marker-start="url(#xstart-3a4570)" marker-end="url(#arrow-3a4570)"/><path d="M 650.3769771914752 129.7227417055124 Q 634.9977502227517 96.90814763029682 608.7174691949116 71.95489061694413" fill="none" stroke="#3a4570" stroke-width="1.8" opacity="0.85" stroke-dasharray="5,4" filter="url(#edgeglow)" marker-start="url(#xstart-3a4570)" marker-end="url(#arrow-3a4570)"/><path d="M 792.3069228817989 139.51075546536478 Q 708.4965397274582 93.36859510547644 619.0471387112975 59.42623300433306" fill="none" stroke="#3a4570" stroke-width="1.8" opacity="0.85" stroke-dasharray="5,4" filter="url(#edgeglow)" marker-start="url(#xstart-3a4570)" marker-end="url(#arrow-3a4570)"/><a href="galaxy_map_current.html#mod-contentProductionLive" class=""><g><title>contentProductionLive._generateVideo() — 🗄️ openmontage_jobs · insert</title><circle cx="365.0" cy="150" r="25" fill="#0f0f1a" stroke="#3a4570" stroke-width="2.5"/><text x="365.0" y="155" text-anchor="middle" font-size="15">🗄️</text><text x="365.0" y="188" text-anchor="middle" font-size="9.5" fill="#3a4570" font-weight="700">contentProductio…</text><text x="365.0" y="199" text-anchor="middle" font-size="8" fill="#8a8a9a">🗄️ openmontage_jobs · i…</text><text x="365.0" y="210" text-anchor="middle" font-size="7.5" fill="#C9A84C" font-weight="700">🔽 jump ↗</text></g></a><a href="galaxy_map_current.html#mod-contentProductionLive" class=""><g><title>contentProductionLive._refreshWidget() — 🗄️ openmontage_jobs · del</title><circle cx="515.0" cy="150" r="25" fill="#0f0f1a" stroke="#3a4570" stroke-width="2.5"/><text x="515.0" y="155" text-anchor="middle" font-size="15">🗄️</text><text x="515.0" y="188" text-anchor="middle" font-size="9.5" fill="#3a4570" font-weight="700">contentProductio…</text><text x="515.0" y="199" text-anchor="middle" font-size="8" fill="#8a8a9a">🗄️ openmontage_jobs · d…</text><text x="515.0" y="210" text-anchor="middle" font-size="7.5" fill="#C9A84C" font-weight="700">🔽 jump ↗</text></g></a><a href="galaxy_map_current.html#mod-contentProductionLive" class=""><g><title>contentProductionLive._simulateOpenMontageResponse() — 🗄️ openmontage_jobs · insert</title><circle cx="665.0" cy="150" r="25" fill="#0f0f1a" stroke="#3a4570" stroke-width="2.5"/><text x="665.0" y="155" text-anchor="middle" font-size="15">🗄️</text><text x="665.0" y="188" text-anchor="middle" font-size="9.5" fill="#3a4570" font-weight="700">contentProductio…</text><text x="665.0" y="199" text-anchor="middle" font-size="8" fill="#8a8a9a">🗄️ openmontage_jobs · i…</text><text x="665.0" y="210" text-anchor="middle" font-size="7.5" fill="#C9A84C" font-weight="700">🔽 jump ↗</text></g></a><a href="galaxy_map_current.html#mod-contentProductionLive" class=""><g><title>contentProductionLive._viewOpenMontageJob() — 🗄️ openmontage_jobs · select</title><circle cx="815.0" cy="150" r="25" fill="#0f0f1a" stroke="#3a4570" stroke-width="2.5"/><text x="815.0" y="155" text-anchor="middle" font-size="15">🗄️</text><text x="815.0" y="188" text-anchor="middle" font-size="9.5" fill="#3a4570" font-weight="700">contentProductio…</text><text x="815.0" y="199" text-anchor="middle" font-size="8" fill="#8a8a9a">🗄️ openmontage_jobs · s…</text><text x="815.0" y="210" text-anchor="middle" font-size="7.5" fill="#C9A84C" font-weight="700">🔽 jump ↗</text></g></a><g><circle cx="590.0" cy="46" r="32" fill="#0f0f1a" stroke="#3a4570" stroke-width="3" filter="url(#glow)"/><text x="590.0" y="52" text-anchor="middle" font-size="19">🔽</text><text x="590.0" y="94" text-anchor="middle" font-size="10.5" fill="#3a4570" font-weight="700">contentProductionLive</text></g></svg></div></div><div class="idd-pane" data-mod="errorLog"><div class="canvas-wrap"><svg viewBox="0 0 1180 221" width="100%" style="max-width:1180px;display:block;margin:0 auto"><path d="M 590.0 125.0 Q 596.72 101.5 590.0 78.0" fill="none" stroke="#8a8a9a" stroke-width="1.8" opacity="0.85" stroke-dasharray="5,4" filter="url(#edgeglow)" marker-start="url(#xstart-8a8a9a)" marker-end="url(#arrow-8a8a9a)"/><g class="" opacity="0.55"><title>errorLog._insertWithCascade() — 🗄️ perspective_reports · select</title><circle cx="590.0" cy="150" r="25" fill="#0f0f1a" stroke="#8a8a9a" stroke-width="2.5"/><text x="590.0" y="155" text-anchor="middle" font-size="15">🗄️</text><text x="590.0" y="188" text-anchor="middle" font-size="9.5" fill="#8a8a9a" font-weight="700">errorLog._insert…</text><text x="590.0" y="199" text-anchor="middle" font-size="8" fill="#8a8a9a">🗄️ perspective_reports …</text><text x="590.0" y="210" text-anchor="middle" font-size="7" fill="#8a8a9a">no Current Series page for this module</text></g><g><circle cx="590.0" cy="46" r="32" fill="#0f0f1a" stroke="#8a8a9a" stroke-width="3" filter="url(#glow)"/><text x="590.0" y="52" text-anchor="middle" font-size="19">🔽</text><text x="590.0" y="94" text-anchor="middle" font-size="10.5" fill="#8a8a9a" font-weight="700">errorLog</text></g></svg></div></div></div></div><script>
+(function() {
+  // G106 (Aug 26 2026) — real, pre-existing bug found while wiring the
+  // new bubble panels in: a page rendering MORE THAN ONE real infra
+  // drilldown at once (galaxy_map_connectors.html — 3 real ones,
+  // Composio/Jina AI/Last.fm, one per connector tab) emitted 3 copies
+  // of this exact script, and every copy did `document.querySelector
+  // ('.idd')`/`document.getElementById('idd-c1'/'idd-l2'/...)` — global
+  // lookups that ALWAYS resolve to the FIRST instance on the page
+  // (duplicate ids besides). Only the first connector's own click
+  // handlers ever attached to real elements; the other two connectors'
+  // river/module bubbles were silently unwired the whole time — a real
+  // bug that predates this session's own bubble-panel rewrite, just
+  // never surfaced under headless verification until a 3-instance page
+  // was actually click-tested. Fixed by scoping every lookup to
+  // `document.currentScript.previousElementSibling` — the specific
+  // `.idd` this exact script tag was written directly after — and by
+  // switching the id-based `#idd-c1`/`#idd-c2`/`#idd-l2`/`#idd-l3`
+  // selectors to real per-instance CLASS lookups scoped under that same
+  // root, so no two instances can ever collide again regardless of how
+  // many real drilldowns share one page.
+  var root = document.currentScript.previousElementSibling;
+  if (!root || !root.classList.contains('idd')) return;
+  var c1 = root.querySelector('.idd-c1'), c2 = root.querySelector('.idd-c2');
+  var l2wrap = root.querySelector('.idd-l2'), l3wrap = root.querySelector('.idd-l3');
+  function panes(sel) { return root.querySelectorAll(sel); }
+  function closeAll(sel) { panes(sel).forEach(function(p) { p.classList.remove('on'); }); }
+  root.querySelectorAll('.idd-river').forEach(function(b) {
+    b.addEventListener('click', function() {
+      root.querySelectorAll('.idd-river').forEach(function(x) { x.classList.toggle('on', x === b); });
+      root.querySelectorAll('.idd-mod').forEach(function(x) { x.classList.remove('on'); });
+      closeAll('.idd-l2 .idd-pane');
+      closeAll('.idd-l3 .idd-pane');
+      var p = root.querySelector('.idd-l2 .idd-pane[data-river="' + b.dataset.river + '"]');
+      if (p) p.classList.add('on');
+      c1.textContent = b.dataset.crumb; c1.className = 'idd-c1 on';
+      c2.textContent = ''; c2.className = 'idd-c2';
+      l2wrap.scrollIntoView({behavior:'smooth', block:'nearest'});
+    });
+  });
+  root.querySelectorAll('.idd-mod').forEach(function(b) {
+    b.addEventListener('click', function() {
+      root.querySelectorAll('.idd-mod').forEach(function(x) { x.classList.toggle('on', x === b); });
+      closeAll('.idd-l3 .idd-pane');
+      var p = root.querySelector('.idd-l3 .idd-pane[data-mod="' + b.dataset.mod + '"]');
+      if (p) p.classList.add('on');
+      c2.textContent = b.dataset.crumb; c2.className = 'idd-c2 on';
+      l3wrap.scrollIntoView({behavior:'smooth', block:'nearest'});
+    });
+  });
+})();
+</script></div></div></div>
+  <div class="l0block" id="dispatch-history">
+    <h2>🤝 Shared Dispatch History — the real relationship between the two</h2>
+    <p class="l0intro">The 8 real openmontage_jobs rows exchanged between Orchestrator CC and OpenMontage CC — narrated per-row, with real ids for direct verification. Identical, byte-for-byte, on both units' own separate pages (generated from the same JOBS list in the same script run, so it cannot drift) — a fact about the RELATIONSHIP, not either unit's own individual role/input/processing/output, which is why it isn't folded into the profile section above.</p>
+    <div class="jgrid"><div class="jcard">
+  <div class="jhead"><h3>Calibri</h3><span class="jstatus" style="color:#E25454">failed</span></div>
+  <div class="jmeta"><span class="jkind">Video job</span><span class="jby">by rpgace_claude_code</span><span class="jdate">2026-07-31</span></div>
+  <p class="jsummary">A real Scorsese-style mob-narrative music-video brief (RnB x West Coast). OpenMontage CC correctly identified the "cinematic" pipeline, then correctly refused to fake the brief with generic stock/archival footage since zero image/video-gen API keys were configured — marked failed with an honest, detailed explanation rather than faking success. Multiple real follow-up investigation threads landed on this SAME row over the following days (local GPU feasibility, Kaggle/Colab cloud-GPU testing) rather than opening new rows — a real, deliberate "one shared row, one shared ground truth" pattern.</p>
+  <div class="jid">Real row id: <code>7cb846b5...</code> — verify directly in <a class="tbl-link" href="galaxy_map_supabase.html#tbl-openmontage_jobs" title="Where this table is actually read and written"><code>openmontage_jobs</code></a></div>
+</div><div class="jcard">
+  <div class="jhead"><h3>Calibri — Free Cloud GPU (Colab/Kaggle) Proposal</h3><span class="jstatus" style="color:#4CAF82">complete</span></div>
+  <div class="jmeta"><span class="jkind">Research/proposal</span><span class="jby">by openmontage_claude_code</span><span class="jdate">2026-08-04</span></div>
+  <p class="jsummary">A real, honest multi-day cloud-GPU investigation (10 real Kaggle kernel iterations) — model VRAM tradeoffs, a real dataset-upload path, checkpoint/resume mechanics reused from OpenMontage's own existing protocol. Ended at a genuine, evidence-confirmed dead end: cogvideo-5b's real peak memory demand during generation exceeds a free-tier T4/P100's ~14.56GB usable VRAM, confirmed 3 separate structurally-different ways (device_map, whole-model offload, sequential layer offload) — a real hardware ceiling, not a fixable bug. Real, reusable value kept regardless: the RAM-staging fix and corrected VRAM/disk figures.</p>
+  <div class="jid">Real row id: <code>34bccfcb...</code> — verify directly in <a class="tbl-link" href="galaxy_map_supabase.html#tbl-openmontage_jobs" title="Where this table is actually read and written"><code>openmontage_jobs</code></a></div>
+</div><div class="jcard">
+  <div class="jhead"><h3>Calibri — Draft fix: hunyuan-1.5/ltx2-local variant-loading bugs</h3><span class="jstatus" style="color:#4CAF82">complete</span></div>
+  <div class="jmeta"><span class="jkind">Code fix (drafted, unmerged)</span><span class="jby">by openmontage_claude_code</span><span class="jdate">2026-08-04</span></div>
+  <p class="jsummary">Real code fixes for 2 genuinely broken local-video tools (missing HF repo variant/subfolder selection) — verified against OpenMontage's own real test suite (620 passed, 7 skipped). Deliberately kept on a local, unpushed branch (fix/hunyuan-ltx2-variant-loading) — no PR opened against the third-party public repo without explicit confirmation of intent, a real, correct restraint.</p>
+  <div class="jid">Real row id: <code>4d804898...</code> — verify directly in <a class="tbl-link" href="galaxy_map_supabase.html#tbl-openmontage_jobs" title="Where this table is actually read and written"><code>openmontage_jobs</code></a></div>
+</div><div class="jcard">
+  <div class="jhead"><h3>SYSTEM: "Total" — 3-way role definition</h3><span class="jstatus" style="color:#4CAF82">complete</span></div>
+  <div class="jmeta"><span class="jkind">Standalone system-state row</span><span class="jby">by openmontage_claude_code</span><span class="jdate">2026-08-04</span></div>
+  <p class="jsummary">The real, foundational row establishing "Total" — roles for RPGACE app / Orchestrator CC (then still named "RPGACE CC") / OpenMontage CC (then still named "Engineer CC"), and confirming directly via list_sessions that no live session-to-session link exists — the same constraint this whole G29 page is built around.</p>
+  <div class="jid">Real row id: <code>5feb76ed...</code> — verify directly in <a class="tbl-link" href="galaxy_map_supabase.html#tbl-openmontage_jobs" title="Where this table is actually read and written"><code>openmontage_jobs</code></a></div>
+</div><div class="jcard">
+  <div class="jhead"><h3>Asylum</h3><span class="jstatus" style="color:#4CAF82">complete</span></div>
+  <div class="jmeta"><span class="jkind">Video job (simulated)</span><span class="jby">by rpgace_claude_code</span><span class="jdate">2026-08-05</span></div>
+  <p class="jsummary">A real Phase F "Simulate Response" test-tool row — explicitly [SIMULATED], zero real cost, zero real render, built to validate the pipeline plumbing end-to-end without spending real API credits.</p>
+  <div class="jid">Real row id: <code>7c191255...</code> — verify directly in <a class="tbl-link" href="galaxy_map_supabase.html#tbl-openmontage_jobs" title="Where this table is actually read and written"><code>openmontage_jobs</code></a></div>
+</div><div class="jcard">
+  <div class="jhead"><h3>Asylum (2nd row, different content_production_id)</h3><span class="jstatus" style="color:#4CAF82">complete</span></div>
+  <div class="jmeta"><span class="jkind">Video job (simulated)</span><span class="jby">by rpgace_claude_code</span><span class="jdate">2026-08-06</span></div>
+  <p class="jsummary">A real second row for the same beat title, one day later, a different content_production_id and a different flPath/visualTreatment flag than the first — a real observation worth naming honestly (possibly a genuine re-run against a corrected ConID, not confirmed either way), not silently treated as identical to the first row.</p>
+  <div class="jid">Real row id: <code>a92d9e05...</code> — verify directly in <a class="tbl-link" href="galaxy_map_supabase.html#tbl-openmontage_jobs" title="Where this table is actually read and written"><code>openmontage_jobs</code></a></div>
+</div><div class="jcard">
+  <div class="jhead"><h3>SYSTEM: "Total" — graphify proposal</h3><span class="jstatus" style="color:#4CAF82">complete</span></div>
+  <div class="jmeta"><span class="jkind">Standalone system-state row</span><span class="jby">by rpgace_claude_code</span><span class="jdate">2026-08-06</span></div>
+  <p class="jsummary">The real historical precedent for this whole G29 page — Orchestrator CC logged a decomposed graphify cross-repo-graph alternative for OpenMontage CC to weigh, after a real /paranoia pass found "graphify as a live 4th Total member" wasn't buildable as originally framed.</p>
+  <div class="jid">Real row id: <code>98aa2096...</code> — verify directly in <a class="tbl-link" href="galaxy_map_supabase.html#tbl-openmontage_jobs" title="Where this table is actually read and written"><code>openmontage_jobs</code></a></div>
+</div><div class="jcard">
+  <div class="jhead"><h3>Insane trap vocal</h3><span class="jstatus" style="color:#4CAF82">complete</span></div>
+  <div class="jmeta"><span class="jkind">Video job (simulated)</span><span class="jby">by rpgace_claude_code</span><span class="jdate">2026-08-06</span></div>
+  <p class="jsummary">A real Phase F "Simulate Response" test-tool row — explicitly [SIMULATED], same zero-cost validation pattern as the Asylum rows.</p>
+  <div class="jid">Real row id: <code>29d1c11d...</code> — verify directly in <a class="tbl-link" href="galaxy_map_supabase.html#tbl-openmontage_jobs" title="Where this table is actually read and written"><code>openmontage_jobs</code></a></div>
+</div></div>
+  </div>
+</div>
+
+
+<script>
+(function() {
+  // Real Sep 15 2026 fix — this page now has 2 real toggle-rows (one per
+  // actor's own Shared Infrastructure block), each with its own scoped
+  // table/map views (data-scope="<unit_id>" on the row, view ids suffixed
+  // -<unit_id>). The old global querySelectorAll toggled EVERY toggle-row
+  // on the page from one click — a real bug this restructure introduces
+  // the moment a 2nd toggle-row exists, fixed here by scoping strictly to
+  // the clicked row's own data-scope, same mechanic Supabase/Oracle use
+  // elsewhere (rule 8), just made scope-aware.
+  document.querySelectorAll('.toggle-row').forEach(function(row) {
+    var scope = row.dataset.scope;
+    var toggles = row.querySelectorAll('.toggle-btn');
+    toggles.forEach(function(t) {
+      t.addEventListener('click', function() {
+        toggles.forEach(function(x) { x.classList.toggle('active', x === t); });
+        document.querySelectorAll('.view[id$="-' + scope + '"]').forEach(function(v) {
+          v.classList.toggle('active', v.id === 'view-' + t.dataset.view + '-' + scope);
+        });
+      });
+    });
+  });
+})();
+</script>
+
+<details class="doc-methodology"><summary>🛠 How this page is generated (methodology)</summary><div class="note">
+  Generated by <code>scripts/galaxy_map_orchestrator_openmontage.py</code> — real data from <code>total_system_members</code>
+  and <code>openmontage_jobs</code> (Supabase), summarized honestly, every row citing its own real id for direct verification.
+  G29 of the ratified "RPGACE Total Systems Galaxy Map" /CEO plan. This unit's own separate page — see the link above for
+  its real counterpart.
+</div></details>
+<script>
+(function() {
+  // Event delegation on document, not a per-instance script tag —
+  // many real .fc-scope regions can share one page (every band-canvas
+  // on Current, every connector tab on Connectors), and this handles
+  // all of them with zero per-instance wiring.
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.fc-btn');
+    if (btn) {
+      var scope = btn.closest('.fc-scope');
+      if (!scope) return;
+      scope.classList.remove('mode-full', 'mode-choice');
+      scope.classList.add('mode-' + btn.dataset.mode);
+      scope.querySelectorAll('.fc-btn').forEach(function(b) { b.classList.toggle('active', b === btn); });
+      return;
+    }
+    var pick = e.target.closest('.fc-pick-btn');
+    if (pick) {
+      var scope2 = pick.closest('.fc-scope');
+      if (!scope2) return;
+      var key = pick.dataset.key;
+      scope2.querySelectorAll('.fc-pick-btn').forEach(function(x) { x.classList.toggle('on', x === pick); });
+      scope2.querySelectorAll('.ev-group').forEach(function(g) { g.classList.toggle('picked', g.dataset.unit === key); });
+    }
+  });
+})();
+</script><script>
+(function() {
+  var toggle = document.querySelector('.gside-toggle');
+  var nav = document.querySelector('.gside-nav');
+  var backdrop = document.querySelector('.gside-backdrop');
+  if (!toggle || !nav) return;
+  function setOpen(open) {
+    nav.classList.toggle('open', open);
+    if (backdrop) backdrop.classList.toggle('open', open);
+  }
+  toggle.addEventListener('click', function() { setOpen(!nav.classList.contains('open')); });
+  if (backdrop) backdrop.addEventListener('click', function() { setOpen(false); });
+})();
+</script></body>
+</html>

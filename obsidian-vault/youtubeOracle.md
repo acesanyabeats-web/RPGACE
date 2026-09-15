@@ -3,13 +3,13 @@ module_name: "youtubeOracle"
 kind: module
 river_number: 3
 river_name: "River III — The Oracle Current"
-source_lines: "5518-5777"
+source_lines: "5552-5811"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # youtubeOracle
 
-`rpgace_core.js:5518-5777`
+`rpgace_core.js:5552-5811`
 
 Member of [[03 — River III — The Oracle Current.md|River III — The Oracle Current]].
 
@@ -19,7 +19,7 @@ Member of [[03 — River III — The Oracle Current.md|River III — The Oracle 
 
 ## Calls into
 
-- → [[oracleAppGrounding.md|oracleAppGrounding]]
+- → [[oracleControl.md|oracleControl]]
 
 ## Hook signals received
 

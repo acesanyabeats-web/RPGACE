@@ -20,6 +20,21 @@ documented repeatedly in CLAUDE.md: there is no live session-to-session
 link between Orchestrator CC and OpenMontage CC — openmontage_jobs is
 an async Supabase queue, never a synchronous call. This page shows WHAT
 was exchanged, not a live connection.
+
+Sep 15 2026, real correction, 2nd pass — Alex's own direct words on the
+first Sep 15 restructure below (2 anchored sections on ONE shared page):
+"its still not 2 separate pages, just on one with more devision." The
+first pass genuinely fixed the WRONG symptom — each bubble now landed on
+its own correctly-scoped content, but both bubbles still opened the SAME
+physical file. Fixed for real this time: this script now writes TWO
+genuinely separate HTML files (galaxy_map_orchestrator_cc.html /
+galaxy_map_openmontage_cc.html), sharing one Python source (rule 8 — the
+JOBS/ACTOR_PROFILES/render logic stays single-sourced) but producing two
+real, independently-addressable pages on disk. Each page shows ONLY its
+own unit's full profile + Shared Infrastructure drilldown, plus the same
+real shared dispatch history (byte-identical on both — generated from
+the same JOBS list in the same run, so it cannot drift between the two
+copies) and a direct link to the other unit's own separate page.
 """
 from pathlib import Path
 import sys as _sys_rail
@@ -44,7 +59,10 @@ from graphify_river_group import (  # noqa: E402
     INFRA_DRILLDOWN_CSS, LEVEL3_MODULES, RIVER_MODULES, RIVER_NAME,
 )
 
-OUT = Path('graphify-out/galaxy_map_orchestrator_openmontage.html')
+OUT_PATH = {
+    'orchestrator_cc': Path('graphify-out/galaxy_map_orchestrator_cc.html'),
+    'openmontage_cc': Path('graphify-out/galaxy_map_openmontage_cc.html'),
+}
 
 # Real, curated summary of the 8 real openmontage_jobs rows (Aug 14
 # read). Each row's own real id is cited for direct Supabase
@@ -367,7 +385,7 @@ TEMPLATE = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RPGACE — Galaxy Map (Orchestrator CC ↔ OpenMontage CC)</title>
+<title>RPGACE — Galaxy Map ({page_label})</title>
 <style>
   :root {{ --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; --purple:#9B59B6; }}
   *{{box-sizing:border-box;margin:0;padding:0}}
@@ -416,8 +434,9 @@ TEMPLATE = """<!DOCTYPE html>
   .touches summary{{cursor:pointer;color:var(--dim)}}
   .touch-row{{padding:3px 0 3px 10px;color:#a8a8b8;font-size:10.5px}}
   .note{{max-width:1000px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
-  .actor-section{{max-width:1000px;margin:0 auto 34px;padding-top:6px;border-top:1px solid rgba(155,89,182,0.2)}}
-  .actor-section:first-of-type{{border-top:none;padding-top:0}}
+  .actor-section{{max-width:1000px;margin:0 auto 34px}}
+  .other-link{{max-width:1000px;margin:0 auto 20px;text-align:center}}
+  .other-link a{{display:inline-block;padding:8px 18px;border-radius:16px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.3);font-size:11.5px;font-weight:700;text-decoration:none}}
   .ahead{{display:flex;align-items:center;gap:14px;margin-bottom:16px}}
   .aicon{{font-size:34px;line-height:1}}
   .ahead h2{{font-family:Georgia,serif;font-size:20px;color:#fff}}
@@ -435,18 +454,18 @@ TEMPLATE = """<!DOCTYPE html>
 </head>
 <body>
 <div class="hero">
-  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Orchestrator ↔ OpenMontage (G29, real Sep 15 2026 restructure)</div>
-  <h1>🤝 Orchestrator CC ↔ OpenMontage CC</h1>
-  <p>Two real, separate full profiles below — each unit's own L0 bubble now jumps straight to its OWN section, never a mixed view. A real, shared dispatch history — {n_jobs} openmontage_jobs rows, summarized honestly — sits on its own further down, since it describes the RELATIONSHIP, not either unit individually.</p>
+  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · {eyebrow_suffix} (G29, real Sep 15 2026 restructure)</div>
+  <h1>{page_h1}</h1>
+  <p>{page_intro}</p>
   <p>Full real pipeline logic (queue → poll → real work → update → session-start check → report, as a Mermaid diagram): <a href="../system_flow_map.md">system_flow_map.md §14</a>, added Aug 20/21 2026 (G56).</p>
 </div>
 <div class="constraint">⚠️ <b>No live session-to-session link exists.</b> openmontage_jobs is an async Supabase queue, confirmed directly via list_sessions (5feb76ed's own real finding) — every row below is a real, asynchronous message, never a synchronous call.</div>
+<div class="other-link">→ <a href="{other_href}">View {other_label}'s own separate page</a></div>
 <div class="msection">
-  {actor_orchestrator}
-  {actor_openmontage}
+  {actor_section}
   <div class="l0block" id="dispatch-history">
     <h2>🤝 Shared Dispatch History — the real relationship between the two</h2>
-    <p class="l0intro">The {n_jobs} real openmontage_jobs rows exchanged between the two units above — narrated per-row, with real ids for direct verification. This is deliberately NOT duplicated into either actor's own profile section: it is a fact about the RELATIONSHIP, not either unit's own individual role/input/processing/output.</p>
+    <p class="l0intro">The {n_jobs} real openmontage_jobs rows exchanged between {page_label} and {other_label} — narrated per-row, with real ids for direct verification. Identical, byte-for-byte, on both units' own separate pages (generated from the same JOBS list in the same script run, so it cannot drift) — a fact about the RELATIONSHIP, not either unit's own individual role/input/processing/output, which is why it isn't folded into the profile section above.</p>
     <div class="jgrid">{jobs}</div>
   </div>
 </div>
@@ -480,24 +499,54 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="note">
   Generated by <code>scripts/galaxy_map_orchestrator_openmontage.py</code> — real data from <code>total_system_members</code>
   and <code>openmontage_jobs</code> (Supabase), summarized honestly, every row citing its own real id for direct verification.
-  G29 of the ratified "RPGACE Total Systems Galaxy Map" /CEO plan.
+  G29 of the ratified "RPGACE Total Systems Galaxy Map" /CEO plan. This unit's own separate page — see the link above for
+  its real counterpart.
 </div>
 </body>
 </html>
 """
 
+_PAGE_COPY = {
+    'orchestrator_cc': {
+        'eyebrow_suffix': 'Orchestrator CC',
+        'h1': '🧭 Orchestrator CC',
+        'intro': ("This unit's own real full profile — role, input received, how it processes the input, "
+                   "where output goes further, river/module/function contribution, external/inter "
+                   "stakeholders — plus its own Shared Infrastructure drilldown. Its real dispatch history "
+                   "with OpenMontage CC (the only other unit it exchanges real data with) sits further down, "
+                   "on its own — see the link above for OpenMontage CC's own separate page."),
+    },
+    'openmontage_cc': {
+        'eyebrow_suffix': 'OpenMontage CC',
+        'h1': '🎬 OpenMontage CC',
+        'intro': ("This unit's own real full profile — role, input received, how it processes the input, "
+                   "where output goes further, river/module/function contribution, external/inter "
+                   "stakeholders — plus its own Shared Infrastructure drilldown. Its real dispatch history "
+                   "with Orchestrator CC (the only other unit it exchanges real data with) sits further down, "
+                   "on its own — see the link above for Orchestrator CC's own separate page."),
+    },
+}
+
 
 def main():
     jobs_html = ''.join(build_job_card(j) for j in JOBS)
-    html = TEMPLATE.format(jobs=jobs_html, n_jobs=len(JOBS),
-                           actor_orchestrator=build_actor_section('orchestrator_cc'),
-                           actor_openmontage=build_actor_section('openmontage_cc'),
-                           dim_index=dimension_index_html(OUT.name),
-                           dim_css=DIMENSION_INDEX_CSS, infra_dd_css=INFRA_DRILLDOWN_CSS)
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    html = inject_level_rail(html, OUT.name)
-    OUT.write_text(html, encoding='utf-8')
-    print(f"Wrote {OUT} — 2 real actor profiles, {len(JOBS)} real dispatch rows.")
+    pairs = (('orchestrator_cc', 'openmontage_cc'), ('openmontage_cc', 'orchestrator_cc'))
+    for unit_id, other_id in pairs:
+        out = OUT_PATH[unit_id]
+        copy = _PAGE_COPY[unit_id]
+        other_label = L0_UNIT_LABEL.get(other_id, other_id)
+        page_label = L0_UNIT_LABEL.get(unit_id, unit_id)
+        html = TEMPLATE.format(
+            page_label=page_label, eyebrow_suffix=copy['eyebrow_suffix'], page_h1=copy['h1'],
+            page_intro=copy['intro'], other_href=OUT_PATH[other_id].name, other_label=other_label,
+            actor_section=build_actor_section(unit_id),
+            jobs=jobs_html, n_jobs=len(JOBS),
+            dim_index=dimension_index_html(out.name),
+            dim_css=DIMENSION_INDEX_CSS, infra_dd_css=INFRA_DRILLDOWN_CSS)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        html = inject_level_rail(html, out.name)
+        out.write_text(html, encoding='utf-8')
+        print(f"Wrote {out} — {page_label}'s own real profile, {len(JOBS)} real dispatch rows (shared history).")
     # Aug 25 2026 — real, measured destination coverage, printed so a
     # future build can never silently regress it.
     named = sorted({'openmontage_jobs'}

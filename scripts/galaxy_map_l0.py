@@ -54,7 +54,7 @@ UNITS = [
      'sublevel': 'skills'},
     {'id': 'orchestrator_cc', 'label': 'Orchestrator CC', 'icon': '🧭', 'color': '#4A90E2',
      'role': 'This session — developer station. Planner/orchestrator, evidence-gathering, dispatch-writing, RPGACE-side schema/UI/doc work.',
-     'sublevel': 'orchestrator_openmontage'},
+     'sublevel': 'orchestrator_cc'},
     {'id': 'alex', 'label': 'Alex', 'icon': '🧑', 'color': '#E25454',
      'role': 'Acting body on all Tier-3 confirmations, real decisions, and direct app use. Same recurring actor as the Alex-bubble at Levels 1-3 and the Human Gate node at Level 0.',
      'sublevel': 'decisions'},

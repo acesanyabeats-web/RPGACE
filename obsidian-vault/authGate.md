@@ -3,13 +3,13 @@ module_name: "authGate"
 kind: module
 river_number: 1
 river_name: "River I — Gatekeeper's Checkpoint"
-source_lines: "31913-32055"
+source_lines: "31969-32111"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # authGate
 
-`rpgace_core.js:31913-32055`
+`rpgace_core.js:31969-32111`
 
 Member of [[01 — River I — Gatekeeper's Checkpoint.md|River I — Gatekeeper's Checkpoint]].
 

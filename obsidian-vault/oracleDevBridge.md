@@ -3,13 +3,13 @@ module_name: "oracleDevBridge"
 kind: module
 river_number: 3
 river_name: "River III — The Oracle Current"
-source_lines: "9985-10193"
+source_lines: "10019-10227"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # oracleDevBridge
 
-`rpgace_core.js:9985-10193`
+`rpgace_core.js:10019-10227`
 
 Member of [[03 — River III — The Oracle Current.md|River III — The Oracle Current]].
 

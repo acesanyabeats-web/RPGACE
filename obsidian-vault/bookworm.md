@@ -3,13 +3,13 @@ module_name: "bookworm"
 kind: module
 river_number: 4
 river_name: "River IV — The Bookworm River"
-source_lines: "19835-22126"
+source_lines: "19883-22174"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # bookworm
 
-`rpgace_core.js:19835-22126`
+`rpgace_core.js:19883-22174`
 
 Member of [[04 — River IV — The Bookworm River.md|River IV — The Bookworm River]].
 

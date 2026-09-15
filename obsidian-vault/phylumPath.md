@@ -3,13 +3,13 @@ module_name: "phylumPath"
 kind: module
 river_number: 6
 river_name: "River VI — The Judgment Chamber"
-source_lines: "17637-19833"
+source_lines: "17685-19881"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # phylumPath
 
-`rpgace_core.js:17637-19833`
+`rpgace_core.js:17685-19881`
 
 Member of [[06 — River VI — The Judgment Chamber.md|River VI — The Judgment Chamber]].
 

@@ -12,19 +12,21 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[oracleAppGrounding]] — `rpgace_core.js:9492-9983`
-- [[oracleTreeGrounding]] — `rpgace_core.js:9207-9490`
-- [[oracleFetchGuard]] — `rpgace_core.js:10195-10257`
-- [[oracleDevBridge]] — `rpgace_core.js:9985-10193`
-- [[mockOracle]] — `rpgace_core.js:34218-34941`
-- [[oracleProviderMode]] — `rpgace_core.js:34943-35137`
-- [[agentsIntoOracle]] — `rpgace_core.js:31291-31351`
-- [[prodOraclePanel]] — `rpgace_core.js:6006-6273`
-- [[instaOraclePanel]] — `rpgace_core.js:6275-6484`
-- [[youtubeOracle]] — `rpgace_core.js:5518-5777`
-- [[tiktokOracle]] — `rpgace_core.js:5779-6004`
-- [[scheduleOracle]] — `rpgace_core.js:12477-12953`
-- [[feynman]] — `rpgace_core.js:7931-8812`
+- [[oracleAppGrounding]] — `rpgace_core.js:9526-10017`
+- [[oracleTreeGrounding]] — `rpgace_core.js:9241-9524`
+- [[oracleFetchGuard]] — `rpgace_core.js:10229-10291`
+- [[oracleDevBridge]] — `rpgace_core.js:10019-10227`
+- [[mockOracle]] — `rpgace_core.js:34333-35056`
+- [[oracleProviderMode]] — `rpgace_core.js:35058-35252`
+- [[agentsIntoOracle]] — `rpgace_core.js:31347-31407`
+- [[prodOraclePanel]] — `rpgace_core.js:6040-6307`
+- [[instaOraclePanel]] — `rpgace_core.js:6309-6518`
+- [[youtubeOracle]] — `rpgace_core.js:5552-5811`
+- [[tiktokOracle]] — `rpgace_core.js:5813-6038`
+- [[scheduleOracle]] — `rpgace_core.js:12511-12987`
+- [[feynman]] — `rpgace_core.js:7965-8846`
+- [[cookingOracle]] — `rpgace_core.js:36064-38660`
+- [[oracleControl]] — `rpgace_core.js:33606-34331`
 
 ## Flows into
 

@@ -3,13 +3,13 @@ module_name: "intelBatchList"
 kind: module
 river_number: 12
 river_name: "River XII — The Research & Intel Stream"
-source_lines: "11211-11246"
+source_lines: "11245-11280"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # intelBatchList
 
-`rpgace_core.js:11211-11246`
+`rpgace_core.js:11245-11280`
 
 Member of [[12 — River XII — The Research & Intel Stream.md|River XII — The Research & Intel Stream]].
 

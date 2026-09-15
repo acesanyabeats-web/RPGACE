@@ -12,11 +12,11 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[researchTabs]] — `rpgace_core.js:10259-10515`
-- [[intelBatchList]] — `rpgace_core.js:11211-11246`
-- [[intelDelete]] — `rpgace_core.js:12955-14004`
-- [[intelDedup]] — `rpgace_core.js:15348-15546`
-- [[ciAutoPropose]] — `rpgace_core.js:8933-9205`
+- [[researchTabs]] — `rpgace_core.js:10293-10549`
+- [[intelBatchList]] — `rpgace_core.js:11245-11280`
+- [[intelDelete]] — `rpgace_core.js:12989-14038`
+- [[intelDedup]] — `rpgace_core.js:15396-15594`
+- [[ciAutoPropose]] — `rpgace_core.js:8967-9239`
 
 ## Core infrastructure
 

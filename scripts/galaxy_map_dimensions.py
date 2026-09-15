@@ -114,7 +114,14 @@ DIMENSION_PAGE = {
     'externals': 'galaxy_map_externals.html',
     'load': 'galaxy_map_load.html',
     'decision': 'galaxy_map_decisions.html',
-    'openmontage': 'galaxy_map_orchestrator_openmontage.html',
+    # Sep 15 2026, real 2nd correction — this dimension is now 2 real
+    # separate pages (galaxy_map_orchestrator_cc.html/galaxy_map_
+    # openmontage_cc.html), not one shared file. Points at Orchestrator
+    # CC's own page since the real module-membership criterion below
+    # (River 11 modules building the openmontage_jobs payload) is
+    # Orchestrator CC's own action; that page links onward to OpenMontage
+    # CC's own separate page.
+    'openmontage': 'galaxy_map_orchestrator_cc.html',
     'supabase': 'galaxy_map_supabase.html',
     # 'ui' — no registered Dimension page of its own, see note above.
 }

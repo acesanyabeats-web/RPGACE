@@ -245,7 +245,7 @@ EXTERNAL_HANDOFF_TARGETS = {
     ('contentProductionLive', '_buildVideoPipelinePayload'): {
         'repo': 'calesthio/OpenMontage',
         'url': 'https://github.com/calesthio/OpenMontage',
-        'via': 'openmontage_jobs (RPGACE.sb.insert, real async dispatch — see galaxy_map_orchestrator_openmontage.html)',
+        'via': 'openmontage_jobs (RPGACE.sb.insert, real async dispatch — see galaxy_map_orchestrator_cc.html / galaxy_map_openmontage_cc.html)',
     },
 }
 
