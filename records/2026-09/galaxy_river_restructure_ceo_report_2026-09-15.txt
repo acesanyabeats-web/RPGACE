@@ -1,0 +1,100 @@
+GALAXY MAP RIVER RESTRUCTURE — /CEO LOOP 1, STEP 5 (REPORT)
+Sep 15 2026
+
+Compiled spec: records/2026-09/galaxy_river_restructure_ceo_compile_2026-09-15.txt
+/interrogation answers: same session, 3 questions, all answered.
+
+=== THREAD 1: Dimensions-Inter-as-river — DROPPED, resolved ===
+
+Real evidence surfaced a genuine architectural conflict: the Galaxy
+Map's own live design doc states a Dimension is deliberately
+multi-membership, "which is exactly why a Dimension is never a
+numbered River (a River is a strict one-module-one-home partition)."
+Making the 5 real Inter dimensions (Skills, Alex's Decision Path,
+Orchestrator↔OpenMontage, Oversight Sync, Local Analysis Pipeline)
+literal rivers would break that invariant everywhere it's relied on
+(LEVEL3_MODULES, per-module river coloring, the Current(L3) grouping).
+A lower-risk symbolic/presentational alternative was offered (matching
+the real precedent rivers XIII-XVII already set — river numbers used
+as role labels, not strict partitions).
+
+Alex's answer: "I think we should forget this idea." Real, deliberate
+decision, not a default — logged here so a future session doesn't
+re-propose it without a new, explicit reason (same discipline CLAUDE.md
+already applies to the "56 real components, leave it" decision from
+Aug 6).
+
+STATUS: closed, not built, not pursued further.
+
+=== THREAD 2: Archive unused rivers — real evidence, concrete proposal pending approval ===
+
+Real finding: Rivers XIII-XVII already carry real, reasoned
+`RIVER_RETIRED` metadata (a stated reason + `superseded_by` list each,
+graphify_river_group.py) and render with a visible "retired" marker in
+the live Galaxy Map (confirmed via direct grep of graphify-out/
+galaxy_map_river.html). None of the 12 live rivers (I-XII) are
+genuinely empty — 5 have exactly 1 module each (authGate, pathRouter,
+bookworm, phylumPath, knowledgeGap), but each is a real, singular,
+load-bearing system, not an abandoned grouping. No live river
+qualifies as "unused" the way rivers 13-17 do.
+
+Alex confirmed wanting more than the current "retired but still shown"
+treatment. Concrete proposal, not yet built, needs a real go/no-go
+before execution:
+
+  Separate the 5 retired rivers from the primary river sequence, both
+  in the sidebar navigation (gside-nav) and the main river-ring
+  visualization (galaxy_map_river.html) — into a distinctly separate
+  "Archived" section/cluster, rather than interspersed as numbered
+  peers among the 12 live rivers. Their real retirement metadata
+  (reason + superseded_by links) stays fully intact and visible —
+  nothing deleted, matching this project's own standing archive-never-
+  delete convention. This directly answers Alex's own stated bar ("I
+  only want real present information") — live rivers and archived-role-
+  labels currently sit in one undifferentiated numbered sequence (1-17),
+  which is the actual source of the "clutter" a pure "retired" text tag
+  doesn't fully solve.
+
+  Real scope: touches `scripts/galaxy_map_hub.py` (sidebar nav),
+  `scripts/galaxy_map_river.py` (main ring), and possibly
+  `scripts/galaxy_map.py` (L0 entry, if it also enumerates all 17
+  inline). Bounded — no RIVER_MODULES/MODULE_RIVER data change, purely
+  a navigation/rendering separation. Real Tier 2 work, executable via
+  `/Engineer` in one session once approved.
+
+STATUS: real proposal drafted, needs Alex's go/no-go on the mechanism
+before Loop 2 execution.
+
+=== THREAD 3: questEngine — resolved with real evidence, doc fix only ===
+
+Real evidence gathered (direct grep, same method as the earlier
+3-module river assignment): `questEngine` calls
+`RPGACE.modules.authGate` (River I), writes to `content_productions`
+(River XI), `taxonomy_links`/`taxonomy_proposals` (River VIII), plus
+its own dedicated `quest_log`/`quest_duration_stats` tables. Zero
+external modules call INTO `questEngine` (confirmed — every
+`RPGACE.modules.questEngine.` occurrence in the file sits inside
+`questEngine`'s own block). No single relationship dominates; the 3
+real touch-points span 3 unrelated rivers with no shared goal beyond
+"quest generation reads broadly across the app."
+
+CONCLUSION: the cross-cutting classification is correct — but for a
+real, evidenced reason, not the unsupported claim that previously
+existed. `questEngine` should be added to the canonical documented-
+exclusions comment in `scripts/graphify_river_group.py` (alongside
+`config`/`dashDeck`/`leftNav`/etc.) with this real evidence cited,
+closing the documentation inconsistency the original wiring sweep
+found — without forcing a river assignment the evidence doesn't
+support.
+
+STATUS: ready to build now — a small, bounded doc-comment fix, same
+class of work as the earlier RIVER_MODULES edits this session. Will
+execute alongside Thread 2 once Alex confirms the archival mechanism,
+or immediately if he'd rather it land separately (it doesn't depend on
+Thread 2's outcome).
+
+=== WHAT NEEDS ALEX'S ANSWER BEFORE ANY MORE BUILDING ===
+
+Thread 2's concrete mechanism (separate the 5 retired rivers into a
+distinct Archived section in nav + ring) — go, no-go, or a different
+mechanism. Thread 3 can proceed regardless of his answer on Thread 2.

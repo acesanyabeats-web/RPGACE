@@ -1,0 +1,162 @@
+GALAXY MAP RIVER RESTRUCTURE — /CEO LOOP 1, STEP 1 (COMPILE)
+Sep 15 2026
+
+=== SCOPE (deferred from the earlier same-session /interrogation) ===
+
+Alex's ask (verbatim): "assign rivers for the 3 modules and regenerate
+the pipeline, /interrogation and /paranoia and /drift and /CEO till we
+get a red on entire river structure, also archive unused rivers, I
+only want real present information, we will make dimensions inter a
+type of river too"
+
+Real answers already locked this session:
+1. Sequencing — the 3-module fix ran as bounded work (done, see the
+   two prior commits this session). This restructure runs separately,
+   through the full CEO planning loop.
+2. Dimensions scope (Infra vs Inter) — Alex's answer: "We will think
+   through after." Genuinely open, not decided — this compile pass
+   gathers the real evidence needed to think it through together.
+3. Archive scope — Alex's answer: "Re-verify all 17 and archive any
+   genuinely thin/empty ones."
+
+=== REAL EVIDENCE — ALL 17 RIVERS, CURRENT STATE ===
+
+Live (12), real module counts (queried directly from RIVER_MODULES,
+post this session's 3-module fix):
+
+  River I    — Gatekeeper's Checkpoint          1 module  (authGate)
+  River II   — The Great Confluence              1 module  (pathRouter)
+  River III  — The Oracle Current               15 modules
+  River IV   — The Bookworm River                1 module  (bookworm)
+  River V    — Daily Ops                         5 modules
+  River VI   — The Judgment Chamber              1 module  (phylumPath)
+  River VII  — The Library Current               5 modules
+  River VIII — The Confluence Pool               3 modules
+  River IX   — The Mirror and the Far Shore      1 module  (knowledgeGap)
+  River X    — The Confluence of Chronicles      3 modules
+  River XI   — Content Production Live           7 modules
+  River XII  — The Research & Intel Stream       5 modules
+
+Already retired (5), real `RIVER_RETIRED` metadata, zero modules by
+design (never real code-partition rivers — role descriptions of
+Total-systems infrastructure, superseded by per-actor L0 Infra/Inter
+breakdowns):
+
+  River XIII — API/Auth Layer      -> superseded by Supabase/Oracle/
+                                       Composio/Jina/Last.fm/librosa/
+                                       n8n/Whisper connector pages
+  River XIV  — Skills               -> superseded by Skills' own
+                                       per-skill Infra/Inter page
+  River XV   — Oversight Docs       -> superseded by Oversight Docs'
+                                       own Infra/Inter page
+  River XVI  — Session Records      -> partial: Orchestrator CC's own
+                                       dispatch-history page (honest
+                                       gap named in the retirement
+                                       metadata itself — no L0 unit is
+                                       a clean successor for "every
+                                       dated file at repo root")
+  River XVII — Dev Tooling          -> partial: Orchestrator CC (runs
+                                       the tooling) — same honest-gap
+                                       shape as XVI
+
+REAL FINDING: rivers 13-17 already carry a real, reasoned
+`RIVER_RETIRED` dict (a `reason` string + `superseded_by` list per
+river) and the rendered `galaxy_map_river.html` visually marks them
+"retired" (confirmed by direct grep of the live HTML). Alex's
+"archive unused rivers" ask may already be substantially DONE for
+these 5 — not a fresh finding, a confirmation that this half of the
+ask has real, existing, reasoned coverage.
+
+REAL FINDING: none of the 12 LIVE rivers are "unused" in the sense
+rivers 13-17 were. Five of them (I, II, IV, VI, IX) have exactly 1
+module — but each is a genuinely singular, load-bearing real system
+(the auth gate, path routing, Bookworm, the taxonomy placement engine,
+knowledge-gap detection), not an abandoned or empty grouping. A
+1-module river and a 0-module retired river are not the same class of
+"thin" — conflating them would misclassify 5 real, active systems as
+candidates for archival they don't deserve. No live river currently
+meets the "genuinely thin/empty" bar rivers 13-17 already met.
+
+=== REAL EVIDENCE — DIMENSIONS, INFRA VS. INTER ===
+
+13 total Dimension pages, 3 real kinds (`DIMENSION_KIND_META`,
+graphify_river_group.py):
+
+  meta (3) — synthesis across several dimensions, never a river
+    candidate by definition: Decision Matrix, Dimensions Matrix, Loops
+
+  infra (5) — "a resource attached to things": Decisions/Human-Gates,
+    Branch Ledger, Supabase, Externals, Load
+
+  inter (5) — "a connection/flow between things": Skills, Alex's
+    Decision Path, Orchestrator↔OpenMontage, Oversight Sync, Local
+    Analysis Pipeline
+
+REAL FINDING, load-bearing, not previously surfaced in this session's
+earlier /interrogation: `galaxy_map_hub.html`'s own live sidebar text
+states the CURRENT, deliberate design reason Dimensions are not
+rivers: "A Dimension is a real cross-cutting facet — the same modules
+and functions, seen through one lens. Deliberately multi-membership —
+which is exactly why a Dimension is never a numbered River (a River is
+a strict one-module-one-home partition)." This is a real, stated
+architectural decision, not an oversight — "fold Dimensions-Inter into
+the river system" runs directly against it, and the compile step's
+job is to surface that conflict plainly rather than build past it.
+
+Two genuinely different ways to honor Alex's ask, both real,
+structurally very different in cost/risk:
+
+  (a) LITERAL — Inter dimensions become real numbered rivers (River
+      XVIII+), added to RIVER_MODULES/MODULE_RIVER exactly like Rivers
+      1-12. Real problem: RIVER_MODULES is currently a strict
+      one-module-one-river partition (MODULE_RIVER is a plain dict,
+      one river per module key) — a genuinely multi-membership Inter
+      dimension (e.g. Skills touches dozens of modules across many
+      existing rivers) cannot become a River without either (i)
+      breaking that one-river-per-module invariant everywhere it's
+      relied on (LEVEL3_MODULES, per-module coloring, the Current(L3)
+      river-section grouping, `compute_intra_river_flow`'s own
+      river-scoped edge computation), or (ii) reassigning modules away
+      from their real existing river, which would be actively
+      dishonest about where those modules really live.
+
+  (b) SYMBOLIC/PRESENTATIONAL — Inter dimensions get River-style
+      numbering/branding in navigation (a real precedent already
+      exists: rivers 13-17 carry River numbers despite having zero
+      real code-partition membership — they were always role labels,
+      not strict partitions) without altering the underlying
+      multi-membership semantics or touching `RIVER_MODULES`/
+      `MODULE_RIVER`'s real one-river-per-module invariant. Real,
+      lower-risk, and has a genuine existing precedent in this exact
+      codebase to build from.
+
+=== REAL EVIDENCE — questEngine ===
+
+Confirmed still unresolved: `questEngine`'s exclusion from
+`RIVER_MODULES` is asserted as deliberate ("cross-cutting... by
+design") at one comment (graphify_river_group.py, near
+`build_infra_drilldown`'s own docstring) but is NOT listed in the
+canonical documented-exclusions comment (~line 410-415) that names
+every other real cross-cutting module with its own reasoning
+(`leftNav`, popup scaffolding, `voiceInput`, `perfWatch`, `pwaInstall`,
+`quickActions`, `docsLinks`, `suppressQuestPopup`, `myFeature`,
+`config`, `errorLog`). Unlike those, `questEngine` is a real feature
+domain (Quest Board Supabase persistence, built Aug 23-24, A9) — not
+obviously "genuinely cross-cutting UI/infra" the way a nav/popup/config
+helper is. Real, checkable evidence for what `questEngine` actually
+does: cross-module calls not yet re-grepped this pass (real work for
+Step 2/3, not guessed here).
+
+=== OVERLAPPING/RELATED OPEN ITEMS, NOT IN SCOPE UNLESS ALEX SAYS SO ===
+
+- `galaxy_map_hub.html`'s own internal "20 real pages" vs "21 pages"
+  self-contradiction (found in the representative pass earlier this
+  session, system_map_flags, still unresolved) — a real generator bug
+  in the hub page count, not a river-structure question. Flagged here
+  since a river restructure will touch the same generator family, but
+  not assumed to be this restructure's job unless it turns out to be
+  the same root cause.
+- The Galaxy Development Framework's own stated future convergence
+  with the Taxonomy restructuring effort (CEO SKILL.md, "Real, stated
+  future convergence") — explicitly out of scope, Alex's own words
+  ("later on when i get to it").

@@ -412,7 +412,16 @@ def river_retirement_note_html(rnum, compact=False):
 # quickActions, docsLinks [dead], suppressQuestPopup, myFeature, config,
 # errorLog [added Aug 12, never reconciled into this list until the Aug
 # 22 pass above found it - a real, minor, standalone gap, not connected
-# to that day's own actual code changes])
+# to that day's own actual code changes], questEngine [added here Sep 15
+# 2026, real wiring-sweep river-restructure pass -- a prior comment near
+# build_infra_drilldown() asserted this exclusion was deliberate with no
+# real evidence cited; direct grep confirmed it properly: questEngine
+# calls RPGACE.modules.authGate (River I), writes content_productions
+# (River XI), taxonomy_links/taxonomy_proposals (River VIII), plus its
+# own quest_log/quest_duration_stats tables -- 3 real touch-points
+# spanning 3 unrelated rivers with no shared goal beyond "quest
+# generation reads broadly," and ZERO external modules call INTO it.
+# Real record: records/2026-09/galaxy_river_restructure_ceo_report_2026-09-15.txt])
 # are deliberately left OUT - they don't belong to one river, and
 # force-fitting them would be dishonest, not "making mapping easier."
 RIVER_MODULES = {
