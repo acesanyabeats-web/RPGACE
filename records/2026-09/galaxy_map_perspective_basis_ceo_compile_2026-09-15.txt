@@ -177,3 +177,37 @@ STATUS: Loop 1 compiled and interrogated. Execution (Loop 2, all 3
 items) blocked on (1) the same Supabase MCP reconnect as the prior plan,
 and (2) that prior plan's 26 rows actually landing first, per Alex's own
 sequencing answer.
+
+=== REAL EXTENSION, same session, later pass — level + dimension-kind syntheses ===
+
+Alex's follow-up ask: "Let's do perspective report on l0, L1, L2, L3 and
+logic, infra and inter dimensions to keep bubble system coherence with
+built structures."
+
+Real finding surfaced before building: the standalone Logic Dimension
+page was RETIRED Sep 1 2026 (G111) — its content dispersed to Decision
+Matrix (Current/L3) and Level 2's own river legend, since it was a real
+duplicate of data those pages already draw from the same RIVER_FLOWS/
+FLOWS_IN/LINKS_BY_RIVER/ALL_SKILLS tables. Put to Alex directly rather
+than guessed which reading he meant (the retired page itself, or the
+real "logic" decision-type still live inside Decision Matrix) — his
+answer: "Nevermind." The Logic half of this ask is dropped entirely, not
+built under either reading.
+
+L0-L3 level scope confirmed: "One synthesis per level, 4 total" — same
+non-actor SYNTHESIS treatment (third-person, compiled) already
+established for rivers, extended to the 4 Galaxy Map levels themselves.
+
+Real, freshly-verified DIMENSION_PAGES count while drafting: 3 meta + 5
+infra + 6 inter = 14 total (not the "13" CLAUDE.md's own Galaxy Map
+bullet states — that count predates the Sep 15 2-page Orchestrator CC/
+OpenMontage CC split, which added a real 6th inter entry; corrected in
+the new inter-dimension synthesis itself, flagged here as a real doc-
+drift instance per rule 16, not yet corrected in the main CLAUDE.md
+bullet — real follow-up item).
+
+6 new perspective_reports rows drafted (scope_level='level': L0/L1/L2/L3;
+scope_level='dimension_kind': infra/inter) — ready SQL at
+/tmp/claude-0/-home-user-RPGACE/scratch/level_dimension_reports.sql,
+queued behind the same Supabase-connector block as the 26-report batch,
+folded into the same scheduled resume in the correct order (Step 1b).
