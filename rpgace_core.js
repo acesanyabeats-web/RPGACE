@@ -36734,6 +36734,70 @@ RPGACE.register('cookingOracle', {
         nutBtn.textContent = '🔎 Estimate Nutrition';
       };
 
+      // Sep 15 2026 (real Alex bug report: "When I added ingredients the
+      // method didn't update where needed") — real gap found by direct
+      // code read: neither the manual "+ Add" button nor Suggest
+      // Additions' own "+ Add" ever touched recipe.steps at all - only
+      // ingredients + the nutrition estimate got reset, so the Method
+      // below silently went stale the moment a new ingredient landed,
+      // with nothing telling Alex it needed a real update. The ONE
+      // existing mechanism that actually knows how to update the Method
+      // safely is the critique -> RECIPE_UPDATE_JSON -> code-computed
+      // diff -> Accept/Deny pipeline already built for the floating 🔮
+      // overlay (logic._listenForRecipeUpdates/ui._showRecipeUpdateConfirm)
+      // - reused here (rule 8), never a second update mechanism. Deliberately
+      // a human-gated BUTTON, not a silent auto-fire Oracle call on every
+      // add - same "AI proposes, human confirms" precedent Suggest
+      // Additions itself already follows (rule 11 - a real ingredient add
+      // is free; an Oracle round-trip on every single one isn't).
+      var pendingMethodIngredients = [];
+      var methodUpdateBanner = document.createElement('div');
+      methodUpdateBanner.id = 'cooking-method-update-banner';
+      methodUpdateBanner.style.cssText = 'display:none;margin-bottom:14px;padding:10px 12px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:8px;font-size:12px;color:var(--text);';
+      var methodUpdateText = document.createElement('div');
+      methodUpdateText.style.cssText = 'margin-bottom:8px;';
+      var methodUpdateRow = document.createElement('div');
+      methodUpdateRow.style.cssText = 'display:flex;gap:8px;';
+      var methodUpdateBtn = document.createElement('button');
+      methodUpdateBtn.textContent = '🔮 Update Method for this';
+      methodUpdateBtn.style.cssText = 'padding:6px 12px;background:rgba(155,89,182,0.18);border:1px solid rgba(155,89,182,0.4);border-radius:6px;color:#9B59B6;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var methodUpdateDismiss = document.createElement('button');
+      methodUpdateDismiss.textContent = 'Not now';
+      methodUpdateDismiss.style.cssText = 'padding:6px 12px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      methodUpdateRow.appendChild(methodUpdateBtn);
+      methodUpdateRow.appendChild(methodUpdateDismiss);
+      methodUpdateBanner.appendChild(methodUpdateText);
+      methodUpdateBanner.appendChild(methodUpdateRow);
+
+      var flagMethodNeedsUpdate = function(name) {
+        if (name && pendingMethodIngredients.indexOf(name) === -1) pendingMethodIngredients.push(name);
+        methodUpdateBanner.style.display = 'block';
+        methodUpdateText.textContent = 'You added ' + pendingMethodIngredients.join(', ')
+          + ' — the Method below hasn\'t been updated to actually use ' + (pendingMethodIngredients.length === 1 ? 'it' : 'them') + ' yet.';
+      };
+      methodUpdateDismiss.onclick = function() {
+        pendingMethodIngredients = [];
+        methodUpdateBanner.style.display = 'none';
+      };
+      methodUpdateBtn.onclick = function() {
+        var names = pendingMethodIngredients.join(', ');
+        var oc = RPGACE.modules.oracleControl;
+        if (!oc || !oc._sendFromOverlay || !document.getElementById('chat-input')) {
+          RPGACE.utils.toast('⚠️ Oracle chat isn\'t ready yet — open the Oracle page once first', '#E2A83D', 3200);
+          return;
+        }
+        // Reuses oracleControl._sendFromOverlay (rule 8), NOT the bare
+        // RPGACE.utils.sendToOracle - only _sendFromOverlay prepends the
+        // registered "cooking" context (title/ingredients/method + the
+        // RECIPE_UPDATE_JSON instructions), confirmed by direct read of
+        // both functions; sendToOracle alone would send this request with
+        // zero context on which recipe or method it refers to.
+        oc._sendFromOverlay('I just added ' + names + ' to the ingredients of this recipe. Update the Method so it actually gets used, in the right place in the sequence, tagged with a real step type — keep everything else the same unless it genuinely must change.');
+        RPGACE.utils.toast('🔮 Asking Oracle to update the Method for ' + names + '...', '#9B59B6', 2600);
+        pendingMethodIngredients = [];
+        methodUpdateBanner.style.display = 'none';
+      };
+
       addIngBtn.onclick = function() {
         var name = addIngName.value.trim();
         if (!name) { RPGACE.utils.toast('⚠️ Enter an ingredient name', '#E2A83D', 2200); return; }
@@ -36747,6 +36811,7 @@ RPGACE.register('cookingOracle', {
         addIngName.value = ''; addIngAmt.value = ''; addIngUnit.value = '';
         renderIngredients();
         resetNutritionState();
+        flagMethodNeedsUpdate(name);
       };
 
       // Oracle-suggested additions, real pantry-aware (H10 2nd half) - a
@@ -36817,6 +36882,7 @@ RPGACE.register('cookingOracle', {
               });
               renderIngredients();
               resetNutritionState();
+              flagMethodNeedsUpdate(s.name);
               row.remove();
             };
 
@@ -36875,6 +36941,7 @@ RPGACE.register('cookingOracle', {
       stepHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;';
       stepHeading.textContent = 'Method & Timeline';
       box.appendChild(stepHeading);
+      box.appendChild(methodUpdateBanner);
 
       var stepList = document.createElement('div');
       // Sep 14 2026 - wrapped into a real, re-callable renderSteps() (was a
@@ -36977,6 +37044,15 @@ RPGACE.register('cookingOracle', {
         renderIngredients();
         renderSteps();
         resetNutritionState(); // ingredients/steps just changed - the old estimate is stale
+        // Sep 15 2026 - a real Method update landed via ANY path (my own
+        // "Update Method" banner, or Alex typing his own critique straight
+        // into the overlay) - either way the "method hasn't caught up"
+        // concern the banner exists for is now resolved, so clear it here
+        // too rather than only where the banner's own button sent the
+        // request (the banner and this apply step are two different real
+        // trigger paths into the same underlying update).
+        pendingMethodIngredients = [];
+        methodUpdateBanner.style.display = 'none';
         if (titleEl) titleEl.textContent = recipe.title || 'Recipe';
       };
       self._applyRecipeUpdate = applyRecipeUpdate;
