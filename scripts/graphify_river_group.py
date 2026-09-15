@@ -418,10 +418,25 @@ def river_retirement_note_html(rnum, compact=False):
 RIVER_MODULES = {
     1: ['authGate'],
     2: ['pathRouter'],
+    # G-post-109 (Sep 15 2026) — real wiring-sweep gap fix, Alex-confirmed
+    # ("assign rivers for the 3 modules"). cookingOracle/oracleControl
+    # added here with real, checked evidence (direct grep of
+    # rpgace_core.js, not guessed): both are genuinely Oracle-pipeline
+    # members, not filed by subject matter. cookingOracle calls
+    # RPGACE.modules.oracleControl.* directly and listens on the same
+    # shared oracle:response-scanned hook every other River III Oracle
+    # panel uses — same real precedent as scheduleOracle already sitting
+    # here (an Oracle-CHAT-DRIVEN feature belongs in River III regardless
+    # of its subject domain; scheduleOracle is schedule-domain content
+    # for the same reason). oracleControl (G41) is the Oracle action
+    # confirm/dispatch mechanism itself — core Oracle-pipeline machinery
+    # by definition, listens on oracle:response-scanned + the G109
+    # rpgace:error-toast hook. Full evidence trail:
+    # records/2026-09/wiring_sweep_river_assignment_2026-09-15.txt.
     3: ['oracleAppGrounding', 'oracleTreeGrounding', 'oracleFetchGuard',
         'oracleDevBridge', 'mockOracle', 'oracleProviderMode', 'agentsIntoOracle', 'prodOraclePanel',
         'instaOraclePanel', 'youtubeOracle', 'tiktokOracle', 'scheduleOracle',
-        'feynman'],
+        'feynman', 'cookingOracle', 'oracleControl'],
     4: ['bookworm'],
     # G49 (Aug 18 2026) — real River-v2 closer look, per the already-
     # locked Part 6 reconciled approach (interaction evidence + shared-
@@ -444,7 +459,17 @@ RIVER_MODULES = {
         'refCorpus'],
     8: ['taxonomyReviewQueue', 'taxonomySync', 'taxonomyTree'],
     9: ['knowledgeGap'],
-    10: ['chroniclesLog', 'careerStatCard'],
+    # G-post-109 (Sep 15 2026) — shoppingWishlist added here with real
+    # evidence: it makes zero direct RPGACE.modules.X calls and listens
+    # on zero hooks (genuinely isolated at the direct-call/hook grain,
+    # same class as agentsIntoOracle/authGate/intelBatchList's G22
+    # finding) — but its ONE real external touchpoint is a shared
+    # chronicles_finance table WRITE, reusing chroniclesLog's own
+    # already-proven write shape (marking an item bought writes a real
+    # chronicles_finance row, category:'Personal', per CLAUDE.md's own
+    # Shopping Wishlist section). River X is the real, evidenced home on
+    # that shared-table-convergence signal, not a subject-matter guess.
+    10: ['chroniclesLog', 'careerStatCard', 'shoppingWishlist'],
     11: ['contentProductionLive', 'beatLog', 'videoPipeline', 'videoSummary',
          'conidPot', 'contentRepurpose', 'visualOracle'],
     # G49 (Aug 18 2026) — the real Research/Intel half split off River V

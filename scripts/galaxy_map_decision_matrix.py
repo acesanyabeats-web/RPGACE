@@ -90,7 +90,7 @@ LOGIC_POINTS = [
         'id': 'oracle-mode',
         'title': 'Oracle Mode: Real / Dummy / Fallback Scout',
         'decider': 'Alex (manual toggle)',
-        'module': 'mockOracle', 'func': 'setMode', 'lines': (34375, 34389), 'anchor': "self.MODES.indexOf(mode) === -1",  # re-verified Sep 8 2026 (/Routine) - drifted from 27558 due to the G53 60-module ui/logic split; the array literal itself moved to module scope (34244) outside setMode's own real span, so the anchor now cites a real line INSIDE the function instead
+        'module': 'mockOracle', 'func': 'setMode', 'lines': (34490, 34502), 'anchor': "self.MODES.indexOf(mode) === -1",  # re-verified Sep 15 2026 (real wiring-sweep pass) - drifted +~115 lines from 34375-34389 to 34490-34502 (real function span, confirmed by direct read) from real code changes elsewhere in the file since the Sep 8 verification; exact upstream cause not traced (proportionate to this pass), same class of drift the anchor system exists to catch, never silently patched around
         'decides': 'Which of 3 real paths every single Oracle call in the app takes, app-wide, until toggled again.',
         'changes': 'Real: every window.callOracle() call in main.js checks getMode() first. \'dummy\' short-circuits to a synthetic labeled reply, zero API cost. \'fallback\' queues the real prompt into oracle_fallback_queue instead of calling the live API. \'real\' calls the live Anthropic API as normal.',
         'result': 'A visible top-right toggle switch (red/green/gold) whose state persists in localStorage and is checked on literally every real Oracle send in the app.',
@@ -100,7 +100,7 @@ LOGIC_POINTS = [
         'id': 'taxonomy-card-branch',
         'title': 'Taxonomy dashboard card: popup vs. page fallback',
         'decider': 'Code logic (real pending-review count)',
-        'module': 'dashDeck', 'lines': (14087, 14090),  # re-verified Sep 8 2026 (/Routine), drifted from 11143 due to the G53 60-module ui/logic split
+        'module': 'dashDeck', 'lines': (14120, 14126),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +33 lines from 14087-14090 due to real code changes earlier in the file since Sep 8
         'anchor': "_pendingReviewCount !== 0",
         'decides': 'Whether clicking the "🌳 Taxonomy & Review" dashboard card opens the review-queue popup or navigates straight to the taxonomy tree page.',
         'changes': 'A real, live-queried count (RPGACE.modules.dashDeck._pendingReviewCount, set by _refreshGlance from a real taxonomy_proposals SELECT) — not a static config flag.',
@@ -111,7 +111,7 @@ LOGIC_POINTS = [
         'id': 'placement-scored',
         'title': 'Taxonomy placement: Council-of-5 scored decision',
         'decider': 'Oracle (ground-worker judgment call)',
-        'module': 'phylumPath', 'func': 'decidePlacementScored', 'lines': (18127, 18173),  # re-verified Sep 8 2026 (/Routine), drifted from 14640 due to the G53 60-module ui/logic split
+        'module': 'phylumPath', 'func': 'decidePlacementScored', 'lines': (18175, 18214),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +48 lines from 18127-18173; also confirmed against 3 other real matches of the same substring (a top-level pass-through wrapper at 19848, and _decidePlacementScored/its own wrapper at 20922/22151) -- 18175 is the real logic:{} implementation, not a wrapper or the underscore-prefixed sibling
         'anchor': 'decidePlacementScored: function',
         'decides': 'Where a new insight/leaf attaches in the taxonomy tree — an existing node (by number) or a brand-new path from the phylum root — and whether it belongs in this phylum at all.',
         'changes': 'The full numbered, indented tree for that phylum (real Supabase read), plus 5 named checks (pedagogical clarity, non-redundancy, practical applicability, structural fit, expansion headroom) folded into one prompt.',
@@ -133,7 +133,7 @@ LOGIC_POINTS = [
         'id': 'oracle-grounding-gate',
         'title': "Oracle grounding gate: does this prompt get RPGACE's own facts injected",
         'decider': 'Code logic (real keyword match against the live prompt)',
-        'module': 'oracleAppGrounding', 'lines': (9616, 9635),  # re-verified Sep 8 2026 (/Routine), drifted from 8258 due to the G53 60-module ui/logic split
+        'module': 'oracleAppGrounding', 'lines': (9649, 9675),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +33 lines from 9616-9635 due to real code changes earlier in the file since Sep 8
         'anchor': 'anatomyHit = self.ANATOMY_KEYWORDS.some',
         'decides': "Whether a real window.callOracle() send gets RPGACE's own SELF_KNOWLEDGE/anatomy grounding block injected into the system prompt before it goes out.",
         'changes': "The user's own last message text, scanned against 2 real keyword lists (TRIGGER_KEYWORDS for general app-knowledge grounding, ANATOMY_KEYWORDS for module-architecture grounding) — or a forced override via forceGroundNext() for a command that always needs it (Prod Oracle's \"5thDimension\").",
@@ -155,7 +155,7 @@ LOGIC_POINTS = [
         'id': 'artist-phylum-routing',
         'title': 'Last.fm-discovered artists: which phylum they get filed under',
         'decider': 'Code logic (hardcoded phylum_number literal)',
-        'module': 'beatLog', 'func': '_addNewArtistsToTaxonomy', 'lines': (23622, 23660),  # re-verified Sep 8 2026 (/Routine), drifted from 20215 due to the G53 60-module ui/logic split
+        'module': 'beatLog', 'func': '_addNewArtistsToTaxonomy', 'lines': (23685, 23698),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +63 lines from 23622-23660 due to real code changes earlier in the file since Sep 8; re-narrowed to the real forEach block containing the literal, not the whole enclosing function
         'anchor': 'phylum_number: 11',
         'decides': 'Which taxonomy phylum a newly-discovered Last.fm artist (via _addNewArtistsToTaxonomy) gets written into.',
         'changes': 'Nothing dynamic — this is a fixed literal, the real near-miss CLAUDE.md rule 13 was written about: the Aug 11 phylum renumber (11<->12) needed a SECOND, separate grep for this raw literal because no adjacent "Phylum 12" text existed nearby to catch it in the first display-text-only pass.',
@@ -189,7 +189,7 @@ TEXT_INPUT_POINTS = [
     {
         'id': 'beat-log-form',
         'title': 'Beat Log form — real multi-field text entry that creates a content_productions/video_jobs row',
-        'module': 'beatLog', 'func': '_getForm', 'lines': (24173, 24195),  # re-verified Sep 8 2026 (/Routine), drifted from 19821 due to the G53 60-module ui/logic split
+        'module': 'beatLog', 'func': '_getForm', 'lines': (24229, 24250),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +56 lines from 24173-24195 due to real code changes earlier in the file since Sep 8
         'anchor': "title:    get('bl-title')",
         'decides': "Title/key/BPM/scale/energy/mood/genre/rating/licence/collab/ref-track/FL-path — real typed values read directly off the DOM, no defaults faked — that _submit() turns into the actual real database row this ConID's whole downstream pipeline is built from.",
         'link': None,
@@ -197,7 +197,7 @@ TEXT_INPUT_POINTS = [
     {
         'id': 'director-blend-inspiration',
         'title': "Director Blend inspiration notes — Alex's own free-text creative direction",
-        'module': 'visualOracle', 'lines': (7050, 7067),  # re-verified Sep 8 2026 (/Routine), drifted from 6430 due to the G53 60-module ui/logic split
+        'module': 'visualOracle', 'lines': (7082, 7100),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +32 lines from 7050-7067 due to real code changes earlier in the file since Sep 8
         'anchor': "var insp = insBox.value.trim()",
         'decides': "Alex's own typed creative notes, kept in a real, separately-labeled group (never conflated with the director-blend keywords) so the outbound Visual Treatment prompt can't confuse his own words with Oracle-generated style language.",
         'link': None,
@@ -205,7 +205,7 @@ TEXT_INPUT_POINTS = [
     {
         'id': 'taxonomy-placement-editor',
         'title': 'Taxonomy Placement Editor — editing a proposed step name/explainer before it writes to taxonomy_tree',
-        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (19241, 19241),  # re-verified Sep 8 2026 (/Routine), drifted from 14805 due to the G53 60-module ui/logic split
+        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (19289, 19364),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +48 lines from 19241-19241; also confirmed against the real top-level pass-through wrapper (a 2nd, later match of the same signature at 19869) -- 19289 is the real ui:{} implementation, not the wrapper
         'anchor': '_showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject)',
         'decides': "Alex can edit Oracle's own proposed step names/explainers inline before confirming — real typed text that replaces the AI's own wording in the eventual taxonomy_tree write, the one place in the whole taxonomy pipeline where his own words can override the model's.",
         # Aug 25 2026 — real dead-anchor fix (see the note on the gate

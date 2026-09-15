@@ -1,0 +1,127 @@
+WIRING SWEEP — RIVER ASSIGNMENT + PIPELINE REGENERATION
+Sep 15 2026 (same session, real follow-up to the deeper wiring-sweep
+findings pass, records/2026-09/wiring_sweep_river_modules_gap_2026-09-15.txt)
+
+=== ALEX'S ASK (verbatim, partial) ===
+
+"assign rivers for the 3 modules and regenerate the pipeline"
+
+Per his /interrogation answers this session: this is the bounded, do-it-
+now half of a larger ask (which also covers archiving unused rivers and
+folding Dimensions-Inter into the river system) — the bigger restructure
+runs through a separate, full CEO planning loop.
+
+=== RIVER ASSIGNMENT — REAL EVIDENCE, NOT GUESSED ===
+
+Grepped each module's real cross-module calls/hooks/table-writes inside
+its own marker block before assigning anything (never subject-matter
+alone):
+
+- cookingOracle: calls RPGACE.modules.oracleControl directly, listens
+  on the shared oracle:response-scanned hook every other River III
+  Oracle panel listens on. Same real precedent scheduleOracle already
+  sits on (an Oracle-chat-DRIVEN feature belongs in River III regardless
+  of its subject domain). -> River III.
+- oracleControl (G41): the Oracle action confirm/dispatch mechanism
+  itself, listens on oracle:response-scanned + the G109
+  rpgace:error-toast hook. Core Oracle-pipeline machinery by definition.
+  -> River III.
+- shoppingWishlist: zero direct RPGACE.modules.X calls, zero hooks —
+  genuinely isolated at that grain (same class as the existing G22
+  finding for agentsIntoOracle/authGate/intelBatchList). Its one real
+  external touchpoint: writes chronicles_finance rows on "mark bought,"
+  reusing chroniclesLog's own already-proven write shape. -> River X.
+
+Applied to scripts/graphify_river_group.py's RIVER_MODULES dict with a
+real, cited comment for each (not a bare data change). River totals now
+48 real modules (up from 45); LEVEL3_MODULES/MODULE_RIVER both derive
+correctly (verified via direct Python import before touching the
+pipeline).
+
+=== PIPELINE REGENERATION — SURFACED A REAL, SEPARATE PROBLEM ===
+
+Re-running the dependent galaxy_map_*.py scripts hit the anchor-
+verification system firing loudly, exactly as designed (CLAUDE.md's own
+landmines section: "fails loud, never silently stale"). 18 real stale
+line-number citations were found across 3 files — galaxy_map_decision_
+matrix.py (8), galaxy_map_current.py (2), galaxy_map_decisions.py (8,
+one shared with decision_matrix.py's fix) — all last verified Sep 8
+2026, all drifted by real amounts (+32 to +63 lines) from real code
+changes elsewhere in rpgace_core.js since then. Exact upstream cause of
+the shift was not fully traced for every anchor (proportionate to this
+pass — the point was fixing the citations, not archaeology on every
+line that moved).
+
+Method: for each stale anchor, grepped the cited anchor TEXT for its
+real current line(s) in rpgace_core.js, read surrounding context to
+confirm the real function/block boundaries (several anchors had 2+
+real substring matches — a genuine `logic:{}`/`ui:{}` implementation
+plus a thin G53-era top-level pass-through wrapper with the identical
+signature; picked the real implementation every time, not the
+wrapper), computed exact start/end via brace-balance where a full
+function span was cited, and updated the `'lines'` tuple + a dated
+comment explaining the drift, matching this project's own existing
+comment convention for anchor re-verification.
+
+Fixed anchors (module.func — old range -> new range):
+  mockOracle.setMode           34375-34389 -> 34490-34502
+  dashDeck (taxonomy card)     14087-14090 -> 14120-14126
+  phylumPath.decidePlacementScored (decision_matrix) 18127-18173 -> 18175-18214
+  oracleAppGrounding (grounding gate)  9616-9635  -> 9649-9675
+  beatLog._addNewArtistsToTaxonomy    23622-23660 -> 23685-23698
+  beatLog._getForm                    24173-24195 -> 24229-24250
+  visualOracle (director-blend)       7050-7067   -> 7082-7100
+  phylumPath._showPlacementConfirm (decision_matrix) 19241-19241 -> 19289-19364
+  refCorpus.findMatches               25315-25369 -> 25371-25404
+  conidPot._quickDetectPhyla          28660-28671 -> 28716-28725
+  videoSummary._delete                15818-15837 -> 15865-15879
+  conidPot._refreshIdeaBank (delete)  29168-29176 -> 29227-29232
+  bookworm._refreshWidget (delete)    21376-21386 -> 21424-21432
+  phylumPath._showPlacementConfirm (decisions)   19241-19241 -> 19289-19289
+  phylumPath._showArticleConfirm      19323-19323 -> 19371-19371
+  taxonomyReviewQueue._acceptPhylumPathProposal  11500-11500 -> 11534-11534
+  taxonomyReviewQueue._acceptConceptFusion       11534-11534 -> 11568-11568
+  taxonomyReviewQueue._editPhylumPathProposal    11586-11586 -> 11620-11620
+  contentProductionLive._undoLastStage           25719-25719 -> 25775-25775
+
+Not stale, confirmed correct, unchanged: phylumPath._insertNewSteps
+(dedup-extend), contentProductionLive._refreshWidget (primary-action-
+lookup), legacy sendChat (oracle-chat-prompt, inside the LEGACY:mainjs
+section, unaffected since it predates the drift-causing changes),
+galaxy_map_current.py's _detailFor/_openProductionPanel/
+_saveDocToProduction.
+
+=== VERIFICATION ===
+
+- All 24 scripts/galaxy_map_*.py now run with zero stale-anchor
+  failures and zero tracebacks (verified by running the complete set
+  in one pass and grepping for failures — none found).
+- R5 idempotency: ran the complete 24-script set twice in a row from
+  fresh processes, md5-diffed every graphify-out/galaxy_map*.html —
+  byte-identical output both times.
+- Div-balance clean (spot-checked galaxy_map.html/galaxy_map_module.html/
+  galaxy_map_current.html/galaxy_map_hub.html — all <div>/</div> counts
+  match exactly).
+- All 3 target modules (cookingOracle, shoppingWishlist, oracleControl)
+  now appear across all 21 galaxy_map*.html pages (up from 0/0/5
+  respectively before this pass).
+- Re-ran the session-start check built earlier this session: the real
+  registered-module-vs-RIVER_MODULES diff now returns EXACTLY the
+  documented cross-cutting exclusion list (config/dashDeck/docsLinks/
+  errorLog/leftNav/perfWatch/pwaInstall/quickActions/suppressQuestPopup)
+  plus questEngine — zero unaccounted real gaps remain.
+- system_map_flags row e71ce5fb-74a9-4209-9659-e5f0f24127ef marked
+  resolved with the full real fix trail.
+
+=== NOT DONE, DELIBERATELY ===
+
+- questEngine's documented-exclusion inconsistency (flagged in the
+  prior pass) was NOT resolved — left for the separate, bigger river-
+  structure planning pass Alex asked for.
+- Archiving unused/thin rivers and folding Dimensions-Inter into the
+  river system — both explicitly deferred to that same separate CEO
+  planning loop, per Alex's own sequencing answer this session.
+- galaxy_map_hub.html's own internal "20 real pages" vs "21 pages"
+  self-contradiction (found in the earlier representative pass) is
+  UNCHANGED by this fix — a different generator-script bug, not
+  touched this pass.

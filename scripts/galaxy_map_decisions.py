@@ -103,7 +103,7 @@ DECISION_POINTS = [
     {
         'id': 'video-summary-delete', 'category': 'destructive',
         'title': 'Delete a video summary report (legacy fallback path)',
-        'module': 'videoSummary', 'func': '_delete', 'lines': (15818, 15837),  # re-verified Sep 8 2026 (/Routine), drifted from 12694 due to the G53 60-module ui/logic split
+        'module': 'videoSummary', 'func': '_delete', 'lines': (15865, 15879),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +42 lines from 15818-15837 due to real code changes earlier in the file since Sep 8
         'anchor': "window.confirm('Delete \"' + title + '\"?')",
         'trigger': 'Same 🗑 delete action as intelDelete — this is the REAL fallback branch when `intelDelete._deleteUnified` isn\'t available, using a bare browser `confirm()` instead of the richer popup.',
         'logic': 'A plain `window.confirm()` — real, but honestly the least-informative gate in this whole category (no context shown beyond the title). Real, minor future cleanup candidate: route this through `intelDelete._confirm` directly instead of the JS-native fallback.',
@@ -111,7 +111,7 @@ DECISION_POINTS = [
     {
         'id': 'conidpot-delete', 'category': 'destructive',
         'title': 'Delete an idea from the Idea Bank (ConID Pot)',
-        'module': 'conidPot', 'func': '_refreshIdeaBank', 'lines': (29168, 29176),  # re-verified Sep 8 2026 (/Routine), drifted from 24288 due to the G53 60-module ui/logic split
+        'module': 'conidPot', 'func': '_refreshIdeaBank', 'lines': (29227, 29232),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +59 lines from 29168-29176 due to real code changes earlier in the file since Sep 8
         'anchor': "confirm('Delete \"' + row.title + '\"?')",
         'trigger': 'A real 🗑 button rendered per-row inside the Idea Bank list.',
         'logic': 'A plain `confirm()` — real, same minimal-context shape as videoSummary\'s.',
@@ -119,7 +119,7 @@ DECISION_POINTS = [
     {
         'id': 'bookworm-delete', 'category': 'destructive',
         'title': 'Delete a Bookworm book (2-click arm/confirm)',
-        'module': 'bookworm', 'func': '_refreshWidget', 'lines': (21376, 21386),  # re-verified Sep 8 2026 (/Routine), drifted from 16268 due to the G53 60-module ui/logic split
+        'module': 'bookworm', 'func': '_refreshWidget', 'lines': (21424, 21432),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +48 lines from 21376-21386 due to real code changes earlier in the file since Sep 8
         'anchor': 'var armed = false;',
         'trigger': 'A real 🗑 button that must be clicked TWICE within 3 seconds (`armed` flips true, button relabels "❌ Confirm", a real `setTimeout` resets it) — the original CLAUDE.md rule 8 precedent this whole category is named after.',
         'logic': 'No popup at all — the confirm IS the second click itself, a real, cheap alternative to a modal for a single destructive action.',
@@ -127,7 +127,7 @@ DECISION_POINTS = [
     {
         'id': 'placement-confirm', 'category': 'taxonomy',
         'title': 'New insight placement — accept/reject before a real taxonomy_tree write',
-        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (19241, 19241),  # re-verified Sep 8 2026 (/Routine), drifted from 14805 due to the G53 60-module ui/logic split
+        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (19289, 19289),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +48 lines from 19241-19241; also confirmed against the real pass-through wrapper (a 2nd match at 19869) -- 19289 is the real ui:{} implementation
         'anchor': '_showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject)',
         'trigger': 'Shown automatically after `decidePlacementScored()` (a real curated core-logic point in its own right — see the Decision Matrix for the full scoring logic) returns a real placement candidate.',
         'logic': 'A real popup showing Oracle\'s own proposed attach point + new steps, with explicit onAccept/onReject callbacks — nothing writes to taxonomy_tree without this gate, per rule 4.',
@@ -136,7 +136,7 @@ DECISION_POINTS = [
     {
         'id': 'article-confirm', 'category': 'taxonomy',
         'title': 'Dedup-extend article regeneration — approve before overwriting an existing leaf',
-        'module': 'phylumPath', 'func': '_showArticleConfirm', 'lines': (19323, 19323),  # re-verified Sep 8 2026 (/Routine), drifted from 15357 due to the G53 60-module ui/logic split
+        'module': 'phylumPath', 'func': '_showArticleConfirm', 'lines': (19371, 19371),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +48 lines from 19323-19323; also confirmed against the real pass-through wrapper (a 2nd match at 19870) -- 19371 is the real ui:{} implementation
         'anchor': '_showArticleConfirm: function(node, articleTitle, text, onApprove, onDeny)',
         'trigger': 'Shown when `_insertNewSteps()` (a real curated core-logic point in its own right — the dedup-extend decision, written up in full on the Decision Matrix) finds a real near-duplicate and proposes extending the existing leaf\'s own article instead of creating a new one.',
         'logic': 'Same real checkpoint pattern as `_showPlacementConfirm`, simpler — an existing leaf\'s content is about to be regenerated, so this gate specifically protects against overwriting real prior content on a bad match.',
@@ -145,7 +145,7 @@ DECISION_POINTS = [
     {
         'id': 'accept-phylumpath-proposal', 'category': 'taxonomy',
         'title': 'Review Queue: accept a pending taxonomy_proposals row',
-        'module': 'taxonomyReviewQueue', 'func': '_acceptPhylumPathProposal', 'lines': (11500, 11500),  # re-verified Sep 8 2026 (/Routine), drifted from 9677 due to the G53 60-module ui/logic split
+        'module': 'taxonomyReviewQueue', 'func': '_acceptPhylumPathProposal', 'lines': (11534, 11534),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +34 lines from 11500-11500; also confirmed against the real pass-through wrapper (a 2nd match at 12013) -- 11534 is the real logic:{} implementation
         'anchor': '_acceptPhylumPathProposal: function(p)',
         'trigger': 'The real "✅ Accept" button on a pending row inside the "🌳 Taxonomy & Review" dashboard card\'s popup.',
         'logic': 'A real, separate SECOND checkpoint from `_showPlacementConfirm` above — this one clears a `taxonomy_proposals` row that was already staged (not a live in-the-moment placement), matching rule 4\'s "or staging through taxonomy_proposals → review queue" alternate path.',
@@ -153,7 +153,7 @@ DECISION_POINTS = [
     {
         'id': 'accept-concept-fusion', 'category': 'taxonomy',
         'title': 'Review Queue: accept a proposed fusion-link bridge',
-        'module': 'taxonomyReviewQueue', 'func': '_acceptConceptFusion', 'lines': (11534, 11534),  # re-verified Sep 8 2026 (/Routine), drifted from 9703 due to the G53 60-module ui/logic split
+        'module': 'taxonomyReviewQueue', 'func': '_acceptConceptFusion', 'lines': (11568, 11568),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +34 lines from 11534-11534; also confirmed against the real pass-through wrapper (a 2nd match at 12014) -- 11568 is the real logic:{} implementation
         'anchor': '_acceptConceptFusion: function(p)',
         'trigger': 'The real "✅ Accept" button on a pending `taxonomy_links` row — the exact real gate River VI/VIII\'s own `human_confirm_gate`-tagged RIVER_FLOWS edges describe at the river level.',
         'logic': 'Same real accept/reject review-queue mechanism as the proposal row above, scoped to fusion-link bridges instead of new-leaf placements.',
@@ -161,7 +161,7 @@ DECISION_POINTS = [
     {
         'id': 'edit-phylumpath-proposal', 'category': 'taxonomy',
         'title': 'Review Queue: edit a pending proposal before accepting it',
-        'module': 'taxonomyReviewQueue', 'func': '_editPhylumPathProposal', 'lines': (11586, 11586),  # re-verified Sep 8 2026 (/Routine), drifted from 9741 due to the G53 60-module ui/logic split
+        'module': 'taxonomyReviewQueue', 'func': '_editPhylumPathProposal', 'lines': (11620, 11620),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +34 lines from 11586-11586; also confirmed against the real pass-through wrapper (a 2nd match at 12015) -- 11620 is the real logic:{} implementation
         'anchor': '_editPhylumPathProposal: function(p)',
         'trigger': 'A real "✏️ Edit" button alongside Accept/Reject on a pending proposal row.',
         'logic': 'Real, distinct from a bare accept/reject — lets Alex correct Oracle\'s own proposed placement before it commits, rather than only a binary yes/no.',
@@ -169,7 +169,7 @@ DECISION_POINTS = [
     {
         'id': 'undo-conid-stage', 'category': 'pipeline',
         'title': 'Undo a ConID\'s last completed production stage',
-        'module': 'contentProductionLive', 'func': '_undoLastStage', 'lines': (25719, 25719),  # re-verified Sep 8 2026 (/Routine), drifted from 21151 due to the G53 60-module ui/logic split
+        'module': 'contentProductionLive', 'func': '_undoLastStage', 'lines': (25775, 25775),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +56 lines from 25719-25719 due to real code changes earlier in the file since Sep 8
         'anchor': "confirm('Undo ConID #' + row.con_id",
         'trigger': 'The real standalone "Undo" button on a music_video ConID card (Aug 6 UX pass — paired with a "revert progress" checkbox, default unchecked = edit-in-place).',
         'logic': 'A plain `confirm()`, but with real, specific consequence text in the message itself ("deletes the creative-doc output that stage produced... cannot be undone") — more informative than the bare delete-confirms above despite using the same native browser dialog.',
