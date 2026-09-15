@@ -98,3 +98,46 @@ Thread 2's outcome).
 Thread 2's concrete mechanism (separate the 5 retired rivers into a
 distinct Archived section in nav + ring) — go, no-go, or a different
 mechanism. Thread 3 can proceed regardless of his answer on Thread 2.
+
+=== REAL UPDATE, Sep 15 2026, same day, CEO Loop 2 execution ===
+
+Alex confirmed go on Thread 2's proposed mechanism (real interrogation,
+same session, before a context-window compaction — resumed and
+completed after "return to galaxy map"). Built exactly as proposed:
+
+- `scripts/galaxy_map_river.py`: the 12 live rivers keep the real
+  crossing-reduced ring (now scoped to live-live RIVER_FLOWS edges
+  only — 5 crossings old numeric order -> 1 after, re-measured honestly
+  post-split, not carried over from the old 17-river number); the 5
+  retired rivers moved into a real, visually distinct dashed "🗄️
+  Archived" row below the ring, own section box + label, same real
+  per-node badge/legend rendering (`_emit_river_node`, one shared
+  function, rule 8) minus the now-redundant per-node 🚫 badge (the
+  section label already says it once). Canvas height grew 1300->1420
+  to fit the new row without collision. Legend split into two real
+  headed sections ("The 12 live rivers" / "🗄️ Archived rivers (5)").
+  Stale "16 Rivers" h1 text fixed to the real live count.
+- `scripts/graphify_river_group.py`'s `left_nav_html()`: `_river_rows()`
+  / `_river_module_nested_rows()` both gained a real `archived` filter
+  (rule 8, one function, two real subsets) — the sidebar now renders
+  "🌊 Live Rivers" and "🗄️ Archived Rivers" as two genuinely separate
+  groups on both L1 (plain river list) and L2 (river+module nested
+  list), everywhere `left_nav_html()` is used (all 22 real pages via
+  `inject_level_rail`).
+- Verified: `python3 -m py_compile` clean on both files; full 24-script
+  pipeline re-run in dependency order (`galaxy_map_hub.py` last);
+  R5-idempotent (2 fresh runs, byte-identical md5 across all 22 real
+  output pages); `verify_anchors.py` clean (26 anchors, all fresh);
+  div/a/svg-balance clean across all 22 pages; headless-Chromium
+  screenshot + DOM check confirms the ring/archived-row visual
+  separation and the sidebar's two real subheadings both render with
+  zero console errors.
+- `galaxy_map.py`/`galaxy_map_hub.py` did NOT need a matching change —
+  confirmed by direct grep neither enumerates all 17 rivers inline
+  (the "possibly touches" scope note above was speculative and turned
+  out not to apply).
+
+STATUS: Thread 2 BUILT and verified. Thread 3 was already built earlier
+the same session (see graphify_river_group.py's own documented-
+exclusions comment, `questEngine` entry). Both threads of this CEO Loop
+1/2 pass are now closed.

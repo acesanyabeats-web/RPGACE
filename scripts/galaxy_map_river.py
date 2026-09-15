@@ -110,8 +110,12 @@ OUT = Path('graphify-out/galaxy_map_river.html')
 
 
 def build_svg():
-    W, H = 1300, 1300
-    cx, cy = W / 2, H / 2
+    # Sep 15 2026: H grew (1300->1420) and cy is now fixed rather than
+    # H/2, so the live ring keeps its original size/position while the
+    # new archived row + its section box has real room below it instead
+    # of overlapping the ring or getting clipped off-canvas.
+    W, H = 1300, 1420
+    cx, cy = W / 2, 600
 
     nodes_svg = []
     edges_svg = []
@@ -155,19 +159,43 @@ def build_svg():
         if _river_num_from_label(target_label) == OVERSIGHT_RIVER
     }
 
-    # --- 17 rivers, evenly spaced around the hub, real crossing-reduced
-    # ANGULAR ORDER (Aug 13, Alex's own rule — see
-    # _crossing_reduced_ring_order()'s own docstring) ---
+    # --- Sep 15 2026, real 2nd correction (Alex's own confirmed ask,
+    # river-restructure record: "Go further on the 5 already-retired
+    # rivers" — the earlier "🚫 badge on an otherwise-identical ring
+    # node" treatment left retired and live rivers sitting in ONE
+    # undifferentiated numbered sequence at equal visual weight, which
+    # is the real source of the "clutter" Alex's own confirmed answer
+    # named — a plain retired TAG doesn't fully solve that, a real
+    # spatial separation does. The 12 live rivers keep the exact same
+    # crossing-reduced radial ring as before (real RIVER_FLOWS edges
+    # between LIVE rivers only feed the crossing-reduction search now,
+    # since that's the ring the search is actually optimizing); the 5
+    # retired rivers (RIVER_RETIRED) move into their own distinct,
+    # visually separate "🗄️ Archived" row below the ring — same real
+    # node/badge/legend logic (_emit_river_node, factored out, rule 8),
+    # just a different real layout algorithm (a fixed row, not a
+    # crossing-reduced ring — 5 nodes don't need ring optimization).
+    # Nothing is deleted: every retired river's real RIVER_RETIRED
+    # metadata (reason + superseded_by links) stays fully intact and
+    # visible, matching this project's own archive-never-delete
+    # convention (patch_notes.html/CLAUDE_archive.md/etc.).
     river_radius = 480
-    ring_order, _reduced_count = _crossing_reduced_ring_order(sorted(RIVER_NAME), cx, cy, river_radius)
-    n = len(RIVER_NAME)
+    live_nums = sorted(r for r in RIVER_NAME if r not in RIVER_RETIRED)
+    archived_nums = sorted(RIVER_RETIRED)
+    live_ring_order, _reduced_count = _crossing_reduced_ring_order(live_nums, cx, cy, river_radius)
+    n_live = len(live_nums)
+
     river_pos = {}
-    for i, rnum in enumerate(ring_order):
-        ang = -90 + (360 * i / n)
-        rx, ry = polar(cx, cy, river_radius, ang)
+    live_legend_rows = []
+    archived_legend_rows = []
+
+    def _emit_river_node(rnum, rx, ry, is_archived, hub_r1=42):
         river_pos[rnum] = (rx, ry)
         color = RIVER_COLOR[rnum]
-        edges_svg.append(_curved_edge(cx, cy, rx, ry, color, real=True, r1=42, r2=30))
+        # Archived spokes are dashed + dimmer — still real, still shown,
+        # visually reads as "connected but not a primary river" at a
+        # glance rather than needing the reader to spot a small badge.
+        edges_svg.append(_curved_edge(cx, cy, rx, ry, color, real=(not is_archived), dashed=is_archived, r1=hub_r1, r2=30))
         edge_colors_used.add(color)
         short_label = RIVER_NAME[rnum].split('—')[0].strip()
         # G4 shipped — every river node is now a real clickable drill-down
@@ -210,12 +238,11 @@ def build_svg():
         if not mods:
             gx, gy = polar(rx, ry, 34, 135)
             nodes_svg.append(f'<text x="{gx}" y="{gy}" text-anchor="middle" font-size="13" opacity="0.85" title="0 real rpgace_core.js modules, by design — a Total-systems category, not an app module domain">⚙️</text>')
-        # G102 (Aug 26 2026) — a real, visible "retired" badge on the
-        # ring node itself, same treatment as the ⚙️/🧑/🔮 badges above,
-        # for the 5 rivers marked deprecated/merged in RIVER_RETIRED.
-        if rnum in RIVER_RETIRED:
-            tx_, ty_ = polar(rx, ry, 34, 180)
-            nodes_svg.append(f'<text x="{tx_}" y="{ty_}" text-anchor="middle" font-size="13" opacity="0.9" title="Retired — merged into the L0 Infra/Inter system, see legend below">🚫</text>')
+        # G102's per-node "🚫 retired" badge was removed Sep 15 2026 (2nd
+        # correction) — now that retired rivers sit in their own real,
+        # visually distinct "🗄️ Archived" cluster with its own section
+        # label (see below), a per-node badge saying the same thing a
+        # second time is redundant, not a second signal.
         # Real, LIGHTWEIGHT Alex-presence badge (Aug 13, Alex's own ask,
         # "also present at level 0, 1 and 2 where it makes sense") — a
         # full bubble+edges (Level 2/3's own treatment) would be real
@@ -251,7 +278,8 @@ def build_svg():
             oversight_note += '<br><span class="meta">🧑 Has at least one real module with DOM/input-facing evidence — see its own real Alex bubble at Level 2/3.</span>'
         if river_oracle_n > 0:
             oversight_note += f'<br><span class="meta">🔮 {river_oracle_n} real Oracle call(s) across this river — see its own real Oracle bubble at Level 2/3.</span>'
-        legend_rows.append(
+        target_legend = archived_legend_rows if is_archived else live_legend_rows
+        target_legend.append(
             f'<div class="legend-row"><span class="dot" style="background:{color}"></span>'
             f'<b>{RIVER_NAME[rnum]}</b><br>'
             f'<span class="meta">Modules: {mods_txt}</span>'
@@ -260,6 +288,44 @@ def build_svg():
             + river_retirement_note_html(rnum, compact=True)
             + '</div>'
         )
+
+    # --- Sep 15 2026: the two real calling loops that actually place
+    # every river node — _emit_river_node only DEFINES how a node
+    # renders, these loops are what were missing before (rule 8: one
+    # shared function, two real real layout algorithms feeding it,
+    # never two copies of the node-rendering logic itself). ---
+    for i, rnum in enumerate(live_ring_order):
+        ang = -90 + (360 * i / n_live)
+        rx, ry = polar(cx, cy, river_radius, ang)
+        _emit_river_node(rnum, rx, ry, is_archived=False)
+
+    # Archived rivers: a fixed horizontal row well below the hub/ring,
+    # evenly spread and centered on cx — 5 nodes don't need (and
+    # shouldn't get) ring-crossing optimization, they need to visibly
+    # NOT be part of the ring.
+    archived_y = cy + river_radius + 150
+    n_archived = len(archived_nums)
+    archived_spacing = 170
+    archived_start_x = cx - (archived_spacing * (n_archived - 1) / 2)
+    for i, rnum in enumerate(archived_nums):
+        ax = archived_start_x + i * archived_spacing
+        _emit_river_node(rnum, ax, archived_y, is_archived=True, hub_r1=30)
+
+    # A real, visible section boundary + label around the archived row —
+    # never just an unlabeled cluster of nodes far from the ring, which
+    # would read as a rendering bug rather than a deliberate section.
+    archive_box_x = archived_start_x - 70
+    archive_box_w = archived_spacing * (n_archived - 1) + 140
+    archive_box_y = archived_y - 62
+    archive_box_h = 110
+    nodes_svg.append(
+        f'<rect x="{archive_box_x}" y="{archive_box_y}" width="{archive_box_w}" height="{archive_box_h}" '
+        f'rx="14" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.14)" stroke-width="1.4" stroke-dasharray="5,4"/>'
+    )
+    nodes_svg.append(
+        f'<text x="{cx}" y="{archive_box_y - 14}" text-anchor="middle" font-size="12.5" font-weight="700" '
+        f'fill="#8a8a9a" letter-spacing="1.5">🗄️ ARCHIVED — SUPERSEDED BY THE L0 INFRA/INTER SYSTEM</text>'
+    )
 
     # --- real RIVER_FLOWS edges, river-to-river only ---
     # A target that isn't a real river number (a terminal-sink note or a
@@ -301,12 +367,15 @@ def build_svg():
     # Real, honest before/after crossing count (never assumed zero) —
     # simulate the OLD plain-numeric ring order at the same radius/angle
     # spacing purely for comparison, count both with the same real
-    # edge list, report the actual improvement.
+    # edge list. Sep 15 2026: scoped to LIVE rivers only, matching what
+    # _crossing_reduced_ring_order() actually optimized — the archived
+    # cluster isn't a ring and was never part of this search.
+    live_ring_edges = [(s, t) for s, t in real_ring_edges if s in live_nums and t in live_nums]
     old_pos = {}
-    for i, rnum in enumerate(sorted(RIVER_NAME)):
-        old_pos[rnum] = polar(cx, cy, river_radius, -90 + (360 * i / n))
-    crossings_before = count_crossings(old_pos, real_ring_edges)
-    crossings_after = count_crossings(river_pos, real_ring_edges)
+    for i, rnum in enumerate(live_nums):
+        old_pos[rnum] = polar(cx, cy, river_radius, -90 + (360 * i / n_live))
+    crossings_before = count_crossings(old_pos, live_ring_edges)
+    crossings_after = count_crossings(river_pos, live_ring_edges)
 
     markers_defs = _build_markers(edge_colors_used)
 
@@ -333,8 +402,8 @@ def build_svg():
         )
     cycles_html = ''.join(cycle_rows) or '<p class="meta">No real cycles detected in the current RIVER_FLOWS data.</p>'
 
-    return ('\n'.join(nodes_svg), '\n'.join(edges_svg), '\n'.join(legend_rows), itype_legend, W, H, markers_defs,
-            crossings_before, crossings_after, cycles_html)
+    return ('\n'.join(nodes_svg), '\n'.join(edges_svg), '\n'.join(live_legend_rows), '\n'.join(archived_legend_rows),
+            itype_legend, W, H, markers_defs, crossings_before, crossings_after, cycles_html)
 
 
 TEMPLATE = """<!DOCTYPE html>
@@ -384,8 +453,8 @@ TEMPLATE = """<!DOCTYPE html>
 
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 1 — Rivers</div>
-  <h1>🏛️ RPGACE Architecture — the 16 Rivers</h1>
-  <p>Drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a> — RPGACE Architecture's own internal structure, the same 17 rivers <code>minotaur_map.html</code> and the Obsidian vault already describe, here laid out radially and cross-linked by real <code>RIVER_FLOWS</code> data (never a river acting on its own — every edge is a real, grounded aggregate of actual caller-level relationships, per <code>system_map_spec.md</code> §1a). Every edge carries a real ✕ mark at its start and a real arrowhead at its end. A 📚 badge marks River XV (the real Oversight hub) and any river with a real, direct connection into it (§6, G5). A 🧑 badge marks a river with at least one real module carrying real DOM/input evidence — a lightweight aggregate (real UI density is too fine-grained for 17 nodes; see Level 2/3 for the real "Alex" bubble + edges). <b>Click any river node to drill into its real modules + dashboard-card entry points (Level 2).</b></p>
+  <h1>🏛️ RPGACE Architecture — {n_live} Live Rivers</h1>
+  <p>Drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a> — RPGACE Architecture's own internal structure, the same {n_rivers} rivers <code>minotaur_map.html</code> and the Obsidian vault already describe ({n_live} live, {n_archived} archived — see the 🗄️ section below), here laid out radially and cross-linked by real <code>RIVER_FLOWS</code> data (never a river acting on its own — every edge is a real, grounded aggregate of actual caller-level relationships, per <code>system_map_spec.md</code> §1a). Every edge carries a real ✕ mark at its start and a real arrowhead at its end. A 📚 badge marks River XV (the real Oversight hub) and any river with a real, direct connection into it (§6, G5). A 🧑 badge marks a river with at least one real module carrying real DOM/input evidence — a lightweight aggregate (real UI density is too fine-grained for 17 nodes; see Level 2/3 for the real "Alex" bubble + edges). <b>Click any river node to drill into its real modules + dashboard-card entry points (Level 2).</b></p>
 </div>
 
 <div class="canvas-wrap">
@@ -414,9 +483,15 @@ TEMPLATE = """<!DOCTYPE html>
 </div>
 
 <div class="legend">
-  <h2>The {n_rivers} rivers</h2>
+  <h2>The {n_live} live rivers</h2>
   <p class="cycle-intro">A <b>River</b> is a strict one-module-one-home grouping of the codebase — every real module belongs to exactly one, which is what makes a river a genuine containment step (L1) with Level 2 nested inside it.</p>
-  {legend}
+  {live_legend}
+</div>
+
+<div class="legend">
+  <h2>🗄️ Archived rivers ({n_archived})</h2>
+  <p class="cycle-intro">These {n_archived} rivers carried zero real <code>rpgace_core.js</code> modules and were real Total-systems categories, not app module domains — superseded by the L0 Infra/Inter system (see <a href="galaxy_map.html">Level 0</a>). Kept here rather than deleted, per this project's own archive-never-delete convention — their real <code>RIVER_RETIRED</code> reason + <code>superseded_by</code> link is shown per row below.</p>
+  {archived_legend}
 </div>
 
 {dim_index}
@@ -437,10 +512,14 @@ TEMPLATE = """<!DOCTYPE html>
 
 
 def main():
-    nodes, edges, legend, itype_legend, W, H, markers, crossings_before, crossings_after, cycles_html = build_svg()
-    html = TEMPLATE.format(nodes=nodes, edges=edges, legend=legend, itype_legend=itype_legend,
+    (nodes, edges, live_legend, archived_legend, itype_legend, W, H, markers,
+     crossings_before, crossings_after, cycles_html) = build_svg()
+    n_archived = len(RIVER_RETIRED)
+    html = TEMPLATE.format(nodes=nodes, edges=edges, live_legend=live_legend,
+                           archived_legend=archived_legend, itype_legend=itype_legend,
                            W=W, H=H, markers=markers, cycles_html=cycles_html,
-                           n_rivers=len(RIVER_NAME),
+                           n_rivers=len(RIVER_NAME), n_live=len(RIVER_NAME) - n_archived,
+                           n_archived=n_archived,
                            dim_index=dimension_index_html(OUT.name,
                                heading='🌌 Dimensions — equal standing with the Rivers above'),
                            dim_css=DIMENSION_INDEX_CSS)

@@ -5347,9 +5347,17 @@ def left_nav_html(current_file):
     for entry in DIMENSION_PAGES:
         dims_by_kind.setdefault(entry[3], []).append(entry)
 
-    def _river_rows():
+    # Sep 15 2026, real 2nd correction (Alex: "Go further on the 5
+    # already-retired rivers") — the sidebar used to list all 17 rivers
+    # as one undifferentiated sequence, same "clutter" problem the
+    # galaxy_map_river.py ring/legend fix already solved visually. Both
+    # helpers below now take a real `archived` filter (rule 8: same
+    # row-rendering logic, two real subsets, never two copies) so the
+    # calling code can render a genuinely separate "🗄️ Archived" group.
+    def _river_rows(archived=False):
         rows = []
-        for r in sorted(RIVER_NAME):
+        nums = sorted(RIVER_RETIRED) if archived else sorted(r for r in RIVER_NAME if r not in RIVER_RETIRED)
+        for r in nums:
             name = RIVER_NAME[r].split('—')[0].strip()
             color = RIVER_COLOR.get(r, '#8a8a9a')
             rows.append(
@@ -5371,9 +5379,10 @@ def left_nav_html(current_file):
     # (the 5 real retired categories, RIVER_RETIRED) still get their own
     # sub-heading with an honest "— no modules —" note rather than being
     # silently skipped, so the river numbering stays visibly complete.
-    def _river_module_nested_rows():
+    def _river_module_nested_rows(archived=False):
         rows = []
-        for r in sorted(RIVER_NAME):
+        nums = sorted(RIVER_RETIRED) if archived else sorted(r for r in RIVER_NAME if r not in RIVER_RETIRED)
+        for r in nums:
             name = RIVER_NAME[r].split('—')[0].strip()
             color = RIVER_COLOR.get(r, '#8a8a9a')
             rows.append(
@@ -5402,16 +5411,24 @@ def left_nav_html(current_file):
         if fname == 'galaxy_map_module.html':
             # L2 gets the ONE combined river->module nested list (rivers
             # and modules were previously two separate flat lists here).
+            # Sep 15 2026: live and archived rivers now get their own
+            # real, separate subheading (see _river_module_nested_rows'
+            # own comment) rather than one undifferentiated 17-river run.
             nested += (
-                '<div class="gside-subhead">🌊 Rivers &amp; Modules</div>'
-                f'<div class="gside-nested gside-rivers">{_river_module_nested_rows()}</div>'
+                '<div class="gside-subhead">🌊 Live Rivers &amp; Modules</div>'
+                f'<div class="gside-nested gside-rivers">{_river_module_nested_rows(archived=False)}</div>'
+                '<div class="gside-subhead">🗄️ Archived Rivers</div>'
+                f'<div class="gside-nested gside-rivers">{_river_module_nested_rows(archived=True)}</div>'
             )
         elif LEFT_NAV_LEVEL_RIVERS.get(fname):
             # L1 (galaxy_map_river.html) has no per-module content of
-            # its own to jump to — plain river list only.
+            # its own to jump to — plain river list only. Sep 15 2026:
+            # same live/archived split as above.
             nested += (
-                '<div class="gside-subhead">🌊 Rivers</div>'
-                f'<div class="gside-nested gside-rivers">{_river_rows()}</div>'
+                '<div class="gside-subhead">🌊 Live Rivers</div>'
+                f'<div class="gside-nested gside-rivers">{_river_rows(archived=False)}</div>'
+                '<div class="gside-subhead">🗄️ Archived Rivers</div>'
+                f'<div class="gside-nested gside-rivers">{_river_rows(archived=True)}</div>'
             )
         dim_nested = ''.join(
             _left_nav_dim_row(entry, current_file)
