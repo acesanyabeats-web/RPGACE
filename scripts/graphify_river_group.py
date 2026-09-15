@@ -368,11 +368,11 @@ RIVER_RETIRED = {
     },
     16: {
         'reason': 'Zero real modules — real dispatch/session history (dated backlog .txt/.md at repo root). Honest gap, not force-mapped: no single L0 unit is a clean 1:1 successor for "every dated file at repo root." Orchestrator CC\'s own unit is the closest real relationship (real Total-systems dispatch history with OpenMontage CC/Graphify CC lives there), but it does not cover the river\'s full original file-path membership.',
-        'superseded_by': [('Orchestrator CC (partial — Total-systems dispatch history only)', 'galaxy_map_orchestrator_openmontage.html#cat-sharedinfra')],
+        'superseded_by': [('Orchestrator CC (partial — Total-systems dispatch history only)', 'galaxy_map_orchestrator_openmontage.html#unit-orchestrator_cc')],
     },
     17: {
         'reason': 'Zero real modules — the actual scripts/config that build/ship/graph the Total system (including the very scripts that generate this graph and the Obsidian vault). Honest gap, not force-mapped: no L0 unit represents "dev tooling" as its own real actor. Orchestrator CC is the closest real relationship (it is the session that runs this tooling), but tooling itself was never promoted to a unit.',
-        'superseded_by': [('Orchestrator CC (partial — runs this tooling)', 'galaxy_map_orchestrator_openmontage.html#cat-sharedinfra')],
+        'superseded_by': [('Orchestrator CC (partial — runs this tooling)', 'galaxy_map_orchestrator_openmontage.html#unit-orchestrator_cc')],
     },
 }
 
@@ -1204,8 +1204,14 @@ def compute_l0_unit_supabase_inter(unit_id):
             # Shared with the FIRST shared table's own infra facet, so
             # clicking here glows both units' matching table rows.
             'share_key': f"sb-{shared[0]}",
-            'link': 'galaxy_map_orchestrator_openmontage.html'
-                    if {unit_id, other} == {'orchestrator_cc', 'openmontage_cc'} else _SB_PAGE,
+            # Sep 15 2026 — real fix: was a bare page link (lands at the
+            # top, showing BOTH units mixed); now points at OTHER's own
+            # real anchor specifically, matching galaxy_map.py's
+            # CC_UNIT_LINK (mirrored here, not imported — galaxy_map.py
+            # imports FROM this file, so the reverse would be circular;
+            # same reasoning L0_UNIT_LABEL's own comment already states).
+            'link': (f'galaxy_map_orchestrator_openmontage.html#unit-{other}'
+                     if {unit_id, other} == {'orchestrator_cc', 'openmontage_cc'} else _SB_PAGE),
         })
     return out
 

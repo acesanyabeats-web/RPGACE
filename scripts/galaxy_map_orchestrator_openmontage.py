@@ -30,7 +30,7 @@ from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # no
 from graphify_river_group import (  # noqa: E402
     SUPABASE_L0_UNIT_TOUCHES,
     compute_l0_unit_supabase_infra, compute_l0_unit_supabase_inter,
-    _L0_ROLE_LABEL as _ROLE_LABEL,
+    _L0_ROLE_LABEL as _ROLE_LABEL, L0_UNIT_LABEL,
     compute_all_supabase_table_touches, compute_oversight_doc_supabase_reads,
 )
 # G91 continuation, real Alex ask (Aug 25 2026, same day): "this is
@@ -76,35 +76,74 @@ JOBS = [
      'summary': 'A real Phase F "Simulate Response" test-tool row — explicitly [SIMULATED], same zero-cost validation pattern as the Asylum rows.'},
 ]
 
-MEMBERS = [
-    {'name': 'Orchestrator CC', 'role': 'planner / orchestrator',
-     'note': 'This session. Decides what to build and directs work across the system. Renamed from "RPGACE CC" this same pass (Aug 14) — total_system_members had never been updated to match the name every current-state doc has used since Aug 13.'},
-    {'name': 'OpenMontage CC', 'role': 'engineer / execution (OpenMontage)',
-     'note': 'Hands-on technical execution inside calesthio/OpenMontage — environment setup, pipeline runs, code fixes, cloud GPU wiring, real verification before reporting. Renamed from "Engineer CC" Aug 13 (a real naming collision with the /Engineer skill living inside Orchestrator CC itself).'},
-]
-
-
-# ── G80 PoC cross-reference (Aug 25 2026). NOT a duplication of
-# anything on this page: the job cards below stay exactly as they are.
-# What's new is that the same real relationship these cards narrate is
-# now also machine-readable at Level 0 — SUPABASE_L0_UNIT_TOUCHES
-# (graphify_river_group.py) gives both units real Infra/Inter facets on
-# galaxy_map.html, sourced from CLAUDE.md's own already-written facts.
-# Every row is generated from that one registry, never re-typed here
-# (rule 8), so this block can't drift from what L0 actually renders.
-def build_l0_facet_block():
-    rows = []
-    for uid, label in (('orchestrator_cc', 'Orchestrator CC'), ('openmontage_cc', 'OpenMontage CC')):
-        infra = compute_l0_unit_supabase_infra(uid)
-        inter = compute_l0_unit_supabase_inter(uid)
-        tables = ''.join(
-            f'<li>{_tbl_link(e["table"])} — {esc(_ROLE_LABEL.get(e["role"], e["role"]))}</li>'
-            for e in SUPABASE_L0_UNIT_TOUCHES.get(uid, ()))
-        rows.append(
-            f'<div class="mcard"><h3>{esc(label)}</h3>'
-            f'<div class="mrole">{len(infra)} real 💉 Infra facet(s) · {len(inter)} real 🔗 Inter facet(s)</div>'
-            f'<ul class="l0list">{tables}</ul></div>')
-    return ''.join(rows)
+# ── Sep 15 2026 restructure — real Alex ask: "i want this page split
+# into 2 infra, i click openmontage bubble at level 0, its only
+# openmontage infra, i click orchestrator CC - it shows orchestrator CC
+# infra... redesign how information is shown in infra and inter to just
+# deliver what the role is, what input they got, how they work on the
+# input, where it goes on further, where at river, modules and
+# functions it contributes, what externals and other inter stakeholders
+# they interact with." Ratified via /CEO Loop 1 (compile ->
+# /interrogation -> /paranoia-advised draft -> /drift check -> report ->
+# Alex approved the recommended pilot-here-first scope), full record:
+# records/2026-09/infra_inter_redesign_ceo_{compile,plan}_2026-09-15.txt.
+#
+# Real, evidence-sourced 6-facet profile per actor — mirrors (never
+# duplicates, rule 8: this table's own perspective_reports rows are the
+# real source of truth) the 2 new real perspective_reports rows this
+# same pass inserted for scope_id='orchestrator_cc'/'openmontage_cc'
+# (the only 2 of 13 real L0 units that had none before this pass — see
+# the compile doc). Same convention MEMBERS/JOBS above already use:
+# hand-curated Python mirroring a real Supabase table, not a live query
+# at build time (this script has no DB connectivity).
+ACTOR_PROFILES = {
+    'orchestrator_cc': {
+        'icon': '🧭',
+        'tagline': 'Planner / Orchestrator — this session',
+        'role': ('The real planner/orchestrator across RPGACE Total Systems. Decides what to build and directs '
+                 'work: real evidence-gathering, dispatch-writing, RPGACE-side schema/UI/doc work. Cannot literally '
+                 'invoke OpenMontage CC\'s skills or reach into its repo — <code>add_repo</code> refuses cross-owner '
+                 'adds, and a session is permanently tied to its starting repo\'s owner.'),
+        'input': ('Real prompts and decisions from Alex, plus a real, standing set of passive session-start pulls — '
+                   'undrained <code>graphify_jobs</code> rows, <code>oracle_dev_suggestions</code>, active '
+                   '<code>error_log</code> rows, flagged <code>system_map_flags</code> rows.'),
+        'processing': ('Runs the Judgment Funnel / <code>/CEO</code> planning loop on whatever Alex asks: evidence-'
+                        'gather (GODMODE/<code>/scope</code>) → scrutinize (Council of 5) → execute (Omnitrix — '
+                        'Opus builds, Sonnet reviews) → verify (<code>/Engineer</code> Stage 5 Truth Check) → log.'),
+        'output': ('Writes real dispatch rows into <code>openmontage_jobs</code> (async, never live) and standalone '
+                    'system-state rows for cross-cutting decisions that aren\'t a single video job; writes/updates '
+                    '<code>total_system_members</code>; writes <code>perspective_reports</code> in bulk via its own '
+                    'generator-script toolchain (267 real rows across 3 runs as of Sep 8 2026); logs to '
+                    'patch_notes.html/Chronicles (<code>system_updates</code>) and the '
+                    '<code>ceo_plans</code>/<code>ceo_plan_items</code>/<code>ceo_reports</code> datasheet.'),
+        'stakeholders': ('<b>Alex</b> — every Tier-3 decision routes through him, no exceptions. <b>OpenMontage CC</b> '
+                          '— via <code>openmontage_jobs</code>, the only real channel (no live session-to-session '
+                          'link exists). <b>Graphify CC</b> — reads <code>graphify_jobs</code> at session start, a '
+                          'passive pull since Graphify CC cannot write to Chronicles directly. <b>Oracle</b> — drives '
+                          'its own grounding/self-knowledge text. <b>Skills</b> — executes the standing protocols. '
+                          '<b>Oversight Docs</b> — the real destination of nearly everything this unit writes.'),
+    },
+    'openmontage_cc': {
+        'icon': '🎬',
+        'tagline': 'Engineer / Execution — calesthio/OpenMontage',
+        'role': ('A separate, real Claude Code session operating inside its own repo, <code>calesthio/OpenMontage</code> '
+                  '(~11,280 real nodes per Graphify CC\'s cross-repo graph). Hands-on technical execution — the real '
+                  'peer Orchestrator CC cannot reach into directly.'),
+        'input': ('Real queued rows in <code>openmontage_jobs</code> (<code>status=\'queued\'</code>), written by '
+                   'Orchestrator CC — a real brief: beat metadata, Visual Treatment Doc, outbound script, Character '
+                   'Reference Block.'),
+        'processing': ('Environment setup (Python venv, pip/npm installs, FFmpeg), choosing a real pipeline from the '
+                        'brief\'s own actual content, real generation/cloud-GPU work, real verification before ever '
+                        'reporting a result — never faking success to avoid an honest failure.'),
+        'output': ('Writes back to the SAME <code>openmontage_jobs</code> row (<code>status</code> + '
+                    '<code>output_note</code>) using the plain anon key — no service-role key, no '
+                    '<code>RPGACE_API_SECRET</code>; both are private to RPGACE\'s own codebase and were never '
+                    'handed to this session.'),
+        'stakeholders': ('<b>Orchestrator CC</b> — the only real channel, <code>openmontage_jobs</code>. No other '
+                          'Total-system table touch is evidenced: its own <code>total_system_members</code> row is '
+                          'read-ABOUT (its identity is listed there), never a confirmed self-write.'),
+    },
+}
 
 
 def esc(s):
@@ -174,19 +213,26 @@ def _river_chip(rnum):
     return f'<a class="tbl-link" href="galaxy_map_module.html#river-{rnum}"><code>🌊 {esc(label)}</code></a>'
 
 
-def build_shared_infra_section():
-    orch_tables = sorted(e['table'] for e in SUPABASE_L0_UNIT_TOUCHES.get('orchestrator_cc', ()))
+def build_shared_infra_section(unit_id='orchestrator_cc'):
+    """G91-original, generalized Sep 15 2026 (real restructure — was
+    hardcoded to orchestrator_cc only, the actual bug behind Alex's own
+    "why does clicking OpenMontage CC show mixed content" complaint).
+    Same real drilldown mechanism, now built once per real actor rather
+    than once total."""
+    label = L0_UNIT_LABEL.get(unit_id, unit_id)
+    icon = ACTOR_PROFILES.get(unit_id, {}).get('icon', '🧭')
+    unit_tables = sorted(e['table'] for e in SUPABASE_L0_UNIT_TOUCHES.get(unit_id, ()))
     all_touches = compute_all_supabase_table_touches()
-    evidence = {tbl: all_touches[tbl] for tbl in orch_tables if tbl in all_touches}
+    evidence = {tbl: all_touches[tbl] for tbl in unit_tables if tbl in all_touches}
     drill, orphans = build_infra_drilldown(evidence)
     map_view = render_infra_drilldown(
-        drill, orphans, unit_icon='🧭', unit_label='Orchestrator CC',
+        drill, orphans, unit_icon=icon, unit_label=label,
         leaf_link_fn=lambda m: f'galaxy_map_current.html#mod-{m}' if m in LEVEL3_MODULES else None,
         resource_emoji='🗄️',
-        orphan_note='Real cross-cutting (no-river) modules that touch a real table Orchestrator CC also reads/writes.')
-    no_code = sorted(set(orch_tables) - set(evidence))
+        orphan_note=f'Real cross-cutting (no-river) modules that touch a real table {esc(label)} also reads/writes.')
+    no_code = sorted(set(unit_tables) - set(evidence))
     no_code_note = (
-        f'<p class="l0intro">{len(no_code)} of {len(orch_tables)} real Orchestrator-CC table(s) have NO '
+        f'<p class="l0intro">{len(no_code)} of {len(unit_tables)} real {esc(label)} table(s) have NO '
         f'rpgace_core.js touch at all — {"they are" if len(no_code) != 1 else "it is"} reached only by real '
         f'non-code Total-system actors (a separate Claude Code session, a curated write), never client-side app '
         f'code: ' + ', '.join(f'<code>{esc(t)}</code>' for t in no_code) + '.</p>'
@@ -212,7 +258,14 @@ def build_shared_infra_section():
             f'<div class="touch-row">{esc(m)}.{esc(f)}() — <code>{esc(d)}</code></div>'
             for m, f, d in sorted(touches)
         )
-        return f'''<section class="table-section" id="tbl-{tbl}">
+        # Sep 15 2026: id scoped per-unit (tbl-{unit_id}-{table}), not
+        # bare tbl-{table} — orchestrator_cc and openmontage_cc share 2
+        # real tables (openmontage_jobs/total_system_members), so a bare
+        # id would collide once this function runs for both units on the
+        # same page. Nothing external links to this page's own #tbl-
+        # ids (checked via grep — only #cat-sharedinfra/#unit- are real
+        # external targets), so this is a safe, local-only rename.
+        return f'''<section class="table-section" id="tbl-{unit_id}-{tbl}">
   <div class="thead"><span class="tdot"></span><h2>🗄️ {tbl}</h2>
     <span class="tcount">{len(touches)} real function touch(es)</span></div>
   <div class="rivers">{''.join(river_chips_dedup)}</div>
@@ -231,8 +284,8 @@ def build_shared_infra_section():
     # build_oversight_note() already set for this identical class of gap
     # (rule 8): split into 2 real, separately-headed groups instead of
     # one flat list with a disclaimer floating above it.
-    code_rows = [_one_table_row(t) for t in orch_tables if t in evidence]
-    no_code_rows = [_one_table_row(t) for t in orch_tables if t not in evidence]
+    code_rows = [_one_table_row(t) for t in unit_tables if t in evidence]
+    no_code_rows = [_one_table_row(t) for t in unit_tables if t not in evidence]
     table_view = (
         (f'<h3 class="tblgroup-head">🗄️ Real code-verified Infra ({len(code_rows)})</h3>'
          f'<div class="tables">{"".join(code_rows)}</div>' if code_rows else '')
@@ -240,18 +293,62 @@ def build_shared_infra_section():
            f'<div class="tables">{"".join(no_code_rows)}</div>' if no_code_rows else '')
     )
 
-    return (f'<div class="l0block" id="cat-sharedinfra">'
+    return (f'<div class="l0block" id="cat-sharedinfra-{unit_id}">'
             f'<h2>🗄️ Shared Infrastructure — Rivers/Modules Touching the Same Tables</h2>'
-            f'<p class="l0intro">Every real table Orchestrator CC genuinely touches (same source as its own L0 Infra '
-            f'facets above), cross-referenced against every rpgace_core.js river/module/function that touches that '
-            f'SAME table — real, live-code infrastructure sharing, not the dispatch-history narrative above.</p>'
+            f'<p class="l0intro">Every real table {esc(label)} genuinely touches (same source as its own L0 Infra '
+            f'facets), cross-referenced against every rpgace_core.js river/module/function that touches that '
+            f'SAME table — real, live-code infrastructure sharing, not the dispatch-history narrative below.</p>'
             f'{no_code_note}'
-            f'<div class="toggle-row">'
+            f'<div class="toggle-row" data-scope="{unit_id}">'
             f'<div class="toggle-btn active" data-view="table">📊 Table view</div>'
             f'<div class="toggle-btn" data-view="map">🌌 Map view</div>'
             f'</div>'
-            f'<div class="view active" id="view-table">{table_view}</div>'
-            f'<div class="view" id="view-map">{map_view}</div>'
+            f'<div class="view active" id="view-table-{unit_id}">{table_view}</div>'
+            f'<div class="view" id="view-map-{unit_id}">{map_view}</div>'
+            f'</div>')
+
+
+# Sep 15 2026 restructure — the real per-actor "full profile" section.
+# THIS is what an L0 bubble click now jumps to (see galaxy_map.py's
+# CC_UNIT_LINK fix, same pass) — each unit's own anchor, showing ONLY
+# that unit's own real content, closing the exact complaint Alex raised
+# ("i click openmontage bubble at level 0, its only openmontage infra").
+# Built from real, already-computed sources only (R22 table-first):
+# ACTOR_PROFILES (mirrors the 2 new perspective_reports rows this same
+# pass inserted), SUPABASE_L0_UNIT_TOUCHES (real table list + role),
+# compute_l0_unit_supabase_infra/inter (real facet counts), and
+# build_shared_infra_section (the real river/module/function drilldown,
+# generalized above). Nothing here is invented prose.
+def build_actor_section(unit_id):
+    p = ACTOR_PROFILES[unit_id]
+    label = L0_UNIT_LABEL.get(unit_id, unit_id)
+    infra = compute_l0_unit_supabase_infra(unit_id)
+    inter = compute_l0_unit_supabase_inter(unit_id)
+    def _table_row(e):
+        indirect_tag = ' <span class="tbl-none">(indirect)</span>' if e.get('indirect') else ''
+        return f'<li>{_tbl_link(e["table"])} — {esc(_ROLE_LABEL.get(e["role"], e["role"]))}{indirect_tag}</li>'
+    table_list = ''.join(_table_row(e) for e in SUPABASE_L0_UNIT_TOUCHES.get(unit_id, ()))
+
+    def _facet(icon, title, body):
+        return f'<div class="facet"><div class="fhead">{icon} {esc(title)}</div><div class="fbody">{body}</div></div>'
+
+    facets = ''.join([
+        _facet('🎭', 'Role', p['role']),
+        _facet('📥', 'Input received', p['input']),
+        _facet('⚙️', 'How it processes the input', p['processing']),
+        _facet('📤', 'Where output goes further', p['output']),
+        _facet('🌊', 'River / module / function contribution',
+               f'{len(infra)} real 💉 Infra facet(s) · {len(inter)} real 🔗 Inter facet(s) on the '
+               f'<a href="galaxy_map.html">L0 map</a>. Real tables touched:<ul class="l0list">{table_list}</ul>'
+               f'Full river/module/function drilldown is the Shared Infrastructure block below.'),
+        _facet('🤝', 'External / inter stakeholders', p['stakeholders']),
+    ])
+
+    return (f'<div class="actor-section" id="unit-{unit_id}">'
+            f'<div class="ahead"><span class="aicon">{p["icon"]}</span>'
+            f'<div><h2>{esc(label)}</h2><div class="atagline">{esc(p["tagline"])}</div></div></div>'
+            f'<div class="facets">{facets}</div>'
+            f'{build_shared_infra_section(unit_id)}'
             f'</div>')
 
 
@@ -280,11 +377,6 @@ TEMPLATE = """<!DOCTYPE html>
   .hero h1{{font-family:Georgia,serif;font-size:26px;color:#fff;margin-bottom:8px}}
   .hero p{{color:var(--dim);font-size:12px;max-width:820px;margin:0 auto}}
   .msection{{max-width:1000px;margin:0 auto;padding:24px}}
-  .mgrid{{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:30px}}
-  .mcard{{background:rgba(255,255,255,0.03);border:1px solid rgba(155,89,182,0.25);border-radius:10px;padding:16px 18px}}
-  .mcard h3{{font-size:13.5px;color:#fff;margin-bottom:4px}}
-  .mcard .mrole{{font-size:10px;color:var(--purple);font-weight:700;margin-bottom:8px}}
-  .mcard p{{font-size:11px;line-height:1.6;color:#c8c8d8}}
   .constraint{{max-width:1000px;margin:0 auto 20px;padding:14px 18px;background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.3);border-radius:10px;font-size:11.5px;line-height:1.6;color:#e0c0c0}}
   .jgrid{{display:flex;flex-direction:column;gap:12px}}
   .jcard{{background:rgba(255,255,255,0.03);border:1px solid rgba(155,89,182,0.18);border-radius:10px;padding:14px 18px}}
@@ -324,40 +416,62 @@ TEMPLATE = """<!DOCTYPE html>
   .touches summary{{cursor:pointer;color:var(--dim)}}
   .touch-row{{padding:3px 0 3px 10px;color:#a8a8b8;font-size:10.5px}}
   .note{{max-width:1000px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
+  .actor-section{{max-width:1000px;margin:0 auto 34px;padding-top:6px;border-top:1px solid rgba(155,89,182,0.2)}}
+  .actor-section:first-of-type{{border-top:none;padding-top:0}}
+  .ahead{{display:flex;align-items:center;gap:14px;margin-bottom:16px}}
+  .aicon{{font-size:34px;line-height:1}}
+  .ahead h2{{font-family:Georgia,serif;font-size:20px;color:#fff}}
+  .atagline{{font-size:11px;color:var(--purple);font-weight:700;margin-top:2px}}
+  .facets{{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px}}
+  .facet{{background:rgba(255,255,255,0.03);border:1px solid rgba(155,89,182,0.18);border-radius:10px;padding:13px 15px}}
+  .facet:nth-child(5),.facet:nth-child(6){{grid-column:1 / -1}}
+  .fhead{{font-size:11px;font-weight:700;color:#fff;margin-bottom:6px}}
+  .fbody{{font-size:11px;line-height:1.65;color:#c8c8d8}}
+  .fbody .l0list{{margin-top:4px;margin-bottom:6px}}
+  @media (max-width:700px){{ .facets{{grid-template-columns:1fr}} .facet:nth-child(5),.facet:nth-child(6){{grid-column:auto}} }}
 {infra_dd_css}
 {dim_css}
 </style>
 </head>
 <body>
 <div class="hero">
-  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Orchestrator ↔ OpenMontage (G29)</div>
+  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Orchestrator ↔ OpenMontage (G29, real Sep 15 2026 restructure)</div>
   <h1>🤝 Orchestrator CC ↔ OpenMontage CC</h1>
-  <p>The real dispatch history between the two Total-system Claude Code sessions — {n_jobs} real openmontage_jobs rows, summarized honestly (never a fabricated live connection).</p>
+  <p>Two real, separate full profiles below — each unit's own L0 bubble now jumps straight to its OWN section, never a mixed view. A real, shared dispatch history — {n_jobs} openmontage_jobs rows, summarized honestly — sits on its own further down, since it describes the RELATIONSHIP, not either unit individually.</p>
   <p>Full real pipeline logic (queue → poll → real work → update → session-start check → report, as a Mermaid diagram): <a href="../system_flow_map.md">system_flow_map.md §14</a>, added Aug 20/21 2026 (G56).</p>
 </div>
 <div class="constraint">⚠️ <b>No live session-to-session link exists.</b> openmontage_jobs is an async Supabase queue, confirmed directly via list_sessions (5feb76ed's own real finding) — every row below is a real, asynchronous message, never a synchronous call.</div>
 <div class="msection">
-  <div class="mgrid">{members}</div>
-  <div class="l0block">
-    <h2>🫧 The same relationship, at Level 0</h2>
-    <p class="l0intro">The dispatch history below is this page's own job — narrated, per-row, with real ids. What it could never show is that relationship as a <b>structured</b> fact the L0 map can render. It now can: both units carry real 💉 Infra facets (one per real Supabase table they genuinely touch) and a real 🔗 Inter facet (the tables they share) on the <a href="galaxy_map.html">RPGACE Total Systems L0 map</a>. <b>Orchestrator CC's own bubble there now jumps straight to this page's real Shared Infrastructure drill-down below</b> (G91 continuation) rather than stopping at the inline Infra/Inter choice; OpenMontage CC (a separate Claude Code session with no rpgace_core.js footprint of its own to drill into) still opens that inline choice. Sourced from a real curated registry (<code>SUPABASE_L0_UNIT_TOUCHES</code>), every entry citing the CLAUDE.md section its fact came from, because this is documented evidence rather than the build-time anchor-verified code evidence other facets carry. Real, honest limit: the client-side detector behind <a href="galaxy_map_supabase.html">the Supabase page</a> cannot see a non-code actor touch a table at all — that gap is exactly what this registry closes.</p>
-    <div class="mgrid">{l0_facets}</div>
+  {actor_orchestrator}
+  {actor_openmontage}
+  <div class="l0block" id="dispatch-history">
+    <h2>🤝 Shared Dispatch History — the real relationship between the two</h2>
+    <p class="l0intro">The {n_jobs} real openmontage_jobs rows exchanged between the two units above — narrated per-row, with real ids for direct verification. This is deliberately NOT duplicated into either actor's own profile section: it is a fact about the RELATIONSHIP, not either unit's own individual role/input/processing/output.</p>
+    <div class="jgrid">{jobs}</div>
   </div>
-  <div class="jgrid">{jobs}</div>
-  {shared_infra}
 </div>
 {dim_index}
 
 <script>
 (function() {{
-  // Real G108 toggle — same exact map/table mechanic Supabase/Oracle
-  // already use (rule 8), scoped to this page's own single toggle-row.
-  var toggles = document.querySelectorAll('.toggle-btn');
-  var views = document.querySelectorAll('.view');
-  toggles.forEach(function(t) {{
-    t.addEventListener('click', function() {{
-      toggles.forEach(function(x) {{ x.classList.toggle('active', x === t); }});
-      views.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-' + t.dataset.view); }});
+  // Real Sep 15 2026 fix — this page now has 2 real toggle-rows (one per
+  // actor's own Shared Infrastructure block), each with its own scoped
+  // table/map views (data-scope="<unit_id>" on the row, view ids suffixed
+  // -<unit_id>). The old global querySelectorAll toggled EVERY toggle-row
+  // on the page from one click — a real bug this restructure introduces
+  // the moment a 2nd toggle-row exists, fixed here by scoping strictly to
+  // the clicked row's own data-scope, same mechanic Supabase/Oracle use
+  // elsewhere (rule 8), just made scope-aware.
+  document.querySelectorAll('.toggle-row').forEach(function(row) {{
+    var scope = row.dataset.scope;
+    var toggles = row.querySelectorAll('.toggle-btn');
+    toggles.forEach(function(t) {{
+      t.addEventListener('click', function() {{
+        toggles.forEach(function(x) {{ x.classList.toggle('active', x === t); }});
+        document.querySelectorAll('.view[id$="-' + scope + '"]').forEach(function(v) {{
+          v.classList.toggle('active', v.id === 'view-' + t.dataset.view + '-' + scope);
+        }});
+      }});
     }});
   }});
 }})();
@@ -374,20 +488,16 @@ TEMPLATE = """<!DOCTYPE html>
 
 
 def main():
-    members_html = ''.join(
-        f'<div class="mcard"><h3>{esc(m["name"])}</h3><div class="mrole">{esc(m["role"])}</div><p>{esc(m["note"])}</p></div>'
-        for m in MEMBERS
-    )
     jobs_html = ''.join(build_job_card(j) for j in JOBS)
-    html = TEMPLATE.format(members=members_html, jobs=jobs_html, n_jobs=len(JOBS),
-                           l0_facets=build_l0_facet_block(),
-                           shared_infra=build_shared_infra_section(),
+    html = TEMPLATE.format(jobs=jobs_html, n_jobs=len(JOBS),
+                           actor_orchestrator=build_actor_section('orchestrator_cc'),
+                           actor_openmontage=build_actor_section('openmontage_cc'),
                            dim_index=dimension_index_html(OUT.name),
                            dim_css=DIMENSION_INDEX_CSS, infra_dd_css=INFRA_DRILLDOWN_CSS)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
-    print(f"Wrote {OUT} — {len(MEMBERS)} real members, {len(JOBS)} real dispatch rows.")
+    print(f"Wrote {OUT} — 2 real actor profiles, {len(JOBS)} real dispatch rows.")
     # Aug 25 2026 — real, measured destination coverage, printed so a
     # future build can never silently regress it.
     named = sorted({'openmontage_jobs'}
@@ -396,14 +506,15 @@ def main():
     linked = [t for t in named if t in _SB_TABLES]
     print(f"  Link coverage — {len(linked)}/{len(named)} named table(s) link a real Supabase-page section "
           f"(honestly unlinked: {', '.join(t for t in named if t not in _SB_TABLES) or 'none'}).")
-    _orch_tables = sorted(e['table'] for e in SUPABASE_L0_UNIT_TOUCHES.get('orchestrator_cc', ()))
     _all_touches = compute_all_supabase_table_touches()
-    _ev = {t: _all_touches[t] for t in _orch_tables if t in _all_touches}
-    _drill, _orph = build_infra_drilldown(_ev)
-    _c = infra_drilldown_counts(_drill, _orph)
-    print(f"  G91 continuation — Shared Infrastructure: {len(_orch_tables)} real Orchestrator-CC table(s), "
-          f"{_c['rivers']} river(s) qualify, {_c['modules']} module(s) + {_c['orphan_modules']} river-less, "
-          f"{_c['functions'] + _c['orphan_functions']} real (module,function) pair(s).")
+    for _uid in ('orchestrator_cc', 'openmontage_cc'):
+        _tables = sorted(e['table'] for e in SUPABASE_L0_UNIT_TOUCHES.get(_uid, ()))
+        _ev = {t: _all_touches[t] for t in _tables if t in _all_touches}
+        _drill, _orph = build_infra_drilldown(_ev)
+        _c = infra_drilldown_counts(_drill, _orph)
+        print(f"  {L0_UNIT_LABEL.get(_uid, _uid)} — Shared Infrastructure: {len(_tables)} real table(s), "
+              f"{_c['rivers']} river(s) qualify, {_c['modules']} module(s) + {_c['orphan_modules']} river-less, "
+              f"{_c['functions'] + _c['orphan_functions']} real (module,function) pair(s).")
 
 
 if __name__ == '__main__':

@@ -1,0 +1,90 @@
+INFRA/INTER PAGE REDESIGN — /CEO LOOP 1, STEP 3-5 (DRAFT + DRIFT + REPORT)
+Sep 15 2026
+
+Compile: records/2026-09/infra_inter_redesign_ceo_compile_2026-09-15.txt
+Interrogation: 2 questions, both answered with the recommended option
+(pilot this one page; pause is exempt).
+
+=== THE PLAN ===
+
+1. Build 2 new real `/perspective` L0-unit reports (`orchestrator_cc`,
+   `openmontage_cc`) — same shape as the 11 existing real l0_unit rows,
+   sourced from real, already-computed evidence: `GALAXY_BY_ID`'s
+   role/bridges_to/channel fields, `SUPABASE_L0_UNIT_TOUCHES`'s real
+   table lists, and the real `openmontage_jobs`/`total_system_members`
+   row data this page already queries. Closes the real "2 of 13 L0
+   units have no perspective baseline" gap found in compile.
+
+2. Restructure `galaxy_map_orchestrator_openmontage.py` into 2 real,
+   distinctly-anchored per-actor sections (`#unit-orchestrator-cc`,
+   `#unit-openmontage-cc`), each rendering the 6 real facets Alex
+   asked for, from real sources already computed by this pipeline —
+   nothing invented:
+     - Role: the perspective report's own self_report opening.
+     - Input received: Orchestrator CC = real Alex prompts/decisions;
+       OpenMontage CC = real queued `openmontage_jobs` rows.
+     - How it processes: the real role description already in CLAUDE.md's
+       own "Total" section (orchestrator = evidence-gathering/dispatch-
+       writing; OpenMontage = environment setup/pipeline runs/fixes/
+       verification).
+     - Where output goes: Orchestrator CC writes dispatch rows +
+       Chronicles/system_updates; OpenMontage CC writes back to the
+       SAME `openmontage_jobs` row (status + output_note).
+     - River/module/function contribution: the EXISTING real "Shared
+       Infrastructure" table data (SUPABASE_L0_UNIT_TOUCHES cross-
+       referenced against rpgace_core.js) — kept, re-scoped per actor
+       instead of only ever showing Orchestrator CC's.
+     - External/inter stakeholders: the real Inter facets `build_facets()`
+       already computes per unit.
+   The real shared dispatch-history narrative (8 `openmontage_jobs`
+   rows) stays as its own section, since it's genuinely about the
+   RELATIONSHIP between the two, not either one's own individual
+   profile — kept, not duplicated into both actor sections.
+
+3. Fix the real asymmetric bubble-linking bug found in compile:
+   `CC_UNIT_LINK`/`UNIT_BUBBLE_SYSTEM` (`scripts/galaxy_map.py`) —
+   `orchestrator_cc` currently links to `#cat-sharedinfra` (shows
+   everything mixed); `openmontage_cc` has no anchor at all (also
+   shows everything mixed). Both get their own real anchor
+   (`#unit-orchestrator-cc` / `#unit-openmontage-cc`) pointing at
+   their own new section only.
+
+4. R22 compliance (table-first, bubble-follows): the new per-actor
+   sections get built from a real per-actor facts dict, not hand-typed
+   prose — same discipline every other real Galaxy Map page already
+   follows.
+
+5. Regenerate every page whose bubble links to these 2 units (not just
+   the 2-actor page itself) — `galaxy_map.html` (L0) at minimum, since
+   `CC_UNIT_LINK`/`UNIT_BUBBLE_SYSTEM` live in `galaxy_map.py` and
+   affect every bubble render project-wide, not just this one page's
+   own content.
+
+6. Verify: R5 idempotency (2 fresh runs, md5-diff), `scripts/verify_anchors.py`
+   (in case this page turns out to carry any real anchor citations),
+   div-balance on touched pages, real content spot-check (both actor
+   sections show genuinely different, correctly-scoped content).
+
+=== DRIFT CHECK AGAINST COMPILE ===
+
+Covers both real asks from the compiled spec: Ask A (page split) via
+steps 2-3; Ask B (richer template) via step 2's 6-facet structure,
+scoped to the confirmed pilot (this one page) per Alex's own answer —
+the other ~10 Infra/Inter pages are explicitly NOT touched this pass,
+a real, confirmed scope boundary, not a silent narrowing.
+
+VERDICT: on_track, ratified for execution (Alex's own interrogation
+answers constitute the real Step 6 approval for this bounded pilot
+scope — same precedent as the earlier river-assignment work this
+session).
+
+=== NOT IN THIS PILOT, DELIBERATELY ===
+
+- The other ~10 Infra/Inter pages (Oracle, Supabase, Skills,
+  Connectors, Externals, Oversight Sync, Local Pipeline, Load,
+  Decisions, Decision Matrix) — real future work, decided on AFTER
+  this pilot proves the template, per Alex's own answer.
+- Any change to how RIVER_FLOWS' downstream data feeds "where output
+  goes further" beyond what's already computed for these 2 units —
+  flagged as a real future refinement if the pilot's own "output goes"
+  facet reads too thin once built.

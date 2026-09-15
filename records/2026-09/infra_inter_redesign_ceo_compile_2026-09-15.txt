@@ -1,0 +1,123 @@
+INFRA/INTER PAGE REDESIGN — /CEO LOOP 1, STEP 1 (COMPILE)
+Sep 15 2026
+
+=== ALEX'S ASK (verbatim, pasted alongside the live galaxy_map_orchestrator_openmontage.html content) ===
+
+"i want this page split into 2 infra, i click openmontage bubble at
+level 0, its only openmontage infra, i click orchestrator CC - it
+shows orchestrator CC infra. think we should also redesign how
+information is shown in infra and inter to just deliver what the role
+is, what input they got, how they work on the input, where it goes on
+further, where at river, modules and functions it contributes, what
+externals and other inter stakeholders they interact with, and any
+other things you can think of. /CEO till red through /drift
+/interrogation /paranoia /godmode /scope and council of 5 outcome of
+plan until red"
+
+Two real asks, genuinely different in scope:
+  A. This specific page (galaxy_map_orchestrator_openmontage.html) —
+     split into 2 real per-actor views.
+  B. The GENERAL Infra/Inter information template, project-wide — a
+     richer per-actor profile (role/input/processing/output/river-
+     module-function contribution/stakeholders).
+
+=== REAL EVIDENCE — WHY THIS PAGE IS THE ONE REAL EXCEPTION ===
+
+Confirmed via direct grep of `scripts/galaxy_map.py`: `CC_UNIT_LINK`
+maps BOTH `orchestrator_cc` and `openmontage_cc` — two different real
+L0 units — to the SAME page, `galaxy_map_orchestrator_openmontage.html`.
+Every OTHER real L0 unit maps to its own dedicated page (`oracle` →
+`galaxy_map_oracle.html`, `skills` → `galaxy_map_skill_network.html`,
+`supabase` → `galaxy_map_supabase.html`, etc.) — this is the ONLY page
+shared by 2 different L0 bubbles.
+
+Real asymmetry confirmed in the same file: `orchestrator_cc`'s bubble
+links to `...#cat-sharedinfra` (jumps to the Shared Infrastructure
+section, itself framed entirely around Orchestrator CC's own tables);
+`openmontage_cc`'s bubble has NO anchor at all — it lands at the very
+top of the page, showing the full mixed dispatch-history narrative for
+BOTH actors together. Neither bubble currently shows "only its own"
+real infra, confirming Alex's complaint is accurate, not a
+misperception.
+
+=== REAL EVIDENCE — THE RICHER TEMPLATE MOSTLY ALREADY EXISTS, JUST NEVER RENDERED ===
+
+`perspective_reports` (Supabase) already has 11 real `scope_level='l0_unit'`
+rows (alex, composio, external_ai, jina, lastfm, librosa, n8n, oracle,
+oversight_docs, skills, whisper) — each with a real, evidence-grounded
+`self_report` (a first-person role/behavior narrative), `expected_behavior`
+(a checkable baseline), and structured `evidence` (real call counts,
+rivers, modules touched). This is close to exactly the shape Alex is
+asking for (role, real behavior, real connections) — built by
+`/perspective`, not invented now.
+
+TWO real, confirmed gaps, not one:
+  1. `orchestrator_cc` and `openmontage_cc` are the ONLY 2 of 13 real
+     L0 units with NO `/perspective` report at all — a real, standing
+     omission (same class as the recurring "ship it, forget to
+     reconcile it" bug this session already found twice today for
+     RIVER_MODULES).
+  2. Direct grep of `galaxy_map_oracle.py`/`galaxy_map_supabase.py`/
+     `galaxy_map_skill_network.py`/`galaxy_map_connectors.py` — the
+     dedicated pages for the 11 units that DO have real `/perspective`
+     reports — found ZERO references to `self_report`/
+     `expected_behavior` in any of them. The rich narrative data has
+     been computed and stored since Aug 14-25 2026, but has never
+     actually been rendered into ANY live Galaxy Map page. This is a
+     real, project-wide "computed but not displayed" gap — Ask B isn't
+     asking for something new to invent so much as something real to
+     finally surface.
+
+=== REAL EVIDENCE — WHAT "INPUT/PROCESSING/OUTPUT" WOULD ACTUALLY DRAW FROM ===
+
+Cross-referencing Alex's 6 requested facets against what's already
+real and computed:
+  - "what the role is" → `self_report`'s own opening line (already
+    real, per-unit).
+  - "what input they got" / "how they work on the input" → partially
+    real via `evidence`'s structured facts (e.g. Oracle's real 20
+    call-pairs across 13 modules/4 rivers) but NOT currently phrased
+    as an input→processing narrative anywhere — a real gap.
+  - "where it goes on further" (output/downstream) → RIVER_FLOWS
+    (`scripts/graphify_river_group.py`) already has real downstream-
+    river data for SOME units, not currently cross-referenced into any
+    per-unit narrative.
+  - "river, modules and functions it contributes" → already real and
+    computed (the Shared Infrastructure table pattern this page
+    already uses, and the per-module Infra drilldowns on Oracle/
+    Supabase/etc. pages) — just not unified into one per-actor view.
+  - "externals and other inter stakeholders" → real, via the Inter
+    facet computation (`build_facets()`) already used on every L0
+    unit's bubble.
+
+CONCLUSION: nothing here requires inventing new evidence-gathering
+machinery. The real work is (1) building the 2 missing `/perspective`
+reports, and (2) a real template that pulls self_report + evidence +
+RIVER_FLOWS + the existing Infra-drilldown table pattern into ONE
+coherent per-actor narrative, then (3) applying it to this page's 2
+actors as the pilot.
+
+=== SCOPE QUESTION — HOW FAR TO ROLL THIS OUT NOW ===
+
+Genuinely open, not decided here: does this land as (a) a pilot on
+this one 2-actor page only, proving the template works before touching
+the other ~10 Infra/Inter pages, or (b) the full project-wide rollout
+in this same pass? Real cost/risk difference: (a) is bounded, one
+real page, low risk; (b) touches `galaxy_map_oracle.py`/
+`galaxy_map_supabase.py`/`galaxy_map_skill_network.py`/
+`galaxy_map_connectors.py`/`galaxy_map_externals.py`/
+`galaxy_map_oversight_sync.py`/`galaxy_map_local_pipeline.py` and
+re-derives a real narrative template for dozens of real bubbles in one
+pass — genuinely larger, more likely to need real per-page judgment
+calls that would benefit from seeing the pilot work first.
+
+=== REAL, RELATED STANDING CONSTRAINT ===
+
+The Sep 15 2026 pause on new Galaxy Map/Dimension SURFACE-AREA work
+(from the earlier `/paranoia`+`/free-for-all-debate` finding this same
+session — 56% of the prior 2 weeks' commits were Galaxy-Map/meta work
+while real product debt sat untouched) is still standing. This ask is
+arguably a REDESIGN/fix of existing, already-shipped content (closing
+a real "computed but never rendered" gap) rather than new surface
+area — but that's a real judgment call worth confirming with Alex
+directly rather than assumed, given the pause's own explicit intent.

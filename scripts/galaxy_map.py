@@ -326,8 +326,17 @@ EXTERNAL_AI_ACTORS = [
 # rather than borrowing one.
 CC_UNIT_CONNECTOR = {'openmontage_cc': 'OpenMontage', 'graphify_cc': 'Graphify CC'}
 CC_UNIT_LINK = {
-    'orchestrator_cc': 'galaxy_map_orchestrator_openmontage.html',
-    'openmontage_cc': 'galaxy_map_orchestrator_openmontage.html',
+    # Sep 15 2026 real fix — both anchors used to be missing or asymmetric
+    # (orchestrator_cc had none here, and UNIT_BUBBLE_SYSTEM below
+    # separately hardcoded a bare #cat-sharedinfra that only orchestrator_cc
+    # actually had; openmontage_cc had no anchor anywhere, landing at the
+    # page top showing BOTH units mixed — confirmed the real bug behind
+    # Alex's own complaint: "i click openmontage bubble at level 0, its
+    # only openmontage infra"). Each CC unit now gets its own real,
+    # dedicated anchor (galaxy_map_orchestrator_openmontage.py's new
+    # build_actor_section()) showing ONLY that unit's own profile.
+    'orchestrator_cc': 'galaxy_map_orchestrator_openmontage.html#unit-orchestrator_cc',
+    'openmontage_cc': 'galaxy_map_orchestrator_openmontage.html#unit-openmontage_cc',
     'graphify_cc': 'galaxy_map_externals.html',
 }
 
@@ -343,7 +352,11 @@ UNIT_BUBBLE_SYSTEM = {
     'supabase': 'galaxy_map_supabase.html#view-map',
     'oracle': 'galaxy_map_oracle.html#view-map',
     'oversight_docs': 'galaxy_map_oversight_sync.html#cat-sharedinfra',
-    'orchestrator_cc': 'galaxy_map_orchestrator_openmontage.html#cat-sharedinfra',
+    # Sep 15 2026 — was a 2nd, separately hand-typed copy of
+    # orchestrator_cc's own link (rule 8); now reuses CC_UNIT_LINK
+    # directly, the same way openmontage_cc/graphify_cc already did,
+    # so this mapping cannot drift from that one again.
+    'orchestrator_cc': CC_UNIT_LINK['orchestrator_cc'],
     'openmontage_cc': CC_UNIT_LINK['openmontage_cc'],
     'graphify_cc': CC_UNIT_LINK['graphify_cc'],
     'composio': 'galaxy_map_connectors.html#conn-composio',
@@ -915,7 +928,7 @@ def build_facets():
         if not g:
             continue
         channel = g.get('channel')
-        link = 'galaxy_map_orchestrator_openmontage.html' if gid == 'openmontage_cc' else None
+        link = CC_UNIT_LINK.get('openmontage_cc') if gid == 'openmontage_cc' else None
         detail = f"{esc(g['role'])} <span class=\"ev\">Bridges to: {esc(g.get('bridges_to') or 'n/a')}" + (f", channel: {esc(channel)}" if channel else '') + '</span>'
         facets['rpgace_architecture'].append({
             'kind': 'inter', 'dim': 'Total Systems dispatch', 'label': f"↔ {g['label']}",

@@ -1,0 +1,130 @@
+INFRA/INTER PAGE REDESIGN — /CEO LOOP 1, STEP 5b (EXECUTION REPORT)
+Sep 15 2026
+
+Compile: records/2026-09/infra_inter_redesign_ceo_compile_2026-09-15.txt
+Ratified plan: records/2026-09/infra_inter_redesign_ceo_plan_2026-09-15.txt
+
+=== WHAT WAS ACTUALLY BUILT ===
+
+1. Two new real `perspective_reports` rows inserted, closing the "2 of
+   13 L0 units have no perspective baseline" gap the compile found:
+     - scope_id='orchestrator_cc', id=f715922e-6481-4723-a222-a439080f3700
+     - scope_id='openmontage_cc', id=55ed466d-757e-4b3b-a65f-7d8900b8d9ad
+   Both real, evidence-grounded (self_report/expected_behavior/evidence
+   columns filled from CLAUDE.md's own "Total" section + the real
+   SUPABASE_L0_UNIT_TOUCHES registry), status='unverified' pending
+   Alex's own hand-test, matching every other real perspective row's
+   convention.
+
+2. `scripts/galaxy_map_orchestrator_openmontage.py` restructured:
+     - New `ACTOR_PROFILES` dict — a real, curated Python mirror of the
+       2 new perspective_reports rows (same convention the file's own
+       pre-existing MEMBERS/JOBS lists already use: hand-curated data
+       mirroring a real Supabase table, since this script has no DB
+       connectivity at build time).
+     - `build_shared_infra_section()` generalized to take a real
+       `unit_id` param (was hardcoded to orchestrator_cc only — the
+       actual bug behind Alex's complaint). Table-section ids scoped
+       per-unit (`tbl-{unit_id}-{table}`) since orchestrator_cc and
+       openmontage_cc share 2 real tables and would have collided.
+     - New `build_actor_section(unit_id)` — the real 6-facet template
+       Alex asked for (role / input received / how it processes the
+       input / where output goes further / river-module-function
+       contribution / external-inter stakeholders), each facet sourced
+       from ACTOR_PROFILES + the real, already-computed
+       compute_l0_unit_supabase_infra/inter + the generalized Shared
+       Infrastructure drilldown. Wrapped in `id="unit-<unit_id>"`.
+     - The old combined "same relationship at L0" mgrid (mixing both
+       units) and the old `build_l0_facet_block()` helper were removed
+       — folded into each actor's own section instead, so nothing mixed
+       renders anymore.
+     - The real shared dispatch history (8 openmontage_jobs rows) kept
+       as its own separate, un-mixed section (`id="dispatch-history"`),
+       since it describes the RELATIONSHIP, not either unit individually
+       — per the ratified plan's own explicit instruction not to
+       duplicate it into both actor profiles.
+     - JS toggle logic fixed to be scope-aware (`data-scope` on each
+       toggle-row, view ids suffixed `-<unit_id>`) — a real bug this
+       restructure would otherwise have introduced the moment a 2nd
+       toggle-row existed on one page (the old code toggled EVERY
+       toggle-row from one click).
+     - Now-unused MEMBERS list + its `.mcard`/`.mgrid` CSS removed
+       (superseded by the richer ACTOR_PROFILES, rule 8).
+
+3. `scripts/galaxy_map.py`'s `CC_UNIT_LINK`/`UNIT_BUBBLE_SYSTEM` fixed
+   — the real, confirmed root cause of Alex's complaint. Both real bugs
+   found in compile now closed:
+     - `orchestrator_cc` had NO entry in CC_UNIT_LINK at all; the
+       ONLY place it was linked was a 2nd, separately hand-typed literal
+       inside UNIT_BUBBLE_SYSTEM (`#cat-sharedinfra`) — a real rule-8
+       violation now fixed (UNIT_BUBBLE_SYSTEM reuses CC_UNIT_LINK
+       directly, matching how openmontage_cc/graphify_cc already did).
+     - `openmontage_cc` had no anchor anywhere — landed at the page top,
+       showing both units' mixed dispatch history. Now points at its own
+       real `#unit-openmontage_cc` anchor.
+   Two more real hardcoded link sites found by a 2nd, separate grep pass
+   (per CLAUDE.md rule 13's own discipline — a rename/relink task needs
+   more than one grep) and fixed the same way:
+     - `galaxy_map.py:931` (rpgace_architecture ↔ openmontage_cc facet)
+       — was a bare page link, now `CC_UNIT_LINK['openmontage_cc']`.
+     - `graphify_river_group.py`'s `compute_l0_unit_supabase_inter()` —
+       the "shares N tables with X" Inter facet's own link was a bare
+       page link for BOTH directions of the orchestrator_cc/openmontage_cc
+       pair; fixed to point at whichever unit is actually `other` in that
+       call (mirrored locally rather than imported from galaxy_map.py,
+       since that would be a circular import — same reasoning
+       L0_UNIT_LABEL's own comment already documents).
+     - `graphify_river_group.py`'s 2 `superseded_by` entries (River
+       XVI/XVII retirement metadata) updated from the stale
+       `#cat-sharedinfra` to `#unit-orchestrator_cc`.
+
+=== A REAL BUG CAUGHT MID-BUILD, NOT SHIPPED BLIND ===
+
+The plan and this build's own first pass used a hyphenated anchor form
+(`#unit-orchestrator-cc`) throughout planning prose. The actual code
+generates `id="unit-{unit_id}"` where `unit_id` is the real Python
+dict key (`orchestrator_cc`, underscore) — so the real generated anchor
+is `#unit-orchestrator_cc` (underscore), not the hyphenated form the
+plan assumed. Caught by an explicit post-build content verification step
+(grepping the actual generated HTML for the literal id, not just
+checking the build succeeded) rather than assumed correct from a clean
+build — the first regeneration produced a page with the right structure
+but a real, silently broken link (`galaxy_map.html` linking to an id
+that didn't exist on the target page). Fixed by aligning every
+cross-file reference to the real underscore form, then a full pipeline
+re-run confirmed the fix.
+
+=== VERIFICATION (Step 6 of the ratified plan) ===
+
+- R5 idempotency: full 24-script pipeline (`galaxy_map.py` +
+  `galaxy_map_*.py`) run twice from fresh processes, byte-identical
+  md5 across every one of the 21 real output HTML files both times.
+- `scripts/verify_anchors.py`: 26 real anchor citations across 3 files,
+  all fresh — this restructure touched none of the cited anchors, so no
+  regression there.
+- div/a/svg/section/ul/li balance: all 21 real galaxy_map*.html pages
+  balanced, checked directly against live output (not assumed).
+- Content spot-check: `galaxy_map_orchestrator_openmontage.html` renders
+  2 real, genuinely different actor sections (orchestrator_cc's own
+  role/input/processing/output text never appears inside openmontage_cc's
+  section or vice versa — confirmed by direct grep of the built HTML) —
+  the actual bug Alex reported.
+- `galaxy_map.html`'s own bubble-link JSON confirmed pointing
+  `orchestrator_cc` and `openmontage_cc` at 2 distinct, correct anchors
+  on the target page (checked directly, not assumed from the source
+  edit alone).
+
+=== WHAT THIS PILOT DELIBERATELY DID NOT TOUCH ===
+
+Per the ratified plan's own explicit scope boundary: the other ~10
+Infra/Inter pages (Oracle, Supabase, Skills, Connectors, Externals,
+Oversight Docs, Local Pipeline, Load, Decisions, Decision Matrix) were
+not touched this pass — a real future decision for Alex once this pilot
+template is confirmed working, not assumed to be wanted project-wide yet.
+
+=== STATUS ===
+
+Ready to commit/push to main and report to Alex. Both new
+`perspective_reports` rows and both actor sections are genuinely
+untested by Alex's own hand — same standing flag as virtually every
+other real build this project ships.
