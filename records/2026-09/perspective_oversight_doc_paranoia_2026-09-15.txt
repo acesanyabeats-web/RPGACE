@@ -1,0 +1,202 @@
+PERSPECTIVE AS A REAL TIER (b) OVERSIGHT DOC — /paranoia FULL PASS
+(supervised by /Engineer; runs /CEO Loop 1 as its own outer shape)
+Sep 15 2026
+
+=== ALEX'S ASK (verbatim) ===
+"Make perspective report a b type oversight doc that constantly reports
+perspective of elements or group of elements relative to others within
+rpgace total systems for truth documenting and galaxy map formation.
+This would boost understanding of this system. /paranoia /CEO /drift
+/interrogation /commit-archaeologist /godmode"
+
+=== STEP 1 — Dual research (adapted: this is an internal-architecture
+proposal, not a third-party tool, so Aintergration/restructure's own
+literal "adopt a repo" framing is re-purposed to their real underlying
+questions per the guardrail on right-sizing token cost) ===
+
+Rule-8 dedup check across all 13 real existing oversight artifacts (12
+tier a/b/c/d/e docs + the Galaxy Map/graphify tier f): NONE of them
+render perspective_reports content directly today.
+  - interconnection_map.md/system_flow_map.md: hand-authored structural
+    prose, never built from perspective_reports.
+  - The Galaxy Map itself: closest overlap in SPIRIT (also describes
+    relationships), but built from code-grep evidence (RIVER_MODULES/
+    RIVER_FLOWS), not from perspective_reports; GMP-A (queued, unbuilt)
+    would bake a report SNIPPET into each individual page, which is a
+    real, different thing from one continuous cross-referenced doc.
+  - taxonomy_map.html: the one existing precedent for a Tier-adjacent
+    page that queries a live evidence table directly on every load
+    (taxonomy_tree) rather than being hand-authored or pipeline-baked —
+    real, relevant precedent for how THIS new doc could work.
+Verdict: genuinely NOT a duplicate. perspective_reports (311 existing
+rows: 4 galaxy + 17 node + 13 l0_unit + 44 module + 176 mainjs_function
++ 47 onclick_feature + 10 decision, plus 32 more drafted this session —
+26 module/river + 6 level/dimension_kind — still queued behind the
+disconnected Supabase MCP connector) has real, substantive content with
+ZERO standing doc surface today. Adopt.
+
+/restructure-shaped question (would this beat what exists on real
+axes): a dedicated doc showing every element's relationship to every
+other, continuously updated, is a real, concrete improvement over the
+status quo (querying Supabase ad hoc, or reading one Galaxy Map page at
+a time with no cross-referenced view) on exactly the "more detailed/
+context-appropriate output" axis /restructure asks about. Clears the
+bar.
+
+=== STEP 2 — Reconcile against real state (/scope + GODMODE +
+/commit-archaeologist) ===
+
+Real history (commit-archaeologist-shaped, from the actual record):
+/perspective was named and built Aug 13 2026 after two real pilots
+(galaxy-level, then node-level) found genuine relationship/topology
+gaps a top-down Galaxy Map build had missed — Alex's own bar: "if it
+works again, then make /perspective." It was built as a SKILL that
+writes ONE baseline row at a time to a Supabase table, explicitly
+FEEDING other consumers (error_log.expected_baseline,
+colourgradient's purple-regression check) — it was never designed as
+something a human reads directly. That is the real, honest reason no
+doc surface exists yet: it was infrastructure from day one, not a
+document.
+
+Real current data-quality picture, gathered honestly rather than
+glossed: of 311+32=343 total rows once the queued batch lands, only
+78 (4+17+13+44) pre-existing + 32 new = 110 are real, evidence-checked
+reports written under the actual /perspective procedure. 233
+(mainjs_function/onclick_feature/decision) are a stale, auto-generated
+scaffold, 100% status='unverified', never put through Step 2's real
+evidence-gathering. A doc whose whole PURPOSE is truth-documentation
+cannot present these 233 as equivalent to the 110 real reports without
+undermining its own founding purpose.
+
+Real, standing tension checked directly: the Sep 15 2026 Galaxy-Map-
+pause ("no new Galaxy Map/Dimension items until product debt moves" —
+still true, reference_tracks.scale/genre is still 0/32, smoke_test.html
+moved only 27->28 of 99). This new doc sits ambiguously against that
+pause: Alex's own stated purpose names BOTH "truth documenting" (an
+oversight-doc job, not Galaxy-Map-pause territory) AND "galaxy map
+formation" (explicitly Galaxy-Map-adjacent). The earlier orchestrator/
+openmontage 2-page pilot was exempted from the pause because it "closes
+a real gap in already-shipped work rather than adding new surface
+area" — this proposal is genuinely BOTH: it closes the real gap of
+already-shipped-but-invisible perspective content, AND it is a new
+standing artifact. Not silently resolved either way — flagged for
+Alex directly in Step 4.
+
+=== STEP 3 — Stress-test against Alex's actual workflow (/debate) ===
+
+FOR building it as its own standing doc (not just GMP-A's per-page
+snippets): gives Alex one single, continuously-updating place to see
+the WHOLE relative picture (every element vs. every other) without
+drilling through 22 separate Galaxy Map pages one at a time — matches
+his own stated goal ("relative to others... boost understanding")
+more directly than a per-page snippet would. Matches the established
+Tier (b) "truth doc, cross-checked against live evidence" pattern
+exactly — this is precisely what Tier (b) already exists to hold.
+
+AGAINST (real, not manufactured): real rule-8 risk that this new doc
+and GMP-A (queued: bake reports inline into each Galaxy Map page) end
+up presenting the SAME data twice in two different places, with no
+clear division of labor — the same class of "two docs doing one job"
+risk rule 8 exists to catch. Resolvable (a standing doc = the full
+cross-referenced picture; a Galaxy Map page's own inline snippet =
+local context for that one element, linking OUT to the standing doc
+for the full relative view) but needs Alex's explicit confirmation of
+that division, not assumed.
+
+Real cost check (rule 11): a live-query design (taxonomy_map.html
+pattern) costs nothing extra to keep fresh but is the SECOND real-time
+Supabase dependency in the whole oversight-doc system (taxonomy_map.html
+is currently the only one); a baked-into-pipeline design (every other
+Galaxy Map page's pattern, and the pattern Alex already chose for
+GMP-A's per-page snippets) is consistent but goes stale between
+pipeline runs. Real, genuine fork — not guessed.
+
+=== STEP 4 — /interrogation: Alex's own answers, not guessed ===
+(see chat — 4 real questions asked directly)
+
+=== STEP 5 — Fact-check (Council of 5 + /simplify + /scope + /godmode +
+/commit-archaeologist), a second independent pass ===
+
+/simplify check: is a whole new file justified, or could this fold into
+an existing tier-b doc? No — none of interconnection_map.md (hand-
+authored prose)/system_flow_map.md (Mermaid diagrams)/ai_tooling_and_
+rules_map.md (skill/rule catalog) share this doc's real shape (live
+per-element self-report + cross-reference). Same reasoning that already
+justified error_log.html/session_lessons.html as their own files rather
+than folded into patch_notes.html. A new file is the right call, not
+scope creep.
+
+/godmode failure-mode check, done before calling this final:
+  - RLS: perspective_reports' anon-SELECT grant is ASSUMED (matching
+    every other table's standard anon_read_only pattern), not directly
+    confirmed — Supabase access was down the entire build. Flagged
+    honestly, not silently assumed true.
+  - Honesty of the scaffold split: verified via a real mocked-network
+    headless-Chromium pass — a mainjs_function-scope row correctly
+    routes to the collapsed scaffold section, never the main list.
+  - Cross-reference resolution: verified via the same mocked pass — a
+    real resolvable relationship (oracleControl -> cookingOracle)
+    renders as a real link; an unresolvable one (oracleControl ->
+    dashDeck, no dashDeck report in the mock set) renders as honest
+    plain text, never a dead link.
+  - Real, corrected count caught while writing this: DIMENSION_PAGES is
+    14 total (3 meta + 5 infra + 6 inter), not the stale "13" this
+    session already found and is tracking as a separate follow-up.
+
+/commit-archaeologist re-check: no new evidence needed — Step 2's
+account of why perspective_reports exists the way it does (Aug 13 2026,
+built as a skill-driven baseline table, never as a doc) is directly
+grounded in the real skill file + the two real pilots' own record, both
+already read this session.
+
+=== STEP 6 — /Summary: what Alex can and can't do with this ===
+
+BUILT, this session, real and verified short of a live Supabase check:
+  - perspective_map.html — a new, real Tier (b) oversight doc (the 13th
+    real oversight artifact) that live-queries perspective_reports on
+    every load, groups every real element by scope (galaxy/node/
+    l0_unit/river-synthesis/module/level-synthesis/dimension_kind-
+    synthesis), and renders real cross-references between reports as
+    clickable links — the actual "relative to each other" mechanism.
+  - Registered in dashDeck._openOversight's live in-app popup (real code
+    change, rpgace_core.js) and in CLAUDE.md's own Tier (b) section (now
+    4 docs, 13 total oversight artifacts).
+  - Explicitly, honestly separates real evidence-checked reports from
+    the 233-row stale scaffold — the doc will never misrepresent
+    unverified content as truth.
+
+WHAT ALEX CAN DO NOW: open /perspective_map.html once deployed and see
+every real perspective_reports row that exists at that moment, grouped
+and cross-linked, growing automatically as more reports land (including
+the 32 still queued behind the Supabase reconnect) — no rebuild needed
+when new reports are written, since this is a live query, not a
+pipeline-baked snapshot.
+
+WHAT ALEX CANNOT DO YET / real, honest obstacles:
+  1. Nothing has been visually confirmed against LIVE Supabase data —
+     the MCP connector was down this entire build; the render logic is
+     verified against realistic mocked data, not the real table.
+  2. `perspective_reports`' anon-SELECT RLS grant is assumed, not
+     confirmed — if it's actually more restricted than the standard
+     pattern, the live page would show the same honest "Could not reach
+     Supabase" error state (verified working) rather than silently
+     failing, but the underlying cause would then be RLS, not maintenance.
+  3. GMP-A (Galaxy Map pages showing their own report inline) is still
+     unbuilt — this doc's own existence doesn't complete that, it's the
+     other real half of the division-of-labor Alex confirmed.
+  4. This whole build, plus the still-queued 32 perspective_reports rows
+     and the "Galaxy Map Structure Based on Perspective" plan's own
+     GMP-A/B/C items, all remain blocked on the same disconnected
+     Supabase MCP connector for anything that needs a real database
+     write from this session.
+
+REAL IMPROVEMENTS TO CODE / INTERCOMMUNICATION: this closes the one real
+gap Step 2 found — perspective_reports had zero doc surface since its
+own creation, existing only as infrastructure for other consumers
+(error_log/colourgradient). It is now a real, first-class oversight
+artifact a human can actually read, not just a table other code reads
+from.
+
+STATUS: built and committed. Supabase-dependent follow-up (logging this
+build to system_updates, adding it as a tracked ceo_plan_item) queued
+behind the same connector block as everything else this session.

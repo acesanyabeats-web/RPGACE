@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RPGACE — Perspective Truth Map</title>
+<style>
+  :root {
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --bg: #08080f;
+    --surface: #101019;
+    --surface2: #161623;
+    --border: rgba(255,255,255,0.08);
+    --ink: rgba(230,230,238,0.92);
+    --muted: rgba(230,230,238,0.5);
+    --faint: rgba(230,230,238,0.3);
+
+    --phylum:  #C9A84C;
+    --order:   #4A90E2;
+    --class:   #3DAA6E;
+    --family:  #9B59B6;
+    --genus:   #2ABFB0;
+    --species: #E2685A;
+    --variant: #D48CC7;
+
+    --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', Palatino, serif;
+    --sans: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    --mono: 'Cascadia Code', 'SF Mono', 'Fira Mono', Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.6; }
+
+  .layout { display: flex; min-height: 100vh; }
+
+  .sidebar {
+    position: fixed; top: 0; left: 0; width: 248px; height: 100vh;
+    background: var(--surface); border-right: 1px solid var(--border);
+    padding: 28px 0; overflow-y: auto; transition: transform .25s ease; z-index: 50;
+  }
+  .sidebar.collapsed { transform: translateX(-100%); }
+  .brand { padding: 0 22px 20px; border-bottom: 1px solid var(--border); margin-bottom: 14px; }
+  .brand .name { font-family: var(--serif); font-size: 17px; color: var(--phylum); letter-spacing: 0.5px; }
+  .brand .sub { font-size: 10px; color: var(--faint); letter-spacing: 2px; text-transform: uppercase; margin-top: 4px; }
+  .nav-label { padding: 10px 22px 6px; font-size: 9px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--faint); }
+  .nav-item { display: block; padding: 6px 22px; font-size: 12.5px; color: var(--muted); text-decoration: none; }
+  .nav-item:hover { color: var(--phylum); }
+
+  .nav-toggle {
+    position: fixed; top: 16px; left: 16px; z-index: 60; display: none;
+    width: 40px; height: 40px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border);
+    color: var(--ink); font-size: 16px; cursor: pointer;
+  }
+  @media (max-width: 920px) {
+    .nav-toggle { display: block; }
+    .sidebar { transform: translateX(-100%); }
+    .sidebar.open { transform: translateX(0); }
+  }
+
+  .content { margin-left: 248px; flex: 1; padding: 56px 64px 100px; max-width: 1180px; }
+  @media (max-width: 920px) { .content { margin-left: 0; padding: 80px 22px 80px; } }
+
+  .eyebrow { font-family: var(--serif); font-style: italic; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--phylum); margin-bottom: 10px; }
+  h1 { font-family: var(--serif); font-size: 30px; margin: 0 0 14px; text-wrap: balance; }
+  .section-sub { color: var(--muted); font-size: 13.5px; max-width: 700px; margin-bottom: 30px; }
+  .section-sub code { font-family: var(--mono); font-size: 12px; background: var(--surface2); padding: 1px 6px; border-radius: 4px; }
+
+  .live-bar {
+    display: flex; align-items: center; gap: 10px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; padding: 10px 16px; margin-bottom: 30px; flex-wrap: wrap;
+  }
+  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--class); flex-shrink: 0; animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+  @media (prefers-reduced-motion: reduce) { .live-dot { animation: none; } }
+  .live-label { font-size: 12px; color: var(--muted); }
+  .live-ts { font-size: 11px; color: var(--faint); font-family: var(--mono); }
+  .refresh-btn {
+    margin-left: auto; background: none; border: 1px solid var(--border); color: var(--muted);
+    border-radius: 6px; padding: 5px 12px; font-size: 11.5px; cursor: pointer; font-family: var(--sans);
+  }
+  .refresh-btn:hover { color: var(--phylum); border-color: var(--phylum); }
+  .refresh-btn:focus-visible, a:focus-visible, .nav-toggle:focus-visible, summary:focus-visible { outline: 2px solid var(--phylum); outline-offset: 2px; }
+
+  .loading-note { color: var(--faint); font-size: 13px; padding: 20px 0; }
+  .error-note { color: var(--species); font-size: 13px; padding: 16px 18px; max-width: 700px; background: var(--surface); border: 1px solid rgba(226,104,90,0.3); border-left: 3px solid var(--species); border-radius: 8px; }
+
+  .scope-section { margin-bottom: 40px; }
+  .scope-head { display: flex; align-items: baseline; gap: 10px; margin-bottom: 4px; }
+  .scope-head h2 { font-family: var(--serif); font-size: 19px; margin: 0; }
+  .scope-count { font-size: 11.5px; color: var(--faint); }
+  .scope-desc { font-size: 12px; color: var(--muted); margin-bottom: 14px; max-width: 700px; }
+
+  .report-card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+    padding: 16px 20px; margin-bottom: 12px; scroll-margin-top: 20px;
+  }
+  .report-card.dim { opacity: 0.6; }
+  .report-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 10px; }
+  .report-id { font-family: var(--mono); font-size: 10.5px; color: var(--faint); }
+  .report-title { font-family: var(--serif); font-size: 15px; color: var(--ink); }
+  .report-status { font-size: 9.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; padding: 2px 8px; border-radius: 10px; }
+  .report-status.active { color: var(--class); background: rgba(61,170,110,0.12); }
+  .report-status.other { color: var(--muted); background: rgba(255,255,255,0.06); }
+
+  .report-body p { font-size: 13px; color: var(--ink); margin: 0 0 10px; }
+  .report-body p:last-child { margin-bottom: 0; }
+  .field-label { font-size: 10px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--faint); margin: 12px 0 6px; }
+  .field-label:first-child { margin-top: 0; }
+  .expected-box { font-size: 12.5px; color: var(--ink); background: var(--surface2); border-left: 3px solid var(--order); padding: 9px 12px; border-radius: 0 6px 6px 0; }
+
+  .xref-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .xref-link, .xref-plain { font-family: var(--mono); font-size: 11px; padding: 3px 9px; border-radius: 5px; text-decoration: none; }
+  .xref-link { background: rgba(74,144,226,0.12); border: 1px solid rgba(74,144,226,0.35); color: var(--order); }
+  .xref-link:hover { background: rgba(74,144,226,0.22); }
+  .xref-plain { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); }
+
+  details.legacy-detail { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px 20px; margin-bottom: 20px; max-width: 100%; }
+  details.legacy-detail > summary { cursor: pointer; font-family: var(--serif); font-size: 15px; color: var(--phylum); padding: 6px 0; list-style: none; }
+  details.legacy-detail > summary::-webkit-details-marker { display: none; }
+  details.legacy-detail > summary::before { content: '▸ '; display: inline-block; transition: transform 0.15s var(--ease-out); }
+  details.legacy-detail[open] > summary::before { transform: rotate(90deg); }
+  @media (prefers-reduced-motion: reduce) { details.legacy-detail > summary::before { transition: none; } }
+  details.legacy-detail .legacy-sub { font-size: 12px; color: var(--muted); font-weight: 400; font-family: var(--sans); margin-top: 4px; }
+
+  .scaffold-row { display: flex; justify-content: space-between; gap: 10px; font-size: 12px; color: var(--muted); padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .scaffold-row .sid { font-family: var(--mono); color: var(--faint); }
+
+  footer { border-top: 1px solid var(--border); padding-top: 26px; color: var(--faint); font-size: 11.5px; max-width: 700px; }
+  footer code { font-family: var(--mono); }
+</style>
+</head>
+<body>
+
+<div class="layout">
+  <button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">☰</button>
+  <nav class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="name">RPGACE</div>
+      <div class="sub">Perspective Truth Map</div>
+    </div>
+    <div class="nav-label">Real elements</div>
+    <a class="nav-item" href="#scope-galaxy">Galaxies</a>
+    <a class="nav-item" href="#scope-node">Nodes</a>
+    <a class="nav-item" href="#scope-l0_unit">L0 Units (Infra/Inter profiles)</a>
+    <a class="nav-item" href="#scope-river">Rivers (synthesis)</a>
+    <a class="nav-item" href="#scope-module">Modules</a>
+    <a class="nav-item" href="#scope-level">Levels (L0-L3 synthesis)</a>
+    <a class="nav-item" href="#scope-dimension_kind">Dimension kinds</a>
+    <div class="nav-label">Honesty</div>
+    <a class="nav-item" href="#scaffold">Unverified scaffold</a>
+    <div class="nav-label">Notes</div>
+    <a class="nav-item" href="#methodology">Methodology</a>
+    <div class="nav-label">Oversight Docs</div>
+    <a class="nav-item" href="/patch_notes.html">Patch Notes</a>
+    <a class="nav-item" href="/interconnection_map.md">Interconnection Map</a>
+    <a class="nav-item" href="/taxonomy_map.html">Taxonomy Map</a>
+    <a class="nav-item" href="/manual.html">Full Manual</a>
+  </nav>
+
+  <main class="content">
+    <div class="eyebrow">Oversight · Tier (b) Truth Doc · Live Document</div>
+    <h1>Every Real Element, Relative to Every Other</h1>
+    <p class="section-sub">
+      This page queries <code>perspective_reports</code> directly on every load — it is never a stale
+      snapshot. Each real element in RPGACE Total Systems (a galaxy, a node, an L0 unit, a river, a
+      module, a level, a dimension kind) gets its own real, evidence-gathered account of who it is and
+      who it actually talks to; a cross-reference in one report links straight to the report on the other
+      side of that relationship, wherever both exist. Built to complement — not replace — the inline
+      report snippet each element's own Galaxy Map page shows: this is the one place to see the whole
+      relative picture in one continuously-updating view.
+    </p>
+
+    <div class="live-bar">
+      <span class="live-dot"></span>
+      <span class="live-label" id="liveStatus">Connecting to Supabase…</span>
+      <span class="live-ts" id="liveTs"></span>
+      <button class="refresh-btn" id="refreshBtn">↻ Refresh</button>
+    </div>
+
+    <div id="pageBody">
+      <div class="loading-note">Loading live perspective data…</div>
+    </div>
+
+    <details class="legacy-detail" id="methodology">
+      <summary>Methodology <span class="legacy-sub">— how this page decides what counts as real</span></summary>
+      <p class="section-sub" style="margin-top:12px">
+        Only rows with <code>status = 'active'</code> or <code>'confirmed'</code> render in the main
+        sections above — these are real, evidence-gathered reports written under the actual
+        <code>/perspective</code> procedure (a real code/git/Supabase read before a word is written).
+        A separate, deliberately unverified scaffold (<code>mainjs_function</code>/<code>onclick_feature</code>/
+        <code>decision</code> scope rows, auto-generated by an earlier pass and never evidence-checked) is
+        shown in its own collapsed, clearly-labeled section below — never mixed into the real set, because
+        a truth-documentation page that presented stale scaffold content as equivalent to real evidence
+        would undermine its own purpose. A cross-reference link only renders when the referenced element
+        genuinely has its own loaded report right now; an unresolvable reference stays plain text rather
+        than a dead link.
+      </p>
+    </details>
+
+    <footer>
+      Built Sep 15 2026 — a real Tier (b) oversight doc, per Alex's own direct ask ("make perspective
+      report a b type oversight doc that constantly reports perspective of elements or group of elements
+      relative to others… for truth documenting and galaxy map formation"), run through a full
+      <code>/paranoia</code> pass (dedup check, real evidence reconciliation, a real debate on division of
+      labor with the Galaxy Map's own per-page report snippets, a real interrogation Alex answered
+      directly, a fact-check pass) supervised by <code>/Engineer</code>. Full record:
+      <code>records/2026-09/perspective_oversight_doc_paranoia_2026-09-15.txt</code>. Queries the same
+      <code>perspective_reports</code> table the <code>/perspective</code> skill writes to — see
+      <code>.claude/skills/perspective/SKILL.md</code>.
+    </footer>
+  </main>
+</div>
+
+<script>
+(function () {
+  var SUPABASE_URL = 'https://gripopghczmrbrhqtqbm.supabase.co';
+  var SUPABASE_KEY = 'sb_publishable_0Z8C5X-FOLrw95VYKxZVCw_4golMyXf';
+
+  var sidebar = document.getElementById('sidebar');
+  var toggle = document.getElementById('navToggle');
+  toggle.onclick = function () { sidebar.classList.toggle('open'); };
+
+  var SCOPE_META = {
+    galaxy:         { icon: '🌌', label: 'Galaxies',              desc: 'The 4 real top-level Total-systems actors — RPGACE Architecture and the 3 external Claude Code sessions it coordinates with.' },
+    node:           { icon: '🔮', label: 'Harness Nodes',         desc: 'Oracle, Self-Awareness, the Human Gate, the 3 real AI providers under Oracle, the 10 real external connectors, and Supabase itself.' },
+    l0_unit:        { icon: '💉', label: 'L0 Units — Infra/Inter Profiles', desc: 'A newer, deeper 6-facet profile (role / input / processing / output / river-module-function contribution / external stakeholders) for the L0 actors that earned their own dedicated page.' },
+    river:          { icon: '🌊', label: 'Rivers — Synthesis',    desc: 'A river is not an actor and never gets a first-person report — each entry here is a real, compiled third-person synthesis of the modules grouped inside that river.' },
+    module:         { icon: '🧩', label: 'Modules',               desc: 'Every real RPGACE.register() module in rpgace_core.js — who it is, who it actually talks to, and what correct behavior looks like.' },
+    level:          { icon: '🧬', label: 'Levels — L0 to L3',     desc: 'A real synthesis of what actually populates each Galaxy Map level, and how it connects to the level above and below — the same non-actor treatment rivers get.' },
+    dimension_kind: { icon: '🔗', label: 'Dimension Kinds',       desc: 'Infra (an attached-resource bubble) and Inter (a connection/flow) — the two real cross-cutting Dimension kinds, each synthesized from its own real member pages.' },
+  };
+  var SCOPE_ORDER = ['galaxy', 'node', 'l0_unit', 'river', 'module', 'level', 'dimension_kind'];
+  var SCAFFOLD_SCOPES = { mainjs_function: 1, onclick_feature: 1, decision: 1 };
+
+  function esc(s) {
+    var d = document.createElement('div');
+    d.textContent = s == null ? '' : String(s);
+    return d.innerHTML;
+  }
+
+  function paraHtml(text) {
+    if (!text) return '';
+    var parts = String(text).split(/\n\s*\n/).map(function (p) { return p.trim(); }).filter(Boolean);
+    return parts.map(function (p) { return '<p>' + esc(p).replace(/\n/g, '<br>') + '</p>'; }).join('');
+  }
+
+  function safeEvidence(raw) {
+    if (!raw) return {};
+    if (typeof raw === 'object') return raw;
+    try { return JSON.parse(raw); } catch (e) { return {}; }
+  }
+
+  function fetchReports() {
+    return fetch(SUPABASE_URL + '/rest/v1/perspective_reports?select=id,scope_level,scope_id,scope_label,self_report,expected_behavior,evidence,findings,status&order=scope_level.asc,scope_id.asc', {
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+    }).then(function (r) {
+      if (!r.ok) throw new Error('Supabase returned HTTP ' + r.status);
+      return r.json();
+    });
+  }
+
+  // Builds a real, live cross-reference index: a report's own evidence.cross_refs
+  // (or evidence.modules/flows_out/flows_in for river/level/dimension_kind
+  // reports) is scanned for a string that matches another loaded report's own
+  // scope_id (case-insensitive substring match on the meaningful part of a
+  // cross_ref string, e.g. "RPGACE.modules.oracleControl" matching scope_id
+  // "oracleControl") — this is the actual "relative to others" mechanism.
+  function buildIndex(rows) {
+    var byScopeId = {};
+    rows.forEach(function (r) {
+      if (!byScopeId[r.scope_id]) byScopeId[r.scope_id] = [];
+      byScopeId[r.scope_id].push(r);
+    });
+    return byScopeId;
+  }
+
+  function resolveXrefTarget(xrefText, byScopeId, selfRow) {
+    var keys = Object.keys(byScopeId);
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      if (!k || k.length < 2) continue;
+      var candidates = byScopeId[k];
+      var target = null;
+      for (var j = 0; j < candidates.length; j++) {
+        if (candidates[j] !== selfRow && (candidates[j].status === 'active' || candidates[j].status === 'confirmed')) { target = candidates[j]; break; }
+      }
+      if (!target) continue;
+      var re = new RegExp('(^|[^a-zA-Z0-9_])' + k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '([^a-zA-Z0-9_]|$)', 'i');
+      if (re.test(xrefText)) return target;
+    }
+    return null;
+  }
+
+  function renderXrefs(list, byScopeId, selfRow) {
+    if (!list || !list.length) return '<span class="xref-plain">none found</span>';
+    return list.map(function (item) {
+      var text = typeof item === 'string' ? item : JSON.stringify(item);
+      var target = resolveXrefTarget(text, byScopeId, selfRow);
+      if (target) {
+        return '<a class="xref-link" href="#report-' + esc(target.scope_level) + '-' + esc(target.scope_id) + '">' + esc(text) + '</a>';
+      }
+      return '<span class="xref-plain">' + esc(text) + '</span>';
+    }).join('');
+  }
+
+  function renderReportCard(row, byScopeId) {
+    var ev = safeEvidence(row.evidence);
+    var xrefList = ev.cross_refs || ev.modules || ev.flows_out || [];
+    if (ev.flows_in) xrefList = xrefList.concat(ev.flows_in);
+    var isActive = row.status === 'active' || row.status === 'confirmed';
+    return (
+      '<div class="report-card' + (isActive ? '' : ' dim') + '" id="report-' + esc(row.scope_level) + '-' + esc(row.scope_id) + '">' +
+        '<div class="report-head">' +
+          '<span class="report-id">' + esc(row.scope_level) + ' · ' + esc(row.scope_id) + '</span>' +
+          '<span class="report-title">' + esc(row.scope_label || row.scope_id) + '</span>' +
+          '<span class="report-status ' + (isActive ? 'active' : 'other') + '">' + esc(row.status || 'unknown') + '</span>' +
+        '</div>' +
+        '<div class="report-body">' +
+          paraHtml(row.self_report) +
+          (row.expected_behavior ? '<div class="field-label">Expected behavior</div><div class="expected-box">' + esc(row.expected_behavior) + '</div>' : '') +
+          '<div class="field-label">Real relationships</div>' +
+          '<div class="xref-row">' + renderXrefs(xrefList, byScopeId, row) + '</div>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  function render(rows) {
+    var real = rows.filter(function (r) { return !SCAFFOLD_SCOPES[r.scope_level]; });
+    var scaffold = rows.filter(function (r) { return SCAFFOLD_SCOPES[r.scope_level]; });
+    var byScopeId = buildIndex(real);
+
+    var html = '';
+    SCOPE_ORDER.forEach(function (level) {
+      var group = real.filter(function (r) { return r.scope_level === level; });
+      if (!group.length) return;
+      var meta = SCOPE_META[level] || { icon: '📄', label: level, desc: '' };
+      html += '<section class="scope-section" id="scope-' + esc(level) + '">' +
+        '<div class="scope-head"><h2>' + meta.icon + ' ' + esc(meta.label) + '</h2>' +
+        '<span class="scope-count">' + group.length + ' real report' + (group.length === 1 ? '' : 's') + '</span></div>' +
+        '<p class="scope-desc">' + esc(meta.desc) + '</p>' +
+        group.map(function (r) { return renderReportCard(r, byScopeId); }).join('') +
+        '</section>';
+    });
+
+    if (!real.length) {
+      html += '<div class="loading-note">No real (active/confirmed) perspective_reports rows found yet — this page will populate as reports are written.</div>';
+    }
+
+    if (scaffold.length) {
+      html += '<details class="legacy-detail" id="scaffold"><summary>🕸️ Unverified scaffold <span class="legacy-sub">— ' + scaffold.length + ' rows, 100% status=\'unverified\', pending a real evidence-gathering audit — never shown as equivalent to the reports above</span></summary>' +
+        '<div style="margin-top:12px">' +
+        scaffold.slice(0, 60).map(function (r) {
+          return '<div class="scaffold-row"><span class="sid">' + esc(r.scope_level) + ' · ' + esc(r.scope_id) + '</span><span>' + esc(r.scope_label || '') + '</span></div>';
+        }).join('') +
+        (scaffold.length > 60 ? '<div class="scaffold-row" style="border:none;color:var(--faint)">… and ' + (scaffold.length - 60) + ' more</div>' : '') +
+        '</div></details>';
+    }
+
+    document.getElementById('pageBody').innerHTML = html;
+  }
+
+  function load() {
+    document.getElementById('liveStatus').textContent = 'Connecting to Supabase…';
+    fetchReports().then(function (rows) {
+      var real = rows.filter(function (r) { return !SCAFFOLD_SCOPES[r.scope_level] && (r.status === 'active' || r.status === 'confirmed'); });
+      document.getElementById('liveStatus').textContent = real.length + ' real reports loaded from perspective_reports (' + rows.length + ' total rows)';
+      document.getElementById('liveTs').textContent = 'Last refreshed ' + new Date().toLocaleTimeString('en-GB');
+      render(rows);
+    }).catch(function (err) {
+      document.getElementById('liveStatus').textContent = 'Could not reach Supabase';
+      document.getElementById('pageBody').innerHTML = '<div class="error-note">Live query to <code>perspective_reports</code> failed: ' + esc(err.message) + '. This page never falls back to invented or cached data — try the Refresh button, or check back shortly.</div>';
+    });
+  }
+
+  document.getElementById('refreshBtn').onclick = load;
+  load();
+})();
+</script>
+</body>
+</html>

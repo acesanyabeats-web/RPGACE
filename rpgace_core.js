@@ -14792,6 +14792,7 @@ RPGACE.register('dashDeck', {
       { icon: '🔗', title: 'Interconnection Map', desc: 'Tier (b) — Module touchpoints, the truth', href: '/interconnection_map.md' },
       { icon: '🗺️', title: 'System Flow Map', desc: 'Tier (b) — Pipeline flow diagrams, the truth', href: '/system_flow_map.md' },
       { icon: '🤖', title: 'AI Tooling & Rules Map', desc: 'Tier (b) — Skills + rule files + external AI providers', href: '/ai_tooling_and_rules_map.md' },
+      { icon: '🔭', title: 'Perspective Truth Map (live)', desc: 'Tier (b), 4th doc, new Sep 15 — every real element vs. every other, queried live from perspective_reports', href: '/perspective_map.html' },
       { icon: '🌳', title: 'Taxonomy Map (live)', desc: 'Queries the tree on every load — outside the tier system by design', href: '/taxonomy_map.html' },
       { icon: '🧪', title: 'Smoke Test', desc: 'Layer (d) — real, hand-tickable, what actually works right now', href: '/smoke_test.html' },
       { icon: '🩹', title: 'Error Log', desc: 'Layer (d), 2nd doc — every real error Total systems has seen, deduplicated, backtracked, fix history kept', href: '/error_log.html' },
