@@ -1,0 +1,170 @@
+GALAXY MAP / OVERSIGHT DOC DRIFT — REPRESENTATIVE VERIFICATION PASS
+Sep 15 2026
+
+=== ALEX'S REQUEST (verbatim) ===
+
+"How about we grep the whole rpgace system and match it against each oversight
+doc and galaxy map. Grep system Dom by Dom, then module by module, then
+function by function to determine wiring, and right a report on findings,
+then match against each oversight doc and galaxy map to find changes and log
+them, new findings and /paranoia and /interrogation the implications that are
+not well described or layed out for truth. I need oversight docs and galaxy
+map to be the cached grep essentially that updates every developer session we
+have in rpgace total systems."
+
+=== SCOPING (/interrogation, 3 questions, all answered) ===
+
+Q1 — Pass scope this session: full exhaustive DOM/module/function grep in one
+    pass, vs. a representative proof-of-method pass (re-derive/verify the
+    Galaxy Map's own headline claims against live grep) + build the standing
+    mechanism, with full coverage accruing over future sessions.
+    Alex's answer: "1 then 2 for things that are stale probably" — read as:
+    run the representative pass first; for anything found stale, go deeper
+    specifically on that item (not the whole app); build the standing
+    mechanism in parallel. This reading was stated back to Alex at the start
+    of execution rather than silently assumed.
+
+Q2 — Does this override the standing Sep 15 pause on new Galaxy Map/Dimension
+    work (logged the same day, same session, after the /paranoia+
+    /free-for-all-debate finding that 56% of the prior 2 weeks' commits were
+    Galaxy-Map/meta work while real product debt sat untouched)?
+    Alex's answer: Yes — verification work is exempt from that pause. This is
+    checking existing claims against reality, not building new Galaxy Map
+    surface area.
+
+Q3 — What should "cached grep that updates every session" mean operationally:
+    a cheap per-session sanity check re-verifying a handful of high-value
+    facts, vs. a mandatory full /cartographer 5-source Baseline
+    Reconciliation every session regardless of whether a change was detected.
+    Alex's answer: a cheap, real per-session sanity check — a new
+    session-start check, same pattern as the existing oracle_dev_suggestions/
+    graphify_jobs/error_log/system_map_flags checks in CLAUDE.md.
+
+=== METHOD ===
+
+Verified the Galaxy Map's own headline numeric claims (as carried in
+CLAUDE.md's live "RPGACE Total Systems Galaxy Map" bullet) against live
+`grep`/`ls` evidence of the actual codebase and generated output, rather than
+trusting the doc's own prose. Two claims checked this pass (the cheapest,
+highest-value headline facts — module count and page count):
+
+1. Module count.
+   `grep -c "^RPGACE\.register('" rpgace_core.js` (line-start + open-quote
+   pattern, deliberately excluding the known false-positive class already
+   documented in this file's own Live-numbers section — a naive grep for
+   "RPGACE.register(" anywhere on a line also matches a documentation
+   TEMPLATE example embedded in a comment block, and matches every comment
+   that merely mentions "RPGACE.register()" in prose).
+   Result: 58 real registrations, 58 distinct module names (zero duplicates
+   via `sort | uniq -c`).
+   This matches CLAUDE.md's own current Live-numbers line exactly ("58
+   registered modules... re-verified Sep 14... shoppingWishlist added").
+
+   Cross-checked against the Galaxy Map's own G53 completion bullet
+   (CLAUDE_archive.md, "G53 real pilot begins, Aug 26 2026... Alex's own
+   confirmed ask (Aug 20): every one of the 60 real RPGACE.register()
+   modules splits into its DOM/rendering half and its business-logic half"),
+   which asserts 60 modules at Aug 20 interrogation time.
+
+   Real count trajectory since Aug 20, per CLAUDE.md's own Live-numbers
+   history:
+     Aug 20 (G53 interrogation): "60" claimed
+     Aug 30 (Fable Total-Systems Audit): 56 confirmed — this same Live-
+       numbers line explicitly documents that the PRIOR "57" count at that
+       point had itself been off-by-one from the same naive-grep-vs-comment-
+       template issue, and states the real net change to reach 56 was
+       "oracleControl (G41, added) minus voiceInput (retired Aug 30) = 56."
+     Sep 10: 57 (cookingOracle added)
+     Sep 14: 58 (shoppingWishlist added)
+
+   For "60" (Aug 20) to reconcile with "56" (Aug 30) via real retirements
+   alone would require 4 real module retirements in 10 days with only 1
+   documented (voiceInput). No such retirements are documented anywhere in
+   patch_notes.html, CLAUDE.md, or CLAUDE_archive.md for that window. Given
+   this file already documents the exact same naive-grep-overcounts-via-
+   comment-template failure mode as a real, previously-proven bug class (the
+   57→56 correction), the far more likely explanation is that "60" was
+   itself an inflated count at the moment it was first asserted — not a
+   number that was true and later became false through real retirements.
+
+   VERDICT: the "60" figure is unreliable and should not be re-asserted as
+   fact. Not a clean "brown" (was-true-became-false) finding in the
+   achiever.html sense — more precisely, a number that was very likely never
+   accurately verified, later superseded by a run of correctly-verified
+   counts (56→57→58) that this doc's own text never reconciled against it.
+
+2. Galaxy Map HTML page count.
+   `ls graphify-out/galaxy_map*.html | wc -l` → 21 files (confirmed by
+   listing all 21 filenames).
+   CLAUDE.md's own bullet claimed "18 real Galaxy Map HTML pages remain."
+   Real discrepancy: 21 actual vs. 18 claimed.
+
+   Further real finding while investigating: `galaxy_map_hub.html` (the
+   page's own real page-index, generated by `scripts/graphify_river_group.py`
+   or a sibling generator script — not traced to the exact script this pass)
+   contains two different self-contradictory internal claims about its own
+   page count in its own generated text: "20 real pages" in one place and
+   "21 pages" in another, within the SAME file. This is a live doc-internal
+   inconsistency, not just a CLAUDE.md-vs-reality drift — the source of
+   truth disagrees with itself.
+
+   Checked whether `galaxy_map_level6.html` (the one file that looked like
+   it might be an orphaned/unlinked page during investigation) is actually
+   reachable: confirmed via `grep -rl "galaxy_map_level6" graphify-out/*.html`
+   that it IS linked from every other Galaxy Map page's shared sidebar nav —
+   not orphaned. A separate hub.html row (`data-file="galaxy_map_level6.html"`)
+   carries description text that reads as if describing a DIFFERENT retired
+   page (mentions "21 curated decision/logic entries," "river-to-river/
+   connector/skill passages" — language matching the Level 5/Decision-Matrix-
+   predecessor retirement, not the Branch Ledger) with an aside at the end
+   ("Level 6 (Branch Ledger) is untouched and stays link-out only") that
+   contradicts the row's own `data-file` attribute. This looks like a real
+   generator-script row-description/file-attribute mismatch, not investigated
+   further at the code level this pass (proportionate to scope — fixing it
+   means editing the Python generator and re-running the full
+   export→recolor→river-group pipeline, real code work beyond a doc-audit
+   pass).
+
+3. River count spot-check (light touch, confirmed correct, not deep-dived).
+   `scripts/graphify_river_group.py`'s RIVER_MODULES dict has keys 1-12,
+   matching CLAUDE.md's "12 live app-code Rivers I-XII" claim. Not stale.
+
+=== FIXES APPLIED THIS PASS ===
+
+- CLAUDE.md's live Galaxy Map bullet: removed the specific "18 real Galaxy
+  Map HTML pages" claim, replaced with the real, live count (21) plus a note
+  naming the hub.html internal self-contradiction as a known, unfixed
+  generator-level issue.
+- CLAUDE.md's live Galaxy Map bullet: removed the specific "all 60
+  RPGACE.register() modules" claim (unreliable per the analysis above),
+  replaced with a present-tense statement that G53's 100% ui/logic-split
+  coverage holds for the CURRENT module set (58), confirmed by direct grep
+  that both modules added after G53 shipped (cookingOracle, shoppingWishlist)
+  were built with the same ui/logic split from the start.
+- New Open-forks bullet added (this pass's own record) stating what was
+  checked, what was found, what was fixed, and what's explicitly NOT done
+  (the full exhaustive DOM/module/function sweep Alex's original message
+  describes).
+
+=== NOT DONE THIS PASS (explicit, not silent) ===
+
+- The full DOM-by-DOM / module-by-module / function-by-function exhaustive
+  wiring sweep across the whole app. This is real, large, multi-session work
+  per Alex's own Q1 answer — this pass deliberately verified a small,
+  high-value representative slice as proof of method, and built the standing
+  mechanism (below) so coverage compounds every session instead of needing
+  one giant, session-consuming pass.
+- Fixing galaxy_map_hub.html's own generator-script page-count bug at the
+  Python/script level (real code work, not a doc fix — flagged, not built).
+- A deep dive into every other Galaxy Map headline claim (L0 unit count,
+  Decision Matrix's "21 real decisions," the 532-Currents count, etc.) — only
+  spot-checked river count, which held up.
+
+=== STANDING MECHANISM ===
+
+A new CLAUDE.md session-start check was added (see "Session-start check —
+galaxy map headline facts" in CLAUDE.md) — a cheap, real per-session
+verification of the same 2 headline facts checked this pass (module count,
+HTML page count), so drift is caught within one session of it happening
+rather than accumulating silently for weeks, without requiring a full
+/cartographer trickle-check every session.
