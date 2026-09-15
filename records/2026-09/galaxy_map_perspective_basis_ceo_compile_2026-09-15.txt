@@ -1,0 +1,179 @@
+GALAXY MAP STRUCTURE BASED ON /perspective — /CEO LOOP 1, STEP 1 (COMPILE)
+Sep 15 2026
+
+=== ALEX'S ASK (verbatim) ===
+"I want galaxy mapping structure to be largely based off perspective to
+keep things relative to each other."
+Follow-up interrogation, both questions answered directly:
+  Q1 (which build): "I think all 3 have a stake here, let's do a combo
+  of all 3" — (a) surface each element's own perspective report inline
+  on its Galaxy Map page, (b) reconcile the map's real relationships/
+  edges against what each report's own "who I talk to" evidence says,
+  (c) reorganize the Galaxy Map's own level hierarchy to mirror
+  perspective's scope-level taxonomy.
+  Q2 (process): "Run it as a real /CEO plan first."
+
+=== REAL EVIDENCE — HOW THE TWO SYSTEMS ACTUALLY RELATE TODAY ===
+
+The Galaxy Map (24 real generator scripts, scripts/galaxy_map*.py) is
+built from graphify_river_group.py's own canonical Python data tables —
+RIVER_NAME/RIVER_MODULES/RIVER_FLOWS/RIVER_RETIRED — themselves derived
+from real rpgace_core.js module markers + curated grep evidence. This
+data has ALWAYS been the map's source of truth; it does not read
+perspective_reports today.
+
+perspective_reports (Supabase table, built Aug 13 2026) is a SEPARATE
+layer: real, evidence-gathered first-person self-reports (or, for a
+river, a third-person synthesis) written to describe elements the map
+ALREADY defines. It was never wired to feed the map's own generation.
+
+Real, current scope_level inventory (queried before the Supabase
+connector disconnected this session — status below):
+  galaxy        4  (RPGACE Architecture, Orchestrator CC, OpenMontage CC,
+                    Graphify CC) — maps 1:1 onto the Galaxy Map's own
+                    "4 galaxies" bubble group at L0.
+  node         17  (Oracle, Self-Awareness, Human Gate, 3 AI providers,
+                    10 connectors, Supabase) — maps 1:1 onto the Galaxy
+                    Map's own "harness nodes" at L0.
+  l0_unit      13  (alex, composio, external_ai, jina, lastfm, librosa,
+                    n8n, openmontage_cc, oracle, orchestrator_cc,
+                    oversight_docs, skills, whisper) — a REAL, GENUINELY
+                    DIFFERENT facet, not a duplicate: this is the newer
+                    6-facet "role / input received / how it processes
+                    input / where output goes further / river-module-
+                    function contribution / external-inter stakeholders"
+                    profile format (built for the orchestrator_cc/
+                    openmontage_cc split + the connector pages). Real,
+                    confirmed overlap: "oracle" appears as BOTH a node
+                    (17) AND an l0_unit (13) — genuinely two different
+                    reports answering two different question sets about
+                    the same real actor, not an accidental duplicate.
+  river         0 written (12 drafted, blocked on the Supabase
+                    disconnect) — maps 1:1 onto Galaxy Map L1.
+  module       44 written (14 more drafted, same block) — maps 1:1 onto
+                    Galaxy Map L2.
+  mainjs_function 176, ALL unverified (legacy scaffold, label itself
+                    stale since main.js merged into rpgace_core.js) —
+                    maps onto Galaxy Map L3 (Current series/function
+                    branch points), but as a stale, never-evidence-
+                    checked scaffold, not real coverage.
+  onclick_feature  47, ALL unverified — same scaffold generation.
+  decision         10, ALL unverified — maps onto the Decision Matrix.
+
+REAL FINDING: the two hierarchies ALREADY largely mirror each other
+(galaxy~L0-galaxies, node~L0-nodes, river~L1, module~L2, function~L3) —
+this is not a case of two unrelated shapes needing to be forced
+together. The real gaps are (1) zero live cross-reference from a map
+page to its own report, (2) zero consistency-check between RIVER_FLOWS
+and what a report's own evidence says, (3) the node/l0_unit split isn't
+named or explained anywhere a reader would see it, and (4) the L3-level
+scaffold (mainjs_function/onclick_feature/decision) is 100% unverified —
+using it as a real structural basis today would build on sand.
+
+=== REAL, GENUINELY OPEN FORKS — NOT GUESSED, PUT TO ALEX DIRECTLY ===
+
+Thread (a) — surface reports inline: LOW risk, additive. Real open
+question: does a map page (river/module/L0-unit) need a LIVE Supabase
+query at view-time (like taxonomy_map.html already does), or should the
+report text get baked into the existing static-generation pipeline
+(pulled from perspective_reports once per pipeline run, same as every
+other real data source graphify_river_group.py already reads)? The
+static-bake approach matches every other Galaxy Map page's existing
+architecture (generate once, serve static HTML) and needs zero new
+runtime dependency; a live query would be the ONE new real-time
+Supabase read anywhere in the Galaxy Map, and would need its own
+loading/error-state design.
+
+Thread (b) — reconcile relationships: MEDIUM risk. Real open question:
+should this be a real CONSISTENCY CHECK (compare RIVER_FLOWS' claimed
+edges against each report's own documented cross_refs evidence, flag
+any mismatch to system_map_flags for human review — additive, no
+existing data structure changes) or should RIVER_FLOWS itself get
+REGENERATED FROM perspective_reports' evidence going forward (a real,
+larger change: RIVER_FLOWS is currently hand-curated prose from a
+one-time grep pass; the reports' own `evidence` jsonb field would need
+to become the actual source of truth, which only the 14 newly-drafted
+module reports currently populate with clean structured cross_refs —
+the other 44 already-written reports were not built with this session's
+same structured-evidence discipline and would need a real audit pass
+first)?
+
+Thread (c) — reorganize the hierarchy: HIGHEST risk, real design
+decision needed. Real, concrete options: (i) keep L0/L1/L2/L3 exactly
+as-is, just rename/re-group the L0 sub-sections to explicitly show
+"galaxy" vs "node" vs "l0_unit" as three distinct, labeled tiers instead
+of one fused "L0" bubble-and-diagram view — cosmetic/organizational,
+low risk; (ii) make a scope_level's EXISTENCE in perspective_reports the
+actual gate for whether an element appears in the Galaxy Map at all —
+inverts today's dependency (code structure -> map -> report becomes
+report -> map), a genuinely bigger architecture reversal with real
+circularity risk (a river/module that hasn't been perspective-reported
+yet would vanish from the map, even though its real code exists) unless
+explicitly scoped as "additive only, code-derived elements never get
+removed for lacking a report."
+
+=== NOT YET RESOLVED — NEEDS ALEX'S DIRECT ANSWER BEFORE DRAFTING ===
+
+1. Thread (a): live query vs. baked into the static pipeline (recommend
+   baked-in, matching every other page).
+2. Thread (b): consistency-check-and-flag vs. literal regeneration-
+   from-reports (recommend consistency-check first, given the 44
+   pre-existing reports' evidence quality is unaudited).
+3. Thread (c): cosmetic relabeling vs. report-gated existence (recommend
+   relabeling only, additive — never remove a code-derived element for
+   lacking a report).
+4. Sequencing: does this plan run BEFORE or AFTER the already-scheduled
+   resume of the blocked 26-report Supabase writes from the prior plan?
+   (Recommend after — this new plan's own Thread (a)/(b) work reads
+   FROM those 26 rows, so building this on top of an incomplete write
+   would mean re-doing part of it once the writes land.)
+
+=== REAL INTERROGATION ANSWERS (Sep 15 2026, same session) ===
+
+Thread (a): "Baked into the static pipeline" — confirmed, matches every
+other Galaxy Map data source's own architecture. No live Supabase
+dependency added to any rendered page.
+
+Thread (b): "1 and 2" — both. Real, phased reading (not a contradiction):
+run the consistency-check-and-flag approach NOW (Option 1, additive,
+safe against the 44 unaudited older reports), with literal regeneration-
+of-RIVER_FLOWS-from-reports (Option 2) named as the real, deliberate
+NEXT phase once those 44 older reports get a real structured-evidence
+audit pass (the same cross_refs jsonb discipline this session's 14 new
+module reports already use). Not built in this pass — logged as a real,
+named follow-up, not silently dropped.
+
+Thread (c): "Relabel L0 into 3 distinct tiers" — confirmed, cosmetic/
+organizational only. Nothing is removed or gated; galaxy/node/l0_unit
+become 3 explicitly labeled sections instead of one fused L0 view.
+
+Sequencing: "Wait for the 26 reports to land first" — confirmed. This
+plan's Loop 2 EXECUTION does not start until the prior "Perspective Full
+Coverage" plan's 26 perspective_reports rows are confirmed written.
+Loop 1 (this compile + the real ceo_plans/ceo_plan_items rows) proceeds
+now; both remain blocked on the same disconnected Supabase MCP
+connector as the prior plan, resuming via the same scheduled check-in.
+
+=== REAL PLAN ITEMS (once Supabase reconnects) ===
+
+A real, dependent ceo_plans row ("Galaxy Map Structure Based on
+Perspective") with explicit real dependency on the "Perspective Full
+Coverage" plan (id 5a9dd7bf-b03b-467d-ad21-0463a1c7dcee) completing
+first. Real bounded scope, 3 items:
+  GMP-A: Bake each river/module/L0-unit's perspective report into its
+    own Galaxy Map page (galaxy_map_river.py/galaxy_map_module.py/the
+    L0 unit pages), via the normal static-generation pipeline.
+  GMP-B: Consistency-check pass — compare RIVER_FLOWS' claimed edges
+    against each of the (by then) 58 module + 12 river reports' own
+    documented cross_refs/relationships; flag any real mismatch to
+    system_map_flags for human review. Literal RIVER_FLOWS regeneration
+    from reports named as a real, deliberate future phase (needs the 44
+    pre-existing reports audited first) — not scoped into this pass.
+  GMP-C: Relabel L0 into 3 explicit tiers (galaxy/node/l0_unit) in
+    galaxy_map.py — cosmetic/organizational, additive only, nothing
+    removed or gated by report existence.
+
+STATUS: Loop 1 compiled and interrogated. Execution (Loop 2, all 3
+items) blocked on (1) the same Supabase MCP reconnect as the prior plan,
+and (2) that prior plan's 26 rows actually landing first, per Alex's own
+sequencing answer.
