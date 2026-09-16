@@ -1,0 +1,155 @@
+DIMENSIONS L0↔L1 BUBBLE FIX + ARCHIVED-RIVER-ROW DECLUTTER — Sep 16 2026
+==========================================================================
+
+REAL PROCESS NOTE, stated honestly rather than glossed over: earlier in
+this same session, a full `/interrogation` (4 real AskUserQuestion
+questions) was run against Alex's own ask below, and he answered all 4
+with the recommended option. A context-compaction summary between then
+and this build captured the RESULT ("interrogation complete, all 4
+answered with the recommended option") but not the literal verbatim
+question/option text itself — the same real "harness-summary blind spot"
+class this project already named once before (the massive-expansion
+spec's own dropped-attachment incident, Aug 10). Rather than fabricate
+that lost text, this record documents what was actually built, why, and
+against what real evidence — checkable against the real diff, not
+reconstructed from memory.
+
+ALEX'S OWN VERBATIM ASK (both real messages, this session)
+------------------------------------------------------------
+1. (screenshot of galaxy_map_river.html's dashed "🗄️ ARCHIVED" row)
+   "i dont like this get rid of it, i want dimensions both infra and
+   inter and l0 units as bubbles interacting with river bubbles, so i
+   can connect l1 to l0. /paranoia and /ceo and /interrogation and
+   /drift and /misunderstanding if you dont understand what i mean.
+   this superseded thing needs to go, i want full absorption to
+   declutter, we have too much clutter"
+
+2. (screenshot of 6 scattered, disconnected circles, no hub, no edges)
+   "this bubble system needs to change too, wtf is this?"
+
+REAL ROOT-CAUSE DIAGNOSIS (message 2, done first — it was the more
+urgent, concrete bug)
+------------------------------------------------------------
+Traced via real headless-Chromium screenshots, not guessed: the
+scattered circles were `galaxy_map_dimensions.html`'s own L1 (rivers)
+Map view. Direct source read of `scripts/galaxy_map_dimensions.py`'s
+`_bubble_ring()` function found the real bug — it computed correct
+polar (x,y) positions for every leaf node, but NEVER drew a hub node or
+a single connecting edge, despite its own docstring already calling
+itself a "hub-and-spoke layout." This was a real, structural gap
+against this project's own already-proven shared bubble primitives
+(`_curved_edge`/`_build_markers`, used successfully by the Supabase Map
+view, GMR-6's 3 new panels, and everywhere else in the pipeline) — a
+separate, inferior one-off that had simply never been given a hub,
+confirmed by direct comparison screenshot against the working Supabase
+Map view (real hub + real curved edges with arrow/X-start markers).
+
+REAL FIX
+------------------------------------------------------------
+`_bubble_ring()` rewritten to draw a real hub (clickable via `hub_href`
+when given) plus real curved edges from hub to every leaf, reusing this
+pipeline's own shared `_curved_edge`/`_build_markers` (rule 8) — same
+drawing primitives as every other working bubble panel, not a second
+implementation. All 3 real callers (`build_l0_bubbles`/
+`build_river_bubbles`/`build_module_bubbles`) updated to pass a real
+hub icon/label, and L1's hub links to `galaxy_map_river.html`.
+
+REAL L0↔L1 CROSS-LINK (message 1's core ask: "l0 units as bubbles
+interacting with river bubbles, so i can connect l1 to l0")
+------------------------------------------------------------
+Real evidence check found `compute_unit_river_touches()`
+(`galaxy_map.py`, G93, Aug 25 2026) already computes exactly
+`{river_num: {unit_id,...}}` — real, already-proven evidence, never a
+new detector (rule 8). Reused directly, in both directions:
+  - Every river's own bubble-detail panel now lists the real L0 units
+    whose Infra/Inter genuinely touches it, each linking straight to
+    that unit's own drilldown page (`UNIT_BUBBLE_SYSTEM`, already real).
+  - Every L0 unit's own bubble-detail panel now lists the real rivers
+    its Infra/Inter genuinely touches, linking to the river ring page.
+This gives a real, working, click-through L1↔L0 connection — not a
+cosmetic label, an actual navigable relationship — inside the existing
+G108 Dimensions Matrix (L0/L1/L2 tab) system that was already built for
+close to this exact purpose 3 weeks earlier (Aug 26 2026).
+
+REAL ARCHIVED-ROW DECLUTTER (message 1: "this superseded thing needs to
+go... i want full absorption to declutter")
+------------------------------------------------------------
+`galaxy_map_river.py`'s dashed "🗄️ ARCHIVED — SUPERSEDED BY THE L0
+INFRA/INTER SYSTEM" row (a real, separate visual cluster below the live
+ring, added Sep 15's 2nd correction) is now GONE from the live diagram
+entirely — `_emit_river_node()` no longer emits any SVG (node, edge,
+badge) for an archived river; `river_pos` is never set for one either,
+so any real `RIVER_FLOWS` edge touching an archived river correctly
+falls back to the pre-existing "not a real river number" stub-note path
+instead of drawing a phantom edge to a node that no longer exists on
+the canvas. The real per-river text (mods/role/RIVER_RETIRED reason +
+superseded_by link) is NOT deleted — per this project's own
+archive-never-delete convention, it now renders as plain informational
+text inside a `<details class="doc-methodology">` block, collapsed by
+default, reusing the exact CSS class + injection this pipeline already
+uses for every other "how this page is generated" footer (rule 8, zero
+new CSS needed since `inject_level_rail()` already ships
+`METHODOLOGY_DETAILS_CSS` into every page).
+
+This is a real, structural answer to "full absorption" as literally
+asked: the 5 retired rivers no longer compete for space or attention on
+the live interactive ring (which is what Alex's own screenshot showed
+reading as confusing clutter) — they're still fully present, just
+folded away as a click-to-expand historical record instead of a
+permanent dashed row.
+
+VERIFICATION (real, not claimed blind)
+------------------------------------------------------------
+- `python3 -c ast.parse(...)` clean on both touched scripts.
+- Both scripts run standalone with zero errors.
+- Full 24-script pipeline (23 generators + `galaxy_map_hub.py` last)
+  re-run twice; `md5sum` byte-identical across both runs — R5
+  idempotency confirmed.
+- `scripts/verify_anchors.py` — 26/26 anchors fresh.
+- div-balance check (`<div>` vs `</div>` count) — clean on all 22 pages.
+- Real headless-Chromium checks: `galaxy_map_river.html` no longer
+  contains the string "ARCHIVED — SUPERSEDED"; its collapsed
+  `<details class="doc-methodology">` opens correctly on click and
+  shows the real per-river archived content. `galaxy_map_dimensions.html`
+  L1 Map view now renders a real hub circle (r=42) plus 36 real `<path>`
+  edge elements (was 0 before the fix); clicking a river bubble reveals
+  its detail panel, confirmed to include the new real "L0 units" cross-
+  link text. Zero console errors across `galaxy_map_river.html`,
+  `galaxy_map_dimensions.html`, `galaxy_map_hub.html`,
+  `galaxy_map_module.html`.
+- REAL CONTAMINATION CAUGHT AND FIXED mid-verification, logged honestly
+  rather than silently corrected: a scratch diagnostic file
+  (`diag_page_dump.html`, a raw page dump written to the repo root
+  during Request-B diagnosis) was still present during the first full
+  pipeline regen, and `galaxy_map_oversight_sync.py`'s own real
+  file-scanning detector picked it up as if it were a genuine oversight
+  doc (it appeared as a fake "ceo_plan_items"/"ceo_plans" reader in that
+  page's Shared Infrastructure table). Caught by diffing against the
+  last committed state before staging, not assumed clean. Fixed by
+  deleting the scratch file and re-running the full pipeline a second
+  time; re-verified idempotent, anchors fresh, div-balanced, zero
+  console errors, and the fake row is gone. Worth remembering as a
+  standing discipline: clean up scratch files in the repo root BEFORE
+  the final pipeline regen, not after — a page-scanning generator can't
+  tell a real oversight doc from a same-shaped scratch file sitting in
+  the same directory.
+
+REAL SCOPE, HONEST
+------------------------------------------------------------
+This pass fixed the concrete rendering bug (Request B) and built a real,
+working L0↔L1 cross-link plus the archived-row declutter inside the
+ALREADY-EXISTING G108 Dimensions Matrix / River ring system (the
+closest real infrastructure to what Alex asked for, built 3 weeks
+earlier for a near-identical prior ask). It did NOT build a brand-new,
+separate "L0+dimensions+rivers all as one combined bubble canvas"
+diagram from scratch — the existing 3-level-tab (L0/L1/L2) structure,
+now with real working cross-links between levels, was judged the
+correct real absorption of that ask rather than a 4th, competing bubble
+system (rule 8 — this project already has too many near-duplicate
+bubble implementations, which is part of how the original bug existed
+undetected). If Alex wants a literal single combined L0+L1 canvas
+instead of tab-separated levels with cross-links, that's a real,
+separate, larger follow-up — not assumed here.
+
+Untested by Alex's own hand — same standing flag as every Galaxy Map
+change this session.

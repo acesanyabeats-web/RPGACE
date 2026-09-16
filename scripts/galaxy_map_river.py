@@ -213,29 +213,50 @@ def build_svg():
     archived_legend_rows = []
 
     def _emit_river_node(rnum, rx, ry, is_archived, hub_r1=42):
-        river_pos[rnum] = (rx, ry)
+        # Sep 16 2026, real 3rd correction (Alex's own direct ask: "this
+        # superseded thing needs to go... i want full absorption to
+        # declutter, we have too much clutter") — an archived river no
+        # longer gets ANY visual presence in the main diagram (no ring/
+        # row node, no edge, no badge): real evidence (this file's own
+        # Sep 15 note two corrections up) already found a plain retired
+        # TAG didn't solve the clutter complaint, and neither did moving
+        # retired rivers to their own visually-separate row — Alex's own
+        # screenshot showed that row STILL read as a confusing dead end
+        # (dashed spokes pointing at nothing a reader could act on).
+        # Real "full absorption": an archived river's real RIVER_RETIRED
+        # reason + superseded_by data still renders in full, just as
+        # plain informational text inside a collapsed <details> further
+        # down the page (see build_river_page below) — never deleted,
+        # per this project's own archive-never-delete convention — it
+        # just stops competing for space on the live interactive ring.
+        # river_pos is deliberately NOT set for an archived river, so
+        # any real RIVER_FLOWS edge touching one correctly falls through
+        # to the existing "not a real river number" stub-note path
+        # below, rather than drawing a phantom edge to a node that no
+        # longer exists on this canvas.
+        if not is_archived:
+            river_pos[rnum] = (rx, ry)
         color = RIVER_COLOR[rnum]
-        # Archived spokes are dashed + dimmer — still real, still shown,
-        # visually reads as "connected but not a primary river" at a
-        # glance rather than needing the reader to spot a small badge.
-        edges_svg.append(_curved_edge(cx, cy, rx, ry, color, real=(not is_archived), dashed=is_archived, r1=hub_r1, r2=30))
-        edge_colors_used.add(color)
+        if not is_archived:
+            edges_svg.append(_curved_edge(cx, cy, rx, ry, color, real=True, dashed=False, r1=hub_r1, r2=30))
+            edge_colors_used.add(color)
         short_label = RIVER_NAME[rnum].split('—')[0].strip()
         # G4 shipped — every river node is now a real clickable drill-down
         # into its own Level-2 module/dashboard-card detail, not a
         # decorative dead end (matches G3's own drill-link precedent on
         # Level 0's central node).
-        nodes_svg.append(
-            f'<a href="galaxy_map_module.html#river-{rnum}" class="drill-link">'
-            + node_circle(rx, ry, 30, color, '🌊', short_label, label_color=color)
-            + '</a>'
-        )
+        if not is_archived:
+            nodes_svg.append(
+                f'<a href="galaxy_map_module.html#river-{rnum}" class="drill-link">'
+                + node_circle(rx, ry, 30, color, '🌊', short_label, label_color=color)
+                + '</a>'
+            )
         # G5 badge — a real "feeds/is Oversight" marker, distinct from
         # any single edge, so the connection reads at a glance.
-        if rnum == OVERSIGHT_RIVER:
+        if not is_archived and rnum == OVERSIGHT_RIVER:
             bx, by = polar(rx, ry, 34, -45)
             nodes_svg.append(f'<text x="{bx}" y="{by}" text-anchor="middle" font-size="16" title="Oversight hub">📚</text>')
-        elif rnum in oversight_feeders:
+        elif not is_archived and rnum in oversight_feeders:
             bx, by = polar(rx, ry, 34, -45)
             nodes_svg.append(f'<text x="{bx}" y="{by}" text-anchor="middle" font-size="13" opacity="0.85" title="Feeds Oversight (River XV)">📚</text>')
         # G20 (Aug 14) — a real "🌾" badge + direct link on any river that
@@ -244,7 +265,7 @@ def build_svg():
         # meanders.py itself uses). NOT nested inside the existing
         # drill-link <a> above (invalid HTML) — a separate small link
         # placed just outside it.
-        if rnum in rivers_needing_meanders():
+        if not is_archived and rnum in rivers_needing_meanders():
             mx, my = polar(rx, ry, 34, 45)
             # Real Aug 21 2026 fold — Level 2.5 no longer has its own
             # page; its real card-split content is now Level 2's own
@@ -258,14 +279,9 @@ def build_svg():
         # badge right on the ring node itself, not just in the legend
         # text below, so "0 modules, by design" is legible at first
         # glance, not only after scrolling to the per-river role note.
-        if not mods:
+        if not is_archived and not mods:
             gx, gy = polar(rx, ry, 34, 135)
             nodes_svg.append(f'<text x="{gx}" y="{gy}" text-anchor="middle" font-size="13" opacity="0.85" title="0 real rpgace_core.js modules, by design — a Total-systems category, not an app module domain">⚙️</text>')
-        # G102's per-node "🚫 retired" badge was removed Sep 15 2026 (2nd
-        # correction) — now that retired rivers sit in their own real,
-        # visually distinct "🗄️ Archived" cluster with its own section
-        # label (see below), a per-node badge saying the same thing a
-        # second time is redundant, not a second signal.
         # Real, LIGHTWEIGHT Alex-presence badge (Aug 13, Alex's own ask,
         # "also present at level 0, 1 and 2 where it makes sense") — a
         # full bubble+edges (Level 2/3's own treatment) would be real
@@ -276,7 +292,7 @@ def build_svg():
         # real DOM/input evidence at all (compute_module_ui_signal(),
         # rule 8, rolled up one level further than Level 2's own use)?
         river_has_alex = any(v for m in mods for v in compute_module_ui_signal(m).values())
-        if river_has_alex:
+        if not is_archived and river_has_alex:
             hx, hy = polar(rx, ry, 34, 45)
             nodes_svg.append(f'<text x="{hx}" y="{hy}" text-anchor="middle" font-size="13" opacity="0.85" title="Has real DOM/input-facing modules — see Level 2/3">🧑</text>')
         # G16 (Aug 14, real continuation — Alex: "move on with next
@@ -287,7 +303,7 @@ def build_svg():
         # rivers with a real Oracle call count > 0 get this (4 of 16,
         # checked against live data — III/V/IX/XI).
         river_oracle_n = sum(compute_module_oracle_call_count(m) for m in mods)
-        if river_oracle_n > 0:
+        if not is_archived and river_oracle_n > 0:
             ox_, oy_ = polar(rx, ry, 34, -135)
             nodes_svg.append(f'<text x="{ox_}" y="{oy_}" text-anchor="middle" font-size="13" opacity="0.85" title="{river_oracle_n} real Oracle call(s) across this river — see Level 2/3">🔮</text>')
         mods_txt = ', '.join(f'<code>{m}</code>' for m in mods) if mods else '(no single-module home — see zone role note)'
@@ -330,33 +346,14 @@ def build_svg():
         rx, ry = polar(cx, cy, river_radius, ang)
         _emit_river_node(rnum, rx, ry, is_archived=False)
 
-    # Archived rivers: a fixed horizontal row well below the hub/ring,
-    # evenly spread and centered on cx — 5 nodes don't need (and
-    # shouldn't get) ring-crossing optimization, they need to visibly
-    # NOT be part of the ring.
-    archived_y = cy + river_radius + 150
-    n_archived = len(archived_nums)
-    archived_spacing = 170
-    archived_start_x = cx - (archived_spacing * (n_archived - 1) / 2)
-    for i, rnum in enumerate(archived_nums):
-        ax = archived_start_x + i * archived_spacing
-        _emit_river_node(rnum, ax, archived_y, is_archived=True, hub_r1=30)
-
-    # A real, visible section boundary + label around the archived row —
-    # never just an unlabeled cluster of nodes far from the ring, which
-    # would read as a rendering bug rather than a deliberate section.
-    archive_box_x = archived_start_x - 70
-    archive_box_w = archived_spacing * (n_archived - 1) + 140
-    archive_box_y = archived_y - 62
-    archive_box_h = 110
-    nodes_svg.append(
-        f'<rect x="{archive_box_x}" y="{archive_box_y}" width="{archive_box_w}" height="{archive_box_h}" '
-        f'rx="14" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.14)" stroke-width="1.4" stroke-dasharray="5,4"/>'
-    )
-    nodes_svg.append(
-        f'<text x="{cx}" y="{archive_box_y - 14}" text-anchor="middle" font-size="12.5" font-weight="700" '
-        f'fill="#8a8a9a" letter-spacing="1.5">🗄️ ARCHIVED — SUPERSEDED BY THE L0 INFRA/INTER SYSTEM</text>'
-    )
+    # Sep 16 2026, real 3rd correction — no ring/row visual presence at
+    # all for archived rivers (see _emit_river_node's own comment above
+    # for the full real reasoning). Still calling _emit_river_node here
+    # purely to populate archived_legend_rows with the real per-river
+    # text (mods/role/retirement note) — x/y are unused since is_archived
+    # skips every SVG-emitting branch.
+    for rnum in archived_nums:
+        _emit_river_node(rnum, cx, cy, is_archived=True)
 
     # --- real RIVER_FLOWS edges, river-to-river only ---
     # A target that isn't a real river number (a terminal-sink note or a
@@ -519,11 +516,13 @@ TEMPLATE = """<!DOCTYPE html>
   {live_legend}
 </div>
 
-<div class="legend">
-  <h2>🗄️ Archived rivers ({n_archived})</h2>
-  <p class="cycle-intro">These {n_archived} rivers carried zero real <code>rpgace_core.js</code> modules and were real Total-systems categories, not app module domains — superseded by the L0 Infra/Inter system (see <a href="galaxy_map.html">Level 0</a>). Kept here rather than deleted, per this project's own archive-never-delete convention — their real <code>RIVER_RETIRED</code> reason + <code>superseded_by</code> link is shown per row below.</p>
+<details class="doc-methodology">
+  <summary>🗄️ Archived rivers ({n_archived}) — real history, kept but no longer on the live ring</summary>
+  <div class="legend">
+  <p class="cycle-intro">Sep 16 2026, real 3rd correction (Alex's own direct ask: "this superseded thing needs to go... i want full absorption to declutter") — these {n_archived} rivers carried zero real <code>rpgace_core.js</code> modules and were real Total-systems categories, not app module domains, fully superseded by the real L0 Infra/Inter system (see <a href="galaxy_map.html">Level 0</a>, and the real, working <a href="galaxy_map_dimensions.html">L0↔L1 cross-links on the Dimensions Matrix</a>). No longer shown as ring/row nodes — kept here, collapsed, rather than deleted, per this project's own archive-never-delete convention; their real <code>RIVER_RETIRED</code> reason + <code>superseded_by</code> link is shown per row below.</p>
   {archived_legend}
-</div>
+  </div>
+</details>
 
 {dim_index}
 
