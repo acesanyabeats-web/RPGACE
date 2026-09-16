@@ -74,6 +74,17 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🗑 Sep 16 — H16: Planned Cook session gets a real per-recipe delete button</div>
+    <div class="card-body">
+      Real Alex ask: "planned cook doesnt have a delete button, i wanted to delete the lime orange desert and choose one i have all ingredients for."<br><br>
+      <b>Real gap, not a bug</b>: <code>logic._addRecipeToSession</code> (H6) could only ever GROW a cook session — once a recipe joined, there was no way to remove it short of abandoning the whole plan. A bad pick (missing an ingredient, exactly this case) had no way back to a clean session.<br><br>
+      <b>Built</b>: the same real 2-click arm/confirm ✕ delete already used elsewhere in this exact module (Current Stock, H11) and across the project (rule 8, no new interaction pattern) on every recipe row in the Planned Cook popup. <code>logic._removeRecipeFromSession(id, cb)</code> mirrors <code>_persistSessionDraft</code>'s existing insert-or-update path rather than inventing a second write mechanism: a real UPDATE with the trimmed <code>recipe_ids</code> in the common case, a real DELETE on the whole <code>planned_cooks</code> row if the removal empties the session (an empty draft serves no purpose and would resurface as a stale "0 recipes" resume — clearing <code>_session</code> to null fixes the dashboard card's live count for free, no extra code), or a pure in-memory update for the narrow never-persisted-yet edge case.<br><br>
+      <b>Real fail-loud discipline (rule 7)</b>: in-memory state only mutates AFTER the real write confirms, never optimistically — a failed write surfaces as a toast with the row left un-armed, never silently diverging from what's actually saved. On success the removed row disappears in place and the popup stays open (so the existing "+ Add another saved recipe" / "...or generate a new one" buttons are right there to pick a real replacement) unless it was the last recipe, in which case the whole popup closes rather than showing dead Schedule/Shopping-list buttons pointing at an empty session.<br><br>
+      <b>Verified via a real headless-Chromium pass</b>, 4/4 assertions pass: removing 1 of 2 recipes (real arm→confirm icon sequence, popup stays open, correct UPDATE write); removing the last recipe (popup closes, real DELETE write); a single click only arms, zero write fires; the never-persisted edge case resolves in-memory with zero writes. Zero console errors. <code>node --check</code> clean, re-minified, cache-bust bumped <code>20260916g</code>→<code>20260916h</code>. Full record: <code>records/2026-09/h16_planned_cook_delete_recipe_2026-09-16.txt</code>. <b>Untested by Alex's own hand.</b>
+    </div>
+  </div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">💬 Sep 16 — H15: recipe generation now works from general Oracle chat, not only the dedicated Generate button</div>
     <div class="card-body">
       Real Alex ask, directly answering the open fork H14b's own investigation flagged rather than guessed at: "yes, general chat too — build it."<br><br>

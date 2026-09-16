@@ -37421,10 +37421,48 @@ RPGACE.register('cookingOracle', {
 
       var list = document.createElement('div');
       list.style.cssText = 'margin-bottom:14px;';
+      // Real Alex ask (Sep 16 2026): "planned cook doesnt have a delete
+      // button, i wanted to delete the lime orange desert and choose one
+      // i have all ingredients for" - this list could only grow, never
+      // shrink, so a bad pick had no way out short of abandoning the
+      // whole session. Same real 2-click arm/confirm delete shape as the
+      // Current Stock tab a few hundred lines above (rule 8).
       (sess.recipes || []).forEach(function(r) {
         var row = document.createElement('div');
-        row.style.cssText = 'font-size:13px;color:var(--text);padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);';
-        row.textContent = '🍽 ' + r.title;
+        row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);';
+        var lbl = document.createElement('span');
+        lbl.style.cssText = 'font-size:13px;color:var(--text);flex:1;';
+        lbl.textContent = '🍽 ' + r.title;
+        row.appendChild(lbl);
+
+        var delBtn = document.createElement('button');
+        delBtn.textContent = '✕';
+        delBtn.style.cssText = 'background:none;border:none;color:rgba(226,84,84,.4);font-size:13px;cursor:pointer;padding:2px 4px;flex-shrink:0;font-family:Rajdhani,sans-serif;';
+        var armed = false, busy = false;
+        delBtn.onclick = function() {
+          if (busy) return;
+          if (!armed) {
+            armed = true; delBtn.textContent = '❌'; delBtn.style.color = '#CC4A4A';
+            setTimeout(function() { if (busy) return; armed = false; delBtn.textContent = '✕'; delBtn.style.color = 'rgba(226,84,84,.4)'; }, 3000);
+            return;
+          }
+          busy = true; delBtn.textContent = '…';
+          self.logic._removeRecipeFromSession(r.id, function(err) {
+            if (err) {
+              busy = false; armed = false; delBtn.textContent = '✕'; delBtn.style.color = 'rgba(226,84,84,.4)';
+              RPGACE.utils.toast('⚠️ Could not remove: ' + err, '#CC4A4A', 3200);
+              return;
+            }
+            RPGACE.utils.toast('🗑 Removed ' + r.title, 'rgba(226,226,236,0.5)', 2200);
+            // Removing the last recipe deletes the whole draft row (an
+            // empty session is meaningless and would resurface as a
+            // stale "0 recipes" resume) - close the popup rather than
+            // show an empty list with a dead Schedule/Shopping-list flow.
+            if (!self._session) { pop.close(); return; }
+            row.remove();
+          });
+        };
+        row.appendChild(delBtn);
         list.appendChild(row);
       });
       box.appendChild(list);
@@ -39338,6 +39376,53 @@ RPGACE.register('cookingOracle', {
         self._session.recipes.push({ id: id, title: title || 'Recipe' });
         self.logic._persistSessionDraft();
       }
+    },
+
+    // Real Alex ask (Sep 16 2026): "planned cook doesnt have a delete
+    // button, i wanted to delete the lime orange desert and choose one i
+    // have all ingredients for" - _addRecipeToSession above could only
+    // grow a session; there was no way to drop a bad pick short of
+    // abandoning the whole plan. Same real insert-or-update path
+    // _persistSessionDraft already uses (rule 8), except a removal that
+    // empties the session does a real DELETE instead - an empty draft row
+    // serves no purpose and would just resurface as a stale "0 recipes"
+    // resume on the next Cooking-hub open. In-memory state is only
+    // updated AFTER a real persisted write confirms (fail loud, rule 7) -
+    // never optimistically, so a failed write can't leave the UI showing
+    // a session that doesn't actually match what's saved.
+    _removeRecipeFromSession: function(id, cb) {
+      var self = RPGACE.modules.cookingOracle;
+      cb = cb || function() {};
+      var sess = self._session;
+      if (!sess || sess.recipeIds.indexOf(id) === -1) { cb(null); return; }
+      var nextIds = sess.recipeIds.filter(function(rid) { return rid !== id; });
+      var nextRecipes = sess.recipes.filter(function(r) { return r.id !== id; });
+
+      if (!sess.plannedCookId) {
+        // Real edge case: an add's own fire-and-forget insert (see
+        // _persistSessionDraft) hasn't landed yet when this fires - never
+        // actually persisted, so nothing to write, just update memory.
+        sess.recipeIds = nextIds;
+        sess.recipes = nextRecipes;
+        if (!nextIds.length) self._session = null;
+        cb(null);
+        return;
+      }
+
+      if (!nextIds.length) {
+        RPGACE.sb.secureWrite('planned_cooks', 'delete', null, 'id=eq.' + sess.plannedCookId)
+          .then(function() { self._session = null; cb(null); })
+          .catch(function(e) { cb(e.message || 'could not delete now-empty session'); });
+        return;
+      }
+
+      RPGACE.sb.secureWrite('planned_cooks', 'update', { recipe_ids: nextIds }, 'id=eq.' + sess.plannedCookId)
+        .then(function() {
+          sess.recipeIds = nextIds;
+          sess.recipes = nextRecipes;
+          cb(null);
+        })
+        .catch(function(e) { cb(e.message || 'could not save session after removing recipe'); });
     },
 
     // The real write half of the fix above - one shared insert-or-update

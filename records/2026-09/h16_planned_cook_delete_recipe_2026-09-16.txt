@@ -1,0 +1,78 @@
+H16: PLANNED COOK SESSION GETS A REAL PER-RECIPE DELETE BUTTON — Sep 16 2026
+==========================================================================
+
+ALEX'S VERBATIM ASK
+------------------------------------------------------------
+"planned cook doesnt have a delete button, i wanted to delete the lime
+orange desert and choose one i have all ingredients for"
+
+Real gap, not a bug: `logic._addRecipeToSession` (H6, the multi-recipe
+cook-session scheduler) could only ever GROW a session — once a recipe
+joined, there was no way to remove it short of abandoning the whole
+planned cook. A bad pick (missing an ingredient, as here) had no path
+back to a clean session other than starting over.
+
+REAL DESIGN CHOICE
+------------------------------------------------------------
+Same real 2-click arm/confirm delete shape already used elsewhere in this
+exact module (Current Stock's ✕ delete, H11) and across the project
+(Bookworm's 🗑, the wishlist's ✕) — rule 8, no new interaction pattern
+invented. Each recipe row in `ui._showSessionBuilder`'s list now carries
+its own ✕ button; first click arms (❌, red, 3s auto-reset), second click
+within that window actually removes it.
+
+`logic._removeRecipeFromSession(id, cb)` — the real write half, mirroring
+`_persistSessionDraft`'s existing insert-or-update path (rule 8) rather
+than inventing a second write mechanism:
+- If the session has never actually been persisted yet (no
+  `plannedCookId` — a real, narrow edge case: a remove firing before an
+  add's own fire-and-forget insert has landed), it's a pure in-memory
+  update, nothing to write.
+- If removing the recipe would leave the session with ZERO recipes, this
+  does a real DELETE on the `planned_cooks` row instead of an update to
+  an empty array — an empty draft serves no purpose and would otherwise
+  resurface as a stale "0 recipes in progress — resume" on the dashboard
+  card (`sessCount`, read live off `self._session.recipeIds.length`, so
+  clearing `self._session` to null fixes that for free, no extra code).
+- Otherwise, a real UPDATE with the trimmed `recipe_ids` array.
+
+Real fail-loud discipline (rule 7): in-memory state (`sess.recipeIds`/
+`sess.recipes`) is only mutated AFTER the real write confirms, never
+optimistically — a failed write surfaces as a toast and the UI stays
+showing the row (un-armed, ready to retry), rather than silently
+diverging from what's actually saved.
+
+UI behavior on success: the removed row is deleted from the popup's DOM
+in place (popup stays open) if other recipes remain, so Alex can
+immediately use the still-visible "+ Add another saved recipe" / "...or
+generate a new one" buttons to pick a real replacement — directly
+answering the "choose one i have all ingredients for" half of the ask.
+If it was the last recipe, the whole popup closes (nothing left to show —
+no dead Schedule/Shopping-list buttons pointing at an empty session).
+
+VERIFICATION
+------------------------------------------------------------
+`node --check` clean. Real headless-Chromium pass (Supabase boundary
+mocked), 4/4 test cases pass:
+- Removing 1 of 2 recipes: real arm→confirm icon sequence (✕→❌), popup
+  stays open, the removed row's DOM element is gone, `_session.recipeIds`
+  correctly trimmed, and the real write is a genuine UPDATE with the
+  correct trimmed `recipe_ids` + filter.
+- Removing the last recipe in a 1-recipe session: popup closes, `_session`
+  clears to null, the real write is a genuine DELETE on the right row.
+- A single click only arms (no write fires, row stays, session
+  unchanged) — confirms the 2-click discipline actually gates the delete.
+- The never-persisted (`plannedCookId: null`) edge case: resolves cleanly
+  in-memory with zero Supabase writes, no error.
+Zero real console/page errors.
+
+Re-minified, `node --check rpgace_core.min.js` clean, cache-bust bumped
+`20260916g`→`20260916h`.
+
+Untested by Alex's own hand. Real next test: open Planned Cook with 2+
+recipes in it, click ✕ next to the one you don't have ingredients for
+(should arm to ❌), click it again (should disappear), confirm the
+session still shows the remaining recipe(s) and the popup stays open, then
+use "+ Add another saved recipe" or "...or generate a new one" to add a
+real replacement.
+==========================================================================
