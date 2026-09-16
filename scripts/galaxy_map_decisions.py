@@ -111,7 +111,7 @@ DECISION_POINTS = [
     {
         'id': 'conidpot-delete', 'category': 'destructive',
         'title': 'Delete an idea from the Idea Bank (ConID Pot)',
-        'module': 'conidPot', 'func': '_refreshIdeaBank', 'lines': (29227, 29232),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +59 lines from 29168-29176 due to real code changes earlier in the file since Sep 8
+        'module': 'conidPot', 'func': '_refreshIdeaBank', 'lines': (29236, 29236),  # re-verified Sep 16 2026 (Galaxy Map redevelopment /CEO pass), drifted +9 lines from 29227 due to the GMR-1 fal.ai/OpenArt edit earlier in the file
         'anchor': "confirm('Delete \"' + row.title + '\"?')",
         'trigger': 'A real 🗑 button rendered per-row inside the Idea Bank list.',
         'logic': 'A plain `confirm()` — real, same minimal-context shape as videoSummary\'s.',

@@ -175,19 +175,19 @@ details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
   <div class="dblock"><div class="dlabel">What's decided</div><p>Which of 3 real paths every single Oracle call in the app takes, app-wide, until toggled again.</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>Real: every window.callOracle() call in main.js checks getMode() first. 'dummy' short-circuits to a synthetic labeled reply, zero API cost. 'fallback' queues the real prompt into oracle_fallback_queue instead of calling the live API. 'real' calls the live Anthropic API as normal.</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>A visible top-right toggle switch (red/green/gold) whose state persists in localStorage and is checked on literally every real Oracle send in the app.</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 34490-34502)</div><pre>  },
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 34490-34502)</div><pre>
+  getMode: function() {
+    var self = RPGACE.modules.mockOracle;
+    try {
+      var m = localStorage.getItem(self.MODE_KEY);
+      return self.MODES.indexOf(m) !== -1 ? m : 'real';
+    } catch (e) { return 'real'; }
+  },
   setMode: function(mode) {
     var self = RPGACE.modules.mockOracle;
     if (self.MODES.indexOf(mode) === -1) return;
     try { localStorage.setItem(self.MODE_KEY, mode); } catch (e) {}
-    if (mode === 'dummy') {
-      RPGACE.utils.toast('🧪 Dummy Oracle ON — every Oracle reply from now on is fake, wiring-test only. No real API calls, no real cost.', '#E2A83D', 5000);
-    } else if (mode === 'fallback') {
-      RPGACE.utils.toast('📥 Fallback Scout Mode ON — every Oracle send now queues for later, free, instead of calling the real API. Open "Scouted" any time to browse answers.', 'rgba(201,168,76,0.9)', 6000);
-    } else {
-      RPGACE.utils.toast('✅ Real Oracle API — live calls resume', '#4CAF82', 3000);
-    }
-    self._renderState();</pre>
+    if (mode === 'dummy') {</pre>
     <div class="cite">Verified live against rpgace_core.js at build time — a moved/changed anchor fails this script's own build, never silently shown stale.</div>
     <a class="mod-chip" href="galaxy_map_current.html#mod-mockOracle">🔽 mockOracle — Current Series</a>
     <a class="mod-chip" href="galaxy_map_level6.html#m-mockOracle">🔬 every branch in mockOracle — Branch Ledger</a>
@@ -527,7 +527,14 @@ details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
   <div class="dblock"><div class="dlabel">What's decided</div><p>Which ONE real action button shows on a music_video ConID card — the real fix for the Aug 6 "duplicate stage" complaint, where every ConID used to render a FIXED set of buttons regardless of real progress.</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>The ConID row's own real content_productions.status column value ('Idea'/'Scripted'/'Filmed'/'Edited'/'Posted'/'Analysed').</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>A single real MUSIC_VIDEO_PRIMARY_ACTION[row.status] lookup returns exactly one {label, fn} pair to render — 'Posted'/'Analysed' correctly render nothing further (real last-stage), never a guessed extra button.</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 26871-27246)</div><pre>
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 26871-27246)</div><pre>      var self = RPGACE.modules.contentProductionLive;
+      var page = document.getElementById('page-dashboard');
+      if (!page) return;
+
+      var widget = document.createElement('div');
+      widget.id = 'cpl-widget';
+      widget.style.cssText = 'background:rgba(61,170,110,0.03);border:1px solid rgba(61,170,110,0.12);border-radius:12px;padding:18px 22px;margin-bottom:20px;';
+
       var hdr = document.createElement('div');
       hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;';
       var titleEl = document.createElement('div');
@@ -895,14 +902,7 @@ details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
               var dmBtn = document.createElement('button');
               dmBtn.textContent = '📦 Manage Deliverables';
               dmBtn.style.cssText = 'padding:4px 10px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:5px;color:#C9A84C;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-              dmBtn.onclick = function() { self._showDeliverablesManager(row); };
-              sellPanel.appendChild(dmBtn);
-
-              sellWrap.appendChild(sellToggle);
-              actions.appendChild(sellWrap);
-              actions.appendChild(sellPanel);
-            }
-</pre>
+              dmBtn.onclick = function() { self._showDeliverablesManager(row); };</pre>
     <div class="cite">Verified live against rpgace_core.js at build time — a moved/changed anchor fails this script's own build, never silently shown stale.</div>
     <a class="mod-chip" href="galaxy_map_current.html#mod-contentProductionLive">🔽 contentProductionLive — Current Series</a>
     <a class="mod-chip" href="galaxy_map_level6.html#m-contentProductionLive">🔬 every branch in contentProductionLive — Branch Ledger</a>

@@ -1,0 +1,169 @@
+GALAXY MAP REDEVELOPMENT — /CEO Loop 1 (compile → interrogation → paranoia/drift → report)
+2026-09-16, same session as the Perspective Full Coverage + GMP-A/B/C build
+
+=== REAL USER REQUEST (verbatim) ===
+
+"now i think its time to redevelop the map system of all galaxy map page. l0
+units should be redone, we are now using fal.ai not openart. the perspective
+reports should give way to new edges being brought in, or some old edges
+disapearing. the l0 map would then somewhat resemble the shape of river l1
+map, which will then resemble l2 module map etc. the bubble system at level 2
+is the best representation, i like how it flows from one to another, so i
+want that bubble system exactly in every galaxy map page that can have data
+from table represented in this format. /paranoia and /CEO and /drift and
+/interrogation and use /misunderstanding if you didnt quite understand me"
+
+=== DECOMPOSED, 6 real asks ===
+
+1. Redevelop ALL Galaxy Map pages (not a targeted fix).
+2. L0's own structure needs rework (beyond GMP-C's cosmetic relabel).
+3. Real external-tool swap: OpenArt → fal.ai, across code and docs.
+4. Escalate GMP-B's own consistency-check-and-flag scope to literal
+   RIVER_FLOWS edge regeneration (add new, remove stale) from perspective-
+   report evidence.
+5. Recursive visual-shape-consistency: L0's shape should resemble L1's,
+   which resembles L2's, etc.
+6. Unify the L2 bubble system (render_bubble_row/render_evidence_bubble/
+   render_infra_drilldown, Full/Choice toggle) as THE rendering pattern for
+   every page with table-backed data.
+
+=== REAL EVIDENCE GATHERED BEFORE INTERROGATING ===
+
+(3) OpenArt→fal.ai — confirmed via patch_notes.html, same session, "tonight":
+OpenArt has zero real integration in OpenMontage CC's own tooling despite
+Alex's active subscription ("no tool file, no registered provider"). A real
+fal.ai key was set up instead, but ONLY in the separate OpenMontage repo,
+outside this session's reach. Meanwhile rpgace_core.js's
+contentProductionLive._buildVideoPipelinePayload (~line 26356) still writes
+"PROVIDER NOTE: Alex has a real, active OpenArt subscription... a usable
+paid provider for this job now" into every openmontage_jobs.brief sent to
+OpenMontage CC — recommending a provider that repo doesn't actually use.
+galaxy_map_externals.py's own OpenArt connector entry is already honestly
+marked "not wired to anything yet" — the Galaxy Map itself isn't
+misrepresenting this; the real drift is in rpgace_core.js's live prompt
+text. Zero fal.ai references exist anywhere in this repo (checked via grep
+across *.py/*.js/*.md/*.html, excluding graphify-out/node_modules).
+
+(1) Pause collision — CLAUDE.md, still standing (Sep 15 2026,
+/paranoia+/free-for-all-debate): "56% of the prior 2 weeks' 75 commits were
+Galaxy-Map/meta work while real product debt... sat untouched. A real pause
+on new Galaxy Map/Dimension items is now in effect until the
+verification-debt and product-debt backlogs move." The one exemption
+granted since (Orchestrator/OpenMontage 2-page split) was justified
+narrowly as "closing a gap in already-shipped work," not new surface area.
+"Redevelop all galaxy map pages" is new surface area.
+
+(4) GMP-B's own Sep 15 interrogation answer: run consistency-check-first
+(shipped), with literal RIVER_FLOWS regeneration named as "the real,
+deliberate NEXT phase once those 44 older reports get a real
+structured-evidence audit pass." That audit never happened — only 14 of 58
+module perspective_reports carry real cross_refs evidence today. GMP-B's own
+run against those 14 found exactly 1 real cross-river gap (River III↔XI).
+
+(6) Bubble-system usage today: 9 of 21 real pages (galaxy_map [L0],
+connectors, current, local_pipeline, module, oracle,
+orchestrator_cc/openmontage_cc, oversight_sync, supabase — via
+render_bubble_row/render_evidence_bubble/render_infra_drilldown in
+scripts/galaxy_map.py + graphify_river_group.py). 12 pages bespoke:
+decision_matrix, decisions, dimensions, externals, hub, level6, load,
+logic_dimension (retired per G111), loops, river (purpose-built radial
+ring), skill_network, alex_path.
+
+=== REAL INTERROGATION (AskUserQuestion, 4 forks, all answered) ===
+
+Q1 — Pause vs. scope. Options offered: (a) narrow scope, keep the pause
+[recommended] — fix only the concrete OpenArt→fal.ai gap now, defer the
+rest until the pause's own condition is met; (b) override the pause for
+this, explicitly logged, not silent; (c) split — ship the fal.ai fix now,
+queue the rest as a ratified-but-blocked plan.
+ANSWER: (b) "Override the pause for this."
+
+Q2 — Edge regeneration. Options: (a) audit the 44 reports first
+[recommended] — do the real evidence pass GMP-B already named as the
+prerequisite, then regenerate from full 58-report coverage; (b) regenerate
+now from the 14 already-audited reports only; (c) just the 1 known gap +
+the fal.ai edge, no general regeneration.
+ANSWER: (a) "Audit the 44 reports first."
+
+Q3 — Shape consistency. Options: (a) shared visual language, not literal
+layout [recommended] — same color tokens/card styling/legend
+conventions/interaction pattern at every level, each level keeps its own
+layout suited to its own data shape; (b) literal layout echo — L0 becomes
+ring-shaped like L1, L2 also adopts a ring/radial shape.
+ANSWER: (a) "Shared visual language, not literal layout."
+
+Q4 — Bubble rollout to the 12 bespoke pages. Options: (a) add alongside
+existing content [recommended]; (b) replace bespoke layouts outright; (c)
+selective — only pages that are genuinely just table dumps with no
+purpose-built visualization (Level 6, Load, Alex Path named as candidates),
+leave River/Decision Matrix/etc. as their bespoke shapes.
+ANSWER: (c) "Selective — only pages that are genuinely just table dumps."
+
+=== REAL, RECORDED TENSION — Q1's answer overrides a standing self-imposed
+pause. This is logged explicitly here and in CLAUDE.md's own Galaxy Map
+section, not silently bypassed. The pause's own underlying finding (real
+product debt sitting untouched while Galaxy-Map/meta work accumulates)
+still stands as a real fact — overriding it for this one plan does not
+retroactively make that finding false, and this plan's own execution should
+not become the next 2-week repeat of the same imbalance. ===
+
+=== COMPILED PLAN — 6 real, scoped items (see ceo_plans "Galaxy Map
+Redevelopment (fal.ai + shared language + selective bubbles + audited
+edges)", ratified basis, created same session) ===
+
+GMR-1 (small, real, ships same session): fal.ai/OpenArt provider-signal fix.
+  - rpgace_core.js's _buildVideoPipelinePayload PROVIDER NOTE updated to
+    reflect real current reality (fal.ai wired in OpenMontage's own repo;
+    OpenArt is not, despite the active subscription) instead of pushing a
+    provider that repo doesn't use.
+  - A new real fal.ai connector entry in EXTERNAL_CONNECTORS /
+    galaxy_map_externals.py (ai_tooling_and_rules_map.md's own connector
+    table is the canonical source per rule 8 — update there first, mirror
+    second), with honest via/bridges_to/status text (no destination
+    resolution invented if none exists yet).
+  - Regenerate the externals + connector-dependent pages, verify anchors +
+    div-balance + headless-Chromium clean.
+
+GMR-2 (large, real, multi-session, BLOCKS GMR-3): audit the 44
+not-yet-cross_refs-audited module perspective_reports rows for real
+structured cross-reference evidence, same discipline the 14 Sep 15 reports
+already used. Bounded: 44 real rows, each needs its own real evidence
+(code reads, not invented claims).
+
+GMR-3 (blocked on GMR-2): real RIVER_FLOWS regeneration from full
+58-report cross_refs coverage — add genuinely evidenced new edges, remove
+genuinely stale ones, each change logged with its own evidence, never a
+blind bulk rewrite. GMP-B's own consistency-checker script
+(scripts/gmp_b_consistency_check.py) is the real starting mechanism —
+extended from flag-only to apply-with-evidence once GMR-2 lands.
+
+GMR-4 (real, moderate): define + apply a real shared visual-language layer
+across all 21 pages — shared color tokens (already mostly true via
+style.css-derived tokens per the graphify recolor pass), shared
+card/legend/node styling, shared interaction pattern (hover/click-forward
+conventions) — WITHOUT forcing every level into the same literal layout
+shape. River's radial ring, the module flow-rank diagram, and L0's 3-tier
+summary each keep their own layout, restyled to read as one consistent
+system.
+
+GMR-5 (real, small, depends on GMR-4 for the styling half): apply GMR-4's
+shared visual language to L0 specifically (the "L0 redone" ask), plus any
+real evidence-backed structural fixes found along the way (not an
+open-ended rebuild — no further concrete structural complaint about L0
+surfaced during interrogation beyond visual language).
+
+GMR-6 (real, small, scoped by Q4's own answer): identify which of the 12
+bespoke pages are genuinely bare table dumps with no purpose-built
+visualization (Level 6's branch ledger, Load, Alex Path are the named
+candidates) vs. genuinely bespoke-for-a-reason (River's ring, Decision
+Matrix's grid, Dimensions' matrix, Skill Network's graph, Externals'
+connector list, Hub's catalog, Loops' flow diagram) — add the bubble system
+only to the former, as an addition where no evidence-panel exists yet.
+
+=== SEQUENCING ===
+GMR-1 ships this session (small, real, no dependency). GMR-4/5 can run
+independently of GMR-2/3 (styling vs. edge-evidence are separate axes).
+GMR-2 is the real long pole — 44 rows of genuine evidence-gathering: queued
+as its own multi-session item, not rushed. GMR-3 stays blocked on GMR-2 by
+design, per Alex's own Q2 answer. GMR-6 is independent and small, can run
+any time.

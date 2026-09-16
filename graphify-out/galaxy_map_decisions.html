@@ -201,12 +201,7 @@ details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
   <div class="dblock"><div class="dlabel">D2 — Real trigger (DOM/button)</div><p>A real 🗑 button rendered per-row inside the Idea Bank list.</p></div>
   <div class="dblock"><div class="dlabel">D3 — Real logic</div><p>A plain `confirm()` — real, same minimal-context shape as videoSummary's.</p></div>
   
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 29227-29232)</div><pre>              }},
-              { label: '🗑', color: 'rgba(226,84,84,0.6)', action: function() {
-                if (confirm('Delete "' + row.title + '"?')) {
-                  RPGACE.sb.secureWrite('conid_pot', 'delete', null, 'id=eq.' + row.id)
-                    .then(function() { self._refreshIdeaBank(filter || 'All'); });
-                }</pre></div>
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 29236-29236)</div><pre>                if (confirm('Delete "' + row.title + '"?')) {</pre></div>
   <a class="mod-chip" href="galaxy_map_current.html#mod-conidPot">🔽 conidPot._refreshIdeaBank() — Current Series</a>
   <a class="mod-chip" href="galaxy_map_level6.html#m-conidPot">🔬 every branch in conidPot — Branch Ledger</a>
 </div><div class="dpcard" id="dp-bookworm-delete">

@@ -26358,7 +26358,14 @@ RPGACE.register('contentProductionLive', {
               // has no such column; PostgREST rejects any field that isn't a
               // real column. Reverted to keep the payload matching the
               // actual live schema exactly.)
-              briefParts.push('PROVIDER NOTE: Alex has a real, active OpenArt subscription (confirmed Aug 30 2026) - a usable paid provider for this job now, alongside whichever else fits best.');
+              // Sep 16 2026 — real correction (GMR-1): OpenArt turned out to
+              // have zero real integration in OpenMontage's own tooling
+              // despite the active subscription (no tool file, no registered
+              // provider — confirmed via the separate OpenMontage CC session
+              // the same night). A real fal.ai key was set up there instead
+              // as the actual working provider. The note now reflects that,
+              // not the stale Aug 30 OpenArt-only signal.
+              briefParts.push('PROVIDER NOTE: Alex has a real, active OpenArt subscription (confirmed Aug 30 2026), but as of Sep 2026 fal.ai is the provider actually wired into OpenMontage\'s own tooling - prefer fal.ai for this job unless OpenArt gets real tool integration later.');
               if (docs.visual_treatment) briefParts.push('VISUAL TREATMENT DOC:\n' + docs.visual_treatment);
               if (docs.script) briefParts.push('ORACLE PROMPT USED:\n' + docs.script);
               var payload = {
