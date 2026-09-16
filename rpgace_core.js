@@ -7220,10 +7220,32 @@ RPGACE.register('visualOracle', {
   // next one starts, which is the only way to guarantee correct
   // attribution without a much larger request-correlation rewrite across
   // every real call site (rule 11 - proportionate to the actual risk).
-  _captureNextResponse: function(callback) {
+  // Real bug found live (Alex report: recipe generation + the "Suggest
+  // 5 ideas" narrow-down dropdown appearing to silently do nothing) -
+  // BOTH failure paths below (the busy-guard's early return, and the
+  // 90s timeout) released the pending-capture lock but NEVER told the
+  // caller anything happened - `callback` simply never fired. Every
+  // caller that shows a loading/disabled button state while waiting
+  // (cookingOracle's Generate/Suggest-5-ideas/Suggest-additions flows
+  // among them) had no way to know the wait had ended in failure, so
+  // that button stayed stuck on its loading text FOREVER with zero
+  // error shown - indistinguishable from "nothing is happening."
+  // Fixed with a real, optional 2nd `onFail(reason)` param, `reason`
+  // one of 'busy'|'timeout' - deliberately backward compatible (rule 8,
+  // one shared implementation, not a per-caller patch): every EXISTING
+  // 1-arg caller (`callback` only) is completely unaffected, since
+  // `onFail` is simply undefined there and every call below is
+  // `if (onFail) onFail(...)` - their own pre-existing "hangs silently
+  // on failure" gap is untouched, not fixed and not worsened, out of
+  // scope for this pass. Only callers that explicitly opt in (the 3
+  // real cookingOracle generation call sites, wired the same session)
+  // get the real fail-loud behavior rule 7 already requires everywhere
+  // else in this project.
+  _captureNextResponse: function(callback, onFail) {
     var self = RPGACE.modules.visualOracle;
     if (self._pendingCapture) {
       RPGACE.utils.toast('⚠️ Another Oracle reply is still pending — wait for it to finish before starting a new Visual Treatment/action, or it can save into the wrong ConID', '#CC4A4A', 5000);
+      if (onFail) onFail('busy');
       return;
     }
     self._pendingCapture = true;
@@ -7240,6 +7262,7 @@ RPGACE.register('visualOracle', {
     var timer = setTimeout(function() {
       timedOut = true;
       self._pendingCapture = false;
+      if (onFail) onFail('timeout');
     }, 90000);
     var off = RPGACE.hooks.on('oracle:response-scanned', function(text) {
       off();
@@ -7414,7 +7437,7 @@ RPGACE.register('visualOracle', {
   _showDirectorPicker: function(callback, prefill, opts) { return this.ui._showDirectorPicker(callback, prefill, opts); },
   _showSaveToPipelinePicker: function(docSlug, text) { return this.ui._showSaveToPipelinePicker(docSlug, text); },
   _withFilmmakerLibrary: function(callback) { return this.logic._withFilmmakerLibrary(callback); },
-  _captureNextResponse: function(callback) { return this.logic._captureNextResponse(callback); },
+  _captureNextResponse: function(callback, onFail) { return this.logic._captureNextResponse(callback, onFail); },
   _saveDocToProduction: function(docSlug, text, productionId, videoJobId) { return this.logic._saveDocToProduction(docSlug, text, productionId, videoJobId); },
 
 });
@@ -38409,6 +38432,18 @@ RPGACE.register('cookingOracle', {
         var recipe = self.logic._parseRecipeJSON(text);
         if (!recipe) { cb('No RECIPE_JSON found in the reply — nothing generated. Try rephrasing what you want.', null, text); return; }
         cb(null, recipe, text);
+      }, function(reason) {
+        // Real fail-loud fix (Alex report: generation appearing to
+        // silently do nothing) - without this, a busy/timed-out capture
+        // left the Generate button stuck disabled forever with zero
+        // error, indistinguishable from a real hang. See
+        // visualOracle._captureNextResponse's own comment for the shared
+        // root cause and why only these 3 real cookingOracle call sites
+        // opt into it.
+        self._generateFlowArmedUntil = 0;
+        cb(reason === 'busy'
+          ? 'Oracle is already busy with another reply — wait a moment and try again'
+          : 'Oracle took too long to reply (90s) — no recipe was generated. Try again.');
       });
     },
 
@@ -38666,6 +38701,13 @@ RPGACE.register('cookingOracle', {
         var ideas = self.logic._parseDishList(text);
         if (!ideas || !ideas.length) { cb('Could not parse dish ideas from the reply — try again'); return; }
         cb(null, ideas);
+      }, function(reason) {
+        // Real fail-loud fix (Alex report: "Suggest 5 ideas" appearing to
+        // silently do nothing) - see visualOracle._captureNextResponse's
+        // own comment for the shared root cause this closes.
+        cb(reason === 'busy'
+          ? 'Oracle is already busy with another reply — wait a moment and try again'
+          : 'Oracle took too long to reply (90s) — try again');
       });
     },
 
@@ -39045,6 +39087,12 @@ RPGACE.register('cookingOracle', {
             s.inPantry = pantryNorm.indexOf(String(s.name || '').trim().toLowerCase()) !== -1;
           });
           cb(null, suggestions);
+        }, function(reason) {
+          // Real fail-loud fix - see visualOracle._captureNextResponse's
+          // own comment for the shared root cause this closes.
+          cb(reason === 'busy'
+            ? 'Oracle is already busy with another reply — wait a moment and try again'
+            : 'Oracle took too long to reply (90s) — try again');
         });
       });
     },

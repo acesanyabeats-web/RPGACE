@@ -1,0 +1,115 @@
+H17: RECIPE GENERATION (AND ITS "SUGGEST 5 IDEAS" NARROW-DOWN) NO LONGER
+HANGS SILENTLY FOREVER ON A SLOW/FAILED ORACLE REPLY — Sep 16 2026
+==========================================================================
+
+ALEX'S REPORT (real, live symptom, no corroborating chat/error-log record
+found this session — investigated fresh from the code, not from a
+recovered conversation)
+------------------------------------------------------------
+"We were dealing with 5 recipes not generating, with narrow down drop
+list" — the "Suggest 5 ideas" button inside Cooking's narrow-down
+dropdown appearing to do nothing. Follow-up ask, once the real root
+cause was found: "Do it for when I'm ever generating recipes" — apply
+the fix everywhere recipe generation can be triggered, not just that one
+button.
+
+REAL ROOT CAUSE, FOUND BY READING THE ACTUAL CODE (rule 1/4 — no
+uncommitted work, no session_memory row, no error_log row existed for
+this; genuinely investigated fresh)
+------------------------------------------------------------
+`visualOracle._captureNextResponse` (the ONE shared one-shot Oracle-reply
+capture mechanism every trailer-based flow in this app uses — RECIPE_JSON,
+RECIPE_UPDATE_JSON, DIRECTOR_CHOSEN, EDL_JSON, dish-list suggestions,
+ingredient suggestions) has TWO real failure paths, and BOTH of them
+silently swallowed the failure instead of ever telling the caller:
+
+(1) The busy-guard: if another capture is already pending, it shows a
+    toast ("Another Oracle reply is still pending...") and returns —
+    but the CALLER's own callback is never invoked either way.
+(2) The 90-second timeout: if Oracle never replies (or the reply never
+    renders into the DOM for `oracle:response-scanned` to fire on), the
+    pending-capture lock is released after 90s — but again, the caller's
+    callback is simply never called.
+
+Every consumer that shows a loading/disabled button state while waiting
+(cookingOracle's "Generate a recipe," "🎲 Suggest 5 ideas," and "💡
+Suggest additions" flows among them) had zero way to learn the wait had
+ended in failure — the button just stayed stuck on its loading text
+("⏳ Asking Oracle...") forever, with no error shown. This is
+indistinguishable from "nothing is happening," which is exactly the
+symptom reported.
+
+REAL FIX — one shared implementation, backward compatible (rule 8)
+------------------------------------------------------------
+`_captureNextResponse(callback, onFail)` gained a real, OPTIONAL second
+parameter. `onFail(reason)` — `reason` one of `'busy'`|`'timeout'` — now
+fires on both failure paths, immediately releasing the caller from its
+stuck loading state. Every EXISTING 1-arg caller (4 real non-cooking call
+sites: Visual Treatment doc-save, Beat Log response-save, the manual
+director-picker save, a Content Pipeline doc-save) is completely
+unaffected — `onFail` is simply `undefined` there, every internal call is
+`if (onFail) onFail(...)`, so their own pre-existing "hangs silently on
+failure" gap is untouched — not fixed, but also not worsened. Widening
+their scope was deliberately NOT done this pass (rule 11, proportionate
+to what Alex actually asked for — "when I'm ever generating recipes").
+
+The 3 real cookingOracle recipe-generation call sites were wired to
+opt in, directly answering "for when I'm ever generating recipes":
+- `logic._generate` (the dedicated "⚡ Generate a recipe" button flow,
+  and the H15 general-chat generation path that shares it) — on failure,
+  clears its own `_generateFlowArmedUntil` guard (so the H15 chat
+  listener doesn't stay wrongly suppressed) and reports a real, honest
+  error via its existing `cb(err)` — which `_runGenerateAndShow` already
+  correctly resets the button/shows an error for, it just never used to
+  get called.
+- `logic._suggestDishes` (the "🎲 Suggest 5 ideas" narrow-down button —
+  the one Alex actually named) — same real error surfaced through the
+  existing `suggestBtn`/`errBox` reset path in `_showNarrowDown`.
+- `logic._suggestIngredientAdditions` ("💡 Suggest additions (uses your
+  pantry)") — same real error surfaced through its own existing button
+  reset path.
+
+All 3 already had fully correct `if (err) { ...reset the button, show the
+error... }` handling waiting for a real error that could never arrive —
+this fix is purely about actually invoking that existing, already-correct
+handling, not building new UI.
+
+VERIFICATION
+------------------------------------------------------------
+`node --check` clean. Real headless-Chromium pass, 7/7 assertions pass:
+- The busy path calls `onFail('busy')` synchronously, the success
+  callback never fires.
+- An existing 1-arg (no `onFail`) caller is completely unaffected — no
+  exception, no behavior change (still never calls back on failure,
+  matching its pre-existing state exactly).
+- The real 90-second timeout path (forced to fire after 20ms via a
+  scoped `window.setTimeout` override — the real production 90000ms
+  value in the shipped code is untouched) calls `onFail('timeout')`,
+  releases `_pendingCapture`, never calls the success callback.
+- `_suggestDishes` surfaces a real, honest "Oracle took too long to
+  reply (90s) — try again" error instead of hanging, on a real timeout.
+- `_generate` surfaces its own real honest error AND correctly clears
+  `_generateFlowArmedUntil` back to 0 on a real timeout.
+- `_suggestIngredientAdditions` surfaces a real honest error on a real
+  timeout.
+- A genuine SUCCESSFUL reply (fired via the real
+  `RPGACE.hooks.fire('oracle:response-scanned', ...)` pipeline, same
+  pipe-delimited format the Sep 13 fix already proved) still works
+  exactly as before — zero regression on the happy path.
+Zero real console/page errors.
+
+Re-minified, `node --check rpgace_core.min.js` clean, cache-bust bumped
+`20260916h`→`20260916i`.
+
+Untested by Alex's own hand. Real, honest note: this was NOT reproduced
+live (no error_log row, no session record existed for the original
+report) — it was diagnosed by reading the actual capture mechanism and
+finding a real, structural gap that would produce exactly the reported
+symptom whenever Oracle is slow, busy, or its reply fails to render. If
+generation still silently hangs after this ships, that's real evidence
+the actual cause is elsewhere (e.g. `sendToOracle` itself failing to
+send, which already surfaces its own separate "Could not send to Oracle"
+error one line earlier in each of these 3 functions) — worth checking
+DevTools console for a toast/error message at that point, since this fix
+specifically closes the ONE path that previously had zero error at all.
+==========================================================================
