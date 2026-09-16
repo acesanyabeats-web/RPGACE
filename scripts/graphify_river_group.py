@@ -1373,8 +1373,18 @@ RIVER_FLOWS = {
         ('River IV — The Bookworm River', 'special prefix diverts the message', 'nav_route'),
         ('River V — Daily Ops: Agenda, Schedule & Journal', 'special prefix diverts the message (scheduleOracle)', 'nav_route'),
         ('River XIII — The API / Auth Layer', 'dormant: a Kimi/Luna provider call would route out through here instead of the default Anthropic call', 'ai_judgment_call'),
+        # GMR-3 (Sep 16 2026) — real edges found by the full 58/58-module
+        # cross_refs consistency check (scripts/gmp_b_consistency_check.py),
+        # evidenced by each named module's own real perspective_reports row.
+        ('River IX — The Mirror and the Far Shore', "feynman's real cross_refs names knowledgeGap directly", 'ai_judgment_call'),
+        ('River VIII — The Confluence Pool', "feynman's real cross_refs names taxonomySync directly", 'ai_judgment_call'),
+        ('River XI — Content Production Live', "cookingOracle's real cross_refs names RPGACE.modules.visualOracle directly", 'ai_judgment_call'),
     ],
-    4: [('River VI — The Judgment Chamber', 'every insight found here', 'ai_judgment_call')],
+    4: [
+        ('River VI — The Judgment Chamber', 'every insight found here', 'ai_judgment_call'),
+        # GMR-3 (Sep 16 2026) — see River 3's own note above.
+        ('River XII — The Research & Intel Stream', "bookworm's real cross_refs names researchTabs directly", 'nav_route'),
+    ],
     5: [
         # G49 (Aug 18): the Content Intelligence -> River VIII flow moved
         # to River 12's own entry below — its real source modules
@@ -1382,6 +1392,8 @@ RIVER_FLOWS = {
         # this axis, ending at the Schedule Calendar (a real main.js UI
         # destination, no further river hop).
         ('River XIII — The API / Auth Layer', "morningBrief's real Composio Gmail-fetch call routes out through here", 'external_extract_call'),
+        # GMR-3 (Sep 16 2026) — see River 3's own note above.
+        ('River VIII — The Confluence Pool', "morningBrief's real cross_refs names taxonomySync directly", 'ai_judgment_call'),
     ],
     12: [
         ('River VIII — The Confluence Pool', 'Content Intelligence real write path — the pending-proposal/review-queue flow', 'write_commit'),
@@ -1390,16 +1402,27 @@ RIVER_FLOWS = {
         ('River VII — The Library Current', "a fresh leaf's teaching page", 'ai_judgment_call'),
         ('River VIII — The Confluence Pool', 'any confirmable fusion-link bridge', 'human_confirm_gate'),
     ],
-    7: [('River VIII — The Confluence Pool', 'a proposed merge', 'human_confirm_gate')],
+    7: [
+        ('River VIII — The Confluence Pool', 'a proposed merge', 'human_confirm_gate'),
+        # GMR-3 (Sep 16 2026) — see River 3's own note above.
+        ('River XII — The Research & Intel Stream', "refCorpus's real cross_refs names researchTabs directly", 'ai_judgment_call'),
+    ],
     8: [('River II — The Great Confluence', "into The Great Tree, River II's own estuary — readable by every other river from there", 'write_commit')],
     9: [
         ('River X — The Confluence of Chronicles', "the Far Shore's own real changes, via system_updates", 'oversight_deposit'),
         ('River XIII — The API / Auth Layer', 'the Claude Code fallback lane\'s drain and Graphify CC\'s own session-start dispatch both route out through here', 'dispatch_trigger'),
+        # GMR-3 (Sep 16 2026) — see River 3's own note above.
+        ('River VIII — The Confluence Pool', "knowledgeGap's real cross_refs names taxonomySync directly", 'ai_judgment_call'),
     ],
     10: [('— terminal sink for every river above —', 'River XI is the one exception, see below', 'terminal_sink')],
     11: [
         ('River X — The Confluence of Chronicles', 'both branches loop back into the same shared estuary, not a new one', 'oversight_deposit'),
         ('River XIII — The API / Auth Layer', "the OpenMontage handoff, librosa's beat_audio_jobs analysis (via Beat Log), and contentRepurpose's real Composio calls (Notion/YouTube) all route out through here", 'dispatch_trigger'),
+        # GMR-3 (Sep 16 2026) — see River 3's own note above.
+        ('River VII — The Library Current', "beatLog's real cross_refs names refCorpus directly", 'ai_judgment_call'),
+        ('River XII — The Research & Intel Stream', "beatLog's real cross_refs names researchTabs directly", 'ai_judgment_call'),
+        ('River VIII — The Confluence Pool', "beatLog's real cross_refs names taxonomySync directly", 'ai_judgment_call'),
+        ('River V — Daily Ops: Agenda, Schedule & Journal', "conidPot's real cross_refs names morningBrief directly", 'ai_judgment_call'),
     ],
     13: [
         ('River XI — Content Production Live', 'the OpenMontage job result — the one external connector whose real spring AND mouth both sit back in River XI', 'dispatch_trigger'),
