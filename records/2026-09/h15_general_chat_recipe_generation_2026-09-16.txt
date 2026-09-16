@@ -1,0 +1,155 @@
+H15: GENERAL CHAT CAN NOW TRIGGER REAL RECIPE GENERATION, NOT JUST THE
+DEDICATED "⚡ Generate a recipe" BUTTON — Sep 16 2026
+==========================================================================
+
+ALEX'S VERBATIM ASK
+------------------------------------------------------------
+Following the H14b investigation report (narrow-down/generation was found
+to be scoped to one specific dedicated button — a real, structural design
+gap, not a bug, per rule 5 not fixed blind), Alex was asked whether
+"generate via chat" should get this treatment too. His answer, verbatim:
+"yes, general chat too — build it."
+
+REAL DESIGN PROBLEM
+------------------------------------------------------------
+How does Oracle know to append a RECIPE_JSON trailer when Alex asks for a
+recipe in FREE-FORM chat, on ANY surface (main dashboard chat or the
+floating oracleControl overlay), without fragile NLU and without adding a
+4th physical `window.callOracle` wrapper — a real, standing landmine this
+project already documents (CLAUDE.md: "only ONE window.callOracle wrap
+should ever exist at a time per grounding concern... every wrap must
+forward all 4 arguments or silently downgrade a streaming call to
+blocking").
+
+REAL DESIGN CHOICES
+------------------------------------------------------------
+(1) `oracleAppGrounding`'s existing `window.callOracle` wrap is the ONE
+real universal interception point for every conversational Oracle call
+across the WHOLE app, gated on `PERSONA_MARKERS` (an `isConversational`
+check) — every real message Alex ever sends to "the Oracle" persona,
+regardless of surface, passes through this exact function. Rather than add
+a 4th wrapper, a 4th gate rides the SAME wrap, exactly matching the
+already-established `anatomyHit`/`actionHit` cross-module guarded-call
+pattern:
+  var cook = RPGACE.modules.cookingOracle;
+  var recipeGenHit = !!(cook && cook.matchesRecipeGenTrigger && cook.matchesRecipeGenTrigger(lower));
+This is real rule-8 discipline, not a new mechanism — reusing the one
+place every wrap already forwards all 4 arguments correctly.
+
+(2) `cookingOracle.RECIPE_GEN_KEYWORDS` — a real, curated compound-phrase
+list (never bare adjectives, same word-boundary-hyphen landmine
+discipline as H13's aisle keywords), deliberately anchored on a real
+recipe/dish NOUN so an unrelated "generate a quest"/"make a caption"
+elsewhere in the app never fires this. Deliberately broad on the verb side
+(a missed trigger just means Oracle answers without the trailer
+instruction — the same safe-fallback shape as `oracleAppGrounding`'s own
+`TRIGGER_KEYWORDS`).
+
+(3) `logic.matchesRecipeGenTrigger(lowerText)` also returns false while a
+recipe card is already open (`self._recipeCardOpen`) — a genuinely
+different mechanism from `oracleControl`'s own RECIPE_UPDATE_JSON
+critique-revision path (that path is for editing an ALREADY-open recipe;
+this path is for generating a NEW one from a bare description). Keeping
+the two paths mutually exclusive on this one flag avoids a message like
+"make this spicier" being misread as a fresh-generation request while a
+card is open.
+
+(4) Reused the EXISTING `oracle:response-scanned` hook (which already
+fires for both the main dashboard chat and the floating overlay, since
+both route through the same `window.sendChat`/`window.sendChatWithImage`)
+for a new persistent listener, `logic._listenForChatGeneratedRecipes()`,
+rather than inventing a new event.
+
+(5) The real double-fire race: the EXISTING dedicated Generate-button flow
+(`logic._generate`) arms a ONE-SHOT `visualOracle._captureNextResponse`
+listener before its own outbound send. If that flow's reply also fires the
+new PERSISTENT chat listener, both could independently call
+`_showRecipeCard` for the SAME single generation event. Solved with a
+future-timestamp guard, not a bare boolean:
+  self._generateFlowArmedUntil = Date.now() + 60000;
+cleared via `setTimeout(function() { self._generateFlowArmedUntil = 0; }, 0)`
+inside the one-shot capture's own callback. The deferred clear (not an
+immediate one) is deliberate — it guarantees the flag is still true for
+the ENTIRE synchronous `RPGACE.hooks.fire()` broadcast to every listener
+registered on `oracle:response-scanned`, regardless of which listener
+(the one-shot capture vs. the new persistent one) happens to run first in
+that broadcast — correctness doesn't depend on registration order.
+
+(6) `RECIPE_JSON_SHAPE(servingsBase)` — the recipe-schema JSON literal
+that used to be duplicated inline in both `_generate`'s prompt and the
+RECIPE_UPDATE_JSON context-provider string (2 near-identical copies) is
+now ONE shared function both call — real rule-8 dedup, done as part of
+this build since a 3rd near-copy would have been needed for the new
+`buildRecipeGenBlock()` otherwise.
+
+WHAT THE PERSISTENT LISTENER ACTUALLY DOES
+------------------------------------------------------------
+`_listenForChatGeneratedRecipes()` listens on `oracle:response-scanned`.
+On every real fire, if a card is not currently open AND the dedicated
+Generate flow is not currently armed, it tries to parse a `RECIPE_JSON:`
+trailer from the text (same `_parseRecipeJSON`/`_sanitizeStepIngredientsUsed`
+pipeline as every other real recipe-generation path in this module — never
+a second parsing implementation). If a real, structurally valid recipe
+parses out, it opens the exact same real recipe card
+(`ui._showRecipeCard`) the dedicated button flow opens — same review UI,
+same Save/Add-to-Cook-Session buttons, same everything.
+
+REAL BUGS FOUND AND FIXED DURING VERIFICATION (not shipped blind)
+------------------------------------------------------------
+(1) The original `RECIPE_GEN_KEYWORDS` list had `'make a recipe'` but not
+`'make me a recipe'` — a real, natural phrasing ("make me a recipe for
+chicken curry") that the test caught failing. Fixed by adding `'make me a
+recipe'`/`'make me that recipe'`/`'make me this recipe'`/`'make me the
+recipe'`/`'generate me a recipe'`/`'make me a dish'` to the real keyword
+list, not just the test.
+
+(2) The first version of the verification test re-invoked
+`oracleAppGrounding.init()` to re-wrap a stubbed `window.callOracle`, but
+the real production `patch()` function guards on `window._appGroundingPatched`
+and only ever wraps ONCE — since the real page boot had already patched
+it before the test ran, the second `init()` call was silently a no-op
+against the fresh stub, making the wrap-behavior assertion fail for a
+test-harness reason, not a production bug. Fixed the TEST (not production
+— the once-only guard is correct, real behavior) by resetting
+`window._appGroundingPatched = false` before the second `init()` call, so
+it genuinely re-wraps the stub the way the real one-time boot sequence
+would wrap the real `window.callOracle`.
+
+VERIFICATION
+------------------------------------------------------------
+`node --check` clean. Real headless-Chromium pass (Supabase boundary
+mocked), 6/6 test cases pass after the 2 fixes above:
+- `matchesRecipeGenTrigger`: 5 real trigger-phrase cases (3 true, 2 false
+  including a deliberate "generate a quest" false-positive guard) plus a
+  6th real case confirming the match is suppressed while a recipe card is
+  already open.
+- `buildRecipeGenBlock`: contains the real RECIPE_JSON trailer instruction
+  plus the `ingredients_used` shape.
+- The real `oracleAppGrounding` wrap: a matching outbound message genuinely
+  gets the recipe-gen trailer instruction appended to the real system
+  prompt sent to `orig` (the underlying real callOracle).
+- A chat-only reply (not armed, no card open) opens exactly 1 real recipe
+  card with the correct parsed title.
+- The double-fire guard: zero cards open while the dedicated Generate flow
+  is armed, even on an identical RECIPE_JSON reply.
+- The card-open guard: zero cards open (no second card) while a recipe
+  card is already open.
+Zero real console/page errors.
+
+Re-minified, `node --check rpgace_core.min.js` clean, cache-bust bumped
+`20260916f`→`20260916g`.
+
+Untested by Alex's own hand. Real next test: in either the main Oracle
+chat page or the floating 🔮 overlay (not the dedicated Cooking →
+"⚡ Generate a recipe" button), type something like "make me a recipe for
+a quick chicken curry" and confirm a real, reviewable recipe card opens
+with the same Save/Add-to-Cook-Session/ingredient-suggestion options the
+dedicated flow already has. Real, honest limitation carried over from
+H14b's own investigation and left unchanged by this build: chat-triggered
+generation does NOT get the dedicated flow's short-description "Narrow it
+down" disambiguation step (dish-type chips, ingredient field, Suggest-5-
+ideas) — Oracle answers directly from whatever was typed in chat, same as
+any other conversational reply. Whether chat-triggered generation should
+ALSO get narrow-down is a real, separate design question not yet put to
+Alex — flagged, not guessed.
+==========================================================================

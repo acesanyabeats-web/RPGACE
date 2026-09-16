@@ -9672,8 +9672,19 @@ RPGACE.register('oracleAppGrounding', {
         // the cache hasn't warmed yet, same discipline as everywhere else).
         var oc = RPGACE.modules.oracleControl;
         var actionHit = !!(oc && oc.matchesAnyTrigger && oc.matchesAnyTrigger(lower));
-        if (!matched && !anatomyHit && !actionHit) return orig.apply(this, arguments);
+        // H15 (Sep 16 2026, real Alex ask: "yes, general chat too — build
+        // it") - a real FOURTH gate, riding this same wrap (same landmine
+        // as anatomyHit/actionHit above - every window.callOracle wrap
+        // must forward all 4 args or silently downgrade streaming, so a
+        // 4th physical wrap is a 4th chance to get that wrong for zero
+        // benefit). cookingOracle owns its own real keyword list AND its
+        // own "not while a card's already open" guard (RECIPE_UPDATE_JSON
+        // territory, a different real mechanism, not this).
+        var cook = RPGACE.modules.cookingOracle;
+        var recipeGenHit = !!(cook && cook.matchesRecipeGenTrigger && cook.matchesRecipeGenTrigger(lower));
+        if (!matched && !anatomyHit && !actionHit && !recipeGenHit) return orig.apply(this, arguments);
         var block = matched ? self._buildBlock() : '';
+        if (recipeGenHit && cook && cook.buildRecipeGenBlock) block += cook.buildRecipeGenBlock();
         // Registered-actions list is shown whenever EITHER gate fires -
         // actionHit (the message matches one already) or matched (the
         // broader self-audit gate, which also covers "what should I work
@@ -36150,6 +36161,54 @@ RPGACE.register('cookingOracle', {
   // currently-open card actually show it" (function-local, per-open).
   _applyRecipeUpdate: null,
 
+  // H15 (Sep 16 2026, real Alex ask: "yes, general chat too — build it" —
+  // following the H14 finding that recipe generation + narrow-down were
+  // scoped to ONE button and never ran from free-form Oracle chat) —
+  // module-scope guard so the NEW persistent chat-generation listener
+  // (logic._listenForChatGeneratedRecipes) can tell "this RECIPE_JSON:
+  // reply is the dedicated Generate-button flow's own, already being
+  // handled by its one-shot capture" from "this one genuinely arrived
+  // from free chat, nothing else is going to show a card for it." A
+  // future timestamp, not a bare boolean, so a real, generous 60s window
+  // covers however long Oracle actually takes — cleared via a deferred
+  // (setTimeout 0) call from inside the one-shot capture's own callback
+  // so it stays true for the WHOLE synchronous oracle:response-scanned
+  // broadcast regardless of which listener happens to run first (rule 4
+  // — don't rely on hook registration order for correctness).
+  _generateFlowArmedUntil: 0,
+
+  // H15 (Sep 16 2026) — the real RECIPE_JSON shape, now emitted from
+  // THREE real places (generation, the RECIPE_UPDATE_JSON critique-
+  // revision trailer, and the new general-chat generation trailer below)
+  // — one real canonical copy (rule 8), referenced everywhere rather than
+  // hand-copied a 3rd time, which would be exactly the kind of drift
+  // rule 8's own composio.js/CORS precedent warns about.
+  RECIPE_JSON_SHAPE: function(servingsBase) {
+    return '{"title":"...","servings_base":' + servingsBase + ',"ingredients":[{"name":"...","amount":<number>,"unit":"...","grams_estimate":<number>}],'
+      + '"steps":[{"order":1,"type":"prep_before_cooking","description":"...","active_duration_min":<number>,"passive_duration_min":<number>,"ingredients_used":[{"name":"...","amount":<number>,"unit":"..."}]}]}';
+  },
+
+  // H15 (Sep 16 2026) — real, compound-phrase keyword gate (the same
+  // hyphen/word-boundary discipline as every other keyword list in this
+  // project) for "Alex is asking Oracle, in FREE-FORM chat, to actually
+  // finalize/generate a real recipe" — genuinely distinct from just
+  // discussing food or recipes in passing. Deliberately broad on the verb
+  // side (a missed trigger just means Oracle answers without the trailer
+  // instruction, same safe-fallback shape as oracleAppGrounding's own
+  // TRIGGER_KEYWORDS) but anchored on a real recipe/dish noun so an
+  // unrelated "generate a quest"/"make a caption" elsewhere in the app
+  // never fires this.
+  RECIPE_GEN_KEYWORDS: [
+    'generate that recipe', 'generate this recipe', 'generate the recipe', 'generate a recipe',
+    'make that recipe', 'make this recipe', 'make the recipe', 'make a recipe', 'make me a recipe',
+    'make me that recipe', 'make me this recipe', 'make me the recipe', 'generate me a recipe',
+    'cook that recipe', 'cook this recipe', 'build that recipe', 'create that recipe',
+    'generate that dish', 'generate this dish', 'generate the dish',
+    'make that dish', 'make this dish', 'make the dish', 'make me a dish',
+    'cook that dish', 'cook this dish',
+    'turn that into a recipe', 'make it into a recipe', 'save that as a recipe',
+  ],
+
   init: function() {
     // No boot-time DOM injection needed - ui.openMain() is reached only
     // via the dashboard card's own click (dashDeck.MODULES 'cooking'
@@ -36191,11 +36250,19 @@ RPGACE.register('cookingOracle', {
         // JSON blindly).
         return 'I have a recipe card open right now: "' + (r.title || 'Recipe') + '". Ingredients: ' + ingList + '. Method: ' + stepList + '. '
           + 'If I ask you to change this recipe (add/remove/edit an ingredient, or change/add/remove/reorder a step), do not just describe the change in prose - end your reply with a trailer on its own final line: RECIPE_UPDATE_JSON: followed by a compact JSON object with the COMPLETE UPDATED recipe (every ingredient and every step, not just the changed ones) in this exact shape: '
-          + '{"title":"...","servings_base":' + (r.servings_base || 4) + ',"ingredients":[{"name":"...","amount":<number>,"unit":"...","grams_estimate":<number>}],"steps":[{"order":1,"type":"prep_before_cooking","description":"...","active_duration_min":<number>,"passive_duration_min":<number>,"ingredients_used":[{"name":"...","amount":<number>,"unit":"..."}]}]}. '
+          + self.RECIPE_JSON_SHAPE(r.servings_base || 4) + '. '
           + 'Only include this trailer when you are actually proposing a concrete change to apply - never when just answering a question or giving an opinion with nothing specific to change.';
       });
     }
     self.logic._listenForRecipeUpdates();
+    // H15 (Sep 16 2026, real Alex ask: "yes, general chat too — build it")
+    // — a real, PERSISTENT second listener on the same shared hook
+    // (rule 8, no new mechanism), catching a genuinely NEW recipe
+    // generated mid-conversation rather than through the dedicated
+    // Generate button. See the function's own comment for the full
+    // real double-fire guard against that dedicated flow's one-shot
+    // capture.
+    self.logic._listenForChatGeneratedRecipes();
   },
 
   // ============================================================
@@ -38284,8 +38351,7 @@ RPGACE.register('cookingOracle', {
         // than repeating the full amount in both.
         + 'For each step, also list exactly which ingredients it uses and how much of each, in the shape ingredients_used:[{"name":"...","amount":<number>,"unit":"..."}] - if an ingredient is used across more than one step, split its amount across those steps rather than repeating the full amount each time. '
         + 'Then, on its own final line, output exactly: RECIPE_JSON: followed by a compact JSON object in the shape '
-        + '{"title":"...","servings_base":' + (servings || 4) + ',"ingredients":[{"name":"...","amount":<number>,"unit":"...","grams_estimate":<number>}],'
-        + '"steps":[{"order":1,"type":"prep_before_cooking","description":"...","active_duration_min":<number>,"passive_duration_min":<number>,"ingredients_used":[{"name":"...","amount":<number>,"unit":"..."}]}]}. '
+        + self.RECIPE_JSON_SHAPE(servings || 4) + '. '
         + 'Ingredient names must be simple, generic, singular/lowercase (e.g. "garlic clove" not "3 cloves of fresh garlic") so they can be tracked consistently across recipes.';
 
       var sent = RPGACE.utils.sendToOracle(prompt);
@@ -38293,7 +38359,15 @@ RPGACE.register('cookingOracle', {
 
       var vo = RPGACE.modules.visualOracle;
       if (!vo || !vo._captureNextResponse) { cb('Oracle response capture is unavailable right now'); return; }
+      // H15 (Sep 16 2026) — armed BEFORE the capture, real generous 60s
+      // window (see the module-scope field's own comment) so the new
+      // persistent chat-generation listener knows this exact reply is
+      // already being handled by the dedicated flow below and skips it,
+      // rather than both paths independently opening a real recipe card
+      // for the same one generation.
+      self._generateFlowArmedUntil = Date.now() + 60000;
       vo._captureNextResponse(function(text) {
+        setTimeout(function() { self._generateFlowArmedUntil = 0; }, 0);
         var recipe = self.logic._parseRecipeJSON(text);
         if (!recipe) { cb('No RECIPE_JSON found in the reply — nothing generated. Try rephrasing what you want.', null, text); return; }
         cb(null, recipe, text);
@@ -38363,6 +38437,60 @@ RPGACE.register('cookingOracle', {
         // confirm - stay silent rather than showing an empty confirm popup.
         if (!diff.hasChanges) return;
         self.ui._showRecipeUpdateConfirm(diff, updated);
+      });
+    },
+
+    // H15 (Sep 16 2026, real Alex ask: "yes, general chat too — build it")
+    // — real keyword gate feeding oracleAppGrounding's own window.callOracle
+    // wrap (rule 8 — the SAME cross-module guarded-call pattern that wrap
+    // already uses for oracleControl's matchesAnyTrigger/buildActionsBlock,
+    // never a 4th window.callOracle wrapper, per the standing landmine).
+    // Deliberately does NOT fire while a recipe card is already open — that
+    // case is already fully covered by the existing 'cooking' context
+    // provider's own RECIPE_UPDATE_JSON trailer, a genuinely different real
+    // mechanism for editing the SAME open recipe, not generating a new one.
+    matchesRecipeGenTrigger: function(lowerText) {
+      var self = RPGACE.modules.cookingOracle;
+      if (self._recipeCardOpen || !lowerText) return false;
+      return self.RECIPE_GEN_KEYWORDS.some(function(k) { return lowerText.indexOf(k) !== -1; });
+    },
+
+    // H15 (Sep 16 2026) — the real grounding instruction riding inside
+    // oracleAppGrounding's wrap once matchesRecipeGenTrigger fires. Reuses
+    // the exact same RECIPE_JSON shape/rules _generate's own prompt already
+    // uses (self.RECIPE_JSON_SHAPE, rule 8) so a chat-generated recipe
+    // parses through the SAME logic._parseRecipeJSON path with no special
+    // casing. Deliberately leaves "is this specific enough yet" to Oracle's
+    // own judgment (never a client-side word-count/narrow-down gate here,
+    // unlike the dedicated Generate form) — in a real multi-turn
+    // conversation Oracle already has whatever context actually resolved
+    // the ambiguity, which a bare word count can't see.
+    buildRecipeGenBlock: function() {
+      var self = RPGACE.modules.cookingOracle;
+      return '\n\nIf Alex is asking you to actually FINALIZE and generate a real, saveable recipe right now (not just discuss or suggest ideas), and you have enough specific detail to write a complete real recipe for one specific dish, write it out in full (title, ingredient list, method - same tagging rules as any other real recipe: each step typed prep_before_cooking/actual_cooking/prep_while_cooking/baking, active_duration_min and passive_duration_min per step, real gram estimates per ingredient, real ingredients_used per step) then end your reply on its own final line with: RECIPE_JSON: followed by a compact JSON object in the shape '
+        + self.RECIPE_JSON_SHAPE(4) + '. '
+        + 'Only include this trailer when a specific dish is genuinely decided and you are finalizing it for real - if his request is still vague or you are only brainstorming/discussing options, answer normally with no trailer.';
+    },
+
+    // H15 (Sep 16 2026) — real, PERSISTENT second listener on the same
+    // shared oracle:response-scanned hook _listenForRecipeUpdates already
+    // uses (rule 8, multiple independent listeners each hunting their own
+    // distinct marker is this project's own established precedent). Real
+    // double-fire guard against the dedicated Generate-button flow's own
+    // one-shot capture: skips entirely while _generateFlowArmedUntil is in
+    // the future (see that field's own comment for why a deferred clear
+    // makes this correct regardless of listener execution order), and
+    // skips while a recipe card is already open (RECIPE_UPDATE_JSON territory,
+    // not this). Opens the SAME real ui._showRecipeCard a Generate-button
+    // reply would — one real recipe-review surface, never a second one.
+    _listenForChatGeneratedRecipes: function() {
+      var self = RPGACE.modules.cookingOracle;
+      RPGACE.hooks.on('oracle:response-scanned', function(text) {
+        if (!text || self._recipeCardOpen || Date.now() < self._generateFlowArmedUntil) return;
+        var recipe = self.logic._parseRecipeJSON(text);
+        if (!recipe) return; // no real RECIPE_JSON trailer in this reply - nothing to do
+        RPGACE.utils.toast('🔮 Oracle drafted a recipe from your chat — review & save', '#C9A84C', 3500);
+        self.ui._showRecipeCard(recipe, text);
       });
     },
 
@@ -39452,14 +39580,17 @@ RPGACE.register('cookingOracle', {
 
   },
 
-  // Thin top-level pass-throughs — none required yet (openMain is called
-  // directly as m.ui.openMain from the dashDeck card and markRecipeCooked
-  // calls m.logic._markCooked directly), kept here as an explicit note per
-  // this series' own convention rather than silently omitted: this module
-  // has no external caller reaching a bare `RPGACE.modules.cookingOracle.X`
-  // form today, so no pass-through is needed for correctness (confirmed by
-  // grep — every real external touchpoint added this pass already goes
-  // through .ui./.logic. explicitly).
+  // Thin top-level pass-throughs — openMain is called directly as
+  // m.ui.openMain from the dashDeck card and markRecipeCooked calls
+  // m.logic._markCooked directly, so neither needs one. H15 (Sep 16 2026)
+  // adds the first two real ones: oracleAppGrounding's window.callOracle
+  // wrap reaches these as a bare `RPGACE.modules.cookingOracle.X(...)` —
+  // the same cross-module guarded-call shape oracleControl's own
+  // matchesAnyTrigger/buildActionsBlock/buildSuggestBlock/
+  // buildRecentErrorsBlock already use there, so this module needs the
+  // exact same real top-level surface, not `.logic.X`.
+  matchesRecipeGenTrigger: function(lowerText) { return this.logic.matchesRecipeGenTrigger(lowerText); },
+  buildRecipeGenBlock: function() { return this.logic.buildRecipeGenBlock(); },
 
 });
 /* ===END:cookingOracle=== */
