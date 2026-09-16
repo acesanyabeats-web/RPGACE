@@ -36113,12 +36113,28 @@ RPGACE.register('cookingOracle', {
   // interrogation record: records/2026-09/habits_cooking_domain_
   // interrogation_spec_2026-09-10.txt section 10. Holds the recipes being
   // batched into one cook session (module scope, mirrors _generatedRecipe's
-  // own runtime-field convention) - {recipeIds:[...], recipes:[{id,title}]}
-  // or null when no session is in progress. Reset only after a schedule is
-  // actually accepted (the session's terminal action) or the app reloads -
-  // never silently cleared on a stray re-open, so Alex can leave and come
-  // back to a session he's still building.
+  // own runtime-field convention) - {recipeIds:[...], recipes:[{id,title}],
+  // plannedCookId:...} or null when no session is in progress. Reset only
+  // after a schedule is actually accepted (the session's terminal action)
+  // or the app reloads.
+  //
+  // H12 (Sep 16 2026, real Alex bug report): this used to be PURE in-memory
+  // state until a schedule was accepted - a reload, a closed tab, or even
+  // just navigating away mid-session silently lost real planning work with
+  // zero trace (confirmed live: 2 real generated recipes safely saved, but
+  // planned_cooks/shopping_lists both genuinely empty). Fixed: the moment a
+  // recipe joins a session, logic._persistSessionDraft writes a real
+  // planned_cooks row (status='draft'); logic._loadDraftSession resumes it
+  // on the next real Cooking-hub open, this page load or a fresh one, so
+  // "reset... or the app reloads" above is no longer the honest scope -
+  // only Accept (status flips to 'scheduled') genuinely ends a session now.
   _session: null,
+
+  // True once this page load has checked Supabase for a real resumable
+  // draft planned_cooks row (logic._loadDraftSession) - regardless of
+  // whether one was found. Avoids re-querying every time the Cooking hub
+  // reopens when there's genuinely nothing to resume.
+  _sessionChecked: false,
 
   // Sep 14 2026 (real Alex ask, "close the loop" follow-up: "So if I
   // generate a recipe, and I don't like the method, I right in float
@@ -36191,15 +36207,23 @@ RPGACE.register('cookingOracle', {
       var self = RPGACE.modules.cookingOracle;
       // H6 - resume an in-progress cook session instead of dropping straight
       // back into the generate form, so leaving and reopening Cooking never
-      // silently loses recipes already added to a session (real, deliberate
-      // UX call - the session is module-scope state, not persisted, so this
-      // only survives within the same page load, which is the honest scope).
+      // loses recipes already added to a session. H12 (Sep 16 2026): the
+      // session is now REAL, persisted state (logic._persistSessionDraft),
+      // not just in-memory - if nothing's in memory yet this page load,
+      // check Supabase for a real resumable draft before falling through to
+      // the generate form.
       if (self._session && self._session.recipeIds && self._session.recipeIds.length) {
         self.ui._showSessionBuilder();
         return;
       }
-      self.logic._loadConfig(function(cfg) {
-        self.ui._showGenerateForm(cfg || {});
+      self.logic._loadDraftSession(function(err, sess) {
+        if (sess && sess.recipeIds && sess.recipeIds.length) {
+          self.ui._showSessionBuilder();
+          return;
+        }
+        self.logic._loadConfig(function(cfg) {
+          self.ui._showGenerateForm(cfg || {});
+        });
       });
     },
 
@@ -36210,7 +36234,17 @@ RPGACE.register('cookingOracle', {
     // below), replacing the old resume-session-or-generate-form jump with
     // an explicit choice matching the module's 3 real distinct jobs.
     // openMain() itself is untouched and still callable directly.
+    // H12 (Sep 16 2026) - a real resumable draft session may exist in
+    // Supabase even though nothing's in memory yet this page load
+    // (logic._loadDraftSession short-circuits via _sessionChecked once
+    // already checked, so this stays cheap on every hub reopen after the
+    // first). The actual popup-building work is _renderModuleHub below.
     _showModuleHub: function() {
+      var self = RPGACE.modules.cookingOracle;
+      self.logic._loadDraftSession(function() { self.ui._renderModuleHub(); });
+    },
+
+    _renderModuleHub: function() {
       var self = RPGACE.modules.cookingOracle;
       var pop = RPGACE.modules.dashDeck._popup({
         width: '380px', eyebrow: '🍳 COOKING', title: 'What do you want to do?',
@@ -37268,10 +37302,21 @@ RPGACE.register('cookingOracle', {
       var self = RPGACE.modules.cookingOracle;
       var sess = self._session || { recipeIds: [], recipes: [] };
       var pop = RPGACE.modules.dashDeck._popup({
-        width: '480px', eyebrow: '🍳 COOKING SESSION', title: 'Recipe saved',
+        // H12 (Sep 16 2026) - real title fix, directly implicated in the
+        // original bug report: "Recipe saved" (true only of the individual
+        // recipe row) read as "your whole plan is saved," which it wasn't -
+        // the real session state was still pure in-memory at that point.
+        // Now that it genuinely IS saved as of the first recipe add, the
+        // title can honestly say so instead of naming the wrong thing.
+        width: '480px', eyebrow: '🍳 COOKING SESSION', title: 'Planned Cook',
         borderColor: 'rgba(76,175,130,0.3)',
       });
       var box = pop.box;
+
+      var savedNote = document.createElement('div');
+      savedNote.style.cssText = 'font-size:11px;color:var(--green);margin-bottom:12px;';
+      savedNote.textContent = '✅ Saved — safe to close this and come back later.';
+      box.appendChild(savedNote);
 
       var listHeading = document.createElement('div');
       listHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;';
@@ -38872,16 +38917,93 @@ RPGACE.register('cookingOracle', {
     // H6 — multi-recipe kitchen-session scheduler, 2026-09-12.
     // Real record: records/2026-09/habits_cooking_domain_interrogation_
     // spec_2026-09-10.txt, section 10 (4 forks resolved via AskUserQuestion).
+    // H12 (Sep 16 2026) real persistence fix: records/2026-09/
+    // h12_planned_cook_draft_persistence_spec_2026-09-16.txt.
     // ============================================================
 
+    // H12 (Sep 16 2026, real Alex bug report - "i just planned 2 meals for
+    // a planned cook... but they didnt save in app, and the grocery list is
+    // nowhere to be seen"). Real root cause, confirmed via direct Supabase
+    // query: the 2 recipes themselves saved fine, but the SESSION (which
+    // recipes are batched for this cook) lived only in self._session - pure
+    // in-memory state - until a much later, separate action (Generate
+    // shopping list / Accept schedule). Closing the tab, navigating away,
+    // or just not reaching that later action lost real planning work with
+    // zero trace and zero warning. Fixed: every add now fires a real
+    // background persist (logic._persistSessionDraft) - the UI updates
+    // immediately from memory (unchanged feel), the real write happens
+    // alongside it, and a genuine write failure surfaces as a real toast
+    // (rule 7 - fail loud) rather than silently vanishing a second time.
     _addRecipeToSession: function(id, title) {
       var self = RPGACE.modules.cookingOracle;
       if (!id) return;
-      if (!self._session) self._session = { recipeIds: [], recipes: [] };
+      if (!self._session) self._session = { recipeIds: [], recipes: [], plannedCookId: null };
+      self._sessionChecked = true; // real session now exists in memory - no need to check Supabase for a draft to resume
       if (self._session.recipeIds.indexOf(id) === -1) {
         self._session.recipeIds.push(id);
         self._session.recipes.push({ id: id, title: title || 'Recipe' });
+        self.logic._persistSessionDraft();
       }
+    },
+
+    // The real write half of the fix above - one shared insert-or-update
+    // path (rule 8), called after every real recipe add. Fire-and-forget
+    // by design (no caller currently needs to await this - the UI already
+    // rendered from the in-memory state that was updated synchronously
+    // before this ran); a real failure still surfaces via toast so Alex
+    // isn't left assuming a save that didn't happen.
+    _persistSessionDraft: function() {
+      var self = RPGACE.modules.cookingOracle;
+      var sess = self._session;
+      if (!sess || !sess.recipeIds.length) return;
+      if (sess.plannedCookId) {
+        RPGACE.sb.secureWrite('planned_cooks', 'update', { recipe_ids: sess.recipeIds }, 'id=eq.' + sess.plannedCookId)
+          .catch(function(e) {
+            RPGACE.utils.toast('⚠️ Could not save your planned cook: ' + (e.message || 'unknown error'), '#CC4A4A', 4200);
+          });
+        return;
+      }
+      RPGACE.sb.secureWrite('planned_cooks', 'insert', { recipe_ids: sess.recipeIds, status: 'draft' })
+        .then(function(data) {
+          var row = Array.isArray(data) ? data[0] : data;
+          if (!row || !row.id) throw new Error('planned_cooks insert returned no row');
+          sess.plannedCookId = row.id;
+        })
+        .catch(function(e) {
+          RPGACE.utils.toast('⚠️ Could not save your planned cook: ' + (e.message || 'unknown error'), '#CC4A4A', 4200);
+        });
+    },
+
+    // The real read/resume half - checks for an existing draft planned_cooks
+    // row and rebuilds self._session from it (real recipe titles joined in,
+    // never guessed) so a fresh page load can pick up exactly where Alex
+    // left off. Short-circuits via _sessionChecked so this only ever hits
+    // Supabase once per page load, matching the pattern _showModuleHub's own
+    // shopping-list fallback below already uses. cb(err, sessionOrNull).
+    _loadDraftSession: function(cb) {
+      var self = RPGACE.modules.cookingOracle;
+      cb = cb || function() {};
+      if (self._sessionChecked) { cb(null, self._session); return; }
+      RPGACE.sb.select('planned_cooks', 'select=id,recipe_ids&status=eq.draft&order=created_at.desc&limit=1')
+        .then(function(rows) {
+          self._sessionChecked = true;
+          var row = rows && rows[0];
+          if (!row || !row.recipe_ids || !row.recipe_ids.length) { cb(null, null); return; }
+          var idList = row.recipe_ids.join(',');
+          RPGACE.sb.select('recipes', 'select=id,title&id=in.(' + idList + ')')
+            .then(function(recipeRows) {
+              var byId = {};
+              (recipeRows || []).forEach(function(r) { byId[r.id] = r.title; });
+              self._session = {
+                recipeIds: row.recipe_ids.slice(),
+                recipes: row.recipe_ids.map(function(id) { return { id: id, title: byId[id] || '(recipe not found)' }; }),
+                plannedCookId: row.id,
+              };
+              cb(null, self._session);
+            })
+            .catch(function(e) { cb(e.message || 'could not load session recipes', null); });
+        })
+        .catch(function(e) { self._sessionChecked = true; cb(e.message || 'could not check for a planned cook', null); });
     },
 
     _fmtMin: function(mins) {
@@ -39010,16 +39132,26 @@ RPGACE.register('cookingOracle', {
     // never a second hand-rolled rpgace_agendas insert). Deliberate scope
     // line, section 10 fork 3: plain date/time only, no shift/calendar
     // collision-checking — that's H5, a separate, later, unstarted item.
+    // H12 (Sep 16 2026) — real update-in-place when a draft row already
+    // exists (the normal case now that every add persists one, per
+    // logic._persistSessionDraft above), falling back to a fresh insert
+    // only for the honest edge case of a session that somehow reached
+    // Accept with no real draft row yet (e.g. its own first persist
+    // attempt failed and Alex pushed on regardless) — never a silent
+    // duplicate row, one real planned_cooks row per real session either way.
     _acceptSchedule: function(sess, schedule, dateStr, hour, minute, cb) {
       var self = RPGACE.modules.cookingOracle;
-      RPGACE.sb.secureWrite('planned_cooks', 'insert', {
-        recipe_ids: sess.recipeIds,
-        schedule: schedule,
-        scheduled_at: dateStr,
-      })
+      var write = sess.plannedCookId
+        ? RPGACE.sb.secureWrite('planned_cooks', 'update', {
+            recipe_ids: sess.recipeIds, schedule: schedule, scheduled_at: dateStr, status: 'scheduled',
+          }, 'id=eq.' + sess.plannedCookId).then(function() { return [{ id: sess.plannedCookId }]; })
+        : RPGACE.sb.secureWrite('planned_cooks', 'insert', {
+            recipe_ids: sess.recipeIds, schedule: schedule, scheduled_at: dateStr, status: 'scheduled',
+          });
+      write
         .then(function(data) {
           var row = Array.isArray(data) ? data[0] : data;
-          if (!row || !row.id) throw new Error('planned_cooks insert returned no row');
+          if (!row || !row.id) throw new Error('planned_cooks save returned no row');
           var titles = sess.recipes.map(function(r) { return r.title; }).join(' + ');
           var agendaEntry = scheduleToCalendar({
             date: dateStr, hour: hour, minute: minute,

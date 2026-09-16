@@ -1,0 +1,110 @@
+H12: PLANNED COOK DRAFT PERSISTENCE — Sep 16 2026
+==========================================================================
+
+ALEX'S VERBATIM BUG REPORT
+------------------------------------------------------------
+"i just planned 2 meals for a planned cook, but they didnt save in app -
+the rendang curry with updates and beef cabbage chicken thigh sichuan soup,
+but they didnt save in app, and the grocery list is nowhere to be seen"
+
+Follow-up, after the real diagnosis was reported back:
+"build so this doesnt happen, it should be shown"
+
+REAL DIAGNOSIS (rule 4 — queried Supabase directly, never guessed)
+------------------------------------------------------------
+Both recipes genuinely saved: "Rendang Daging Cincang — Indonesian Beef
+Mince Rendang" (19 ingredients) and "Sichuan Spicy Beef and Cabbage Noodle
+Soup" (22 ingredients) — both real rows in `recipes`/`recipe_ingredients`.
+`planned_cooks` and `shopping_lists` were both completely empty. No error
+was logged anywhere in the window (checked `error_log` directly).
+
+Root cause: `cookingOracle._session` (the in-progress "which recipes are
+batched for this cook" state) was PURE in-memory JS state — the module's
+own code comment said so outright ("_session is module-scope memory only
+(lost on reload)"). `planned_cooks` only ever got a row at the very END of
+the flow — either "🛒 Generate shopping list" (writes `shopping_lists`
+directly) or "📅 Schedule cook time → ✅ Accept" (`logic._acceptSchedule`,
+the only real `planned_cooks` insert in the whole module). Adding recipes
+to a session, closing the session-builder popup, navigating away, or a
+page reload at any point before one of those two actions completed lost
+the whole plan with zero warning and zero trace.
+
+THE REAL FIX
+------------------------------------------------------------
+Schema (migration `planned_cooks_draft_status`): `schedule`/`scheduled_at`
+made nullable (both were `NOT NULL`, which made a real "draft, not yet
+scheduled" row structurally impossible before this) — added `status text
+NOT NULL DEFAULT 'draft'` with a CHECK (`'draft'`|`'scheduled'`). 0
+pre-existing rows at migration time, so the backfill step (`UPDATE ...
+SET status='scheduled' WHERE scheduled_at IS NOT NULL`) was a real, correct
+no-op — included anyway since a future session re-reading this record
+should see the honest full migration, not an assumption that skipping the
+backfill was safe.
+
+Logic (`cookingOracle.logic`, rpgace_core.js):
+- `_addRecipeToSession(id, title)` now calls `_persistSessionDraft()` after
+  every real add — the in-memory session updates first (unchanged feel,
+  zero added latency to the UI), the real Supabase write happens alongside
+  it.
+- `_persistSessionDraft()` — one shared insert-or-update path (rule 8): no
+  `plannedCookId` yet → real INSERT (`status:'draft'`), captures the real
+  returned id; already has one → real UPDATE of `recipe_ids` on that same
+  row. A write failure surfaces as a real toast (rule 7 — fail loud) rather
+  than silently vanishing a second time.
+- `_loadDraftSession(cb)` — the resume half. Checks for the most recent
+  `status='draft'` row, joins real recipe titles back in (never guessed),
+  rebuilds `self._session` from it. Guarded by a new `_sessionChecked`
+  module field so this only ever hits Supabase once per page load.
+- `_acceptSchedule` — now UPDATEs the existing draft row in place
+  (`status:'scheduled'`, real schedule/scheduled_at) when `plannedCookId`
+  exists, instead of always inserting a fresh row — one real row per real
+  session, never a duplicate draft+scheduled pair. Falls back to a real
+  insert only for the honest edge case of a session that somehow reached
+  Accept with no draft row (e.g. its own first persist attempt failed and
+  Alex pushed on regardless).
+
+UI ("it should be shown" — Alex's own explicit second ask):
+- `openMain()` and `ui._showModuleHub()` (split into a loader +
+  `ui._renderModuleHub()`) both now call `logic._loadDraftSession` before
+  deciding what to show — a fresh page load or a brand-new session this
+  page load both correctly resolve the REAL persisted state, not just
+  whatever happens to be in memory. The "🍳 Planned Cook" button's own
+  "N recipes in progress — resume" label was already wired to
+  `self._session` — it just needed real data behind it, which it now has.
+- The session-builder popup's own title was part of the original
+  confusion, not just the missing persistence: it said "Recipe saved" —
+  true of the individual recipe row, but easy to misread as "your whole
+  plan is saved," which it wasn't. Retitled "Planned Cook" and given a
+  real "✅ Saved — safe to close this and come back later" line, now an
+  honest statement instead of an accidentally-misleading one.
+
+VERIFICATION
+------------------------------------------------------------
+`node --check` clean, re-minified, cache-bust bumped `20260916b`→
+`20260916c`. 5 real headless-Chromium functional assertions (Supabase
+boundary mocked, a real in-memory fake `planned_cooks` table backing the
+mock so insert/update semantics are genuinely exercised, not just
+call-shape-checked):
+  1. First recipe add → a real INSERT with `status:'draft'`, `plannedCookId`
+     captured correctly into `self._session`.
+  2. Second recipe add → a real UPDATE using the stored `plannedCookId`,
+     confirmed NOT a second insert (no duplicate draft row).
+  3. A fresh page load (`_session=null`, `_sessionChecked=false`) correctly
+     resumes the real draft, joining both real recipe titles back in from
+     the mocked `recipes` table.
+  4. `ui._showModuleHub()` renders the real resumed count — "🍳 Planned
+     Cook 2 recipes in progress — resume" — confirming the button's own
+     label reflects genuinely persisted state, not stale in-memory zero.
+  5. `_acceptSchedule` correctly UPDATEs the same draft row in place
+     (`status:'scheduled'`, real schedule/date), never a duplicate insert
+     — and, running the real unmocked `scheduleToCalendar()` legacy
+     function inside the same harness, correctly wrote a real
+     `rpgace_agendas` row and back-linked `agenda_id` onto the same
+     `planned_cooks` row.
+Zero console/page errors across all 5 assertions.
+
+Untested by Alex's own hand — same standing flag as every HABITS build
+this project has shipped. The next real, concrete test: add 2 recipes to
+a session, close the tab without touching Generate Shopping List or
+Schedule, reopen Cooking, and confirm the Planned Cook button shows both
+recipes ready to resume.
