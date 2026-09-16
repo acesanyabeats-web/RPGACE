@@ -127,7 +127,7 @@ DECISION_POINTS = [
     {
         'id': 'placement-confirm', 'category': 'taxonomy',
         'title': 'New insight placement — accept/reject before a real taxonomy_tree write',
-        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (19289, 19289),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +48 lines from 19241-19241; also confirmed against the real pass-through wrapper (a 2nd match at 19869) -- 19289 is the real ui:{} implementation
+        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (19290, 19290),  # re-verified Sep 16 2026 (found via a routine full pipeline run, not a dedicated sweep), drifted +1 line from 19289-19289; re-confirmed against the real pass-through wrapper (a 2nd match at 19870) -- 19290 is the real ui:{} implementation
         'anchor': '_showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject)',
         'trigger': 'Shown automatically after `decidePlacementScored()` (a real curated core-logic point in its own right — see the Decision Matrix for the full scoring logic) returns a real placement candidate.',
         'logic': 'A real popup showing Oracle\'s own proposed attach point + new steps, with explicit onAccept/onReject callbacks — nothing writes to taxonomy_tree without this gate, per rule 4.',
@@ -136,7 +136,7 @@ DECISION_POINTS = [
     {
         'id': 'article-confirm', 'category': 'taxonomy',
         'title': 'Dedup-extend article regeneration — approve before overwriting an existing leaf',
-        'module': 'phylumPath', 'func': '_showArticleConfirm', 'lines': (19371, 19371),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +48 lines from 19323-19323; also confirmed against the real pass-through wrapper (a 2nd match at 19870) -- 19371 is the real ui:{} implementation
+        'module': 'phylumPath', 'func': '_showArticleConfirm', 'lines': (19372, 19372),  # re-verified Sep 16 2026 (found via a routine full pipeline run), drifted +1 line from 19371-19371, same class as placement-confirm above; re-confirmed against the real pass-through wrapper (a 2nd match at 19871) -- 19372 is the real ui:{} implementation  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +48 lines from 19323-19323; also confirmed against the real pass-through wrapper (a 2nd match at 19870) -- 19371 is the real ui:{} implementation
         'anchor': '_showArticleConfirm: function(node, articleTitle, text, onApprove, onDeny)',
         'trigger': 'Shown when `_insertNewSteps()` (a real curated core-logic point in its own right — the dedup-extend decision, written up in full on the Decision Matrix) finds a real near-duplicate and proposes extending the existing leaf\'s own article instead of creating a new one.',
         'logic': 'Same real checkpoint pattern as `_showPlacementConfirm`, simpler — an existing leaf\'s content is about to be regenerated, so this gate specifically protects against overwriting real prior content on a bad match.',
@@ -169,7 +169,7 @@ DECISION_POINTS = [
     {
         'id': 'undo-conid-stage', 'category': 'pipeline',
         'title': 'Undo a ConID\'s last completed production stage',
-        'module': 'contentProductionLive', 'func': '_undoLastStage', 'lines': (25775, 25775),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +56 lines from 25719-25719 due to real code changes earlier in the file since Sep 8
+        'module': 'contentProductionLive', 'func': '_undoLastStage', 'lines': (25776, 25776),  # re-verified Sep 16 2026 (found via a routine full pipeline run), drifted +1 line from 25775-25775
         'anchor': "confirm('Undo ConID #' + row.con_id",
         'trigger': 'The real standalone "Undo" button on a music_video ConID card (Aug 6 UX pass — paired with a "revert progress" checkbox, default unchecked = edit-in-place).',
         'logic': 'A plain `confirm()`, but with real, specific consequence text in the message itself ("deletes the creative-doc output that stage produced... cannot be undone") — more informative than the bare delete-confirms above despite using the same native browser dialog.',

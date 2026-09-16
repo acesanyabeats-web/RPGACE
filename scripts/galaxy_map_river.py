@@ -46,6 +46,29 @@ from graphify_river_group import (  # noqa: E402
 from graphify_river_group import inject_level_rail, inject_plan_overlay  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
 
+# GMP-A (Sep 16 2026) — a real, verbatim first-sentence excerpt from
+# each live river's own perspective_reports self_report (written this
+# session, scope_level='river'), baked in at generation time since this
+# is a static-pipeline page. Deliberately an EXCERPT + a link, never the
+# full report text duplicated here (rule 8) — the confirmed division of
+# labor: this is that river's own local context, perspective_map.html
+# is the one full cross-referenced picture (its own #report-river-{n}
+# anchor, same id scheme both pages agree on).
+RIVER_PERSPECTIVE_EXCERPT = {
+    1: "River I is the smallest real river in RPGACE: exactly one module, authGate.",
+    2: "River II is also a single-module river: pathRouter, the real page-navigation dispatcher every showPage()-driven route passes through.",
+    3: "River III is by far the largest real river — 15 real modules, the whole Oracle surface.",
+    4: "River IV is a single-module river: bookworm, RPGACE's whole-book ingestion pipeline — chapter-by-chapter analysis into the taxonomy tree, with real review checkpoints.",
+    5: "River V groups 5 real modules around RPGACE's daily-operations surface: scheduleFixes, shiftSync, agendaReminder, morningBrief, and journalQoL.",
+    6: "River VI is a single-module river carrying an outsized real responsibility: phylumPath, RPGACE's whole taxonomy placement engine.",
+    7: "River VII groups 5 real modules around RPGACE's encyclopedia/reference-corpus surface: jargonEncyclopedia, encyclopediaQoL, encSync, encTaxonomyLink, and refCorpus.",
+    8: "River VIII groups 3 real modules that together form the real review-queue/commit layer for the whole taxonomy system: taxonomyReviewQueue, taxonomySync, and taxonomyTree.",
+    9: "River IX is a single-module river: knowledgeGap, the real gap-detection engine that surfaces what RPGACE's own knowledge tree is honestly missing.",
+    10: "River X groups 3 real modules around RPGACE's real record-keeping surface: chroniclesLog, careerStatCard, and shoppingWishlist.",
+    11: "River XI is the second-largest real river — 7 modules covering RPGACE's whole beat-to-video Content Pipeline.",
+    12: "River XII groups 5 real modules around RPGACE's Content Intelligence pipeline: researchTabs, intelBatchList, intelDelete, intelDedup, and ciAutoPropose.",
+}
+
 
 def _crossing_reduced_ring_order(river_nums, cx, cy, radius):
     """Real crossing-reduction for the ring ORDER itself (Aug 13, Alex's
@@ -278,6 +301,13 @@ def build_svg():
             oversight_note += '<br><span class="meta">🧑 Has at least one real module with DOM/input-facing evidence — see its own real Alex bubble at Level 2/3.</span>'
         if river_oracle_n > 0:
             oversight_note += f'<br><span class="meta">🔮 {river_oracle_n} real Oracle call(s) across this river — see its own real Oracle bubble at Level 2/3.</span>'
+        perspective_note = ''
+        excerpt = RIVER_PERSPECTIVE_EXCERPT.get(rnum)
+        if excerpt:
+            perspective_note = (
+                f'<br><span class="meta">🔭 {excerpt} '
+                f'<a href="perspective_map.html#report-river-{rnum}">Full perspective report ↗</a></span>'
+            )
         target_legend = archived_legend_rows if is_archived else live_legend_rows
         target_legend.append(
             f'<div class="legend-row"><span class="dot" style="background:{color}"></span>'
@@ -285,6 +315,7 @@ def build_svg():
             f'<span class="meta">Modules: {mods_txt}</span>'
             + (f'<br><span class="meta">{role}</span>' if role else '')
             + oversight_note
+            + perspective_note
             + river_retirement_note_html(rnum, compact=True)
             + '</div>'
         )

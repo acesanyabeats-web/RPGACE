@@ -1576,6 +1576,10 @@ TEMPLATE = """<!DOCTYPE html>
   .legend-row .meta{{display:block;font-size:10.5px;color:#6a6a78;margin-top:2px}}
   .legend-row.small{{font-size:11px}}
   .legend-row .warn{{color:#E0A040;font-weight:700}}
+  .tier-label{{font-size:12.5px;font-weight:700;color:var(--gold);margin:14px 0 6px}}
+  .tier-row{{cursor:pointer}}
+  a.tier-row{{color:var(--dim)}}
+  .tier-row:hover{{color:var(--text)}}
   .dot{{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px}}
   .itype-grid{{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}}
   .note{{max-width:900px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
@@ -1683,8 +1687,14 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 0</div>
   <h1>🌌 RPGACE Total Systems — The Galaxy Map</h1>
-  <p>The real top-level view of RPGACE Total Systems — all 9 real merged L0 units in one place (4 galaxies rendered in the diagram below, 5 more as real bubbles beside it): RPGACE Architecture, Orchestrator CC, OpenMontage CC, Graphify CC, External AI, Skills, Alex, Supabase, Oversight Docs. Oracle mediates all 3 AI providers (never a direct RPGACE→provider edge), self-awareness and a real Human Gate are their own nodes, every real external connector is shown — each edge colored by its own real interaction TYPE. <b>Click any unit — in the diagram or the bubble row below — for a real CHOICE (not a toggle switch) between 💉 Infra (a real attached resource) and 🔗 Inter (a real dimension it participates in)</b>, expanding real detail inline and cross-highlighting every other unit sharing that same resource/dimension. <b>Click the RPGACE Architecture node's own center to drill into its 17 rivers (Level 1).</b></p>
+  <p>The real top-level view of RPGACE Total Systems — 3 genuinely different KINDS of unit at Level 0, labeled explicitly below (GMP-C, Sep 16 2026): 4 galaxies rendered in the diagram, 3 harness nodes (Oracle/self-awareness/Human Gate) alongside them, and 15 real merged L0 units each with their own Infra/Inter facet bubble (Oracle's own 6 formerly-"External AI" constituents — Composio/Jina AI/Last.fm/librosa/n8n/Whisper — are each a real standalone unit since G99, not one aggregate). Oracle mediates all 3 AI providers (never a direct RPGACE→provider edge), every real external connector is shown — each edge colored by its own real interaction TYPE. <b>Click any unit — in the diagram, the tiers list below, or the bubble row — for a real CHOICE (not a toggle switch) between 💉 Infra (a real attached resource) and 🔗 Inter (a real dimension it participates in)</b>, expanding real detail inline and cross-highlighting every other unit sharing that same resource/dimension. <b>Click the RPGACE Architecture node's own center to drill into its 17 rivers (Level 1).</b></p>
   <p style="margin-top:10px"><b>New Aug 25 2026:</b> 🧑 <b>Alex</b>'s Infra tab is now purely the Decisions bubble system — all 21 real decisions (10 human-confirm gates, 7 curated logic choices, 4 curated text-input points), grouped by the real river each one lives in and ordered by real river flow, from the logging end toward the last untouched action. 🔮 <b>External AI</b>'s Infra tab names all 12 real external AI actors individually — Orchestrator CC, OpenMontage CC, Graphify CC, Composio, librosa, Jina AI, Last.fm, Whisper, n8n, Luna, Moonshot, Anthropic — each with its own real live/dormant/unconfirmed status read straight from source, instead of the vague aggregate it used to show. The <b>Table view</b> now carries the 5 bubble-row units' own facet content too, not just the 7×7 edge matrix.</p>
+</div>
+
+<div class="legend" id="l0-tiers">
+  <h2>🔭 3 real Level-0 tiers (GMP-C, Sep 16 2026)</h2>
+  <p style="font-size:11px;color:var(--dim);margin:-4px 0 12px">L0 has always held 3 genuinely different kinds of unit — this labels them explicitly for the first time. Nothing here is new data; every row already renders elsewhere on this page (the diagram above, or its own bubble/panel) — purely an organizational summary. Click any row to jump to that same real unit.</p>
+  {tiers_block}
 </div>
 
 <div class="toggle-row">
@@ -1955,6 +1965,26 @@ TEMPLATE = """<!DOCTYPE html>
       card.click();
     }});
   }});
+  // GMP-C (Sep 16 2026) — a 3-tiers-list row forwards to the SAME real
+  // unit-card/unit-node click already handled above, exact same
+  // pattern as th.unit-rowhead just above (rule 8 — no new logic).
+  // Harness nodes (oracle_api/human_gate_alex) already carry a real
+  // unit_id and resolve via .unit-node; self_awareness has no unit of
+  // its own (stated honestly in build_tiers_block()'s own meta text
+  // via HARNESS_NODES['note']) and is a harmless no-op click here,
+  // same as clicking its own SVG node already is.
+  document.querySelectorAll('.tier-row').forEach(function(el) {{
+    el.addEventListener('click', function() {{
+      var uid = el.dataset.unit;
+      if (UNIT_BUBBLE_SYSTEM[uid]) {{ window.location.href = UNIT_BUBBLE_SYSTEM[uid]; return; }}
+      var card = document.querySelector('.unit-card[data-unit="' + uid + '"]')
+              || document.querySelector('.unit-node[data-unit="' + uid + '"]');
+      if (!card) return;
+      mtToggles.forEach(function(x) {{ x.classList.toggle('active', x.dataset.view === 'map'); }});
+      mtViews.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-map'); }});
+      card.click();
+    }});
+  }});
   // G79 — a facet-table row opens that unit's own bubble with the row's
   // exact Infra/Inter choice already made and its dimension already
   // open. Reuses the map view's own card/kind/dim handlers by
@@ -2004,6 +2034,58 @@ TEMPLATE = """<!DOCTYPE html>
 """
 
 
+def build_tiers_block():
+    """GMP-C (Sep 16 2026) — 3 real, explicitly-labeled L0 tiers.
+
+    Additive/organizational only, per the ratified plan: relabels the
+    3 kinds of unit that already existed (GALAXIES/HARNESS_NODES/
+    UNIT_ORDER), invents nothing new, removes nothing, gates nothing.
+    Every row here forwards its click to the SAME real bubble/panel
+    the diagram or units-grid already opens for that uid (rule 8 — the
+    exact click-forwarding shape th.unit-rowhead already uses below).
+    """
+    def row(uid, icon, color, label, meta, href=None):
+        # Real fix, found via this session's own headless verification:
+        # rpgace_architecture's real central node is a plain <a href>
+        # (never a .unit-card/.unit-node — it has its own dedicated
+        # drill-link), so the shared click-forwarding JS below finds no
+        # card for it and silently no-ops. A real direct href here
+        # matches its own actual destination rather than leaving one of
+        # 22 rows a dead click.
+        if href:
+            return (f'<a href="{href}" class="legend-row tier-row" data-unit="{uid}" style="display:block;text-decoration:none">'
+                    f'<span class="dot" style="background:{color}"></span>'
+                    f'<b>{esc(label)}</b> <span class="meta">{esc(meta)}</span></a>')
+        return (f'<div class="legend-row tier-row" data-unit="{uid}">'
+                f'<span class="dot" style="background:{color}"></span>'
+                f'<b>{esc(label)}</b> <span class="meta">{esc(meta)}</span></div>')
+
+    galaxy_rows = ''.join(
+        row(g['id'], g['icon'], g['color'], g['label'], g['role'],
+            href='galaxy_map_river.html' if g['id'] == 'rpgace_architecture' else None)
+        for g in GALAXIES
+    )
+    harness_rows = ''.join(
+        row(hn['id'], hn['icon'], '#9B59B6' if hn['id'] != 'human_gate_alex' else '#E25454', hn['label'], hn['note'])
+        for hn in HARNESS_NODES
+    )
+    unit_rows = ''.join(
+        row(uid, UNIT_META[uid]['icon'], UNIT_META[uid]['color'], UNIT_META[uid]['label'],
+            'click to open its own real Infra/Inter facet bubble')
+        for uid in UNIT_ORDER
+    )
+    return (
+        f'<div class="tier-label">🌌 Galaxies ({len(GALAXIES)}) — a whole external repo/session, or RPGACE itself</div>'
+        f'{galaxy_rows}'
+        f'<div class="tier-label">📡 Harness Nodes ({len(HARNESS_NODES)}) — real AI/self-awareness/human-checkpoint '
+        f'concepts, not a unit with a facet system of its own</div>'
+        f'{harness_rows}'
+        f'<div class="tier-label">🔷 L0 Units ({len(UNIT_ORDER)}) — every real actor with its own Infra/Inter facet '
+        f'bubble</div>'
+        f'{unit_rows}'
+    )
+
+
 def main():
     import json
     nodes, edges, legend, itype_legend, W, H, markers = build_svg()
@@ -2025,7 +2107,8 @@ def main():
                            markers=markers, unit_cards=unit_cards, data_json=json.dumps(data),
                            matrix_rows=matrix_rows, table_details=table_details,
                            unit_facet_table=unit_facet_table,
-                           unit_bubble_system_json=json.dumps(UNIT_BUBBLE_SYSTEM))
+                           unit_bubble_system_json=json.dumps(UNIT_BUBBLE_SYSTEM),
+                           tiers_block=build_tiers_block())
     OUT.parent.mkdir(exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     # DD7 (Aug 23 2026) — live in-flight ceo_plan_items overlay,
