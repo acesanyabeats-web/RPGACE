@@ -1,0 +1,156 @@
+H11: CURRENT STOCK (Pantry/Fridge/Freezer/Equipment) + Recipe Photo — Sep 16 2026
+==========================================================================
+
+ALEX'S VERBATIM ASK
+------------------------------------------------------------
+"in cooking, a fourth button should exist called current stock, divided
+into pantry, fridge, freezer, equipment so i have live reads on current
+stock to make batch cooking less wasteful."
+
+Mid-turn follow-up, same session:
+"i also think recipes i choose should have a photo of the internet
+presented so i can see what im making."
+
+REAL EVIDENCE GATHERED BEFORE BUILDING (rule 1/4)
+------------------------------------------------------------
+- cookingOracle's real dashboard hub (`ui._showModuleHub`) had exactly 3
+  buttons: Planned Cook / Grocery List / Recipe Generator. A separate
+  standalone "📦 Pantry" button lived one level down, inside the Generate
+  form popup — not counted among "the 3."
+- `pantry_stock` (live Supabase query, not assumed): PK was `ingredient_id`
+  alone, no location column — one row per ingredient, total. 17 real rows.
+- `habits_config` has `oven_slots`/`stovetop_slots` — 2 plain capacity
+  numbers used by H6's scheduling engine, NOT an itemized equipment
+  inventory.
+- No `kitchen_equipment`-shaped table existed anywhere (confirmed via
+  `list_tables`).
+- `shoppingWishlist` (a deliberately separate module, Sep 14) already
+  tracks planned equipment PURCHASES (wok, mixing stand, baking mould) —
+  a real, named overlap risk with "Equipment" that needed resolving
+  before building, not guessed.
+- No image-search API is connected anywhere in RPGACE today (Jina AI is
+  text-extraction only).
+
+REAL /INTERROGATION (2 questions, both via AskUserQuestion, both answered
+directly by Alex — rule 5)
+------------------------------------------------------------
+Q1: What should "Equipment" actually track, given the real overlap risk
+    with shoppingWishlist and habits_config's oven/stovetop numbers?
+    Answer: **A real owned-equipment inventory** (containers, trays, wok,
+    scales, etc., with counts) — genuinely useful for "do I have enough
+    containers/trays to batch-store this" before committing to a cook.
+
+Q2: For recipe photos "from the internet" — no image-search API exists
+    today; real options were a free/keyless Wikipedia lookup (limited
+    coverage) vs. a real keyed image-search API (needs Alex's own setup)
+    vs. both.
+    Answer: **Both — keyed API first, Wikipedia fallback.**
+
+WHAT WAS BUILT
+------------------------------------------------------------
+Schema (Supabase, migration `cooking_current_stock_location_and_equipment`):
+- `pantry_stock` gained a real `location` column (CHECK'd to
+  pantry/fridge/freezer, default 'pantry'), and its PK changed from
+  `(ingredient_id)` to `(ingredient_id, location)` so the same ingredient
+  can be tracked separately per storage location. All 17 pre-existing
+  rows correctly backfilled to `location='pantry'` (verified by direct
+  query post-migration) — matches their real prior meaning exactly, no
+  data lost or reinterpreted.
+- New `kitchen_equipment` table (id/name/quantity/notes/created_at/
+  updated_at), `anon_read_only`/`authenticated_all` RLS from creation
+  (same "flip RLS first, then allowlist by construction" precedent as
+  every other HABITS table), added to `api/data-write.js`'s
+  `ALLOWED_TABLES`.
+
+UI (rpgace_core.js, cookingOracle module):
+- 4th hub button, "📦 Current Stock", opens `ui._showCurrentStock()` — a
+  real 4-tab popup (Pantry/Fridge/Freezer/Equipment).
+- The 3 food-storage tabs share ONE renderer, `ui._renderStockLocationTab
+  (container, location)` (rule 8) — add/adjust-stock form + a live list,
+  each row showing a real staleness badge (days since `updated_at`,
+  flagged amber past 14 days) — the concrete "make batch cooking less
+  wasteful" mechanism, built from a column that already existed, no new
+  detector. Each row gets a real 2-click arm/confirm delete (same
+  pattern already proven elsewhere in this project — Bookworm/Intel
+  Delete's own dismiss buttons).
+- `ui._renderEquipmentTab(container)` — a separate real add/list UI over
+  `kitchen_equipment`, same 2-click delete convention.
+- The old standalone `_showPantry` popup is retired — the pre-existing
+  "📦 Pantry" button (inside the Generate form) now opens
+  `_showCurrentStock('pantry')` instead, so there is one real stock UI,
+  not two (rule 8).
+- `logic._loadPantryNamed` (used by the existing Oracle ingredient-
+  suggestion feature, H10) now sums quantity across all 3 locations per
+  ingredient — its own return shape and its one real caller are
+  unchanged; it genuinely doesn't matter to that feature WHERE stock
+  physically sits.
+- New `logic._loadStockByLocation`/`_deleteStockItem`/`_loadEquipment`/
+  `_saveEquipment`/`_deleteEquipment`.
+
+Recipe photo (`ui._showRecipeCard`, `api/search.js`):
+- A real photo box renders at the top of the recipe card, populated via
+  a new `logic._fetchRecipePhoto(title, cb)` call to `/api/search` with
+  a new `type:'recipe-image'` field (every existing YouTube-search caller
+  omits `type`, so the original behavior is byte-for-byte unchanged for
+  them — confirmed by direct grep, exactly one existing caller).
+- `api/search.js` gained a `handleRecipeImage()` branch: tries Unsplash
+  first (`process.env.UNSPLASH_ACCESS_KEY`, server-side only, never
+  shipped to the client — same secret discipline as
+  `LASTFM_API_KEY`/`RPGACE_API_SECRET`), falls back to Wikipedia's free,
+  keyless REST summary API when the key is unset or Unsplash finds
+  nothing. Returns `{image:null}` — never a thrown error or a fake
+  placeholder — when neither source finds a real match (rule 7). No 13th
+  `api/*.js` file added (would have hit the 12-Serverless-Function Vercel
+  Hobby cap, currently 11 of 12) — folded into the existing `search.js`
+  endpoint instead, per the standing landmine's own instruction.
+
+REAL, OPEN GAP — NOT YET LIVE
+------------------------------------------------------------
+`UNSPLASH_ACCESS_KEY` is not yet set as a Vercel env var. Until Alex adds
+it, the photo feature runs on the Wikipedia-only fallback (real, working,
+but limited to well-known named dishes like "Chicken Tikka Masala" — a
+specific Oracle-generated recipe title like "Spicy Batch Oxtail Stew"
+will usually find nothing). This is an honest partial state, not a bug —
+the code fails open exactly as designed.
+
+VERIFICATION
+------------------------------------------------------------
+`node --check` clean on `rpgace_core.js`, `api/search.js`,
+`api/data-write.js`. Re-minified, cache-bust bumped `20260916a`→
+`20260916b`. Real functional headless-Chromium verification (Supabase
+boundary mocked, real network to Supabase blocked from this dev
+environment per standing project convention) — 3 separate real passes:
+(1) all 4 tabs render, Equipment tab correctly loads/shows a real mocked
+row, Fridge tab correctly shows empty when the mock has no fridge rows
+(confirms the `location=eq.<x>` filter is actually being sent, not just
+present in the code); (2) the full add-stock flow — ingredient resolve/
+create → `pantry_stock` insert with the real `location` field and the
+correct composite `onConflict:'ingredient_id,location'` — verified
+end-to-end; (3) the 2-click arm/confirm delete correctly arms on click 1
+(✕→❌) and correctly deletes with the right composite match filter on
+click 2, removing the row from the DOM. `_showRecipeCard` opens with zero
+exceptions and correctly calls `/api/search` with `type:'recipe-image'`.
+A real, honest process note: the first attempt at test (2) initially
+showed zero downstream calls — traced to a genuine test-harness race (a
+real staggered boot task reassigns `RPGACE.sb` a few hundred ms after
+page load, same class of timing this project's own modules already use),
+not a bug in the new code — confirmed by re-asserting the mock
+immediately before the click and getting the full expected call chain.
+
+Untested by Alex's own hand — same standing flag as every HABITS build
+this project has shipped.
+
+STILL NEEDED FROM ALEX (real, concrete, with a real verification — rule
+10)
+------------------------------------------------------------
+To get real image-search coverage beyond Wikipedia's limited match rate:
+1. Sign up free at unsplash.com/developers, create an app, copy its
+   "Access Key" (not the Secret Key).
+2. In the Vercel dashboard → rpgace project → Settings → Environment
+   Variables, add `UNSPLASH_ACCESS_KEY` = that key, for Production.
+3. Redeploy (or wait for the next push to trigger one).
+Verification: open a recipe you've generated before whose title matches
+a well-known dish and confirm a photo appears; more tellingly, check the
+Vercel function logs for `/api/search` after a `type:'recipe-image'`
+call — the response should show `"source":"unsplash"` instead of
+`"source":"wikipedia"` once the key is live.

@@ -161,6 +161,12 @@ const ALLOWED_TABLES = new Set([
   // one real write path.
   'wishlist_items',
   'wishlist_config',
+  // 2026-09-16 - HABITS/Cooking Current Stock (Pantry/Fridge/Freezer/
+  // Equipment). Created anon_read_only/authenticated_all FROM THE START
+  // (same "flip RLS first, then allowlist" by construction as every
+  // HABITS table above). cookingOracle.ui._renderEquipmentTab is the one
+  // real write path.
+  'kitchen_equipment',
 ]);
 
 async function handleBundleDeliverables(req, res, serviceKey) {

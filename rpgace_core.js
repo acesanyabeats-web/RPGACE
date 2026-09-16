@@ -36271,6 +36271,16 @@ RPGACE.register('cookingOracle', {
       mkBtn('⚡ Recipe Generator', 'Generate a new recipe from a description', function() {
         self.logic._loadConfig(function(cfg) { self.ui._showGenerateForm(cfg || {}); });
       });
+
+      // Sep 16 2026 - real Alex ask: a 4th button, live reads on current
+      // stock (Pantry/Fridge/Freezer/Equipment) to make batch cooking less
+      // wasteful. Real /interrogation confirmed Equipment = a real owned-
+      // equipment inventory (genuinely new, distinct from habits_config's
+      // oven_slots/stovetop_slots capacity numbers and from
+      // shoppingWishlist's planned-purchase tracking).
+      mkBtn('📦 Current Stock', 'Pantry, fridge, freezer & equipment — live', function() {
+        self.ui._showCurrentStock();
+      });
     },
 
     _showGenerateForm: function(cfg, initialDesc) {
@@ -36342,10 +36352,14 @@ RPGACE.register('cookingOracle', {
 
       // H7 (shopping/pantry, Sep 13 2026) — reachable from the same entry
       // point as Habits Settings, not buried inside a session-in-progress.
+      // Sep 16 2026 - retargeted to the new tabbed Current Stock view
+      // (defaulting to the Pantry tab) instead of the old standalone
+      // _showPantry popup, which is now retired — one real stock UI, not
+      // two (rule 8).
       var pantryBtn = document.createElement('button');
       pantryBtn.textContent = '📦 Pantry';
       pantryBtn.style.cssText = 'width:100%;padding:8px;margin-top:6px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-      pantryBtn.onclick = function() { pop.close(); self.ui._showPantry(); };
+      pantryBtn.onclick = function() { pop.close(); self.ui._showCurrentStock('pantry'); };
       box.appendChild(pantryBtn);
 
       // H6 - if a cook session is already in progress, offer a real way
@@ -36653,6 +36667,29 @@ RPGACE.register('cookingOracle', {
         onClose: function() { self._recipeCardOpen = false; self._applyRecipeUpdate = null; },
       });
       var box = pop.box;
+
+      // Sep 16 2026 - real Alex ask: "recipes i choose should have a photo
+      // of the internet presented so i can see what im making." Real
+      // /interrogation confirmed a real image-search API first (server-
+      // side, key never shipped to the client), Wikipedia's free REST
+      // summary API as a fallback. Honest empty state when neither finds
+      // a real match - no broken-image icon, no placeholder pretending to
+      // be a real photo (rule 7).
+      var photoBox = document.createElement('div');
+      photoBox.style.cssText = 'width:100%;aspect-ratio:16/9;border-radius:8px;overflow:hidden;margin-bottom:14px;background:rgba(255,255,255,0.03);display:none;';
+      var photoImg = document.createElement('img');
+      photoImg.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+      photoImg.alt = recipe.title || 'Recipe photo';
+      photoBox.appendChild(photoImg);
+      box.appendChild(photoBox);
+      if (recipe.title) {
+        self.logic._fetchRecipePhoto(recipe.title, function(url) {
+          if (!url) return;
+          photoImg.onload = function() { photoBox.style.display = 'block'; };
+          photoImg.onerror = function() { photoBox.style.display = 'none'; };
+          photoImg.src = url;
+        });
+      }
 
       // Real serving scaler - recomputes every displayed ingredient amount
       // live against recipe.servings_base, never mutates the stored recipe
@@ -37486,21 +37523,82 @@ RPGACE.register('cookingOracle', {
     // 2026-09-13.txt (4 forks resolved via AskUserQuestion).
     // ============================================================
 
-    _showPantry: function() {
+    // Sep 16 2026 - real Alex ask: a 4th Cooking button, "Current Stock,"
+    // divided into Pantry/Fridge/Freezer/Equipment - live reads to make
+    // batch cooking less wasteful. Retires the old standalone _showPantry
+    // popup (see the pantryBtn.onclick comment above) - one real stock UI,
+    // not two (rule 8). The 3 food-storage tabs share ONE renderer
+    // (_renderStockLocationTab, parameterized by location) since they're
+    // genuinely the same real mechanism (pantry_stock, now location-
+    // tagged) with 3 different filters; Equipment is a real, separate
+    // table/domain and gets its own renderer.
+    _showCurrentStock: function(initialTab) {
       var self = RPGACE.modules.cookingOracle;
       var pop = RPGACE.modules.dashDeck._popup({
-        width: '480px', scroll: true, eyebrow: '📦 PANTRY', title: 'What you have in stock',
+        width: '480px', scroll: true, eyebrow: '📦 CURRENT STOCK', title: 'What you actually have, live',
         borderColor: 'rgba(76,175,130,0.3)',
       });
       var box = pop.box;
+
+      var tabBar = document.createElement('div');
+      tabBar.style.cssText = 'display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;';
+      var content = document.createElement('div');
+
+      var TABS = [
+        { key: 'pantry', label: '🥫 Pantry' },
+        { key: 'fridge', label: '🧊 Fridge' },
+        { key: 'freezer', label: '❄️ Freezer' },
+        { key: 'equipment', label: '🍳 Equipment' },
+      ];
+      var tabBtns = {};
+
+      var render = function(key) {
+        Object.keys(tabBtns).forEach(function(k) {
+          var active = k === key;
+          tabBtns[k].style.background = active ? 'rgba(76,175,130,0.18)' : 'rgba(255,255,255,0.03)';
+          tabBtns[k].style.borderColor = active ? 'rgba(76,175,130,0.5)' : 'var(--border)';
+          tabBtns[k].style.color = active ? 'var(--green)' : 'var(--muted)';
+        });
+        content.innerHTML = '';
+        if (key === 'equipment') self.ui._renderEquipmentTab(content);
+        else self.ui._renderStockLocationTab(content, key);
+      };
+
+      TABS.forEach(function(t) {
+        var btn = document.createElement('button');
+        btn.textContent = t.label;
+        btn.style.cssText = 'flex:1;min-width:88px;padding:8px 6px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:var(--muted);font-size:11.5px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+        btn.onclick = function() { render(t.key); };
+        tabBtns[t.key] = btn;
+        tabBar.appendChild(btn);
+      });
+
+      box.appendChild(tabBar);
+      box.appendChild(content);
+      render((initialTab && tabBtns[initialTab]) ? initialTab : 'pantry');
+    },
+
+    // The 3 food-storage tabs' shared real renderer - `location` is one of
+    // 'pantry'|'fridge'|'freezer' (pantry_stock_location_check). Real
+    // waste-reduction touch matching Alex's own stated purpose ("make
+    // batch cooking less wasteful"): every row shows how long it's sat
+    // untouched, flagged amber past 14 days, using the column that was
+    // already there (updated_at) - no new detector needed.
+    LOCATION_META: {
+      pantry: { icon: '🥫', label: 'pantry' },
+      fridge: { icon: '🧊', label: 'fridge' },
+      freezer: { icon: '❄️', label: 'freezer' },
+    },
+    _renderStockLocationTab: function(container, location) {
+      var self = RPGACE.modules.cookingOracle;
       var loadingMsg = document.createElement('div');
       loadingMsg.style.cssText = 'font-size:12px;color:var(--muted);';
-      loadingMsg.textContent = 'Loading pantry...';
-      box.appendChild(loadingMsg);
+      loadingMsg.textContent = 'Loading ' + location + '...';
+      container.appendChild(loadingMsg);
 
       var addHeading = document.createElement('div');
       addHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin:16px 0 8px;';
-      addHeading.textContent = 'Add / adjust stock';
+      addHeading.textContent = 'Add / adjust ' + location + ' stock';
 
       var nameInput = document.createElement('input');
       nameInput.type = 'text';
@@ -37528,44 +37626,68 @@ RPGACE.register('cookingOracle', {
       addBtn.style.cssText = 'width:100%;padding:9px;background:rgba(76,175,130,0.12);border:1px solid rgba(76,175,130,0.35);border-radius:8px;color:var(--green);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
 
       var renderList = function() {
-        // Sep 13 2026 (H10): reuses logic._loadPantryNamed (rule 8) instead
-        // of a 2nd hand-rolled copy of this same pantry_stock+ingredients
-        // embed query — this view's own row rendering is unchanged.
-        self.logic._loadPantryNamed(function(rows, err) {
+        self.logic._loadStockByLocation(location, function(rows, err) {
           if (err) {
-            loadingMsg.textContent = '⚠️ Could not load pantry: ' + (err.message || 'unknown error');
+            loadingMsg.textContent = '⚠️ Could not load ' + location + ': ' + (err.message || 'unknown error');
             return;
           }
           if (loadingMsg.parentNode) loadingMsg.remove();
-          Array.prototype.slice.call(box.querySelectorAll('.pantry-row')).forEach(function(el) { el.remove(); });
+          Array.prototype.slice.call(container.querySelectorAll('.stock-row')).forEach(function(el) { el.remove(); });
           (rows || []).forEach(function(r) {
             var row = document.createElement('div');
-            row.className = 'pantry-row';
-            row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;';
+            row.className = 'stock-row';
+            row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;';
             var lbl = document.createElement('span');
             lbl.textContent = r.name || '(unknown)';
+            lbl.style.flex = '1';
+            var days = r.updated_at ? Math.floor((Date.now() - new Date(r.updated_at).getTime()) / 86400000) : null;
+            var stale = days != null && days > 14;
             var right = document.createElement('span');
-            right.style.color = 'var(--muted)';
-            right.textContent = (r.quantity != null ? r.quantity : 0) + ' ' + (r.unit || '');
+            right.style.cssText = 'color:' + (stale ? '#E2A83D' : 'var(--muted)') + ';white-space:nowrap;';
+            right.textContent = (r.quantity != null ? r.quantity : 0) + ' ' + (r.unit || '')
+              + (days != null ? (stale ? ' ⚠️ ' : ' · ') + days + 'd' : '');
             row.appendChild(lbl);
             row.appendChild(right);
-            box.insertBefore(row, addHeading);
+
+            var delBtn = document.createElement('button');
+            delBtn.textContent = '✕';
+            delBtn.style.cssText = 'background:none;border:none;color:rgba(226,84,84,.4);font-size:13px;cursor:pointer;padding:2px 4px;';
+            var armed = false, busy = false;
+            delBtn.onclick = function() {
+              if (busy) return;
+              if (!armed) {
+                armed = true; delBtn.textContent = '❌'; delBtn.style.color = '#CC4A4A';
+                setTimeout(function() { if (busy) return; armed = false; delBtn.textContent = '✕'; delBtn.style.color = 'rgba(226,84,84,.4)'; }, 3000);
+                return;
+              }
+              busy = true; delBtn.textContent = '…';
+              self.logic._deleteStockItem(r.ingredient_id, location, function(err) {
+                if (err) {
+                  busy = false; armed = false; delBtn.textContent = '✕'; delBtn.style.color = 'rgba(226,84,84,.4)';
+                  RPGACE.utils.toast('⚠️ Delete failed: ' + (err.message || 'unknown error'), '#CC4A4A', 3200);
+                  return;
+                }
+                row.remove();
+              });
+            };
+            row.appendChild(delBtn);
+            container.insertBefore(row, addHeading);
           });
           if (!rows || !rows.length) {
             var empty = document.createElement('div');
-            empty.className = 'pantry-row';
+            empty.className = 'stock-row';
             empty.style.cssText = 'font-size:12px;color:var(--muted);';
-            empty.textContent = 'Nothing tracked yet — add stock below.';
-            box.insertBefore(empty, addHeading);
+            empty.textContent = 'Nothing tracked in the ' + location + ' yet — add stock below.';
+            container.insertBefore(empty, addHeading);
           }
         });
       };
 
-      box.appendChild(addHeading);
-      box.appendChild(nameInput);
-      box.appendChild(qtyRow);
-      box.appendChild(errBox);
-      box.appendChild(addBtn);
+      container.appendChild(addHeading);
+      container.appendChild(nameInput);
+      container.appendChild(qtyRow);
+      container.appendChild(errBox);
+      container.appendChild(addBtn);
 
       addBtn.onclick = function() {
         var name = nameInput.value.trim();
@@ -37586,12 +37708,12 @@ RPGACE.register('cookingOracle', {
             return;
           }
           RPGACE.sb.secureWrite('pantry_stock', 'insert', {
-            ingredient_id: row.id, quantity: qty, unit: unit, updated_at: new Date().toISOString(),
-          }, null, 'ingredient_id')
+            ingredient_id: row.id, location: location, quantity: qty, unit: unit, updated_at: new Date().toISOString(),
+          }, null, 'ingredient_id,location')
             .then(function() {
               addBtn.disabled = false;
               nameInput.value = ''; qtyInput.value = ''; unitInput.value = '';
-              RPGACE.utils.toast('📦 Pantry updated', '#4caf82', 2000);
+              RPGACE.utils.toast('📦 ' + location.charAt(0).toUpperCase() + location.slice(1) + ' updated', '#4caf82', 2000);
               renderList();
             })
             .catch(function(e) {
@@ -37599,6 +37721,129 @@ RPGACE.register('cookingOracle', {
               errBox.textContent = '⚠️ ' + (e.message || 'save failed');
               errBox.style.display = 'block';
             });
+        });
+      };
+
+      renderList();
+    },
+
+    // Real, separate owned-equipment inventory (kitchen_equipment table) -
+    // /interrogation-confirmed Sep 16 2026: genuinely distinct from
+    // habits_config's oven_slots/stovetop_slots (a scheduling capacity
+    // number, not an itemized inventory) and from shoppingWishlist (future
+    // purchases, not owned stock). Same 2-click arm/confirm delete as the
+    // stock tabs above (rule 8 - one shared UX convention).
+    _renderEquipmentTab: function(container) {
+      var self = RPGACE.modules.cookingOracle;
+      var loadingMsg = document.createElement('div');
+      loadingMsg.style.cssText = 'font-size:12px;color:var(--muted);';
+      loadingMsg.textContent = 'Loading equipment...';
+      container.appendChild(loadingMsg);
+
+      var addHeading = document.createElement('div');
+      addHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin:16px 0 8px;';
+      addHeading.textContent = 'Add equipment';
+
+      var nameInput = document.createElement('input');
+      nameInput.type = 'text';
+      nameInput.placeholder = 'Equipment name (e.g. Baking trays)';
+      nameInput.style.cssText = 'width:100%;margin-bottom:6px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;padding:7px 10px;box-sizing:border-box;';
+
+      var qtyInput = document.createElement('input');
+      qtyInput.type = 'number';
+      qtyInput.placeholder = 'Quantity';
+      qtyInput.value = '1';
+      qtyInput.min = '1';
+      qtyInput.style.cssText = 'width:100%;margin-bottom:8px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;padding:7px 10px;box-sizing:border-box;';
+
+      var errBox = document.createElement('div');
+      errBox.style.cssText = 'font-size:12px;color:#CC4A4A;margin-bottom:8px;display:none;';
+
+      var addBtn = document.createElement('button');
+      addBtn.textContent = '+ Add equipment';
+      addBtn.style.cssText = 'width:100%;padding:9px;background:rgba(76,175,130,0.12);border:1px solid rgba(76,175,130,0.35);border-radius:8px;color:var(--green);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+
+      var renderList = function() {
+        self.logic._loadEquipment(function(rows, err) {
+          if (err) {
+            loadingMsg.textContent = '⚠️ Could not load equipment: ' + (err.message || 'unknown error');
+            return;
+          }
+          if (loadingMsg.parentNode) loadingMsg.remove();
+          Array.prototype.slice.call(container.querySelectorAll('.equip-row')).forEach(function(el) { el.remove(); });
+          (rows || []).forEach(function(r) {
+            var row = document.createElement('div');
+            row.className = 'equip-row';
+            row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;';
+            var lbl = document.createElement('span');
+            lbl.textContent = r.name || '(unknown)';
+            lbl.style.flex = '1';
+            var right = document.createElement('span');
+            right.style.cssText = 'color:var(--muted);white-space:nowrap;';
+            right.textContent = '× ' + (r.quantity != null ? r.quantity : 1);
+            row.appendChild(lbl);
+            row.appendChild(right);
+
+            var delBtn = document.createElement('button');
+            delBtn.textContent = '✕';
+            delBtn.style.cssText = 'background:none;border:none;color:rgba(226,84,84,.4);font-size:13px;cursor:pointer;padding:2px 4px;';
+            var armed = false, busy = false;
+            delBtn.onclick = function() {
+              if (busy) return;
+              if (!armed) {
+                armed = true; delBtn.textContent = '❌'; delBtn.style.color = '#CC4A4A';
+                setTimeout(function() { if (busy) return; armed = false; delBtn.textContent = '✕'; delBtn.style.color = 'rgba(226,84,84,.4)'; }, 3000);
+                return;
+              }
+              busy = true; delBtn.textContent = '…';
+              self.logic._deleteEquipment(r.id, function(err) {
+                if (err) {
+                  busy = false; armed = false; delBtn.textContent = '✕'; delBtn.style.color = 'rgba(226,84,84,.4)';
+                  RPGACE.utils.toast('⚠️ Delete failed: ' + (err.message || 'unknown error'), '#CC4A4A', 3200);
+                  return;
+                }
+                row.remove();
+              });
+            };
+            row.appendChild(delBtn);
+            container.insertBefore(row, addHeading);
+          });
+          if (!rows || !rows.length) {
+            var empty = document.createElement('div');
+            empty.className = 'equip-row';
+            empty.style.cssText = 'font-size:12px;color:var(--muted);';
+            empty.textContent = 'Nothing tracked yet — add equipment below.';
+            container.insertBefore(empty, addHeading);
+          }
+        });
+      };
+
+      container.appendChild(addHeading);
+      container.appendChild(nameInput);
+      container.appendChild(qtyInput);
+      container.appendChild(errBox);
+      container.appendChild(addBtn);
+
+      addBtn.onclick = function() {
+        var name = nameInput.value.trim();
+        var qty = parseInt(qtyInput.value, 10);
+        if (!name || isNaN(qty) || qty < 1) {
+          errBox.textContent = '⚠️ Enter a name and a real quantity';
+          errBox.style.display = 'block';
+          return;
+        }
+        errBox.style.display = 'none';
+        addBtn.disabled = true;
+        self.logic._saveEquipment(name, qty, function(err) {
+          addBtn.disabled = false;
+          if (err) {
+            errBox.textContent = '⚠️ ' + (err.message || 'save failed');
+            errBox.style.display = 'block';
+            return;
+          }
+          nameInput.value = ''; qtyInput.value = '1';
+          RPGACE.utils.toast('🍳 Equipment updated', '#4caf82', 2000);
+          renderList();
         });
       };
 
@@ -38277,14 +38522,91 @@ RPGACE.register('cookingOracle', {
     // told apart from a genuinely empty pantry (ui._showPantry uses this;
     // the pantry-aware suggestion feature below doesn't need to, and JS
     // callbacks simply ignore an extra arg they don't declare).
+    // Sep 16 2026 - pantry_stock now carries a real `location` column
+    // (pantry/fridge/freezer) instead of one row per ingredient. This
+    // caller (the Oracle ingredient-suggestion feature below) doesn't
+    // care WHERE stock physically sits, only whether it exists at all -
+    // so rows are summed per ingredient+unit across all 3 locations here,
+    // keeping this function's own return shape (and its existing caller)
+    // unchanged.
     _loadPantryNamed: function(cb) {
       RPGACE.sb.select('pantry_stock', 'select=ingredient_id,quantity,unit,ingredients(name)&order=updated_at.desc')
         .then(function(rows) {
+          var byKey = {};
+          (rows || []).forEach(function(r) {
+            var name = (r.ingredients && r.ingredients.name) || '';
+            if (!name) return;
+            var key = r.ingredient_id + '|' + (r.unit || '');
+            if (!byKey[key]) byKey[key] = { name: name, quantity: 0, unit: r.unit };
+            byKey[key].quantity += (r.quantity || 0);
+          });
+          cb(Object.keys(byKey).map(function(k) { return byKey[k]; }), null);
+        })
+        .catch(function(e) { cb([], e); });
+    },
+
+    // Real, location-filtered read for the Current Stock tabs (H11, Sep 16
+    // 2026) - a genuinely different shape than _loadPantryNamed above
+    // (per-location rows, plus ingredient_id + updated_at for the delete
+    // button and the staleness badge), kept as its own function rather
+    // than overloading one query shape for two different real consumers.
+    _loadStockByLocation: function(location, cb) {
+      RPGACE.sb.select('pantry_stock', 'select=ingredient_id,quantity,unit,updated_at,ingredients(name)&location=eq.' + encodeURIComponent(location) + '&order=updated_at.desc')
+        .then(function(rows) {
           cb((rows || []).map(function(r) {
-            return { name: (r.ingredients && r.ingredients.name) || '', quantity: r.quantity, unit: r.unit };
+            return { ingredient_id: r.ingredient_id, name: (r.ingredients && r.ingredients.name) || '', quantity: r.quantity, unit: r.unit, updated_at: r.updated_at };
           }).filter(function(r) { return r.name; }), null);
         })
         .catch(function(e) { cb([], e); });
+    },
+
+    _deleteStockItem: function(ingredientId, location, cb) {
+      RPGACE.sb.secureWrite('pantry_stock', 'delete', null,
+        'ingredient_id=eq.' + ingredientId + '&location=eq.' + encodeURIComponent(location))
+        .then(function() { cb(null); })
+        .catch(function(e) { cb(e); });
+    },
+
+    // Real owned-equipment inventory reads/writes (H11, Sep 16 2026,
+    // kitchen_equipment table - /interrogation-confirmed genuinely
+    // distinct domain from habits_config's oven_slots/stovetop_slots and
+    // from shoppingWishlist's planned-purchase tracking).
+    _loadEquipment: function(cb) {
+      RPGACE.sb.select('kitchen_equipment', 'select=id,name,quantity,notes&order=name.asc')
+        .then(function(rows) { cb(rows || [], null); })
+        .catch(function(e) { cb([], e); });
+    },
+
+    _saveEquipment: function(name, quantity, cb) {
+      RPGACE.sb.secureWrite('kitchen_equipment', 'insert', {
+        name: name, quantity: quantity, updated_at: new Date().toISOString(),
+      })
+        .then(function() { cb(null); })
+        .catch(function(e) { cb(e); });
+    },
+
+    _deleteEquipment: function(id, cb) {
+      RPGACE.sb.secureWrite('kitchen_equipment', 'delete', null, 'id=eq.' + id)
+        .then(function() { cb(null); })
+        .catch(function(e) { cb(e); });
+    },
+
+    // Sep 16 2026 - real Alex ask: a real photo of the dish on the recipe
+    // card. Routes through /api/search's new `type:'recipe-image'` branch
+    // (server-side, so a real image-search API key never ships to the
+    // client - same discipline as every other keyed external connector).
+    // Fails open to no photo (never a broken-image icon or a fake
+    // placeholder) on any error - a missing photo for an obscure
+    // generated dish name is an honest empty state, not a bug (rule 7).
+    _fetchRecipePhoto: function(title, cb) {
+      fetch('/api/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'recipe-image', query: title }),
+      })
+        .then(function(r) { return r.json(); })
+        .then(function(data) { cb((data && data.image) || null); })
+        .catch(function() { cb(null); });
     },
 
     // Sep 13 2026 (H10, real Alex ask - "no option to add or suggest

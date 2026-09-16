@@ -293,6 +293,12 @@ EXTERNAL_CONNECTORS = [
     {'name': 'Whisper (OpenAI, local)', 'status': 'built, unconfirmed this session', 'tested': False, 'via': 'local_server.py / Python scripts on Alex\'s own machine',
      'bridges_to': 'Alex\'s own local machine — not in this repo',
      'note': 'local speech-to-text — historically confirmed working July 7 (Content Intelligence: metadata->download->Whisper->frame extraction->Claude Vision->Oracle report). Current live status genuinely unconfirmed this session, same visibility gap as local_server.py\'s other integrations — do not claim active without asking Alex.'},
+    {'name': 'Unsplash', 'status': 'built, not configured', 'tested': False, 'via': 'api/search.js handleRecipeImage(), UNSPLASH_ACCESS_KEY',
+     'bridges_to': 'Unsplash\'s own hosted free-tier image-search API',
+     'note': 'H11 (Sep 16 2026) real recipe-photo primary source — code checks for UNSPLASH_ACCESS_KEY and fails open to the Wikipedia fallback below when unset (not yet set as of this build). River III\'s Oracle Current is unrelated; this is triggered from River XI\'s cookingOracle recipe card.'},
+    {'name': 'Wikipedia REST API', 'status': 'live', 'tested': False, 'via': 'api/search.js handleRecipeImage() fallback, en.wikipedia.org/api/rest_v1',
+     'bridges_to': 'Wikimedia\'s own hosted, free, keyless REST API',
+     'note': 'H11 (Sep 16 2026) real recipe-photo fallback — no key needed, live today, but only finds a photo for well-known named dishes with a matching Wikipedia article.'},
 ]
 
 # Supabase is deliberately its own real category, not folded into
