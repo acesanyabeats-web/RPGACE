@@ -36211,6 +36211,19 @@ RPGACE.register('cookingOracle', {
       + '"steps":[{"order":1,"type":"prep_before_cooking","description":"...","active_duration_min":<number>,"passive_duration_min":<number>,"ingredients_used":[{"name":"...","amount":<number>,"unit":"..."}]}]}';
   },
 
+  // H18 (Sep 16 2026) — real, shared rendering metadata for the 5-color
+  // ingredient-status system (see logic._classifyIngredientStatus for the
+  // real classification rules). Module-top-level, same convention as
+  // RECIPE_JSON_SHAPE above, since both ui and logic need this one real
+  // copy (rule 8) — never a per-render-site hand-rolled color/label pair.
+  INGREDIENT_STATUS_META: {
+    green:  { color: 'var(--green)', bg: 'rgba(76,175,130,0.07)',  icon: '🟢', label: 'Have plenty' },
+    yellow: { color: 'var(--gold)',  bg: 'rgba(226,168,61,0.07)',  icon: '🟡', label: 'Not enough — need more' },
+    red:    { color: '#CC4A4A',      bg: 'rgba(204,74,74,0.07)',   icon: '🔴', label: "Don't have" },
+    blue:   { color: '#4A9FCC',      bg: 'rgba(74,159,204,0.07)',  icon: '🔵', label: 'Have an alternative — buy the real one' },
+    purple: { color: '#9B59B6',      bg: 'rgba(155,89,182,0.07)',  icon: '🟣', label: 'Running low — replenish after this cook' },
+  },
+
   // H15 (Sep 16 2026) — real, compound-phrase keyword gate (the same
   // hyphen/word-boundary discipline as every other keyword list in this
   // project) for "Alex is asking Oracle, in FREE-FORM chat, to actually
@@ -36405,9 +36418,22 @@ RPGACE.register('cookingOracle', {
       mkBtn('📦 Current Stock', 'Pantry, fridge, freezer & equipment — live', function() {
         self.ui._showCurrentStock();
       });
+
+      // H18 (Sep 16 2026, real Alex ask: "now i can look for recipes that
+      // will only give me purple or green ingredients so i can have
+      // perfect recipes with my context") — a real 6th button, the actual
+      // named entry point for the new 5-color "what's makeable right now"
+      // finder (ui._showStockMatchFinder).
+      mkBtn('🥫 What Can I Cook Right Now?', 'Saved recipes needing zero shopping trip', function() {
+        self.ui._showStockMatchFinder();
+      });
     },
 
-    _showGenerateForm: function(cfg, initialDesc) {
+    // H18 (Sep 16 2026) — real, OPTIONAL 3rd param, `forceStockOnly`, so
+    // the new stock-match finder's "generate a new one using only what I
+    // have" can open this SAME form with the stock-only box already
+    // ticked, rather than a second, parallel generate form.
+    _showGenerateForm: function(cfg, initialDesc, forceStockOnly) {
       var self = RPGACE.modules.cookingOracle;
       var pop = RPGACE.modules.dashDeck._popup({
         width: '520px', eyebrow: '🍳 COOKING', title: 'Generate a recipe',
@@ -36441,6 +36467,22 @@ RPGACE.register('cookingOracle', {
       servingsRow.appendChild(servingsInput);
       box.appendChild(servingsRow);
 
+      // H18 (Sep 16 2026, real Alex ask: "now i can look for recipes that
+      // will only give me purple or green ingredients... as filter to
+      // generate new recipes") — real, honest "use what I have" toggle,
+      // threaded through narrow-down too so a short description doesn't
+      // silently lose the constraint on its way there.
+      var stockOnlyRow = document.createElement('label');
+      stockOnlyRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:14px;font-size:12px;color:var(--muted);cursor:pointer;';
+      var stockOnlyCheck = document.createElement('input');
+      stockOnlyCheck.type = 'checkbox';
+      if (forceStockOnly) stockOnlyCheck.checked = true;
+      var stockOnlyText = document.createElement('span');
+      stockOnlyText.textContent = '📦 Use only what I already have — no shopping trip needed';
+      stockOnlyRow.appendChild(stockOnlyCheck);
+      stockOnlyRow.appendChild(stockOnlyText);
+      box.appendChild(stockOnlyRow);
+
       var errBox = document.createElement('div');
       errBox.style.cssText = 'font-size:12px;color:#CC4A4A;margin-bottom:10px;display:none;';
       box.appendChild(errBox);
@@ -36461,10 +36503,10 @@ RPGACE.register('cookingOracle', {
         var wordCount = d.split(/\s+/).filter(Boolean).length;
         if (wordCount <= 3) {
           pop.close();
-          self.ui._showNarrowDown(d, servingsInput.value || 4);
+          self.ui._showNarrowDown(d, servingsInput.value || 4, stockOnlyCheck.checked);
           return;
         }
-        self.ui._runGenerateAndShow(pop, genBtn, errBox, d, servingsInput.value || 4);
+        self.ui._runGenerateAndShow(pop, genBtn, errBox, d, servingsInput.value || 4, stockOnlyCheck.checked);
       };
       box.appendChild(genBtn);
 
@@ -36506,7 +36548,7 @@ RPGACE.register('cookingOracle', {
     // handle err, show the recipe card." btn/errBox are optional - a caller
     // with no inline button (a picked-idea popup) gets a toast on error
     // instead of an inline errBox message.
-    _runGenerateAndShow: function(pop, btn, errBox, description, servings) {
+    _runGenerateAndShow: function(pop, btn, errBox, description, servings, stockOnly) {
       var self = RPGACE.modules.cookingOracle;
       if (btn) { btn.disabled = true; btn.textContent = '⏳ Asking Oracle... (this can take a while)'; }
       if (errBox) errBox.style.display = 'none';
@@ -36519,7 +36561,7 @@ RPGACE.register('cookingOracle', {
         }
         if (pop) pop.close();
         self.ui._showRecipeCard(recipe, rawText);
-      });
+      }, stockOnly);
     },
 
     // Sep 13 2026 - real Alex ask: "Korean" used to go straight to one
@@ -36528,7 +36570,7 @@ RPGACE.register('cookingOracle', {
     // type / specific ingredients. Reached from _showGenerateForm's genBtn
     // whenever the typed description is <=3 words - never a hard gate,
     // "Generate with this info" always proceeds with exactly what he typed.
-    _showNarrowDown: function(description, servings) {
+    _showNarrowDown: function(description, servings, stockOnly) {
       var self = RPGACE.modules.cookingOracle;
       var pop = RPGACE.modules.dashDeck._popup({
         width: '520px', scroll: true, eyebrow: '🍳 COOKING', title: 'Narrow it down',
@@ -36620,7 +36662,7 @@ RPGACE.register('cookingOracle', {
               loadingMsg.style.cssText = 'font-size:13px;color:var(--muted);padding:10px 0;';
               loadingMsg.textContent = '⏳ Asking Oracle for "' + idea + '"...';
               pop2.box.appendChild(loadingMsg);
-              self.ui._runGenerateAndShow(pop2, null, null, idea, servings);
+              self.ui._runGenerateAndShow(pop2, null, null, idea, servings, stockOnly);
             };
             ideasBox.appendChild(ib);
           });
@@ -36636,7 +36678,7 @@ RPGACE.register('cookingOracle', {
         if (selectedType) parts.push(selectedType.toLowerCase() + ' dish');
         if (ingInput.value.trim()) parts.push('using ' + ingInput.value.trim());
         var finalDesc = parts.join(', ');
-        self.ui._runGenerateAndShow(pop, genBtn, errBox, finalDesc, servings);
+        self.ui._runGenerateAndShow(pop, genBtn, errBox, finalDesc, servings, stockOnly);
       };
       box.appendChild(genBtn);
 
@@ -36684,6 +36726,24 @@ RPGACE.register('cookingOracle', {
         chip.textContent = amt + (u.name || '');
         row.appendChild(chip);
       });
+      return row;
+    },
+
+    // H18 (Sep 16 2026) — the ONE shared render for a single ingredient's
+    // 5-color status row (rule 8), used by the recipe card, the schedule
+    // preview, and the shopping list — never 3 hand-rolled copies of the
+    // same colored-chip markup. `text` is the full line to show (already
+    // formatted with amount/unit by the caller, since each of the 3 real
+    // consumers phrases it slightly differently — "have 2 eggs" vs "need to
+    // buy 200g flour" — the color/border/background treatment is what's
+    // actually shared, not the wording).
+    _renderIngredientStatusRow: function(text, status) {
+      var self = RPGACE.modules.cookingOracle;
+      var meta = self.INGREDIENT_STATUS_META[status] || self.INGREDIENT_STATUS_META.red;
+      var row = document.createElement('div');
+      row.style.cssText = 'font-size:12px;color:' + meta.color + ';border-left:3px solid ' + meta.color + ';background:' + meta.bg + ';border-radius:0 5px 5px 0;padding:4px 10px;margin-bottom:3px;';
+      row.textContent = meta.icon + ' ' + text;
+      row.title = meta.label;
       return row;
     },
 
@@ -36761,7 +36821,14 @@ RPGACE.register('cookingOracle', {
       };
     },
 
-    _showRecipeCard: function(recipe, rawText) {
+    // H18 (Sep 16 2026) — real, OPTIONAL 3rd param, `existingRecipeId`. The
+    // new "What can I cook right now?" finder (ui._showPantryMatchFinder)
+    // is the first real caller that reopens an ALREADY-SAVED recipe rather
+    // than showing a fresh generation — without this, savedRecipeId would
+    // start null and a Save click on a reopened recipe would silently
+    // insert a genuine duplicate row. Every EXISTING caller passes only 2
+    // args, so existingRecipeId is simply undefined there — unaffected.
+    _showRecipeCard: function(recipe, rawText, existingRecipeId) {
       var self = RPGACE.modules.cookingOracle;
       self._generatedRecipe = recipe;
       // Sep 13 2026 (H10, real Alex ask - "no option to add or suggest
@@ -36769,7 +36836,7 @@ RPGACE.register('cookingOracle', {
       // planned cook") - tracks the real recipes.id once a save has
       // actually inserted a row, so a later click of either button never
       // inserts a 2nd duplicate row.
-      var savedRecipeId = null;
+      var savedRecipeId = existingRecipeId || null;
       // Real, superseding fix, same day (Alex hand-tested and hit both
       // buttons ending up saved: "always do dedup") - a real concurrency
       // gap in the first version let clicking Save then immediately
@@ -36868,6 +36935,20 @@ RPGACE.register('cookingOracle', {
       ingList.style.cssText = 'margin-bottom:18px;';
       box.appendChild(ingList);
 
+      // H18 (Sep 16 2026, real Alex ask — see logic._classifyIngredientStatus
+      // for the full 5-color rules + /interrogation record) — a real,
+      // NAME-keyed pantry snapshot (this recipe has no real ingredient_id
+      // yet if it hasn't been saved — logic._save only resolves/creates
+      // real ingredient rows on Save, see this function's own top comment).
+      // Loaded once when the card opens; renderIngredients re-runs once it
+      // lands, same "render once now, re-render richer once real data
+      // arrives" pattern the photo fetch above already uses.
+      var pantrySnapshot = null;
+      self.logic._loadPantrySummed(function(snapshot) {
+        pantrySnapshot = snapshot;
+        renderIngredients();
+      });
+
       var renderIngredients = function() {
         var base = recipe.servings_base || 1;
         var target = parseFloat(scaleInput.value) || base;
@@ -36875,13 +36956,34 @@ RPGACE.register('cookingOracle', {
         ingList.innerHTML = '';
         (recipe.ingredients || []).forEach(function(ing) {
           var row = document.createElement('div');
-          row.style.cssText = 'display:flex;justify-content:space-between;font-size:13px;color:var(--text);padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.05);';
+          row.style.cssText = 'display:flex;justify-content:space-between;font-size:13px;color:var(--text);padding:4px 0 4px 8px;border-bottom:1px solid rgba(255,255,255,0.05);';
           var amt = (typeof ing.amount === 'number') ? (Math.round(ing.amount * factor * 100) / 100) : ing.amount;
           var left = document.createElement('span');
           left.textContent = ing.name || '';
           var right = document.createElement('span');
           right.style.color = 'var(--muted)';
           right.textContent = (amt != null ? amt : '') + (ing.unit ? (' ' + ing.unit) : '');
+
+          if (pantrySnapshot && ing.name) {
+            var norm = String(ing.name).trim().toLowerCase();
+            var slots = pantrySnapshot.byName[norm] || [];
+            var have = 0;
+            // H18 (Sep 16 2026, real Alex correction) — same shared unit
+            // normalizer every other real 5-color match uses (rule 8),
+            // so "gram" on the card and "g" in stock match correctly.
+            var wantUnit = self.logic._normalizeUnit(ing.unit);
+            for (var i = 0; i < slots.length; i++) {
+              if (self.logic._normalizeUnit(slots[i].unit) === wantUnit) { have = slots[i].quantity; break; }
+            }
+            var status = self.logic._classifyIngredientStatus({ name: ing.name, needed: (typeof amt === 'number') ? amt : 0, have: have, aisleIndex: pantrySnapshot.aisleIndex });
+            var meta = self.INGREDIENT_STATUS_META[status];
+            row.style.borderLeft = '3px solid ' + meta.color;
+            row.style.background = meta.bg;
+            row.style.borderRadius = '0 5px 5px 0';
+            row.title = meta.label;
+            left.textContent = meta.icon + ' ' + (ing.name || '');
+          }
+
           row.appendChild(left);
           row.appendChild(right);
           ingList.appendChild(row);
@@ -37689,47 +37791,33 @@ RPGACE.register('cookingOracle', {
                 usageBox.appendChild(self.ui._errNode('Could not check pantry stock: ' + usageErr));
                 return;
               }
-              var willUse = usage.filter(function(u) { return u.have > 0; })
-                .sort(function(a, b) { return a.name.localeCompare(b.name); });
-              var needToBuy = usage.filter(function(u) { return u.toBuy > 0; });
-              needToBuy.forEach(function(u) { u._aisle = self.logic._classifyAisle(u.name); });
-              needToBuy.sort(function(a, b) {
+              // H18 (Sep 16 2026, real Alex ask — see logic._classifyIngredientStatus
+              // for the full 5-color rules and the /interrogation record).
+              // Real Alex-stated grouping, direct from his own words: "green
+              // is plenty and not needed for consideration for next shop,
+              // purple is only in consideration after planned shop, red,
+              // yellow and blue is what needs shopping BEFORE next planned
+              // cook" — so this replaces H14b's old willUse/needToBuy
+              // 2-color split with the 3 real buckets that actually match
+              // that timing logic (buy-before / plenty / buy-after), each
+              // ingredient individually color-coded within its bucket via
+              // the shared ui._renderIngredientStatusRow (rule 8).
+              var buyBefore = usage.filter(function(u) { return u.status === 'red' || u.status === 'yellow' || u.status === 'blue'; });
+              var plenty = usage.filter(function(u) { return u.status === 'green'; }).sort(function(a, b) { return a.name.localeCompare(b.name); });
+              var buyAfter = usage.filter(function(u) { return u.status === 'purple'; }).sort(function(a, b) { return a.name.localeCompare(b.name); });
+              buyBefore.forEach(function(u) { u._aisle = self.logic._classifyAisle(u.name); });
+              buyBefore.sort(function(a, b) {
                 if (a._aisle.order !== b._aisle.order) return a._aisle.order - b._aisle.order;
                 return a.name.localeCompare(b.name);
               });
 
-              // H14b (Sep 16 2026, real Alex ask: "i wish the list
-              // highlighted what i have vs what ill need to purchase,
-              // should be colour coded for ease") — real green=covered/
-              // gold=action-needed colour coding, matching this app's own
-              // already-established convention (green Accept/Mark-bought
-              // buttons, gold "Need to buy" heading in the real generated
-              // shopping list) rather than inventing a new colour language.
-              // A "partial" row (some pantry, some still needed) gets BOTH
-              // a green pantry-portion chip and its own gold buy-portion
-              // row further down, in the needToBuy list, so it's never
-              // ambiguous which real amount is covered vs. which isn't.
-              if (willUse.length) {
-                var useHeading = document.createElement('div');
-                useHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--green);margin:14px 0 6px;';
-                useHeading.textContent = '📦 Will use from pantry';
-                usageBox.appendChild(useHeading);
-                willUse.forEach(function(u) {
-                  var row = document.createElement('div');
-                  row.style.cssText = 'font-size:12px;color:var(--green);border-left:3px solid var(--green);background:rgba(76,175,130,0.06);border-radius:0 5px 5px 0;padding:4px 10px;margin-bottom:3px;';
-                  var usedAmt = Math.min(u.amount, u.have);
-                  row.textContent = '✅ ' + u.name + ' — ' + usedAmt + ' ' + (u.unit || '') + (u.toBuy > 0 ? ' (have — rest below still needs buying)' : '');
-                  usageBox.appendChild(row);
-                });
-              }
-
-              if (needToBuy.length) {
+              if (buyBefore.length) {
                 var buyHeading = document.createElement('div');
                 buyHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin:14px 0 6px;';
-                buyHeading.textContent = '🛒 Need to add to grocery list';
+                buyHeading.textContent = '🛒 Need to buy before this cook';
                 usageBox.appendChild(buyHeading);
                 var currentAisle = null;
-                needToBuy.forEach(function(u) {
+                buyBefore.forEach(function(u) {
                   if (u._aisle.name !== currentAisle) {
                     currentAisle = u._aisle.name;
                     var aisleHeading = document.createElement('div');
@@ -37737,14 +37825,34 @@ RPGACE.register('cookingOracle', {
                     aisleHeading.textContent = '📍 ' + currentAisle;
                     usageBox.appendChild(aisleHeading);
                   }
-                  var row = document.createElement('div');
-                  row.style.cssText = 'font-size:12px;color:var(--gold);border-left:3px solid var(--gold);background:rgba(201,168,76,0.07);border-radius:0 5px 5px 0;padding:4px 10px;margin-bottom:3px;';
-                  row.textContent = '🛒 ' + u.name + ' — ' + u.toBuy + ' ' + (u.unit || '');
-                  usageBox.appendChild(row);
+                  var text = u.name + ' — need ' + u.toBuy + ' ' + (u.unit || '') + (u.have > 0 ? ' (have ' + u.have + ' already)' : '');
+                  usageBox.appendChild(self.ui._renderIngredientStatusRow(text, u.status));
                 });
               }
 
-              if (!willUse.length && !needToBuy.length) {
+              if (plenty.length) {
+                var useHeading = document.createElement('div');
+                useHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--green);margin:14px 0 6px;';
+                useHeading.textContent = '📦 Have plenty — nothing to buy';
+                usageBox.appendChild(useHeading);
+                plenty.forEach(function(u) {
+                  var usedAmt = Math.min(u.amount, u.have);
+                  usageBox.appendChild(self.ui._renderIngredientStatusRow(u.name + ' — using ' + usedAmt + ' ' + (u.unit || ''), 'green'));
+                });
+              }
+
+              if (buyAfter.length) {
+                var afterHeading = document.createElement('div');
+                afterHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9B59B6;margin:14px 0 6px;';
+                afterHeading.textContent = '🟣 Will run low — restock on your NEXT shop, after this cook';
+                usageBox.appendChild(afterHeading);
+                buyAfter.forEach(function(u) {
+                  var usedAmt = Math.min(u.amount, u.have);
+                  usageBox.appendChild(self.ui._renderIngredientStatusRow(u.name + ' — using ' + usedAmt + ' ' + (u.unit || '') + ', little left after', 'purple'));
+                });
+              }
+
+              if (!buyBefore.length && !plenty.length && !buyAfter.length) {
                 var noneMsg = document.createElement('div');
                 noneMsg.style.cssText = 'font-size:12px;color:var(--muted);margin:10px 0;';
                 noneMsg.textContent = 'No pantry stock logged yet — everything here will need buying once you generate a shopping list.';
@@ -38155,13 +38263,26 @@ RPGACE.register('cookingOracle', {
       box.appendChild(loadingMsg);
 
       var renderItems = function() {
-        RPGACE.sb.select('shopping_list_items', 'select=id,ingredient_id,needed_amount,needed_unit,have_amount,to_buy_amount,bought,ingredients(name)&list_id=eq.' + listId + '&order=bought.asc')
-          .then(function(rows) {
+        // H18 (Sep 16 2026) — real, superseding rewrite of this list's own
+        // colour language (rule 8, see logic._classifyIngredientStatus for
+        // the full 5-color rules + /interrogation record). Loads a live
+        // pantry snapshot ALONGSIDE this list's own persisted needed/have
+        // amounts (the snapshot only supplies the aisleIndex a blue-
+        // alternative check needs — the have/needed numbers themselves stay
+        // the real, frozen-at-generation-time values this list was always
+        // built from, never silently re-computed from current pantry).
+        Promise.all([
+          RPGACE.sb.select('shopping_list_items', 'select=id,ingredient_id,needed_amount,needed_unit,have_amount,to_buy_amount,bought,ingredients(name)&list_id=eq.' + listId + '&order=bought.asc'),
+          new Promise(function(resolve) { self.logic._loadPantrySummed(function(snapshot) { resolve(snapshot); }); }),
+        ])
+          .then(function(results) {
+            var rows = results[0];
+            var pantry = results[1];
             box.innerHTML = ''; // full re-render each time — keeps this simple and correct
 
             var needHeading = document.createElement('div');
             needHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;';
-            needHeading.textContent = 'Need to buy';
+            needHeading.textContent = '🛒 Need to buy before this cook';
             box.appendChild(needHeading);
 
             var needRows = (rows || []).filter(function(r) { return !r.bought && (r.to_buy_amount || 0) > 0; });
@@ -38179,7 +38300,9 @@ RPGACE.register('cookingOracle', {
             // ingredient name within an aisle, so re-renders after a "Mark
             // bought" never visibly reshuffle the remaining rows.
             needRows.forEach(function(r) {
-              r._aisle = self.logic._classifyAisle(r.ingredients && r.ingredients.name);
+              var name = (r.ingredients && r.ingredients.name) || '';
+              r._aisle = self.logic._classifyAisle(name);
+              r._status = self.logic._classifyIngredientStatus({ name: name, needed: r.needed_amount, have: r.have_amount, aisleIndex: pantry.aisleIndex });
             });
             needRows.sort(function(a, b) {
               if (a._aisle.order !== b._aisle.order) return a._aisle.order - b._aisle.order;
@@ -38196,38 +38319,59 @@ RPGACE.register('cookingOracle', {
                 aisleHeading.textContent = '📍 ' + currentAisle;
                 box.appendChild(aisleHeading);
               }
-              // H14b (Sep 16 2026, real Alex ask: "i wish the list
-              // highlighted what i have vs what ill need to purchase,
-              // should be colour coded for ease") — same real green=have/
-              // gold=need-to-buy convention just applied to the schedule
-              // preview's own usage panel (rule 8, one shared colour
-              // language across both real "have vs need" surfaces).
+              // H18 (Sep 16 2026) — real 5-color status (red/yellow/blue all
+              // land here, individually distinguished — see
+              // logic._classifyIngredientStatus), replacing the old flat
+              // single-gold treatment every row in this bucket used to get.
+              var meta = self.INGREDIENT_STATUS_META[r._status] || self.INGREDIENT_STATUS_META.red;
               var row = document.createElement('div');
-              row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-left:3px solid var(--gold);background:rgba(201,168,76,0.06);border-radius:0 5px 5px 0;margin-bottom:5px;font-size:13px;';
+              row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-left:3px solid ' + meta.color + ';background:' + meta.bg + ';border-radius:0 5px 5px 0;margin-bottom:5px;font-size:13px;';
               var lbl = document.createElement('span');
-              lbl.style.cssText = 'color:var(--gold);';
-              lbl.textContent = '🛒 ' + ((r.ingredients && r.ingredients.name) || '?') + ' — need ' + r.to_buy_amount + ' ' + (r.needed_unit || '')
+              lbl.style.cssText = 'color:' + meta.color + ';';
+              lbl.title = meta.label;
+              lbl.textContent = meta.icon + ' ' + ((r.ingredients && r.ingredients.name) || '?') + ' — need ' + r.to_buy_amount + ' ' + (r.needed_unit || '')
                 + (r.have_amount ? ' (have ' + r.have_amount + ' already)' : '');
               var btn = document.createElement('button');
               btn.textContent = '✅ Mark bought';
-              btn.style.cssText = 'padding:5px 10px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);border-radius:6px;color:var(--gold);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+              btn.style.cssText = 'padding:5px 10px;background:' + meta.bg + ';border:1px solid ' + meta.color + ';border-radius:6px;color:' + meta.color + ';font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
               btn.onclick = function() { self.ui._showPriceEntryPopup(r, renderItems); };
               row.appendChild(lbl);
               row.appendChild(btn);
               box.appendChild(row);
             });
 
+            // H18 (Sep 16 2026) — the old flat "Already have enough" bucket
+            // now splits into real green (plenty) vs. real purple (will run
+            // low — Alex's own explicit "consideration after planned shop,
+            // not before" rule), instead of treating every already-covered
+            // ingredient identically.
             var haveOnlyRows = (rows || []).filter(function(r) { return !r.bought && (r.to_buy_amount || 0) <= 0; });
-            if (haveOnlyRows.length) {
+            haveOnlyRows.forEach(function(r) {
+              var name = (r.ingredients && r.ingredients.name) || '';
+              r._status = self.logic._classifyIngredientStatus({ name: name, needed: r.needed_amount, have: r.have_amount, aisleIndex: pantry.aisleIndex });
+            });
+            var plentyRows = haveOnlyRows.filter(function(r) { return r._status !== 'purple'; });
+            var lowRows = haveOnlyRows.filter(function(r) { return r._status === 'purple'; });
+
+            if (plentyRows.length) {
               var haveHeading = document.createElement('div');
               haveHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--green);margin:16px 0 8px;';
-              haveHeading.textContent = 'Already have enough';
+              haveHeading.textContent = '📦 Already have enough';
               box.appendChild(haveHeading);
-              haveOnlyRows.forEach(function(r) {
-                var row = document.createElement('div');
-                row.style.cssText = 'font-size:12px;color:var(--green);border-left:3px solid var(--green);background:rgba(76,175,130,0.06);border-radius:0 5px 5px 0;padding:4px 10px;margin-bottom:3px;';
-                row.textContent = '✅ ' + ((r.ingredients && r.ingredients.name) || '?') + ' — have ' + r.have_amount + ' ' + (r.needed_unit || '');
-                box.appendChild(row);
+              plentyRows.forEach(function(r) {
+                var name = (r.ingredients && r.ingredients.name) || '?';
+                box.appendChild(self.ui._renderIngredientStatusRow(name + ' — have ' + r.have_amount + ' ' + (r.needed_unit || ''), 'green'));
+              });
+            }
+
+            if (lowRows.length) {
+              var lowHeading = document.createElement('div');
+              lowHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9B59B6;margin:16px 0 8px;';
+              lowHeading.textContent = '🟣 Will run low — restock on your NEXT shop, after this cook';
+              box.appendChild(lowHeading);
+              lowRows.forEach(function(r) {
+                var name = (r.ingredients && r.ingredients.name) || '?';
+                box.appendChild(self.ui._renderIngredientStatusRow(name + ' — have ' + r.have_amount + ' ' + (r.needed_unit || ''), 'purple'));
               });
             }
 
@@ -38251,6 +38395,83 @@ RPGACE.register('cookingOracle', {
           });
       };
       renderItems();
+    },
+
+    // H18 (Sep 16 2026, real Alex ask: "now i can look for recipes that
+    // will only give me purple or green ingredients so i can have perfect
+    // recipes with my context") — real "what's makeable right now" finder.
+    // Every saved recipe gets classified live (logic._findMakeableRecipes,
+    // reusing the SAME shared classifier + pantry snapshot every other
+    // real 5-color surface uses, rule 8) — makeable (all green/purple)
+    // recipes sort first, everything else stays visible underneath with
+    // an honest per-recipe colour-count summary so a "close but for one
+    // red ingredient" recipe is never hidden, just correctly ranked lower.
+    _showStockMatchFinder: function() {
+      var self = RPGACE.modules.cookingOracle;
+      var pop = RPGACE.modules.dashDeck._popup({
+        width: '560px', scroll: true, eyebrow: '🍳 COOKING', title: 'What can I cook right now?',
+        borderColor: 'rgba(76,175,130,0.3)',
+      });
+      var box = pop.box;
+      var loadingMsg = document.createElement('div');
+      loadingMsg.style.cssText = 'font-size:12px;color:var(--muted);';
+      loadingMsg.textContent = 'Checking your saved recipes against current stock...';
+      box.appendChild(loadingMsg);
+
+      var genBtn = document.createElement('button');
+      genBtn.textContent = '✨ Or generate a new one using only what I have';
+      genBtn.style.cssText = 'width:100%;padding:11px;margin-bottom:14px;background:rgba(76,175,130,0.12);border:1px solid rgba(76,175,130,0.35);border-radius:8px;color:var(--green);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      genBtn.onclick = function() {
+        pop.close();
+        self.logic._loadConfig(function(cfg) { self.ui._showGenerateForm(cfg || {}, null, true); });
+      };
+      box.appendChild(genBtn);
+
+      var listBox = document.createElement('div');
+      box.appendChild(listBox);
+
+      self.logic._findMakeableRecipes(function(err, results) {
+        loadingMsg.remove();
+        if (err) { listBox.appendChild(self.ui._errNode('Could not check saved recipes: ' + err)); return; }
+        if (!results.length) {
+          var noneMsg = document.createElement('div');
+          noneMsg.style.cssText = 'font-size:12px;color:var(--muted);';
+          noneMsg.textContent = 'No saved recipes yet — generate and save one first.';
+          listBox.appendChild(noneMsg);
+          return;
+        }
+        results.sort(function(a, b) {
+          if (a.makeable !== b.makeable) return a.makeable ? -1 : 1;
+          var aBad = a.counts.red + a.counts.yellow + a.counts.blue;
+          var bBad = b.counts.red + b.counts.yellow + b.counts.blue;
+          if (aBad !== bBad) return aBad - bBad;
+          return a.title.localeCompare(b.title);
+        });
+        results.forEach(function(rec) {
+          var row = document.createElement('button');
+          var borderColor = rec.makeable ? 'var(--green)' : 'var(--border)';
+          row.style.cssText = 'display:block;width:100%;text-align:left;padding:10px 12px;margin-bottom:8px;background:rgba(255,255,255,0.03);border:1px solid ' + borderColor + ';border-left:3px solid ' + borderColor + ';border-radius:0 8px 8px 0;color:var(--text);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          var top = document.createElement('div');
+          top.textContent = (rec.makeable ? '✅ ' : '') + rec.title;
+          row.appendChild(top);
+          var summary = document.createElement('div');
+          summary.style.cssText = 'font-size:11px;font-weight:400;color:var(--muted);margin-top:3px;';
+          var parts = [];
+          ['green', 'purple', 'blue', 'yellow', 'red'].forEach(function(status) {
+            if (rec.counts[status]) parts.push(self.INGREDIENT_STATUS_META[status].icon + ' ' + rec.counts[status]);
+          });
+          summary.textContent = rec.makeable ? 'Nothing to buy before cooking this' : (parts.join('  ') + ' ingredients');
+          row.appendChild(summary);
+          row.onclick = function() {
+            self.logic._loadSavedRecipe(rec.id, function(loadErr, recipe) {
+              if (loadErr) { RPGACE.utils.toast('⚠️ ' + loadErr, '#CC4A4A', 3000); return; }
+              pop.close();
+              self.ui._showRecipeCard(recipe, null, rec.id);
+            });
+          };
+          listBox.appendChild(row);
+        });
+      });
     },
 
     // Real, evidence-resolved fork (section 2, Q2): "One but with pop up to
@@ -38378,7 +38599,32 @@ RPGACE.register('cookingOracle', {
     // reusing the existing sendChat pipeline (RPGACE.utils.sendToOracle)
     // and the existing one-shot capture (visualOracle._captureNextResponse,
     // rule 8 - never a second hand-rolled capture mechanism).
-    _generate: function(description, servings, cb) {
+    // H18 (Sep 16 2026, real Alex ask: "now i can look for recipes that
+    // will only give me purple or green ingredients... like [browse saved]
+    // and [filter] but as filter to generate new recipes or choose saved
+    // ones") — real, OPTIONAL 4th param, `stockOnly`. When true, the
+    // prompt is extended with a real, honest CHOICE constraint (use only
+    // what's actually in stock right now) — never a QUANTITY guarantee,
+    // since there's no "needed" amount to compare against before a recipe
+    // exists. The resulting recipe still gets classified by the same real
+    // shared 5-color system once shown (ui._showRecipeCard) — if Oracle
+    // calls for more of something than is actually in stock, that shows up
+    // honestly as yellow/red on the card rather than being hidden or
+    // silently guaranteed away (rule 7 — fail loud, never fake compliance).
+    // Every EXISTING caller (none pass a 4th arg) is unaffected — stockOnly
+    // defaults to falsy, same prompt as before.
+    _generate: function(description, servings, cb, stockOnly) {
+      var self = RPGACE.modules.cookingOracle;
+      if (stockOnly) {
+        self.logic._loadPantryNamed(function(stockRows) {
+          self.logic._generateWithStockConstraint(description, servings, cb, stockRows || []);
+        });
+        return;
+      }
+      self.logic._generateWithStockConstraint(description, servings, cb, null);
+    },
+
+    _generateWithStockConstraint: function(description, servings, cb, stockRows) {
       var self = RPGACE.modules.cookingOracle;
       var prompt = 'Generate a real, cookable recipe for: ' + description + '. Base servings: ' + (servings || 4) + '. '
         + 'Write it as a normal recipe (title, ingredient list, method) in your reply. '
@@ -38414,6 +38660,26 @@ RPGACE.register('cookingOracle', {
         + 'Then, on its own final line, output exactly: RECIPE_JSON: followed by a compact JSON object in the shape '
         + self.RECIPE_JSON_SHAPE(servings || 4) + '. '
         + 'Ingredient names must be simple, generic, singular/lowercase (e.g. "garlic clove" not "3 cloves of fresh garlic") so they can be tracked consistently across recipes.';
+
+      // H18 (Sep 16 2026, real Alex correction: "not pantry only, stock
+      // only, pantry is part of stock, like fridge and freezer") — real
+      // "use what I have" constraint, genuinely covering all 3 real
+      // pantry_stock locations (pantry/fridge/freezer, H11), never just
+      // the pantry shelf. A genuine CHOICE constraint (which ingredients
+      // to use), never a fabricated QUANTITY guarantee — see this
+      // function's own top comment for why.
+      if (stockRows && stockRows.length) {
+        var stockList = stockRows.map(function(p) { return p.name + ' (' + p.quantity + ' ' + (p.unit || '') + ' in stock)'; }).join(', ');
+        prompt += ' IMPORTANT real constraint: build this recipe using ONLY ingredients from this real current stock list (pantry, fridge, and freezer combined), so no shopping trip is needed before cooking it — '
+          + stockList + '. Do not introduce any ingredient not on this list (basic salt, pepper, and water are always fine even if not listed). '
+          + 'If a genuinely good recipe for "' + description + '" is not possible from this stock alone, say so plainly in your reply instead of silently adding an ingredient that is not actually in stock.';
+      } else if (stockRows) {
+        // A real, empty array — stock is genuinely tracked but has zero
+        // rows logged. Fail loud rather than silently sending the
+        // unconstrained prompt as if the constraint had been honored.
+        cb('No stock is logged yet — nothing to constrain generation to. Log some stock under 📦 Current Stock first.');
+        return;
+      }
 
       var sent = RPGACE.utils.sendToOracle(prompt);
       if (!sent) { cb('Could not send to Oracle — chat may be busy, try again in a moment'); return; }
@@ -39271,18 +39537,133 @@ RPGACE.register('cookingOracle', {
     // (section 4's own honest scope, unchanged): "2 cloves garlic" in the
     // pantry and "50g garlic" in the fridge stay 2 separate tracked lines,
     // no invented conversion.
+    //
+    // H18 (Sep 16 2026, real Alex correction on the schedule-cook colours:
+    // "ingredients that are not equal to measurements in recipes show as
+    // not in stock - i need this to be sensitive to colour to make it make
+    // sense") — real root cause: every have-vs-needed match keys strictly
+    // on (ingredient_id, exact unit STRING). A real stock row logged as
+    // "clove" for a recipe asking "cloves" (or "g"/"gram"/"grams", "tbsp"/
+    // "tablespoon") silently failed to match at all — have came back 0,
+    // showing red/"don't have" for something genuinely in stock. Fixed
+    // with ONE shared normalizer (rule 8), used everywhere a (id, unit)
+    // key is built for this 5-color system, so a real unit SYNONYM (never
+    // a cross-system numeric conversion — g does not become oz here, no
+    // invented math) is recognized as the same real unit. A curated table
+    // covers the common real cases; a generic trailing-"s" strip (skipped
+    // for anything 3 chars or shorter, so "oz" never becomes "o") catches
+    // the rest without needing every plural hand-listed.
+    _normalizeUnit: function(u) {
+      var s = String(u || '').trim().toLowerCase();
+      if (!s) return '';
+      var SYNONYMS = {
+        gram: 'g', grams: 'g', gramme: 'g', grammes: 'g', g: 'g',
+        kilogram: 'kg', kilograms: 'kg', kg: 'kg',
+        millilitre: 'ml', millilitres: 'ml', milliliter: 'ml', milliliters: 'ml', ml: 'ml',
+        litre: 'l', litres: 'l', liter: 'l', liters: 'l', l: 'l',
+        tablespoon: 'tbsp', tablespoons: 'tbsp', tbsp: 'tbsp', tbsps: 'tbsp',
+        teaspoon: 'tsp', teaspoons: 'tsp', tsp: 'tsp', tsps: 'tsp',
+        clove: 'clove', cloves: 'clove',
+        piece: 'piece', pieces: 'piece', pc: 'piece', pcs: 'piece',
+        can: 'can', cans: 'can', tin: 'can', tins: 'can',
+        cup: 'cup', cups: 'cup',
+        pinch: 'pinch', pinches: 'pinch',
+        slice: 'slice', slices: 'slice',
+        unit: 'unit', units: 'unit',
+      };
+      if (SYNONYMS[s]) return SYNONYMS[s];
+      if (s.length > 3 && s.charAt(s.length - 1) === 's') return s.slice(0, -1);
+      return s;
+    },
+
+    // H18 (Sep 16 2026) — real, superseding extension, not a second loader
+    // (rule 8): now joins ingredients(name) and returns one full pantry
+    // SNAPSHOT ({byKey, byName, aisleIndex}) instead of a bare byKey map,
+    // so the new shared 5-color classifier (see _classifyIngredientStatus
+    // below) has everything it needs from ONE real query, reused by every
+    // real consumer (_computeIngredientUsage's id-keyed recipe-usage path,
+    // and the recipe card's own name-keyed not-yet-saved-recipe path,
+    // which has no real ingredient_id yet to key off). byName groups by
+    // normalized (trim+lowercase) name, same case-insensitive precedent
+    // logic._save's own ingredient resolution already uses — never fuzzy.
+    // aisleIndex only ever includes an ingredient actually in stock
+    // (quantity > 0) — a real zero-stock pantry_stock row (already bought,
+    // fully used) must never count as a real "blue alternative available."
+    // The one existing caller (_computeIngredientUsage) is the only place
+    // this shape change needed updating — confirmed via grep, no other
+    // real call site exists.
     _loadPantrySummed: function(cb) {
-      RPGACE.sb.select('pantry_stock', 'select=ingredient_id,quantity,unit')
+      RPGACE.sb.select('pantry_stock', 'select=ingredient_id,quantity,unit,ingredients(name)')
         .then(function(rows) {
+          var self = RPGACE.modules.cookingOracle;
           var byKey = {};
+          var byName = {};
+          var aisleIndex = {};
           (rows || []).forEach(function(r) {
-            var key = r.ingredient_id + '|' + (r.unit || '');
-            if (!byKey[key]) byKey[key] = { ingredient_id: r.ingredient_id, unit: r.unit || null, quantity: 0 };
-            byKey[key].quantity += (typeof r.quantity === 'number' ? r.quantity : 0);
+            var qty = (typeof r.quantity === 'number') ? r.quantity : 0;
+            var name = (r.ingredients && r.ingredients.name) || '';
+            var normUnit = self.logic._normalizeUnit(r.unit);
+            var key = r.ingredient_id + '|' + normUnit;
+            if (!byKey[key]) byKey[key] = { ingredient_id: r.ingredient_id, unit: r.unit || null, quantity: 0, name: name };
+            byKey[key].quantity += qty;
+
+            if (name) {
+              var norm = name.trim().toLowerCase();
+              if (!byName[norm]) byName[norm] = [];
+              var slot = null;
+              for (var i = 0; i < byName[norm].length; i++) { if (self.logic._normalizeUnit(byName[norm][i].unit) === normUnit) { slot = byName[norm][i]; break; } }
+              if (!slot) { slot = { unit: r.unit || null, quantity: 0 }; byName[norm].push(slot); }
+              slot.quantity += qty;
+
+              if (qty > 0) {
+                var aisle = self.logic._classifyAisle(name).name;
+                if (!aisleIndex[aisle]) aisleIndex[aisle] = [];
+                if (aisleIndex[aisle].indexOf(norm) === -1) aisleIndex[aisle].push(norm);
+              }
+            }
           });
-          cb(byKey);
+          cb({ byKey: byKey, byName: byName, aisleIndex: aisleIndex });
         })
-        .catch(function() { cb({}); });
+        .catch(function() { cb({ byKey: {}, byName: {}, aisleIndex: {} }); });
+    },
+
+    // H18 (Sep 16 2026) — the ONE shared ingredient-status classifier
+    // (rule 8), real Alex ask: "green ingredients are what i have, yellow
+    // are not what enough of, red is what i dont have, blue is what i have
+    // as an alternative, but should buy in shop... purple is what will
+    // almost run out and should be replenished next shop after planned
+    // cooking session." Real /interrogation answers locked before building
+    // (records/2026-09/h18_ingredient_color_system_spec_2026-09-16.txt):
+    // blue = a same-aisle-group alternative present in pantry (H13's own
+    // _classifyAisle/_AISLE_GROUPS, reused not reinvented); purple
+    // threshold = a have-minus-needed margin below 20% of what's needed.
+    // Applied EVERYWHERE ingredients are shown — this REPLACES H14b's
+    // earlier 2-color green/gold scheme, not a parallel 3rd system.
+    //
+    // Pure function, no I/O — every real caller pre-loads a pantry
+    // snapshot (_loadPantrySummed above) once and passes its aisleIndex in,
+    // rather than this function re-querying Supabase per ingredient.
+    _classifyIngredientStatus: function(opts) {
+      var self = RPGACE.modules.cookingOracle;
+      opts = opts || {};
+      var needed = (typeof opts.needed === 'number') ? opts.needed : 0;
+      var have = (typeof opts.have === 'number') ? opts.have : 0;
+      if (have <= 0) {
+        if (opts.aisleIndex && opts.name) {
+          var aisle = self.logic._classifyAisle(opts.name).name;
+          var namesInAisle = opts.aisleIndex[aisle] || [];
+          var norm = String(opts.name).trim().toLowerCase();
+          var hasAlt = namesInAisle.some(function(n) { return n !== norm; });
+          if (hasAlt) return 'blue';
+        }
+        return 'red';
+      }
+      if (have < needed) return 'yellow';
+      if (needed > 0) {
+        var margin = have - needed;
+        if (margin < needed * 0.20) return 'purple';
+      }
+      return 'green';
     },
 
     // H14 (Sep 16 2026) — real, shared "how much of each ingredient does
@@ -39306,22 +39687,107 @@ RPGACE.register('cookingOracle', {
           if (!rows || !rows.length) { cb('no ingredients found for these recipes'); return; }
           var groups = {};
           rows.forEach(function(r) {
-            var key = r.ingredient_id + '|' + (r.unit || '');
+            // H18 (Sep 16 2026, real Alex correction: schedule-cook rows
+            // were showing "not in stock" purely because a recipe's unit
+            // string didn't exactly match the pantry's own unit string for
+            // the same real ingredient) — keyed on the SAME normalized
+            // unit logic._loadPantrySummed's own byKey uses (rule 8, one
+            // shared normalizer, see logic._normalizeUnit), so "gram" here
+            // and "g" in stock are correctly treated as the same real unit.
+            var key = r.ingredient_id + '|' + self.logic._normalizeUnit(r.unit);
             if (!groups[key]) groups[key] = { ingredient_id: r.ingredient_id, name: (r.ingredients && r.ingredients.name) || '?', unit: r.unit || null, amount: 0 };
             groups[key].amount += (typeof r.amount === 'number' ? r.amount : 0);
           });
-          self.logic._loadPantrySummed(function(pantryByKey) {
+          self.logic._loadPantrySummed(function(pantry) {
             var list = Object.keys(groups).map(function(k) {
               var g = groups[k];
-              var pantryRow = pantryByKey[k]; // same real key shape: ingredient_id|unit
+              var pantryRow = pantry.byKey[k]; // same real key shape: ingredient_id|normalizedUnit
               var have = pantryRow ? pantryRow.quantity : 0;
               var toBuy = Math.max(0, g.amount - have);
-              return { ingredient_id: g.ingredient_id, name: g.name, unit: g.unit, amount: g.amount, have: have, toBuy: toBuy };
+              // H18 (Sep 16 2026) — real 5-color status, computed once here
+              // (rule 8) so every real consumer of this shared usage list
+              // (the schedule preview, the shopping-list generator) gets
+              // the same classification for free instead of each
+              // re-deriving it.
+              var status = self.logic._classifyIngredientStatus({ name: g.name, needed: g.amount, have: have, aisleIndex: pantry.aisleIndex });
+              return { ingredient_id: g.ingredient_id, name: g.name, unit: g.unit, amount: g.amount, have: have, toBuy: toBuy, status: status };
             });
             cb(null, list);
           });
         })
         .catch(function(e) { cb(e.message || 'could not load session ingredients'); });
+    },
+
+    // H18 (Sep 16 2026, real Alex ask: "now i can look for recipes that
+    // will only give me purple or green ingredients so i can have perfect
+    // recipes with my context") — real, evidence-checked "which of my
+    // saved recipes are makeable right now with zero shopping trip"
+    // computation. A recipe is fully makeable when every real ingredient
+    // classifies green or purple (Alex's own stated rule: those two are
+    // the ones NOT needed before a shop; red/yellow/blue all are). Reuses
+    // the SAME shared classifier + pantry snapshot every other real
+    // consumer uses (rule 8) — never a second have/need computation.
+    _findMakeableRecipes: function(cb) {
+      var self = RPGACE.modules.cookingOracle;
+      RPGACE.sb.select('recipes', 'select=id,title&order=title.asc')
+        .then(function(recipeRows) {
+          if (!recipeRows || !recipeRows.length) { cb(null, []); return; }
+          RPGACE.sb.select('recipe_ingredients', 'select=recipe_id,ingredient_id,amount,unit,ingredients(name)')
+            .then(function(riRows) {
+              self.logic._loadPantrySummed(function(pantry) {
+                var byRecipe = {};
+                (riRows || []).forEach(function(r) {
+                  if (!byRecipe[r.recipe_id]) byRecipe[r.recipe_id] = [];
+                  byRecipe[r.recipe_id].push(r);
+                });
+                var results = recipeRows.map(function(rec) {
+                  var ings = byRecipe[rec.id] || [];
+                  var counts = { green: 0, yellow: 0, red: 0, blue: 0, purple: 0 };
+                  var statuses = ings.map(function(ing) {
+                    var key = ing.ingredient_id + '|' + self.logic._normalizeUnit(ing.unit);
+                    var pantryRow = pantry.byKey[key];
+                    var have = pantryRow ? pantryRow.quantity : 0;
+                    var name = (ing.ingredients && ing.ingredients.name) || '?';
+                    var status = self.logic._classifyIngredientStatus({ name: name, needed: ing.amount, have: have, aisleIndex: pantry.aisleIndex });
+                    counts[status]++;
+                    return { name: name, status: status };
+                  });
+                  var makeable = ings.length > 0 && (counts.red + counts.yellow + counts.blue) === 0;
+                  return { id: rec.id, title: rec.title, makeable: makeable, counts: counts, statuses: statuses };
+                });
+                cb(null, results);
+              });
+            })
+            .catch(function(e) { cb(e.message || 'could not load recipe ingredients'); });
+        })
+        .catch(function(e) { cb(e.message || 'could not load saved recipes'); });
+    },
+
+    // H18 (Sep 16 2026) — real reconstruction of a saved recipe into the
+    // same shape ui._showRecipeCard already renders (recipes.steps is
+    // jsonb, already the right shape; recipe_ingredients only holds a real
+    // ingredient_id, so names come back via the join, same as everywhere
+    // else this project reads that table). The recipe finder is the first
+    // real caller that needs to REOPEN an already-saved recipe rather than
+    // showing a fresh generation.
+    _loadSavedRecipe: function(recipeId, cb) {
+      RPGACE.sb.select('recipes', 'select=id,title,servings_base,steps&id=eq.' + recipeId + '&limit=1')
+        .then(function(rows) {
+          var row = rows && rows[0];
+          if (!row) { cb('recipe not found'); return; }
+          RPGACE.sb.select('recipe_ingredients', 'select=amount,unit,grams_estimate,ingredients(name)&recipe_id=eq.' + recipeId)
+            .then(function(riRows) {
+              var recipe = {
+                title: row.title, servings_base: row.servings_base, steps: row.steps || [],
+                ingredients: (riRows || []).map(function(r) {
+                  return { name: (r.ingredients && r.ingredients.name) || '?', amount: r.amount, unit: r.unit, grams_estimate: r.grams_estimate };
+                }),
+              };
+              cb(null, recipe);
+            })
+            .catch(function(e) { cb(e.message || 'could not load recipe ingredients'); });
+        })
+        .catch(function(e) { cb(e.message || 'could not load recipe'); });
     },
 
     _generateShoppingList: function(sess, cb) {

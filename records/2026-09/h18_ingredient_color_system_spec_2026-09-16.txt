@@ -1,0 +1,203 @@
+H18: 5-COLOR INGREDIENT-STATUS SYSTEM + "WHAT CAN I COOK RIGHT NOW?" FINDER
+==========================================================================
+Sep 16 2026
+
+ALEX'S VERBATIM ASK
+------------------------------------------------------------
+"when displaying recipes, green ingredients are what i have, yellow are
+not what enough of, red is what i dont have, blue is what i have as an
+alternative, but should buy in shop. purple is what will almost run out
+and should be replenished next shop after planned cooking session. thus
+green is plenty and not needed for consideration for next shop, purple is
+only in consideration after planned shop, red, yellow and blue is what
+needs shopping before next planned cook. this way it will give me
+coherence. this way now i can look for recipes that will only give me
+purple or green ingredients so i can have perfect recipes with my
+context"
+
+Real evidence gathered BEFORE building (rule 1) — grepped the whole
+codebase for any existing substitution/alternative-ingredient concept and
+any low-stock threshold: zero of either existed anywhere. This, plus the
+genuine ambiguity in scope (does this replace H14b's existing 2-color
+green/gold scheme, or sit alongside it?) and the unspecified shape of the
+"look for recipes" ask, put this over rule 5's 3+-new-pieces threshold —
+real /interrogation run via AskUserQuestion before any code was written.
+
+REAL /INTERROGATION — 4 QUESTIONS, ALL ANSWERED VERBATIM
+------------------------------------------------------------
+Q1: "Blue = 'have an alternative, but should buy the real one.' RPGACE has
+zero substitution/alternative-ingredient concept right now. What should
+count as an alternative?"
+A1: "Same aisle group in pantry (Recommended)" — i.e. reuse H13's own
+_AISLE_GROUPS/_classifyAisle (Fruit & Veg / Meat & Fish / Bakery / Pantry
+& Tins / Spices,Sauces & Oils / Dairy & Chilled / Frozen / Drinks /
+Household & Other) rather than inventing a new substitution table.
+
+Q2: "Purple = 'will almost run out, replenish AFTER this cook.' What
+should the low-stock threshold be?"
+A2: "Below 20% of what's needed (Recommended)" — have >= needed AND
+(have - needed) < 0.20 * needed.
+
+Q3: "Where does this 5-color system apply?"
+A3: "Everywhere ingredients are shown" (the broader, non-recommended
+option) — explicitly REPLACES H14b's existing green/gold 2-color scheme
+in the schedule preview and shopping list, not just the recipe card.
+
+Q4: "'Now I can look for recipes that will only give me purple or green
+ingredients.' How should this actually work?"
+A4 (free-text, combining/extending both preset options): "like 1 and 2
+but as filter to generate new recipes or choose saved ones" — the filter
+must work BOTH as a browse-filter over saved recipes AND as a real
+constraint fed into new recipe GENERATION.
+
+REAL MID-BUILD CORRECTIONS FROM ALEX (both addressed same pass, not
+deferred)
+------------------------------------------------------------
+(1) "not pantry only, stock only, pantry is part of stock, like fridge
+and freezer" — caught while the checkbox/prompt-constraint feature was
+still being named "pantryOnly." Renamed throughout (stockOnly,
+_generateWithStockConstraint, the checkbox/finder copy) — the underlying
+DATA was always correct (pantry_stock's own `location` column already
+covers pantry/fridge/freezer, H11), only the naming needed fixing to
+match Alex's stated mental model.
+
+(2) "in schedule cook - ingredients that are not equal to measurements in
+recipes show as not in stock - i need this to be sensitive to colour to
+make it make sense" — a real, separate bug found live: every have-vs-
+needed match keyed strictly on (ingredient_id, exact unit STRING), so a
+recipe asking for "gram" against pantry stock logged as "g" (or "clove"
+vs "cloves", "tbsp" vs "tablespoon") silently failed to match, showing red
+("don't have") for something genuinely in stock. Fixed with one shared
+logic._normalizeUnit(u) — a curated synonym table (g/gram/grams/gramme,
+kg, ml, l, tbsp, tsp, clove, piece, can/tin, cup, pinch, slice, unit) plus
+a generic trailing-"s" plural strip (skipped for anything <=3 chars, so
+"oz" never becomes "o") — NEVER a cross-system numeric conversion (g does
+not become oz, no invented density/volume math). Applied everywhere a
+(ingredient_id, unit) match happens: logic._loadPantrySummed's byKey/
+byName, logic._computeIngredientUsage's groups key, logic.
+_findMakeableRecipes's key, and ui._showRecipeCard's inline byName match.
+
+REAL BUILD, PER RULE 8 (ONE SHARED IMPLEMENTATION EVERYWHERE)
+------------------------------------------------------------
+logic._classifyIngredientStatus({name, needed, have, aisleIndex}) — the
+ONE real classifier:
+  - have <= 0, same-aisle alternative present in pantry -> blue
+  - have <= 0, no alternative -> red
+  - 0 < have < needed -> yellow
+  - have >= needed, margin (have-needed) < 20% of needed -> purple
+  - have >= needed, margin >= 20% of needed -> green
+
+logic._loadPantrySummed(cb) — real, superseding extension (not a second
+loader): now returns a full snapshot {byKey, byName, aisleIndex} instead
+of a bare byKey map, joining ingredients(name) in the one real query.
+aisleIndex only ever includes an ingredient actually in stock (quantity >
+0) — a zero-stock row must never count as a real "blue alternative."
+
+logic._computeIngredientUsage — unchanged shape, now also returns a real
+`status` per ingredient (computed once, shared by every caller).
+
+INGREDIENT_STATUS_META (module top-level) + ui._renderIngredientStatusRow
+— the one shared color/icon/label/render treatment, reused by the recipe
+card, the schedule preview, and the shopping list.
+
+REAL SURFACES UPDATED (per Q3's "everywhere" answer)
+------------------------------------------------------------
+- ui._showRecipeCard's renderIngredients — real, NAME-keyed pantry check
+  (this recipe may not have a real ingredient_id yet if unsaved), loaded
+  once via logic._loadPantrySummed and re-rendered once it lands.
+- ui._showSchedulePreview — H14b's old willUse/needToBuy 2-color split
+  REPLACED with Alex's own stated 3-bucket timing logic: "🛒 Need to buy
+  before this cook" (red/yellow/blue), "📦 Have plenty" (green), "🟣 Will
+  run low — restock on your NEXT shop" (purple).
+- ui._showShoppingList — same real 3-bucket replacement, loading a live
+  pantry snapshot ALONGSIDE this list's own persisted needed/have amounts
+  (the snapshot only supplies aisleIndex for the blue check; the real
+  have/needed numbers stay the frozen-at-generation-time values, never
+  silently re-computed from current pantry).
+
+REAL NEW FEATURE — "🥫 What Can I Cook Right Now?" (Q4's answer, built
+in full)
+------------------------------------------------------------
+logic._findMakeableRecipes(cb) — real, evidence-checked classification of
+every saved recipe against current stock. A recipe is "makeable" only
+when EVERY real ingredient classifies green or purple (Alex's own stated
+rule: those two are not needed before a shop; red/yellow/blue all are).
+Reuses the exact same classifier + pantry snapshot as everywhere else —
+never a second have/need computation.
+
+ui._showStockMatchFinder — new hub button + popup. Makeable recipes sort
+first; everything else stays visible underneath with an honest per-recipe
+colour-count summary (never hidden, just correctly ranked lower). Clicking
+a row reopens the real saved recipe via the new logic._loadSavedRecipe
+(reconstructs the {title, servings_base, ingredients, steps} shape
+ui._showRecipeCard already expects from recipes+recipe_ingredients) and
+opens it through ui._showRecipeCard(recipe, null, recipeId) — the new,
+OPTIONAL 3rd param `existingRecipeId` prevents a real duplicate-save bug
+(without it, savedRecipeId would start null on a REOPENED recipe and a
+later Save click would insert a genuine 2nd recipes row).
+
+"✨ Or generate a new one using only what I have" — opens the SAME real
+Generate form (ui._showGenerateForm) with its stock-only checkbox already
+ticked (new 3rd param `forceStockOnly`), rather than a second, parallel
+generate form.
+
+GENERATION-TIME CONSTRAINT (the other half of Q4's combined answer)
+------------------------------------------------------------
+logic._generate gained a real, OPTIONAL 4th param, `stockOnly`. When true,
+loads the real current stock (logic._loadPantryNamed, all 3 locations)
+and extends the outbound Oracle prompt with a genuine CHOICE constraint —
+"build this recipe using ONLY ingredients from this real current stock
+list (pantry, fridge, and freezer combined)... do not introduce any
+ingredient not on this list." Deliberately a CHOICE constraint, never a
+fabricated QUANTITY guarantee — there is no "needed" amount to compare
+against before a recipe exists, so the resulting recipe still gets
+classified by the same real 5-color system once shown; if Oracle ends up
+calling for more of something than is actually in stock, that shows up
+honestly as yellow/red on the card rather than being hidden or silently
+guaranteed away (rule 7). A real, empty stock array fails loud with an
+honest error instead of silently sending the unconstrained prompt as if
+the constraint had been honored. A checkbox on the Generate form ("📦 Use
+only what I already have — no shopping trip needed") threads stockOnly
+through both the direct-generate path and the narrow-down path (a short
+description still routes through narrow-down first, per H9's existing
+design; stockOnly now survives that hop too).
+
+VERIFICATION
+------------------------------------------------------------
+node --check clean. Real headless-Chromium pass (Supabase boundary
+mocked, http.server serving the real raw rpgace_core.js — never the
+pre-existing stale .min.js — via a scratch-only index.html copy, deleted
+after the run), 27/27 assertions pass:
+- _normalizeUnit: all real synonym groups (gram/grams/g/G, tablespoon/
+  tbsp, cloves/clove), "oz" NOT wrongly stripped to "o", empty/null/
+  undefined all normalize to "", a generic plural strip works, and
+  genuinely different real units (ml vs g) stay distinct.
+- _classifyIngredientStatus: all 5 real outcomes plus 2 real boundary
+  cases (a same-aisle alternative correctly triggers blue; an aisle index
+  entry that's only the ingredient's OWN name never falsely triggers
+  blue; a margin of exactly 20% classifies green, not purple — the
+  threshold is a hard "<", not "<=").
+- _computeIngredientUsage: the real Alex-reported bug reproduced and
+  confirmed fixed — a recipe asking "200 gram" flour against pantry stock
+  logged as "g" now correctly resolves have=1000 (not 0) and classifies
+  green (not red).
+- ui._showRecipeCard: 3 real ingredients (plenty/not-enough/none-with-no-
+  alt) render the correct green/yellow/red dot and border color.
+- ui._showStockMatchFinder: a fully-makeable recipe sorts before one
+  needing a shop, shows a checkmark, and clicking it correctly reopens
+  the real saved recipe via _loadSavedRecipe -> _showRecipeCard.
+- logic._generate(stockOnly=true): the outbound prompt correctly lists
+  real stock items and frames the constraint as "pantry, fridge, and
+  freezer combined" (not "pantry" alone, per Alex's own correction); an
+  empty stock array fails loud with zero Oracle call, never a silent
+  unconstrained send.
+Zero real console/page errors from this feature's own code (unrelated
+pre-existing boot-time fetch failures from other modules, blocked by the
+test harness's own network route filter, are expected noise — same as
+every other H-series headless pass this session).
+
+Re-minified, node --check rpgace_core.min.js clean, cache-bust bumped
+20260916i -> 20260916j.
+
+Untested by Alex's own hand.
+==========================================================================
