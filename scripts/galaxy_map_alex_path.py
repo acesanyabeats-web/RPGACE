@@ -46,6 +46,7 @@ from graphify_river_group import DASHBOARD_CARDS, compute_dashboard_card_flow
 from graphify_river_group import LEVEL3_MODULES, RIVER_NAME  # noqa: E402
 from graphify_river_group import inject_level_rail  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
+from graphify_river_group import render_bubble_row, render_fc_bar, _curved_edge, _build_markers  # noqa: E402
 from galaxy_map_decisions import DECISION_POINTS
 
 OUT = Path('graphify-out/galaxy_map_alex_path.html')
@@ -136,7 +137,7 @@ def build_card_block(card, flow):
                  'flow detector — neither a popup module nor a page navigation.</span>')
     river_line = _river_links(card)
     river_html = (f'<div class="pathriver">🌊 Its own river: {river_line}</div>' if river_line else '')
-    return f'''<div class="pathcard">
+    return f'''<div class="pathcard" id="card-{esc(card["key"])}">
   <div class="pathhead"><span class="cardicon">{esc(card["label"])}</span>{badge}</div>
   <div class="pathstep">🧑 Alex clicks the dashboard card</div>
   <div class="patharrow">↓</div>
@@ -145,6 +146,32 @@ def build_card_block(card, flow):
   <div class="patharrow">↓</div>
   {forks}
 </div>'''
+
+
+def build_bubble_view(gate_counts):
+    """GMR-6 (Sep 16 2026) — a real hub-and-spoke bubble for the exact
+    thing Alex originally asked for by name ("a real Alex-bubble
+    decision-tree system"), which the original G37 build had to defer
+    to a card-grid synthesis under a real same-session time constraint.
+    Pure rendering layer over the SAME real DASHBOARD_CARDS list the
+    card grid below already renders (R22) — each leaf links to its own
+    real #card-<key> anchor, now that pathcard divs carry one."""
+    hub = dict(icon='🧑', label="Alex's Dashboard", color='#E25454')
+    leaves = []
+    for card in DASHBOARD_CARDS:
+        icon, _, text = card['label'].partition(' ')
+        n_gates = gate_counts.get(card['key'], 0)
+        leaves.append(dict(id=card['key'], icon=icon or '🔘', label=text or card['label'],
+                            sub=f'{n_gates} gate(s)' if n_gates else 'no gates',
+                            color='#E25454', href=f'#card-{card["key"]}'))
+    bubble = render_bubble_row(hub, leaves, _curved_edge, _build_markers, leaf_r=24, width=1180)
+    return (
+        '<div class="fc-scope mode-full">' + render_fc_bar()
+        + '<div class="lp-bubble-block"><h3>🧑 The real path, at a glance</h3>'
+        '<p class="lp-bnote">Click a card to jump to its own real path detail below. '
+        'Same real DASHBOARD_CARDS list the grid already renders — pure rendering layer, never a second source.</p>'
+        f'{bubble}</div></div>'
+    )
 
 
 TEMPLATE = """<!DOCTYPE html>
@@ -186,6 +213,9 @@ TEMPLATE = """<!DOCTYPE html>
   .nogate{{font-size:10.5px;color:var(--dim);font-style:italic;margin-top:6px}}
   .note{{max-width:1200px;margin:24px auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
   a{{color:var(--red)}}
+  .lp-bubble-block{{max-width:1200px;margin:0 auto 26px;padding:0 24px}}
+  .lp-bubble-block h3{{font-family:Georgia,serif;font-size:15px;color:#fff;margin-bottom:5px}}
+  .lp-bnote{{font-size:10.5px;color:var(--dim);line-height:1.65;margin-bottom:10px}}
 {dim_css}
 </style>
 </head>
@@ -195,6 +225,7 @@ TEMPLATE = """<!DOCTYPE html>
   <h1>🧑 Alex's Real UI Navigation Path — Y/N At Every Real Fork</h1>
   <p>A real synthesis (rule 8, no new detection) of already-shipped Galaxy Map data: for each of the {n_cards} real dashboard cards, the real dashboard-card frontend flow to its real target module(s), then whether that module owns one of the 10 real Decisions-page (G26) gates — the real Y/N fork Alex actually hits walking that path. A card with no gate is a straight click-through, shown honestly as such. Every named module links to its own Current Series section; a card that navigates to a page instead of opening a module says so, and links its own river at <a href="galaxy_map_module.html">Level 2</a>, where the dashboard-card-flow role itself retired (G48).</p>
 </div>
+{bubble}
 <div class="wrap">{cards}</div>
 {dim_index}
 
@@ -211,7 +242,12 @@ TEMPLATE = """<!DOCTYPE html>
 def main():
     flow = compute_dashboard_card_flow()
     cards_html = ''.join(build_card_block(c, flow) for c in DASHBOARD_CARDS)
-    html = TEMPLATE.format(cards=cards_html, n_cards=len(DASHBOARD_CARDS),
+    gate_counts = {
+        c['key']: sum(len(DP_BY_MODULE.get(m, [])) for m in _flow_modules(c, flow))
+        for c in DASHBOARD_CARDS
+    }
+    bubble = build_bubble_view(gate_counts)
+    html = TEMPLATE.format(cards=cards_html, bubble=bubble, n_cards=len(DASHBOARD_CARDS),
                            dim_index=dimension_index_html(OUT.name),
                            dim_css=DIMENSION_INDEX_CSS)
     OUT.parent.mkdir(parents=True, exist_ok=True)

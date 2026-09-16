@@ -27,6 +27,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from graphify_river_group import (  # noqa: E402
     LEVEL3_MODULES, RIVER_NAME, RIVER_MODULES, compute_function_branches,
+    render_bubble_row, render_fc_bar, _curved_edge, _build_markers,
 )
 from graphify_river_group import inject_level_rail  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
@@ -103,6 +104,31 @@ def build_module_section(mod, branches):
 </section>'''
 
 
+def build_bubble_view(kind_counts, n_total):
+    """GMR-6 (Sep 16 2026) — a real, evidence-gated aggregate bubble for
+    the Branch Ledger's own genuinely bare table-dump shape (no purpose-
+    built visualization existed here before). Pure rendering layer over
+    the SAME real per-kind counts already summed from compute_function_
+    branches() across all 44 modules (R22 — bubble follows table, never
+    a second source). Leaves are decorative (no href) — a "kind" has no
+    real single destination on this per-module-organized page, so a
+    fake link would be worse than none (rule 7's own fail-loud spirit,
+    applied to navigation)."""
+    hub = dict(icon='🔢', label='Branch Ledger', color='#9B59B6')
+    leaves = [
+        dict(id=kind, icon=KIND_ICON.get(kind, '•'), label=kind, sub=f'{n} real branch(es)', color='#9B59B6')
+        for kind, n in kind_counts.items() if n > 0
+    ]
+    bubble = render_bubble_row(hub, leaves, _curved_edge, _build_markers, leaf_r=26, width=900)
+    return (
+        '<div class="fc-scope mode-full">' + render_fc_bar()
+        + '<div class="lp-bubble-block"><h3>🔢 The real branch-kind breakdown, project-wide</h3>'
+        f'<p class="lp-bnote">{n_total} real branch points across all 44 modules, by real kind. '
+        'Same real counts already summed from compute_function_branches() — pure rendering layer, never a second source.</p>'
+        f'{bubble}</div></div>'
+    )
+
+
 TEMPLATE = """<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -143,6 +169,9 @@ TEMPLATE = """<!DOCTYPE html>
   .bcond{{font-family:'Cascadia Code','Fira Mono',monospace;font-size:10px;background:rgba(255,255,255,0.05);padding:1px 6px;border-radius:3px;color:#c8c8d8}}
   a{{color:var(--purple)}}
   .note{{max-width:900px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
+  .lp-bubble-block{{max-width:900px;margin:0 auto 26px;padding:0 24px}}
+  .lp-bubble-block h3{{font-family:Georgia,serif;font-size:15px;color:#fff;margin-bottom:5px}}
+  .lp-bnote{{font-size:10.5px;color:var(--dim);line-height:1.65;margin-bottom:10px}}
 {dim_css}
 </style>
 </head>
@@ -152,6 +181,7 @@ TEMPLATE = """<!DOCTYPE html>
   <h1>🔢 Branch Ledger — Every Real Yes/No</h1>
   <p>The exhaustive, mechanical counterpart to <a href="galaxy_map_decision_matrix.html">the Decision Matrix</a>'s curated core logic — {n_total} real if/else-if/else/switch branch points across {n_mods} modules, extracted by real balanced-paren parsing, never hand-picked. Pick a module below.</p>
 </div>
+{bubble}
 <div class="modpicker">{tabs}</div>
 {sections}
 {dim_index}
@@ -212,7 +242,13 @@ def main():
         for m, b in mods_with_branches.items()
     )
     sections = ''.join(build_module_section(m, b) for m, b in mods_with_branches.items())
-    html = TEMPLATE.format(tabs=tabs, sections=sections, n_total=n_total, n_mods=len(mods_with_branches),
+    kind_counts = {}
+    for b in mods_with_branches.values():
+        for branches in b.values():
+            for br in branches:
+                kind_counts[br['kind']] = kind_counts.get(br['kind'], 0) + 1
+    bubble = build_bubble_view(kind_counts, n_total)
+    html = TEMPLATE.format(tabs=tabs, sections=sections, bubble=bubble, n_total=n_total, n_mods=len(mods_with_branches),
                            dim_index=dimension_index_html(OUT.name),
                            dim_css=DIMENSION_INDEX_CSS)
     OUT.parent.mkdir(parents=True, exist_ok=True)
