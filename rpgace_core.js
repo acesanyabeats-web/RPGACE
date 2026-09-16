@@ -36191,7 +36191,7 @@ RPGACE.register('cookingOracle', {
         // JSON blindly).
         return 'I have a recipe card open right now: "' + (r.title || 'Recipe') + '". Ingredients: ' + ingList + '. Method: ' + stepList + '. '
           + 'If I ask you to change this recipe (add/remove/edit an ingredient, or change/add/remove/reorder a step), do not just describe the change in prose - end your reply with a trailer on its own final line: RECIPE_UPDATE_JSON: followed by a compact JSON object with the COMPLETE UPDATED recipe (every ingredient and every step, not just the changed ones) in this exact shape: '
-          + '{"title":"...","servings_base":' + (r.servings_base || 4) + ',"ingredients":[{"name":"...","amount":<number>,"unit":"...","grams_estimate":<number>}],"steps":[{"order":1,"type":"prep_before_cooking","description":"...","active_duration_min":<number>,"passive_duration_min":<number>}]}. '
+          + '{"title":"...","servings_base":' + (r.servings_base || 4) + ',"ingredients":[{"name":"...","amount":<number>,"unit":"...","grams_estimate":<number>}],"steps":[{"order":1,"type":"prep_before_cooking","description":"...","active_duration_min":<number>,"passive_duration_min":<number>,"ingredients_used":[{"name":"...","amount":<number>,"unit":"..."}]}]}. '
           + 'Only include this trailer when you are actually proposing a concrete change to apply - never when just answering a question or giving an opinion with nothing specific to change.';
       });
     }
@@ -36569,6 +36569,32 @@ RPGACE.register('cookingOracle', {
       actual_cooking:       { label: '🔥 Cooking', color: '#cc7a3a' },
       prep_while_cooking:   { label: '🍳 Prep (while cooking)', color: '#4caf82' },
       baking:                { label: '🍞 Baking', color: '#C9A84C' },
+    },
+
+    // H14 (Sep 16 2026, real Alex ask: "it needs to show me measurements of
+    // each ingredient at each step so i dont have to go back and fourth to
+    // agree plan") — one shared renderer (rule 8) for a step's own real
+    // ingredients_used chips, used by BOTH the single-recipe card's Method
+    // list below AND the multi-recipe schedule-preview block loop
+    // (ui._showSchedulePreview), so the two real consumers of a step's data
+    // never drift into two different chip layouts. Returns null (append
+    // nothing) when a step genuinely has no ingredients_used — an OLD
+    // recipe saved before this field existed, or a step that's real
+    // "no ingredient" work (e.g. "preheat the oven") — never a fabricated
+    // placeholder chip.
+    _renderStepIngredients: function(step) {
+      var list = (step && Array.isArray(step.ingredients_used)) ? step.ingredients_used : [];
+      if (!list.length) return null;
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;';
+      list.forEach(function(u) {
+        var chip = document.createElement('span');
+        chip.style.cssText = 'font-size:11px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);color:var(--gold);border-radius:10px;padding:2px 8px;';
+        var amt = (u.amount != null) ? (u.amount + ' ' + (u.unit || '')).trim() + ' ' : '';
+        chip.textContent = amt + (u.name || '');
+        row.appendChild(chip);
+      });
+      return row;
     },
 
     // Sep 14 2026 (real "close the loop" build, Alex's own exact words:
@@ -37056,6 +37082,9 @@ RPGACE.register('cookingOracle', {
         desc.textContent = step.description || '';
         row.appendChild(desc);
 
+        var stepIng = self.ui._renderStepIngredients(step);
+        if (stepIng) row.appendChild(stepIng);
+
         // Real, simple per-step timer - the "timers" half of the original
         // ask. Times the LONGER of active/passive duration (whichever is
         // present); a real countdown, not decorative.
@@ -37502,7 +37531,97 @@ RPGACE.register('cookingOracle', {
               desc.style.cssText = 'color:var(--text);margin-top:2px;';
               desc.textContent = b.description || '';
               row.appendChild(desc);
+              var blockIng = self.ui._renderStepIngredients({ ingredients_used: b.ingredientsUsed });
+              if (blockIng) row.appendChild(blockIng);
               box.appendChild(row);
+            });
+
+            // H14 (Sep 16 2026, real Alex ask: "make a list of ingredients
+            // i will use up and what will need to be added to future
+            // grocery list") — a real, read-only preview using the SAME
+            // shared usage computation _generateShoppingList itself now
+            // calls (rule 8, no second copy of the have/need-to-buy math).
+            // Deliberately a PREVIEW, never a second write mechanism — the
+            // session builder's own "Generate shopping list" button is
+            // still the one real place a shopping_lists row actually gets
+            // created; this just answers "what will this session use up,
+            // what will I need to buy" right here, without a popup round
+            // trip, so Alex doesn't have to leave this screen to check.
+            var usageBox = document.createElement('div');
+            usageBox.style.cssText = 'margin-top:4px;';
+            var usageLoading = document.createElement('div');
+            usageLoading.style.cssText = 'font-size:11px;color:var(--muted);margin:10px 0;';
+            usageLoading.textContent = 'Checking pantry stock...';
+            usageBox.appendChild(usageLoading);
+            box.appendChild(usageBox);
+
+            self.logic._computeIngredientUsage(sess.recipeIds, function(usageErr, usage) {
+              usageBox.innerHTML = '';
+              if (usageErr) {
+                usageBox.appendChild(self.ui._errNode('Could not check pantry stock: ' + usageErr));
+                return;
+              }
+              var willUse = usage.filter(function(u) { return u.have > 0; })
+                .sort(function(a, b) { return a.name.localeCompare(b.name); });
+              var needToBuy = usage.filter(function(u) { return u.toBuy > 0; });
+              needToBuy.forEach(function(u) { u._aisle = self.logic._classifyAisle(u.name); });
+              needToBuy.sort(function(a, b) {
+                if (a._aisle.order !== b._aisle.order) return a._aisle.order - b._aisle.order;
+                return a.name.localeCompare(b.name);
+              });
+
+              // H14b (Sep 16 2026, real Alex ask: "i wish the list
+              // highlighted what i have vs what ill need to purchase,
+              // should be colour coded for ease") — real green=covered/
+              // gold=action-needed colour coding, matching this app's own
+              // already-established convention (green Accept/Mark-bought
+              // buttons, gold "Need to buy" heading in the real generated
+              // shopping list) rather than inventing a new colour language.
+              // A "partial" row (some pantry, some still needed) gets BOTH
+              // a green pantry-portion chip and its own gold buy-portion
+              // row further down, in the needToBuy list, so it's never
+              // ambiguous which real amount is covered vs. which isn't.
+              if (willUse.length) {
+                var useHeading = document.createElement('div');
+                useHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--green);margin:14px 0 6px;';
+                useHeading.textContent = '📦 Will use from pantry';
+                usageBox.appendChild(useHeading);
+                willUse.forEach(function(u) {
+                  var row = document.createElement('div');
+                  row.style.cssText = 'font-size:12px;color:var(--green);border-left:3px solid var(--green);background:rgba(76,175,130,0.06);border-radius:0 5px 5px 0;padding:4px 10px;margin-bottom:3px;';
+                  var usedAmt = Math.min(u.amount, u.have);
+                  row.textContent = '✅ ' + u.name + ' — ' + usedAmt + ' ' + (u.unit || '') + (u.toBuy > 0 ? ' (have — rest below still needs buying)' : '');
+                  usageBox.appendChild(row);
+                });
+              }
+
+              if (needToBuy.length) {
+                var buyHeading = document.createElement('div');
+                buyHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin:14px 0 6px;';
+                buyHeading.textContent = '🛒 Need to add to grocery list';
+                usageBox.appendChild(buyHeading);
+                var currentAisle = null;
+                needToBuy.forEach(function(u) {
+                  if (u._aisle.name !== currentAisle) {
+                    currentAisle = u._aisle.name;
+                    var aisleHeading = document.createElement('div');
+                    aisleHeading.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin:8px 0 3px;';
+                    aisleHeading.textContent = '📍 ' + currentAisle;
+                    usageBox.appendChild(aisleHeading);
+                  }
+                  var row = document.createElement('div');
+                  row.style.cssText = 'font-size:12px;color:var(--gold);border-left:3px solid var(--gold);background:rgba(201,168,76,0.07);border-radius:0 5px 5px 0;padding:4px 10px;margin-bottom:3px;';
+                  row.textContent = '🛒 ' + u.name + ' — ' + u.toBuy + ' ' + (u.unit || '');
+                  usageBox.appendChild(row);
+                });
+              }
+
+              if (!willUse.length && !needToBuy.length) {
+                var noneMsg = document.createElement('div');
+                noneMsg.style.cssText = 'font-size:12px;color:var(--muted);margin:10px 0;';
+                noneMsg.textContent = 'No pantry stock logged yet — everything here will need buying once you generate a shopping list.';
+                usageBox.appendChild(noneMsg);
+              }
             });
 
             var whenHeading = document.createElement('div');
@@ -37949,10 +38068,17 @@ RPGACE.register('cookingOracle', {
                 aisleHeading.textContent = '📍 ' + currentAisle;
                 box.appendChild(aisleHeading);
               }
+              // H14b (Sep 16 2026, real Alex ask: "i wish the list
+              // highlighted what i have vs what ill need to purchase,
+              // should be colour coded for ease") — same real green=have/
+              // gold=need-to-buy convention just applied to the schedule
+              // preview's own usage panel (rule 8, one shared colour
+              // language across both real "have vs need" surfaces).
               var row = document.createElement('div');
-              row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;';
+              row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-left:3px solid var(--gold);background:rgba(201,168,76,0.06);border-radius:0 5px 5px 0;margin-bottom:5px;font-size:13px;';
               var lbl = document.createElement('span');
-              lbl.textContent = ((r.ingredients && r.ingredients.name) || '?') + ' — need ' + r.to_buy_amount + ' ' + (r.needed_unit || '')
+              lbl.style.cssText = 'color:var(--gold);';
+              lbl.textContent = '🛒 ' + ((r.ingredients && r.ingredients.name) || '?') + ' — need ' + r.to_buy_amount + ' ' + (r.needed_unit || '')
                 + (r.have_amount ? ' (have ' + r.have_amount + ' already)' : '');
               var btn = document.createElement('button');
               btn.textContent = '✅ Mark bought';
@@ -37966,13 +38092,13 @@ RPGACE.register('cookingOracle', {
             var haveOnlyRows = (rows || []).filter(function(r) { return !r.bought && (r.to_buy_amount || 0) <= 0; });
             if (haveOnlyRows.length) {
               var haveHeading = document.createElement('div');
-              haveHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;';
+              haveHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--green);margin:16px 0 8px;';
               haveHeading.textContent = 'Already have enough';
               box.appendChild(haveHeading);
               haveOnlyRows.forEach(function(r) {
                 var row = document.createElement('div');
-                row.style.cssText = 'font-size:12px;color:var(--muted);padding:4px 0;';
-                row.textContent = '📦 ' + ((r.ingredients && r.ingredients.name) || '?') + ' — have ' + r.have_amount + ' ' + (r.needed_unit || '');
+                row.style.cssText = 'font-size:12px;color:var(--green);border-left:3px solid var(--green);background:rgba(76,175,130,0.06);border-radius:0 5px 5px 0;padding:4px 10px;margin-bottom:3px;';
+                row.textContent = '✅ ' + ((r.ingredients && r.ingredients.name) || '?') + ' — have ' + r.have_amount + ' ' + (r.needed_unit || '');
                 box.appendChild(row);
               });
             }
@@ -38146,9 +38272,20 @@ RPGACE.register('cookingOracle', {
         + 'Anything quick to prep that is added near the END of cooking - raw seafood, raw fish, delicate herbs/garnishes, anything that degrades or is a food-safety risk sitting prepped early - must get its OWN separate step positioned shortly before it is actually used (as a prep_while_cooking step riding an earlier passive/simmer window, or as a short active step immediately before the cooking step that adds it), never bundled into the opening prep block. '
         + 'For each step give an active_duration_min (minutes you must actively attend to it) and, where the step then runs unattended, a passive_duration_min (minutes it keeps going with zero attention needed - a simmer, a bake, a chill). '
         + 'For each ingredient, also estimate its real total weight in grams at the stated amount/unit (e.g. "2 tbsp olive oil" is roughly 27g) — this is used to compute real nutrition later, so give your best honest estimate even for odd units like "1 clove" or "1 chicken thigh". '
+        // H14 (Sep 16 2026, real Alex ask: "it needs to show me measurements
+        // of each ingredient at each step so i dont have to go back and
+        // fourth to agree plan") - each step now also names exactly which
+        // ingredients (and how much of each) it calls for, in the SAME
+        // amount/unit shape as the top-level ingredients list, so a step
+        // can be rendered with its own real measurements next to it rather
+        // than forcing a reader back to the ingredient list to check
+        // quantities. If one ingredient is used across 2+ steps (e.g. half
+        // now, half later), split the amount across those steps rather
+        // than repeating the full amount in both.
+        + 'For each step, also list exactly which ingredients it uses and how much of each, in the shape ingredients_used:[{"name":"...","amount":<number>,"unit":"..."}] - if an ingredient is used across more than one step, split its amount across those steps rather than repeating the full amount each time. '
         + 'Then, on its own final line, output exactly: RECIPE_JSON: followed by a compact JSON object in the shape '
         + '{"title":"...","servings_base":' + (servings || 4) + ',"ingredients":[{"name":"...","amount":<number>,"unit":"...","grams_estimate":<number>}],'
-        + '"steps":[{"order":1,"type":"prep_before_cooking","description":"...","active_duration_min":<number>,"passive_duration_min":<number>}]}. '
+        + '"steps":[{"order":1,"type":"prep_before_cooking","description":"...","active_duration_min":<number>,"passive_duration_min":<number>,"ingredients_used":[{"name":"...","amount":<number>,"unit":"..."}]}]}. '
         + 'Ingredient names must be simple, generic, singular/lowercase (e.g. "garlic clove" not "3 cloves of fresh garlic") so they can be tracked consistently across recipes.';
 
       var sent = RPGACE.utils.sendToOracle(prompt);
@@ -38169,7 +38306,27 @@ RPGACE.register('cookingOracle', {
       var recipe;
       try { recipe = JSON.parse(m[1]); } catch (e) { return null; }
       if (!recipe || !Array.isArray(recipe.ingredients) || !Array.isArray(recipe.steps)) return null;
+      RPGACE.modules.cookingOracle.logic._sanitizeStepIngredientsUsed(recipe.steps);
       return recipe;
+    },
+
+    // H14 (Sep 16 2026) — real, defensive structural sanitize of the new
+    // per-step ingredients_used field (rule 5 — never trust model JSON
+    // blindly): a missing/malformed field is stripped to an empty array
+    // rather than left as whatever shape Oracle actually sent, so every
+    // real renderer downstream can assume a clean array of {name,amount,
+    // unit} objects and never has to defend against a stray string/number/
+    // null entry a prompt regression could otherwise let through.
+    _sanitizeStepIngredientsUsed: function(steps) {
+      (steps || []).forEach(function(step) {
+        if (!step || typeof step !== 'object') return;
+        var list = Array.isArray(step.ingredients_used) ? step.ingredients_used : [];
+        step.ingredients_used = list.filter(function(u) {
+          return u && typeof u === 'object' && typeof u.name === 'string' && u.name.trim();
+        }).map(function(u) {
+          return { name: u.name.trim(), amount: (typeof u.amount === 'number') ? u.amount : null, unit: (typeof u.unit === 'string') ? u.unit : '' };
+        });
+      });
     },
 
     // Sep 14 2026 (real "close the loop" build - see the registerContextProvider
@@ -38199,6 +38356,7 @@ RPGACE.register('cookingOracle', {
         var updated;
         try { updated = JSON.parse(m[1]); } catch (e) { console.warn('[cookingOracle] malformed RECIPE_UPDATE_JSON, ignored:', e.message); return; }
         if (!updated || !Array.isArray(updated.ingredients) || !Array.isArray(updated.steps)) return;
+        self.logic._sanitizeStepIngredientsUsed(updated.steps);
         var diff = self.logic._diffRecipe(self._generatedRecipe, updated);
         // A reply that carries the trailer but genuinely changes nothing
         // real (Oracle echoed the recipe back unchanged) has nothing to
@@ -38886,63 +39044,93 @@ RPGACE.register('cookingOracle', {
       return { name: fallback.name, order: fallback.walkOrder };
     },
 
-    _loadPantry: function(cb) {
+    // H14 (Sep 16 2026) — real bug found and fixed while extracting this:
+    // the old _loadPantry (removed) grouped rows by ingredient_id ALONE and
+    // kept whichever row happened to arrive LAST for a given ingredient —
+    // silently correct only by accident before H11 added pantry_stock's
+    // real location column (pantry/fridge/freezer, one row per location
+    // now normal). Since H11 shipped, this silently understated (or picked
+    // an arbitrary one of) a real "have" amount for anything stocked in
+    // more than one location. Fixed to genuinely SUM across locations, the
+    // same real discipline _loadPantryNamed already proved correct for a
+    // different caller — never force-summed across mismatched UNITS though
+    // (section 4's own honest scope, unchanged): "2 cloves garlic" in the
+    // pantry and "50g garlic" in the fridge stay 2 separate tracked lines,
+    // no invented conversion.
+    _loadPantrySummed: function(cb) {
       RPGACE.sb.select('pantry_stock', 'select=ingredient_id,quantity,unit')
         .then(function(rows) {
-          var byId = {};
-          (rows || []).forEach(function(r) { byId[r.ingredient_id] = r; });
-          cb(byId);
+          var byKey = {};
+          (rows || []).forEach(function(r) {
+            var key = r.ingredient_id + '|' + (r.unit || '');
+            if (!byKey[key]) byKey[key] = { ingredient_id: r.ingredient_id, unit: r.unit || null, quantity: 0 };
+            byKey[key].quantity += (typeof r.quantity === 'number' ? r.quantity : 0);
+          });
+          cb(byKey);
         })
         .catch(function() { cb({}); });
     },
 
-    // Real, honest scope (section 4): grouped by (ingredient_id, unit) pair,
-    // never force-summed across mismatched units — "2 cloves garlic" +
-    // "50g garlic" stay 2 separate lines rather than an invented
-    // conversion. Pantry have_amount only counts when its own tracked unit
-    // matches this line's unit, same conservative discipline (rule 7 —
-    // fail honest, never quietly wrong).
-    _generateShoppingList: function(sess, cb) {
+    // H14 (Sep 16 2026) — real, shared "how much of each ingredient does
+    // this set of recipes need, how much do I already have, how much do I
+    // need to buy" computation (rule 8), extracted out of
+    // _generateShoppingList's own prior inline logic so it can also power
+    // ui._showSchedulePreview's real read-only usage/grocery preview
+    // without a second hand-rolled copy of the same math. Real, honest
+    // scope (section 4, unchanged): grouped by (ingredient_id, unit) pair,
+    // never force-summed across mismatched units.
+    _computeIngredientUsage: function(recipeIds, cb) {
       var self = RPGACE.modules.cookingOracle;
-      if (!sess || !sess.recipeIds || !sess.recipeIds.length) { cb('no recipes in this session yet'); return; }
+      if (!recipeIds || !recipeIds.length) { cb('no recipes given'); return; }
       // Plain comma-joined UUIDs, no quoting — matches this project's own
       // established, working `in.()` precedent (taxonomy_tree/bibliography/
       // etc). See the real bug note on _showSchedulePreview's own idList
       // line above for why a quoted variant breaks fetch() outright.
-      var idList = sess.recipeIds.join(',');
-      RPGACE.sb.select('recipe_ingredients', 'select=ingredient_id,amount,unit&recipe_id=in.(' + idList + ')')
+      var idList = recipeIds.join(',');
+      RPGACE.sb.select('recipe_ingredients', 'select=ingredient_id,amount,unit,ingredients(name)&recipe_id=in.(' + idList + ')')
         .then(function(rows) {
-          if (!rows || !rows.length) { cb('no ingredients found for this session\'s recipes'); return; }
+          if (!rows || !rows.length) { cb('no ingredients found for these recipes'); return; }
           var groups = {};
           rows.forEach(function(r) {
             var key = r.ingredient_id + '|' + (r.unit || '');
-            if (!groups[key]) groups[key] = { ingredient_id: r.ingredient_id, unit: r.unit || null, amount: 0 };
+            if (!groups[key]) groups[key] = { ingredient_id: r.ingredient_id, name: (r.ingredients && r.ingredients.name) || '?', unit: r.unit || null, amount: 0 };
             groups[key].amount += (typeof r.amount === 'number' ? r.amount : 0);
           });
-          var groupList = Object.keys(groups).map(function(k) { return groups[k]; });
-          self.logic._loadPantry(function(pantryByIngredient) {
-            RPGACE.sb.secureWrite('shopping_lists', 'insert', { planned_cook_id: null, status: 'open' })
-              .then(function(data) {
-                var listRow = Array.isArray(data) ? data[0] : data;
-                if (!listRow || !listRow.id) throw new Error('shopping list insert returned no row');
-                var itemsPayload = groupList.map(function(g) {
-                  var have = 0;
-                  var pantryRow = pantryByIngredient[g.ingredient_id];
-                  if (pantryRow && pantryRow.unit === g.unit) have = pantryRow.quantity || 0;
-                  var toBuy = Math.max(0, g.amount - have);
-                  return {
-                    list_id: listRow.id, ingredient_id: g.ingredient_id,
-                    needed_amount: g.amount, needed_unit: g.unit,
-                    have_amount: have, to_buy_amount: toBuy, bought: false,
-                  };
-                });
-                return RPGACE.sb.secureWrite('shopping_list_items', 'insert', itemsPayload).then(function() { return listRow.id; });
-              })
-              .then(function(listId) { cb(null, listId); })
-              .catch(function(e) { cb(e.message || 'shopping list save failed'); });
+          self.logic._loadPantrySummed(function(pantryByKey) {
+            var list = Object.keys(groups).map(function(k) {
+              var g = groups[k];
+              var pantryRow = pantryByKey[k]; // same real key shape: ingredient_id|unit
+              var have = pantryRow ? pantryRow.quantity : 0;
+              var toBuy = Math.max(0, g.amount - have);
+              return { ingredient_id: g.ingredient_id, name: g.name, unit: g.unit, amount: g.amount, have: have, toBuy: toBuy };
+            });
+            cb(null, list);
           });
         })
         .catch(function(e) { cb(e.message || 'could not load session ingredients'); });
+    },
+
+    _generateShoppingList: function(sess, cb) {
+      var self = RPGACE.modules.cookingOracle;
+      if (!sess || !sess.recipeIds || !sess.recipeIds.length) { cb('no recipes in this session yet'); return; }
+      self.logic._computeIngredientUsage(sess.recipeIds, function(err, usage) {
+        if (err) { cb(err); return; }
+        RPGACE.sb.secureWrite('shopping_lists', 'insert', { planned_cook_id: null, status: 'open' })
+          .then(function(data) {
+            var listRow = Array.isArray(data) ? data[0] : data;
+            if (!listRow || !listRow.id) throw new Error('shopping list insert returned no row');
+            var itemsPayload = usage.map(function(u) {
+              return {
+                list_id: listRow.id, ingredient_id: u.ingredient_id,
+                needed_amount: u.amount, needed_unit: u.unit,
+                have_amount: u.have, to_buy_amount: u.toBuy, bought: false,
+              };
+            });
+            return RPGACE.sb.secureWrite('shopping_list_items', 'insert', itemsPayload).then(function() { return listRow.id; });
+          })
+          .then(function(listId) { cb(null, listId); })
+          .catch(function(e) { cb(e.message || 'shopping list save failed'); });
+      });
     },
 
     // The real, combined tick-bought -> price-log moment (section 2, Q2).
@@ -39193,6 +39381,7 @@ RPGACE.register('cookingOracle', {
           blocks.push({
             recipeId: chain.id, recipeTitle: chain.title, type: step.type,
             description: step.description || '', start: start, end: equipEnd,
+            ingredientsUsed: step.ingredients_used || [], // H14 - carried through for the schedule preview's own real measurement chips
           });
           prevEnd = equipEnd;
         });

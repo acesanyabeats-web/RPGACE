@@ -1,0 +1,198 @@
+H14: SCHEDULE PREVIEW GETS REAL PER-STEP MEASUREMENTS + A USAGE/GROCERY
+PREVIEW — Sep 16 2026
+==========================================================================
+
+ALEX'S VERBATIM ASK
+------------------------------------------------------------
+"i like the proposed plan from the scheduled cook, but it needs to show
+me measurements of each ingredient at each step so i dont have to go
+back and fourth to agree plan. it should also make a list of ingredients
+i will use up and what will need to be added to future grocery list."
+
+Two real asks, both addressed:
+(1) Show real ingredient measurements alongside each step in the
+    proposed schedule (cookingOracle.ui._showSchedulePreview).
+(2) A real list of what this cook session will use from the pantry, and
+    what's short and needs to go on a future grocery list.
+
+REAL DESIGN CHOICE — PART 1 (step measurements)
+------------------------------------------------------------
+No schema/migration needed at all: `recipes.steps` is a jsonb column,
+so adding a new field to each step object is a pure JSON-shape change,
+not a DB change. Considered mechanically deriving which ingredients a
+step "uses" by string-matching ingredient names against the step's free-
+text description — rejected: unreliable (a step might say "the chicken"
+with no amount, or omit an ingredient it clearly uses), and this project's
+own rule 7 (fail loud, never silently wrong) argues against guessing
+something this concrete from text matching when the model that WROTE the
+step already knows exactly what it used.
+
+Real fix instead: the recipe-generation prompt (`logic._generate`) now
+also asks Oracle to tag each step with `ingredients_used:[{name,amount,
+unit}]` — the exact ingredients and amounts that step calls for, in the
+same shape as the top-level ingredient list, splitting an ingredient's
+amount across multiple steps if it's genuinely used more than once. The
+SAME schema addition was made to the RECIPE_UPDATE_JSON trailer prompt
+(the critique/revision pipeline, oracleControl's registered context
+provider) so a later Method edit via the floating overlay carries the
+same real per-step data forward, not just the initial generation.
+
+Real, honest limitation named, not hidden: this only applies to recipes
+generated FROM NOW ON. Recipes saved before this change have no
+`ingredients_used` on their steps — the new chip renderer shows nothing
+for those steps rather than fabricating a guess, which is the correct,
+honest behavior for old data, not a bug.
+
+`logic._sanitizeStepIngredientsUsed(steps)` — real, defensive structural
+sanitize (rule 5, "never trust model JSON blindly") run on every parsed
+recipe (both the real RECIPE_JSON generation reply and any real
+RECIPE_UPDATE_JSON critique-revision reply) — strips a malformed entry
+(not an object, no name, wrong-typed amount) to a clean, safe shape
+instead of ever rendering raw model output.
+
+`ui._renderStepIngredients(step)` — ONE shared renderer (rule 8), used
+by BOTH the single-recipe card's own Method & Timeline list AND the
+schedule preview's per-block loop, so the two real consumers of a step's
+data never drift into two different chip layouts. Returns null (renders
+nothing) when a step genuinely has no `ingredients_used` — never a
+placeholder chip.
+
+REAL DESIGN CHOICE — PART 2 (usage + grocery preview)
+------------------------------------------------------------
+A real, LIVE bug was found and fixed while building this (rule 4 — pull
+real source before editing, not guessed): the existing pantry-lookup
+helper backing `_generateShoppingList`, `logic._loadPantry`, grouped
+`pantry_stock` rows by `ingredient_id` ALONE and kept whichever row
+happened to arrive last — silently correct only by accident until H11
+(Sep 16, earlier the same day) added `pantry_stock`'s real `location`
+column, making more than one row per ingredient (pantry/fridge/freezer)
+the normal case. Since H11 shipped, every real shopping-list generation
+has been UNDERSTATING (or picking an arbitrary one of) the real "have"
+amount for anything stocked in more than one location — a real,
+live-production correctness bug, not a hypothetical one. Its sibling
+function, `_loadPantryNamed` (a different real caller), had already been
+fixed for this at H11 build time; `_loadPantry` was simply missed.
+
+Fixed as part of this build, not deferred: `logic._loadPantry` renamed to
+`logic._loadPantrySummed` and rewritten to genuinely SUM quantity across
+all locations for a given (ingredient_id, unit) pair — matching
+`_loadPantryNamed`'s already-proven-correct discipline. Never force-summed
+across mismatched UNITS though (the pre-existing, correct scope from H7 —
+"2 cloves garlic" and "50g garlic" stay 2 separate tracked lines, no
+invented conversion).
+
+`logic._computeIngredientUsage(recipeIds, cb)` — real, shared "how much
+of each ingredient does this recipe set need, how much do I have, how
+much do I need to buy" computation, extracted (rule 8) out of
+`_generateShoppingList`'s own prior inline logic, which now calls this
+shared function instead of duplicating the math. This is what makes the
+new schedule-preview panel and the real shopping-list write path use
+IDENTICAL arithmetic — the fix above benefits both, verified together.
+
+`_showSchedulePreview` now renders two real sections after the schedule
+blocks: "📦 Will use from pantry" (real pantry-covered ingredients) and
+"🛒 Need to add to grocery list" (real shortfalls, sorted by aisle using
+H13's `_classifyAisle`/`_AISLE_GROUPS` — shipped earlier the same
+session, reused here rather than a second sort mechanism). Deliberately
+a READ-ONLY preview, not a second write path — the session builder's
+own "Generate shopping list" button is still the one real place a
+`shopping_lists` row actually gets created; this answers "what will this
+use up, what do I need to buy" right on the schedule screen so Alex
+doesn't have to leave it to check, without duplicating the real write
+mechanism (rule 11).
+
+VERIFICATION
+------------------------------------------------------------
+`node --check` clean, re-minified, cache-bust bumped
+`20260916d`→`20260916e`. Real headless-Chromium pass (Supabase boundary
+mocked), 19/19 assertions pass:
+- 4 sanitize cases (malformed entries stripped, non-numeric amount
+  coerced to null not crashed, missing/malformed field -> clean empty
+  array).
+- 3 `_renderStepIngredients` cases (real chip text/count, null returned
+  for empty/missing data).
+- 4 `_computeIngredientUsage` cases — the real fix directly proven: a
+  fake pantry with chicken thigh split across 2 locations (2+1) correctly
+  sums to have=3 (was silently 1 or 2 before the fix), garlic/noodles
+  cases confirm the have/toBuy math is otherwise unchanged.
+- 2 `_generateShoppingList` regression cases confirming the refactor
+  didn't change its real Supabase write shape or behavior.
+- 4 full schedule-preview render cases: real per-step ingredient chips
+  render inline, both new sections render, the grocery list is genuinely
+  aisle-grouped.
+Zero real console/page errors (only pre-existing sandboxed outbound-
+network noise, unrelated).
+
+Untested by Alex's own hand. Real next test: generate a fresh recipe
+(so it has real `ingredients_used` per step), add 2 recipes to a cook
+session, open "Proposed cook schedule," confirm each step shows real
+measurement chips and the two new pantry/grocery sections render
+correctly.
+
+==========================================================================
+H14b — REAL SAME-DAY FOLLOW-UP: COLOUR-CODING (Alex's live hand-test)
+==========================================================================
+
+Alex hand-tested the live Oracle chat mid-session (removed a posset from
+his planned cook, no double cream) and sent 2 real follow-ups:
+(1) "i wish the list highlighted what i have vs what ill need to
+    purchase, should be colour coded for ease."
+(2) "also generate new recipe for planned cook didnt do the narrowing
+    down options" — addressed separately below, NOT built blind (real
+    evidence found first, see the open-question note).
+
+REAL FIX (1) — colour coding
+------------------------------------------------------------
+Applied the SAME real green=have/gold=need-to-buy convention (rule 8 —
+one shared colour language, not invented per-surface) already used
+elsewhere in this app (green Accept/Mark-bought buttons, gold "Need to
+buy" heading) to BOTH real "have vs need" surfaces: the new H14 schedule-
+preview usage panel (📦 Will use from pantry now renders each row with a
+real green left-border chip; 🛒 Need to add to grocery list with a real
+gold left-border chip) AND the pre-existing real generated shopping list
+(`ui._showShoppingList` — "Already have enough" rows now green-bordered,
+"Need to buy" rows now gold-bordered), which is arguably the more
+literal reading of "the list," since it's the one persistent, real
+`shopping_list_items` artifact backing exactly this have/need-to-buy
+data. Verified via a real headless-Chromium pass, 4/4 assertions pass
+(real inline `border-left`/`color` style checked directly, not just
+presence of text) — both surfaces render the correct real colour. Zero
+console errors. `node --check` clean, re-minified, cache-bust bumped
+`20260916e`→`20260916f`.
+
+REAL OPEN QUESTION (2) — "generate new recipe... didnt do narrowing
+down" — investigated with real evidence, NOT guessed or fixed blind
+------------------------------------------------------------
+Real code check (rule 4, one failed assumption doesn't get patched
+blind): grepped every real caller of `logic._generate`/
+`ui._runGenerateAndShow` — exactly 3 exist, ALL inside `_showGenerateForm`/
+`_showNarrowDown` themselves. There is no code path where the app's own
+dedicated Cooking → "⚡ Generate" flow skips the real `wordCount <= 3`
+narrow-down gate — that gate is intact and the only real entry point.
+
+Real, evidence-based conclusion: narrow-down almost certainly didn't run
+because Alex was talking to Oracle in FREE-FORM CHAT (the exact
+transcript he pasted — Oracle answering conversationally with 3 dish
+suggestions), not through the dedicated Cooking "Generate a recipe" form
+at all. That form is the ONLY place narrow-down exists — it's not a
+global Oracle chat behaviour, it's specific client-side JS gated on that
+one button. Also checked and worth stating plainly: nothing in the app
+persistently listens for a bare `RECIPE_JSON:` trailer arriving in
+GENERAL chat either (only `logic._generate`'s own one-shot capture,
+armed for exactly one outbound request) — so even if Oracle DID produce
+a full recipe with a trailer in free chat, nothing would save it as a
+real, trackable recipe. This is a real, structural design gap (recipe
+generation + narrow-down are scoped to one specific button), not a code
+defect to patch.
+
+**Not built blind** — this is a real, multi-piece design decision (does
+"generate via chat" get the exact same narrow-down treatment, or does it
+always skip straight to generation since Oracle's already been talking
+it through conversationally; what's the actual detection trigger for "this
+chat message is a recipe-generation request"?) that genuinely needs
+Alex's own answer before committing real build time, per rule 5.
+Flagged to him directly in the same turn as this report, with a concrete,
+checkable interim instruction: use Cooking → "⚡ Generate a recipe" and
+type a short description (e.g. "Glazed Orange & Lime Chicken," 3 words)
+to get the real narrow-down step and a real, trackable, saved recipe —
+that path already fully works today.
