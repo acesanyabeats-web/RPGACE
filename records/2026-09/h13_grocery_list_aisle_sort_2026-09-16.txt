@@ -1,0 +1,78 @@
+H13: GROCERY LIST AUTO-SORT BY AISLE — Sep 16 2026
+==========================================================================
+
+ALEX'S VERBATIM ASK
+------------------------------------------------------------
+"Make grocery list auto sort by aisle, too much scrolling and calculating
+needed"
+
+REAL DESIGN CHOICE (checked before building, not assumed)
+------------------------------------------------------------
+Considered a new `ingredients.aisle` Supabase column (schema migration +
+per-ingredient categorization), but:
+- A migration is always Tier-3 territory (CLAUDE.md's own Judgment
+  Funnel) and needs a real stop-and-confirm outside a ratified /CEO plan
+  or /auto — extra friction for a genuinely small UI ask.
+- A DB column still needs a real backfill for the 2 already-saved
+  recipes' ingredients, and wouldn't classify a BRAND NEW ingredient the
+  moment it's typed into a fresh recipe without a second write.
+
+Built instead as a pure client-side, zero-AI-cost, zero-schema-change
+keyword classifier — same "mechanical tier" discipline as cofid_foods'
+own base_ingredient/prep_state grouping columns (rule 12's guide). No
+migration, no backfill, works on any ingredient name (existing or brand
+new) the instant the list renders.
+
+THE REAL FIX
+------------------------------------------------------------
+`cookingOracle.logic._AISLE_GROUPS` — 9 real UK-supermarket-shaped
+buckets (Fruit & Veg / Meat & Fish / Bakery / Pantry & Tins / Spices,
+Sauces & Oils / Dairy & Chilled / Frozen / Drinks / Household & Other
+catch-all), each with a keyword list and a `walkOrder` (the real render
+sort order, matching a typical shop walk — Frozen deliberately walks
+LAST despite being checked EARLY, see below).
+
+`logic._classifyAisle(name)` — lowercase substring match against each
+group's keywords, first hit wins, unmatched names fall into the honest
+"Household & Other" catch-all rather than crashing or being dropped.
+
+`ui._showShoppingList`'s "Need to buy" section (the one used while
+actually shopping — "Already have enough"/"Already bought" are
+deliberately left untouched, not the section causing the scrolling
+complaint) now sorts by aisle walkOrder first, ingredient name second,
+and renders a "📍 <Aisle>" subheading whenever the aisle changes.
+
+A REAL BUG FOUND AND FIXED DURING VERIFICATION (rule 4 — one failed
+check, get real evidence, don't ship blind)
+------------------------------------------------------------
+A first pass classified "Sichuan Peppercorn" as Fruit & Veg (a bare
+"pepper" keyword matched inside "peppercorn") and "Vanilla Ice Cream" as
+Spices (a bare "vanilla" keyword matched before Frozen's own "ice cream"
+phrase was ever checked) — the exact keyword-substring collision class
+CLAUDE.md's own landmines section already names for taxonomy keywords,
+now proven to apply here too. Fixed with 2 real changes: (1) compound/
+specific phrases ("bell pepper", "black pepper", "peppercorn") listed
+ahead of the bare "pepper"/"cream" words wherever a real collision
+exists; (2) match PRIORITY (array position, checked top-to-bottom) and
+render WALK ORDER (`walkOrder` field) were deliberately split apart —
+Frozen is checked early (right after Fruit & Veg) so "ice cream" wins
+over Spices'/Dairy's bare keywords, but still RENDERS last (walkOrder 6)
+matching a real shopping trip (frozen bought last so it doesn't thaw).
+
+VERIFICATION
+------------------------------------------------------------
+`node --check` clean, re-minified, cache-bust bumped
+`20260916c`→`20260916d`. Real headless-Chromium pass (Supabase boundary
+mocked, mock re-asserted immediately before each interaction per the
+H11/H12 boot-race lesson): 15/15 direct `_classifyAisle` unit cases pass
+(including the 2 real collisions found and fixed above), full
+`_showShoppingList` render pass confirms aisle headings appear in the
+correct walk order with items correctly grouped/sorted within each,
+zero console errors from the app's own code (only pre-existing sandboxed
+outbound-network noise — font/Supabase connection failures — unrelated
+to this change, same class CLAUDE.md's own landmines already name).
+
+Untested by Alex's own hand — same standing flag as every HABITS build
+this project has shipped. Real next test: open a shopping list with a
+real mix of produce/meat/pantry/spice items and confirm it renders
+grouped by aisle heading instead of one flat list.

@@ -37924,7 +37924,31 @@ RPGACE.register('cookingOracle', {
               doneMsg.textContent = 'Nothing left to buy on this list.';
               box.appendChild(doneMsg);
             }
+            // H13 (Sep 16 2026) - auto-sorted by aisle (self.logic._classifyAisle,
+            // a real Alex ask: "too much scrolling and calculating needed" while
+            // shopping off a flat, unordered list) instead of the old plain
+            // needRows.forEach. Real, checkable sort: aisle walk-order first
+            // (groups renders in one real physical shop-walk sequence), then
+            // ingredient name within an aisle, so re-renders after a "Mark
+            // bought" never visibly reshuffle the remaining rows.
             needRows.forEach(function(r) {
+              r._aisle = self.logic._classifyAisle(r.ingredients && r.ingredients.name);
+            });
+            needRows.sort(function(a, b) {
+              if (a._aisle.order !== b._aisle.order) return a._aisle.order - b._aisle.order;
+              var an = (a.ingredients && a.ingredients.name) || '';
+              var bn = (b.ingredients && b.ingredients.name) || '';
+              return an.localeCompare(bn);
+            });
+            var currentAisle = null;
+            needRows.forEach(function(r) {
+              if (r._aisle.name !== currentAisle) {
+                currentAisle = r._aisle.name;
+                var aisleHeading = document.createElement('div');
+                aisleHeading.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin:10px 0 4px;';
+                aisleHeading.textContent = '📍 ' + currentAisle;
+                box.appendChild(aisleHeading);
+              }
               var row = document.createElement('div');
               row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;';
               var lbl = document.createElement('span');
@@ -38807,6 +38831,60 @@ RPGACE.register('cookingOracle', {
     // Real record: records/2026-09/habits_shopping_pantry_calories_spec_
     // 2026-09-13.txt (4 forks resolved via AskUserQuestion).
     // ============================================================
+
+    // H13 (Sep 16 2026, real Alex ask: "make grocery list auto sort by
+    // aisle, too much scrolling and calculating needed"). Deliberately a
+    // client-side, zero-AI-cost, zero-schema-change keyword classifier
+    // (same mechanical-grouping discipline as cofid_foods' own
+    // base_ingredient/prep_state columns, rule 12's "mechanical tier"
+    // precedent) rather than a new ingredients.aisle column - a schema
+    // migration+backfill would need a real Tier-3 confirmation and still
+    // couldn't classify a brand-new ingredient the moment it's added,
+    // where this classifies any ingredient name live, no backfill ever
+    // needed. Honest, best-effort categorization, not a precise
+    // planogram - anything unmatched falls into the catch-all
+    // "Household & Other" bucket at the end rather than being silently
+    // dropped or crashing.
+    //
+    // `walkOrder` (final render/sort order, a real UK-supermarket-shaped
+    // walk) is deliberately kept SEPARATE from array position (which
+    // controls match PRIORITY - checked top to bottom, first hit wins).
+    // Real collision, found and fixed via a headless test
+    // (h13_aisle_sort), not assumed correct on first write: a bare,
+    // common word ("pepper", "cream", "vanilla") can be a real substring
+    // of a DIFFERENT category's item - "peppercorn" is a spice, not
+    // produce; "vanilla ice cream" is frozen, not a spice or dairy. Fix
+    // is two-part: compound/specific phrases listed ahead of a shorter
+    // bare word wherever the collision is real, AND Frozen's array
+    // position moved early (checked right after Fruit & Veg) so
+    // "ice cream" resolves before Spices' bare "vanilla" or Dairy's bare
+    // "cream" can claim it - while its own walkOrder (6) keeps it
+    // rendering late, matching a real shopping trip (frozen last, so
+    // it doesn't thaw while the rest of the list gets worked through).
+    _AISLE_GROUPS: [
+      { name: 'Fruit & Veg', walkOrder: 0, keywords: ['onion', 'garlic', 'ginger', 'shallot', 'chilli', 'chili', 'bell pepper', 'red pepper', 'green pepper', 'yellow pepper', 'capsicum', 'tomato', 'potato', 'carrot', 'cabbage', 'lettuce', 'spinach', 'kale', 'broccoli', 'cauliflower', 'courgette', 'zucchini', 'cucumber', 'celery', 'leek', 'mushroom', 'lemongrass', 'galangal', 'kaffir lime', 'lime leaf', 'spring onion', 'scallion', 'apple', 'banana', 'lemon', 'lime', 'orange', 'avocado', 'coriander', 'cilantro', 'parsley', 'basil', 'mint', 'thyme', 'rosemary', 'sage', 'dill', 'chive', 'bean sprout', 'beansprout', 'pak choi', 'bok choy', 'sweetcorn', 'sweet corn', 'pumpkin', 'squash', 'aubergine', 'eggplant', 'radish', 'beetroot', 'turnip'] },
+      { name: 'Frozen', walkOrder: 6, keywords: ['frozen', 'ice cream'] },
+      { name: 'Meat & Fish', walkOrder: 1, keywords: ['beef', 'chicken', 'pork', 'lamb', 'mince', 'bacon', 'sausage', 'turkey', 'duck', 'fish', 'salmon', 'cod', 'prawn', 'shrimp', 'squid', 'tuna', 'anchovy', 'steak', 'thigh', 'breast', 'drumstick', 'rib'] },
+      { name: 'Bakery', walkOrder: 2, keywords: ['bread', 'baguette', 'bread roll', 'bun', 'naan', 'tortilla', 'pitta', 'pita', 'bagel', 'croissant', 'pastry'] },
+      { name: 'Pantry & Tins', walkOrder: 3, keywords: ['coconut milk', 'rice', 'noodle', 'pasta', 'spaghetti', 'flour', 'sugar', 'salt', 'stock cube', 'bouillon', 'stock', 'broth', 'tinned', 'canned', 'lentil', 'chickpea', 'oat', 'cereal', 'breadcrumb', 'cornflour', 'cornstarch', 'baking powder', 'baking soda', 'yeast', 'honey'] },
+      { name: 'Spices, Sauces & Oils', walkOrder: 4, keywords: ['soy sauce', 'fish sauce', 'oyster sauce', 'sesame oil', 'sesame seed', 'sauce', 'oil', 'vinegar', 'spice', 'cumin', 'paprika', 'chilli powder', 'chili powder', 'star anise', 'cinnamon', 'clove', 'cardamom', 'turmeric', 'peppercorn', 'black pepper', 'white pepper', 'ground pepper', 'doubanjiang', 'bean paste', 'msg', 'curry paste', 'curry powder', 'tamarind', 'miso', 'mustard', 'ketchup', 'mayonnaise', 'vanilla'] },
+      { name: 'Dairy & Chilled', walkOrder: 5, keywords: ['milk', 'cheese', 'butter', 'cream', 'yoghurt', 'yogurt', 'egg', 'paneer', 'ghee', 'margarine'] },
+      { name: 'Drinks', walkOrder: 7, keywords: ['water', 'juice', 'wine', 'beer', 'tea', 'coffee', 'soda', 'cola'] },
+      { name: 'Household & Other', walkOrder: 8, keywords: [] },
+    ],
+
+    _classifyAisle: function(ingredientName) {
+      var self = RPGACE.modules.cookingOracle;
+      var name = (ingredientName || '').toLowerCase();
+      for (var i = 0; i < self.logic._AISLE_GROUPS.length; i++) {
+        var group = self.logic._AISLE_GROUPS[i];
+        for (var j = 0; j < group.keywords.length; j++) {
+          if (name.indexOf(group.keywords[j]) !== -1) return { name: group.name, order: group.walkOrder };
+        }
+      }
+      var fallback = self.logic._AISLE_GROUPS[self.logic._AISLE_GROUPS.length - 1];
+      return { name: fallback.name, order: fallback.walkOrder };
+    },
 
     _loadPantry: function(cb) {
       RPGACE.sb.select('pantry_stock', 'select=ingredient_id,quantity,unit')
