@@ -178,43 +178,43 @@ TEMPLATE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>RPGACE — Galaxy Map (Skill Composition Network)</title>
 <style>
-  :root {{ --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; --orange:#E2A83D; }}
+  :root {{ --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; --amber:#E2A83D; }}
   *{{box-sizing:border-box;margin:0;padding:0}}
   body{{background:radial-gradient(ellipse at 50% 30%, #1a1610 0%, #050508 70%);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif}}
   .hero{{padding:36px 24px 16px;text-align:center}}
-  .hero .eyebrow{{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--orange);margin-bottom:8px}}
+  .hero .eyebrow{{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--amber);margin-bottom:8px}}
   .hero h1{{font-family:Georgia,serif;font-size:26px;color:#fff;margin-bottom:8px}}
   .hero p{{color:var(--dim);font-size:12px;max-width:900px;margin:0 auto}}
   .breadcrumb{{display:flex;gap:6px;align-items:center;justify-content:center;padding:10px 16px 0;font-size:10.5px;font-weight:700;letter-spacing:1px;flex-wrap:wrap}}
   .breadcrumb a{{color:var(--dim);text-decoration:none;padding:4px 9px;border-radius:12px;border:1px solid rgba(255,255,255,0.1)}}
-  .breadcrumb a:hover{{color:var(--orange);border-color:var(--orange)}}
-  .breadcrumb .bc-here{{color:#1a0f04;background:var(--orange);padding:4px 9px;border-radius:12px}}
+  .breadcrumb a:hover{{color:var(--amber);border-color:var(--amber)}}
+  .breadcrumb .bc-here{{color:#1a0f04;background:var(--amber);padding:4px 9px;border-radius:12px}}
   .breadcrumb .bc-sep{{color:#4a4a58}}
   .tabs{{display:flex;gap:5px;justify-content:center;flex-wrap:wrap;padding:16px 24px;border-bottom:1px solid rgba(255,255,255,0.08)}}
   .tab{{padding:4px 10px;border-radius:14px;font-size:9.5px;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim)}}
-  .tab.active{{background:var(--orange);color:#1a0f04;font-weight:700}}
+  .tab.active{{background:var(--amber);color:#1a0f04;font-weight:700}}
   .wrap{{max-width:900px;margin:0 auto;padding:24px}}
   .shead{{display:flex;align-items:center;gap:10px;margin-bottom:6px;flex-wrap:wrap}}
   .shead h2{{font-family:'Cascadia Code','Fira Mono',monospace;font-size:18px;color:var(--gold)}}
-  .pcount{{font-size:10px;color:var(--orange);font-weight:700}}
+  .pcount{{font-size:10px;color:var(--amber);font-weight:700}}
   .modline{{font-size:11px;color:var(--dim);margin-bottom:14px}}
   .passage{{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:8px 12px;margin-bottom:8px}}
   .passage summary{{cursor:pointer;font-size:12px;font-weight:700;color:#E2E2EC;list-style:none;font-family:'Cascadia Code','Fira Mono',monospace}}
   .passage summary::-webkit-details-marker{{display:none}}
-  .passage summary::before{{content:'▶ ';color:var(--orange);font-size:9px}}
+  .passage summary::before{{content:'▶ ';color:var(--amber);font-size:9px}}
   .passage[open] summary::before{{content:'▼ '}}
   .passage p{{font-size:11px;color:#b8b8c8;line-height:1.6;margin-top:8px}}
   .empty-note{{font-size:11px;color:var(--dim);font-style:italic}}
   .note{{max-width:900px;margin:24px auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
-  a{{color:var(--orange)}}
+  a{{color:var(--amber)}}
   .toggle-row{{display:flex;justify-content:center;gap:8px;padding:16px 24px 0}}
   .toggle-btn{{padding:8px 18px;border-radius:16px;font-size:11.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid rgba(255,255,255,0.1)}}
-  .toggle-btn.active{{background:var(--orange);color:#1a0f04;border-color:var(--orange)}}
+  .toggle-btn.active{{background:var(--amber);color:#1a0f04;border-color:var(--amber)}}
   .view{{display:none}}
   .view.active{{display:block}}
   #view-map{{padding:10px 24px 30px;overflow-x:auto;text-align:center}}
   .net-node{{cursor:pointer}}
-  .net-node circle{{fill:#1a0f04;stroke:var(--orange);stroke-width:2}}
+  .net-node circle{{fill:#1a0f04;stroke:var(--amber);stroke-width:2}}
   .net-node:hover circle{{fill:rgba(226,168,61,0.25)}}
   .net-node text{{fill:#E2E2EC;pointer-events:none}}
   .net-node.dim circle{{opacity:0.15}}
@@ -229,9 +229,9 @@ TEMPLATE = """<!DOCTYPE html>
   .gsection{{max-width:1100px;margin:0 auto;padding:24px;overflow-x:auto}}
   .ghead{{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}}
   .ghead h2{{font-family:Georgia,serif;font-size:19px;color:#fff}}
-  .gcount{{font-size:10px;color:var(--orange);font-weight:700}}
+  .gcount{{font-size:10px;color:var(--amber);font-weight:700}}
   .sktable{{width:100%;border-collapse:collapse;font-size:11px}}
-  .sktable th{{text-align:left;font-size:9.5px;text-transform:uppercase;letter-spacing:0.5px;color:var(--orange);padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.1)}}
+  .sktable th{{text-align:left;font-size:9.5px;text-transform:uppercase;letter-spacing:0.5px;color:var(--amber);padding:6px 10px;border-bottom:1px solid rgba(255,255,255,0.1)}}
   .sktable td{{padding:8px 10px;border-bottom:1px solid rgba(255,255,255,0.05);vertical-align:top}}
   .skname{{font-family:'Cascadia Code','Fira Mono',monospace;font-weight:700;color:var(--gold);white-space:nowrap}}
   .axbubble{{display:inline-block;font-size:11px;padding:1px 5px;border-radius:9px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.12);margin-left:3px}}

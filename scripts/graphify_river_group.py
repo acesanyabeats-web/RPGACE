@@ -5294,6 +5294,33 @@ LEFT_NAV_LEVEL_RIVERS = {
     'galaxy_map_module.html': True,
 }
 
+# GMR-4 (Sep 16 2026) — the real, confirmed canonical `:root` palette every
+# galaxy_map_*.py page's own `:root {{ ... }}` block should draw from, per
+# the "Galaxy Map Redevelopment" plan's own interrogation answer (shared
+# color/card/legend/interaction conventions, never literal layout
+# unification — each page keeps its own layout shape). Confirmed by real
+# grep evidence across all 20 pages' own :root declarations plus the 9
+# oversight-doc HTML files (minotaur_map.html/manual.html/patch_notes.html/
+# etc.) that already share a real, consistent family palette distinct from
+# the live app's own style.css (a deliberate, different visual identity for
+# this "space/oversight" doc family — not a style.css drift to correct
+# toward). 4 real value/naming drifts found and fixed this pass:
+# galaxy_map_loops.py's --red (#cc4a4a, style.css's own value, not this
+# family's #E25454), galaxy_map_externals.py's --blue (#5FB3D9, not the
+# family's real #4A90E2), galaxy_map_oversight_sync.py's --brown (#A8734A,
+# not the family's real #8B5E3C), and galaxy_map_skill_network.py's
+# --orange (renamed to --amber, #E2A83D — same real value, but "orange" is
+# actually style.css's own different token name; #E2A83D is this family's
+# real --amber, confirmed via minotaur_map.html). --purple (#9B59B6),
+# --green (#3DAA6E), and --teal (#2ABFB0, sourced from the oversight-doc
+# family, not style.css — see CLAUDE.md's own Aug 11 note) were already
+# correct everywhere they're used; nothing changed there. Canonical values,
+# for any future page's own :root block:
+#   --bg:#050508  --gold:#C9A84C  --text:#E2E2EC  --dim:#8a8a9a
+#   --red:#E25454  --blue:#4A90E2  --purple:#9B59B6  --green:#3DAA6E
+#   --amber:#E2A83D  --teal:#2ABFB0  --brown:#8B5E3C
+# Add only the extra tokens a given page's own real content needs — never
+# copy the whole set defensively; an unused CSS variable is real clutter.
 LEFT_NAV_CSS = '''
 .gside-toggle{position:fixed;top:50%;left:0;transform:translateY(-50%);z-index:10001;background:#C9A84C;color:#1a1a1f;border:none;border-radius:0 8px 8px 0;padding:16px 6px;font-size:13px;cursor:pointer;writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:1.5px;font-weight:700;box-shadow:2px 0 10px rgba(0,0,0,0.4)}
 .gside-toggle:hover{background:#ddbb5c}

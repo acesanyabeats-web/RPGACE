@@ -201,7 +201,7 @@ TEMPLATE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>RPGACE — Galaxy Map (Loops)</title>
 <style>
-  :root {{ --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; --red:#cc4a4a; }}
+  :root {{ --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; --red:#E25454; }}
   *{{box-sizing:border-box;margin:0;padding:0}}
   body{{background:radial-gradient(ellipse at 50% 30%, #1a0e0e 0%, #050508 70%);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif}}
   .hero{{padding:36px 24px 16px;text-align:center}}
