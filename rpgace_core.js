@@ -36224,6 +36224,20 @@ RPGACE.register('cookingOracle', {
     purple: { color: '#9B59B6',      bg: 'rgba(155,89,182,0.07)',  icon: '🟣', label: 'Running low — replenish after this cook' },
   },
 
+  // H19 (Sep 17 2026, real Alex ask: "also use cups as much as possible
+  // (liquid and spices) and weight when makes sense, everywhere where a
+  // recipe is present. in pantry ill be using mostly weight and ml and
+  // count rather than cups" — restated a 2nd time, same session, "in
+  // pantry and stock as a whole") — the ONE real shared instruction text
+  // every real Oracle call that produces a fresh ingredient amount/unit
+  // uses (rule 8): full generation, chat-triggered generation, the
+  // critique/revision path, and Suggest Additions. Deliberately doesn't
+  // hardcode "always cups" — Alex's own words are "as much as possible"
+  // and "when makes sense," so this asks for real judgment per
+  // ingredient, matching how a real recipe actually measures things,
+  // never cups for their own sake.
+  UNIT_PREFERENCE_TEXT: 'For each ingredient amount, prefer cup measurements for liquids and spices wherever that is genuinely how a real home cook would measure them, and prefer weight in grams for other ingredients (meat, vegetables, bulk dry goods) when that makes more practical sense — pick whichever real unit a genuine recipe would actually use, never cups just for the sake of it. ',
+
   // H15 (Sep 16 2026) — real, compound-phrase keyword gate (the same
   // hyphen/word-boundary discipline as every other keyword list in this
   // project) for "Alex is asking Oracle, in FREE-FORM chat, to actually
@@ -36287,6 +36301,7 @@ RPGACE.register('cookingOracle', {
         return 'I have a recipe card open right now: "' + (r.title || 'Recipe') + '". Ingredients: ' + ingList + '. Method: ' + stepList + '. '
           + 'If I ask you to change this recipe (add/remove/edit an ingredient, or change/add/remove/reorder a step), do not just describe the change in prose - end your reply with a trailer on its own final line: RECIPE_UPDATE_JSON: followed by a compact JSON object with the COMPLETE UPDATED recipe (every ingredient and every step, not just the changed ones) in this exact shape: '
           + self.RECIPE_JSON_SHAPE(r.servings_base || 4) + '. '
+          + self.UNIT_PREFERENCE_TEXT
           + 'Only include this trailer when you are actually proposing a concrete change to apply - never when just answering a question or giving an opinion with nothing specific to change.';
       });
     }
@@ -36967,14 +36982,18 @@ RPGACE.register('cookingOracle', {
           if (pantrySnapshot && ing.name) {
             var norm = String(ing.name).trim().toLowerCase();
             var slots = pantrySnapshot.byName[norm] || [];
-            var have = 0;
-            // H18 (Sep 16 2026, real Alex correction) — same shared unit
-            // normalizer every other real 5-color match uses (rule 8),
-            // so "gram" on the card and "g" in stock match correctly.
-            var wantUnit = self.logic._normalizeUnit(ing.unit);
-            for (var i = 0; i < slots.length; i++) {
-              if (self.logic._normalizeUnit(slots[i].unit) === wantUnit) { have = slots[i].quantity; break; }
-            }
+            // H19 (Sep 17 2026, real Alex ask: "use cups as much as
+            // possible (liquid and spices) and weight when makes sense...
+            // in pantry ill be using mostly weight and ml and count
+            // rather than cups") — real bridging via
+            // logic._resolveHaveAmount (rule 8, same function every other
+            // real 5-color match now uses) instead of an exact-unit-only
+            // lookup. The gram-per-unit ratio must come from this
+            // ingredient's own BASE amount/grams_estimate (scale-
+            // independent), never the currently-displayed SCALED amt —
+            // "have" itself doesn't change just because Alex asked for
+            // more servings.
+            var have = self.logic._resolveHaveAmount({ neededUnit: ing.unit, neededAmount: ing.amount, gramsEstimate: ing.grams_estimate, buckets: slots });
             var status = self.logic._classifyIngredientStatus({ name: ing.name, needed: (typeof amt === 'number') ? amt : 0, have: have, aisleIndex: pantrySnapshot.aisleIndex });
             var meta = self.INGREDIENT_STATUS_META[status];
             row.style.borderLeft = '3px solid ' + meta.color;
@@ -38645,6 +38664,7 @@ RPGACE.register('cookingOracle', {
         + 'Only put an ingredient in an early prep_before_cooking step if it genuinely benefits from advance prep and holds up fine sitting prepped and waiting (vegetables, aromatics, dry goods, anything that actually needs to marinate). '
         + 'Anything quick to prep that is added near the END of cooking - raw seafood, raw fish, delicate herbs/garnishes, anything that degrades or is a food-safety risk sitting prepped early - must get its OWN separate step positioned shortly before it is actually used (as a prep_while_cooking step riding an earlier passive/simmer window, or as a short active step immediately before the cooking step that adds it), never bundled into the opening prep block. '
         + 'For each step give an active_duration_min (minutes you must actively attend to it) and, where the step then runs unattended, a passive_duration_min (minutes it keeps going with zero attention needed - a simmer, a bake, a chill). '
+        + self.UNIT_PREFERENCE_TEXT
         + 'For each ingredient, also estimate its real total weight in grams at the stated amount/unit (e.g. "2 tbsp olive oil" is roughly 27g) — this is used to compute real nutrition later, so give your best honest estimate even for odd units like "1 clove" or "1 chicken thigh". '
         // H14 (Sep 16 2026, real Alex ask: "it needs to show me measurements
         // of each ingredient at each step so i dont have to go back and
@@ -38806,7 +38826,9 @@ RPGACE.register('cookingOracle', {
     // the ambiguity, which a bare word count can't see.
     buildRecipeGenBlock: function() {
       var self = RPGACE.modules.cookingOracle;
-      return '\n\nIf Alex is asking you to actually FINALIZE and generate a real, saveable recipe right now (not just discuss or suggest ideas), and you have enough specific detail to write a complete real recipe for one specific dish, write it out in full (title, ingredient list, method - same tagging rules as any other real recipe: each step typed prep_before_cooking/actual_cooking/prep_while_cooking/baking, active_duration_min and passive_duration_min per step, real gram estimates per ingredient, real ingredients_used per step) then end your reply on its own final line with: RECIPE_JSON: followed by a compact JSON object in the shape '
+      return '\n\nIf Alex is asking you to actually FINALIZE and generate a real, saveable recipe right now (not just discuss or suggest ideas), and you have enough specific detail to write a complete real recipe for one specific dish, write it out in full (title, ingredient list, method - same tagging rules as any other real recipe: each step typed prep_before_cooking/actual_cooking/prep_while_cooking/baking, active_duration_min and passive_duration_min per step, real gram estimates per ingredient, real ingredients_used per step). '
+        + self.UNIT_PREFERENCE_TEXT
+        + 'Then end your reply on its own final line with: RECIPE_JSON: followed by a compact JSON object in the shape '
         + self.RECIPE_JSON_SHAPE(4) + '. '
         + 'Only include this trailer when a specific dish is genuinely decided and you are finalizing it for real - if his request is still vague or you are only brainstorming/discussing options, answer normally with no trailer.';
     },
@@ -39331,6 +39353,7 @@ RPGACE.register('cookingOracle', {
           + '(e.g. a protein like meat or fish, a vegetable, a garnish) — not replacements, not core ingredients already listed. '
           + 'Prefer suggesting something already in my pantry stock above, to reduce food waste, when it would genuinely fit the dish — '
           + 'but only suggest real, sensible additions, never force a pantry item that would not actually work. '
+          + self.UNIT_PREFERENCE_TEXT
           + 'For each suggestion, estimate its real weight in grams at the amount you suggest (same convention as a normal ingredient). '
           + 'Reply with ONLY, on its own single line, exactly: INGREDIENT_SUGGESTIONS_JSON: followed by a compact JSON array in the shape '
           + '[{"name":"...","amount":<number>,"unit":"...","grams_estimate":<number>,"reason":"short real reason, under 12 words"}]. '
@@ -39576,36 +39599,117 @@ RPGACE.register('cookingOracle', {
       return s;
     },
 
+    // H19 (Sep 17 2026, real Alex ask: "also use cups as much as possible
+    // (liquid and spices) and weight when makes sense, everywhere where a
+    // recipe is present. in pantry ill be using mostly weight and ml and
+    // count rather than cups" — restated a 2nd time, same session,
+    // "in pantry and stock as a whole") — real, shared unit-bridging so
+    // the 5-color system still works once recipes lean on cups while
+    // stock stays logged in weight/ml/count. Two REAL, NEVER-INVENTED
+    // bridges, ranked safest-first:
+    //   1. VOLUME_TO_ML — a cup/tbsp/tsp/l/ml conversion is exact real
+    //      physics, true regardless of what's actually in the cup. Never
+    //      a density guess.
+    //   2. a weight bridge using the RECIPE'S OWN already-generated
+    //      grams_estimate (existing data, built for nutrition - reused
+    //      here, rule 8 - never a new invented per-ingredient density
+    //      table) when the recipe's unit isn't a weight unit but a real
+    //      stock bucket is one (g/kg).
+    // Genuinely NOT bridged, on purpose: "count" against weight/volume
+    // (a real onion's weight varies - no honest conversion exists) —
+    // stays an honest non-match (rule 7), same as before this ask.
+    VOLUME_TO_ML: { ml: 1, l: 1000, cup: 240, tbsp: 15, tsp: 5 },
+    WEIGHT_TO_G: { g: 1, kg: 1000 },
+
+    _convertVolumeUnits: function(amount, fromUnit, toUnit) {
+      var self = RPGACE.modules.cookingOracle;
+      var f = self.logic.VOLUME_TO_ML[fromUnit], t = self.logic.VOLUME_TO_ML[toUnit];
+      if (!f || !t) return null;
+      return amount * f / t;
+    },
+
+    // Real, shared "how much do I actually have of this, expressed in the
+    // recipe's own unit" resolver (rule 8) — every real 5-color consumer
+    // (schedule preview/shopping list via _computeIngredientUsage, the
+    // stock-match finder via _findMakeableRecipes, and the recipe card's
+    // own name-keyed path) now goes through this ONE function instead of
+    // each hand-rolling its own exact-unit lookup. `buckets` is the real
+    // stock this ingredient has, one entry per distinct real unit
+    // actually logged — `neededAmount`/`gramsEstimate` must be the
+    // recipe's own BASE (unscaled) figures, since the gram-per-unit ratio
+    // they imply is scale-independent even when a caller (the recipe
+    // card's serving scaler) later compares this "have" against a scaled
+    // "needed."
+    _resolveHaveAmount: function(opts) {
+      var self = RPGACE.modules.cookingOracle;
+      opts = opts || {};
+      var neededUnit = self.logic._normalizeUnit(opts.neededUnit);
+      var buckets = opts.buckets || [];
+
+      var exact = buckets.filter(function(b) { return self.logic._normalizeUnit(b.unit) === neededUnit; })[0];
+      if (exact) return (typeof exact.quantity === 'number') ? exact.quantity : 0;
+
+      if (self.logic.VOLUME_TO_ML[neededUnit]) {
+        var volBucket = buckets.filter(function(b) { return self.logic.VOLUME_TO_ML[self.logic._normalizeUnit(b.unit)]; })[0];
+        if (volBucket) {
+          var converted = self.logic._convertVolumeUnits(volBucket.quantity, self.logic._normalizeUnit(volBucket.unit), neededUnit);
+          if (converted != null) return converted;
+        }
+      }
+
+      if (!self.logic.WEIGHT_TO_G[neededUnit] && typeof opts.gramsEstimate === 'number' && opts.neededAmount > 0) {
+        var weightBucket = buckets.filter(function(b) { return self.logic.WEIGHT_TO_G[self.logic._normalizeUnit(b.unit)]; })[0];
+        if (weightBucket) {
+          var haveGrams = weightBucket.quantity * self.logic.WEIGHT_TO_G[self.logic._normalizeUnit(weightBucket.unit)];
+          var gramsPerNeededUnit = opts.gramsEstimate / opts.neededAmount;
+          if (gramsPerNeededUnit > 0) return haveGrams / gramsPerNeededUnit;
+        }
+      }
+
+      return 0;
+    },
+
     // H18 (Sep 16 2026) — real, superseding extension, not a second loader
     // (rule 8): now joins ingredients(name) and returns one full pantry
-    // SNAPSHOT ({byKey, byName, aisleIndex}) instead of a bare byKey map,
-    // so the new shared 5-color classifier (see _classifyIngredientStatus
-    // below) has everything it needs from ONE real query, reused by every
-    // real consumer (_computeIngredientUsage's id-keyed recipe-usage path,
-    // and the recipe card's own name-keyed not-yet-saved-recipe path,
-    // which has no real ingredient_id yet to key off). byName groups by
-    // normalized (trim+lowercase) name, same case-insensitive precedent
-    // logic._save's own ingredient resolution already uses — never fuzzy.
-    // aisleIndex only ever includes an ingredient actually in stock
-    // (quantity > 0) — a real zero-stock pantry_stock row (already bought,
-    // fully used) must never count as a real "blue alternative available."
-    // The one existing caller (_computeIngredientUsage) is the only place
-    // this shape change needed updating — confirmed via grep, no other
-    // real call site exists.
+    // SNAPSHOT ({byIngredient, byName, aisleIndex}) instead of a bare
+    // byKey map, so the shared 5-color classifier has everything it needs
+    // from ONE real query, reused by every real consumer. byName groups
+    // by normalized (trim+lowercase) name, same case-insensitive
+    // precedent logic._save's own ingredient resolution already uses —
+    // never fuzzy. aisleIndex only ever includes an ingredient actually
+    // in stock (quantity > 0) — a real zero-stock pantry_stock row
+    // (already bought, fully used) must never count as a real "blue
+    // alternative available."
+    //
+    // H19 (Sep 17 2026) — real, superseding shape change: `byKey` (a flat
+    // ingredient_id|unit -> one bucket map) replaced with `byIngredient`
+    // (ingredient_id -> ARRAY of every real unit-bucket that ingredient
+    // has). A flat exact-key map can only ever answer "do I have EXACTLY
+    // this unit" — logic._resolveHaveAmount's real cup<->ml/g bridging
+    // (Alex's own ask: recipes lean on cups, stock stays weight/ml/count)
+    // needs to see every real unit an ingredient is stocked in to have
+    // anything to bridge FROM. Both real callers (_computeIngredientUsage,
+    // _findMakeableRecipes) updated to match — confirmed via grep, no
+    // other real call site exists.
     _loadPantrySummed: function(cb) {
       RPGACE.sb.select('pantry_stock', 'select=ingredient_id,quantity,unit,ingredients(name)')
         .then(function(rows) {
           var self = RPGACE.modules.cookingOracle;
-          var byKey = {};
+          var byIngredient = {};
           var byName = {};
           var aisleIndex = {};
           (rows || []).forEach(function(r) {
             var qty = (typeof r.quantity === 'number') ? r.quantity : 0;
             var name = (r.ingredients && r.ingredients.name) || '';
             var normUnit = self.logic._normalizeUnit(r.unit);
-            var key = r.ingredient_id + '|' + normUnit;
-            if (!byKey[key]) byKey[key] = { ingredient_id: r.ingredient_id, unit: r.unit || null, quantity: 0, name: name };
-            byKey[key].quantity += qty;
+
+            if (!byIngredient[r.ingredient_id]) byIngredient[r.ingredient_id] = [];
+            var idBucket = null;
+            for (var b = 0; b < byIngredient[r.ingredient_id].length; b++) {
+              if (byIngredient[r.ingredient_id][b].unit === normUnit) { idBucket = byIngredient[r.ingredient_id][b]; break; }
+            }
+            if (!idBucket) { idBucket = { unit: normUnit, quantity: 0, name: name }; byIngredient[r.ingredient_id].push(idBucket); }
+            idBucket.quantity += qty;
 
             if (name) {
               var norm = name.trim().toLowerCase();
@@ -39622,9 +39726,9 @@ RPGACE.register('cookingOracle', {
               }
             }
           });
-          cb({ byKey: byKey, byName: byName, aisleIndex: aisleIndex });
+          cb({ byIngredient: byIngredient, byName: byName, aisleIndex: aisleIndex });
         })
-        .catch(function() { cb({ byKey: {}, byName: {}, aisleIndex: {} }); });
+        .catch(function() { cb({ byIngredient: {}, byName: {}, aisleIndex: {} }); });
     },
 
     // H18 (Sep 16 2026) — the ONE shared ingredient-status classifier
@@ -39682,7 +39786,7 @@ RPGACE.register('cookingOracle', {
       // etc). See the real bug note on _showSchedulePreview's own idList
       // line above for why a quoted variant breaks fetch() outright.
       var idList = recipeIds.join(',');
-      RPGACE.sb.select('recipe_ingredients', 'select=ingredient_id,amount,unit,ingredients(name)&recipe_id=in.(' + idList + ')')
+      RPGACE.sb.select('recipe_ingredients', 'select=ingredient_id,amount,unit,grams_estimate,ingredients(name)&recipe_id=in.(' + idList + ')')
         .then(function(rows) {
           if (!rows || !rows.length) { cb('no ingredients found for these recipes'); return; }
           var groups = {};
@@ -39691,18 +39795,31 @@ RPGACE.register('cookingOracle', {
             // were showing "not in stock" purely because a recipe's unit
             // string didn't exactly match the pantry's own unit string for
             // the same real ingredient) — keyed on the SAME normalized
-            // unit logic._loadPantrySummed's own byKey uses (rule 8, one
-            // shared normalizer, see logic._normalizeUnit), so "gram" here
-            // and "g" in stock are correctly treated as the same real unit.
+            // unit logic._loadPantrySummed's own byIngredient buckets use
+            // (rule 8, one shared normalizer, see logic._normalizeUnit).
             var key = r.ingredient_id + '|' + self.logic._normalizeUnit(r.unit);
-            if (!groups[key]) groups[key] = { ingredient_id: r.ingredient_id, name: (r.ingredients && r.ingredients.name) || '?', unit: r.unit || null, amount: 0 };
+            if (!groups[key]) groups[key] = { ingredient_id: r.ingredient_id, name: (r.ingredients && r.ingredients.name) || '?', unit: r.unit || null, amount: 0, gramsEstimate: null };
             groups[key].amount += (typeof r.amount === 'number' ? r.amount : 0);
+            // H19 (Sep 17 2026) — accumulated alongside amount so the
+            // real grams-per-unit ratio logic._resolveHaveAmount needs
+            // for a cup<->weight bridge stays valid even when 2+ rows
+            // (across different recipes in the same session) land in the
+            // same group. A group with no real grams_estimate at all
+            // stays null — honest, never a guessed weight.
+            if (typeof r.grams_estimate === 'number') groups[key].gramsEstimate = (groups[key].gramsEstimate || 0) + r.grams_estimate;
           });
           self.logic._loadPantrySummed(function(pantry) {
             var list = Object.keys(groups).map(function(k) {
               var g = groups[k];
-              var pantryRow = pantry.byKey[k]; // same real key shape: ingredient_id|normalizedUnit
-              var have = pantryRow ? pantryRow.quantity : 0;
+              // H19 (Sep 17 2026, real Alex ask: recipes lean on cups,
+              // stock stays weight/ml/count) — real bridging via
+              // logic._resolveHaveAmount instead of a flat exact-key
+              // lookup, so "1 cup" here correctly finds real stock logged
+              // in ml (volume<->volume, exact) or g/kg (via this
+              // ingredient's own real grams_estimate) rather than always
+              // reading as 0/not-in-stock.
+              var buckets = pantry.byIngredient[g.ingredient_id] || [];
+              var have = self.logic._resolveHaveAmount({ neededUnit: g.unit, neededAmount: g.amount, gramsEstimate: g.gramsEstimate, buckets: buckets });
               var toBuy = Math.max(0, g.amount - have);
               // H18 (Sep 16 2026) — real 5-color status, computed once here
               // (rule 8) so every real consumer of this shared usage list
@@ -39732,7 +39849,7 @@ RPGACE.register('cookingOracle', {
       RPGACE.sb.select('recipes', 'select=id,title&order=title.asc')
         .then(function(recipeRows) {
           if (!recipeRows || !recipeRows.length) { cb(null, []); return; }
-          RPGACE.sb.select('recipe_ingredients', 'select=recipe_id,ingredient_id,amount,unit,ingredients(name)')
+          RPGACE.sb.select('recipe_ingredients', 'select=recipe_id,ingredient_id,amount,unit,grams_estimate,ingredients(name)')
             .then(function(riRows) {
               self.logic._loadPantrySummed(function(pantry) {
                 var byRecipe = {};
@@ -39744,9 +39861,12 @@ RPGACE.register('cookingOracle', {
                   var ings = byRecipe[rec.id] || [];
                   var counts = { green: 0, yellow: 0, red: 0, blue: 0, purple: 0 };
                   var statuses = ings.map(function(ing) {
-                    var key = ing.ingredient_id + '|' + self.logic._normalizeUnit(ing.unit);
-                    var pantryRow = pantry.byKey[key];
-                    var have = pantryRow ? pantryRow.quantity : 0;
+                    // H19 (Sep 17 2026, real Alex ask: recipes lean on
+                    // cups, stock stays weight/ml/count) — real bridging
+                    // via logic._resolveHaveAmount (rule 8), not a flat
+                    // exact-unit lookup.
+                    var buckets = pantry.byIngredient[ing.ingredient_id] || [];
+                    var have = self.logic._resolveHaveAmount({ neededUnit: ing.unit, neededAmount: ing.amount, gramsEstimate: ing.grams_estimate, buckets: buckets });
                     var name = (ing.ingredients && ing.ingredients.name) || '?';
                     var status = self.logic._classifyIngredientStatus({ name: name, needed: ing.amount, have: have, aisleIndex: pantry.aisleIndex });
                     counts[status]++;

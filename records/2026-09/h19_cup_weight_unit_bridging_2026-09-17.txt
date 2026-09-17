@@ -1,0 +1,133 @@
+H19: RECIPES LEAN ON CUPS (LIQUIDS/SPICES) + WEIGHT, STOCK STAYS
+WEIGHT/ML/COUNT — REAL CROSS-UNIT BRIDGING FOR THE 5-COLOR SYSTEM
+==========================================================================
+Sep 17 2026
+
+ALEX'S VERBATIM ASK (stated twice, same session)
+------------------------------------------------------------
+"also use cups as much as possible (liquid and spices) and weight when
+makes sense, everywhere where a recipe is present. in pantry ill be using
+mostly weight and ml and count rather than cups"
+
+"in pantry ill be using mostly weight and ml and count rather than cups -
+in pantry and stock as a whole"
+
+Two real, separate asks folded into one build: (1) a generation-prompt
+change — Oracle should lean on cups for liquids/spices and weight
+(grams) for other ingredients, whichever a real recipe would actually
+use; (2) a real engineering consequence I identified myself before
+building anything (rule 1) — H18's whole 5-color system exact-matched
+ingredient_id+unit, so the moment recipes start using cups while stock
+stays in g/ml/count, EVERY liquid/spice ingredient would start reading as
+"not in stock" (red) even when genuinely well-stocked — a real
+regression to H18 the moment Alex's stated future stock-logging habit
+actually shows up, not a hypothetical.
+
+REAL DESIGN CONSTRAINT HONORED THROUGHOUT: NO INVENTED CONVERSIONS
+------------------------------------------------------------
+CLAUDE.md's own standing landmine ("never force-summed across mismatched
+UNITS... no invented conversion") stays true here. Only 2 real,
+NEVER-GUESSED bridges were added:
+
+1. VOLUME_TO_ML — cup=240ml, tbsp=15ml, tsp=5ml, l=1000ml, ml=1. Real,
+   exact, ingredient-INDEPENDENT physics: a cup is always the same real
+   volume regardless of what's in it. No density guess anywhere in this
+   path.
+2. A weight bridge using the RECIPE'S OWN already-existing
+   grams_estimate (built for nutrition, H2 — reused here, rule 8, never a
+   new invented per-ingredient density table). When a recipe's unit
+   isn't weight (e.g. "1 cup" flour) but a real stock bucket for that
+   same ingredient_id IS weight (g/kg), the bridge derives a real
+   grams-per-recipe-unit ratio from that SPECIFIC recipe's own estimate
+   (gramsEstimate/neededAmount) and converts the real stock grams back
+   into the recipe's own unit.
+
+Genuinely NOT bridged, on purpose (rule 7 — honest gap, not guessed):
+"count" against weight/volume (a real onion's weight varies — no honest
+conversion exists without inventing one).
+
+REAL SHARED BUILD (rule 8 — one implementation, every consumer reuses it)
+------------------------------------------------------------
+logic.VOLUME_TO_ML / logic.WEIGHT_TO_G — the 2 real, fixed unit tables.
+logic._convertVolumeUnits(amount, fromUnit, toUnit) — pure, real
+volume<->volume math, returns null if either side isn't a volume unit.
+logic._resolveHaveAmount({neededUnit, neededAmount, gramsEstimate,
+buckets}) — the ONE real "how much do I actually have of this, in the
+recipe's own unit" resolver. Precedence, safest first: (1) an exact
+normalized-unit match (unchanged H18 behavior); (2) the real volume
+bridge; (3) the real grams_estimate weight bridge. Returns 0, honestly,
+when none apply.
+
+logic._loadPantrySummed — real, superseding shape change: `byKey` (a flat
+ingredient_id|unit -> one bucket) replaced with `byIngredient`
+(ingredient_id -> ARRAY of every real unit-bucket that ingredient has,
+normalized-unit keyed). A flat exact-key map can only ever answer "do I
+have EXACTLY this unit" — the bridge needs to see every real unit an
+ingredient is actually stocked in.
+
+3 real callers updated to match (confirmed via grep — no other real
+caller existed):
+- logic._computeIngredientUsage (schedule preview + shopping-list
+  generation) — recipe_ingredients select gained grams_estimate,
+  accumulated alongside amount per group (so 2+ rows in the same real
+  normalized-unit group keep a valid grams-per-unit ratio); have is now
+  resolved via _resolveHaveAmount against pantry.byIngredient.
+- logic._findMakeableRecipes (the stock-match finder) — same real
+  select+resolve change.
+- ui._showRecipeCard's renderIngredients (the not-yet-saved-recipe,
+  name-keyed path) — same real resolve, but the grams-per-unit ratio is
+  deliberately computed from the ingredient's BASE (unscaled)
+  amount/grams_estimate, never the currently-displayed SCALED amount —
+  "have" doesn't change just because Alex asked for more servings.
+
+REAL GENERATION-PROMPT CHANGE (Alex's part 1 ask)
+------------------------------------------------------------
+New module-top-level UNIT_PREFERENCE_TEXT (one real shared string, rule
+8): "prefer cup measurements for liquids and spices wherever that is
+genuinely how a real home cook would measure them, and prefer weight in
+grams for other ingredients... when that makes more practical sense —
+pick whichever real unit a genuine recipe would actually use, never cups
+just for the sake of it." Deliberately NOT "always cups" — Alex's own
+words are "as much as possible" and "when makes sense," so this asks for
+real per-ingredient judgment, matching how recipes actually measure
+things.
+
+Spliced into all 4 real places that generate a fresh ingredient
+amount/unit (confirmed via grep, no other real site exists):
+logic._generateWithStockConstraint (full generation), logic.
+buildRecipeGenBlock (H15 chat-triggered generation), the RECIPE_UPDATE_JSON
+critique-revision context-provider text (registerContextProvider), and
+logic._suggestIngredientAdditions (pantry-aware Suggest Additions).
+
+VERIFICATION
+------------------------------------------------------------
+node --check clean. Real headless-Chromium pass (raw rpgace_core.js
+served directly, not the pre-existing .min.js, via a scratch-only
+index.html copy deleted after the run), 20/20 new assertions pass, plus
+a full re-run of H18's own 27/27-assertion suite confirming zero
+regression from the byKey->byIngredient shape change:
+- _convertVolumeUnits: cup->ml, ml->cup, tbsp->ml, tsp->ml, l->ml all
+  exact; a non-volume unit on either side correctly returns null (no
+  false bridge).
+- _resolveHaveAmount: an exact match stays unchanged AND wins over a
+  same-ingredient bridge candidate when both exist; a real volume bridge
+  (1 cup needed, 500ml in stock -> ~2.083 cups) both directions; a real
+  weight bridge via the recipe's own grams_estimate (1 cup flour =
+  120g/cup, 600g in stock -> 5 cups); a genuinely unbridgeable case (cup
+  vs count, no grams_estimate) honestly returns 0, never a guess.
+- _computeIngredientUsage: a "1 cup" milk ingredient against 1000ml
+  stock, and a "2 cup" flour ingredient (240g total) against 300g stock,
+  both correctly resolve via the real bridges and classify green.
+- _findMakeableRecipes: a cup-based recipe correctly resolves as
+  makeable once the ml bridge applies.
+- ui._showRecipeCard: a "1 cup" sugar ingredient (200g/cup) bridged
+  against 600g stock renders the correct green dot.
+- logic._generate's real outbound prompt includes the new unit-
+  preference instruction text.
+Zero real console/page errors from this feature's own code.
+
+Re-minified, node --check rpgace_core.min.js clean, cache-bust bumped
+20260916j -> 20260917a.
+
+Untested by Alex's own hand.
+==========================================================================
