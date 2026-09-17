@@ -1,0 +1,117 @@
+H24 2ND PASS: REAL "CONFIRM SUBSTITUTE → GREEN" FLOW + THE REAL "whole"/"Count"
+UNIT-MISMATCH BUG THAT KEPT LIME ORANGE AFTER THE H24 MERGE
+==========================================================================
+
+ALEX'S VERBATIM ASK
+------------------------------------------------------------
+After re-testing the Schedule Cook Preview against the H24 fixes (confirmed
+several were live and correct — "whole coriander"/"beef cuts with bone"/
+"cabbage"/"garlic bulbs" now showing as real substitutes instead of the
+prior session's wrong matches): "Close - nothing changed - when orange
+subsitution or blue is presented, give me an option to confirm so it can
+turn green." Then, on the earlier turn's own deferred-scope note about the
+"ask what specific type I have" idea: "lets red this too."
+
+REAL BUG FOUND FIRST, BEFORE BUILDING ANYTHING (rule 4)
+------------------------------------------------------------
+"lime" was STILL showing orange with "have a substitute in stock: lime
+leaves" even though the earlier same-session pass had already merged the
+real "lime"/"limes" duplicate ingredient row and verified real fridge
+stock landed on the correct id. Traced by hand, not guessed: the recipe's
+own ingredient wants unit "whole" (2 whole lime); the real Current Stock
+row is logged in unit "Count" (his own dropdown selection when adding
+stock). `logic._normalizeUnit`'s synonym table had no entry mapping
+either of these — "whole" and "count" both normalized to themselves,
+never to a shared bucket, so the exact-unit-match in
+`logic._resolveHaveAmount` failed for the SAME real ingredient, `have`
+came back 0, and the row fell through to the substitute-finder path
+exactly as if no stock existed at all. Same real bug CLASS as H18's
+"gram"/"g" fix — a genuine unit-string mismatch between what a recipe
+asks for and what Alex's own stock entry used, never a data problem.
+
+REAL FIX 1 — unit normalization
+------------------------------------------------------------
+Added `whole`/`wholes`/`count`/`counts` to `logic._normalizeUnit`'s
+SYNONYMS table, all mapping to the same canonical bucket the existing
+`unit`/`units` entries already use. This is the real, direct fix for
+lime (and any other whole-item recipe ingredient matched against a
+Current-Stock row logged as "Count") — verified via
+`_resolveHaveAmount` directly: a real "2 Count" stock bucket now
+correctly answers "2" for a recipe needing "whole".
+
+REAL BUILD 2 — the confirm-to-green flow (his new, explicit ask)
+------------------------------------------------------------
+New real Supabase table, `ingredient_substitution_confirmations`
+(ingredient_id, substitute_name, confirmed_at; UNIQUE on the pair),
+`anon_read_only`/`authenticated_all` RLS from creation, added to
+`api/data-write.js`'s ALLOWED_TABLES (satisfies "flip RLS first, then
+allowlist" by construction, same precedent as every HABITS table this
+project has shipped). Real write path, `logic._confirmSubstitution`
+(rule 8 — one shared function, every real UI site below calls this
+same one) — keyed on the (ingredient_id, substitute_name) PAIR, not a
+global flag, so confirming "beef cuts with bone for beef shin" never
+silently also confirms an unrelated pairing that happens to share the
+same generic orange status. `logic._loadConfirmedSubs` is the matching
+shared reader.
+
+`logic._classifyIngredientStatus` gained 2 real, optional params
+(`ingredientId`, `confirmedSubs`) — when a real substitute is found AND
+that exact (ingredientId, substituteName) pair has already been
+confirmed, it now returns green instead of orange. Every existing
+caller that omits the new params is completely unaffected (verified:
+orange still classifies exactly as before when they're not passed) —
+same backward-compatible discipline every H18-H23 classifier extension
+already used.
+
+Real UI, 2 of the 3 real render sites (rule 11 — proportionate scope,
+see below for the honest 3rd):
+- **Schedule Preview** (`ui._showSchedulePreview`'s buyBefore loop): a
+  new `ui._renderSubstitutableStatusRow` (a real, separate function —
+  deliberately not a retrofit of the widely-shared
+  `_renderIngredientStatusRow`, rule 4, so every other real caller of
+  that function stays untouched) renders a real "✓ Use <substitute>
+  instead" button under an orange row. On click: writes the real
+  confirmation, then flips that one row's own color/icon to green in
+  place (no full popup re-render needed here).
+- **Shopping List** (`ui._showShoppingList`'s "Need to buy" section):
+  the same real confirm write, wired into this function's own already-
+  established "full re-render on any successful write" convention
+  (its own comment: "keeps this simple and correct") — clicking
+  Confirm here re-runs `renderItems()`, which re-loads the now-updated
+  confirmed-subs snapshot and shows the row green on the next pass.
+
+**Deliberately NOT built this pass, honestly scoped (rule 11/16), matching
+Alex's own earlier note that this needed its own pass**: the recipe
+card's own inline "Ingredients" list (`ui._showRecipeCard`'s
+`renderIngredients`) still shows an orange row's substitute name but has
+no confirm button yet — same shared `logic._confirmSubstitution`/
+`_loadConfirmedSubs` functions are already in place, so wiring this 3rd
+site is a real, cheap, low-risk fast-follow, not a redesign. Blue status
+was also deliberately left out (Alex's ask named both, but blue has no
+single named candidate the way orange does — only a same-aisle "something
+exists" flag — so there's nothing concrete yet to attach a confirm button
+to; would need a real picker UI showing every same-aisle alternative,
+genuinely new scope, not guessed at here).
+
+VERIFICATION
+------------------------------------------------------------
+`node --check` clean. Real headless-Chromium pass, 14/14 new assertions
+pass: the real whole/Count unit-normalization fix and its direct effect
+on `_resolveHaveAmount`; the classifier correctly keys confirmations per
+(ingredientId, substituteName) pair — a DIFFERENT ingredient with the
+same substitute name stays orange, the real confirmed pair goes green,
+omitting the new params entirely leaves existing behavior untouched;
+`_confirmSubstitution`'s real write shape (table name, normalized
+lowercase substitute name); `_loadConfirmedSubs`'s real map shape; the
+new `_renderSubstitutableStatusRow`'s full button-render/click/write/
+DOM-flip/button-removal cycle; and confirmation that blue and green rows
+never get a confirm button at all. Plus full re-runs of every
+pre-existing Cooking module suite confirming zero regression: H18
+27/27, H19 20/20, H20 16/16, H21 26/26, H22 17/17, H23 19/19, H24 (1st
+pass) 18/18 — 143 total pre-existing assertions, all unchanged.
+
+Re-minified (2538142 -> 1249057 bytes), cache-bust bumped
+20260917f -> 20260917g.
+
+Untested by Alex's own hand.
+==========================================================================

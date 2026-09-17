@@ -167,6 +167,14 @@ const ALLOWED_TABLES = new Set([
   // HABITS table above). cookingOracle.ui._renderEquipmentTab is the one
   // real write path.
   'kitchen_equipment',
+  // 2026-09-17 - H24 2nd pass (real Alex ask: "when orange substitution
+  // or blue is presented, give me an option to confirm so it can turn
+  // green"). Created anon_read_only/authenticated_all FROM THE START (same
+  // "flip RLS first, then allowlist" by construction as every HABITS
+  // table above). cookingOracle.logic._confirmSubstitution is the one
+  // real write path - a real, explicit Alex click, never an automatic
+  // insert.
+  'ingredient_substitution_confirmations',
 ]);
 
 async function handleBundleDeliverables(req, res, serviceKey) {

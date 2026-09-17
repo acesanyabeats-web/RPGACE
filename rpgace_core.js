@@ -37040,6 +37040,52 @@ RPGACE.register('cookingOracle', {
       return row;
     },
 
+    // H24 (Sep 17 2026, 2nd pass, real Alex ask: "when orange
+    // substitution or blue is presented, give me an option to confirm so
+    // it can turn green") — a real, separate function rather than
+    // retrofitting _renderIngredientStatusRow's own widely-shared
+    // contract (rule 4 — don't touch a working call site's contract to
+    // serve a new, unrelated caller); every non-orange status still
+    // renders identically to the plain function above. Only fires the
+    // real confirm button when a real substitute name is actually known
+    // — blue is deliberately excluded, it has no single named candidate
+    // to confirm against.
+    _renderSubstitutableStatusRow: function(text, status, ingredientId, subName, ingredientName) {
+      var self = RPGACE.modules.cookingOracle;
+      var meta = self.INGREDIENT_STATUS_META[status] || self.INGREDIENT_STATUS_META.red;
+      var row = document.createElement('div');
+      row.style.cssText = 'font-size:12px;color:' + meta.color + ';border-left:3px solid ' + meta.color + ';background:' + meta.bg + ';border-radius:0 5px 5px 0;padding:4px 10px;margin-bottom:3px;';
+      row.title = meta.label;
+      var textEl = document.createElement('div');
+      textEl.textContent = meta.icon + ' ' + text;
+      row.appendChild(textEl);
+      if (status === 'orange' && ingredientId && subName) {
+        var btn = self.ui._mkBtn('✓ Use ' + subName + ' instead', 'inline', { extra: 'margin-top:5px;font-size:10px;padding:3px 8px;', color: 'var(--green)', borderColor: 'rgba(76,175,130,.35)' });
+        btn.onclick = function() {
+          btn.disabled = true;
+          btn.textContent = '⏳ Saving...';
+          self.logic._confirmSubstitution(ingredientId, subName, function(err) {
+            if (err) {
+              btn.disabled = false;
+              btn.textContent = '✓ Use ' + subName + ' instead';
+              RPGACE.utils.toast('⚠️ Could not save: ' + err, '#CC4A4A', 3200);
+              return;
+            }
+            var greenMeta = self.INGREDIENT_STATUS_META.green;
+            row.style.color = greenMeta.color;
+            row.style.borderLeftColor = greenMeta.color;
+            row.style.background = greenMeta.bg;
+            row.title = greenMeta.label;
+            textEl.textContent = greenMeta.icon + ' ' + text;
+            btn.remove();
+            RPGACE.utils.toast('✅ Confirmed — ' + (ingredientName || 'this') + ' will show green from now on', '#4caf82', 3200);
+          });
+        };
+        row.appendChild(btn);
+      }
+      return row;
+    },
+
     // Sep 14 2026 (real "close the loop" build, Alex's own exact words:
     // "let me confirm changes first, but make sure only changes are
     // shown, not the whole thing, so I can make a quick informed
@@ -38139,11 +38185,15 @@ RPGACE.register('cookingOracle', {
                   // H21 (Sep 17 2026) — real substitute name surfaced on
                   // an orange row (never invented — _findSubstitute only
                   // ever returns a real, currently in-stock match).
+                  var subName = null;
                   if (u.status === 'orange') {
                     var sub = self.logic._findSubstitute(u.name, pantrySnapForSub.aisleIndex);
-                    if (sub) text += ' — have a substitute in stock: ' + sub.name;
+                    if (sub) { text += ' — have a substitute in stock: ' + sub.name; subName = sub.name; }
                   }
-                  usageBox.appendChild(self.ui._renderIngredientStatusRow(text, u.status));
+                  // H24 (Sep 17 2026, 2nd pass) — real confirm-to-green
+                  // button, rule 8 shared render (see
+                  // ui._renderSubstitutableStatusRow's own comment).
+                  usageBox.appendChild(self.ui._renderSubstitutableStatusRow(text, u.status, u.ingredient_id, subName, u.name));
                 });
               }
 
@@ -38593,11 +38643,16 @@ RPGACE.register('cookingOracle', {
           RPGACE.sb.select('shopping_list_items', 'select=id,ingredient_id,needed_amount,needed_unit,have_amount,to_buy_amount,bought,in_basket,ingredients(name)&list_id=eq.' + listId + '&order=bought.asc'),
           new Promise(function(resolve) { self.logic._loadPantrySummed(function(snapshot) { resolve(snapshot); }); }),
           RPGACE.sb.select('shopping_lists', 'select=shop_mode&id=eq.' + listId + '&limit=1').catch(function() { return []; }),
+          // H24 (Sep 17 2026, 2nd pass) — real confirmed-substitutions
+          // snapshot, same shared loader every real consumer of this
+          // classification now uses (rule 8).
+          new Promise(function(resolve) { self.logic._loadConfirmedSubs(function(map) { resolve(map); }); }),
         ])
           .then(function(results) {
             var rows = results[0];
             var pantry = results[1];
             var listRow = results[2] && results[2][0];
+            var confirmedSubs = results[3] || {};
             box.innerHTML = ''; // full re-render each time — keeps this simple and correct
 
             // H21 (Sep 17 2026) — a real, honest note when THIS list was
@@ -38644,7 +38699,7 @@ RPGACE.register('cookingOracle', {
             needRows.forEach(function(r) {
               var name = (r.ingredients && r.ingredients.name) || '';
               r._aisle = self.logic._classifyAisle(name);
-              r._status = self.logic._classifyIngredientStatus({ name: name, needed: r.needed_amount, have: r.have_amount, aisleIndex: pantry.aisleIndex });
+              r._status = self.logic._classifyIngredientStatus({ name: name, needed: r.needed_amount, have: r.have_amount, aisleIndex: pantry.aisleIndex, ingredientId: r.ingredient_id, confirmedSubs: confirmedSubs });
             });
             needRows.sort(function(a, b) {
               if (a._aisle.order !== b._aisle.order) return a._aisle.order - b._aisle.order;
@@ -38666,8 +38721,10 @@ RPGACE.register('cookingOracle', {
               // logic._classifyIngredientStatus), replacing the old flat
               // single-gold treatment every row in this bucket used to get.
               var meta = self.INGREDIENT_STATUS_META[r._status] || self.INGREDIENT_STATUS_META.red;
+              var wrap = document.createElement('div');
+              wrap.style.cssText = 'margin-bottom:5px;';
               var row = document.createElement('div');
-              row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-left:3px solid ' + meta.color + ';background:' + meta.bg + ';border-radius:0 5px 5px 0;margin-bottom:5px;font-size:13px;';
+              row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:7px 10px;border-left:3px solid ' + meta.color + ';background:' + meta.bg + ';border-radius:0 5px 5px 0;font-size:13px;';
               var lbl = document.createElement('span');
               lbl.style.cssText = 'color:' + meta.color + ';';
               lbl.title = meta.label;
@@ -38677,9 +38734,10 @@ RPGACE.register('cookingOracle', {
               // H21 (Sep 17 2026) — real substitute name surfaced on an
               // orange row (never invented — logic._findSubstitute only
               // ever returns a real, currently in-stock match).
+              var subName = null;
               if (r._status === 'orange') {
                 var sub = self.logic._findSubstitute(ingName, pantry.aisleIndex);
-                if (sub) lblText += ' — have a substitute in stock: ' + sub.name;
+                if (sub) { lblText += ' — have a substitute in stock: ' + sub.name; subName = sub.name; }
               }
               lbl.textContent = lblText;
               // H22 (Sep 17 2026) — real, honest 2-step shopping flow: this
@@ -38712,7 +38770,36 @@ RPGACE.register('cookingOracle', {
               };
               row.appendChild(lbl);
               row.appendChild(btn);
-              box.appendChild(row);
+              wrap.appendChild(row);
+              // H24 (Sep 17 2026, 2nd pass, real Alex ask: "when orange
+              // substitution or blue is presented, give me an option to
+              // confirm so it can turn green") — real, persisted confirm
+              // (logic._confirmSubstitution, rule 8 — same one write path
+              // the schedule preview's own confirm button uses). This
+              // list already re-renders in full on any successful write
+              // (this function's own established convention, see its
+              // opening comment), so a real re-render is what shows the
+              // confirmed row as green — no manual DOM-color patch needed
+              // here.
+              if (r._status === 'orange' && subName) {
+                var confirmBtn = self.ui._mkBtn('✓ Use ' + subName + ' instead', 'inline', { extra: 'margin-top:4px;font-size:10px;padding:3px 8px;', color: 'var(--green)', borderColor: 'rgba(76,175,130,.35)' });
+                confirmBtn.onclick = function() {
+                  confirmBtn.disabled = true;
+                  confirmBtn.textContent = '⏳ Saving...';
+                  self.logic._confirmSubstitution(r.ingredient_id, subName, function(err) {
+                    if (err) {
+                      confirmBtn.disabled = false;
+                      confirmBtn.textContent = '✓ Use ' + subName + ' instead';
+                      RPGACE.utils.toast('⚠️ Could not save: ' + err, '#CC4A4A', 3200);
+                      return;
+                    }
+                    RPGACE.utils.toast('✅ Confirmed — ' + ingName + ' will show green from now on', '#4caf82', 3200);
+                    renderItems();
+                  });
+                };
+                wrap.appendChild(confirmBtn);
+              }
+              box.appendChild(wrap);
             });
 
             // H22 (Sep 17 2026) — the real "found state table" Alex asked
@@ -40156,6 +40243,18 @@ RPGACE.register('cookingOracle', {
         pinch: 'pinch', pinches: 'pinch',
         slice: 'slice', slices: 'slice',
         unit: 'unit', units: 'unit',
+        // H24 (Sep 17 2026, 2nd pass) — real bug found from Alex's own
+        // pasted popup: "lime — need 2 whole — have a substitute in
+        // stock: lime leaves" even after the real lime/limes duplicate
+        // ingredient row was merged the same session, because the
+        // RECIPE'S OWN unit ("whole") and Current Stock's own unit
+        // ("Count", the real dropdown option a shopper picks for a
+        // whole/countable item) are two different real strings for the
+        // same real count-based unit — the exact same class of gap H18
+        // already fixed for "gram"/"g". Both now map to the same
+        // canonical bucket 'unit'/'units' already uses.
+        whole: 'unit', wholes: 'unit',
+        count: 'unit', counts: 'unit',
       };
       if (SYNONYMS[s]) return SYNONYMS[s];
       if (s.length > 3 && s.charAt(s.length - 1) === 's') return s.slice(0, -1);
@@ -40358,6 +40457,42 @@ RPGACE.register('cookingOracle', {
     // component — Alex's own words: "just omit if I'm not going shop"),
     // then orange (a real substitute is actually in stock), then the
     // existing blue/red ladder, unchanged.
+    // H24 (Sep 17 2026, 2nd pass, real Alex ask: "when orange
+    // substitution or blue is presented, give me an option to confirm so
+    // it can turn green") — the real, persisted write path for that
+    // confirm click (rule 8 — one shared function, every real render
+    // site that adds the confirm button calls this same one). Keyed on
+    // (ingredient_id, substitute_name) rather than a global boolean, so
+    // confirming "beef cuts with bone for beef shin" never silently
+    // also confirms an unrelated pairing that happens to also classify
+    // orange. Scope explicitly NOT extended to blue this pass — blue has
+    // no single named candidate to confirm against (see the record for
+    // the real reason), only ever a same-aisle "something exists" flag.
+    _confirmSubstitution: function(ingredientId, subName, cb) {
+      var norm = String(subName || '').trim().toLowerCase();
+      if (!ingredientId || !norm) { cb('missing ingredient or substitute name'); return; }
+      RPGACE.sb.secureWrite('ingredient_substitution_confirmations', 'insert', {
+        ingredient_id: ingredientId,
+        substitute_name: norm,
+      })
+        .then(function() { cb(null); })
+        .catch(function(e) { cb(e.message || 'could not save confirmation'); });
+    },
+
+    // Real, shared loader for every real (ingredient_id, substitute_name)
+    // pair Alex has already confirmed — returns a plain map,
+    // `ingredientId::substituteName` -> true, so _classifyIngredientStatus
+    // can do a real O(1) lookup rather than re-querying per ingredient.
+    _loadConfirmedSubs: function(cb) {
+      RPGACE.sb.select('ingredient_substitution_confirmations', 'select=ingredient_id,substitute_name')
+        .then(function(rows) {
+          var map = {};
+          (rows || []).forEach(function(r) { map[r.ingredient_id + '::' + r.substitute_name] = true; });
+          cb(map);
+        })
+        .catch(function() { cb({}); });
+    },
+
     _classifyIngredientStatus: function(opts) {
       var self = RPGACE.modules.cookingOracle;
       opts = opts || {};
@@ -40367,7 +40502,16 @@ RPGACE.register('cookingOracle', {
         if (opts.noShopMode && opts.isSeparable) return 'brown';
         if (opts.aisleIndex && opts.name) {
           var sub = self.logic._findSubstitute(opts.name, opts.aisleIndex);
-          if (sub) return 'orange';
+          if (sub) {
+            // H24 (Sep 17 2026, 2nd pass) — a real, previously-confirmed
+            // (ingredient, substitute) pairing classifies green from now
+            // on, everywhere, not just in the one popup Alex confirmed it
+            // in — opts.ingredientId/opts.confirmedSubs are both optional,
+            // so every existing caller that omits them is unaffected
+            // (orange keeps working exactly as before).
+            if (opts.confirmedSubs && opts.ingredientId && opts.confirmedSubs[opts.ingredientId + '::' + sub.name]) return 'green';
+            return 'orange';
+          }
           var aisle = self.logic._classifyAisle(opts.name).name;
           var namesInAisle = opts.aisleIndex[aisle] || [];
           var norm = String(opts.name).trim().toLowerCase();
@@ -40434,6 +40578,12 @@ RPGACE.register('cookingOracle', {
             if (!r.is_separable) groups[key].isSeparable = false;
           });
           self.logic._loadPantrySummed(function(pantry) {
+            // H24 (Sep 17 2026, 2nd pass) — a real confirmed-substitutions
+            // snapshot loaded once here alongside the pantry, so every row
+            // this function returns already reflects any pairing Alex has
+            // previously confirmed (rule 8 — same one loader every real
+            // caller of this shared usage computation now benefits from).
+            self.logic._loadConfirmedSubs(function(confirmedSubs) {
             var list = Object.keys(groups).map(function(k) {
               var g = groups[k];
               // H19 (Sep 17 2026, real Alex ask: recipes lean on cups,
@@ -40451,10 +40601,11 @@ RPGACE.register('cookingOracle', {
               // (the schedule preview, the shopping-list generator) gets
               // the same classification for free instead of each
               // re-deriving it.
-              var status = self.logic._classifyIngredientStatus({ name: g.name, needed: g.amount, have: have, aisleIndex: pantry.aisleIndex, isSeparable: g.isSeparable, noShopMode: !!opts.noShop });
+              var status = self.logic._classifyIngredientStatus({ name: g.name, needed: g.amount, have: have, aisleIndex: pantry.aisleIndex, isSeparable: g.isSeparable, noShopMode: !!opts.noShop, ingredientId: g.ingredient_id, confirmedSubs: confirmedSubs });
               return { ingredient_id: g.ingredient_id, name: g.name, unit: g.unit, amount: g.amount, have: have, toBuy: toBuy, status: status, isSeparable: g.isSeparable };
             });
             cb(null, list);
+            });
           });
         })
         .catch(function(e) { cb(e.message || 'could not load session ingredients'); });

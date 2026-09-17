@@ -74,6 +74,17 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">✅ Sep 17 — H24 2nd pass: real "confirm substitute → green" flow + the "whole"/"Count" unit bug</div>
+    <div class="card-body">
+      Real Alex re-test of the H24 fixes, verbatim: "Close - nothing changed - when orange subsitution or blue is presented, give me an option to confirm so it can turn green."<br><br>
+      <b>Real bug found first</b>: "lime" was STILL orange despite the earlier same-session merge, because the recipe's unit ("whole") and Current Stock's own unit ("Count") had no shared synonym mapping — same bug CLASS as H18's "gram"/"g" fix. Fixed by adding whole/count to the existing "unit" canonical bucket in <code>logic._normalizeUnit</code>.<br><br>
+      <b>The real new build</b>: a new <code>ingredient_substitution_confirmations</code> table, a real shared write path (<code>logic._confirmSubstitution</code>) and reader (<code>logic._loadConfirmedSubs</code>), and 2 new optional params on the shared classifier — a real, previously-confirmed (ingredient, substitute) pair now classifies green instead of orange everywhere, with every existing caller unaffected. Real UI on the Schedule Preview (a "✓ Use &lt;substitute&gt; instead" button that flips the row green in place) and the Shopping List's "Need to buy" section.<br><br>
+      <b>Deliberately deferred, honestly scoped</b>: the recipe card's own ingredient list has no confirm button yet (same shared functions already in place, a cheap fast-follow); blue status was left out — it has no single named candidate to confirm against.<br><br>
+      <b>Verified via a real headless-Chromium pass</b>, 14/14 new assertions pass, plus full re-runs of H18 through H24-1st-pass (143 total pre-existing assertions) confirming zero regression. Zero real console/page errors. <code>node --check</code> clean, re-minified, cache-bust bumped <code>20260917f</code>→<code>20260917g</code>. Full record: <code>records/2026-09/h24b_confirm_substitution_unit_fix_2026-09-17.txt</code>. <b>Untested by Alex's own hand.</b>
+    </div>
+  </div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🍋 Sep 17 — H24: real ingredient-matching bug fixes + cup/tbsp display + a real Back button</div>
     <div class="card-body">
       Real Alex hand-test report on a live Schedule Cook Preview, verbatim: "but saying no limes when i literally put limes in fridge stock is most insane to me" — plus real examples (beef with bone for beef shin, chicken stock cubes for chicken stock, cabbage for white cabbage, garlic bulbs for garlic clove, ginger fresh for fresh ginger, whole coriander for fresh coriander).<br><br>
