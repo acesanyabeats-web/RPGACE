@@ -37007,6 +37007,7 @@ RPGACE.register('cookingOracle', {
     // "no ingredient" work (e.g. "preheat the oven") — never a fabricated
     // placeholder chip.
     _renderStepIngredients: function(step) {
+      var self = RPGACE.modules.cookingOracle;
       var list = (step && Array.isArray(step.ingredients_used)) ? step.ingredients_used : [];
       if (!list.length) return null;
       var row = document.createElement('div');
@@ -37014,7 +37015,7 @@ RPGACE.register('cookingOracle', {
       list.forEach(function(u) {
         var chip = document.createElement('span');
         chip.style.cssText = 'font-size:11px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);color:var(--gold);border-radius:10px;padding:2px 8px;';
-        var amt = (u.amount != null) ? (u.amount + ' ' + (u.unit || '')).trim() + ' ' : '';
+        var amt = (u.amount != null) ? self.logic._fmtMeasurement(u.amount, u.unit) + ' ' : '';
         chip.textContent = amt + (u.name || '');
         row.appendChild(chip);
       });
@@ -37254,7 +37255,7 @@ RPGACE.register('cookingOracle', {
           left.textContent = ing.name || '';
           var right = document.createElement('span');
           right.style.color = 'var(--muted)';
-          right.textContent = (amt != null ? amt : '') + (ing.unit ? (' ' + ing.unit) : '');
+          right.textContent = self.logic._fmtMeasurement(amt, ing.unit);
 
           if (pantrySnapshot && ing.name) {
             var norm = String(ing.name).trim().toLowerCase();
@@ -38239,6 +38240,20 @@ RPGACE.register('cookingOracle', {
               });
             };
             box.appendChild(acceptBtn);
+
+            // H24 (Sep 17 2026, real Alex ask: "make a return button for
+            // previous slide of pop up") — same real
+            // pop.close()+reopen-the-prior-popup pattern already
+            // established elsewhere in this module (rule 8, e.g. the
+            // Generate form's own "← Back to cook session" button) —
+            // this schedule preview is only ever reached from the Session
+            // Builder's own "📅 Schedule this cook" button, so that's the
+            // one real "previous slide" to return to. The session itself
+            // (self._session) is untouched by going back — only Accept
+            // clears it.
+            var backBtn = self.ui._mkBtn('← Back to Planned Cook', 'plainLink', { extra: 'margin-top:6px;' });
+            backBtn.onclick = function() { pop.close(); self.ui._showSessionBuilder(); };
+            box.appendChild(backBtn);
           })
           .catch(function(e) {
             loadingMsg.textContent = '⚠️ Could not load session recipes: ' + (e.message || 'unknown error');
@@ -39427,24 +39442,52 @@ RPGACE.register('cookingOracle', {
       return parts.slice(0, 5);
     },
 
+    // H24 (Sep 17 2026, real Alex bug report — a real "lime"/"limes"
+    // duplicate ingredient row silently hid 2 real limes already in his
+    // fridge stock, "the most insane" bug he flagged) — a real, narrow
+    // singular/plural fallback, same trailing-s precedent _normalizeUnit
+    // already established (len>3 guard, never strip a short word). Tried
+    // ONLY on a cache-miss, so the common exact-match case costs nothing
+    // extra — one existing ingredients row is reused across a trivial
+    // pluralization difference instead of a new near-duplicate being
+    // minted, which is exactly what let "lime" (what recipes ask for) and
+    // "limes" (what Alex actually typed into Current Stock) become two
+    // separate rows with zero shared stock.
+    _pluralVariant: function(norm) {
+      if (!norm) return null;
+      if (norm.length > 3 && norm.charAt(norm.length - 1) === 's') return norm.slice(0, -1);
+      return norm + 's';
+    },
+
     // Real ingredient resolution: case-insensitive lookup by name (matching
     // intelDedup's own normalized-key-exact-match precedent, not fuzzy) -
     // reuses an existing ingredients row across recipes instead of minting
     // a near-duplicate every time, which is what the whole ingredient_
     // frequency view depends on being accurate.
     _resolveIngredient: function(name, cb) {
+      var self = RPGACE.modules.cookingOracle;
       var norm = String(name || '').trim().toLowerCase();
       if (!norm) { cb('ingredient with no name'); return; }
       RPGACE.sb.select('ingredients', 'name=eq.' + encodeURIComponent(norm) + '&select=id&limit=1')
         .then(function(rows) {
           if (rows && rows[0] && rows[0].id) { cb(null, rows[0].id); return; }
-          RPGACE.sb.secureWrite('ingredients', 'insert', { name: norm })
-            .then(function(data) {
-              var row = Array.isArray(data) ? data[0] : data;
-              if (!row || !row.id) throw new Error('ingredient insert returned no row');
-              cb(null, row.id);
+          var create = function() {
+            RPGACE.sb.secureWrite('ingredients', 'insert', { name: norm })
+              .then(function(data) {
+                var row = Array.isArray(data) ? data[0] : data;
+                if (!row || !row.id) throw new Error('ingredient insert returned no row');
+                cb(null, row.id);
+              })
+              .catch(function(e) { cb(e.message || 'ingredient resolve failed'); });
+          };
+          var alt = self.logic._pluralVariant(norm);
+          if (!alt) { create(); return; }
+          RPGACE.sb.select('ingredients', 'name=eq.' + encodeURIComponent(alt) + '&select=id&limit=1')
+            .then(function(altRows) {
+              if (altRows && altRows[0] && altRows[0].id) { cb(null, altRows[0].id); return; }
+              create();
             })
-            .catch(function(e) { cb(e.message || 'ingredient resolve failed'); });
+            .catch(create);
         })
         .catch(function(e) { cb(e.message || 'ingredient lookup failed'); });
     },
@@ -39455,19 +39498,36 @@ RPGACE.register('cookingOracle', {
     // changing _resolveIngredient's own contract, since _save above already
     // relies on that one resolving to a bare id (rule 4 — don't touch a
     // working call site's contract to serve a new, unrelated caller).
+    // H24 (Sep 17 2026) — same real singular/plural fallback as
+    // _resolveIngredient above (rule 8's own sibling, not a copy-pasted
+    // divergent one): Current Stock's add-stock form (this function's
+    // other real caller) is exactly where Alex hand-types a name that can
+    // trivially differ in pluralization from whatever a recipe asked for.
     _resolveIngredientFull: function(name, cb) {
+      var self = RPGACE.modules.cookingOracle;
       var norm = String(name || '').trim().toLowerCase();
       if (!norm) { cb('ingredient with no name'); return; }
-      RPGACE.sb.select('ingredients', 'name=eq.' + encodeURIComponent(norm) + '&select=id,kcal_per_100g,protein_g_per_100g,carbs_g_per_100g,fat_g_per_100g&limit=1')
+      var NUTRI_SELECT = 'id,kcal_per_100g,protein_g_per_100g,carbs_g_per_100g,fat_g_per_100g';
+      RPGACE.sb.select('ingredients', 'name=eq.' + encodeURIComponent(norm) + '&select=' + NUTRI_SELECT + '&limit=1')
         .then(function(rows) {
           if (rows && rows[0] && rows[0].id) { cb(null, rows[0]); return; }
-          RPGACE.sb.secureWrite('ingredients', 'insert', { name: norm })
-            .then(function(data) {
-              var row = Array.isArray(data) ? data[0] : data;
-              if (!row || !row.id) throw new Error('ingredient insert returned no row');
-              cb(null, { id: row.id, kcal_per_100g: null, protein_g_per_100g: null, carbs_g_per_100g: null, fat_g_per_100g: null });
+          var create = function() {
+            RPGACE.sb.secureWrite('ingredients', 'insert', { name: norm })
+              .then(function(data) {
+                var row = Array.isArray(data) ? data[0] : data;
+                if (!row || !row.id) throw new Error('ingredient insert returned no row');
+                cb(null, { id: row.id, kcal_per_100g: null, protein_g_per_100g: null, carbs_g_per_100g: null, fat_g_per_100g: null });
+              })
+              .catch(function(e) { cb(e.message || 'ingredient resolve failed'); });
+          };
+          var alt = self.logic._pluralVariant(norm);
+          if (!alt) { create(); return; }
+          RPGACE.sb.select('ingredients', 'name=eq.' + encodeURIComponent(alt) + '&select=' + NUTRI_SELECT + '&limit=1')
+            .then(function(altRows) {
+              if (altRows && altRows[0] && altRows[0].id) { cb(null, altRows[0]); return; }
+              create();
             })
-            .catch(function(e) { cb(e.message || 'ingredient resolve failed'); });
+            .catch(create);
         })
         .catch(function(e) { cb(e.message || 'ingredient lookup failed'); });
     },
@@ -39956,6 +40016,20 @@ RPGACE.register('cookingOracle', {
     // same group substitute for each other symmetrically without
     // duplicating each real relationship twice. A starting set, meant to
     // grow the same organic way _AISLE_GROUPS itself has.
+    // H24 (Sep 17 2026) — 6 real, evidence-backed additions, every one
+    // pulled directly from Alex's own verbatim examples during a real
+    // hand-test of his actual live pantry_stock rows (never guessed): "ive
+    // got beef with bone, so can replace beef shin"; "ive got chicken
+    // stock cubes, so can try use that instead of actual chicken stock";
+    // "got cabbage instead of white cabbage"; "garlic clove comes from a
+    // garlic bulb, so i have so many"; "fresh coriander is in my stock"
+    // (his real row is named "whole coriander" — the same real bunch, a
+    // naming difference only); his real stock row for ginger is named
+    // "ginger fresh" (reversed word order of "fresh ginger"). None of
+    // these claim the 2 forms are numerically interchangeable 1-for-1
+    // (a garlic bulb is not literally one clove) — same as every existing
+    // group, orange only ever means "a real usable alternative exists,"
+    // never a computed quantity swap (unchanged scope, section 4).
     _SUBSTITUTION_GROUPS: [
       { members: ['caster sugar', 'golden caster sugar', 'granulated sugar', 'light brown sugar', 'dark brown sugar', 'soft brown sugar'] },
       { members: ['unsalted butter', 'salted butter', 'margarine'] },
@@ -39965,8 +40039,13 @@ RPGACE.register('cookingOracle', {
       { members: ['vegetable oil', 'sunflower oil', 'canola oil', 'rapeseed oil'] },
       { members: ['plain flour', 'all purpose flour', 'all-purpose flour'] },
       { members: ['spring onion', 'scallion', 'shallot'] },
-      { members: ['coriander', 'cilantro'] },
-      { members: ['chicken stock', 'vegetable stock', 'chicken broth', 'vegetable broth'] },
+      { members: ['coriander', 'cilantro', 'fresh coriander', 'whole coriander'] },
+      { members: ['chicken stock', 'vegetable stock', 'chicken broth', 'vegetable broth', 'chicken stock cubes', 'vegetable stock cube', 'beef stock pot'] },
+      { members: ['beef shin', 'beef cuts with bone', 'beef stew meat', 'stewing beef'] },
+      { members: ['white cabbage', 'cabbage'] },
+      { members: ['garlic clove', 'garlic cloves', 'garlic bulb', 'garlic bulbs'] },
+      { members: ['ginger', 'fresh ginger', 'ginger fresh'] },
+      { members: ['fresh red chilli', 'red chilli', 'large red chilli', 'bullet chilli', "bird's eye chilli"] },
     ],
 
     // Real, shared "is there a genuine substitute for this actually in
@@ -39981,6 +40060,24 @@ RPGACE.register('cookingOracle', {
     // only ever match a real in-stock name — aisleIndex holds nothing
     // with quantity<=0, H18's own standing contract, never re-derived
     // here.
+    // H24 (Sep 17 2026, real Alex bug: "fresh coriander" showed a
+    // substitute of "ginger fresh" in stock, when his own real "whole
+    // coriander" stock — the actual same ingredient, now also a curated
+    // group member above — was sitting right there unmatched). Real root
+    // cause, confirmed by tracing the heuristic by hand: "fresh"/"dried"/
+    // "whole"/etc are common QUALIFIER words that describe a PREPARATION,
+    // not the ingredient's own identity — the old heuristic treated a
+    // shared qualifier word exactly like a shared identity word, so
+    // "fresh coriander" vs "ginger fresh" (sharing only "fresh") scored
+    // identically to "fresh coriander" vs "whole coriander" (sharing the
+    // real identity word "coriander"), and whichever candidate the aisle
+    // list happened to iterate first won. A real, small, curated stoplist
+    // — never a guess, every one of these genuinely describes FORM, not
+    // WHAT the ingredient is — excludes qualifier words from counting as
+    // a real shared-identity token, so only a genuinely identifying word
+    // (like "coriander" or "cabbage") can produce a heuristic match.
+    _QUALIFIER_STOPWORDS: ['fresh', 'dried', 'whole', 'ground', 'chopped', 'sliced', 'diced', 'minced', 'large', 'small', 'medium', 'frozen', 'fine', 'coarse', 'crushed', 'grated'],
+
     _findSubstitute: function(name, aisleIndex) {
       var self = RPGACE.modules.cookingOracle;
       var norm = String(name || '').trim().toLowerCase();
@@ -40001,12 +40098,13 @@ RPGACE.register('cookingOracle', {
 
       var aisle = self.logic._classifyAisle(name).name;
       var namesInAisle = aisleIndex[aisle] || [];
-      var tokens = norm.split(/\s+/).filter(function(w) { return w.length >= 4; });
+      var stop = self.logic._QUALIFIER_STOPWORDS;
+      var tokens = norm.split(/\s+/).filter(function(w) { return w.length >= 4 && stop.indexOf(w) === -1; });
       if (!tokens.length) return null;
       for (var i = 0; i < namesInAisle.length; i++) {
         var cand = namesInAisle[i];
         if (cand === norm) continue;
-        var candTokens = cand.split(/\s+/);
+        var candTokens = cand.split(/\s+/).filter(function(w) { return stop.indexOf(w) === -1; });
         if (tokens.some(function(t) { return candTokens.indexOf(t) !== -1; })) return { name: cand, method: 'heuristic' };
       }
       return null;
@@ -40091,6 +40189,46 @@ RPGACE.register('cookingOracle', {
       var f = self.logic.VOLUME_TO_ML[fromUnit], t = self.logic.VOLUME_TO_ML[toUnit];
       if (!f || !t) return null;
       return amount * f / t;
+    },
+
+    // H24 (Sep 17 2026, real Alex ask: "ive got ml in stock, so convert to
+    // cups and tbsp (1/16th of cup) so i can cook easier") — a real,
+    // shared measurement FORMATTER (rule 8 — one function, every real
+    // display site), distinct from _resolveHaveAmount's own bridging
+    // (which only ever answers "how much do I have," never changes what
+    // a recipe SHOWS). Only ever converts a real ml/l amount — ml/tbsp/
+    // tsp/cup/l are the same exact real physics VOLUME_TO_ML already uses
+    // for matching, never a new invented ratio. Deliberately expresses
+    // whole cups + whole tbsp + a real quarter-tsp-rounded remainder
+    // (never a fraction of a tbsp — his own "1/16th of a cup" note is
+    // exactly 1 tbsp, the real smallest unit this rounds to before
+    // dropping to tsp) — any non-volume unit (g/kg/clove/count/etc) is
+    // returned completely unchanged, since only volume has an honest,
+    // exact conversion (rule 7, same discipline VOLUME_TO_ML's own
+    // comment already states).
+    _fmtMeasurement: function(amount, unit) {
+      var self = RPGACE.modules.cookingOracle;
+      var raw = ((amount != null ? amount : '') + ' ' + (unit || '')).trim();
+      if (typeof amount !== 'number' || !unit) return raw;
+      var normUnit = self.logic._normalizeUnit(unit);
+      if (normUnit !== 'ml' && normUnit !== 'l') return raw;
+      var ml = self.logic._convertVolumeUnits(amount, normUnit, 'ml');
+      if (ml == null || ml <= 0) return raw;
+
+      var CUP = self.logic.VOLUME_TO_ML.cup, TBSP = self.logic.VOLUME_TO_ML.tbsp, TSP = self.logic.VOLUME_TO_ML.tsp;
+      var cups = Math.floor(ml / CUP);
+      var remAfterCups = ml - cups * CUP;
+      var tbsp = Math.floor(remAfterCups / TBSP);
+      var remAfterTbsp = remAfterCups - tbsp * TBSP;
+      var tsp = Math.round((remAfterTbsp / TSP) * 4) / 4; // nearest real quarter-tsp
+      if (tsp >= 3) { tbsp += 1; tsp = 0; } // 3 tsp = 1 real tbsp — never show an ugly "3 tsp" remainder
+      if (tbsp >= 16) { cups += Math.floor(tbsp / 16); tbsp = tbsp % 16; } // 16 tbsp = 1 real cup
+
+      var parts = [];
+      if (cups > 0) parts.push(cups + ' ' + (cups === 1 ? 'cup' : 'cups'));
+      if (tbsp > 0) parts.push(tbsp + ' tbsp');
+      if (tsp > 0) parts.push(tsp + ' tsp');
+      return parts.length ? parts.join(' ') : raw; // genuinely under 1/4 tsp — not worth converting
     },
 
     // Real, shared "how much do I actually have of this, expressed in the

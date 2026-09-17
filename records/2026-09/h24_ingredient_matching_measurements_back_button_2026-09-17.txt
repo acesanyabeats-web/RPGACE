@@ -1,0 +1,179 @@
+H24: REAL INGREDIENT-MATCHING BUG FIXES + CUP/TBSP DISPLAY + BACK BUTTON
+==========================================================================
+
+ALEX'S VERBATIM ASK
+------------------------------------------------------------
+"make a return button for previous slide of pop up." Then, on a real
+Schedule Cook Preview he was hand-testing: "not all steps show
+measurements - ive got ml in stock, so convert to cups and tbsp (1/16th
+of cup) so i can cook easier. i have bullet chilli that is a dried
+chilli, fresh coriander is in my stock. when something is orange and i
+have something that could be exactly what the recipe needs, ask me what
+type of the specific ingredient i have, then use for green if have, or
+blue/orange if can alternative, or red if shop is a must. ive got beef
+with bone, so can replace beef shin for instance. ive got chicken stock
+cubes, so can try use that instead of actual chicken stock. got cabbage
+instead of white cabbage. garlic clove comes from a garlic bulb, so i
+have so many. stupid things like that need to be taken into account.
+but saying no limes when i literally put limes in fridge stock is most
+insane to me"
+
+REAL DIAGNOSIS FIRST (rule 4 — evidence before a fix, not a guess)
+------------------------------------------------------------
+Direct Supabase query on his own live `ingredients`/`pantry_stock` rows
+found the real, single root cause behind nearly every symptom he
+listed: RPGACE's ingredient resolution (`logic._resolveIngredient`/
+`_resolveIngredientFull`) has always been an EXACT-STRING match — a
+recipe asking for "lime" and Alex's own Current Stock entry "limes"
+(both real, both meaning the same thing) became two wholly separate
+`ingredients` rows, with real stock sitting on the row the recipe never
+looks at. Confirmed for real, not guessed:
+- `lime` (id 5e38d647, referenced by 2 real recipe_ingredients rows,
+  zero stock) vs `limes` (id 5f998760, 2 Count in fridge, zero recipe
+  references) — the exact "most insane" bug.
+- `fresh coriander` (recipe wants, zero stock row) vs `whole coriander`
+  (his real 200g fridge stock — the same bunch, different name).
+- `beef shin` (recipe wants) vs `beef cuts with bone` (his real 1kg
+  fridge stock — "ive got beef with bone, so can replace beef shin").
+- `chicken stock` (recipe wants) vs `chicken stock cubes` (his real
+  8-count pantry stock).
+- `white cabbage` (recipe wants) vs `cabbage` (his real 1kg fridge
+  stock).
+- `garlic clove` (recipe wants) vs `garlic bulbs` (his real 5.5-count
+  pantry stock — "garlic clove comes from a garlic bulb, so i have so
+  many").
+- `fresh ginger`/`ginger` (recipe wants) vs `ginger fresh` (his real
+  150g pantry stock, same thing, reversed word order).
+
+Separately, the schedule preview's "fresh coriander — have a substitute
+in stock: ginger fresh" line was traced by hand through
+`logic._findSubstitute`'s own heuristic: it shares the token "fresh"
+with BOTH "ginger fresh" and "whole coriander," and the loop returns
+whichever candidate the aisle list happened to iterate first — a real
+qualifier word ("fresh") was being treated exactly like a real identity
+word ("coriander"), so the wrong candidate won on iteration order alone.
+
+REAL FIXES SHIPPED
+------------------------------------------------------------
+1. **The live "lime"/"limes" duplicate — merged for real, evidence-
+   checked before touching anything.** Confirmed `limes` (5f998760) had
+   zero recipe_ingredients/ingredient_prices/shopping_list_items
+   references, only the 1 real pantry_stock row — safe, narrow,
+   single-row UPDATE (reassign that pantry_stock row to `lime`'s real
+   id) then DELETE the now-orphaned duplicate ingredient row. Verified
+   post-merge: `lime` now correctly shows 2 Count in fridge.
+
+2. **`logic._pluralVariant` + a real singular/plural fallback wired into
+   BOTH `_resolveIngredient` and `_resolveIngredientFull` (rule 8 — the
+   one real shared pattern, not two divergent copies)** — the actual
+   preventive fix, so this exact bug class can't recur. On a cache-miss,
+   a 2nd real lookup checks the trivial plural/singular variant (same
+   len>3 trailing-s precedent `_normalizeUnit` already established)
+   BEFORE ever minting a new `ingredients` row. Zero extra cost on the
+   common already-exact-match path; one extra read only on what would
+   already have been a real insert anyway.
+
+3. **`_QUALIFIER_STOPWORDS`** — a real, curated list (fresh/dried/whole/
+   ground/chopped/sliced/diced/minced/large/small/medium/frozen/fine/
+   coarse/crushed/grated) excluded from `_findSubstitute`'s heuristic
+   shared-token match. These words describe a PREPARATION, not what the
+   ingredient actually IS — excluding them means only a genuine identity
+   word (coriander, cabbage, chilli) can produce a heuristic match,
+   fixing "fresh coriander → ginger fresh" for good (it now correctly
+   finds "whole coriander").
+
+4. **6 new curated `_SUBSTITUTION_GROUPS` entries, every one pulled
+   directly from Alex's own verbatim examples above, never guessed**:
+   beef shin/beef cuts with bone/beef stew meat/stewing beef; white
+   cabbage/cabbage; garlic clove(s)/garlic bulb(s); ginger/fresh ginger/
+   ginger fresh; fresh red chilli/red chilli/large red chilli/bullet
+   chilli/bird's eye chilli; the existing coriander/cilantro group
+   extended with "fresh coriander"/"whole coriander," and the existing
+   chicken-stock group extended with "chicken stock cubes"/"vegetable
+   stock cube"/"beef stock pot." Curated groups are checked FIRST in
+   `_findSubstitute` and return immediately, so these correct matches
+   now win before the heuristic ever runs — real, evidence-backed
+   coverage, not an attempt to auto-detect every possible real-world
+   pairing.
+
+5. **`logic._fmtMeasurement(amount, unit)`** — real, shared cup/tbsp/tsp
+   display formatter, Alex's own direct ask ("convert to cups and tbsp
+   (1/16th of cup) so i can cook easier"). Uses ONLY the exact real
+   VOLUME_TO_ML physics H19 already built (cup=240ml, tbsp=15ml,
+   tsp=5ml — never an invented ratio, rule 7) to express a real ml/l
+   amount as whole cups + whole tbsp + a real quarter-tsp-rounded
+   remainder. A non-volume unit (g/kg/clove/Count/etc) passes through
+   completely unchanged. Wired into both real display sites (rule 8):
+   `ui._renderStepIngredients` (the schedule preview + the recipe
+   card's own Method list, since H14 already shares this one function
+   between both) and the recipe card's main "Ingredients" list.
+
+6. **A real "← Back to Planned Cook" button on the Schedule Preview
+   popup** — Alex's own direct ask. This popup is only ever reached from
+   the Session Builder's own "📅 Schedule this cook" button (confirmed
+   by grep — the one real caller), so that's the one real "previous
+   slide" to return to; same established `pop.close(); reopen-the-
+   prior-popup` pattern the Generate form's own "← Back to cook session"
+   button already uses (rule 8). Going back leaves `self._session`
+   completely untouched — only Accept clears it.
+
+INVESTIGATED, CONFIRMED NOT A NEW BUG (rule 4 — real evidence before
+claiming or "fixing" anything)
+------------------------------------------------------------
+"Not all steps show measurements" — direct Supabase query on the real
+`steps` jsonb for all 3 recipes in his session: the Rendang (created
+12:05, Sep 16) and Sichuan Spicy Beef Soup (created 11:50, Sep 16) both
+have ZERO `ingredients_used` on every single step — both were generated
+BEFORE H14 shipped later that same day (Sep 16 2026). The Coconut, Lime
+& Orange Cake (created 21:54, same day, after H14) correctly carries
+`ingredients_used` on 6 of its 8 steps — the 2 without are genuinely
+ingredient-free steps (greasing the tin, etc), not a bug. This is
+exactly H14's own already-documented, honest limitation: "only recipes
+generated from now on carry this — old recipes' steps show no chips
+rather than a guessed one." His cook session simply combined 2
+pre-H14 recipes with 1 post-H14 recipe. Nothing to fix here — flagged
+plainly rather than silently re-investigated or "fixed" with invented
+data on old recipes.
+
+DELIBERATELY NOT BUILT THIS PASS
+------------------------------------------------------------
+Alex's real, separate ask — "when something is orange... ask me what
+type of the specific ingredient i have, then use for green if have, or
+blue/orange if can alternative, or red if shop is a must" — is a
+genuinely new, real interactive confirm-and-persist feature (a per-pair
+"same thing / alternative / need to buy" control, with real open design
+forks: does confirming "same" merge the 2 ingredient rows outright, is
+the answer remembered per-pair going forward, does it need its own
+review queue). The fixes above (structural dedup prevention + the
+curated groups + the stoplist) already resolve the great majority of
+his real examples automatically, without ever needing to ask — the
+interactive flow is real, valuable, future work, not silently dropped,
+just honestly out of scope for this pass (deserves its own
+/interrogation given the real design forks, not guessed at here).
+
+VERIFICATION
+------------------------------------------------------------
+`node --check` clean. Real headless-Chromium pass, 18/18 new
+assertions pass: `_pluralVariant`'s real trailing-s behavior (including
+the len>3 guard on a short word); `_resolveIngredient`'s real plural-
+fallback reusing an existing row instead of inserting a duplicate
+(mocked Supabase, checked the real insert path was never called);
+`_findSubstitute`'s qualifier-stoplist fix reproducing then confirming
+the exact "fresh coriander" bug fixed; all 4 new curated groups
+(beef/cabbage/garlic/stock) matching correctly; `_fmtMeasurement`'s
+real cup/tbsp/tsp math (240ml→"1 cup", 255ml→"1 cup 1 tbsp", 15ml→
+"1 tbsp", 5ml→"1 tsp", a non-volume unit passing through completely
+unchanged, a real l→ml→cup bridge); `_renderStepIngredients`'s chip
+text using the new formatter; the real "← Back to Planned Cook" button
+rendering and correctly closing this popup + reopening the Session
+Builder on click. Plus full re-runs of every pre-existing Cooking
+module suite confirming zero regression: H18 27/27, H19 20/20, H20
+16/16, H21 26/26, H22 17/17, H23 19/19 — 143 total pre-existing
+assertions, all unchanged.
+
+Re-minified (2529058 -> 1245656 bytes), cache-bust bumped
+20260917e -> 20260917f.
+
+Untested by Alex's own hand (beyond the real live "lime" merge, which
+is now real, live Supabase data — not just code).
+==========================================================================
