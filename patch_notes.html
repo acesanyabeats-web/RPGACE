@@ -74,6 +74,15 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">✅ Sep 17 — H24 3rd pass: clicking a Planned Cook recipe now opens its real recipe card</div>
+    <div class="card-body">
+      Real Alex ask, direct from a pasted Planned Cook popup: "when i click a recipe in this session, open up the recipe of the specific dish." Real gap: the session's recipe list only ever showed a plain label + a delete button — no way to see the actual recipe from inside a planned cook without leaving and re-finding it elsewhere.<br><br>
+      Fixed by reusing the exact real <code>_loadSavedRecipe</code> → <code>pop.close()</code> → <code>_showRecipeCard(recipe, null, existingRecipeId)</code> sequence H18's Stock Match Finder already proved (rule 8) — clicking a recipe's title loads its true saved data from <code>recipes</code>/<code>recipe_ingredients</code> and opens the real recipe card, with <code>existingRecipeId</code> set so a later Save click can't mint a duplicate row. A real load failure (network/deleted row) surfaces an honest toast and leaves the session popup open, never a silent no-op. The 2-click delete button is untouched and unaffected.<br><br>
+      Verified via a real headless-Chromium pass, 10/10 new assertions pass (the row renders clickable, clicking it calls the real load with the correct recipe id, the recipe card opens with the right title and dedup-guard id, the session popup closes first matching the established pattern, a real load failure toasts and leaves the popup open rather than closing blind, and the delete button still removes the correct id unaffected by the new click handler). Zero real console/page errors. <code>node --check</code> clean, re-minified, cache-bust bumped <code>20260917g</code>→<code>20260917h</code>. <b>Untested by Alex's own hand.</b>
+    </div>
+  </div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">✅ Sep 17 — H24 2nd pass: real "confirm substitute → green" flow + the "whole"/"Count" unit bug</div>
     <div class="card-body">
       Real Alex re-test of the H24 fixes, verbatim: "Close - nothing changed - when orange subsitution or blue is presented, give me an option to confirm so it can turn green."<br><br>

@@ -37916,9 +37916,25 @@ RPGACE.register('cookingOracle', {
       (sess.recipes || []).forEach(function(r) {
         var row = document.createElement('div');
         row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,0.05);';
+        // Real Alex ask (Sep 17 2026): "when i click a recipe in this
+        // session, open up the recipe of the specific dish." Same real
+        // _loadSavedRecipe -> pop.close() -> _showRecipeCard(recipe, null,
+        // existingRecipeId) pattern the Stock Match Finder already proved
+        // (rule 8, H18) - reopens the exact saved recipe, never a fresh
+        // generation, so a later Save click there can't mint a duplicate
+        // row. Closes this popup first, matching that same established
+        // sequence, rather than stacking a 2nd dashDeck._popup() overlay on
+        // top of this one (a shape never used elsewhere in this module).
         var lbl = document.createElement('span');
-        lbl.style.cssText = 'font-size:13px;color:var(--text);flex:1;';
+        lbl.style.cssText = 'font-size:13px;color:var(--text);flex:1;cursor:pointer;';
         lbl.textContent = '🍽 ' + r.title;
+        lbl.onclick = function() {
+          self.logic._loadSavedRecipe(r.id, function(loadErr, recipe) {
+            if (loadErr) { RPGACE.utils.toast('⚠️ ' + loadErr, '#CC4A4A', 3000); return; }
+            pop.close();
+            self.ui._showRecipeCard(recipe, null, r.id);
+          });
+        };
         row.appendChild(lbl);
 
         var delBtn = self.ui._mkDeleteArmBtn(function(doneCb) {
