@@ -36264,7 +36264,12 @@ RPGACE.register('cookingOracle', {
   // hand-copied a 3rd time, which would be exactly the kind of drift
   // rule 8's own composio.js/CORS precedent warns about.
   RECIPE_JSON_SHAPE: function(servingsBase) {
-    return '{"title":"...","servings_base":' + servingsBase + ',"ingredients":[{"name":"...","amount":<number>,"unit":"...","grams_estimate":<number>}],'
+    // H21 (Sep 17 2026) — real, superseding shape change: each ingredient
+    // now also carries "is_separable" (see SEPARABLE_TAG_TEXT below for
+    // the real instruction driving it, and logic._sanitizeRecipeIngredients
+    // for the defensive boolean coercion on the way back — rule 5, never
+    // trust model JSON blindly).
+    return '{"title":"...","servings_base":' + servingsBase + ',"ingredients":[{"name":"...","amount":<number>,"unit":"...","grams_estimate":<number>,"is_separable":<boolean>}],'
       + '"steps":[{"order":1,"type":"prep_before_cooking","description":"...","active_duration_min":<number>,"passive_duration_min":<number>,"ingredients_used":[{"name":"...","amount":<number>,"unit":"..."}]}]}';
   },
 
@@ -36279,6 +36284,23 @@ RPGACE.register('cookingOracle', {
     red:    { color: '#CC4A4A',      bg: 'rgba(204,74,74,0.07)',   icon: '🔴', label: "Don't have" },
     blue:   { color: '#4A9FCC',      bg: 'rgba(74,159,204,0.07)',  icon: '🔵', label: 'Have an alternative — buy the real one' },
     purple: { color: '#9B59B6',      bg: 'rgba(155,89,182,0.07)',  icon: '🟣', label: 'Running low — replenish after this cook' },
+    // H21 (Sep 17 2026, real Alex ask via a pasted Oracle-chat transcript
+    // + AskUserQuestion-confirmed answers — see records/2026-09/
+    // h21_orange_brown_shopnoshop_spec_2026-09-17.txt). Orange is a
+    // NARROWER, more confident claim than blue: a genuine substitute is
+    // actually in stock right now, real enough to skip buying the real
+    // ingredient for this cook entirely — "think of blue with extra
+    // steps," Alex's own words — never just "something else lives in
+    // this aisle."
+    orange: { color: '#D9822B',      bg: 'rgba(217,130,43,0.08)',  icon: '🟠', label: 'Have a real substitute — can skip buying this' },
+    // Brown only ever appears when a real per-session "No Shop" mode is
+    // active (see logic._classifyIngredientStatus) — a separable/optional
+    // component (Oracle-tagged at generation time) that's missing but can
+    // simply be left out without changing the dish, Alex's own words:
+    // "won't change the recipe, just omit if I'm not going shop." No
+    // serving-pairing suggestion is ever computed or shown here — Alex
+    // explicitly asked for a bare "can be omitted" note, nothing more.
+    brown:  { color: '#8B5E3C',      bg: 'rgba(139,94,60,0.08)',   icon: '🟤', label: 'Separable — can be omitted (skipping shop this time)' },
   },
 
   // H19 (Sep 17 2026, real Alex ask: "also use cups as much as possible
@@ -36294,6 +36316,19 @@ RPGACE.register('cookingOracle', {
   // ingredient, matching how a real recipe actually measures things,
   // never cups for their own sake.
   UNIT_PREFERENCE_TEXT: 'For each ingredient amount, prefer cup measurements for liquids and spices wherever that is genuinely how a real home cook would measure them, and prefer weight in grams for other ingredients (meat, vegetables, bulk dry goods) when that makes more practical sense — pick whichever real unit a genuine recipe would actually use, never cups just for the sake of it. ',
+
+  // H21 (Sep 17 2026, real Alex ask, via a pasted Oracle-chat transcript:
+  // "I don't mean put rice into the soup instead of noodles, just skip
+  // the noodles... won't change the recipe, just omit if I'm not going
+  // shop" — AskUserQuestion-confirmed answer: "Oracle tags it at
+  // generation time (Recommended)") — the ONE real shared instruction
+  // text (rule 8) every real full-recipe-generating Oracle call uses,
+  // same convention as UNIT_PREFERENCE_TEXT above, spliced alongside it
+  // at all 3 real call sites. Honest limitation, same shape as H14's own
+  // per-step measurements: only NEW recipes generated from here on carry
+  // a real is_separable flag — old recipes default to false (essential)
+  // on read, never guessed true.
+  SEPARABLE_TAG_TEXT: 'For each ingredient, also mark is_separable:true only if it is a genuinely optional/removable side component that could simply be left out without changing what the dish actually is (e.g. a starch/carb served alongside a soup, stew, or curry, or a garnish/topping) — mark is_separable:false for anything essential to the dish actually being the dish it claims to be (this should be the default for most ingredients). ',
 
   // H15 (Sep 16 2026) — real, compound-phrase keyword gate (the same
   // hyphen/word-boundary discipline as every other keyword list in this
@@ -36359,6 +36394,7 @@ RPGACE.register('cookingOracle', {
           + 'If I ask you to change this recipe (add/remove/edit an ingredient, or change/add/remove/reorder a step), do not just describe the change in prose - end your reply with a trailer on its own final line: RECIPE_UPDATE_JSON: followed by a compact JSON object with the COMPLETE UPDATED recipe (every ingredient and every step, not just the changed ones) in this exact shape: '
           + self.RECIPE_JSON_SHAPE(r.servings_base || 4) + '. '
           + self.UNIT_PREFERENCE_TEXT
+          + self.SEPARABLE_TAG_TEXT
           + 'Only include this trailer when you are actually proposing a concrete change to apply - never when just answering a question or giving an opinion with nothing specific to change.';
       });
     }
@@ -37129,6 +37165,13 @@ RPGACE.register('cookingOracle', {
             row.style.borderRadius = '0 5px 5px 0';
             row.title = meta.label;
             left.textContent = meta.icon + ' ' + (ing.name || '');
+            // H21 (Sep 17 2026) — real substitute name surfaced on an
+            // orange row (never invented — logic._findSubstitute only
+            // ever returns a real, currently in-stock match).
+            if (status === 'orange') {
+              var sub = self.logic._findSubstitute(ing.name, pantrySnapshot.aisleIndex);
+              if (sub) left.textContent += ' (sub: ' + sub.name + ')';
+            }
           }
 
           row.appendChild(left);
@@ -37686,6 +37729,37 @@ RPGACE.register('cookingOracle', {
       savedNote.textContent = '✅ Saved — safe to close this and come back later.';
       box.appendChild(savedNote);
 
+      // H21 (Sep 17 2026, real Alex ask, via a pasted Oracle-chat
+      // transcript: "no shop or can go shop should be a toggle mode for
+      // cooking planning") — AskUserQuestion-confirmed scope: "Per
+      // planned-cook session (Recommended)," not a global Habits setting.
+      // Defaults to 'can_shop' (the existing behavior — nothing changes
+      // for a session that never touches this). Persisted immediately on
+      // change via the same real _persistSessionDraft path every other
+      // session edit already uses (rule 8), so reopening this popup or
+      // resuming this draft later keeps the real choice Alex made.
+      if (sess.recipeIds && sess.recipeIds.length) {
+        var shopModeRow = document.createElement('div');
+        shopModeRow.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:8px 10px;background:rgba(255,255,255,0.03);border-radius:8px;';
+        var shopModeLbl = document.createElement('span');
+        shopModeLbl.style.cssText = 'font-size:12px;color:var(--muted);flex:1;';
+        shopModeLbl.textContent = 'This cook session:';
+        var shopModeSelect = document.createElement('select');
+        shopModeSelect.style.cssText = 'background:rgba(255,255,255,0.05);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:5px 8px;font-family:Rajdhani,sans-serif;';
+        var optCan = document.createElement('option'); optCan.value = 'can_shop'; optCan.textContent = '🛒 Can go shop';
+        var optNo = document.createElement('option'); optNo.value = 'no_shop'; optNo.textContent = '🚫 No shop this time';
+        shopModeSelect.appendChild(optCan);
+        shopModeSelect.appendChild(optNo);
+        shopModeSelect.value = sess.shopMode === 'no_shop' ? 'no_shop' : 'can_shop';
+        shopModeSelect.onchange = function() {
+          sess.shopMode = shopModeSelect.value;
+          self.logic._persistSessionDraft();
+        };
+        shopModeRow.appendChild(shopModeLbl);
+        shopModeRow.appendChild(shopModeSelect);
+        box.appendChild(shopModeRow);
+      }
+
       var listHeading = document.createElement('div');
       listHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;';
       listHeading.textContent = 'Recipes in this session';
@@ -37932,6 +38006,14 @@ RPGACE.register('cookingOracle', {
             usageBox.appendChild(usageLoading);
             box.appendChild(usageBox);
 
+            // H21 (Sep 17 2026) — a real, separate pantry snapshot loaded
+            // here purely so an orange row can name its real real in-stock
+            // substitute (logic._findSubstitute needs the aisleIndex, which
+            // _computeIngredientUsage's own callback doesn't expose) — same
+            // real "load the pantry snapshot a 2nd time for display" shape
+            // ui._showShoppingList's own Promise.all already uses, never a
+            // second have/need computation.
+            self.logic._loadPantrySummed(function(pantrySnapForSub) {
             self.logic._computeIngredientUsage(sess.recipeIds, function(usageErr, usage) {
               usageBox.innerHTML = '';
               if (usageErr) {
@@ -37949,9 +38031,18 @@ RPGACE.register('cookingOracle', {
               // that timing logic (buy-before / plenty / buy-after), each
               // ingredient individually color-coded within its bucket via
               // the shared ui._renderIngredientStatusRow (rule 8).
-              var buyBefore = usage.filter(function(u) { return u.status === 'red' || u.status === 'yellow' || u.status === 'blue'; });
+              // H21 (Sep 17 2026) — orange (a real substitute is actually
+              // in stock, skip buying the real thing) joins the same real
+              // "needs a decision before this cook" bucket blue already
+              // sits in — genuinely distinct color, same real timing.
+              var buyBefore = usage.filter(function(u) { return u.status === 'red' || u.status === 'yellow' || u.status === 'blue' || u.status === 'orange'; });
               var plenty = usage.filter(function(u) { return u.status === 'green'; }).sort(function(a, b) { return a.name.localeCompare(b.name); });
               var buyAfter = usage.filter(function(u) { return u.status === 'purple'; }).sort(function(a, b) { return a.name.localeCompare(b.name); });
+              // Brown only ever appears when this session's own real
+              // shopMode is 'no_shop' (see the _computeIngredientUsage
+              // call below) — a separable, missing ingredient Alex has
+              // already decided to just omit, never a shopping decision.
+              var omittable = usage.filter(function(u) { return u.status === 'brown'; }).sort(function(a, b) { return a.name.localeCompare(b.name); });
               buyBefore.forEach(function(u) { u._aisle = self.logic._classifyAisle(u.name); });
               buyBefore.sort(function(a, b) {
                 if (a._aisle.order !== b._aisle.order) return a._aisle.order - b._aisle.order;
@@ -37973,6 +38064,13 @@ RPGACE.register('cookingOracle', {
                     usageBox.appendChild(aisleHeading);
                   }
                   var text = u.name + ' — need ' + u.toBuy + ' ' + (u.unit || '') + (u.have > 0 ? ' (have ' + u.have + ' already)' : '');
+                  // H21 (Sep 17 2026) — real substitute name surfaced on
+                  // an orange row (never invented — _findSubstitute only
+                  // ever returns a real, currently in-stock match).
+                  if (u.status === 'orange') {
+                    var sub = self.logic._findSubstitute(u.name, pantrySnapForSub.aisleIndex);
+                    if (sub) text += ' — have a substitute in stock: ' + sub.name;
+                  }
                   usageBox.appendChild(self.ui._renderIngredientStatusRow(text, u.status));
                 });
               }
@@ -37999,12 +38097,27 @@ RPGACE.register('cookingOracle', {
                 });
               }
 
-              if (!buyBefore.length && !plenty.length && !buyAfter.length) {
+              // H21 (Sep 17 2026, real Alex ask: "just omit if I'm not
+              // going shop") — a bare, honest "can be omitted" note, never
+              // a computed serving-pairing suggestion — Alex explicitly
+              // overrode that idea: "No, just say 'can be omitted'."
+              if (omittable.length) {
+                var omitHeading = document.createElement('div');
+                omitHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8B5E3C;margin:14px 0 6px;';
+                omitHeading.textContent = '🟤 Skipping shop this time — can be omitted';
+                usageBox.appendChild(omitHeading);
+                omittable.forEach(function(u) {
+                  usageBox.appendChild(self.ui._renderIngredientStatusRow(u.name + ' — can be omitted', 'brown'));
+                });
+              }
+
+              if (!buyBefore.length && !plenty.length && !buyAfter.length && !omittable.length) {
                 var noneMsg = document.createElement('div');
                 noneMsg.style.cssText = 'font-size:12px;color:var(--muted);margin:10px 0;';
                 noneMsg.textContent = 'No pantry stock logged yet — everything here will need buying once you generate a shopping list.';
                 usageBox.appendChild(noneMsg);
               }
+            }, { noShop: sess.shopMode === 'no_shop' });
             });
 
             var whenHeading = document.createElement('div');
@@ -38421,11 +38534,24 @@ RPGACE.register('cookingOracle', {
         Promise.all([
           RPGACE.sb.select('shopping_list_items', 'select=id,ingredient_id,needed_amount,needed_unit,have_amount,to_buy_amount,bought,ingredients(name)&list_id=eq.' + listId + '&order=bought.asc'),
           new Promise(function(resolve) { self.logic._loadPantrySummed(function(snapshot) { resolve(snapshot); }); }),
+          RPGACE.sb.select('shopping_lists', 'select=shop_mode&id=eq.' + listId + '&limit=1').catch(function() { return []; }),
         ])
           .then(function(results) {
             var rows = results[0];
             var pantry = results[1];
+            var listRow = results[2] && results[2][0];
             box.innerHTML = ''; // full re-render each time — keeps this simple and correct
+
+            // H21 (Sep 17 2026) — a real, honest note when THIS list was
+            // generated under No-Shop mode — explains why some genuinely
+            // missing (but separable) ingredients never made it onto the
+            // list at all (see logic._generateShoppingList's own filter).
+            if (listRow && listRow.shop_mode === 'no_shop') {
+              var noShopNote = document.createElement('div');
+              noShopNote.style.cssText = 'font-size:11px;color:#8B5E3C;background:rgba(139,94,60,0.08);border:1px solid rgba(139,94,60,0.3);border-radius:6px;padding:6px 10px;margin-bottom:12px;';
+              noShopNote.textContent = '🟤 No-shop mode — omittable ingredients were left off this list.';
+              box.appendChild(noShopNote);
+            }
 
             var needHeading = document.createElement('div');
             needHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;';
@@ -38476,8 +38602,17 @@ RPGACE.register('cookingOracle', {
               var lbl = document.createElement('span');
               lbl.style.cssText = 'color:' + meta.color + ';';
               lbl.title = meta.label;
-              lbl.textContent = meta.icon + ' ' + ((r.ingredients && r.ingredients.name) || '?') + ' — need ' + r.to_buy_amount + ' ' + (r.needed_unit || '')
+              var ingName = (r.ingredients && r.ingredients.name) || '?';
+              var lblText = meta.icon + ' ' + ingName + ' — need ' + r.to_buy_amount + ' ' + (r.needed_unit || '')
                 + (r.have_amount ? ' (have ' + r.have_amount + ' already)' : '');
+              // H21 (Sep 17 2026) — real substitute name surfaced on an
+              // orange row (never invented — logic._findSubstitute only
+              // ever returns a real, currently in-stock match).
+              if (r._status === 'orange') {
+                var sub = self.logic._findSubstitute(ingName, pantry.aisleIndex);
+                if (sub) lblText += ' — have a substitute in stock: ' + sub.name;
+              }
+              lbl.textContent = lblText;
               var btn = document.createElement('button');
               btn.textContent = '✅ Mark bought';
               btn.style.cssText = 'padding:5px 10px;background:' + meta.bg + ';border:1px solid ' + meta.color + ';border-radius:6px;color:' + meta.color + ';font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
@@ -38805,6 +38940,7 @@ RPGACE.register('cookingOracle', {
         // now, half later), split the amount across those steps rather
         // than repeating the full amount in both.
         + 'For each step, also list exactly which ingredients it uses and how much of each, in the shape ingredients_used:[{"name":"...","amount":<number>,"unit":"..."}] - if an ingredient is used across more than one step, split its amount across those steps rather than repeating the full amount each time. '
+        + self.SEPARABLE_TAG_TEXT
         + 'Then, on its own final line, output exactly: RECIPE_JSON: followed by a compact JSON object in the shape '
         + self.RECIPE_JSON_SHAPE(servings || 4) + '. '
         + 'Ingredient names must be simple, generic, singular/lowercase (e.g. "garlic clove" not "3 cloves of fresh garlic") so they can be tracked consistently across recipes.';
@@ -38868,7 +39004,21 @@ RPGACE.register('cookingOracle', {
       try { recipe = JSON.parse(m[1]); } catch (e) { return null; }
       if (!recipe || !Array.isArray(recipe.ingredients) || !Array.isArray(recipe.steps)) return null;
       RPGACE.modules.cookingOracle.logic._sanitizeStepIngredientsUsed(recipe.steps);
+      RPGACE.modules.cookingOracle.logic._sanitizeIngredientSeparable(recipe.ingredients);
       return recipe;
+    },
+
+    // H21 (Sep 17 2026) — real, defensive structural sanitize of the new
+    // per-ingredient is_separable field (rule 5 — never trust model JSON
+    // blindly), same discipline as _sanitizeStepIngredientsUsed above: a
+    // missing/malformed value coerces to a plain false (essential) rather
+    // than being carried through as whatever truthy/falsy junk a prompt
+    // regression could otherwise send — never guessed true.
+    _sanitizeIngredientSeparable: function(ingredients) {
+      (ingredients || []).forEach(function(ing) {
+        if (!ing || typeof ing !== 'object') return;
+        ing.is_separable = !!ing.is_separable;
+      });
     },
 
     // H14 (Sep 16 2026) — real, defensive structural sanitize of the new
@@ -38918,6 +39068,7 @@ RPGACE.register('cookingOracle', {
         try { updated = JSON.parse(m[1]); } catch (e) { console.warn('[cookingOracle] malformed RECIPE_UPDATE_JSON, ignored:', e.message); return; }
         if (!updated || !Array.isArray(updated.ingredients) || !Array.isArray(updated.steps)) return;
         self.logic._sanitizeStepIngredientsUsed(updated.steps);
+        self.logic._sanitizeIngredientSeparable(updated.ingredients);
         var diff = self.logic._diffRecipe(self._generatedRecipe, updated);
         // A reply that carries the trailer but genuinely changes nothing
         // real (Oracle echoed the recipe back unchanged) has nothing to
@@ -38956,6 +39107,7 @@ RPGACE.register('cookingOracle', {
       var self = RPGACE.modules.cookingOracle;
       return '\n\nIf Alex is asking you to actually FINALIZE and generate a real, saveable recipe right now (not just discuss or suggest ideas), and you have enough specific detail to write a complete real recipe for one specific dish, write it out in full (title, ingredient list, method - same tagging rules as any other real recipe: each step typed prep_before_cooking/actual_cooking/prep_while_cooking/baking, active_duration_min and passive_duration_min per step, real gram estimates per ingredient, real ingredients_used per step). '
         + self.UNIT_PREFERENCE_TEXT
+        + self.SEPARABLE_TAG_TEXT
         + 'Then end your reply on its own final line with: RECIPE_JSON: followed by a compact JSON object in the shape '
         + self.RECIPE_JSON_SHAPE(4) + '. '
         + 'Only include this trailer when a specific dish is genuinely decided and you are finalizing it for real - if his request is still vague or you are only brainstorming/discussing options, answer normally with no trailer.';
@@ -39571,7 +39723,7 @@ RPGACE.register('cookingOracle', {
           if (!row || !row.id) throw new Error('recipe insert returned no row');
           recipeId = row.id;
           var riPayload = ingredients.map(function(ing, i) {
-            return { recipe_id: recipeId, ingredient_id: resolvedIds[i], amount: ing.amount, unit: ing.unit || null, grams_estimate: (typeof ing.grams_estimate === 'number') ? ing.grams_estimate : null };
+            return { recipe_id: recipeId, ingredient_id: resolvedIds[i], amount: ing.amount, unit: ing.unit || null, grams_estimate: (typeof ing.grams_estimate === 'number') ? ing.grams_estimate : null, is_separable: !!ing.is_separable };
           });
           return RPGACE.sb.secureWrite('recipe_ingredients', 'insert', riPayload);
         })
@@ -39673,6 +39825,73 @@ RPGACE.register('cookingOracle', {
       }
       var fallback = self.logic._AISLE_GROUPS[self.logic._AISLE_GROUPS.length - 1];
       return { name: fallback.name, order: fallback.walkOrder };
+    },
+
+    // H21 (Sep 17 2026, real Alex ask — see records/2026-09/
+    // h21_orange_brown_shopnoshop_spec_2026-09-17.txt) — real, curated
+    // substitution groups for the Orange tier. AskUserQuestion-confirmed:
+    // "1 and 2 I think have their place, do both" — a curated table
+    // (authoritative, checked first) AND a broader aisle+name heuristic
+    // (checked only as a fallback). Deliberately a small, real, well-
+    // known set of genuine home-kitchen swaps (never an invented or
+    // guessed pairing) — grouped, not paired, so any 2 members of the
+    // same group substitute for each other symmetrically without
+    // duplicating each real relationship twice. A starting set, meant to
+    // grow the same organic way _AISLE_GROUPS itself has.
+    _SUBSTITUTION_GROUPS: [
+      { members: ['caster sugar', 'golden caster sugar', 'granulated sugar', 'light brown sugar', 'dark brown sugar', 'soft brown sugar'] },
+      { members: ['unsalted butter', 'salted butter', 'margarine'] },
+      { members: ['whole milk', 'semi-skimmed milk', 'semi skimmed milk', 'skimmed milk'] },
+      { members: ['lemon juice', 'lime juice'] },
+      { members: ['white wine vinegar', 'cider vinegar', 'apple cider vinegar', 'rice vinegar'] },
+      { members: ['vegetable oil', 'sunflower oil', 'canola oil', 'rapeseed oil'] },
+      { members: ['plain flour', 'all purpose flour', 'all-purpose flour'] },
+      { members: ['spring onion', 'scallion', 'shallot'] },
+      { members: ['coriander', 'cilantro'] },
+      { members: ['chicken stock', 'vegetable stock', 'chicken broth', 'vegetable broth'] },
+    ],
+
+    // Real, shared "is there a genuine substitute for this actually in
+    // stock right now" finder (rule 8 — one function, both the classifier
+    // and every real render site call this same one). Real, deliberate
+    // precedence (safest/most certain first, same discipline
+    // logic._resolveHaveAmount's own bridge chain already established in
+    // H19): the curated group above first (authoritative), falling back
+    // to a same-aisle + shared-significant-word heuristic only when no
+    // curated pair exists (broader coverage, deliberately looser, real
+    // false-positive risk Alex accepted by asking for both). Both checks
+    // only ever match a real in-stock name — aisleIndex holds nothing
+    // with quantity<=0, H18's own standing contract, never re-derived
+    // here.
+    _findSubstitute: function(name, aisleIndex) {
+      var self = RPGACE.modules.cookingOracle;
+      var norm = String(name || '').trim().toLowerCase();
+      if (!norm || !aisleIndex) return null;
+
+      var inStock = {};
+      Object.keys(aisleIndex).forEach(function(aisle) {
+        (aisleIndex[aisle] || []).forEach(function(n) { inStock[n] = true; });
+      });
+
+      for (var g = 0; g < self.logic._SUBSTITUTION_GROUPS.length; g++) {
+        var members = self.logic._SUBSTITUTION_GROUPS[g].members;
+        if (members.indexOf(norm) === -1) continue;
+        for (var m = 0; m < members.length; m++) {
+          if (members[m] !== norm && inStock[members[m]]) return { name: members[m], method: 'curated' };
+        }
+      }
+
+      var aisle = self.logic._classifyAisle(name).name;
+      var namesInAisle = aisleIndex[aisle] || [];
+      var tokens = norm.split(/\s+/).filter(function(w) { return w.length >= 4; });
+      if (!tokens.length) return null;
+      for (var i = 0; i < namesInAisle.length; i++) {
+        var cand = namesInAisle[i];
+        if (cand === norm) continue;
+        var candTokens = cand.split(/\s+/);
+        if (tokens.some(function(t) { return candTokens.indexOf(t) !== -1; })) return { name: cand, method: 'heuristic' };
+      }
+      return null;
     },
 
     // H14 (Sep 16 2026) — real bug found and fixed while extracting this:
@@ -39875,13 +40094,24 @@ RPGACE.register('cookingOracle', {
     // Pure function, no I/O — every real caller pre-loads a pantry
     // snapshot (_loadPantrySummed above) once and passes its aisleIndex in,
     // rather than this function re-querying Supabase per ingredient.
+    // H21 (Sep 17 2026) — real, superseding extension (rule 8, same one
+    // function, opts-based so every existing caller that doesn't pass
+    // isSeparable/noShopMode is completely unaffected). Real precedence
+    // when missing, checked in order: brown (only when a real per-session
+    // No-Shop mode is active AND this ingredient is a genuine separable
+    // component — Alex's own words: "just omit if I'm not going shop"),
+    // then orange (a real substitute is actually in stock), then the
+    // existing blue/red ladder, unchanged.
     _classifyIngredientStatus: function(opts) {
       var self = RPGACE.modules.cookingOracle;
       opts = opts || {};
       var needed = (typeof opts.needed === 'number') ? opts.needed : 0;
       var have = (typeof opts.have === 'number') ? opts.have : 0;
       if (have <= 0) {
+        if (opts.noShopMode && opts.isSeparable) return 'brown';
         if (opts.aisleIndex && opts.name) {
+          var sub = self.logic._findSubstitute(opts.name, opts.aisleIndex);
+          if (sub) return 'orange';
           var aisle = self.logic._classifyAisle(opts.name).name;
           var namesInAisle = opts.aisleIndex[aisle] || [];
           var norm = String(opts.name).trim().toLowerCase();
@@ -39906,15 +40136,25 @@ RPGACE.register('cookingOracle', {
     // without a second hand-rolled copy of the same math. Real, honest
     // scope (section 4, unchanged): grouped by (ingredient_id, unit) pair,
     // never force-summed across mismatched units.
-    _computeIngredientUsage: function(recipeIds, cb) {
+    // H21 (Sep 17 2026) — real, superseding extension: an optional 3rd
+    // `opts` param ({noShop:true}) so a real per-session No-Shop mode can
+    // reach the shared classifier (rule 8 — every existing caller that
+    // omits it is completely unaffected, brown never triggers without
+    // it). `is_separable` is now also selected and folded per group: a
+    // group stays separable only when EVERY real contributing row across
+    // however many recipes in this session said so — if this ingredient
+    // is essential to even ONE of them, the merged group must stay
+    // essential too (never silently downgraded to omittable).
+    _computeIngredientUsage: function(recipeIds, cb, opts) {
       var self = RPGACE.modules.cookingOracle;
+      opts = opts || {};
       if (!recipeIds || !recipeIds.length) { cb('no recipes given'); return; }
       // Plain comma-joined UUIDs, no quoting — matches this project's own
       // established, working `in.()` precedent (taxonomy_tree/bibliography/
       // etc). See the real bug note on _showSchedulePreview's own idList
       // line above for why a quoted variant breaks fetch() outright.
       var idList = recipeIds.join(',');
-      RPGACE.sb.select('recipe_ingredients', 'select=ingredient_id,amount,unit,grams_estimate,ingredients(name)&recipe_id=in.(' + idList + ')')
+      RPGACE.sb.select('recipe_ingredients', 'select=ingredient_id,amount,unit,grams_estimate,is_separable,ingredients(name)&recipe_id=in.(' + idList + ')')
         .then(function(rows) {
           if (!rows || !rows.length) { cb('no ingredients found for these recipes'); return; }
           var groups = {};
@@ -39926,7 +40166,7 @@ RPGACE.register('cookingOracle', {
             // unit logic._loadPantrySummed's own byIngredient buckets use
             // (rule 8, one shared normalizer, see logic._normalizeUnit).
             var key = r.ingredient_id + '|' + self.logic._normalizeUnit(r.unit);
-            if (!groups[key]) groups[key] = { ingredient_id: r.ingredient_id, name: (r.ingredients && r.ingredients.name) || '?', unit: r.unit || null, amount: 0, gramsEstimate: null };
+            if (!groups[key]) groups[key] = { ingredient_id: r.ingredient_id, name: (r.ingredients && r.ingredients.name) || '?', unit: r.unit || null, amount: 0, gramsEstimate: null, isSeparable: true };
             groups[key].amount += (typeof r.amount === 'number' ? r.amount : 0);
             // H19 (Sep 17 2026) — accumulated alongside amount so the
             // real grams-per-unit ratio logic._resolveHaveAmount needs
@@ -39935,6 +40175,7 @@ RPGACE.register('cookingOracle', {
             // same group. A group with no real grams_estimate at all
             // stays null — honest, never a guessed weight.
             if (typeof r.grams_estimate === 'number') groups[key].gramsEstimate = (groups[key].gramsEstimate || 0) + r.grams_estimate;
+            if (!r.is_separable) groups[key].isSeparable = false;
           });
           self.logic._loadPantrySummed(function(pantry) {
             var list = Object.keys(groups).map(function(k) {
@@ -39954,8 +40195,8 @@ RPGACE.register('cookingOracle', {
               // (the schedule preview, the shopping-list generator) gets
               // the same classification for free instead of each
               // re-deriving it.
-              var status = self.logic._classifyIngredientStatus({ name: g.name, needed: g.amount, have: have, aisleIndex: pantry.aisleIndex });
-              return { ingredient_id: g.ingredient_id, name: g.name, unit: g.unit, amount: g.amount, have: have, toBuy: toBuy, status: status };
+              var status = self.logic._classifyIngredientStatus({ name: g.name, needed: g.amount, have: have, aisleIndex: pantry.aisleIndex, isSeparable: g.isSeparable, noShopMode: !!opts.noShop });
+              return { ingredient_id: g.ingredient_id, name: g.name, unit: g.unit, amount: g.amount, have: have, toBuy: toBuy, status: status, isSeparable: g.isSeparable };
             });
             cb(null, list);
           });
@@ -39987,7 +40228,13 @@ RPGACE.register('cookingOracle', {
                 });
                 var results = recipeRows.map(function(rec) {
                   var ings = byRecipe[rec.id] || [];
-                  var counts = { green: 0, yellow: 0, red: 0, blue: 0, purple: 0 };
+                  // H21 (Sep 17 2026) — orange (a real substitute in
+                  // stock, skip buying) added to the count so a genuine
+                  // orange-only recipe isn't silently mis-tallied to NaN;
+                  // deliberately NOT included in the blocking sum below —
+                  // same real "no shopping trip needed" status as
+                  // green/purple, per its own INGREDIENT_STATUS_META label.
+                  var counts = { green: 0, yellow: 0, red: 0, blue: 0, purple: 0, orange: 0 };
                   var statuses = ings.map(function(ing) {
                     // H19 (Sep 17 2026, real Alex ask: recipes lean on
                     // cups, stock stays weight/ml/count) — real bridging
@@ -40023,12 +40270,16 @@ RPGACE.register('cookingOracle', {
         .then(function(rows) {
           var row = rows && rows[0];
           if (!row) { cb('recipe not found'); return; }
-          RPGACE.sb.select('recipe_ingredients', 'select=amount,unit,grams_estimate,ingredients(name)&recipe_id=eq.' + recipeId)
+          RPGACE.sb.select('recipe_ingredients', 'select=amount,unit,grams_estimate,is_separable,ingredients(name)&recipe_id=eq.' + recipeId)
             .then(function(riRows) {
               var recipe = {
                 title: row.title, servings_base: row.servings_base, steps: row.steps || [],
                 ingredients: (riRows || []).map(function(r) {
-                  return { name: (r.ingredients && r.ingredients.name) || '?', amount: r.amount, unit: r.unit, grams_estimate: r.grams_estimate };
+                  // H21 (Sep 17 2026) — a pre-existing recipe saved before
+                  // this shipped has a real NULL here (column default is
+                  // false anyway) — coerced honestly to essential, never
+                  // guessed as a real separable tag it never actually got.
+                  return { name: (r.ingredients && r.ingredients.name) || '?', amount: r.amount, unit: r.unit, grams_estimate: r.grams_estimate, is_separable: !!r.is_separable };
                 }),
               };
               cb(null, recipe);
@@ -40041,24 +40292,34 @@ RPGACE.register('cookingOracle', {
     _generateShoppingList: function(sess, cb) {
       var self = RPGACE.modules.cookingOracle;
       if (!sess || !sess.recipeIds || !sess.recipeIds.length) { cb('no recipes in this session yet'); return; }
+      var noShop = sess.shopMode === 'no_shop';
       self.logic._computeIngredientUsage(sess.recipeIds, function(err, usage) {
         if (err) { cb(err); return; }
-        RPGACE.sb.secureWrite('shopping_lists', 'insert', { planned_cook_id: null, status: 'open' })
+        // H21 (Sep 17 2026) — real per-session No-Shop mode: a genuine
+        // brown (separable, missing) ingredient never lands on the actual
+        // physical shopping list at all — the whole real point of the
+        // toggle is skipping the shop trip, so it would defeat that to
+        // still nag Alex to buy something he's already decided to omit.
+        // An essential missing ingredient (any other status) still goes
+        // on the list unchanged, No-Shop mode or not.
+        var toInsert = usage.filter(function(u) { return u.status !== 'brown'; });
+        RPGACE.sb.secureWrite('shopping_lists', 'insert', { planned_cook_id: null, status: 'open', shop_mode: sess.shopMode || 'can_shop' })
           .then(function(data) {
             var listRow = Array.isArray(data) ? data[0] : data;
             if (!listRow || !listRow.id) throw new Error('shopping list insert returned no row');
-            var itemsPayload = usage.map(function(u) {
+            var itemsPayload = toInsert.map(function(u) {
               return {
                 list_id: listRow.id, ingredient_id: u.ingredient_id,
                 needed_amount: u.amount, needed_unit: u.unit,
                 have_amount: u.have, to_buy_amount: u.toBuy, bought: false,
               };
             });
+            if (!itemsPayload.length) return listRow.id;
             return RPGACE.sb.secureWrite('shopping_list_items', 'insert', itemsPayload).then(function() { return listRow.id; });
           })
           .then(function(listId) { cb(null, listId); })
           .catch(function(e) { cb(e.message || 'shopping list save failed'); });
-      });
+      }, { noShop: noShop });
     },
 
     // The real, combined tick-bought -> price-log moment (section 2, Q2).
@@ -40131,7 +40392,7 @@ RPGACE.register('cookingOracle', {
     _addRecipeToSession: function(id, title) {
       var self = RPGACE.modules.cookingOracle;
       if (!id) return;
-      if (!self._session) self._session = { recipeIds: [], recipes: [], plannedCookId: null };
+      if (!self._session) self._session = { recipeIds: [], recipes: [], plannedCookId: null, shopMode: 'can_shop' };
       self._sessionChecked = true; // real session now exists in memory - no need to check Supabase for a draft to resume
       if (self._session.recipeIds.indexOf(id) === -1) {
         self._session.recipeIds.push(id);
@@ -40197,14 +40458,18 @@ RPGACE.register('cookingOracle', {
       var self = RPGACE.modules.cookingOracle;
       var sess = self._session;
       if (!sess || !sess.recipeIds.length) return;
+      // H21 (Sep 17 2026) — real per-session shop/no-shop mode, persisted
+      // alongside the recipe list itself so a resumed draft keeps
+      // whichever real choice Alex made (rule 8, same insert-or-update
+      // path every other session edit already goes through).
       if (sess.plannedCookId) {
-        RPGACE.sb.secureWrite('planned_cooks', 'update', { recipe_ids: sess.recipeIds }, 'id=eq.' + sess.plannedCookId)
+        RPGACE.sb.secureWrite('planned_cooks', 'update', { recipe_ids: sess.recipeIds, shop_mode: sess.shopMode || 'can_shop' }, 'id=eq.' + sess.plannedCookId)
           .catch(function(e) {
             RPGACE.utils.toast('⚠️ Could not save your planned cook: ' + (e.message || 'unknown error'), '#CC4A4A', 4200);
           });
         return;
       }
-      RPGACE.sb.secureWrite('planned_cooks', 'insert', { recipe_ids: sess.recipeIds, status: 'draft' })
+      RPGACE.sb.secureWrite('planned_cooks', 'insert', { recipe_ids: sess.recipeIds, status: 'draft', shop_mode: sess.shopMode || 'can_shop' })
         .then(function(data) {
           var row = Array.isArray(data) ? data[0] : data;
           if (!row || !row.id) throw new Error('planned_cooks insert returned no row');
@@ -40225,7 +40490,7 @@ RPGACE.register('cookingOracle', {
       var self = RPGACE.modules.cookingOracle;
       cb = cb || function() {};
       if (self._sessionChecked) { cb(null, self._session); return; }
-      RPGACE.sb.select('planned_cooks', 'select=id,recipe_ids&status=eq.draft&order=created_at.desc&limit=1')
+      RPGACE.sb.select('planned_cooks', 'select=id,recipe_ids,shop_mode&status=eq.draft&order=created_at.desc&limit=1')
         .then(function(rows) {
           self._sessionChecked = true;
           var row = rows && rows[0];
@@ -40239,6 +40504,8 @@ RPGACE.register('cookingOracle', {
                 recipeIds: row.recipe_ids.slice(),
                 recipes: row.recipe_ids.map(function(id) { return { id: id, title: byId[id] || '(recipe not found)' }; }),
                 plannedCookId: row.id,
+                // H21 (Sep 17 2026) — real, resumed per-session shop mode.
+                shopMode: row.shop_mode || 'can_shop',
               };
               cb(null, self._session);
             })
@@ -40445,10 +40712,10 @@ RPGACE.register('cookingOracle', {
       var self = RPGACE.modules.cookingOracle;
       var write = sess.plannedCookId
         ? RPGACE.sb.secureWrite('planned_cooks', 'update', {
-            recipe_ids: sess.recipeIds, schedule: schedule, scheduled_at: dateStr, status: 'scheduled',
+            recipe_ids: sess.recipeIds, schedule: schedule, scheduled_at: dateStr, status: 'scheduled', shop_mode: sess.shopMode || 'can_shop',
           }, 'id=eq.' + sess.plannedCookId).then(function() { return [{ id: sess.plannedCookId }]; })
         : RPGACE.sb.secureWrite('planned_cooks', 'insert', {
-            recipe_ids: sess.recipeIds, schedule: schedule, scheduled_at: dateStr, status: 'scheduled',
+            recipe_ids: sess.recipeIds, schedule: schedule, scheduled_at: dateStr, status: 'scheduled', shop_mode: sess.shopMode || 'can_shop',
           });
       write
         .then(function(data) {

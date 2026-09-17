@@ -1,0 +1,148 @@
+H21: ORANGE SUBSTITUTE TIER + BROWN OMITTABLE TIER + SHOP/NO-SHOP TOGGLE
+==========================================================================
+
+ORIGIN — REAL PASTED ORACLE-CHAT TRANSCRIPT, NOT A DIRECT ASK
+------------------------------------------------------------
+Alex pasted a transcript of a conversation he had with RPGACE's in-app
+Oracle chat (a different AI, no real codebase access) about extending the
+H18 5-color ingredient-status system. The other Oracle could not act on
+any of it — it has no repo/Supabase access — so this session picked it up
+directly.
+
+Alex's real verbatim lines from that transcript:
+"there are more greens blues and oranges here, also have no noodles, but
+I do have rice, and have pita bread and tortilla I can use as carb to go
+with soup curry or other dishes, so I can alternate things like that"
+
+"I don't mean put rice into the soup instead of noodles, just skip the
+noodles, then can use broth as way to eat with rice or bread, won't
+change the recipe, just omit if I'm not going shop (no shop or can go
+shop should be a toggle mode for cooking planning)"
+
+Real ask distilled into 3 pieces, each with its own open fork:
+1. 🟠 Orange — a real substitute already in stock that lets you skip
+   buying the real ingredient entirely for this cook ("think of blue
+   with extra steps to make alternative," Alex's own words — a narrower,
+   more confident claim than blue's existing "same-aisle alternative,
+   still buy the real thing").
+2. 🟤 Brown — a separable/optional recipe component that can simply be
+   omitted without changing the dish's real identity (his own example:
+   noodles in a soup — omit them, don't substitute rice INTO the soup,
+   eat the broth with rice/bread on the side instead).
+3. A real shop/no-shop toggle mode for cooking planning.
+
+Also separately: Alex asked the OTHER (non-Claude-Code) Oracle to "Look
+through oversight to see what's done with cooking" — it couldn't, so this
+session answered that directly in chat instead of building anything for it.
+
+REAL /interrogation — 4 QUESTIONS, ALL ANSWERED VIA AskUserQuestion
+------------------------------------------------------------
+Q1 — Orange precision: curated substitution-pairs table (precise, only
+covers listed pairs) vs. same-aisle + name-similarity heuristic (broader,
+more false positives)?
+A1 — "1 and 2 I think have their place, do both." No stated precedence
+between the two — resolved by this session's own judgment, consistent
+with logic._resolveHaveAmount's existing "try safest/most certain first"
+precedent (H19): curated table checked first (authoritative), the
+aisle+name heuristic only as a fallback when no curated pair exists.
+
+Q2 — Brown tagging: who marks an ingredient essential vs. separable?
+A2 — "Oracle tags it at generation time (Recommended)." Confirmed: same
+mechanism as grams_estimate/ingredients_used's existing per-ingredient
+tagging. Honest limitation: only NEW recipes generated after this ships
+carry a real is_separable flag (same precedent as H14's per-step
+measurements) — pre-existing rows default to false (essential), never
+guessed true.
+
+Q3 — Toggle scope: per planned-cook session, or a global Habits setting?
+A3 — "Per planned-cook session (Recommended)." Set on the Session Builder
+popup, persisted on the real planned_cooks row alongside the recipe list.
+
+Q4 — Serving suggestion: should a missing separable ingredient also
+suggest a real in-stock substitute serving pairing (e.g. "you have
+rice/pita — serve broth over that")?
+A4 — "No, just say 'can be omitted'." This is the NON-recommended option
+— an explicit override of this session's own suggested default. NO
+serving-pairing suggestion is computed or shown anywhere. A bare, honest
+"can be omitted" note only.
+
+REAL BUILD, MATCHING THE 4 ANSWERS EXACTLY
+------------------------------------------------------------
+Orange — logic._SUBSTITUTION_GROUPS (a real, curated, small set of
+well-known home-kitchen swaps — sugar variants, butter/margarine, milk
+variants, citrus juices, vinegar variants, cooking oils, flour variants,
+allium variants, coriander/cilantro, stock/broth variants) +
+logic._findSubstitute(name, aisleIndex) (curated group checked first,
+same-aisle + shared-significant-word-token heuristic as fallback — both
+only ever match a name genuinely in stock right now, aisleIndex's own
+standing H18 contract). logic._classifyIngredientStatus now checks a real
+substitute before falling to blue when have<=0. INGREDIENT_STATUS_META
+gained a real 'orange' entry. Every real render site that can show a
+substitute name does (recipe card, schedule preview, shopping list) — a
+real, never-invented match, or nothing shown. _findMakeableRecipes' counts
+object gained orange (never blocks makeable — same "no shopping trip
+needed" status as green/purple).
+
+Brown — RECIPE_JSON_SHAPE gained a real per-ingredient "is_separable"
+field; a new SEPARABLE_TAG_TEXT shared instruction (rule 8, same
+convention as UNIT_PREFERENCE_TEXT) spliced into all 3 real full-recipe-
+generating prompt sites (the RECIPE_UPDATE_JSON context provider, the
+main generation prompt, buildRecipeGenBlock for chat-triggered
+generation). logic._sanitizeIngredientSeparable defensively coerces the
+field to a real boolean (rule 5 — never trust model JSON blindly), run on
+both the RECIPE_JSON and RECIPE_UPDATE_JSON parse paths. Persisted via a
+new recipe_ingredients.is_separable column (additive migration,
+NOT NULL DEFAULT false), read back via _loadSavedRecipe.
+logic._classifyIngredientStatus returns 'brown' when
+(opts.noShopMode && opts.isSeparable) and have<=0 — checked BEFORE orange/
+blue, since Alex's own words scope brown strictly to "if I'm not going
+shop." _computeIngredientUsage now also selects is_separable and folds it
+per merged group (a group stays separable only if EVERY real contributing
+row across every recipe in the session says so — essential wins if
+there's any real conflict). Brown rendering is a bare
+"<name> — can be omitted" note, explicitly never a computed serving-
+suggestion, per Alex's own A4 override.
+
+Toggle — a new planned_cooks.shop_mode + shopping_lists.shop_mode column
+(additive, text, CHECK IN ('can_shop','no_shop'), DEFAULT 'can_shop' —
+nothing changes for a session that never touches this). A real select
+control in ui._showSessionBuilder ("🛒 Can go shop" / "🚫 No shop this
+time"), persisted immediately via the existing logic._persistSessionDraft
+insert-or-update path (rule 8) and read back via logic._loadDraftSession.
+logic._computeIngredientUsage gained an optional 3rd `opts` param
+({noShop:true}) so a real No-Shop mode can actually reach the shared
+classifier — every existing caller that omits it is completely
+unaffected. ui._showSchedulePreview passes sess.shopMode through and
+renders a real, separate "🟤 Skipping shop this time — can be omitted"
+bucket. logic._generateShoppingList passes the same opts through and
+SKIPS inserting a brown-status item into shopping_list_items at all (the
+whole real point of the toggle is skipping the shop trip, so a genuinely
+omittable ingredient must never still nag Alex to buy it) — the list's
+own shop_mode is stored alongside it so ui._showShoppingList can show an
+honest note explaining why some items were left off when reopened later.
+logic._acceptSchedule carries shop_mode through to the scheduled row too.
+
+SCOPE, DELIBERATELY NARROW
+------------------------------------------------------------
+The toggle and brown status only ever apply within the real per-session
+"cooking planning" views (Session Builder / Schedule Preview / the
+shopping list it generates) — the standalone recipe card view (opened
+outside an active session, e.g. via the Stock Match Finder) never passes
+isSeparable/noShopMode, so it stays on the existing orange/blue/red
+ladder unchanged, matching Alex's own scoped answer (A3).
+
+Zero in-stock serving-pairing suggestion logic was built anywhere, per
+A4's explicit override.
+
+VERIFICATION
+------------------------------------------------------------
+See this same date's headless-Chromium test pass covering: curated
+substitution match, heuristic fallback match, no-match honest null,
+orange precedence over blue, brown precedence over orange/blue (No-Shop
+mode only), brown never firing without No-Shop mode, the shopping-list
+generator excluding brown items and persisting shop_mode, the schedule
+preview's 4-bucket render, and full re-runs of H18/H19/H20's own existing
+suites confirming zero regression.
+
+Untested by Alex's own hand.
+==========================================================================
