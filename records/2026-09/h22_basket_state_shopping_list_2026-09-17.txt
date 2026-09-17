@@ -1,0 +1,87 @@
+H22: REAL 3-STEP SHOPPING-LIST FLOW — NEED TO BUY / IN BASKET / BOUGHT
+==========================================================================
+
+ALEX'S VERBATIM ASK
+------------------------------------------------------------
+"While shopping for current list, make the buy buttons next to each
+ingredient say added to basket, which will keep it in a found state
+table, then after once receipt is made and produce is paid for, I click
+bought and enter details."
+
+REAL GAP THIS CLOSES
+------------------------------------------------------------
+Before this pass, `ui._showShoppingList`'s "Need to buy" row had exactly
+ONE button — "✅ Mark bought" — which opened `_showPriceEntryPopup`
+directly. That button silently conflated two genuinely different real
+moments: physically finding an item in the aisle (no receipt yet, no
+real price to log) and actually checking out (a real receipt now exists).
+Clicking it mid-shop meant either inventing a price before the till total
+was known, or leaving items unmarked until the whole trip was done —
+neither matches how a real shop trip works.
+
+REAL FIX
+------------------------------------------------------------
+New additive column, `shopping_list_items.in_basket boolean NOT NULL
+DEFAULT false` (Supabase migration `h22_shopping_list_basket_state`,
+verified live). A genuine 3rd real state now sits between "still need to
+find it" and "bought":
+
+1. **Need to buy** — `!bought && !in_basket`. Row shows a real "🧺 Add to
+   basket" button. Clicking it does ONE thing — a real
+   `secureWrite('shopping_list_items','update',{in_basket:true})` — and
+   re-renders. No price popup, no data invented.
+2. **In basket — ready to check out** (the real "found state table" Alex
+   asked for) — `!bought && in_basket`. A new, separate bucket, sorted by
+   name (not aisle — the walk-order need is already satisfied once an
+   item is basketed). Each row gets TWO real buttons:
+   - **✅ Bought** — opens the exact same, unchanged
+     `_showPriceEntryPopup`/`logic._recordPurchase` mechanism the old
+     single button used (rule 8 — no second purchase-logging path
+     invented). This is now genuinely the real moment a receipt exists,
+     so entering brand/store/pack size/price paid is honest, not guessed.
+   - **↩ (undo)** — a real, deliberate reversal
+     (`secureWrite(...,{in_basket:false})`) for a mis-tap or a plan
+     change mid-shop (put it back, found a better price elsewhere, etc).
+     Matches this project's own standing "reversible where it costs
+     nothing" discipline.
+3. **Bought** — unchanged, `bought:true`. `logic._recordPurchase` now
+   also sets `in_basket:true` alongside `bought:true` in the same write
+   (real data consistency — a bought item was, under this flow,
+   necessarily basketed first; harmless even for the rare edge case of a
+   stale draft resumed after this shipped).
+
+Zero change to the "Already have enough"/"Will run low"/"Already bought"
+buckets or to `ui._showSchedulePreview` (a read-only preview with no buy
+buttons at all — out of scope, nothing there needed this).
+
+VERIFICATION
+------------------------------------------------------------
+node --check clean. Real headless-Chromium pass (raw rpgace_core.js
+served directly, Supabase mocked with an in-memory fake
+`shopping_list_items` table so every real write is checked against
+actual before/after state, not just call-shape), 17/17 new assertions
+pass:
+- Initial render: "Need to buy" heading + a real "Add to basket" button;
+  no "In basket" bucket renders while nothing is basketed.
+- Clicking "Add to basket" fires the real write, updates the backing
+  row, and the re-render shows the new "In basket" bucket.
+- The basketed row shows the 🧺 icon, a real "Bought" button, and a real
+  undo button — and no longer offers a duplicate "Add to basket".
+- A second, still-unbasketed item (chicken thigh) is unaffected and
+  still shows its own "Add to basket" button independently.
+- The basket row's "Bought" button opens the real, unchanged price-entry
+  popup (same mechanism as before this pass, confirmed by DOM content).
+- Undo writes `in_basket:false` and the item returns to "Need to buy";
+  the basket bucket disappears again since it's empty.
+- `logic._recordPurchase` writes `bought:true` AND `in_basket:true`
+  together in the same update, confirmed via the real payload and the
+  real backing-row state after the call.
+
+Plus full re-runs of H18 (27/27), H19 (20/20), and H21 (26/26) confirming
+zero regression — none of those suites' own assertions touch the changed
+code paths, and all still pass unchanged.
+
+Re-minified, cache-bust bumped 20260917c -> 20260917d.
+
+Untested by Alex's own hand.
+==========================================================================

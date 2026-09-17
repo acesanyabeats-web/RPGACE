@@ -74,6 +74,16 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🧺 Sep 17 — H22: real "In basket" state for the shopping list</div>
+    <div class="card-body">
+      Real Alex ask: "while shopping for current list, make the buy buttons next to each ingredient say added to basket, which will keep it in a found state table, then after once receipt is made and produce is paid for, I click bought and enter details."<br><br>
+      Real gap: the old single "✅ Mark bought" button opened the price-entry popup directly — conflating physically finding an item (no real receipt yet) with actually checking out (a real receipt now exists). Clicking it mid-aisle meant inventing a price before the till total was known.<br><br>
+      New additive <code>shopping_list_items.in_basket</code> column. The "Need to buy" row's button is now "🧺 Add to basket" — a plain write, no popup, nothing invented. A new "🧺 In basket — ready to check out" bucket (the real "found state table" Alex asked for) shows each basketed item with two real buttons: "✅ Bought" (opens the exact same unchanged price-entry mechanism — no 2nd purchase-logging path) and a real "↩" undo for a mis-tap or a plan change mid-shop. <code>_recordPurchase</code> now sets <code>in_basket:true</code> alongside <code>bought:true</code> for data consistency.<br><br>
+      <b>Verified via a real headless-Chromium pass</b> (an in-memory fake table, every write checked against real before/after state), 17/17 new assertions pass, plus full re-runs of H18's 27/27, H19's 20/20, and H21's 26/26 confirming zero regression. Zero real console/page errors. <code>node --check</code> clean, re-minified, cache-bust bumped <code>20260917c</code>→<code>20260917d</code>. Full record: <code>records/2026-09/h22_basket_state_shopping_list_2026-09-17.txt</code>. <b>Untested by Alex's own hand.</b>
+    </div>
+  </div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🟠🟤 Sep 17 — H21: Orange substitute tier, Brown omittable tier, shop/no-shop toggle</div>
     <div class="card-body">
       Real Alex ask, via a pasted transcript of a conversation with RPGACE's in-app Oracle (a separate AI with no repo access — this session picked it up directly). Verbatim: "there are more greens blues and oranges here, also have no noodles, but I do have rice, and have pita bread and tortilla I can use as carb to go with soup curry or other dishes" and "I don't mean put rice into the soup instead of noodles, just skip the noodles... won't change the recipe, just omit if I'm not going shop (no shop or can go shop should be a toggle mode for cooking planning)."<br><br>

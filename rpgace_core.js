@@ -38532,7 +38532,7 @@ RPGACE.register('cookingOracle', {
         // the real, frozen-at-generation-time values this list was always
         // built from, never silently re-computed from current pantry).
         Promise.all([
-          RPGACE.sb.select('shopping_list_items', 'select=id,ingredient_id,needed_amount,needed_unit,have_amount,to_buy_amount,bought,ingredients(name)&list_id=eq.' + listId + '&order=bought.asc'),
+          RPGACE.sb.select('shopping_list_items', 'select=id,ingredient_id,needed_amount,needed_unit,have_amount,to_buy_amount,bought,in_basket,ingredients(name)&list_id=eq.' + listId + '&order=bought.asc'),
           new Promise(function(resolve) { self.logic._loadPantrySummed(function(snapshot) { resolve(snapshot); }); }),
           RPGACE.sb.select('shopping_lists', 'select=shop_mode&id=eq.' + listId + '&limit=1').catch(function() { return []; }),
         ])
@@ -38558,11 +38558,22 @@ RPGACE.register('cookingOracle', {
             needHeading.textContent = '🛒 Need to buy before this cook';
             box.appendChild(needHeading);
 
-            var needRows = (rows || []).filter(function(r) { return !r.bought && (r.to_buy_amount || 0) > 0; });
+            // H22 (Sep 17 2026, real Alex ask: "while shopping for current
+            // list, make the buy buttons next to each ingredient say added
+            // to basket, which will keep it in a found state table, then
+            // after once receipt is made and produce is paid for, I click
+            // bought and enter details") — a genuinely missing THIRD real
+            // state between "still need to find it" and "bought" (needed
+            // once + paid for), matching how a real shop trip actually
+            // works: items get found and physically put in the trolley
+            // well before there's a real receipt/price to log. Not yet
+            // in_basket AND not yet bought is the only real "still to find"
+            // state now — an in_basket item moves to its own bucket below.
+            var needRows = (rows || []).filter(function(r) { return !r.bought && !r.in_basket && (r.to_buy_amount || 0) > 0; });
             if (!needRows.length) {
               var doneMsg = document.createElement('div');
               doneMsg.style.cssText = 'font-size:12px;color:var(--muted);margin-bottom:14px;';
-              doneMsg.textContent = 'Nothing left to buy on this list.';
+              doneMsg.textContent = 'Nothing left to find on this list.';
               box.appendChild(doneMsg);
             }
             // H13 (Sep 16 2026) - auto-sorted by aisle (self.logic._classifyAisle,
@@ -38613,14 +38624,88 @@ RPGACE.register('cookingOracle', {
                 if (sub) lblText += ' — have a substitute in stock: ' + sub.name;
               }
               lbl.textContent = lblText;
+              // H22 (Sep 17 2026) — real, honest 2-step shopping flow: this
+              // button no longer opens the price popup directly (no real
+              // receipt exists yet while still walking the aisles) — it
+              // just marks the item physically found, moving it into the
+              // real "In basket" bucket below. Logging the actual price
+              // paid stays a SEPARATE, later action once there's a real
+              // receipt to enter (rule 7 — never invent purchase data that
+              // doesn't exist yet).
               var btn = document.createElement('button');
-              btn.textContent = '✅ Mark bought';
+              btn.textContent = '🧺 Add to basket';
               btn.style.cssText = 'padding:5px 10px;background:' + meta.bg + ';border:1px solid ' + meta.color + ';border-radius:6px;color:' + meta.color + ';font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-              btn.onclick = function() { self.ui._showPriceEntryPopup(r, renderItems); };
+              btn.onclick = function() {
+                btn.disabled = true;
+                btn.textContent = '…';
+                RPGACE.sb.secureWrite('shopping_list_items', 'update', { in_basket: true }, 'id=eq.' + r.id)
+                  .then(function() {
+                    RPGACE.utils.toast('🧺 Added to basket: ' + ingName, 'rgba(226,226,236,0.5)', 1800);
+                    renderItems();
+                  })
+                  .catch(function(e) {
+                    btn.disabled = false;
+                    btn.textContent = '🧺 Add to basket';
+                    RPGACE.utils.toast('⚠️ Could not add to basket: ' + (e.message || 'unknown error'), '#CC4A4A', 3200);
+                  });
+              };
               row.appendChild(lbl);
               row.appendChild(btn);
               box.appendChild(row);
             });
+
+            // H22 (Sep 17 2026) — the real "found state table" Alex asked
+            // for: items physically in the trolley, not yet checked out.
+            // Sorted by name only (not aisle — the real shop-walk ordering
+            // need is already done once an item lands here; what matters
+            // now is finding it quickly in a growing basket list).
+            var basketRows = (rows || []).filter(function(r) { return !r.bought && r.in_basket; })
+              .sort(function(a, b) { return ((a.ingredients && a.ingredients.name) || '').localeCompare((b.ingredients && b.ingredients.name) || ''); });
+            if (basketRows.length) {
+              var basketHeading = document.createElement('div');
+              basketHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#4A9FCC;margin:16px 0 8px;';
+              basketHeading.textContent = '🧺 In basket — ready to check out';
+              box.appendChild(basketHeading);
+              basketRows.forEach(function(r) {
+                var name = (r.ingredients && r.ingredients.name) || '?';
+                var row = document.createElement('div');
+                row.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:6px;padding:7px 10px;border-left:3px solid #4A9FCC;background:rgba(74,159,204,0.07);border-radius:0 5px 5px 0;margin-bottom:5px;font-size:13px;';
+                var lbl2 = document.createElement('span');
+                lbl2.style.cssText = 'color:#4A9FCC;flex:1;';
+                lbl2.textContent = '🧺 ' + name + ' — ' + r.to_buy_amount + ' ' + (r.needed_unit || '');
+                row.appendChild(lbl2);
+
+                // Real, deliberate undo — a genuine mis-tap (or a plan
+                // change at the shop) shouldn't be permanent; matches this
+                // project's own standing "reversible where it costs
+                // nothing" discipline.
+                var undoBtn = document.createElement('button');
+                undoBtn.textContent = '↩';
+                undoBtn.title = 'Remove from basket';
+                undoBtn.style.cssText = 'padding:5px 8px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+                undoBtn.onclick = function() {
+                  undoBtn.disabled = true;
+                  RPGACE.sb.secureWrite('shopping_list_items', 'update', { in_basket: false }, 'id=eq.' + r.id)
+                    .then(function() { renderItems(); })
+                    .catch(function(e) {
+                      undoBtn.disabled = false;
+                      RPGACE.utils.toast('⚠️ Could not remove from basket: ' + (e.message || 'unknown error'), '#CC4A4A', 3200);
+                    });
+                };
+
+                // The real, ONE place a purchase actually gets logged (rule
+                // 8) — unchanged from before, just moved here since this is
+                // now the real point in the flow where a receipt exists.
+                var boughtBtn = document.createElement('button');
+                boughtBtn.textContent = '✅ Bought';
+                boughtBtn.style.cssText = 'padding:5px 10px;background:rgba(76,175,130,0.12);border:1px solid rgba(76,175,130,0.35);border-radius:6px;color:var(--green);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+                boughtBtn.onclick = function() { self.ui._showPriceEntryPopup(r, renderItems); };
+
+                row.appendChild(undoBtn);
+                row.appendChild(boughtBtn);
+                box.appendChild(row);
+              });
+            }
 
             // H18 (Sep 16 2026) — the old flat "Already have enough" bucket
             // now splits into real green (plenty) vs. real purple (will run
@@ -40345,7 +40430,12 @@ RPGACE.register('cookingOracle', {
         .then(function(data) {
           var priceRow = Array.isArray(data) ? data[0] : data;
           var priceId = priceRow && priceRow.id ? priceRow.id : null;
-          return RPGACE.sb.secureWrite('shopping_list_items', 'update', { bought: true, ingredient_price_id: priceId }, 'id=eq.' + item.id);
+          // H22 (Sep 17 2026) — in_basket:true kept alongside bought:true
+          // for data consistency (a real bought item was, under this
+          // flow, necessarily found and basketed first) — harmless even
+          // for the rare item marked bought while it was never actually
+          // basketed (a stale draft resumed after H22 shipped, say).
+          return RPGACE.sb.secureWrite('shopping_list_items', 'update', { bought: true, in_basket: true, ingredient_price_id: priceId }, 'id=eq.' + item.id);
         })
         .then(function() {
           if (entry.unit && item.needed_unit && entry.unit.toLowerCase() === item.needed_unit.toLowerCase()) {
