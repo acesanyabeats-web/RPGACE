@@ -182,6 +182,16 @@ const ALLOWED_TABLES = new Set([
   // real write path - append-only, a real historical log, never updated
   // or deleted (same discipline ingredient_prices already established).
   'substitution_ratings',
+  // 2026-09-17 - H24 7th pass (real Alex ask, "orange should have an
+  // option where i declare we talk about same item just 2 derivations of
+  // names... interpret into recipe so counts on stock and recipe go
+  // through no matter how i word it"). Created anon_read_only/
+  // authenticated_all FROM THE START. cookingOracle.logic._declareSameItem
+  // is the one real write path - a real, explicit 2-click-confirmed Alex
+  // action, never automatic; a real permanent ingredient merge (delete +
+  // FK reassignment) happens alongside it, real Tier-3-adjacent stakes
+  // given there is no Supabase backup, per the standing landmine.
+  'ingredient_aliases',
 ]);
 
 async function handleBundleDeliverables(req, res, serviceKey) {

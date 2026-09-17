@@ -36551,27 +36551,44 @@ RPGACE.register('cookingOracle', {
     // shared button knows whether to reset itself (a failure) or leave
     // itself alone (a success — the caller's own code already removed
     // the row or closed the popup).
-    _mkDeleteArmBtn: function(onConfirm) {
+    // H24 (Sep 17 2026, 7th pass) — real, shared 2-click arm/confirm STATE
+    // MACHINE (rule 8), one level more general than _mkDeleteArmBtn below
+    // — the exact same real mechanical shape (armed/busy/3s auto-disarm),
+    // just with a real caller-supplied idle/armed label+color instead of
+    // delete's own hardcoded ones, so a 2nd real destructive action
+    // (declaring an ingredient alias — a real permanent merge, no
+    // Supabase backup) can reuse the identical interaction discipline
+    // instead of a 2nd hand-rolled copy of the same state machine.
+    // idleColor is captured from the constructed button's own variant CSS
+    // (never hand-typed here), so _mkDeleteArmBtn's real byte-identical
+    // reset color stays correct without restating it.
+    _mkArmConfirmBtn: function(idleText, armedText, variant, armedColor, onConfirm, opts) {
       var self = RPGACE.modules.cookingOracle;
-      var btn = self.ui._mkBtn('✕', 'deleteArm');
+      var btn = self.ui._mkBtn(idleText, variant, opts);
+      var idleColor = btn.style.color;
       var armed = false, busy = false;
       btn.onclick = function() {
         if (busy) return;
         if (!armed) {
-          armed = true; btn.textContent = '❌'; btn.style.color = '#CC4A4A';
-          setTimeout(function() { if (busy) return; armed = false; btn.textContent = '✕'; btn.style.color = 'rgba(226,84,84,.4)'; }, 3000);
+          armed = true; btn.textContent = armedText; btn.style.color = armedColor;
+          setTimeout(function() { if (busy) return; armed = false; btn.textContent = idleText; btn.style.color = idleColor; }, 3000);
           return;
         }
         busy = true; btn.textContent = '…';
         onConfirm(function(err) {
           if (err) {
-            busy = false; armed = false; btn.textContent = '✕'; btn.style.color = 'rgba(226,84,84,.4)';
+            busy = false; armed = false; btn.textContent = idleText; btn.style.color = idleColor;
           }
           // A real success needs no reset here — the caller's own
           // onConfirm already removed the row or closed the popup.
         });
       };
       return btn;
+    },
+
+    _mkDeleteArmBtn: function(onConfirm) {
+      var self = RPGACE.modules.cookingOracle;
+      return self.ui._mkArmConfirmBtn('✕', '❌', 'deleteArm', '#CC4A4A', onConfirm);
     },
 
     openMain: function() {
@@ -37102,7 +37119,12 @@ RPGACE.register('cookingOracle', {
     // recipe sharing this ingredient gets instead, once Alex has already
     // resolved a real pink choice in this ingredient's favor — every
     // existing caller that omits it is completely unaffected.
-    _renderSubstitutableStatusRow: function(text, status, ingredientId, subName, ingredientName, alreadyConfirmed, derivableFrom, neededAmount, pinkOthers) {
+    // H24 (Sep 17 2026, 7th pass) — 2 new, optional trailing params:
+    // `blueName` (blue's own real captured aisle-alternative, resolved
+    // by logic._computeIngredientUsage the same way orange's subName
+    // already is) and `onMerged` (a real reopen callback — see below;
+    // every existing caller that omits either is completely unaffected).
+    _renderSubstitutableStatusRow: function(text, status, ingredientId, subName, ingredientName, alreadyConfirmed, derivableFrom, neededAmount, pinkOthers, blueName, onMerged) {
       var self = RPGACE.modules.cookingOracle;
       var meta = self.INGREDIENT_STATUS_META[status] || self.INGREDIENT_STATUS_META.red;
       var row = document.createElement('div');
@@ -37149,6 +37171,34 @@ RPGACE.register('cookingOracle', {
           };
           row.appendChild(btn);
         }
+      }
+      // H24 (Sep 17 2026, 7th pass, real Alex ask: "orange should have an
+      // option where i declare we talk about same item just 2
+      // derivations of names" — AskUserQuestion-confirmed: orange AND
+      // blue rows both, 2-click arm/confirm) — a genuinely DIFFERENT real
+      // claim from the orange confirm button above ("use this instead
+      // this time" vs. "these are literally the same real ingredient"),
+      // so it renders alongside it, never replacing it. A real, permanent
+      // merge with no Supabase backup — logic._declareSameItem.
+      var altName = (status === 'orange') ? subName : (status === 'blue') ? blueName : null;
+      if (ingredientId && altName) {
+        var sameBtn = self.ui._mkArmConfirmBtn(
+          '🔗 Same item as "' + altName + '"?', '🔗 Confirm — merge for good', 'inline', '#C9A84C',
+          function(doneCb) {
+            self.logic._declareSameItem(ingredientId, altName, function(err) {
+              if (err) {
+                RPGACE.utils.toast('⚠️ Could not merge: ' + err, '#CC4A4A', 3200);
+                doneCb(err);
+                return;
+              }
+              RPGACE.utils.toast('✅ Merged — "' + altName + '" now always means ' + (ingredientName || 'this ingredient'), '#4caf82', 3600);
+              doneCb(null);
+              if (onMerged) onMerged();
+            });
+          },
+          { extra: 'margin-top:5px;font-size:10px;padding:3px 8px;', color: 'var(--gold)', borderColor: 'rgba(201,168,76,.35)' }
+        );
+        row.appendChild(sameBtn);
       }
       // H24 (Sep 17 2026, 5th pass, real Alex ask + AskUserQuestion-
       // confirmed: derive-and-deduct is a real, committed stock write,
@@ -38412,6 +38462,11 @@ RPGACE.register('cookingOracle', {
                   // now resolved once by _computeIngredientUsage itself
                   // (rule 8), never re-derived here.
                   if (u.status === 'orange' && u.subName) text += ' — have a substitute in stock: ' + u.subName;
+                  // H24 (Sep 17 2026, 7th pass) — u.blueName is now
+                  // resolved the same real way (rule 8), so a blue row
+                  // finally names its own real alternative instead of
+                  // staying silent about what's actually in the aisle.
+                  if (u.status === 'blue' && u.blueName) text += ' — have an alternative in stock: ' + u.blueName;
                   // H24 (6th pass) — a real, unresolved pink row gets its
                   // own dedicated real per-recipe choice UI (genuinely
                   // different shape — multiple recipe options, not one
@@ -38443,7 +38498,13 @@ RPGACE.register('cookingOracle', {
                       return oText;
                     });
                   }
-                  usageBox.appendChild(self.ui._renderSubstitutableStatusRow(text, u.status, u.ingredient_id, u.subName, u.name, u.subConfirmed, u.derivableFrom, u.amount, pinkOthers));
+                  // H24 (Sep 17 2026, 7th pass) — u.blueName + a real
+                  // reopen callback (same reopen shape pink's own row
+                  // already uses above) so a real "declare same item"
+                  // merge can refresh this whole popup once it lands —
+                  // the merged ingredient's real status can genuinely
+                  // change (e.g. a real duplicate stock row now counts).
+                  usageBox.appendChild(self.ui._renderSubstitutableStatusRow(text, u.status, u.ingredient_id, u.subName, u.name, u.subConfirmed, u.derivableFrom, u.amount, pinkOthers, u.blueName, function() { pop.close(); self.ui._showSchedulePreview(); }));
                 });
               }
 
@@ -39831,14 +39892,28 @@ RPGACE.register('cookingOracle', {
               })
               .catch(function(e) { cb(e.message || 'ingredient resolve failed'); });
           };
-          var alt = self.logic._pluralVariant(norm);
-          if (!alt) { create(); return; }
-          RPGACE.sb.select('ingredients', 'name=eq.' + encodeURIComponent(alt) + '&select=id&limit=1')
-            .then(function(altRows) {
-              if (altRows && altRows[0] && altRows[0].id) { cb(null, altRows[0].id); return; }
-              create();
+          var tryPlural = function() {
+            var alt = self.logic._pluralVariant(norm);
+            if (!alt) { create(); return; }
+            RPGACE.sb.select('ingredients', 'name=eq.' + encodeURIComponent(alt) + '&select=id&limit=1')
+              .then(function(altRows) {
+                if (altRows && altRows[0] && altRows[0].id) { cb(null, altRows[0].id); return; }
+                create();
+              })
+              .catch(create);
+          };
+          // H24 (Sep 17 2026, 7th pass) — a real, Alex-declared alias
+          // (logic._declareSameItem) is checked BEFORE the plural guess —
+          // stronger, deliberate evidence than a trailing-s heuristic,
+          // and the whole real point of "no matter how i word it": a
+          // wording he's already told this app means a known ingredient
+          // must resolve there, not mint yet another near-duplicate row.
+          RPGACE.sb.select('ingredient_aliases', 'alias_name=eq.' + encodeURIComponent(norm) + '&select=canonical_ingredient_id&limit=1')
+            .then(function(aliasRows) {
+              if (aliasRows && aliasRows[0] && aliasRows[0].canonical_ingredient_id) { cb(null, aliasRows[0].canonical_ingredient_id); return; }
+              tryPlural();
             })
-            .catch(create);
+            .catch(tryPlural);
         })
         .catch(function(e) { cb(e.message || 'ingredient lookup failed'); });
     },
@@ -39871,14 +39946,34 @@ RPGACE.register('cookingOracle', {
               })
               .catch(function(e) { cb(e.message || 'ingredient resolve failed'); });
           };
-          var alt = self.logic._pluralVariant(norm);
-          if (!alt) { create(); return; }
-          RPGACE.sb.select('ingredients', 'name=eq.' + encodeURIComponent(alt) + '&select=' + NUTRI_SELECT + '&limit=1')
-            .then(function(altRows) {
-              if (altRows && altRows[0] && altRows[0].id) { cb(null, altRows[0]); return; }
-              create();
+          var tryPlural = function() {
+            var alt = self.logic._pluralVariant(norm);
+            if (!alt) { create(); return; }
+            RPGACE.sb.select('ingredients', 'name=eq.' + encodeURIComponent(alt) + '&select=' + NUTRI_SELECT + '&limit=1')
+              .then(function(altRows) {
+                if (altRows && altRows[0] && altRows[0].id) { cb(null, altRows[0]); return; }
+                create();
+              })
+              .catch(create);
+          };
+          // H24 (Sep 17 2026, 7th pass) — same real alias-check as
+          // _resolveIngredient above (rule 8's own sibling), checked
+          // before the plural guess — Current Stock's add-stock form
+          // (this function's other real caller) is exactly where a
+          // declared alias needs to resolve straight to the canonical
+          // ingredient instead of minting a new row.
+          RPGACE.sb.select('ingredient_aliases', 'alias_name=eq.' + encodeURIComponent(norm) + '&select=canonical_ingredient_id&limit=1')
+            .then(function(aliasRows) {
+              var canonId = aliasRows && aliasRows[0] && aliasRows[0].canonical_ingredient_id;
+              if (!canonId) { tryPlural(); return; }
+              RPGACE.sb.select('ingredients', 'id=eq.' + canonId + '&select=' + NUTRI_SELECT + '&limit=1')
+                .then(function(canonRows) {
+                  if (canonRows && canonRows[0] && canonRows[0].id) { cb(null, canonRows[0]); return; }
+                  tryPlural();
+                })
+                .catch(tryPlural);
             })
-            .catch(create);
+            .catch(tryPlural);
         })
         .catch(function(e) { cb(e.message || 'ingredient lookup failed'); });
     },
@@ -40655,6 +40750,18 @@ RPGACE.register('cookingOracle', {
         // above, one recipe unit ("stalk") with no synonym mapping to
         // the canonical countable-unit bucket real stock is logged in.
         stalk: 'unit', stalks: 'unit',
+        // H24 (Sep 17 2026, 7th pass) — real bug, found from Alex's own
+        // live report: "egg... still blue not green" despite 11 real
+        // Count in stock. Root cause: the recipe's own unit was "large"
+        // (Oracle wrote the size descriptor into the unit slot, e.g. "3
+        // large" meaning "3 large eggs") with no synonym mapping to the
+        // same canonical countable-unit bucket whole/count/stalk already
+        // use — the real quantity meant is a plain count regardless of
+        // size, same as an onion/chilli's own size descriptor never
+        // changing how many are needed. Sibling size words added
+        // together, same real culinary convention, not invented new.
+        large: 'unit', medium: 'unit', small: 'unit',
+        'extra-large': 'unit', xl: 'unit',
       };
       if (SYNONYMS[s]) return SYNONYMS[s];
       if (s.length > 3 && s.charAt(s.length - 1) === 's') return s.slice(0, -1);
@@ -40756,6 +40863,21 @@ RPGACE.register('cookingOracle', {
         if (volBucket) {
           var converted = self.logic._convertVolumeUnits(volBucket.quantity, self.logic._normalizeUnit(volBucket.unit), neededUnit);
           if (converted != null) return converted;
+        }
+      }
+
+      // H24 (Sep 17 2026, 7th pass) — real, structural gap found: WEIGHT_TO_G
+      // existed but was ONLY ever consulted as a negative guard on the
+      // gramsEstimate branch below, never as its own exact g<->kg bridge —
+      // the same real, always-true SI conversion VOLUME_TO_ML's own branch
+      // above already proves out for volume, just missing here. Real bug
+      // this caused: "300g needed, 1.2kg in stock" resolved have=0. Mirrors
+      // the volume branch exactly, never a density guess (rule 7).
+      if (self.logic.WEIGHT_TO_G[neededUnit]) {
+        var wtBucket = buckets.filter(function(b) { return self.logic.WEIGHT_TO_G[self.logic._normalizeUnit(b.unit)]; })[0];
+        if (wtBucket) {
+          var wtG = wtBucket.quantity * self.logic.WEIGHT_TO_G[self.logic._normalizeUnit(wtBucket.unit)];
+          return wtG / self.logic.WEIGHT_TO_G[neededUnit];
         }
       }
 
@@ -40906,6 +41028,52 @@ RPGACE.register('cookingOracle', {
         .catch(function() { cb({}); });
     },
 
+    // H24 (Sep 17 2026, 7th pass, real Alex ask: "orange should have an
+    // option where i declare we talk about same item just 2 derivations
+    // of names" — AskUserQuestion-confirmed: the recipe's own wording
+    // always wins and any future differently-worded stock entry should
+    // "go through no matter how i word it," a real substitute/aisle-
+    // alternative candidate can trigger it from BOTH orange and blue rows,
+    // 2-click arm/confirm friction) — a real, PERMANENT merge, the same
+    // evidence-shaped operation this session's own manual duplicate-
+    // ingredient merges (lime/limes, egg/eggs, coconut milk/full-fat
+    // coconut milk, etc) have been doing by hand all session, now a real
+    // in-app action instead of needing a future Claude Code SQL pass every
+    // time a new wording recurs. `canonicalIngredientId` is always the
+    // RECIPE's own real ingredient_id (never the substitute's) — the
+    // ANOTHER real half of "no matter how i word it": every reference the
+    // substitute's own row carried (real stock, other recipes, price
+    // history, shopping-list rows) is reassigned onto the SAME canonical
+    // id, then the substitute's now-orphaned ingredients row is deleted.
+    // The real, standing gap this closes going FORWARD (not just this one
+    // instance): a real ingredient_aliases row is written too, so a
+    // FUTURE stock-add typed under the exact same alternate wording
+    // resolves straight to the same canonical ingredient instead of
+    // minting yet another duplicate row needing yet another declare —
+    // see logic._resolveIngredient/_resolveIngredientFull's own real
+    // alias-check, checked before ever creating a new row.
+    _declareSameItem: function(canonicalIngredientId, altName, cb) {
+      var norm = String(altName || '').trim().toLowerCase();
+      if (!canonicalIngredientId || !norm) { cb('missing ingredient or alternate name'); return; }
+      RPGACE.sb.select('ingredients', 'name=eq.' + encodeURIComponent(norm) + '&select=id&limit=1')
+        .then(function(rows) {
+          var altId = rows && rows[0] && rows[0].id;
+          if (!altId) { cb('could not find "' + altName + '" as a real ingredient'); return; }
+          if (altId === canonicalIngredientId) { cb(null); return; } // already the same real row
+          var reassign = function(table) {
+            return RPGACE.sb.secureWrite(table, 'update', { ingredient_id: canonicalIngredientId }, 'ingredient_id=eq.' + altId);
+          };
+          Promise.all([reassign('pantry_stock'), reassign('recipe_ingredients'), reassign('ingredient_prices'), reassign('shopping_list_items')])
+            .then(function() { return RPGACE.sb.secureWrite('ingredients', 'delete', null, 'id=eq.' + altId); })
+            .then(function() {
+              return RPGACE.sb.secureWrite('ingredient_aliases', 'insert', { alias_name: norm, canonical_ingredient_id: canonicalIngredientId }, null, 'alias_name');
+            })
+            .then(function() { cb(null); })
+            .catch(function(e) { cb(e.message || 'merge failed'); });
+        })
+        .catch(function(e) { cb(e.message || 'ingredient lookup failed'); });
+    },
+
     // H24 (Sep 17 2026, 6th pass, real Alex ask: "id also like a system
     // where at the end of a cook a rate the subsitutions so the system
     // prunes to different alternatives to make better decisions with
@@ -41019,6 +41187,24 @@ RPGACE.register('cookingOracle', {
         .catch(function(e) { cb(e.message || 'could not load real ' + norm + ' stock'); });
     },
 
+    // H24 (Sep 17 2026, 7th pass) — real, shared "is there ANY other real
+    // ingredient stocked in the same aisle" resolver (rule 8), extracted
+    // out of _classifyIngredientStatus's own prior inline boolean check —
+    // now returns the real matched NAME (not just true/false) so a real
+    // caller can actually show/declare it, same shape as orange's own
+    // _findSubstitute. Deliberately the loosest, cheapest real tier (no
+    // curated group, no shared-word heuristic) — genuinely just "same
+    // real shopping aisle, a different name."
+    _findAisleAlternative: function(name, aisleIndex) {
+      var self = RPGACE.modules.cookingOracle;
+      if (!aisleIndex || !name) return null;
+      var aisle = self.logic._classifyAisle(name).name;
+      var namesInAisle = aisleIndex[aisle] || [];
+      var norm = String(name).trim().toLowerCase();
+      for (var i = 0; i < namesInAisle.length; i++) { if (namesInAisle[i] !== norm) return namesInAisle[i]; }
+      return null;
+    },
+
     _classifyIngredientStatus: function(opts) {
       var self = RPGACE.modules.cookingOracle;
       opts = opts || {};
@@ -41045,11 +41231,14 @@ RPGACE.register('cookingOracle', {
           // (what Alex has already decided is an acceptable swap).
           var sub = self.logic._findSubstitute(opts.name, opts.aisleIndex);
           if (sub) return 'orange';
-          var aisle = self.logic._classifyAisle(opts.name).name;
-          var namesInAisle = opts.aisleIndex[aisle] || [];
-          var norm = String(opts.name).trim().toLowerCase();
-          var hasAlt = namesInAisle.some(function(n) { return n !== norm; });
-          if (hasAlt) return 'blue';
+          // H24 (Sep 17 2026, 7th pass) — real, superseding extension:
+          // was a bare boolean (hasAlt), now routes through the shared
+          // _findAisleAlternative (rule 8) so a real CALLER (see
+          // _computeIngredientUsage's own blueName resolution below) can
+          // capture the actual name that matched, not just "some
+          // alternative exists" — needed for the real "same item, 2
+          // names" declare action Alex asked for on a blue row too.
+          if (self.logic._findAisleAlternative(opts.name, opts.aisleIndex)) return 'blue';
         }
         return 'red';
       }
@@ -41245,6 +41434,13 @@ RPGACE.register('cookingOracle', {
                   subConfirmed = !!(confirmedSubs[g.ingredient_id + '::' + subName]);
                 }
               }
+              // H24 (Sep 17 2026, 7th pass, real Alex ask: "orange should
+              // have an option where i declare we talk about same item
+              // just 2 derivations of names") — resolved for blue too
+              // (his own answer, both rows), reusing the shared
+              // _findAisleAlternative (rule 8) rather than a 2nd lookup.
+              var blueName = null;
+              if (status === 'blue') blueName = self.logic._findAisleAlternative(g.name, pantry.aisleIndex);
               // H24 (6th pass) — `amount` returned here is effectiveAmount
               // (the real combined total, UNLESS a resolved pink
               // allocation narrows it to just the chosen recipe's own
@@ -41253,7 +41449,7 @@ RPGACE.register('cookingOracle', {
               // per-recipe breakdown (including any amount this row's
               // own `amount` field no longer directly shows) always lives
               // in pinkInfo.perRecipe, never lost.
-              return { ingredient_id: g.ingredient_id, name: g.name, unit: g.unit, amount: effectiveAmount, have: have, toBuy: toBuy, status: status, isSeparable: g.isSeparable, subName: subName, subConfirmed: subConfirmed, derivableFrom: (status === 'maroon') ? derivableFrom : null, pinkInfo: pinkInfo };
+              return { ingredient_id: g.ingredient_id, name: g.name, unit: g.unit, amount: effectiveAmount, have: have, toBuy: toBuy, status: status, isSeparable: g.isSeparable, subName: subName, subConfirmed: subConfirmed, blueName: blueName, derivableFrom: (status === 'maroon') ? derivableFrom : null, pinkInfo: pinkInfo };
             });
             cb(null, list);
             });

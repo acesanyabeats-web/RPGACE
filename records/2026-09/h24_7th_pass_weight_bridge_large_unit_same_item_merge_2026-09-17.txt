@@ -1,0 +1,149 @@
+H24 7TH PASS: REAL WEIGHT-BRIDGE BUG, "LARGE" UNIT SYNONYM, AND A REAL
+"SAME ITEM, 2 NAMES" PERMANENT-MERGE FEATURE
+==========================================================================
+
+ALEX'S VERBATIM REPORT
+------------------------------------------------------------
+"the pink didnt appear for the coconut milk situation, egg and frozen
+chicken thighs still blue not green. also orange should have an option
+where i declare we talk about same item just 2 derivations of names"
+
+REAL EVIDENCE FIRST (rule 4) — 3 genuinely different root causes, not one
+------------------------------------------------------------
+Direct Supabase query of the real live draft session (3 recipes) plus
+real pantry_stock found 3 distinct bugs, not a single shared cause:
+
+1. Pink missing for coconut milk: the 2 recipes need "full-fat coconut
+   milk" (ingredient_id a5a1ab77...) — a real, ZERO-stock ingredient row.
+   Alex's real 400g stock lived under a completely separate row, "coconut
+   milk" (df7b17f2...) — same duplicate-ingredient-identity bug class as
+   lime/limes, egg/eggs, never caught for this pair. Real reference check
+   (recipe_ingredients/pantry_stock/ingredient_prices/shopping_list_items)
+   found a clean split — "full-fat coconut milk" had 2 real recipe refs +
+   4 shopping-list refs, "coconut milk" had only the 1 pantry_stock row —
+   merged directly (same evidence-checked pattern as the 6 earlier merges
+   this session), confirming pink now computes correctly (grams_estimate
+   on both real recipe rows bridges the g<->ml gap, 400g have >= 120ml
+   smallest need, < 520ml combined = real pink eligibility).
+
+2. Egg still blue: the recipe's own unit was "large" ("3 large" — Oracle
+   wrote the size descriptor into the unit slot), with zero synonym
+   mapping to the same canonical countable-unit bucket whole/count/stalk
+   already use, despite 11 real Count in stock.
+
+3. Frozen chicken thigh still blue: real, structural gap found in
+   logic._resolveHaveAmount — a real WEIGHT_TO_G table existed (g:1,
+   kg:1000) but was NEVER actually consulted as its own exact bridge,
+   only as a negative guard inside a DIFFERENT branch (the gramsEstimate
+   bridge, which only fires when the needed unit ISN'T itself a weight
+   unit). "300g needed, 1.2kg in stock" resolved have=0 every time — the
+   exact same real gap VOLUME_TO_ML's own branch already correctly closes
+   for volume, just missing for weight.
+
+FIXES
+------------------------------------------------------------
+logic._resolveHaveAmount gained a real, exact weight-to-weight bridge
+branch (g<->kg), mirroring VOLUME_TO_ML's own branch exactly — never a
+density guess, pure SI conversion (rule 7). logic._normalizeUnit gained
+large/medium/small/extra-large/xl mapped to the same canonical 'unit'
+bucket as whole/count/stalk — the real observed culprit ("large") plus
+its natural sibling size-descriptors, same real culinary convention.
+
+THE REAL "SAME ITEM, 2 NAMES" FEATURE — interrogated first (rule 5)
+------------------------------------------------------------
+A real, permanent, destructive merge with no Supabase backup — genuinely
+consequential design forks, so AskUserQuestion before building (3
+questions, all answered):
+1. Which name wins: "keep recipe, but if i use different wording just
+   interpret into recipe so counts on stock and recipe go through no
+   matter how i word it" — read as BOTH halves of his answer: the
+   recipe's own wording is canonical (matches the Recommended option),
+   AND a real, standing ALIAS mechanism so a future re-wording resolves
+   automatically, not just this one instance.
+2. Where it appears: "Orange and blue rows both" (his own explicit
+   choice, not the narrower orange-only default).
+3. Confirm friction: 2-click arm/confirm (Recommended).
+
+THE REAL BUILD
+------------------------------------------------------------
+New real, append-only-in-spirit `ingredient_aliases` table (alias_name
+UNIQUE, canonical_ingredient_id, anon_read_only/authenticated_all from
+creation). logic._declareSameItem(canonicalIngredientId, altName, cb) —
+resolves altName to its real ingredient_id, reassigns every real FK
+reference across pantry_stock/recipe_ingredients/ingredient_prices/
+shopping_list_items onto the canonical id, deletes the now-orphaned
+ingredients row, then writes a real ingredient_aliases row (upserted via
+onConflict, so redeclaring the same wording never 409s). This is the
+exact same evidence-shaped merge this session's own manual SQL passes
+have been doing by hand all session (lime/limes, egg/eggs, coconut
+milk/full-fat coconut milk, etc) — now a real in-app action.
+
+The real "no matter how i word it" half: logic._resolveIngredient/
+_resolveIngredientFull (both real, shared ingredient-resolution
+functions, rule 8) now check ingredient_aliases FIRST on a cache-miss —
+before the existing plural-fallback, before ever minting a new row — so
+a FUTURE stock-add typed under a previously-declared alternate wording
+resolves straight to the canonical ingredient instead of creating yet
+another duplicate needing yet another declare.
+
+Blue rows previously carried only a bare boolean ("some alternative
+exists") — logic._findAisleAlternative is a new, shared extraction (rule
+8) that returns the real matched NAME instead, used by BOTH
+_classifyIngredientStatus's own blue check (refactored to use it, zero
+behavior change) and _computeIngredientUsage's new blueName resolution —
+the real, necessary prerequisite for a blue row to have anything concrete
+to declare "same item" against.
+
+UI: ui._renderSubstitutableStatusRow gained 2 new optional trailing
+params (blueName, onMerged — every existing caller unaffected) and a new
+real "🔗 Same item as X?" 2-click arm/confirm button, rendered on BOTH
+orange (subName) and blue (blueName) rows, genuinely independent of the
+orange confirm-substitution button (a different real claim — "these are
+the same real ingredient" vs "use this instead this time" — so both can
+coexist on the same row). A real generalized ui._mkArmConfirmBtn extracts
+_mkDeleteArmBtn's own 2-click state machine one level further (rule 8) so
+this 2nd real destructive action reuses the identical interaction
+discipline instead of a hand-rolled copy — _mkDeleteArmBtn's own public
+behavior stays byte-identical (verified).
+
+A REAL BUG CAUGHT AND FIXED BEFORE SHIPPING, NOT AFTER
+------------------------------------------------------------
+The first version of the same-item button mutated `.style.cssText` AFTER
+_mkArmConfirmBtn had already captured `idleColor` for its own reset
+logic — meaning a failed merge (or the 3s auto-disarm) would silently
+reset the button to the WRONG color (its pre-styling default, not the
+real gold it actually rendered at). Caught by a real headless test
+specifically built to exercise the fail-then-reset path, not by
+inspection. Fixed by threading opts through to _mkArmConfirmBtn's own
+internal _mkBtn call so idleColor is captured AFTER styling, matching
+_mkDeleteArmBtn's own already-correct precedent.
+
+HONEST SCOPE LIMIT
+------------------------------------------------------------
+The Shopping List's own separate, hand-rolled inline rendering (a
+genuinely distinct implementation from _renderSubstitutableStatusRow,
+confirmed by direct grep) does NOT get the same-item button this pass —
+matches H24 2nd pass's own established precedent of scoping v1 to the
+Schedule Preview first and naming the 2nd real site as a deliberate,
+cheap fast-follow rather than guessed at blind.
+
+VERIFICATION
+------------------------------------------------------------
+30 new real headless-Chromium assertions (the exact reported bugs
+reproduced-then-fixed; the real weight bridge both directions with exact-
+match-still-wins and unbridgeable-honestly-0 regression guards; the real
+merge's own 4-table reassignment + delete + upsert-alias write shape; the
+real alias-check in both resolve functions, before plural fallback,
+never short-circuiting an ordinary exact match; the exact idle-color bug
+this pass caught, verified fixed; the button correctly absent when there
+is no real captured alt name at all). Plus a full re-run of every
+pre-existing suite (H18 through H24 6th pass, 231 prior assertions) —
+one real, stale test assertion found and corrected (H24 2nd pass's own
+confirm-flow test asserted "zero buttons after confirm," now stale since
+a real 2nd button legitimately survives confirm — fixed to check the
+SPECIFIC confirm button is gone, not the row's whole button count,
+same honest-correction discipline as every prior instance of this class
+this session). 261 total assertions, zero failures.
+
+node --check clean, re-minified, cache-bust bumped 20260917j -> 20260917k.
+==========================================================================
