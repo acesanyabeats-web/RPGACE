@@ -1,0 +1,204 @@
+H24 4TH PASS: 6 DUPLICATE-INGREDIENT-ROW MERGES, A 2ND UNIT-SYNONYM GAP,
+A REAL "CURATED GROUP IS AUTHORITATIVE" TIGHTENING, 2 NEW CURATED GROUPS,
+A GENERIC-HEAD-NOUN STOPLIST, AND A REAL CORRECTION TO H24 2ND PASS'S OWN
+"CONFIRM -> GREEN" BEHAVIOR
+==========================================================================
+
+ALEX'S VERBATIM ASK
+------------------------------------------------------------
+A real, frustrated live hand-test of the Planned Cook / Schedule Preview
+popup, pasted directly:
+
+"🟠 shallot — need 6 medium — have a substitute in stock: spring onion
+✓ Use spring onion instead
+🟠 spring onion — need 5 stalk — have a substitute in stock: yellow onion
+✓ Use yellow onion instead - i have 4 shallots in stock, wtf. i have
+spring onion, yet you say we have none and offered yellow onion as
+replacement, yet want spring onion to replace shallot. wtf is this
+bullshit."
+
+Immediately followed, same session, by more real live examples (demerara
+sugar, oranges), then a separate message with more: "i have whole eggs...
+i have 2 soy sauces in stock, why are you giving me worchestershire
+sauce, wtf. use the ENTIRE STOCK NOT JUST PANTRY. i have tamarind
+concentrate - why vanilla bean paste as subsitute? ... i have olive oil
+and butter instead of vegetable oil. i have whole milk why give me
+evaporated milk as sub?"
+
+Then, separately, a real correction to H24 2nd pass's own shipped
+"confirm -> green" feature: "maybe not turn subs into green, but rather a
+tick on the left to show ingredient or alternative is agreed upon, but
+keeping colours as is to highlight whats subbed, how subbed, whats true
+green, so future sessions now what subs can be used, and what in the
+recipe is authentic from cook from previous rounds."
+
+REAL EVIDENCE FIRST, NOT A 3RD BLIND PATCH (rule 4)
+------------------------------------------------------------
+Direct Supabase queries against Alex's own live `ingredients`/
+`pantry_stock`/`recipe_ingredients` rows for his real 3-recipe session
+(Rendang, Sichuan Soup, Coconut Lime Orange Cake) found a REAL,
+SYSTEMATIC pattern, not isolated cases: a scoped plural-normalize SQL
+query across every ingredient touched by his current stock or these 3
+recipes found 5 more real duplicate pairs beyond shallot/shallots
+(already suspected): egg/eggs, "frozen chicken thighs"/"frozen chicken
+thigh", "lemongrass stalk"/"lemongrass stalks", orange/oranges, and a
+separate, non-plural TYPO pair found by direct inspection: "demarara
+sugar" (his real stock, misspelled) vs "demerara sugar" (the recipe's
+correct spelling). Every single pair showed the exact same shape: the
+recipe-referencing id had 0 real pantry_stock rows and 1+ recipe_
+ingredients/shopping_list_items references; the stock-referencing id had
+1 real pantry_stock row and 0 recipe_ingredients/ingredient_prices
+references. Zero ambiguity, zero real conflicting references on the
+"to-delete" side in any of the 6 pairs.
+
+REAL FIX 1 — 6 one-time, evidence-checked merges (same discipline as the
+lime/limes merge earlier this session)
+------------------------------------------------------------
+For each pair: reassigned the stock-only id's real pantry_stock row(s) to
+the recipe-referencing id, deleted the now-orphaned duplicate row.
+Verified post-merge: egg (15 Count), frozen chicken thigh (1.2kg),
+lemongrass stalk (5 Count), orange (2 Count), shallot (4 Count), demerara
+sugar (300g) — all now show real stock under the exact names his 3
+current recipes reference.
+
+REAL FIX 2 — a 2nd real unit-synonym gap: "stalk"
+------------------------------------------------------------
+Real root cause of "i have spring onion, yet you say we have none":
+recipe wants "spring onion" in unit "stalk"; his real stock is logged in
+unit "Count" — no synonym mapping existed between them (same bug CLASS
+as H24 2nd pass's own whole/count fix, a 2nd real instance of it). Added
+`stalk`/`stalks` to the existing canonical `unit`/`units` bucket in
+`logic._normalizeUnit`.
+
+REAL FIX 3 — curated groups are now authoritative, never fall through to
+the loose heuristic
+------------------------------------------------------------
+Real root cause of the incoherent "shallot wants spring onion, but spring
+onion (itself genuinely in stock, once Fix 2 landed) wants yellow onion"
+chain: `_findSubstitute`'s curated-group check only ever returned early
+on a real MATCH — if no real group member was in stock, it silently fell
+through to the much looser aisle+shared-word heuristic below, which
+matched spring onion against yellow onion purely because both contain
+the bare word "onion." A curated group is a real, deliberate, hand-picked
+answer (rule 7) — once one exists for an ingredient, it should be the
+FINAL word, even when no real member happens to be in stock right now.
+Fixed: `_findSubstitute` now returns null outright once it establishes
+the ingredient belongs to ANY curated group, regardless of whether a real
+match was found within it — never falls through to the heuristic for a
+curated ingredient.
+
+REAL FIX 4 — a real, GENERALIZED fix for the shared-generic-word class of
+bug (found 4 separate times this session, not a one-off)
+------------------------------------------------------------
+Once Fix 3 was traced, the SAME failure shape kept recurring for
+ingredients that had NO curated group yet: "soy sauce" -> "worcestershire
+sauce" (shared "sauce"), "tamarind paste" -> "vanilla bean paste" (shared
+"paste"), and (in a synthetic test) "red onion" -> "white onion" (shared
+"onion"). Every single wrong heuristic match this session found shares
+the exact same shape: the ONLY token 2 genuinely different ingredients
+have in common is a generic PRODUCT-CATEGORY noun at the end of a
+compound name, never a real identifying word. Real, restrained fix,
+same evidence-seeded-not-exhaustive discipline `_QUALIFIER_STOPWORDS`
+itself already used: a new sibling stoplist, `_GENERIC_HEAD_STOPWORDS`
+(`onion`, `sauce`, `milk`, `paste` — the 4 real, observed culprits),
+applied to the SOURCE ingredient's own token list only (a candidate can
+still legitimately match via this word alongside a real identifying one
+— "coconut milk" still correctly matches "full-fat coconut milk" via the
+genuinely identifying shared word "coconut," verified directly).
+
+REAL FIX 5 — 2 new curated groups + 2 extensions, every one pulled
+directly from Alex's own verbatim examples
+------------------------------------------------------------
+- New: `{ members: ['soy sauce', 'dark soy sauce', 'light soy sauce'] }`
+  — his real stock IS dark/light soy sauce; a bare "soy sauce" ask now
+  correctly resolves to one of those instead of worcestershire.
+- New: `{ members: ['tamarind paste', 'tamarind concentrate'] }` — his
+  real stock name differs from the recipe's only in product form.
+- Extended the milk group with bare `'milk'` — his real stock is entered
+  as bare "milk," which he considers the same real thing as "whole milk"
+  for cooking purposes.
+- Extended the oil group with `'olive oil'`, `'unsalted butter'`,
+  `'salted butter'` — his own explicit, named substitutes ("i have olive
+  oil and butter instead of vegetable oil"), added exactly as stated;
+  butter's own pre-existing group is untouched, dual membership is
+  already an established precedent (Aug 11 reference-track note).
+
+REAL CORRECTION 1 — H24 2nd pass's "confirm -> green" is now "confirm ->
+tick, color stays true" (Alex's own direct, same-session correction)
+------------------------------------------------------------
+Alex explicitly walked back what he'd asked for one turn earlier: a
+confirmed substitution should NEVER reclassify green — green must always
+mean "genuinely, currently in stock," never "an approved swap." The real,
+persisted `ingredient_substitution_confirmations` table/write path is
+completely unchanged (it was always the right mechanism) — only what the
+classifier and UI DO with a confirmed pairing changes:
+- `logic._classifyIngredientStatus` no longer checks `confirmedSubs` at
+  all — a real substitute always returns 'orange', full stop, confirmed
+  or not.
+- `logic._computeIngredientUsage` now resolves `subName`/`subConfirmed`
+  itself, ONCE, and exposes both on each returned row (rule 8 — this
+  used to be independently re-derived by every real UI consumer against
+  its own separately-loaded pantry snapshot; now one real computation).
+  As a direct, real perf win from this same rule-8 cleanup, the Schedule
+  Preview's own 2nd, now-redundant `_loadPantrySummed` call (loaded
+  purely so its old inline substitute lookup had an aisleIndex) is
+  removed outright — one real Supabase round trip, not two.
+- `ui._renderSubstitutableStatusRow` gained a 6th param, `alreadyConfirmed`
+  — the row's real color/border/background NEVER changes on confirm now;
+  a real ✓ tick prefix + an "✓ Agreed substitution — using X" note is the
+  only visible change, both on a fresh confirm click AND on every future
+  load of an already-confirmed pairing (the real, persistent, cross-
+  session record Alex asked for — "future sessions now what subs can be
+  used"). The Shopping List's own separate needRows render (a different,
+  persisted-list data path, not `_computeIngredientUsage`'s output) got
+  the identical tick treatment, inline, matching its own established
+  shape.
+
+DELIBERATELY NOT BUILT THIS PASS — 3 real, new, multi-piece features,
+interrogated via AskUserQuestion rather than guessed (rule 5)
+------------------------------------------------------------
+Alex also asked, same session, for 3 genuinely new subsystems: (1) a real
+🟤MAROON status for a byproduct-derivable ingredient (egg -> egg
+white/yolk, desiccated coconut -> toasted desiccated coconut) with real
+derivation instructions; (2) a real 🩷PINK status for an ingredient
+shared across 2+ recipes in one session where total stock covers ONE
+recipe's need but not both, picking which recipe gets the real
+ingredient vs. a substitute; (3) a post-cook substitution rating system
+that prunes future substitute suggestions toward what Alex rates well.
+Real, confirmed answers (AskUserQuestion, all 4 questions answered):
+maroon deducts the real source ingredient's stock automatically once
+used; pink lets Alex choose which recipe gets the real stock each time
+(not an automatic pick); ratings have no forced prompt at cook-complete
+— rated whenever from the recipe card; and ratings DO feed back to
+auto-prefer highly-rated substitutes and deprioritize poorly-rated ones
+in future suggestions. These are real, substantial, separate builds —
+see the following same-session record files for maroon/pink/ratings.
+
+VERIFICATION
+------------------------------------------------------------
+`node --check` clean. Real headless-Chromium pass, 20/20 new assertions
+pass (unit synonym fix; the inGroup tightening with a real synthetic
+"spring onion has no real group member in stock" case; all 4 new/
+extended curated groups resolving correctly against real stock-shaped
+mock data; the generic-head-noun stoplist killing a synthetic false
+match while a genuinely specific shared word still matches; the
+classifier never returning green for a confirmed pairing;
+_computeIngredientUsage resolving subName/subConfirmed once and exposing
+them; the tick-render function's full already-confirmed and fresh-
+confirm-click paths, confirming the row's color literally never changes).
+2 real, PRE-EXISTING test assertions from earlier same-session passes
+were found asserting the OLD (now deliberately superseded) behavior —
+not silently left broken: `test_h21_orange_brown_toggle.js`'s own "red
+onion -> white onion via bare shared 'onion'" case (the exact bug class
+just fixed) was corrected to assert the new, correct null result, with a
+new case added alongside it proving a genuinely specific shared word
+("bell pepper") still produces a real match; `test_h24b_confirm_flow.js`'s
+own "confirmed pair classifies green" case was corrected to assert the
+new, correct 'orange' result. Full re-runs of every pre-existing suite
+(H18 27/27, H19 20/20, H20 16/16, H21 27/27 post-correction, H22 17/17,
+H23 19/19, H24 1st pass 18/18, H24 2nd pass 14/14 post-correction)
+confirm zero real regression — 178 total assertions across the module,
+all passing.
+
+Re-minified, cache-bust bumped 20260917h -> 20260917i.
+==========================================================================

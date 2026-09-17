@@ -37050,38 +37050,62 @@ RPGACE.register('cookingOracle', {
     // real confirm button when a real substitute name is actually known
     // — blue is deliberately excluded, it has no single named candidate
     // to confirm against.
-    _renderSubstitutableStatusRow: function(text, status, ingredientId, subName, ingredientName) {
+    // H24 (Sep 17 2026, 3rd pass) — real, superseding correction, Alex's
+    // own direct words: "maybe not turn subs into green, but rather a
+    // tick on the left to show ingredient or alternative is agreed upon,
+    // but keeping colours as is to highlight whats subbed, how subbed,
+    // whats true green, so future sessions now what subs can be used,
+    // and what in the recipe is authentic." The row's real color/status
+    // NEVER changes on confirm now — a confirmed substitution stays
+    // visibly orange, permanently, because it IS a substitution, not a
+    // real in-stock match; only a genuine 5-color reclassification
+    // (buying/restocking the real ingredient) can ever turn it green.
+    // A real ✓ tick prefix is the one thing that changes, both on a
+    // fresh confirm click AND on every future load of an already-
+    // confirmed pairing (the new `alreadyConfirmed` param, sourced from
+    // logic._computeIngredientUsage's own real ingredient_substitution_
+    // confirmations lookup) — this is the real, persistent, cross-
+    // session record Alex asked for: "future sessions now what subs can
+    // be used."
+    _renderSubstitutableStatusRow: function(text, status, ingredientId, subName, ingredientName, alreadyConfirmed) {
       var self = RPGACE.modules.cookingOracle;
       var meta = self.INGREDIENT_STATUS_META[status] || self.INGREDIENT_STATUS_META.red;
       var row = document.createElement('div');
       row.style.cssText = 'font-size:12px;color:' + meta.color + ';border-left:3px solid ' + meta.color + ';background:' + meta.bg + ';border-radius:0 5px 5px 0;padding:4px 10px;margin-bottom:3px;';
       row.title = meta.label;
       var textEl = document.createElement('div');
-      textEl.textContent = meta.icon + ' ' + text;
+      var renderText = function(confirmed) {
+        textEl.textContent = (confirmed ? '✓ ' : '') + meta.icon + ' ' + text;
+      };
+      renderText(!!alreadyConfirmed);
       row.appendChild(textEl);
+      var noteEl = document.createElement('div');
+      noteEl.style.cssText = 'font-size:10px;color:var(--muted);margin-top:3px;';
       if (status === 'orange' && ingredientId && subName) {
-        var btn = self.ui._mkBtn('✓ Use ' + subName + ' instead', 'inline', { extra: 'margin-top:5px;font-size:10px;padding:3px 8px;', color: 'var(--green)', borderColor: 'rgba(76,175,130,.35)' });
-        btn.onclick = function() {
-          btn.disabled = true;
-          btn.textContent = '⏳ Saving...';
-          self.logic._confirmSubstitution(ingredientId, subName, function(err) {
-            if (err) {
-              btn.disabled = false;
-              btn.textContent = '✓ Use ' + subName + ' instead';
-              RPGACE.utils.toast('⚠️ Could not save: ' + err, '#CC4A4A', 3200);
-              return;
-            }
-            var greenMeta = self.INGREDIENT_STATUS_META.green;
-            row.style.color = greenMeta.color;
-            row.style.borderLeftColor = greenMeta.color;
-            row.style.background = greenMeta.bg;
-            row.title = greenMeta.label;
-            textEl.textContent = greenMeta.icon + ' ' + text;
-            btn.remove();
-            RPGACE.utils.toast('✅ Confirmed — ' + (ingredientName || 'this') + ' will show green from now on', '#4caf82', 3200);
-          });
-        };
-        row.appendChild(btn);
+        if (alreadyConfirmed) {
+          noteEl.textContent = '✓ Agreed substitution — using ' + subName;
+          row.appendChild(noteEl);
+        } else {
+          var btn = self.ui._mkBtn('✓ Use ' + subName + ' instead', 'inline', { extra: 'margin-top:5px;font-size:10px;padding:3px 8px;', color: 'var(--green)', borderColor: 'rgba(76,175,130,.35)' });
+          btn.onclick = function() {
+            btn.disabled = true;
+            btn.textContent = '⏳ Saving...';
+            self.logic._confirmSubstitution(ingredientId, subName, function(err) {
+              if (err) {
+                btn.disabled = false;
+                btn.textContent = '✓ Use ' + subName + ' instead';
+                RPGACE.utils.toast('⚠️ Could not save: ' + err, '#CC4A4A', 3200);
+                return;
+              }
+              renderText(true);
+              noteEl.textContent = '✓ Agreed substitution — using ' + subName;
+              row.appendChild(noteEl);
+              btn.remove();
+              RPGACE.utils.toast('✅ Agreed — ' + (ingredientName || 'this') + ' will show a tick for this substitution from now on', '#4caf82', 3200);
+            });
+          };
+          row.appendChild(btn);
+        }
       }
       return row;
     },
@@ -38140,14 +38164,13 @@ RPGACE.register('cookingOracle', {
             usageBox.appendChild(usageLoading);
             box.appendChild(usageBox);
 
-            // H21 (Sep 17 2026) — a real, separate pantry snapshot loaded
-            // here purely so an orange row can name its real real in-stock
-            // substitute (logic._findSubstitute needs the aisleIndex, which
-            // _computeIngredientUsage's own callback doesn't expose) — same
-            // real "load the pantry snapshot a 2nd time for display" shape
-            // ui._showShoppingList's own Promise.all already uses, never a
-            // second have/need computation.
-            self.logic._loadPantrySummed(function(pantrySnapForSub) {
+            // H24 (Sep 17 2026, 3rd pass) — the real, separate 2nd pantry
+            // snapshot this comment used to justify (loaded purely so an
+            // orange row could name its real in-stock substitute) is gone:
+            // _computeIngredientUsage now resolves subName/subConfirmed
+            // itself and returns them on each row (rule 8 — one real
+            // computation, not two), so this real 2nd Supabase round trip
+            // is removed outright rather than left dead.
             self.logic._computeIngredientUsage(sess.recipeIds, function(usageErr, usage) {
               usageBox.innerHTML = '';
               if (usageErr) {
@@ -38200,16 +38223,17 @@ RPGACE.register('cookingOracle', {
                   var text = u.name + ' — need ' + u.toBuy + ' ' + (u.unit || '') + (u.have > 0 ? ' (have ' + u.have + ' already)' : '');
                   // H21 (Sep 17 2026) — real substitute name surfaced on
                   // an orange row (never invented — _findSubstitute only
-                  // ever returns a real, currently in-stock match).
-                  var subName = null;
-                  if (u.status === 'orange') {
-                    var sub = self.logic._findSubstitute(u.name, pantrySnapForSub.aisleIndex);
-                    if (sub) { text += ' — have a substitute in stock: ' + sub.name; subName = sub.name; }
-                  }
-                  // H24 (Sep 17 2026, 2nd pass) — real confirm-to-green
+                  // ever returns a real, currently in-stock match). H24
+                  // (Sep 17 2026, 3rd pass) — u.subName/u.subConfirmed are
+                  // now resolved once by _computeIngredientUsage itself
+                  // (rule 8), never re-derived here.
+                  if (u.status === 'orange' && u.subName) text += ' — have a substitute in stock: ' + u.subName;
+                  // H24 (Sep 17 2026, 3rd pass) — real confirm/tick
                   // button, rule 8 shared render (see
-                  // ui._renderSubstitutableStatusRow's own comment).
-                  usageBox.appendChild(self.ui._renderSubstitutableStatusRow(text, u.status, u.ingredient_id, subName, u.name));
+                  // ui._renderSubstitutableStatusRow's own comment) —
+                  // no longer flips this row to green (Alex's own direct
+                  // correction).
+                  usageBox.appendChild(self.ui._renderSubstitutableStatusRow(text, u.status, u.ingredient_id, u.subName, u.name, u.subConfirmed));
                 });
               }
 
@@ -38256,7 +38280,6 @@ RPGACE.register('cookingOracle', {
                 usageBox.appendChild(noneMsg);
               }
             }, { noShop: sess.shopMode === 'no_shop' });
-            });
 
             var whenHeading = document.createElement('div');
             whenHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin:16px 0 8px;';
@@ -38715,7 +38738,7 @@ RPGACE.register('cookingOracle', {
             needRows.forEach(function(r) {
               var name = (r.ingredients && r.ingredients.name) || '';
               r._aisle = self.logic._classifyAisle(name);
-              r._status = self.logic._classifyIngredientStatus({ name: name, needed: r.needed_amount, have: r.have_amount, aisleIndex: pantry.aisleIndex, ingredientId: r.ingredient_id, confirmedSubs: confirmedSubs });
+              r._status = self.logic._classifyIngredientStatus({ name: name, needed: r.needed_amount, have: r.have_amount, aisleIndex: pantry.aisleIndex });
             });
             needRows.sort(function(a, b) {
               if (a._aisle.order !== b._aisle.order) return a._aisle.order - b._aisle.order;
@@ -38745,16 +38768,20 @@ RPGACE.register('cookingOracle', {
               lbl.style.cssText = 'color:' + meta.color + ';';
               lbl.title = meta.label;
               var ingName = (r.ingredients && r.ingredients.name) || '?';
-              var lblText = meta.icon + ' ' + ingName + ' — need ' + r.to_buy_amount + ' ' + (r.needed_unit || '')
-                + (r.have_amount ? ' (have ' + r.have_amount + ' already)' : '');
-              // H21 (Sep 17 2026) — real substitute name surfaced on an
-              // orange row (never invented — logic._findSubstitute only
-              // ever returns a real, currently in-stock match).
-              var subName = null;
+              // H24 (Sep 17 2026, 3rd pass) — real, deliberate correction,
+              // Alex's own direct words: "keeping colours as is... a tick
+              // on the left" — a confirmed substitution renders with a ✓
+              // prefix, never a color change (see
+              // logic._classifyIngredientStatus's own comment for the
+              // full reasoning).
+              var subName = null, subConfirmed = false;
               if (r._status === 'orange') {
                 var sub = self.logic._findSubstitute(ingName, pantry.aisleIndex);
-                if (sub) { lblText += ' — have a substitute in stock: ' + sub.name; subName = sub.name; }
+                if (sub) { subName = sub.name; subConfirmed = !!confirmedSubs[r.ingredient_id + '::' + subName]; }
               }
+              var lblText = (subConfirmed ? '✓ ' : '') + meta.icon + ' ' + ingName + ' — need ' + r.to_buy_amount + ' ' + (r.needed_unit || '')
+                + (r.have_amount ? ' (have ' + r.have_amount + ' already)' : '');
+              if (subName) lblText += ' — have a substitute in stock: ' + subName;
               lbl.textContent = lblText;
               // H22 (Sep 17 2026) — real, honest 2-step shopping flow: this
               // button no longer opens the price popup directly (no real
@@ -38787,17 +38814,18 @@ RPGACE.register('cookingOracle', {
               row.appendChild(lbl);
               row.appendChild(btn);
               wrap.appendChild(row);
-              // H24 (Sep 17 2026, 2nd pass, real Alex ask: "when orange
-              // substitution or blue is presented, give me an option to
-              // confirm so it can turn green") — real, persisted confirm
+              // H24 (Sep 17 2026, 2nd/3rd pass, real Alex ask: "when
+              // orange substitution or blue is presented, give me an
+              // option to confirm") — real, persisted confirm
               // (logic._confirmSubstitution, rule 8 — same one write path
               // the schedule preview's own confirm button uses). This
               // list already re-renders in full on any successful write
               // (this function's own established convention, see its
-              // opening comment), so a real re-render is what shows the
-              // confirmed row as green — no manual DOM-color patch needed
-              // here.
-              if (r._status === 'orange' && subName) {
+              // opening comment) — the real ✓ tick above (subConfirmed)
+              // is what shows the agreed state after that re-render, the
+              // status color itself never changes (Alex's own direct
+              // 3rd-pass correction).
+              if (r._status === 'orange' && subName && !subConfirmed) {
                 var confirmBtn = self.ui._mkBtn('✓ Use ' + subName + ' instead', 'inline', { extra: 'margin-top:4px;font-size:10px;padding:3px 8px;', color: 'var(--green)', borderColor: 'rgba(76,175,130,.35)' });
                 confirmBtn.onclick = function() {
                   confirmBtn.disabled = true;
@@ -38809,11 +38837,16 @@ RPGACE.register('cookingOracle', {
                       RPGACE.utils.toast('⚠️ Could not save: ' + err, '#CC4A4A', 3200);
                       return;
                     }
-                    RPGACE.utils.toast('✅ Confirmed — ' + ingName + ' will show green from now on', '#4caf82', 3200);
+                    RPGACE.utils.toast('✅ Agreed — ' + ingName + ' will show a tick for this substitution from now on', '#4caf82', 3200);
                     renderItems();
                   });
                 };
                 wrap.appendChild(confirmBtn);
+              } else if (r._status === 'orange' && subName && subConfirmed) {
+                var subNote = document.createElement('div');
+                subNote.style.cssText = 'font-size:10px;color:var(--muted);margin-top:3px;';
+                subNote.textContent = '✓ Agreed substitution — using ' + subName;
+                wrap.appendChild(subNote);
               }
               box.appendChild(wrap);
             });
@@ -40133,13 +40166,35 @@ RPGACE.register('cookingOracle', {
     // (a garlic bulb is not literally one clove) — same as every existing
     // group, orange only ever means "a real usable alternative exists,"
     // never a computed quantity swap (unchanged scope, section 4).
+    // H24 (Sep 17 2026, 4th pass) — 4 more real, evidence-backed
+    // additions/extensions, every one pulled directly from Alex's own
+    // verbatim examples during a 2nd real hand-test of his actual live
+    // pantry against a real session-preview popup (same discipline as
+    // the 1st-pass additions above, never guessed): "i have 2 soy sauces
+    // in stock, why are you giving me worchestershire sauce" (his real
+    // stock is under "dark soy sauce"/"light soy sauce", a bare "soy
+    // sauce" ask had no curated answer and fell through to the generic
+    // heuristic below, which matched purely on the shared word "sauce" —
+    // see _QUALIFIER_STOPWORDS' new sibling stoplist a few lines down for
+    // the general fix, this curated group is the specific, correct
+    // answer); "i have tamarind concentrate - why vanilla bean paste as
+    // subsitute" (his real stock name differs from the recipe's "tamarind
+    // paste" only in product form — concentrate vs paste — a real, close
+    // substitute, not the "paste"-token heuristic match that was actually
+    // firing); "i have olive oil and butter instead of vegetable oil"
+    // (his own explicit, named substitutes — added exactly as stated,
+    // butter's own separate group above is untouched, dual membership is
+    // already an established precedent, see the reference-track/Mixtura
+    // Aug 11 note); "i have whole milk why give me evaporated milk as
+    // sub" (his real stock is entered as bare "milk", which he considers
+    // the same real thing as "whole milk" for cooking purposes).
     _SUBSTITUTION_GROUPS: [
       { members: ['caster sugar', 'golden caster sugar', 'granulated sugar', 'light brown sugar', 'dark brown sugar', 'soft brown sugar'] },
       { members: ['unsalted butter', 'salted butter', 'margarine'] },
-      { members: ['whole milk', 'semi-skimmed milk', 'semi skimmed milk', 'skimmed milk'] },
+      { members: ['whole milk', 'semi-skimmed milk', 'semi skimmed milk', 'skimmed milk', 'milk'] },
       { members: ['lemon juice', 'lime juice'] },
       { members: ['white wine vinegar', 'cider vinegar', 'apple cider vinegar', 'rice vinegar'] },
-      { members: ['vegetable oil', 'sunflower oil', 'canola oil', 'rapeseed oil'] },
+      { members: ['vegetable oil', 'sunflower oil', 'canola oil', 'rapeseed oil', 'olive oil', 'unsalted butter', 'salted butter'] },
       { members: ['plain flour', 'all purpose flour', 'all-purpose flour'] },
       { members: ['spring onion', 'scallion', 'shallot'] },
       { members: ['coriander', 'cilantro', 'fresh coriander', 'whole coriander'] },
@@ -40149,6 +40204,8 @@ RPGACE.register('cookingOracle', {
       { members: ['garlic clove', 'garlic cloves', 'garlic bulb', 'garlic bulbs'] },
       { members: ['ginger', 'fresh ginger', 'ginger fresh'] },
       { members: ['fresh red chilli', 'red chilli', 'large red chilli', 'bullet chilli', "bird's eye chilli"] },
+      { members: ['soy sauce', 'dark soy sauce', 'light soy sauce'] },
+      { members: ['tamarind paste', 'tamarind concentrate'] },
     ],
 
     // Real, shared "is there a genuine substitute for this actually in
@@ -40181,6 +40238,29 @@ RPGACE.register('cookingOracle', {
     // (like "coriander" or "cabbage") can produce a heuristic match.
     _QUALIFIER_STOPWORDS: ['fresh', 'dried', 'whole', 'ground', 'chopped', 'sliced', 'diced', 'minced', 'large', 'small', 'medium', 'frozen', 'fine', 'coarse', 'crushed', 'grated'],
 
+    // H24 (Sep 17 2026, 4th pass) — real, generalized fix for a bug
+    // CLASS the inGroup tightening above (3rd pass) only closes for
+    // ingredients that already HAVE a curated group. Real evidence, all
+    // from the same session's live hand-test: "spring onion" -> "yellow
+    // onion" (shared "onion"), "soy sauce" -> "worcestershire sauce"
+    // (shared "sauce"), "whole milk" -> "evaporated milk" (shared
+    // "milk"), "tamarind paste" -> "vanilla bean paste" (shared "paste")
+    // — every single wrong heuristic match this session found shares the
+    // exact same shape: the ONLY token 2 genuinely different ingredients
+    // have in common is the generic PRODUCT-CATEGORY word at the end of
+    // a compound name, never a real identifying word. `onion`/`sauce`/
+    // `milk`/`paste` are the 4 real, observed culprits — same restrained,
+    // evidence-seeded-not-exhaustive build discipline
+    // _QUALIFIER_STOPWORDS itself already used (a sibling stoplist, a
+    // different linguistic category: qualifiers describe FORM, this one
+    // is generic CATEGORY nouns too common across an aisle to ever be a
+    // safe SOLE match). Filtered out of the SOURCE ingredient's own
+    // token list only — a candidate can still legitimately share this
+    // word alongside a real identifying one (e.g. "coconut milk" still
+    // correctly matches "full-fat coconut milk" via the shared, genuinely
+    // identifying "coconut").
+    _GENERIC_HEAD_STOPWORDS: ['onion', 'sauce', 'milk', 'paste'],
+
     _findSubstitute: function(name, aisleIndex) {
       var self = RPGACE.modules.cookingOracle;
       var norm = String(name || '').trim().toLowerCase();
@@ -40191,18 +40271,43 @@ RPGACE.register('cookingOracle', {
         (aisleIndex[aisle] || []).forEach(function(n) { inStock[n] = true; });
       });
 
+      // H24 (Sep 17 2026, 3rd pass) — real bug, found from Alex's own
+      // pasted popup: shallot's own curated group correctly offered
+      // spring onion, but spring onion's own status (broken at the time
+      // by the 2 real bugs above) fell through to the LOOSER heuristic
+      // below and offered yellow onion — a bare shared "onion" token
+      // match, even though spring onion has its own curated group
+      // (spring onion/scallion/shallot) that deliberately does NOT
+      // include yellow onion. A curated group is a deliberate, real,
+      // hand-picked list of what actually substitutes for a given
+      // ingredient (rule 7 — never invented) — once one exists for this
+      // ingredient, it's the authoritative answer, even when no real
+      // member happens to be in stock right now. Falling through to the
+      // looser aisle+shared-word heuristic in that case can produce an
+      // incoherent chain (A recommends B, but B — genuinely in stock —
+      // itself recommends C, a name A's own curator never listed as
+      // equivalent). `inGroup` tracks this without a 2nd loop over the
+      // same table.
+      var inGroup = false;
       for (var g = 0; g < self.logic._SUBSTITUTION_GROUPS.length; g++) {
         var members = self.logic._SUBSTITUTION_GROUPS[g].members;
         if (members.indexOf(norm) === -1) continue;
+        inGroup = true;
         for (var m = 0; m < members.length; m++) {
           if (members[m] !== norm && inStock[members[m]]) return { name: members[m], method: 'curated' };
         }
       }
+      if (inGroup) return null;
 
       var aisle = self.logic._classifyAisle(name).name;
       var namesInAisle = aisleIndex[aisle] || [];
       var stop = self.logic._QUALIFIER_STOPWORDS;
-      var tokens = norm.split(/\s+/).filter(function(w) { return w.length >= 4 && stop.indexOf(w) === -1; });
+      var headStop = self.logic._GENERIC_HEAD_STOPWORDS;
+      // H24 (Sep 17 2026, 4th pass) — headStop applied to the SOURCE
+      // ingredient's own tokens only (see the stoplist's own comment) —
+      // candTokens deliberately keeps every word, so a real, genuinely
+      // identifying shared word elsewhere in the name still matches.
+      var tokens = norm.split(/\s+/).filter(function(w) { return w.length >= 4 && stop.indexOf(w) === -1 && headStop.indexOf(w) === -1; });
       if (!tokens.length) return null;
       for (var i = 0; i < namesInAisle.length; i++) {
         var cand = namesInAisle[i];
@@ -40271,6 +40376,13 @@ RPGACE.register('cookingOracle', {
         // canonical bucket 'unit'/'units' already uses.
         whole: 'unit', wholes: 'unit',
         count: 'unit', counts: 'unit',
+        // H24 (Sep 17 2026, 3rd pass) — real bug, found from Alex's own
+        // pasted popup: "spring onion — need 5 stalk — have a substitute
+        // in stock: yellow onion" despite his real stock showing 6
+        // spring onion (Count) — same exact bug class as whole/count
+        // above, one recipe unit ("stalk") with no synonym mapping to
+        // the canonical countable-unit bucket real stock is logged in.
+        stalk: 'unit', stalks: 'unit',
       };
       if (SYNONYMS[s]) return SYNONYMS[s];
       if (s.length > 3 && s.charAt(s.length - 1) === 's') return s.slice(0, -1);
@@ -40484,6 +40596,19 @@ RPGACE.register('cookingOracle', {
     // orange. Scope explicitly NOT extended to blue this pass — blue has
     // no single named candidate to confirm against (see the record for
     // the real reason), only ever a same-aisle "something exists" flag.
+    // H24 (Sep 17 2026, 3rd pass) — real, superseding correction, same
+    // session, direct Alex ask: "maybe not turn subs into green, but
+    // rather a tick on the left to show ingredient or alternative is
+    // agreed upon, but keeping colours as is to highlight whats subbed,
+    // how subbed, whats true green, so future sessions now what subs can
+    // be used, and what in the recipe is authentic." Flipping to green
+    // erased the real distinction he actually wanted preserved — a
+    // confirmed substitution and a genuinely-in-stock ingredient are NOT
+    // the same fact, and collapsing them to the same color threw that
+    // away. The write path/table below is unchanged (this was always a
+    // real, persisted, cross-session record) — only what the classifier
+    // and the UI DO with a confirmed pairing changes, see
+    // logic._classifyIngredientStatus below.
     _confirmSubstitution: function(ingredientId, subName, cb) {
       var norm = String(subName || '').trim().toLowerCase();
       if (!ingredientId || !norm) { cb('missing ingredient or substitute name'); return; }
@@ -40517,17 +40642,18 @@ RPGACE.register('cookingOracle', {
       if (have <= 0) {
         if (opts.noShopMode && opts.isSeparable) return 'brown';
         if (opts.aisleIndex && opts.name) {
+          // H24 (Sep 17 2026, 3rd pass) — real, deliberate correction:
+          // a confirmed substitution NEVER classifies green here anymore
+          // (Alex's own direct ask — see _confirmSubstitution's comment
+          // above for the full reasoning). A confirmed pairing still
+          // returns the real, true 'orange' status; opts.confirmedSubs/
+          // opts.ingredientId are read by the real CALLERS below (see
+          // _computeIngredientUsage's subConfirmed field) to drive a real
+          // tick indicator instead, keeping color = truth (what's
+          // actually in stock) separate from confirmation = agreement
+          // (what Alex has already decided is an acceptable swap).
           var sub = self.logic._findSubstitute(opts.name, opts.aisleIndex);
-          if (sub) {
-            // H24 (Sep 17 2026, 2nd pass) — a real, previously-confirmed
-            // (ingredient, substitute) pairing classifies green from now
-            // on, everywhere, not just in the one popup Alex confirmed it
-            // in — opts.ingredientId/opts.confirmedSubs are both optional,
-            // so every existing caller that omits them is unaffected
-            // (orange keeps working exactly as before).
-            if (opts.confirmedSubs && opts.ingredientId && opts.confirmedSubs[opts.ingredientId + '::' + sub.name]) return 'green';
-            return 'orange';
-          }
+          if (sub) return 'orange';
           var aisle = self.logic._classifyAisle(opts.name).name;
           var namesInAisle = opts.aisleIndex[aisle] || [];
           var norm = String(opts.name).trim().toLowerCase();
@@ -40617,8 +40743,25 @@ RPGACE.register('cookingOracle', {
               // (the schedule preview, the shopping-list generator) gets
               // the same classification for free instead of each
               // re-deriving it.
-              var status = self.logic._classifyIngredientStatus({ name: g.name, needed: g.amount, have: have, aisleIndex: pantry.aisleIndex, isSeparable: g.isSeparable, noShopMode: !!opts.noShop, ingredientId: g.ingredient_id, confirmedSubs: confirmedSubs });
-              return { ingredient_id: g.ingredient_id, name: g.name, unit: g.unit, amount: g.amount, have: have, toBuy: toBuy, status: status, isSeparable: g.isSeparable };
+              var status = self.logic._classifyIngredientStatus({ name: g.name, needed: g.amount, have: have, aisleIndex: pantry.aisleIndex, isSeparable: g.isSeparable, noShopMode: !!opts.noShop });
+              // H24 (Sep 17 2026, 3rd pass) — real substitute name +
+              // confirmed-state resolved ONCE here (rule 8 — this used
+              // to be re-derived independently by every real UI consumer,
+              // see ui._showSchedulePreview's own buyBefore loop, which
+              // now just reads these 2 fields instead of calling
+              // _findSubstitute a second time against a 2nd, separately-
+              // loaded pantry snapshot). subConfirmed drives a real tick
+              // indicator, never a color change (see the classifier's own
+              // comment above for why).
+              var subName = null, subConfirmed = false;
+              if (status === 'orange') {
+                var subInfo = self.logic._findSubstitute(g.name, pantry.aisleIndex);
+                if (subInfo) {
+                  subName = subInfo.name;
+                  subConfirmed = !!(confirmedSubs[g.ingredient_id + '::' + subName]);
+                }
+              }
+              return { ingredient_id: g.ingredient_id, name: g.name, unit: g.unit, amount: g.amount, have: have, toBuy: toBuy, status: status, isSeparable: g.isSeparable, subName: subName, subConfirmed: subConfirmed };
             });
             cb(null, list);
             });
