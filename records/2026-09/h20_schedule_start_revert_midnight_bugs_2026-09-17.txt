@@ -1,0 +1,120 @@
+H20: 3 REAL LIVE SCHEDULE/PLANNED-COOK BUGS — Sep 17 2026
+==========================================================================
+
+ALEX'S VERBATIM REPORT (3 real bugs in one message)
+------------------------------------------------------------
+"pressing start planned cook on schedule did nothing. scheduling planned
+cook did go on selected time slot - but end time was 26hrs which didnt
+make sense. no way to revert planned cook back from scheduled to planned
+cook in cooking module."
+
+All 3 investigated fresh via real evidence (rule 4/1) — direct Supabase
+query of the real `planned_cooks`/`rpgace_agendas` rows Alex actually
+created, and a direct read of the real rendering/action code, never
+guessed.
+
+BUG 1 — "pressing start planned cook on schedule did nothing"
+------------------------------------------------------------
+Real root cause, confirmed by direct code read: `startScheduledTask(id)`
+(the function behind the Daily Schedule grid's own "Start" button on any
+agenda row, including a real cooking-session entry) only ever updated the
+LOCAL `rpgace_sched_agendas` cache — zero toast, zero re-render, zero
+Supabase write. A real click was completely indistinguishable from a
+genuinely broken button: nothing visibly changed on screen, and nothing
+reached the cross-device record either.
+
+Real fix: `startScheduledTask` now shows a real toast ("▶️ Started: ..."),
+calls the real `renderDailyGrid()` so the click actually has a visible
+effect, and writes through to the real `rpgace_agendas.started_at` column
+(same real write-proxy `scheduleToCalendar` itself already uses, rule 8)
+for cross-device parity. `completeScheduledTask` ("Done") had the
+identical structural gap — not reported by Alex, but the same root cause
+— fixed the same way for consistency (rule 8), not left as a known twin
+bug.
+
+BUG 2 — "end time was 26hrs which didnt make sense"
+------------------------------------------------------------
+Real evidence, not assumed: queried the actual `planned_cooks`/
+`rpgace_agendas` rows Alex created — a genuine 3-recipe cook session,
+`schedule.totalMinutes: 183` (3h3m — a real, correct number, not a
+scheduling-math bug), scheduled to start at `hour:23, minute:30`. Root
+cause is a real DISPLAY bug, not a computation bug: `renderDailyGrid`'s
+own `_fracClock(f)` took a raw fractional-hour value with no wrap —
+23.5 (start) + 183/60 (3.05) = 26.55, formatted directly as "26:33"
+instead of the real, sane next-day clock time "02:33." Exactly matches
+Alex's report.
+
+Real fix: `_fracClock` now wraps modulo 24 (`((f%24)+24)%24`) so it
+always returns a genuine, sane clock time — every in-range caller
+(anything under 24h) is completely unaffected; only the previously-
+nonsensical >=24 case changes, from "26:33" to the real wrapped "02:33."
+The one real caller that can produce an out-of-range value (the daily
+grid's own row label) separately appends an honest "(+1 day)" suffix when
+`endFrac >= 24`, so a genuine cross-midnight block is shown plainly
+rather than silently implied to end earlier than it starts.
+
+Real, honest, deliberately NOT built this pass: the overflow portion of a
+cross-midnight block (the real 02:33 finish) does not also appear on
+TOMORROW's own daily grid — this remains a single-day view with no
+concept of a block spanning 2 real calendar days. Flagged as a genuine,
+separate future item (real cross-day event splitting), not silently
+solved by the display fix above.
+
+BUG 3 — "no way to revert planned cook back from scheduled to planned
+cook in cooking module"
+------------------------------------------------------------
+Real, confirmed structural gap: once Accept (`logic._acceptSchedule`)
+flips a real `planned_cooks` row to `status='scheduled'`, it became
+completely invisible to the Cooking module — `logic._loadDraftSession`
+only ever checks `status='draft'`. The only real trace left was the
+Agenda/calendar entry, with zero path back into Cooking's own UI.
+
+Real fix, built from scratch (a genuine missing feature, not a one-line
+patch): new `logic._loadScheduledSession` (same real read shape as
+`_loadDraftSession`, for the OTHER real status this table holds), called
+by `ui._showModuleHub` only when there's no active draft (cheap, rare
+check — never adds a query to the common in-progress-session path). The
+"🍳 Planned Cook" hub button now shows a real "Scheduled for <date> —
+view / revert" sub-label instead of silently falling back to "no cook
+session in progress" the moment a session gets scheduled. Clicking it
+opens the new `ui._showScheduledCookInfo` popup (real recipe titles +
+date shown honestly) with a deliberate, explicit "↩ Revert to draft
+(unschedule)" button — never an automatic/silent revert, since Alex might
+genuinely want to leave it scheduled; this view is only reachable via a
+deliberate click.
+
+`logic._revertScheduleToDraft` does the real work: flips the
+`planned_cooks` row back to `status='draft'` (clears `agenda_id`) so
+`_loadDraftSession` picks it back up next open, then best-effort cleans
+up the now-stale calendar entry — both the real `rpgace_agendas` row
+(DELETE) and the local `RPGACE.DB('sched')` cache `renderDailyGrid` reads
+from (same real key `scheduleToCalendar` itself writes into, rule 8 —
+never a second, parallel local-cache mechanism). The agenda cleanup is
+real but deliberately best-effort (console-warned on failure, never fails
+the whole revert over it) — a stray leftover calendar entry is a real but
+minor annoyance, failing the revert entirely would be worse.
+
+VERIFICATION
+------------------------------------------------------------
+node --check clean. Real headless-Chromium pass (raw rpgace_core.js
+served directly), 16/16 new assertions pass, plus full re-runs of both
+H18's 27/27 and H19's 20/20 suites confirming zero regression:
+- `_fracClock`: an in-range value stays exactly the same as before; the
+  exact real reported case (26.55) now gives "02:33" instead of "26:33";
+  exactly 24 wraps to "00:00"; a defensive negative input still returns
+  a valid HH:MM.
+- `startScheduledTask`/`completeScheduledTask`: both now show a real
+  toast, trigger a real re-render, and write through to the real
+  `rpgace_agendas` row; the local cache write is unchanged.
+- The hub correctly shows a real "Scheduled for..." sub-label instead of
+  silently hiding a scheduled session; the info popup shows the real
+  recipe titles; reverting produces the real `planned_cooks` UPDATE +
+  `rpgace_agendas` DELETE, and `_session` is correctly rehydrated
+  in-memory with the same real recipes.
+Zero real console/page errors from this feature's own code.
+
+Re-minified, node --check rpgace_core.min.js clean, cache-bust bumped
+20260917a -> 20260917b.
+
+Untested by Alex's own hand.
+==========================================================================

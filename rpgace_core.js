@@ -2109,8 +2109,20 @@ function scheduleToCalendar(item){
 }
 
 function _fracClock(f){
-  var h=Math.floor(f), m=Math.round((f-h)*60);
+  // H20 (Sep 17 2026, real Alex bug report: "end time was 26hrs which
+  // didnt make sense" — a real HABITS cook session starting late at
+  // night and running long enough to cross midnight) — real root cause:
+  // this took a raw fractional-hour value with no wrap, so a genuine
+  // 26.55 (23:30 start + a real 183-minute cook session) rendered as the
+  // nonsensical clock time "26:33" instead of the real next-day "02:33."
+  // Wrapped modulo 24 here so every real caller gets a genuine, sane
+  // clock time; the one real caller that can produce a value >=24
+  // (renderDailyGrid's own rangeLabel) separately appends a "+1 day"
+  // note so crossing midnight is still shown honestly, not hidden.
+  var wrapped=((f%24)+24)%24;
+  var h=Math.floor(wrapped), m=Math.round((wrapped-h)*60);
   if(m===60){h+=1;m=0;}
+  if(h===24){h=0;}
   return String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
 }
 
@@ -2164,7 +2176,11 @@ function renderDailyGrid(){
   rows.forEach(function(row,i){
     const div=document.createElement('div');
     div.className='time-slot'+(row.type!=='free'?' filled':'');
-    const rangeLabel=_fracClock(row.startFrac)+'\u2013'+_fracClock(row.endFrac);
+    // H20 (Sep 17 2026) \u2014 real, honest "+1 day" note when a genuine block
+    // (a long HABITS cook session, most likely) runs past midnight,
+    // instead of a raw wrapped clock time silently implying it ends
+    // EARLIER the same day than it started.
+    const rangeLabel=_fracClock(row.startFrac)+'\u2013'+_fracClock(row.endFrac)+(row.endFrac>=24?' (+1 day)':'');
 
     if(row.type==='free'){
       div.style.cssText='padding:10px 14px;border-bottom:1px solid rgba(255,255,255,0.04);display:flex;align-items:center;gap:12px;min-height:36px;cursor:pointer;';
@@ -2318,8 +2334,24 @@ function confirmScheduleModal(){
 function startScheduledTask(id){
   const stored=JSON.parse(localStorage.getItem('rpgace_sched_agendas')||'[]');
   const idx=stored.findIndex(function(a){return a.id===id;});
-  if(idx<0)return;stored[idx].started_at=new Date().toISOString();
+  if(idx<0)return;
+  const now=new Date().toISOString();
+  stored[idx].started_at=now;
   localStorage.setItem('rpgace_sched_agendas',JSON.stringify(stored));
+  // H20 (Sep 17 2026, real Alex bug report: "pressing start planned cook
+  // on schedule did nothing") — real root cause: this only ever touched
+  // the LOCAL cache, with zero visible feedback and zero re-render, so a
+  // real click was indistinguishable from a genuinely broken button.
+  // Fixed with a real toast, a real re-render (so the grid actually
+  // reflects the click), and a real write-through to the same
+  // rpgace_agendas row scheduleToCalendar itself created (cross-device
+  // parity, same established pattern, rule 8).
+  if(RPGACE.sb&&RPGACE.sb.secureWrite){
+    RPGACE.sb.secureWrite('rpgace_agendas','update',{started_at:now},'id=eq.'+id)
+      .catch(function(e){console.warn('[startScheduledTask] Supabase write failed:',e.message);});
+  }
+  if(RPGACE.utils&&RPGACE.utils.toast)RPGACE.utils.toast('▶️ Started: '+(stored[idx].title||'task'),'#4A90E2',2200);
+  if(typeof renderDailyGrid==='function')renderDailyGrid();
 }
 
 function completeScheduledTask(id){
@@ -2329,11 +2361,24 @@ function completeScheduledTask(id){
   const entry=stored[idx],endedAt=new Date();
   entry.ended_at=endedAt.toISOString();entry.completed=true;
   if(entry.started_at){const startedAt=new Date(entry.started_at);entry.actual_mins=Math.round((endedAt-startedAt)/60000);}
+  // H20 (Sep 17 2026) — same real write-through fix as startScheduledTask
+  // above (rule 8), so "Done" reaches the real cross-device record too,
+  // not just the local cache.
+  if(RPGACE.sb&&RPGACE.sb.secureWrite){
+    RPGACE.sb.secureWrite('rpgace_agendas','update',{ended_at:entry.ended_at,completed:true,actual_mins:entry.actual_mins||null},'id=eq.'+id)
+      .catch(function(e){console.warn('[completeScheduledTask] Supabase write failed:',e.message);});
+  }
   stored[idx]=entry;localStorage.setItem('rpgace_sched_agendas',JSON.stringify(stored));
   const diff=entry.actual_mins&&entry.estimated_mins?entry.actual_mins-entry.estimated_mins:null;
   const summary=entry.actual_mins?'Estimated: '+entry.estimated_mins+'min Actual: '+entry.actual_mins+'min'+(diff!==null?' ('+(diff>0?'+':'')+diff+'min vs estimate)':''):' Completed';
   if(typeof logDailyAction==='function')logDailyAction(entry.date,entry.title,summary);
   if(typeof saveToJournal==='function')saveToJournal(entry.title+' Completed',entry.title+'\n'+summary,'schedule');
+  // H20 (Sep 17 2026) — same real "give visible feedback, don't just
+  // silently update a cache" fix as startScheduledTask above (rule 8);
+  // "Done" had the identical gap, just not the one Alex happened to
+  // click first.
+  if(RPGACE.utils&&RPGACE.utils.toast)RPGACE.utils.toast('✅ Completed: '+(entry.title||'task'),'#3DAA6E',2200);
+  if(typeof renderDailyGrid==='function')renderDailyGrid();
   return entry;
 }
 
@@ -36170,6 +36215,18 @@ RPGACE.register('cookingOracle', {
   // reopens when there's genuinely nothing to resume.
   _sessionChecked: false,
 
+  // H20 (Sep 17 2026, real Alex bug report: "no way to revert planned
+  // cook back from scheduled to planned cook in cooking module") - once
+  // Accept flips a real planned_cooks row to status='scheduled', it
+  // became completely invisible to this module (_loadDraftSession only
+  // ever checks status='draft') - the ONLY real trace was the Agenda
+  // calendar entry, with zero way back into Cooking's own UI. Holds the
+  // most recent real scheduled row (logic._loadScheduledSession), same
+  // module-scope convention as _session above, so ui._renderModuleHub
+  // can offer a real "view / revert to draft" path instead of silently
+  // hiding it.
+  _scheduledSession: null,
+
   // Sep 14 2026 (real Alex ask, "close the loop" follow-up: "So if I
   // generate a recipe, and I don't like the method, I right in float
   // oracle button chat to change steps, and it will update the method
@@ -36359,7 +36416,13 @@ RPGACE.register('cookingOracle', {
     // first). The actual popup-building work is _renderModuleHub below.
     _showModuleHub: function() {
       var self = RPGACE.modules.cookingOracle;
-      self.logic._loadDraftSession(function() { self.ui._renderModuleHub(); });
+      self.logic._loadDraftSession(function() {
+        if (self._session) { self.ui._renderModuleHub(); return; }
+        // H20 (Sep 17 2026) — only checked when there's no active draft
+        // (the common, cheap case) so this never adds a real query to the
+        // normal in-progress-session path.
+        self.logic._loadScheduledSession(function() { self.ui._renderModuleHub(); });
+      });
     },
 
     _renderModuleHub: function() {
@@ -36388,8 +36451,18 @@ RPGACE.register('cookingOracle', {
       };
 
       var sessCount = (self._session && self._session.recipeIds && self._session.recipeIds.length) || 0;
-      mkBtn('🍳 Planned Cook', sessCount ? (sessCount + ' recipe' + (sessCount === 1 ? '' : 's') + ' in progress — resume') : 'No cook session in progress yet', function() {
+      // H20 (Sep 17 2026, real Alex bug report: "no way to revert planned
+      // cook back from scheduled to planned cook in cooking module") — a
+      // real scheduled session (self._scheduledSession, loaded by
+      // _showModuleHub above whenever there's no active draft) now gets
+      // its own real sub-label + entry point instead of silently
+      // vanishing into "no cook session in progress."
+      var scheduled = !sessCount ? self._scheduledSession : null;
+      var plannedSub = sessCount ? (sessCount + ' recipe' + (sessCount === 1 ? '' : 's') + ' in progress — resume')
+        : (scheduled ? 'Scheduled for ' + (scheduled.scheduledAt || '?') + ' — view / revert' : 'No cook session in progress yet');
+      mkBtn('🍳 Planned Cook', plannedSub, function() {
         if (sessCount) { self.ui._showSessionBuilder(); return; }
+        if (scheduled) { self.ui._showScheduledCookInfo(scheduled); return; }
         // Real, honest empty state - a session only exists once a real
         // recipe joins it (logic._addRecipeToSession), so an empty
         // "Planned Cook" click routes into the generator instead of
@@ -36442,6 +36515,61 @@ RPGACE.register('cookingOracle', {
       mkBtn('🥫 What Can I Cook Right Now?', 'Saved recipes needing zero shopping trip', function() {
         self.ui._showStockMatchFinder();
       });
+    },
+
+    // H20 (Sep 17 2026, real Alex bug report: "no way to revert planned
+    // cook back from scheduled to planned cook in cooking module") — the
+    // real new view for a scheduled-but-not-yet-cooked session. Shows
+    // exactly what's scheduled and a real, explicit way back to a draft
+    // (never a silent/automatic revert — Alex might genuinely want to
+    // just leave it scheduled and this is only reachable via a deliberate
+    // click on the hub's own "Planned Cook" button).
+    _showScheduledCookInfo: function(scheduled) {
+      var self = RPGACE.modules.cookingOracle;
+      var pop = RPGACE.modules.dashDeck._popup({
+        width: '460px', eyebrow: '🍳 COOKING', title: 'Scheduled Cook Session',
+        borderColor: 'rgba(226,168,61,0.3)',
+      });
+      var box = pop.box;
+
+      var info = document.createElement('div');
+      info.style.cssText = 'font-size:13px;color:var(--text);margin-bottom:16px;line-height:1.7;';
+      info.innerHTML = 'Scheduled for <b>' + (scheduled.scheduledAt || '?') + '</b>:<br>'
+        + scheduled.recipes.map(function(r) { return '• ' + (r.title || '(recipe not found)'); }).join('<br>');
+      box.appendChild(info);
+
+      var errBox = document.createElement('div');
+      errBox.style.cssText = 'font-size:12px;color:#CC4A4A;margin-bottom:10px;display:none;';
+      box.appendChild(errBox);
+
+      var revertBtn = document.createElement('button');
+      revertBtn.textContent = '↩ Revert to draft (unschedule)';
+      revertBtn.style.cssText = 'width:100%;padding:11px;margin-bottom:8px;background:rgba(226,168,61,0.12);border:1px solid rgba(226,168,61,0.35);border-radius:8px;color:var(--gold);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      revertBtn.onclick = function() {
+        revertBtn.disabled = true;
+        revertBtn.textContent = '⏳ Reverting...';
+        self.logic._revertScheduleToDraft(scheduled, function(err) {
+          if (err) {
+            revertBtn.disabled = false;
+            revertBtn.textContent = '↩ Revert to draft (unschedule)';
+            errBox.textContent = '⚠️ ' + err;
+            errBox.style.display = 'block';
+            return;
+          }
+          RPGACE.utils.toast('↩ Reverted to draft — edit it under Planned Cook', '#E2A83D', 3200);
+          self._scheduledSession = null;
+          self._session = { recipeIds: scheduled.recipeIds.slice(), recipes: scheduled.recipes.slice(), plannedCookId: scheduled.plannedCookId };
+          pop.close();
+          self.ui._showSessionBuilder();
+        });
+      };
+      box.appendChild(revertBtn);
+
+      var closeBtn = document.createElement('button');
+      closeBtn.textContent = 'Close';
+      closeBtn.style.cssText = 'width:100%;padding:8px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      closeBtn.onclick = function() { pop.close(); };
+      box.appendChild(closeBtn);
     },
 
     // H18 (Sep 16 2026) — real, OPTIONAL 3rd param, `forceStockOnly`, so
@@ -40117,6 +40245,66 @@ RPGACE.register('cookingOracle', {
             .catch(function(e) { cb(e.message || 'could not load session recipes', null); });
         })
         .catch(function(e) { self._sessionChecked = true; cb(e.message || 'could not check for a planned cook', null); });
+    },
+
+    // H20 (Sep 17 2026, real Alex bug report: "no way to revert planned
+    // cook back from scheduled to planned cook in cooking module") — the
+    // real read half for a scheduled (status='scheduled') planned_cooks
+    // row, same shape as _loadDraftSession above but for the OTHER real
+    // status this table ever holds. Only ever called when there's no
+    // active draft (see ui._showModuleHub), so this stays a cheap, rare
+    // query rather than a 2nd check on every normal hub open.
+    _loadScheduledSession: function(cb) {
+      var self = RPGACE.modules.cookingOracle;
+      cb = cb || function() {};
+      RPGACE.sb.select('planned_cooks', 'select=id,recipe_ids,scheduled_at,agenda_id&status=eq.scheduled&order=created_at.desc&limit=1')
+        .then(function(rows) {
+          var row = rows && rows[0];
+          if (!row || !row.recipe_ids || !row.recipe_ids.length) { self._scheduledSession = null; cb(null, null); return; }
+          var idList = row.recipe_ids.join(',');
+          RPGACE.sb.select('recipes', 'select=id,title&id=in.(' + idList + ')')
+            .then(function(recipeRows) {
+              var byId = {};
+              (recipeRows || []).forEach(function(r) { byId[r.id] = r.title; });
+              self._scheduledSession = {
+                recipeIds: row.recipe_ids.slice(),
+                recipes: row.recipe_ids.map(function(id) { return { id: id, title: byId[id] || '(recipe not found)' }; }),
+                plannedCookId: row.id,
+                agendaId: row.agenda_id || null,
+                scheduledAt: row.scheduled_at || null,
+              };
+              cb(null, self._scheduledSession);
+            })
+            .catch(function(e) { cb(e.message || 'could not load scheduled session recipes', null); });
+        })
+        .catch(function(e) { cb(e.message || 'could not check for a scheduled cook', null); });
+    },
+
+    // H20 (Sep 17 2026) — real, deliberate, one-click-away revert: flips
+    // the same planned_cooks row back to status='draft' (so
+    // _loadDraftSession picks it back up next open) and cleans up the
+    // now-stale calendar entry it created — both the real Supabase
+    // rpgace_agendas row AND the local RPGACE.DB('sched') cache
+    // renderDailyGrid reads from (same real key scheduleToCalendar itself
+    // writes into, rule 8 — never a 2nd, parallel local-cache mechanism).
+    // The agenda cleanup is real but best-effort (console-warned, not
+    // cb'd as a failure) — a stray leftover calendar entry is a real but
+    // minor annoyance; failing the whole revert over it would be worse.
+    _revertScheduleToDraft: function(scheduled, cb) {
+      RPGACE.sb.secureWrite('planned_cooks', 'update', { status: 'draft', agenda_id: null }, 'id=eq.' + scheduled.plannedCookId)
+        .then(function() {
+          if (!scheduled.agendaId) { cb(null); return; }
+          RPGACE.sb.secureWrite('rpgace_agendas', 'delete', null, 'id=eq.' + scheduled.agendaId)
+            .catch(function(e) { console.warn('[cookingOracle] could not delete stale agenda row on revert:', e.message); });
+          try {
+            if (RPGACE.DB && RPGACE.DB.get) {
+              var stored = RPGACE.DB.get('sched') || [];
+              RPGACE.DB.set('sched', stored.filter(function(a) { return a.id !== scheduled.agendaId; }));
+            }
+          } catch (e) { console.warn('[cookingOracle] could not clean local schedule cache on revert:', e.message); }
+          cb(null);
+        })
+        .catch(function(e) { cb(e.message || 'could not revert schedule'); });
     },
 
     _fmtMin: function(mins) {

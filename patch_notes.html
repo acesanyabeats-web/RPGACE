@@ -74,6 +74,18 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🐛 Sep 17 — H20: 3 real live schedule/planned-cook bugs fixed</div>
+    <div class="card-body">
+      Real Alex report: "pressing start planned cook on schedule did nothing. scheduling planned cook did go on selected time slot - but end time was 26hrs which didnt make sense. no way to revert planned cook back from scheduled to planned cook in cooking module."<br><br>
+      All 3 investigated fresh via real evidence — a direct Supabase query of Alex's own actual <code>planned_cooks</code>/<code>rpgace_agendas</code> rows, never guessed.<br><br>
+      <b>Bug 1 — "Start" did nothing</b>: <code>startScheduledTask</code> (the Daily Schedule grid's own Start button) only ever updated a LOCAL cache — zero toast, zero re-render, zero Supabase write, so a real click was indistinguishable from a genuinely broken button. Fixed with a real toast, a real re-render, and a real write-through to <code>rpgace_agendas.started_at</code> (same write-proxy <code>scheduleToCalendar</code> already uses, rule 8). <code>completeScheduledTask</code> ("Done") had the identical gap — fixed the same way, for consistency, though not separately reported.<br><br>
+      <b>Bug 2 — "26hrs" end time</b>: real evidence showed the schedule MATH was correct (a genuine 3h3m cook session starting at 23:30) — the bug was a real DISPLAY bug: <code>_fracClock</code> took a raw fractional-hour value with no wrap, so 23.5+3.05=26.55 rendered as the nonsensical "26:33" instead of the real next-day "02:33." Fixed with a real modulo-24 wrap (every in-range caller unaffected) plus an honest "(+1 day)" suffix so a genuine cross-midnight block is shown plainly. Honestly NOT built: the overflow portion doesn't also appear on tomorrow's own daily grid — a real, separate, deferred limitation.<br><br>
+      <b>Bug 3 — no way back from Scheduled</b>: once Accept flips a <code>planned_cooks</code> row to <code>status='scheduled'</code>, it became completely invisible to the Cooking module, with zero path back from the Agenda entry into Cooking's own UI. Built real new <code>logic._loadScheduledSession</code>/<code>ui._showScheduledCookInfo</code>/<code>logic._revertScheduleToDraft</code> — the "🍳 Planned Cook" hub button now shows a real "Scheduled for..." state with a deliberate (never automatic) "↩ Revert to draft" action that flips the row back and best-effort cleans up the stale calendar entry, both the real Supabase row and the local cache.<br><br>
+      <b>Verified via a real headless-Chromium pass</b>, 16/16 new assertions pass, plus full re-runs of H18's 27/27 and H19's 20/20 suites confirming zero regression. Zero real console/page errors. <code>node --check</code> clean, re-minified, cache-bust bumped <code>20260917a</code>→<code>20260917b</code>. Full record: <code>records/2026-09/h20_schedule_start_revert_midnight_bugs_2026-09-17.txt</code>. <b>Untested by Alex's own hand.</b>
+    </div>
+  </div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🥄 Sep 17 — H19: recipes lean on cups + weight, 5-color system gets real cross-unit bridging</div>
     <div class="card-body">
       Real Alex ask, stated twice: "also use cups as much as possible (liquid and spices) and weight when makes sense, everywhere where a recipe is present. in pantry ill be using mostly weight and ml and count rather than cups."<br><br>
