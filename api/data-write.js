@@ -175,6 +175,13 @@ const ALLOWED_TABLES = new Set([
   // real write path - a real, explicit Alex click, never an automatic
   // insert.
   'ingredient_substitution_confirmations',
+  // 2026-09-17 - H24 6th pass (real Alex ask: "rate the subsitutions so
+  // the system prunes to different alternatives to make better decisions
+  // with me"). Created anon_read_only/authenticated_all FROM THE START
+  // (same precedent). cookingOracle.logic._rateSubstitution is the one
+  // real write path - append-only, a real historical log, never updated
+  // or deleted (same discipline ingredient_prices already established).
+  'substitution_ratings',
 ]);
 
 async function handleBundleDeliverables(req, res, serviceKey) {

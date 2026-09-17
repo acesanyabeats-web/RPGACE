@@ -1,0 +1,156 @@
+H24 5TH + 6TH PASS: MAROON (DERIVED INGREDIENTS), PINK (SHARED STOCK
+ACROSS RECIPES), AND SUBSTITUTION RATINGS — 3 REAL NEW FEATURES,
+INTERROGATED VIA ASKUSERQUESTION BEFORE BUILD
+==========================================================================
+
+ALEX'S VERBATIM ASKS
+------------------------------------------------------------
+"maybe not turn subs into green, but rather a tick on the left..." (see
+the 4th pass record for that correction) was followed, same session, by
+3 genuinely new feature asks:
+
+Maroon: "i have whole eggs, so i have both egg whites and egg yolks
+(make these maroon - an ingredient that derives as by product from
+something in stock, with instructions on how to get desired result of
+ingredient, that will then be a part of recipe) toasted dessicated
+coconut would also be maroon since i need to toast to get ingredient."
+
+Pink: "i have 400ml of coconut milk, so it good for one recipe (make
+this pink - enough for one recipe, not for another, use one subsitute
+(blue or orange) for one recipe with closest alternative possible
+available from stock) this will help identify which subsitution is
+least impactful in final product in both recipes."
+
+Ratings: "id also like a system where at the end of a cook a rate the
+subsitutions so the system prunes to different alternatives to make
+better decisions with me."
+
+REAL INTERROGATION FIRST (rule 5 — 3+ new pieces get spec'd before
+building)
+------------------------------------------------------------
+AskUserQuestion, 4 real questions, all answered:
+1. Maroon stock math: deduct the real source ingredient automatically
+   once used (Recommended, confirmed) vs. just show instructions.
+   -> DEDUCT AUTOMATICALLY.
+2. Pink allocation: system picks automatically vs. Alex picks each time.
+   -> ALEX PICKS EACH TIME (the non-recommended option — his own
+   explicit choice, not defaulted).
+3. Ratings prompt timing: forced at cook-complete (Recommended) vs. no
+   prompt, rate whenever from the recipe card.
+   -> NO PROMPT — rate whenever from the recipe card (again, his own
+   explicit choice over the recommended default).
+4. Ratings feedback loop: auto-prefer highly-rated/deprioritize poorly-
+   rated (Recommended) vs. visible but never auto-changing.
+   -> AUTO-PREFER/DEPRIORITIZE (Recommended, confirmed).
+
+MAROON — real build
+------------------------------------------------------------
+New real, curated `logic._DERIVATION_GROUPS` (same restrained, evidence-
+seeded discipline as `_SUBSTITUTION_GROUPS`) — 2 real entries, both his
+own verbatim examples, both genuine 1:1 real culinary facts (rule 7 —
+never invented): egg -> egg white / egg yolk; desiccated coconut ->
+toasted desiccated coconut (toasting doesn't meaningfully change real
+countable quantity). `logic._findDerivation(name)` resolves a real
+derived-ingredient name to its source. A real maroon status (⚗️, no
+standard maroon-square emoji exists in Unicode) takes PRIORITY over
+orange in `logic._classifyIngredientStatus` — deriving the actual real
+ingredient is more accurate than substituting a different one, and only
+fires when the real source genuinely has positive stock (never assumed).
+`logic._deriveIngredient(sourceName, derivedAmount, yieldRatio, cb)` is
+the real, committed write — deducts across whatever real pantry_stock
+row(s) actually exist for the source, never letting a row go negative,
+honestly reporting a real shortfall if stock is genuinely insufficient
+rather than inventing extra stock to make the math come out even. Real
+UI on `ui._renderSubstitutableStatusRow`'s new maroon branch: shows the
+real source stock count + the real curated instructions + a "⚗️ Derive &
+use N {source}" button computing the correct real source amount
+(derivedAmount / yieldRatio). A successful derive does NOT change the
+row's color (same "tick, not green" discipline as orange's confirm flow)
+— shows a real "✓ Derived — used N" note instead.
+
+PINK — real build
+------------------------------------------------------------
+`logic._computeIngredientUsage`'s group-building now tracks real
+`perRecipe: [{recipeId, amount}]` per (ingredient_id, unit) group,
+alongside the existing merged `amount` total (never replacing it — every
+existing consumer unaffected). Real pink eligibility: 2+ DISTINCT real
+recipes genuinely share the ingredient, real stock covers at least the
+smallest single recipe's own need (otherwise it's an ordinary shortfall,
+the existing ladder already handles it honestly) but not the combined
+total. New `planned_cooks.pink_allocations` (additive jsonb column,
+DEFAULT '{}') persists Alex's real per-session choice, keyed by
+`ingredient_id|unit`. Deliberately NOT threaded through the broader
+`_persistSessionDraft`/`_loadDraftSession`/`_acceptSchedule` machinery
+(rule 4 — don't touch a working call site's contract more than needed);
+`logic._loadPinkAllocations`/`logic._setPinkAllocation` are narrow,
+dedicated read/write functions scoped to the one real consumer
+(`ui._showSchedulePreview`). Real, dedicated UI, `ui._renderPinkRow` —
+shows the real per-recipe breakdown (real recipe titles from
+`sess.recipes`, real needed amounts) with a real button per contributing
+recipe, "Give real stock to '{title}' (needs N {unit})" — Alex's own
+explicit choice, never auto-picked. Once resolved: the group's own
+status/toBuy is recomputed against ONLY the chosen recipe's real amount
+(falls through to the normal 5-color ladder from there, e.g. a real
+exact-match can correctly land on purple if the margin is thin — not
+forced to green), and `pinkInfo.others` carries each OTHER real
+recipe's own independently-computed fallback (its own real substitute or
+derivation, `have:0` for its own share since the real stock went to the
+chosen recipe) — reuses the exact same classify/substitute/derivation
+machinery every other row already uses (rule 8), never a parallel 2nd
+system. This is the real, concrete answer to "identify which
+subsitution is least impactful" — the OTHER recipe's own real fallback
+is shown right there, in context, once a real choice is made.
+
+RATINGS — real build
+------------------------------------------------------------
+New, real, append-only `substitution_ratings` table (ingredient_id,
+substitute_name, rating CHECK(rating in (-1,1)), created_at) — never
+overwritten, same discipline as `ingredient_prices` (a changed mind
+later adds a new real data point, never erases the old one).
+`logic._rateSubstitution`/`logic._loadSubstitutionRatings` (client-side
+net-score aggregation, same established precedent as
+`_loadPantrySummed`'s own aggregation). `logic._findSubstitute` gained 2
+real, optional trailing params (`ingredientId`, `ratings`) — every
+existing caller that omits them is byte-identical to before (with no
+ratings loaded, every candidate scores 0, original array order wins,
+same as the old first-match-wins logic). When 2+ real candidates are
+simultaneously available (a genuine case — e.g. both "dark soy sauce"
+and "light soy sauce" in stock at once), the function now collects ALL
+real matches (curated group AND heuristic, both previously
+first-match-wins) and picks the highest real net-rated one via the new
+`logic._pickBestRated`. Wired into the 3 real "surface a specific
+substitute name" sites — `_computeIngredientUsage`'s own subName
+resolution, its pink-others fallback resolution, and the Shopping
+List's inline resolution — plus the recipe card's own ingredient
+preview. `logic._loadSavedRecipe` gained a real `ingredient_id` field on
+each returned ingredient (previously entirely absent) — the one real
+thing needed to rate a substitution "from the recipe card," Alex's own
+literal ask; a freshly-generated, not-yet-saved recipe still has none
+(an honest, unavoidable gap, not fixed blind — nothing to rate against
+until a real `recipe_ingredients` row exists). Real 👍/👎 rating buttons
+now appear on an orange row in a REOPENED SAVED recipe's own ingredient
+list, writing immediately, no forced prompt (his own explicit choice).
+
+DELIBERATELY NOT BUILT / HONEST SCOPE LIMITS
+------------------------------------------------------------
+Rating buttons do not yet appear on a freshly-GENERATED (not yet saved)
+recipe's ingredient list — no real ingredient_id exists there until
+Save resolves/creates the real `ingredients`/`recipe_ingredients` rows,
+matching the same real gap H24 2nd pass already named for the confirm-
+substitution button at this same site. Pink allocation is scoped to
+exactly 2+ recipes sharing one ingredient at a time — a 3+-recipe shared
+ingredient still works (the eligibility check and per-recipe breakdown
+are N-way, not hardcoded to 2), but was not specifically hand-tested
+with 3 real recipes this pass (real, proportionate scope — Alex's own
+worked example was a 2-recipe case).
+
+VERIFICATION
+------------------------------------------------------------
+Real headless-Chromium passes, one per feature: maroon 17/17, pink
+14/14, ratings 12/12 — 43 new assertions, all passing. Full re-runs of
+every pre-existing suite (H18 through H24 4th pass, 198 total prior
+assertions) confirm zero regression from the `_findSubstitute` signature
+extension and the `_computeIngredientUsage` group-shape change.
+
+Re-minified, cache-bust bumped 20260917i -> 20260917j.
+==========================================================================

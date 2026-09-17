@@ -74,6 +74,19 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">✅ Sep 17 — H24 5th+6th pass: maroon (derived ingredients), pink (shared stock across recipes), and substitution ratings</div>
+    <div class="card-body">
+      3 real new features, interrogated via AskUserQuestion before building (rule 5). Alex's own verbatim asks: maroon — "i have whole eggs, so i have both egg whites and egg yolks (make these maroon - an ingredient that derives as by product from something in stock, with instructions)... toasted dessicated coconut would also be maroon"; pink — "i have 400ml of coconut milk, so it good for one recipe (make this pink... use one subsitute for one recipe with closest alternative possible)"; ratings — "id also like a system where at the end of a cook a rate the subsitutions so the system prunes to different alternatives."<br><br>
+      <b>Confirmed answers</b>: maroon auto-deducts the real source ingredient once used; pink lets Alex pick which recipe gets the real stock each time (his own explicit choice, not the recommended auto-pick); ratings have no forced prompt — rated whenever from the recipe card; ratings DO auto-prefer highly-rated substitutes going forward.<br><br>
+      <b>Maroon</b>: new curated derivation table (egg→white/yolk, desiccated coconut→toasted — real 1:1 culinary facts, never invented), takes priority over orange, a real "Derive & use" action deducts across actual pantry_stock rows, honestly reports any real shortfall.<br><br>
+      <b>Pink</b>: real per-recipe usage now tracked alongside the merged total; a real per-recipe choice button ("Give real stock to X"), persisted per session; once resolved, the OTHER recipe's own real fallback substitute/derivation is computed and shown in context.<br><br>
+      <b>Ratings</b>: a new append-only ratings table; <code>_findSubstitute</code> now collects every real candidate and picks the highest net-rated one instead of first-match-wins; real 👍/👎 buttons on a reopened saved recipe's own ingredient list.<br><br>
+      <b>Honest scope limit</b>: no rating UI yet on a freshly-generated, not-yet-saved recipe — no real ingredient_id exists until Save, same gap already named for H24 2nd pass's confirm button.<br><br>
+      Verified via 3 real headless-Chromium passes (maroon 17/17, pink 14/14, ratings 12/12 — 43 new assertions), plus full re-runs of every pre-existing suite (198 prior assertions) confirming zero regression. <code>node --check</code> clean, re-minified, cache-bust bumped <code>20260917i</code>→<code>20260917j</code>. Full record: <code>records/2026-09/h24_5th_6th_pass_maroon_pink_ratings_2026-09-17.txt</code>. <b>Untested by Alex's own hand.</b>
+    </div>
+  </div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">✅ Sep 17 — H24 4th pass: 6 more duplicate-ingredient merges, a real "curated is authoritative" fix, and "confirm → tick" replaces "confirm → green"</div>
     <div class="card-body">
       Real, frustrated live hand-test, verbatim: "i have 4 shallots in stock, wtf. i have spring onion, yet you say we have none and offered yellow onion as replacement, yet want spring onion to replace shallot. wtf is this bullshit" — followed by more real examples (soy sauce/worcestershire, tamarind/vanilla, vegetable oil/olive oil, whole milk/evaporated milk) and a direct correction to yesterday's own confirm-to-green feature: "maybe not turn subs into green, but rather a tick on the left... keeping colours as is... so future sessions now what subs can be used."<br><br>

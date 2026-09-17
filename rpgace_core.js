@@ -36301,6 +36301,30 @@ RPGACE.register('cookingOracle', {
     // serving-pairing suggestion is ever computed or shown here — Alex
     // explicitly asked for a bare "can be omitted" note, nothing more.
     brown:  { color: '#8B5E3C',      bg: 'rgba(139,94,60,0.08)',   icon: '🟤', label: 'Separable — can be omitted (skipping shop this time)' },
+    // H24 (Sep 17 2026, 5th pass, real Alex ask: "i have whole eggs, so i
+    // have both egg whites and egg yolks (make these maroon - an
+    // ingredient that derives as by product from something in stock, with
+    // instructions on how to get desired result of ingredient)... toasted
+    // dessicated coconut would also be maroon since i need to toast to
+    // get ingredient") — a genuinely different real claim from orange:
+    // orange means a real, different ingredient stands in adequately;
+    // maroon means the exact real ingredient itself can be produced,
+    // right now, from something already in stock (a real curated
+    // derivation, never invented — see logic._DERIVATION_GROUPS). No
+    // standard maroon-square emoji exists in Unicode, so a real ⚗️ (a
+    // genuine transformation/derivation symbol) carries the visual
+    // identity instead, paired with a real maroon hex distinct from
+    // brown's.
+    maroon: { color: '#A6314B',      bg: 'rgba(166,49,75,0.08)',   icon: '⚗️', label: 'Can be made from what you have' },
+    // H24 (Sep 17 2026, 6th pass, real Alex ask: "i have 400ml of coconut
+    // milk, so it good for one recipe, not for another... this will help
+    // identify which subsitution is least impactful in final product in
+    // both recipes") — a real, genuinely different claim from every
+    // other status: 2+ recipes in this session share the ingredient, and
+    // real stock covers one of them but not the combined total. Never
+    // auto-resolved (AskUserQuestion-confirmed) — pink is a real, open
+    // decision Alex has to make, not a computed answer.
+    pink:   { color: '#D46FA3',      bg: 'rgba(212,111,163,0.08)', icon: '🩷', label: 'Shared across recipes — not enough for both, pick which one gets it' },
   },
 
   // H19 (Sep 17 2026, real Alex ask: "also use cups as much as possible
@@ -37067,7 +37091,18 @@ RPGACE.register('cookingOracle', {
     // confirmations lookup) — this is the real, persistent, cross-
     // session record Alex asked for: "future sessions now what subs can
     // be used."
-    _renderSubstitutableStatusRow: function(text, status, ingredientId, subName, ingredientName, alreadyConfirmed) {
+    // H24 (Sep 17 2026, 5th pass) — real maroon branch, `derivableFrom`
+    // (the real {deriv,srcHave} logic._computeIngredientUsage already
+    // resolved) and `neededAmount` (the real derived-ingredient amount
+    // this row needs) are the 2 new, optional trailing params — every
+    // existing orange/other-status caller that omits them is completely
+    // unaffected.
+    // H24 (6th pass) — a real, optional trailing `pinkOthers` param: an
+    // array of pre-formatted real strings describing what each OTHER
+    // recipe sharing this ingredient gets instead, once Alex has already
+    // resolved a real pink choice in this ingredient's favor — every
+    // existing caller that omits it is completely unaffected.
+    _renderSubstitutableStatusRow: function(text, status, ingredientId, subName, ingredientName, alreadyConfirmed, derivableFrom, neededAmount, pinkOthers) {
       var self = RPGACE.modules.cookingOracle;
       var meta = self.INGREDIENT_STATUS_META[status] || self.INGREDIENT_STATUS_META.red;
       var row = document.createElement('div');
@@ -37079,6 +37114,14 @@ RPGACE.register('cookingOracle', {
       };
       renderText(!!alreadyConfirmed);
       row.appendChild(textEl);
+      if (pinkOthers && pinkOthers.length) {
+        pinkOthers.forEach(function(line) {
+          var otherNote = document.createElement('div');
+          otherNote.style.cssText = 'font-size:10px;color:#D46FA3;margin-top:3px;';
+          otherNote.textContent = '🩷 ' + line;
+          row.appendChild(otherNote);
+        });
+      }
       var noteEl = document.createElement('div');
       noteEl.style.cssText = 'font-size:10px;color:var(--muted);margin-top:3px;';
       if (status === 'orange' && ingredientId && subName) {
@@ -37107,6 +37150,92 @@ RPGACE.register('cookingOracle', {
           row.appendChild(btn);
         }
       }
+      // H24 (Sep 17 2026, 5th pass, real Alex ask + AskUserQuestion-
+      // confirmed: derive-and-deduct is a real, committed stock write,
+      // not just a preference like a confirmed substitution — this
+      // never becomes a "future sessions remember it" tick the way
+      // orange's does, it's a one-time real action each time it's
+      // genuinely used).
+      if (status === 'maroon' && derivableFrom) {
+        var deriv = derivableFrom.deriv;
+        var srcNeeded = (typeof neededAmount === 'number' && neededAmount > 0) ? (neededAmount / (deriv.yieldRatio || 1)) : null;
+        var infoEl = document.createElement('div');
+        infoEl.style.cssText = 'font-size:10px;color:var(--muted);margin-top:3px;';
+        infoEl.textContent = 'Have ' + derivableFrom.srcHave + ' ' + deriv.sourceName + ' in stock. ' + deriv.instructions;
+        row.appendChild(infoEl);
+        if (srcNeeded && srcNeeded <= derivableFrom.srcHave) {
+          var deriveBtn = self.ui._mkBtn('⚗️ Derive & use ' + srcNeeded + ' ' + deriv.sourceName, 'inline', { extra: 'margin-top:5px;font-size:10px;padding:3px 8px;', color: meta.color, borderColor: 'rgba(166,49,75,.35)' });
+          deriveBtn.onclick = function() {
+            deriveBtn.disabled = true;
+            deriveBtn.textContent = '⏳ Deriving...';
+            self.logic._deriveIngredient(deriv.sourceName, neededAmount, deriv.yieldRatio, function(err, result) {
+              if (err) {
+                deriveBtn.disabled = false;
+                deriveBtn.textContent = '⚗️ Derive & use ' + srcNeeded + ' ' + deriv.sourceName;
+                RPGACE.utils.toast('⚠️ Could not derive: ' + err, '#CC4A4A', 3200);
+                return;
+              }
+              var derivedNote = document.createElement('div');
+              derivedNote.style.cssText = 'font-size:10px;color:var(--muted);margin-top:3px;';
+              derivedNote.textContent = '✓ Derived — used ' + result.consumed + ' ' + deriv.sourceName + (result.shortfall > 0 ? ' (real shortfall: ' + result.shortfall + ' short of what was needed)' : '');
+              row.appendChild(derivedNote);
+              deriveBtn.remove();
+              RPGACE.utils.toast('✅ Derived ' + (ingredientName || 'this') + ' — your ' + deriv.sourceName + ' stock has been reduced', '#4caf82', 3200);
+            });
+          };
+          row.appendChild(deriveBtn);
+        }
+      }
+      return row;
+    },
+
+    // H24 (Sep 17 2026, 6th pass, real Alex ask + AskUserQuestion-
+    // confirmed: Alex picks which recipe gets the real shared stock each
+    // time, never auto-picked) — a genuinely different real UI shape from
+    // every other status row (2+ real choices, not one confirm/derive
+    // action), so a dedicated function rather than cramming a 3rd branch
+    // into _renderSubstitutableStatusRow (rule 4). `u` is the real pink
+    // row from logic._computeIngredientUsage (status:'pink', unresolved —
+    // this function is never called for a resolved one, see
+    // ui._showSchedulePreview's own branch); `sess` supplies the real
+    // recipe titles (u.pinkInfo.perRecipe only carries ids/amounts, never
+    // a title, rule 7 — never invented here); `onResolved()` re-renders
+    // the whole popup once a real choice is saved (matches this module's
+    // own established "just reopen" pattern for a state change big
+    // enough to affect the whole usage list, not just one row).
+    _renderPinkRow: function(u, sess, onResolved) {
+      var self = RPGACE.modules.cookingOracle;
+      var meta = self.INGREDIENT_STATUS_META.pink;
+      var row = document.createElement('div');
+      row.style.cssText = 'font-size:12px;color:' + meta.color + ';border-left:3px solid ' + meta.color + ';background:' + meta.bg + ';border-radius:0 5px 5px 0;padding:4px 10px;margin-bottom:6px;';
+      row.title = meta.label;
+      var textEl = document.createElement('div');
+      var totalNeeded = (u.pinkInfo.perRecipe || []).reduce(function(s, pr) { return s + pr.amount; }, 0);
+      textEl.textContent = meta.icon + ' ' + u.name + ' — have ' + u.have + ' ' + (u.unit || '') + ', enough for one recipe but not both (' + totalNeeded + ' ' + (u.unit || '') + ' needed combined). Pick which one gets it:';
+      row.appendChild(textEl);
+      var btnRow = document.createElement('div');
+      btnRow.style.cssText = 'display:flex;flex-direction:column;gap:4px;margin-top:6px;';
+      (u.pinkInfo.perRecipe || []).forEach(function(pr) {
+        var recipe = (sess.recipes || []).filter(function(r) { return r.id === pr.recipeId; })[0];
+        var title = recipe ? recipe.title : 'this recipe';
+        var btn = self.ui._mkBtn('Give real stock to "' + title + '" (needs ' + pr.amount + ' ' + (u.unit || '') + ')', 'inline', { extra: 'font-size:10px;padding:4px 8px;text-align:left;', color: meta.color, borderColor: 'rgba(212,111,163,.35)' });
+        btn.onclick = function() {
+          btn.disabled = true;
+          btn.textContent = '⏳ Saving...';
+          self.logic._setPinkAllocation(sess.plannedCookId, u.pinkInfo.allocKey, pr.recipeId, function(err) {
+            if (err) {
+              btn.disabled = false;
+              btn.textContent = 'Give real stock to "' + title + '" (needs ' + pr.amount + ' ' + (u.unit || '') + ')';
+              RPGACE.utils.toast('⚠️ Could not save: ' + err, '#CC4A4A', 3200);
+              return;
+            }
+            RPGACE.utils.toast('✅ "' + title + '" gets the real ' + u.name + ' — the other recipe will show its own closest alternative', '#4caf82', 3200);
+            if (onResolved) onResolved();
+          });
+        };
+        btnRow.appendChild(btn);
+      });
+      row.appendChild(btnRow);
       return row;
     },
 
@@ -37307,9 +37436,18 @@ RPGACE.register('cookingOracle', {
       // lands, same "render once now, re-render richer once real data
       // arrives" pattern the photo fetch above already uses.
       var pantrySnapshot = null;
+      // H24 (Sep 17 2026, 6th pass) — real ratings snapshot loaded
+      // alongside the pantry (rule 8, same one-load-per-open shape) so a
+      // substitute shown here is already ranked by Alex's own past
+      // ratings, and the new rating buttons below have something real to
+      // write against.
+      var subRatings = {};
       self.logic._loadPantrySummed(function(snapshot) {
         pantrySnapshot = snapshot;
-        renderIngredients();
+        self.logic._loadSubstitutionRatings(function(ratings) {
+          subRatings = ratings;
+          renderIngredients();
+        });
       });
 
       var renderIngredients = function() {
@@ -37318,14 +37456,19 @@ RPGACE.register('cookingOracle', {
         var factor = target / base;
         ingList.innerHTML = '';
         (recipe.ingredients || []).forEach(function(ing) {
+          var wrap = document.createElement('div');
+          wrap.style.cssText = 'padding:4px 0 4px 8px;border-bottom:1px solid rgba(255,255,255,0.05);';
           var row = document.createElement('div');
-          row.style.cssText = 'display:flex;justify-content:space-between;font-size:13px;color:var(--text);padding:4px 0 4px 8px;border-bottom:1px solid rgba(255,255,255,0.05);';
+          row.style.cssText = 'display:flex;justify-content:space-between;font-size:13px;color:var(--text);';
           var amt = (typeof ing.amount === 'number') ? (Math.round(ing.amount * factor * 100) / 100) : ing.amount;
           var left = document.createElement('span');
           left.textContent = ing.name || '';
           var right = document.createElement('span');
           right.style.color = 'var(--muted)';
           right.textContent = self.logic._fmtMeasurement(amt, ing.unit);
+          row.appendChild(left);
+          row.appendChild(right);
+          wrap.appendChild(row);
 
           if (pantrySnapshot && ing.name) {
             var norm = String(ing.name).trim().toLowerCase();
@@ -37344,23 +37487,54 @@ RPGACE.register('cookingOracle', {
             var have = self.logic._resolveHaveAmount({ neededUnit: ing.unit, neededAmount: ing.amount, gramsEstimate: ing.grams_estimate, buckets: slots });
             var status = self.logic._classifyIngredientStatus({ name: ing.name, needed: (typeof amt === 'number') ? amt : 0, have: have, aisleIndex: pantrySnapshot.aisleIndex });
             var meta = self.INGREDIENT_STATUS_META[status];
-            row.style.borderLeft = '3px solid ' + meta.color;
-            row.style.background = meta.bg;
-            row.style.borderRadius = '0 5px 5px 0';
-            row.title = meta.label;
+            wrap.style.borderLeft = '3px solid ' + meta.color;
+            wrap.style.background = meta.bg;
+            wrap.style.borderRadius = '0 5px 5px 0';
+            wrap.title = meta.label;
             left.textContent = meta.icon + ' ' + (ing.name || '');
             // H21 (Sep 17 2026) — real substitute name surfaced on an
             // orange row (never invented — logic._findSubstitute only
             // ever returns a real, currently in-stock match).
             if (status === 'orange') {
-              var sub = self.logic._findSubstitute(ing.name, pantrySnapshot.aisleIndex);
-              if (sub) left.textContent += ' (sub: ' + sub.name + ')';
+              var sub = self.logic._findSubstitute(ing.name, pantrySnapshot.aisleIndex, ing.ingredient_id, subRatings);
+              if (sub) {
+                left.textContent += ' (sub: ' + sub.name + ')';
+                // H24 (Sep 17 2026, 6th pass, real Alex ask — Ask
+                // UserQuestion-confirmed: "no prompt - you rate whenever
+                // from the recipe card") — real rating buttons, only
+                // when this ingredient carries a real, checkable
+                // ingredient_id (a freshly-generated, not-yet-saved
+                // recipe genuinely doesn't have one yet — an honest gap,
+                // not fixed blind; reopening a SAVED recipe via
+                // logic._loadSavedRecipe always has one, see that
+                // function's own H24 6th-pass extension).
+                if (ing.ingredient_id) {
+                  var rateRow = document.createElement('div');
+                  rateRow.style.cssText = 'font-size:10px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:6px;';
+                  var rateLabel = document.createElement('span');
+                  rateLabel.textContent = 'Rate this substitution:';
+                  rateRow.appendChild(rateLabel);
+                  var mkRateBtn = function(label, ratingValue) {
+                    var rb = self.ui._mkBtn(label, 'inline', { extra: 'font-size:10px;padding:2px 6px;' });
+                    rb.onclick = function() {
+                      rb.disabled = true;
+                      self.logic._rateSubstitution(ing.ingredient_id, sub.name, ratingValue, function(err) {
+                        if (err) { rb.disabled = false; RPGACE.utils.toast('⚠️ Could not save rating: ' + err, '#CC4A4A', 3200); return; }
+                        rateRow.textContent = '✓ Rated — thanks, this helps future suggestions';
+                        RPGACE.utils.toast('✅ Rating saved', '#4caf82', 1800);
+                      });
+                    };
+                    return rb;
+                  };
+                  rateRow.appendChild(mkRateBtn('👍 Good sub', 1));
+                  rateRow.appendChild(mkRateBtn('👎 Not great', -1));
+                  wrap.appendChild(rateRow);
+                }
+              }
             }
           }
 
-          row.appendChild(left);
-          row.appendChild(right);
-          ingList.appendChild(row);
+          ingList.appendChild(wrap);
         });
       };
       renderIngredients();
@@ -38171,6 +38345,10 @@ RPGACE.register('cookingOracle', {
             // itself and returns them on each row (rule 8 — one real
             // computation, not two), so this real 2nd Supabase round trip
             // is removed outright rather than left dead.
+            // H24 (6th pass) — a real, persisted pink-allocation snapshot
+            // loaded first, so a pink row already reflects any choice
+            // Alex made on a prior open of this same popup.
+            self.logic._loadPinkAllocations(sess.plannedCookId, function(pinkAllocations) {
             self.logic._computeIngredientUsage(sess.recipeIds, function(usageErr, usage) {
               usageBox.innerHTML = '';
               if (usageErr) {
@@ -38192,7 +38370,13 @@ RPGACE.register('cookingOracle', {
               // in stock, skip buying the real thing) joins the same real
               // "needs a decision before this cook" bucket blue already
               // sits in — genuinely distinct color, same real timing.
-              var buyBefore = usage.filter(function(u) { return u.status === 'red' || u.status === 'yellow' || u.status === 'blue' || u.status === 'orange'; });
+              // H24 (Sep 17 2026, 5th pass) — maroon (a real derivation is
+              // genuinely available right now) joins the same bucket, same
+              // real timing logic — a real decision (derive it) before
+              // this cook, not a shopping trip. H24 (6th pass) — pink
+              // joins it too, same real "a decision is needed before this
+              // cook" timing.
+              var buyBefore = usage.filter(function(u) { return u.status === 'red' || u.status === 'yellow' || u.status === 'blue' || u.status === 'orange' || u.status === 'maroon' || u.status === 'pink'; });
               var plenty = usage.filter(function(u) { return u.status === 'green'; }).sort(function(a, b) { return a.name.localeCompare(b.name); });
               var buyAfter = usage.filter(function(u) { return u.status === 'purple'; }).sort(function(a, b) { return a.name.localeCompare(b.name); });
               // Brown only ever appears when this session's own real
@@ -38228,12 +38412,38 @@ RPGACE.register('cookingOracle', {
                   // now resolved once by _computeIngredientUsage itself
                   // (rule 8), never re-derived here.
                   if (u.status === 'orange' && u.subName) text += ' — have a substitute in stock: ' + u.subName;
+                  // H24 (6th pass) — a real, unresolved pink row gets its
+                  // own dedicated real per-recipe choice UI (genuinely
+                  // different shape — multiple recipe options, not one
+                  // confirm/derive action), see ui._renderPinkRow.
+                  if (u.status === 'pink') {
+                    usageBox.appendChild(self.ui._renderPinkRow(u, sess, function() { pop.close(); self.ui._showSchedulePreview(); }));
+                    return;
+                  }
                   // H24 (Sep 17 2026, 3rd pass) — real confirm/tick
                   // button, rule 8 shared render (see
                   // ui._renderSubstitutableStatusRow's own comment) —
                   // no longer flips this row to green (Alex's own direct
-                  // correction).
-                  usageBox.appendChild(self.ui._renderSubstitutableStatusRow(text, u.status, u.ingredient_id, u.subName, u.name, u.subConfirmed));
+                  // correction). H24 (5th pass) — u.derivableFrom/u.amount
+                  // drive the real maroon derive-and-use action.
+                  // H24 (6th pass) — a real RESOLVED pink pairing (Alex
+                  // already picked which recipe gets the real stock) is
+                  // rendered by the normal ladder above like any other
+                  // status, but the real "what does the OTHER recipe get
+                  // instead" fact still needs a real, named recipe title
+                  // (sess.recipes, only available here, never inside the
+                  // shared render function) — resolved here, passed
+                  // through as pre-formatted real data.
+                  var pinkOthers = null;
+                  if (u.pinkInfo && u.pinkInfo.resolved) {
+                    pinkOthers = u.pinkInfo.others.map(function(o) {
+                      var recipe = (sess.recipes || []).filter(function(r) { return r.id === o.recipeId; })[0];
+                      var oMeta = self.INGREDIENT_STATUS_META[o.status] || self.INGREDIENT_STATUS_META.red;
+                      var oText = (recipe ? recipe.title : 'the other recipe') + ' needs ' + o.amount + ' ' + (u.unit || '') + ' — ' + oMeta.icon + ' ' + oMeta.label + (o.subName ? ' (' + o.subName + ')' : (o.derivableFrom ? ' (can derive from ' + o.derivableFrom.deriv.sourceName + ')' : ''));
+                      return oText;
+                    });
+                  }
+                  usageBox.appendChild(self.ui._renderSubstitutableStatusRow(text, u.status, u.ingredient_id, u.subName, u.name, u.subConfirmed, u.derivableFrom, u.amount, pinkOthers));
                 });
               }
 
@@ -38279,7 +38489,8 @@ RPGACE.register('cookingOracle', {
                 noneMsg.textContent = 'No pantry stock logged yet — everything here will need buying once you generate a shopping list.';
                 usageBox.appendChild(noneMsg);
               }
-            }, { noShop: sess.shopMode === 'no_shop' });
+            }, { noShop: sess.shopMode === 'no_shop', pinkAllocations: pinkAllocations });
+            });
 
             var whenHeading = document.createElement('div');
             whenHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin:16px 0 8px;';
@@ -38686,11 +38897,15 @@ RPGACE.register('cookingOracle', {
           // snapshot, same shared loader every real consumer of this
           // classification now uses (rule 8).
           new Promise(function(resolve) { self.logic._loadConfirmedSubs(function(map) { resolve(map); }); }),
+          // H24 (6th pass) — real substitution ratings, same shared
+          // loader every real consumer now uses (rule 8).
+          new Promise(function(resolve) { self.logic._loadSubstitutionRatings(function(map) { resolve(map); }); }),
         ])
           .then(function(results) {
             var rows = results[0];
             var pantry = results[1];
             var listRow = results[2] && results[2][0];
+            var subRatings = results[4] || {};
             var confirmedSubs = results[3] || {};
             box.innerHTML = ''; // full re-render each time — keeps this simple and correct
 
@@ -38776,7 +38991,7 @@ RPGACE.register('cookingOracle', {
               // full reasoning).
               var subName = null, subConfirmed = false;
               if (r._status === 'orange') {
-                var sub = self.logic._findSubstitute(ingName, pantry.aisleIndex);
+                var sub = self.logic._findSubstitute(ingName, pantry.aisleIndex, r.ingredient_id, subRatings);
                 if (sub) { subName = sub.name; subConfirmed = !!confirmedSubs[r.ingredient_id + '::' + subName]; }
               }
               var lblText = (subConfirmed ? '✓ ' : '') + meta.icon + ' ' + ingName + ' — need ' + r.to_buy_amount + ' ' + (r.needed_unit || '')
@@ -40208,6 +40423,37 @@ RPGACE.register('cookingOracle', {
       { members: ['tamarind paste', 'tamarind concentrate'] },
     ],
 
+    // H24 (Sep 17 2026, 5th pass, real Alex ask — AskUserQuestion-
+    // confirmed: derived ingredients deduct their real source ingredient
+    // from stock once used) — a real, curated derivation table, same
+    // "small, evidence-backed, grows organically" discipline as
+    // _SUBSTITUTION_GROUPS above, genuinely different relationship
+    // though: this is NOT "X substitutes for Y," it's "Y IS a real
+    // byproduct/preparation of X," with a real, checkable yieldRatio
+    // (rule 7 — never invented; both real entries below are exact,
+    // standard culinary facts, not guessed) and real, concrete
+    // instructions Alex can actually follow. `yieldRatio` = real derived
+    // units produced per 1 real source unit (both his own real examples
+    // are exactly 1:1 — one egg genuinely yields one real white and one
+    // real yolk; toasting doesn't meaningfully change desiccated
+    // coconut's real countable quantity).
+    _DERIVATION_GROUPS: [
+      { sourceName: 'egg', derivedName: 'egg white', yieldRatio: 1, instructions: 'Crack the egg and separate the white from the yolk (an egg separator, or passing the yolk between the 2 shell halves, both work).' },
+      { sourceName: 'egg', derivedName: 'egg yolk', yieldRatio: 1, instructions: 'Crack the egg and separate the yolk from the white (an egg separator, or passing the yolk between the 2 shell halves, both work).' },
+      { sourceName: 'desiccated coconut', derivedName: 'toasted desiccated coconut', yieldRatio: 1, instructions: 'Toast desiccated coconut in a dry pan over medium-low heat, stirring constantly until golden (2-4 min) — or spread on a tray and toast in the oven at 160°C for 5-8 min, checking often as it browns fast.' },
+    ],
+
+    _findDerivation: function(name) {
+      var self = RPGACE.modules.cookingOracle;
+      var norm = String(name || '').trim().toLowerCase();
+      if (!norm) return null;
+      for (var i = 0; i < self.logic._DERIVATION_GROUPS.length; i++) {
+        var d = self.logic._DERIVATION_GROUPS[i];
+        if (d.derivedName === norm) return d;
+      }
+      return null;
+    },
+
     // Real, shared "is there a genuine substitute for this actually in
     // stock right now" finder (rule 8 — one function, both the classifier
     // and every real render site call this same one). Real, deliberate
@@ -40261,7 +40507,29 @@ RPGACE.register('cookingOracle', {
     // identifying "coconut").
     _GENERIC_HEAD_STOPWORDS: ['onion', 'sauce', 'milk', 'paste'],
 
-    _findSubstitute: function(name, aisleIndex) {
+    // H24 (Sep 17 2026, 6th pass) — real, optional trailing `ingredientId`/
+    // `ratings` params (both default to null/undefined — every existing
+    // caller that omits them behaves byte-identical to before, since
+    // with no real ratings loaded every candidate scores 0 and the
+    // original array order wins, same as the old first-match-wins logic).
+    // When 2+ real candidates are simultaneously available (a genuine,
+    // not-hypothetical case — e.g. both "dark soy sauce" and "light soy
+    // sauce" in stock at once), this used to always pick whichever one
+    // happened to come first in the curated members array or the aisle
+    // scan order — arbitrary, not a real preference. Real Alex ask: rate
+    // a substitution so future picks prefer what actually worked well.
+    _pickBestRated: function(ingredientId, candidates, ratings) {
+      if (!candidates.length) return null;
+      if (!ratings || !ingredientId) return candidates[0];
+      var best = candidates[0], bestScore = ratings[ingredientId + '::' + candidates[0]] || 0;
+      for (var i = 1; i < candidates.length; i++) {
+        var score = ratings[ingredientId + '::' + candidates[i]] || 0;
+        if (score > bestScore) { best = candidates[i]; bestScore = score; }
+      }
+      return best;
+    },
+
+    _findSubstitute: function(name, aisleIndex, ingredientId, ratings) {
       var self = RPGACE.modules.cookingOracle;
       var norm = String(name || '').trim().toLowerCase();
       if (!norm || !aisleIndex) return null;
@@ -40289,14 +40557,16 @@ RPGACE.register('cookingOracle', {
       // equivalent). `inGroup` tracks this without a 2nd loop over the
       // same table.
       var inGroup = false;
+      var curatedCandidates = [];
       for (var g = 0; g < self.logic._SUBSTITUTION_GROUPS.length; g++) {
         var members = self.logic._SUBSTITUTION_GROUPS[g].members;
         if (members.indexOf(norm) === -1) continue;
         inGroup = true;
         for (var m = 0; m < members.length; m++) {
-          if (members[m] !== norm && inStock[members[m]]) return { name: members[m], method: 'curated' };
+          if (members[m] !== norm && inStock[members[m]]) curatedCandidates.push(members[m]);
         }
       }
+      if (curatedCandidates.length) return { name: self.logic._pickBestRated(ingredientId, curatedCandidates, ratings), method: 'curated' };
       if (inGroup) return null;
 
       var aisle = self.logic._classifyAisle(name).name;
@@ -40309,12 +40579,14 @@ RPGACE.register('cookingOracle', {
       // identifying shared word elsewhere in the name still matches.
       var tokens = norm.split(/\s+/).filter(function(w) { return w.length >= 4 && stop.indexOf(w) === -1 && headStop.indexOf(w) === -1; });
       if (!tokens.length) return null;
+      var heuristicCandidates = [];
       for (var i = 0; i < namesInAisle.length; i++) {
         var cand = namesInAisle[i];
         if (cand === norm) continue;
         var candTokens = cand.split(/\s+/).filter(function(w) { return stop.indexOf(w) === -1; });
-        if (tokens.some(function(t) { return candTokens.indexOf(t) !== -1; })) return { name: cand, method: 'heuristic' };
+        if (tokens.some(function(t) { return candTokens.indexOf(t) !== -1; })) heuristicCandidates.push(cand);
       }
+      if (heuristicCandidates.length) return { name: self.logic._pickBestRated(ingredientId, heuristicCandidates, ratings), method: 'heuristic' };
       return null;
     },
 
@@ -40634,6 +40906,119 @@ RPGACE.register('cookingOracle', {
         .catch(function() { cb({}); });
     },
 
+    // H24 (Sep 17 2026, 6th pass, real Alex ask: "id also like a system
+    // where at the end of a cook a rate the subsitutions so the system
+    // prunes to different alternatives to make better decisions with
+    // me" — AskUserQuestion-confirmed: no forced prompt, rated whenever
+    // from the recipe card, and ratings DO auto-prefer highly-rated subs
+    // / deprioritize poorly-rated ones) — a real, append-only historical
+    // log (rule 7 — never overwritten, same discipline as
+    // ingredient_prices), never a single mutable "current rating" row,
+    // so a changed mind later just adds a real new data point rather
+    // than erasing the old one.
+    _rateSubstitution: function(ingredientId, subName, rating, cb) {
+      var norm = String(subName || '').trim().toLowerCase();
+      if (!ingredientId || !norm || (rating !== 1 && rating !== -1)) { cb('missing or invalid rating'); return; }
+      RPGACE.sb.secureWrite('substitution_ratings', 'insert', {
+        ingredient_id: ingredientId,
+        substitute_name: norm,
+        rating: rating,
+      })
+        .then(function() { cb(null); })
+        .catch(function(e) { cb(e.message || 'could not save rating'); });
+    },
+
+    // Real, shared aggregate: net score (sum of +1/-1) per real
+    // (ingredient_id, substitute_name) pair, client-side (same
+    // established precedent as _loadPantrySummed's own aggregation —
+    // this table stays small enough that a server-side aggregate view
+    // isn't warranted yet). Used by logic._findSubstitute to rank
+    // multiple real, simultaneously-available candidates — never to
+    // invent a candidate that isn't genuinely in stock.
+    _loadSubstitutionRatings: function(cb) {
+      RPGACE.sb.select('substitution_ratings', 'select=ingredient_id,substitute_name,rating')
+        .then(function(rows) {
+          var map = {};
+          (rows || []).forEach(function(r) {
+            var key = r.ingredient_id + '::' + r.substitute_name;
+            map[key] = (map[key] || 0) + (typeof r.rating === 'number' ? r.rating : 0);
+          });
+          cb(map);
+        })
+        .catch(function() { cb({}); });
+    },
+
+    // H24 (Sep 17 2026, 5th pass) — the real, committed "derive & use"
+    // action for a maroon row: a genuine stock deduction, not a
+    // preference (unlike a confirmed substitution). Real, evidence-
+    // checked math only (rule 7): sourceNeeded = derivedAmount /
+    // yieldRatio, deducted across whatever real pantry_stock row(s)
+    // actually exist for the source ingredient, oldest/first-found
+    // first, never letting a row go negative. If real stock is genuinely
+    // insufficient, deducts what's actually there and reports the real
+    // shortfall honestly (rule 7/fail-loud) — never invents extra stock
+    // to make the math come out even.
+    // H24 (Sep 17 2026, 6th pass) — real, persisted pink allocation
+    // choices, keyed on this session's own `planned_cooks.pink_
+    // allocations` (a real, additive jsonb column, DEFAULT '{}' — a
+    // pre-existing row with none set reads as an honest empty map, never
+    // guessed). Deliberately NOT threaded through the broader session
+    // load/save machinery (_persistSessionDraft/_loadDraftSession/
+    // _acceptSchedule, rule 4 — don't touch a working call site's
+    // contract more than needed) — a dedicated, narrow read/write,
+    // scoped to the one real consumer (ui._showSchedulePreview).
+    _loadPinkAllocations: function(plannedCookId, cb) {
+      if (!plannedCookId) { cb({}); return; }
+      RPGACE.sb.select('planned_cooks', 'select=pink_allocations&id=eq.' + plannedCookId + '&limit=1')
+        .then(function(rows) { cb((rows && rows[0] && rows[0].pink_allocations) || {}); })
+        .catch(function() { cb({}); });
+    },
+
+    _setPinkAllocation: function(plannedCookId, allocKey, recipeId, cb) {
+      var self = RPGACE.modules.cookingOracle;
+      if (!plannedCookId) { cb('no real planned cook to save this against yet'); return; }
+      self.logic._loadPinkAllocations(plannedCookId, function(current) {
+        var next = Object.create(null);
+        for (var k in current) { if (current.hasOwnProperty(k)) next[k] = current[k]; }
+        next[allocKey] = recipeId;
+        RPGACE.sb.secureWrite('planned_cooks', 'update', { pink_allocations: next }, 'id=eq.' + plannedCookId)
+          .then(function() { cb(null); })
+          .catch(function(e) { cb(e.message || 'could not save this choice'); });
+      });
+    },
+
+    _deriveIngredient: function(sourceName, derivedAmount, yieldRatio, cb) {
+      var norm = String(sourceName || '').trim().toLowerCase();
+      var ratio = (typeof yieldRatio === 'number' && yieldRatio > 0) ? yieldRatio : 1;
+      var needed = (typeof derivedAmount === 'number' && derivedAmount > 0) ? (derivedAmount / ratio) : 0;
+      if (!norm || needed <= 0) { cb('nothing real to derive'); return; }
+      RPGACE.sb.select('pantry_stock', 'select=ingredient_id,location,quantity,ingredients!inner(name)&ingredients.name=eq.' + encodeURIComponent(norm))
+        .then(function(rows) {
+          rows = (rows || []).filter(function(r) { return typeof r.quantity === 'number' && r.quantity > 0; });
+          if (!rows.length) { cb('no real ' + norm + ' stock found'); return; }
+          var remaining = needed;
+          var writes = [];
+          rows.forEach(function(r) {
+            if (remaining <= 0) return;
+            var take = Math.min(r.quantity, remaining);
+            remaining -= take;
+            writes.push({ ingredient_id: r.ingredient_id, location: r.location, newQty: r.quantity - take });
+          });
+          var doWrite = function(i) {
+            if (i >= writes.length) {
+              cb(null, { consumed: needed - remaining, shortfall: Math.max(0, remaining) });
+              return;
+            }
+            var w = writes[i];
+            RPGACE.sb.secureWrite('pantry_stock', 'update', { quantity: w.newQty }, 'ingredient_id=eq.' + w.ingredient_id + '&location=eq.' + encodeURIComponent(w.location))
+              .then(function() { doWrite(i + 1); })
+              .catch(function(e) { cb(e.message || 'could not update stock'); });
+          };
+          doWrite(0);
+        })
+        .catch(function(e) { cb(e.message || 'could not load real ' + norm + ' stock'); });
+    },
+
     _classifyIngredientStatus: function(opts) {
       var self = RPGACE.modules.cookingOracle;
       opts = opts || {};
@@ -40641,6 +41026,12 @@ RPGACE.register('cookingOracle', {
       var have = (typeof opts.have === 'number') ? opts.have : 0;
       if (have <= 0) {
         if (opts.noShopMode && opts.isSeparable) return 'brown';
+        // H24 (Sep 17 2026, 5th pass) — a real, checked derivation takes
+        // priority over a substitute: it IS the actual real ingredient,
+        // not an approximation of it. opts.derivableFrom is real I/O the
+        // CALLER already resolved (this function stays pure, no I/O) —
+        // see logic._computeIngredientUsage's own derivation lookup.
+        if (opts.derivableFrom) return 'maroon';
         if (opts.aisleIndex && opts.name) {
           // H24 (Sep 17 2026, 3rd pass) — real, deliberate correction:
           // a confirmed substitution NEVER classifies green here anymore
@@ -40696,7 +41087,7 @@ RPGACE.register('cookingOracle', {
       // etc). See the real bug note on _showSchedulePreview's own idList
       // line above for why a quoted variant breaks fetch() outright.
       var idList = recipeIds.join(',');
-      RPGACE.sb.select('recipe_ingredients', 'select=ingredient_id,amount,unit,grams_estimate,is_separable,ingredients(name)&recipe_id=in.(' + idList + ')')
+      RPGACE.sb.select('recipe_ingredients', 'select=recipe_id,ingredient_id,amount,unit,grams_estimate,is_separable,ingredients(name)&recipe_id=in.(' + idList + ')')
         .then(function(rows) {
           if (!rows || !rows.length) { cb('no ingredients found for these recipes'); return; }
           var groups = {};
@@ -40708,8 +41099,19 @@ RPGACE.register('cookingOracle', {
             // unit logic._loadPantrySummed's own byIngredient buckets use
             // (rule 8, one shared normalizer, see logic._normalizeUnit).
             var key = r.ingredient_id + '|' + self.logic._normalizeUnit(r.unit);
-            if (!groups[key]) groups[key] = { ingredient_id: r.ingredient_id, name: (r.ingredients && r.ingredients.name) || '?', unit: r.unit || null, amount: 0, gramsEstimate: null, isSeparable: true };
+            if (!groups[key]) groups[key] = { ingredient_id: r.ingredient_id, name: (r.ingredients && r.ingredients.name) || '?', unit: r.unit || null, amount: 0, gramsEstimate: null, isSeparable: true, perRecipe: [] };
             groups[key].amount += (typeof r.amount === 'number' ? r.amount : 0);
+            // H24 (Sep 17 2026, 6th pass, real Alex ask: "i have 400ml of
+            // coconut milk, so it good for one recipe... use one
+            // subsitute for one recipe with closest alternative possible
+            // available from stock) this will help identify which
+            // subsitution is least impactful") — real, per-RECIPE
+            // attribution, tracked alongside the merged total (never
+            // replacing it — every existing consumer of amount/have/
+            // status is completely unaffected). This is the one real
+            // piece of data the "pink" shared-stock feature needs that
+            // nothing before it ever kept.
+            groups[key].perRecipe.push({ recipeId: r.recipe_id, amount: (typeof r.amount === 'number' ? r.amount : 0) });
             // H19 (Sep 17 2026) — accumulated alongside amount so the
             // real grams-per-unit ratio logic._resolveHaveAmount needs
             // for a cup<->weight bridge stays valid even when 2+ rows
@@ -40726,6 +41128,11 @@ RPGACE.register('cookingOracle', {
             // previously confirmed (rule 8 — same one loader every real
             // caller of this shared usage computation now benefits from).
             self.logic._loadConfirmedSubs(function(confirmedSubs) {
+            // H24 (6th pass) — a real ratings snapshot loaded once here
+            // too (rule 8, same one-load-per-call shape confirmedSubs
+            // already established), so every real substitute name this
+            // function resolves already reflects Alex's own past ratings.
+            self.logic._loadSubstitutionRatings(function(subRatings) {
             var list = Object.keys(groups).map(function(k) {
               var g = groups[k];
               // H19 (Sep 17 2026, real Alex ask: recipes lean on cups,
@@ -40738,12 +41145,89 @@ RPGACE.register('cookingOracle', {
               var buckets = pantry.byIngredient[g.ingredient_id] || [];
               var have = self.logic._resolveHaveAmount({ neededUnit: g.unit, neededAmount: g.amount, gramsEstimate: g.gramsEstimate, buckets: buckets });
               var toBuy = Math.max(0, g.amount - have);
+              // H24 (6th pass) — the real amount this row's own status/
+              // toBuy/returned `amount` field are computed against —
+              // stays g.amount (the real combined total) unless a real,
+              // RESOLVED pink allocation narrows it to one chosen
+              // recipe's own real share (see below).
+              var effectiveAmount = g.amount;
+              // H24 (Sep 17 2026, 6th pass, real Alex ask: "i have 400ml
+              // of coconut milk, so it good for one recipe... use one
+              // subsitute for one recipe with closest alternative
+              // possible available from stock" — AskUserQuestion-
+              // confirmed: Alex picks which recipe gets the real stock
+              // each time, never auto-picked) — real "pink" detection.
+              // Eligible only when 2+ DISTINCT recipes in this session
+              // genuinely share the ingredient, real stock covers at
+              // least the smallest single recipe's own need (otherwise
+              // this is just an ordinary shortfall, the existing ladder
+              // already handles it honestly), but not the combined total.
+              var pinkInfo = null;
+              var distinctRecipeIds = [];
+              g.perRecipe.forEach(function(pr) { if (distinctRecipeIds.indexOf(pr.recipeId) === -1) distinctRecipeIds.push(pr.recipeId); });
+              var allocKey = g.ingredient_id + '|' + self.logic._normalizeUnit(g.unit);
+              if (distinctRecipeIds.length >= 2 && have > 0 && have < g.amount) {
+                var minSingle = Math.min.apply(null, g.perRecipe.map(function(pr) { return pr.amount; }));
+                if (have >= minSingle) {
+                  var chosenRecipeId = (opts.pinkAllocations && opts.pinkAllocations[allocKey]) || null;
+                  if (chosenRecipeId && distinctRecipeIds.indexOf(chosenRecipeId) !== -1) {
+                    // H24 (6th pass) — real, per-OTHER-recipe fallback,
+                    // each one independently classified with have:0 for
+                    // its own share (the real stock went to the chosen
+                    // recipe) — reuses the exact same classifier/
+                    // substitute/derivation machinery every other row
+                    // already uses (rule 8), never a parallel 2nd system.
+                    var others = g.perRecipe.filter(function(pr) { return pr.recipeId !== chosenRecipeId; }).map(function(pr) {
+                      var oDeriv = null;
+                      var d2 = self.logic._findDerivation(g.name);
+                      if (d2) {
+                        var sb2 = pantry.byName[d2.sourceName] || [];
+                        var sh2 = sb2.reduce(function(s, b) { return s + (typeof b.quantity === 'number' ? b.quantity : 0); }, 0);
+                        if (sh2 > 0) oDeriv = { deriv: d2, srcHave: sh2 };
+                      }
+                      var oStatus = self.logic._classifyIngredientStatus({ name: g.name, needed: pr.amount, have: 0, aisleIndex: pantry.aisleIndex, derivableFrom: oDeriv });
+                      var oSubName = null;
+                      if (oStatus === 'orange') { var oSub = self.logic._findSubstitute(g.name, pantry.aisleIndex, g.ingredient_id, subRatings); if (oSub) oSubName = oSub.name; }
+                      return { recipeId: pr.recipeId, amount: pr.amount, status: oStatus, subName: oSubName, derivableFrom: (oStatus === 'maroon') ? oDeriv : null };
+                    });
+                    pinkInfo = { eligible: true, resolved: true, chosenRecipeId: chosenRecipeId, perRecipe: g.perRecipe, others: others, allocKey: allocKey };
+                    // The group's own status/have/toBuy now reflect ONLY
+                    // the chosen recipe's real amount, not the combined
+                    // total — the other recipes' own real need is fully
+                    // accounted for separately in pinkInfo.others.
+                    var chosenAmount = g.perRecipe.filter(function(pr) { return pr.recipeId === chosenRecipeId; }).reduce(function(s, pr) { return s + pr.amount; }, 0);
+                    effectiveAmount = chosenAmount;
+                    toBuy = Math.max(0, chosenAmount - have);
+                  } else {
+                    pinkInfo = { eligible: true, resolved: false, perRecipe: g.perRecipe, allocKey: allocKey };
+                  }
+                }
+              }
               // H18 (Sep 16 2026) — real 5-color status, computed once here
               // (rule 8) so every real consumer of this shared usage list
               // (the schedule preview, the shopping-list generator) gets
               // the same classification for free instead of each
               // re-deriving it.
-              var status = self.logic._classifyIngredientStatus({ name: g.name, needed: g.amount, have: have, aisleIndex: pantry.aisleIndex, isSeparable: g.isSeparable, noShopMode: !!opts.noShop });
+              // H24 (Sep 17 2026, 5th pass) — real, resolved-once
+              // derivation check (rule 8, same real I/O-in-the-caller
+              // shape subName/subConfirmed already use). A real source
+              // has to genuinely be in stock (any positive quantity,
+              // same "genuinely available" bar orange already uses) for
+              // maroon to fire — never assumed.
+              var derivableFrom = null;
+              var deriv = self.logic._findDerivation(g.name);
+              if (deriv) {
+                var srcBuckets = pantry.byName[deriv.sourceName] || [];
+                var srcHave = srcBuckets.reduce(function(sum, b) { return sum + (typeof b.quantity === 'number' ? b.quantity : 0); }, 0);
+                if (srcHave > 0) derivableFrom = { deriv: deriv, srcHave: srcHave };
+              }
+              // H24 (6th pass) — a real, unresolved pink candidate takes
+              // priority over every other status — it's a genuinely
+              // different real fact ("you have to choose"), not a color
+              // the normal ladder can express. A RESOLVED pink candidate
+              // falls through to the normal ladder below, now correctly
+              // computed against the chosen recipe's own real amount.
+              var status = pinkInfo && !pinkInfo.resolved ? 'pink' : self.logic._classifyIngredientStatus({ name: g.name, needed: effectiveAmount, have: have, aisleIndex: pantry.aisleIndex, isSeparable: g.isSeparable, noShopMode: !!opts.noShop, derivableFrom: derivableFrom });
               // H24 (Sep 17 2026, 3rd pass) — real substitute name +
               // confirmed-state resolved ONCE here (rule 8 — this used
               // to be re-derived independently by every real UI consumer,
@@ -40755,15 +41239,24 @@ RPGACE.register('cookingOracle', {
               // comment above for why).
               var subName = null, subConfirmed = false;
               if (status === 'orange') {
-                var subInfo = self.logic._findSubstitute(g.name, pantry.aisleIndex);
+                var subInfo = self.logic._findSubstitute(g.name, pantry.aisleIndex, g.ingredient_id, subRatings);
                 if (subInfo) {
                   subName = subInfo.name;
                   subConfirmed = !!(confirmedSubs[g.ingredient_id + '::' + subName]);
                 }
               }
-              return { ingredient_id: g.ingredient_id, name: g.name, unit: g.unit, amount: g.amount, have: have, toBuy: toBuy, status: status, isSeparable: g.isSeparable, subName: subName, subConfirmed: subConfirmed };
+              // H24 (6th pass) — `amount` returned here is effectiveAmount
+              // (the real combined total, UNLESS a resolved pink
+              // allocation narrows it to just the chosen recipe's own
+              // share) so it always stays internally consistent with
+              // this same row's own status/toBuy — the real, full
+              // per-recipe breakdown (including any amount this row's
+              // own `amount` field no longer directly shows) always lives
+              // in pinkInfo.perRecipe, never lost.
+              return { ingredient_id: g.ingredient_id, name: g.name, unit: g.unit, amount: effectiveAmount, have: have, toBuy: toBuy, status: status, isSeparable: g.isSeparable, subName: subName, subConfirmed: subConfirmed, derivableFrom: (status === 'maroon') ? derivableFrom : null, pinkInfo: pinkInfo };
             });
             cb(null, list);
+            });
             });
           });
         })
@@ -40836,7 +41329,15 @@ RPGACE.register('cookingOracle', {
         .then(function(rows) {
           var row = rows && rows[0];
           if (!row) { cb('recipe not found'); return; }
-          RPGACE.sb.select('recipe_ingredients', 'select=amount,unit,grams_estimate,is_separable,ingredients(name)&recipe_id=eq.' + recipeId)
+          // H24 (Sep 17 2026, 6th pass) — real ingredient_id added to the
+          // select + returned shape (rule 8 — one real loader, extended,
+          // never a 2nd copy) so a reopened saved recipe's own ingredient
+          // rows carry a real, checkable database identity — the one
+          // real thing the recipe card's rating UI needs and never had
+          // before (a fresh, not-yet-saved generation still has none,
+          // an honest, unavoidable gap — nothing to rate against until a
+          // real recipe_ingredients row exists).
+          RPGACE.sb.select('recipe_ingredients', 'select=ingredient_id,amount,unit,grams_estimate,is_separable,ingredients(name)&recipe_id=eq.' + recipeId)
             .then(function(riRows) {
               var recipe = {
                 title: row.title, servings_base: row.servings_base, steps: row.steps || [],
@@ -40845,7 +41346,7 @@ RPGACE.register('cookingOracle', {
                   // this shipped has a real NULL here (column default is
                   // false anyway) — coerced honestly to essential, never
                   // guessed as a real separable tag it never actually got.
-                  return { name: (r.ingredients && r.ingredients.name) || '?', amount: r.amount, unit: r.unit, grams_estimate: r.grams_estimate, is_separable: !!r.is_separable };
+                  return { ingredient_id: r.ingredient_id, name: (r.ingredients && r.ingredients.name) || '?', amount: r.amount, unit: r.unit, grams_estimate: r.grams_estimate, is_separable: !!r.is_separable };
                 }),
               };
               cb(null, recipe);
