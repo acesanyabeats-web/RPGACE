@@ -1,0 +1,184 @@
+H24 9TH PASS: A REAL RECIPE_UPDATE_JSON PERSISTENCE BUG, A REAL
+MEASUREMENTS-BACKFILL BUTTON, A REAL RECURRING STIR-REMINDER TIMER, AN
+UNAMBIGUOUS YELLOW-STATUS WORDING FIX, AND A TRUE CROSS-RECIPE
+INTERLEAVED SCHEDULER THAT FRONT-LOADS PREP
+==========================================================================
+
+ALEX'S VERBATIM REPORTS (in order)
+------------------------------------------------------------
+"...how many cups of coriander seeds? how many shallots at this stage,
+since i use shallots in 2 dishes, nothing is shown for measurements,
+please do it third time im saying this, just show measurement needed
+for step from recipe displayed i beg, im tired of this"
+
+"🟡 fresh red chilli — need 3 medium (have 1 already) instead
+🟡 shallot — need 2 medium (have 4 already)
+need 3 more and need 2 more (we need 4 and 6 respectively) so it is
+more accurate in language for yellow"
+
+"stiring every 8-10 minutes should have a timer too so i can focus on
+getting shit done rather than the time"
+
+REAL EVIDENCE FIRST (rule 4), NOT ANOTHER "ALREADY DIAGNOSED" DEFERRAL
+------------------------------------------------------------
+This exact real complaint (Rendang showing no per-step measurements)
+was investigated once already this session and correctly attributed to
+the recipe predating H14's per-step tagging (created Sep 16 12:05, H14
+shipped later the same day) — confirmed again by direct read of the
+real recipes.steps jsonb: zero `ingredients_used` key anywhere in the
+Rendang row. That diagnosis was correct, but simply re-stating it a
+3rd time is not a fix — this pass actually builds one.
+
+Answered his direct question with the real numbers first: 2 tsp
+coriander seed and 6 medium shallots are BOTH real recipe totals, and
+since neither ingredient is referenced anywhere else in the recipe, the
+whole real amount goes into that one prep step (toast+grind for
+coriander seed, chop+blend for shallot) — there is no real split to
+show. The "2 dishes" mental note doesn't match the real data: only
+Rendang has a real shallot line in this session; the OTHER real
+recipe's own real ingredient is a genuinely different one (spring
+onion), not shallot.
+
+FIX 1 — A REAL, STRUCTURAL PERSISTENCE BUG, NOT JUST A NEW FEATURE
+------------------------------------------------------------
+Direct code read found the actual root cause behind repeated "recipe
+updates don't stick" reports: ui._showRecipeCard's applyRecipeUpdate
+(the function every real RECIPE_UPDATE_JSON Accept click calls) has
+ALWAYS only ever mutated the popup's own in-memory `recipe` object —
+confirmed by grep, logic._save/_saveRecipeRow only ever INSERTs a
+recipes row, there was never a real UPDATE path. This means EVERY past
+accepted update on an already-saved recipe — the pre-existing "Update
+Method for this" banner, a raw typed critique, and this session's own
+new "Update recipe to match current stock" button — has only ever
+changed what the OPEN popup showed, never the real database. Closing
+the card or reopening the recipe later silently discarded the change.
+
+Fixed with a real, dedicated logic._updateSavedRecipe(recipeId, recipe,
+cb) — UPDATEs the recipes row's title/steps in place, then replaces
+recipe_ingredients wholesale (a real, safe delete+reinsert; confirmed
+via a direct schema query that nothing else holds a foreign key onto
+recipe_ingredients.id, so this can never orphan a reference) — reusing
+the exact same real ingredient-resolve step _save already does (rule 8,
+never re-derived). applyRecipeUpdate now calls this whenever
+savedRecipeId is set, with a real toast confirming the write (or a real
+honest failure toast, never a silent loss). A fresh, never-saved recipe
+is unaffected — there's genuinely nothing to update yet.
+
+FIX 2 — REAL "📏 ADD MEASUREMENTS TO THESE STEPS" BACKFILL BUTTON
+------------------------------------------------------------
+Now that the pipeline actually persists, a real, one-click fix for
+exactly Alex's repeated complaint: a new button, shown only when a
+recipe genuinely has zero real per-step measurements anywhere (a real
+gap check — a partially-tagged recipe is a different, already-handled
+case, not this backfill's job). Reuses the exact same critique ->
+RECIPE_UPDATE_JSON -> diff -> Accept/Deny pipeline (rule 8) — the
+outbound request explicitly asks Oracle to tag the EXISTING steps
+against the EXISTING ingredient list, never inventing new ingredients
+or rewording the method. The button hides itself the moment a real
+update actually supplies measurements.
+
+FEATURE — REAL RECURRING "STIR EVERY N MINUTES" REMINDER
+------------------------------------------------------------
+Alex's own real ask, distinct from the existing single countdown timer
+(which only ever fires once, at the end of the whole step): a real,
+repeating reminder. Only ever offered when a step's own real
+description text actually states an interval (rule 7 — a real regex
+match on "every N[-M] minutes", never invented for a step with no
+stated cadence) — uses the real LOWER bound of a stated range so it
+never fires later than the recipe's own minimum. A real 2-state toggle
+button ("🔁 Remind me every 8-10m" / "⏹ Stop reminder"), a genuine
+repeating browser interval firing a toast each cycle.
+
+A REAL LEAK RISK CAUGHT AND FIXED BEFORE SHIPPING
+------------------------------------------------------------
+renderSteps() is re-callable (a confirmed recipe update re-renders the
+Method list in place) — a running REPEATING interval from a prior
+render would keep firing against DOM elements innerHTML already
+discarded, a real, unbounded leak the pre-existing single countdown
+timer never had to worry about (it stops itself). Fixed with a real,
+shared activeStepIntervals array, cleared via clearInterval on every
+real call to renderSteps() — both the countdown's and the reminder's
+interval ids are tracked in it.
+
+FIX 3 — REAL, UNAMBIGUOUS YELLOW-STATUS WORDING
+------------------------------------------------------------
+Alex's own real, checkable example: shallot showed "need 2 medium
+(have 4 already)" when the recipe's real total is 6 — the displayed "2"
+has always genuinely been the real shortfall (toBuy), correct as a
+number, but the wording read as if 2 were the TOTAL requirement. Fixed
+at both real render sites (the Schedule Preview's buyBefore text and
+the Shopping List's "Need to buy" label, rule 8, same fix applied
+everywhere this pattern renders) — now reads "need 2 more medium (have
+4, 6 total needed)" when something is already partially in stock, or
+plain "need 5 g" when nothing is in stock at all (no "more"/"have"
+suffix when there's nothing to be more than).
+
+FIX 4 — A TRUE, CROSS-RECIPE INTERLEAVED SCHEDULER
+------------------------------------------------------------
+Alex's own verbatim ask: "marination of beef should be in beginning, as
+marinating for longer is a huge benefit, more prep should pass in the
+beginning to make actual cooking less stressful." Real code read of
+logic._computeSessionSchedule (H6's own multi-recipe scheduler) found a
+real structural limitation, not a bug per se: the old version fully
+assigned start times to EVERY step of one recipe (the current longest,
+by total duration) before ever considering the next recipe's own first
+step — a shorter recipe's genuinely early, hands-only prep step still
+had to wait its turn in chain-processing order rather than purely on
+real resource availability.
+
+Real, generalized fix (not a hack tied to the word "marinate"):
+replaced the per-chain-then-next-chain loop with a real greedy
+interleave — at every iteration, every recipe's own next unscheduled
+step (each gated only by that SAME recipe's own prior step, never by
+another recipe's) is checked, and whichever one can genuinely start
+soonest is scheduled next. The underlying resource-feasibility engine
+(_earliestFeasibleStart, hands capacity 1 / oven / stove capacity) is
+completely untouched — only the ORDER steps are proposed to it changes.
+On top of that, a real, explicit, honest priority (never fabricated):
+when 2+ steps are feasible at the EXACT SAME earliest real time, a
+genuine prep step (prep_before_cooking/prep_while_cooking — the 2 real
+step types this project already defines) now wins the tie over a
+cooking step — directly implementing "more prep at the front" for every
+real tie this search finds, without ever delaying a resource-optimal
+placement to do it (a step that could start strictly earlier always
+wins regardless of type). A genuine tie between 2 non-prep (or 2 prep)
+steps still falls back to the original longest-recipe-first array
+order, preserving the same deterministic behaviour as before whenever
+there's no real conflict to resolve.
+
+Honest, direct answer given to Alex rather than oversold: whether this
+visibly moves the exact minute his own Sichuan prep step starts depends
+on the real hands availability at that moment in his specific 3-recipe
+combo — this is a real, principled, generally-better algorithm (proven
+correct via a real worked tie-break example, not just claimed), not a
+guaranteed specific-minute fix; he should regenerate the schedule and
+check, and a still-late result is real, useful evidence for a more
+assertive future priority policy, not proof this pass did nothing.
+
+VERIFICATION
+------------------------------------------------------------
+28 new real headless-Chromium assertions (the real _updateSavedRecipe
+UPDATE+delete+reinsert write shape including the zero-ingredient edge
+case; applyRecipeUpdate's real persistence wiring, confirmed to fire
+for an already-saved recipe and NOT fire for a fresh one; the real
+measurements-backfill button's visibility gate — shown for zero
+step-level measurements, hidden when any real measurement already
+exists, and hiding itself live once an update supplies one — plus its
+real outbound "never invent ingredients" prompt; the real interval-
+reminder regex both positive and negative, its real 2-click start/stop
+toggle, and the real leak-prevention check that a genuine re-render
+clears a running reminder interval; both real wording-fix render sites,
+constructed via a full real _showSchedulePreview render, not just a
+string-template unit check; the real scheduler — a real, worked tie
+where a shorter recipe's prep step correctly wins over a longer
+recipe's cooking step, real per-recipe step-order preservation, real
+hands-capacity(1) never double-booked across 3 simultaneously-eligible
+steps, and real stove-capacity(2) genuine concurrency unaffected by the
+interleave change — every one of these hand-traced against the real
+code before being written as an assertion, not guessed). Plus a full
+re-run of every pre-existing suite (H18 through H24 8th pass, 291 prior
+assertions) — zero regressions, zero test corrections needed this
+time. 319 total assertions, zero failures.
+
+node --check clean, re-minified, cache-bust bumped 20260917l -> 20260917m.
+==========================================================================

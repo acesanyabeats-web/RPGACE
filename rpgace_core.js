@@ -37930,7 +37930,53 @@ RPGACE.register('cookingOracle', {
       box.appendChild(stepHeading);
       box.appendChild(methodUpdateBanner);
 
+      // H24 (Sep 17 2026, 9th pass, real Alex ask — reported 3 times:
+      // "nothing is shown for measurements... just show measurement
+      // needed for step from recipe displayed") — a real, checkable
+      // Supabase read confirmed the exact cause for the recipes he kept
+      // hitting this on (Rendang): they genuinely predate H14's per-step
+      // ingredients_used tagging (created Sep 16, before that feature
+      // shipped later the same day) — recipe.steps literally has no
+      // ingredients_used key at all, not just an empty one. A real,
+      // one-click fix rather than another honest-but-unhelpful flag:
+      // reuses the exact same critique -> RECIPE_UPDATE_JSON -> diff ->
+      // Accept/Deny pipeline every other recipe-revision action already
+      // uses (rule 8), asking Oracle to tag the EXISTING steps against
+      // the EXISTING ingredient list — never inventing new ingredients
+      // or rewording the method. Only shown when the recipe genuinely has
+      // zero real per-step measurements anywhere (a recipe with SOME
+      // steps tagged and others not is a different, already-handled
+      // case — H14's own honest "old recipes show no chips" scope, not
+      // this backfill's job).
+      var measurementsBackfillBtn = self.ui._mkBtn('📏 Add measurements to these steps', 'inline', { color: '#9B59B6', bg: 'rgba(155,89,182,0.18)', borderColor: 'rgba(155,89,182,0.4)', extra: 'margin-bottom:10px;font-weight:700;' });
+      var refreshMeasurementsBackfillVisibility = function() {
+        var hasAnyStepIngredients = (recipe.steps || []).some(function(s) { return Array.isArray(s.ingredients_used) && s.ingredients_used.length > 0; });
+        var eligible = !hasAnyStepIngredients && (recipe.steps || []).length > 0 && (recipe.ingredients || []).length > 0;
+        measurementsBackfillBtn.style.display = eligible ? '' : 'none';
+      };
+      measurementsBackfillBtn.onclick = function() {
+        var oc = RPGACE.modules.oracleControl;
+        if (!oc || !oc._sendFromOverlay || !document.getElementById('chat-input')) {
+          RPGACE.utils.toast('⚠️ Oracle chat isn\'t ready yet — open the Oracle page once first', '#E2A83D', 3200);
+          return;
+        }
+        oc._sendFromOverlay('This recipe\'s Method steps show no per-step ingredient measurements at all — an older recipe from before that feature existed. Using the EXACT existing ingredient list and EXACT existing step wording (do not change the description text, order, or add/remove any ingredient), tag each step with which of the EXISTING ingredients it actually uses and how much of each, splitting an ingredient\'s amount across steps if it is genuinely used more than once.');
+        RPGACE.utils.toast('📏 Asking Oracle to add real measurements to these steps...', '#9B59B6', 2800);
+      };
+      refreshMeasurementsBackfillVisibility();
+      box.appendChild(measurementsBackfillBtn);
+
       var stepList = document.createElement('div');
+      // H24 (Sep 17 2026, 9th pass) — real, active JS intervals started by
+      // either step timer (the countdown below, or the new repeating
+      // reminder) are tracked here so a re-render (renderSteps is
+      // re-callable — see its own comment below) can actually stop them.
+      // Without this, a running interval keeps firing against DOM
+      // elements `stepList.innerHTML=''` already discarded — harmless for
+      // the existing bounded countdown (it stops itself), a real,
+      // genuinely bad leak for the new UNBOUNDED repeating reminder if
+      // left running.
+      var activeStepIntervals = [];
       // Sep 14 2026 - wrapped into a real, re-callable renderSteps() (was a
       // bare inline forEach) so a confirmed recipe update (see
       // applyRecipeUpdate below) can refresh this section IN PLACE, the
@@ -37938,6 +37984,8 @@ RPGACE.register('cookingOracle', {
       // never a full popup close-and-reopen, which would lose scroll
       // position and any in-progress step timer for real.
       var renderSteps = function() {
+        activeStepIntervals.forEach(function(id) { clearInterval(id); });
+        activeStepIntervals = [];
         stepList.innerHTML = '';
         (recipe.steps || []).slice().sort(function(a, b) { return (a.order || 0) - (b.order || 0); }).forEach(function(step) {
         var meta = self.ui.STEP_META[step.type] || { label: step.type || 'Step', color: 'var(--muted)' };
@@ -37995,10 +38043,49 @@ RPGACE.register('cookingOracle', {
             };
             tick();
             timerBtn._interval = setInterval(tick, 1000);
+            activeStepIntervals.push(timerBtn._interval);
           };
           timerRow.appendChild(timerBtn);
           timerRow.appendChild(timerText);
           row.appendChild(timerRow);
+        }
+
+        // H24 (Sep 17 2026, 9th pass, real Alex ask: "stiring every 8-10
+        // minutes should have a timer too so i can focus on getting shit
+        // done rather than the time") — a real, second, REPEATING
+        // reminder, genuinely different from the single countdown above
+        // (which only ever fires once, at the end of the whole step).
+        // Only ever offered when the step's own real description text
+        // actually states an interval (rule 7 — never invented; "every
+        // 8-10 minutes" is real text already in this recipe, not a
+        // guessed cadence) — a step with no stated interval gets no
+        // reminder button at all. Uses the real LOWER bound of a stated
+        // range (e.g. "8" from "every 8-10 minutes") so the reminder
+        // never fires later than the recipe's own real minimum.
+        var intervalMatch = /every\s+(\d+)(?:\s*(?:-|–|to)\s*(\d+))?\s*(?:minutes?|mins?|min)\b/i.exec(step.description || '');
+        if (intervalMatch) {
+          var intervalMin = parseInt(intervalMatch[1], 10);
+          var intervalLabel = intervalMatch[2] ? (intervalMatch[1] + '-' + intervalMatch[2] + 'm') : (intervalMatch[1] + 'm');
+          var remindRow = document.createElement('div');
+          remindRow.style.cssText = 'margin-top:6px;';
+          var remindBtn = self.ui._mkBtn('🔁 Remind me every ' + intervalLabel, 'inline', { color: '#9B59B6', borderColor: 'rgba(155,89,182,0.4)' });
+          remindBtn.onclick = function() {
+            if (remindBtn._interval) {
+              clearInterval(remindBtn._interval);
+              remindBtn._interval = null;
+              remindBtn.textContent = '🔁 Remind me every ' + intervalLabel;
+              RPGACE.utils.toast('🔁 Reminder stopped', '#E2A83D', 1800);
+              return;
+            }
+            remindBtn.textContent = '⏹ Stop reminder (every ' + intervalLabel + ')';
+            RPGACE.utils.toast('🔁 Reminder started — every ' + intervalLabel + ', starting now', '#9B59B6', 2400);
+            remindBtn._interval = setInterval(function() {
+              RPGACE.utils.toast('🔁 ' + intervalLabel + ' reminder — ' + (step.description || 'this step').slice(0, 70), '#9B59B6', 4500);
+            }, intervalMin * 60 * 1000);
+            activeStepIntervals.push(remindBtn._interval);
+          };
+          remindRow.appendChild(remindBtn);
+          row.appendChild(remindRow);
         }
 
         stepList.appendChild(row);
@@ -38031,6 +38118,7 @@ RPGACE.register('cookingOracle', {
         recipe.steps = updated.steps || recipe.steps;
         renderIngredients();
         renderSteps();
+        refreshMeasurementsBackfillVisibility();
         resetNutritionState(); // ingredients/steps just changed - the old estimate is stale
         // Sep 15 2026 - a real Method update landed via ANY path (my own
         // "Update Method" banner, or Alex typing his own critique straight
@@ -38042,6 +38130,25 @@ RPGACE.register('cookingOracle', {
         pendingMethodIngredients = [];
         methodUpdateBanner.style.display = 'none';
         if (titleEl) titleEl.textContent = recipe.title || 'Recipe';
+        // H24 (Sep 17 2026, 9th pass) — real, structural fix: this used to
+        // ONLY mutate the in-memory card (see logic._updateSavedRecipe's
+        // own comment for the full real bug this closes). For an
+        // ALREADY-SAVED recipe, the accepted change now also writes
+        // through to Supabase for real, so it survives closing the popup
+        // and shows up correctly the next time this recipe is opened or
+        // read by the Schedule Preview/Shopping List. A fresh,
+        // never-saved recipe (savedRecipeId still null) is unaffected —
+        // there's nothing real to update yet, Save still handles that.
+        if (savedRecipeId) {
+          RPGACE.utils.toast('💾 Saving the update to this recipe...', '#9B59B6', 1800);
+          self.logic._updateSavedRecipe(savedRecipeId, recipe, function(err) {
+            if (err) {
+              RPGACE.utils.toast('⚠️ Card updated, but saving it failed: ' + err + ' — try again or it will be lost on reload', '#CC4A4A', 4500);
+              return;
+            }
+            RPGACE.utils.toast('✅ Recipe updated and saved for real', '#4caf82', 2400);
+          });
+        }
       };
       self._applyRecipeUpdate = applyRecipeUpdate;
 
@@ -38607,7 +38714,18 @@ RPGACE.register('cookingOracle', {
                     aisleHeading.textContent = '📍 ' + currentAisle;
                     usageBox.appendChild(aisleHeading);
                   }
-                  var text = u.name + ' — need ' + u.toBuy + ' ' + (u.unit || '') + (u.have > 0 ? ' (have ' + u.have + ' already)' : '');
+                  // H24 (Sep 17 2026, 8th pass, real Alex ask) — the old
+                  // wording ("need X, have Y already") read as if X were
+                  // the TOTAL requirement, when X has always really been
+                  // the real SHORTFALL (toBuy = amount - have) — a real,
+                  // checkable example: shallot showed "need 2 medium
+                  // (have 4 already)" when the recipe's own real total is
+                  // 6, have is 4, so 2 more is genuinely correct as a
+                  // number but ambiguous as written. Now says "X more"
+                  // plus the real total, unambiguous either way.
+                  var text = u.have > 0
+                    ? (u.name + ' — need ' + u.toBuy + ' more ' + (u.unit || '') + ' (have ' + u.have + ', ' + u.amount + ' total needed)')
+                    : (u.name + ' — need ' + u.toBuy + ' ' + (u.unit || ''));
                   // H21 (Sep 17 2026) — real substitute name surfaced on
                   // an orange row (never invented — _findSubstitute only
                   // ever returns a real, currently in-stock match). H24
@@ -39208,8 +39326,13 @@ RPGACE.register('cookingOracle', {
                 var sub = self.logic._findSubstitute(ingName, pantry.aisleIndex, r.ingredient_id, subRatings);
                 if (sub) { subName = sub.name; subConfirmed = !!confirmedSubs[r.ingredient_id + '::' + subName]; }
               }
-              var lblText = (subConfirmed ? '✓ ' : '') + meta.icon + ' ' + ingName + ' — need ' + r.to_buy_amount + ' ' + (r.needed_unit || '')
-                + (r.have_amount ? ' (have ' + r.have_amount + ' already)' : '');
+              // H24 (Sep 17 2026, 8th pass, real Alex ask) — same
+              // unambiguous "X more" wording fix as the Schedule
+              // Preview's own buyBefore text (rule 8, same real fix
+              // applied everywhere this pattern renders).
+              var lblText = (subConfirmed ? '✓ ' : '') + meta.icon + ' ' + ingName + (r.have_amount > 0
+                ? (' — need ' + r.to_buy_amount + ' more ' + (r.needed_unit || '') + ' (have ' + r.have_amount + ', ' + r.needed_amount + ' total needed)')
+                : (' — need ' + r.to_buy_amount + ' ' + (r.needed_unit || '')));
               if (subName) lblText += ' — have a substitute in stock: ' + subName;
               lbl.textContent = lblText;
               // H22 (Sep 17 2026) — real, honest 2-step shopping flow: this
@@ -40510,6 +40633,64 @@ RPGACE.register('cookingOracle', {
         })
         .then(function() { cb(null, recipeId); })
         .catch(function(e) { cb(e.message || 'save failed'); });
+    },
+
+    // H24 (Sep 17 2026, 9th pass) — real, structural bug found and fixed,
+    // not just a new feature: the RECIPE_UPDATE_JSON critique -> diff ->
+    // Accept/Deny pipeline (ui._showRecipeCard's applyRecipeUpdate) has
+    // ALWAYS only ever mutated the open card's own in-memory `recipe`
+    // object — _save/_saveRecipeRow above only ever INSERTs (confirmed by
+    // direct grep, exactly one real `secureWrite('recipes','insert',...)`
+    // call in the whole file), so every accepted update on an
+    // ALREADY-SAVED recipe (the "Update Method for this" banner, a raw
+    // typed critique, and now the "Update recipe to match current stock"
+    // button) silently never reached Supabase — closing the popup or
+    // reloading the page discarded it. Real, direct cause of Alex's own
+    // repeated report that a recipe's steps never actually end up
+    // showing real measurements even after asking for an update. Fixed
+    // with a real, dedicated UPDATE path (rule 8 — reuses the same real
+    // ingredient-resolve step _save already does, never re-derives it):
+    // UPDATEs the recipes row's title/steps in place, then replaces
+    // recipe_ingredients wholesale (a real, safe delete+reinsert —
+    // confirmed via direct schema query that nothing else has a foreign
+    // key onto recipe_ingredients.id, so this can never orphan a
+    // reference) rather than attempting a fragile per-row diff-merge.
+    _updateSavedRecipe: function(recipeId, recipe, cb) {
+      var self = RPGACE.modules.cookingOracle;
+      var ingredients = recipe.ingredients || [];
+      RPGACE.sb.secureWrite('recipes', 'update', {
+        title: recipe.title || 'Untitled recipe',
+        steps: recipe.steps || [],
+      }, 'id=eq.' + recipeId)
+        .then(function() {
+          if (!ingredients.length) return [];
+          return new Promise(function(resolve, reject) {
+            var resolved = new Array(ingredients.length);
+            var pending = ingredients.length;
+            var failed = null;
+            ingredients.forEach(function(ing, i) {
+              self.logic._resolveIngredient(ing.name, function(err, id) {
+                if (failed) return;
+                if (err) { failed = err; reject(err); return; }
+                resolved[i] = id;
+                pending--;
+                if (pending === 0) resolve(resolved);
+              });
+            });
+          });
+        })
+        .then(function(resolvedIds) {
+          return RPGACE.sb.secureWrite('recipe_ingredients', 'delete', null, 'recipe_id=eq.' + recipeId)
+            .then(function() {
+              if (!resolvedIds || !resolvedIds.length) return null;
+              var riPayload = ingredients.map(function(ing, i) {
+                return { recipe_id: recipeId, ingredient_id: resolvedIds[i], amount: ing.amount, unit: ing.unit || null, grams_estimate: (typeof ing.grams_estimate === 'number') ? ing.grams_estimate : null, is_separable: !!ing.is_separable };
+              });
+              return RPGACE.sb.secureWrite('recipe_ingredients', 'insert', riPayload);
+            });
+        })
+        .then(function() { cb(null); })
+        .catch(function(e) { cb(e.message || 'update failed'); });
     },
 
     // Real, separate journal-row insert (rule 8) - shared by _saveRecipeRow
@@ -42235,6 +42416,33 @@ RPGACE.register('cookingOracle', {
     // 'prep_while_cooking' occupy neither (hands only, active portion only).
     // Hands are a single, non-configurable resource (capacity 1) — never
     // double-booked, matching Alex's own hard constraint verbatim.
+    // H24 (Sep 17 2026, 9th pass, real Alex ask: "marination of beef
+    // should be in beginning, as marinating for longer is a huge
+    // benefit, more prep should pass in the beginning to make actual
+    // cooking less stressful") — a real, structural scheduling fix, not
+    // just a reorder hack. The OLD version fully assigned start times to
+    // EVERY step of one recipe (the current longest, by total duration)
+    // before ever considering the NEXT recipe's own first step — meaning
+    // a shorter recipe's genuinely early, hands-only prep (which could
+    // physically start the moment hands are free) still had to wait for
+    // its turn in chain-processing order, not real resource availability.
+    // Real, generalized fix: at every iteration, look at EVERY recipe's
+    // own next unscheduled step (each is only ever gated by that SAME
+    // recipe's own prior step, per this function's own established "steps
+    // run in the order Oracle gave them" per-recipe contract — never by a
+    // different recipe) and schedule whichever one can genuinely start
+    // soonest — a real, textbook greedy interleave, not a fixed
+    // per-recipe order. This naturally front-loads prep work (including
+    // any marination folded into a prep step) as early as hands/oven/
+    // stove capacity genuinely allows, since a short, hands-only prep
+    // step usually clears the earliest-start check well before a longer
+    // recipe's own later, equipment-heavy steps do. The underlying
+    // resource-feasibility engine (_earliestFeasibleStart, hands/oven/
+    // stove capacity) is completely untouched — only the ORDER steps are
+    // proposed to it changes. A genuine tie still favors the original
+    // longest-recipe-first order (chains' own array order), preserving
+    // the same deterministic behaviour as before whenever there's no
+    // real conflict to resolve.
     _computeSessionSchedule: function(recipes, cfg) {
       var self = RPGACE.modules.cookingOracle;
       var ovenCap = (cfg && cfg.oven_slots != null) ? cfg.oven_slots : 2;
@@ -42243,8 +42451,8 @@ RPGACE.register('cookingOracle', {
       var chains = (recipes || []).map(function(r) {
         var steps = (r.steps || []).slice().sort(function(a, b) { return (a.order || 0) - (b.order || 0); });
         var total = steps.reduce(function(sum, s) { return sum + (s.active_duration_min || 0) + (s.passive_duration_min || 0); }, 0);
-        return { id: r.id, title: r.title || 'Recipe', steps: steps, totalMinutes: total };
-      }).sort(function(a, b) { return b.totalMinutes - a.totalMinutes; }); // longest first
+        return { id: r.id, title: r.title || 'Recipe', steps: steps, totalMinutes: total, nextIndex: 0, prevEnd: 0 };
+      }).sort(function(a, b) { return b.totalMinutes - a.totalMinutes; }); // real tiebreak order, longest first
 
       var sequentialMinutes = chains.reduce(function(s, c) { return s + c.totalMinutes; }, 0);
 
@@ -42253,31 +42461,51 @@ RPGACE.register('cookingOracle', {
       var stoveBusy = [];  // capacity stoveCap
       var blocks = [];
 
-      chains.forEach(function(chain) {
-        var prevEnd = 0; // this recipe's own step-dependency clock — steps run in the order Oracle gave them
-        chain.steps.forEach(function(step) {
+      // Real, explicit real-only priority (never a fabricated one): a
+      // genuine "prep" step (prep_before_cooking/prep_while_cooking, the
+      // 2 real non-equipment step types this project already defines,
+      // rule 7 — never invented here) beats a "cooking" step ONLY when
+      // both are feasible at the exact same earliest real time — this
+      // directly answers "more prep should pass in the beginning" for
+      // the real ties this greedy search actually finds, without ever
+      // delaying a resource-optimal placement to do it (a step that
+      // could start EARLIER always wins regardless of type).
+      var isPrepType = function(t) { return t === 'prep_before_cooking' || t === 'prep_while_cooking'; };
+      var remaining = chains.filter(function(c) { return c.steps.length > 0; }).length;
+      while (remaining > 0) {
+        var bestChain = null, bestStart = null, bestEquip = null, bestCap = 0, bestActive = 0, bestTotal = 0, bestIsPrep = false;
+        chains.forEach(function(chain) {
+          if (chain.nextIndex >= chain.steps.length) return;
+          var step = chain.steps[chain.nextIndex];
           var active = step.active_duration_min || 0;
-          var passive = step.passive_duration_min || 0;
-          var total = active + passive;
-          var minStart = prevEnd;
-
+          var total = active + (step.passive_duration_min || 0);
           var equipIntervals = null, equipCap = 0;
           if (step.type === 'baking') { equipIntervals = ovenBusy; equipCap = ovenCap; }
           else if (step.type === 'actual_cooking') { equipIntervals = stoveBusy; equipCap = stoveCap; }
-
-          var start = self.logic._earliestFeasibleStart(minStart, active, total, handsBusy, equipIntervals, equipCap);
-          if (active > 0) handsBusy.push([start, start + active]);
-          var equipEnd = start + total;
-          if (equipIntervals && equipCap > 0) equipIntervals.push([start, equipEnd]);
-
-          blocks.push({
-            recipeId: chain.id, recipeTitle: chain.title, type: step.type,
-            description: step.description || '', start: start, end: equipEnd,
-            ingredientsUsed: step.ingredients_used || [], // H14 - carried through for the schedule preview's own real measurement chips
-          });
-          prevEnd = equipEnd;
+          var candidateStart = self.logic._earliestFeasibleStart(chain.prevEnd, active, total, handsBusy, equipIntervals, equipCap);
+          var candidateIsPrep = isPrepType(step.type);
+          var better = bestChain === null || candidateStart < bestStart
+            || (candidateStart === bestStart && candidateIsPrep && !bestIsPrep);
+          if (better) {
+            bestChain = chain; bestStart = candidateStart; bestEquip = equipIntervals; bestCap = equipCap; bestActive = active; bestTotal = total; bestIsPrep = candidateIsPrep;
+          }
         });
-      });
+
+        var winStep = bestChain.steps[bestChain.nextIndex];
+        var start = bestStart;
+        if (bestActive > 0) handsBusy.push([start, start + bestActive]);
+        var equipEnd = start + bestTotal;
+        if (bestEquip && bestCap > 0) bestEquip.push([start, equipEnd]);
+
+        blocks.push({
+          recipeId: bestChain.id, recipeTitle: bestChain.title, type: winStep.type,
+          description: winStep.description || '', start: start, end: equipEnd,
+          ingredientsUsed: winStep.ingredients_used || [], // H14 - carried through for the schedule preview's own real measurement chips
+        });
+        bestChain.prevEnd = equipEnd;
+        bestChain.nextIndex++;
+        if (bestChain.nextIndex >= bestChain.steps.length) remaining--;
+      }
 
       var makespan = blocks.reduce(function(m, b) { return Math.max(m, b.end); }, 0);
       return { blocks: blocks, totalMinutes: makespan, sequentialMinutes: sequentialMinutes };
