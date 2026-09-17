@@ -1,0 +1,164 @@
+COOKING MODULE BUTTON/UI UNIFORMITY — /paranoia+/CEO+/GODMODE+/drift COMPILE
+==========================================================================
+
+ALEX'S VERBATIM ASK
+------------------------------------------------------------
+"Now start UI accessing the cooking Dom and all buttons inside, they are
+not uniform and rather poorly structured, I want neat and tidy display
+with intention. Use /impeccable with /drift /CEO /paranoia /Godmode"
+
+SCOPE OF THIS PASS
+------------------------------------------------------------
+This is Loop 1 of /CEO: compile real evidence → interrogate real open
+forks → (next) paranoia-advised draft → drift-check → report → Alex
+approves → THEN execute. Nothing has been rewritten yet. Per /paranoia's
+own procedure this compile stage runs GODMODE evidence-gathering first,
+real Council-of-5-shaped scrutiny on what was found, and ends by handing
+Alex the real open forks that would change the actual build — never
+guessed at.
+
+STEP 1 — /impeccable (real, automated, free scan)
+------------------------------------------------------------
+`npx impeccable detect index.html style.css` — 35 anti-patterns, mostly
+app-wide static-HTML findings (tiny-text/wide-tracking/dark-glow) that
+don't reach cookingOracle's own dynamically-built DOM (Impeccable's
+scanner reads static markup, not JS-generated popups — a real, known
+scope limit, not a bug). One finding IS directly relevant and confirmed
+present in cookingOracle's own code: `[side-tab] border-left:3px solid`
+— the exact pattern `_renderIngredientStatusRow` and this session's own
+H22 basket rows use for every colored status row. Impeccable's own
+verdict: "the most recognizable tell of AI-generated UIs... use a
+subtler accent or remove it entirely." Flagged as a real finding, not
+acted on yet — see Open Fork 4 below.
+
+STEP 2 — GODMODE evidence pass (real, direct code read, not assumed)
+------------------------------------------------------------
+Every one of cookingOracle's 42 real `document.createElement('button')`
+call sites was extracted and catalogued directly from `rpgace_core.js`
+(lines 36152-40860). Real, counted findings:
+
+**Padding — 12 distinct values in live use, no shared scale**:
+`12px 14px`, `11px`, `10px`, `9px`, `8px`, `6px 12px`, `5px 10px`,
+`5px 8px`, `4px 10px`, `3px 10px`, `2px 4px`, `8px 6px`. A "primary"
+full-width action button (Generate/Save/Accept/Schedule) is padded
+anywhere from 8px to 12px 14px with no real logic tying the choice to
+the button's actual role — mostly just whatever felt right the day each
+one was written.
+
+**Font-size — 5 distinct values, one is a real outlier**: 14px (used
+once, the ConID-hub row button), 13px (most "primary" actions), 12px
+(some secondary actions), 11px (most secondary/tertiary/inline actions),
+and a genuine one-off **11.5px** (the Current Stock tab-switcher
+button) — a fractional pixel value that exists nowhere else in the
+entire module, real evidence of an un-intentional one-off rather than a
+deliberate choice.
+
+**Border-radius**: 8px (most full-width buttons), 6px (most inline row
+actions), 4px (the timer-start button, alone), 16px (the dish-type
+chip), plus one asymmetric `0 8px 8px 0` (the stock-match-finder recipe
+row, which is really a button styled as a row, not a normal button).
+
+**Color semantics — two real "primary CTA" colors coexist with no
+documented rule**: green (`rgba(76,175,130,...)`) is used for
+Generate/Accept/Confirm/Bought/Save-Settings/Set-stock/Add-equipment;
+gold (`rgba(201,168,76,...)`) is used for Save-to-Journal/Schedule-cook-
+time/Revert-to-draft. This may be a real, defensible semantic split
+(gold = "commits to the calendar/journal," green = "commits data/stock")
+— but it was never actually decided or written down anywhere, so a
+future button gets whichever color felt right that day, same as the
+padding problem.
+
+**Real, concrete bugs found (not just inconsistency)**:
+1. Two of the three "✕→❌" delete buttons (pantry-stock delete,
+   equipment delete) never set `font-family:Rajdhani,sans-serif` at
+   all — they silently fall back to the browser default sans-serif,
+   rendering in a visibly different typeface than every other button
+   in the app. The third (session-recipe delete) does set it correctly.
+   A real, fixable font-family gap, not a design-taste question.
+2. This same session's own H22 "🧺 Add to basket" button sets its
+   loading state to a bare `'…'` — every OTHER async button in the
+   module (Save/Add-to-Session/Build-list/Estimate-Nutrition/Asking-
+   Oracle/Reverting) uses the established `'⏳ <verb>...'` convention.
+   A real, self-inflicted inconsistency from the same session that
+   shipped it, caught only by this pass's own systematic sweep.
+
+**Real, structural inconsistency in "undo/reversible action" pattern —
+3 genuinely different interaction models coexist for what's
+conceptually the same real idea (reverse a state that isn't destructive
+yet)**:
+   (a) 2-click arm→confirm, icon-only `✕`→`❌` (recipe/pantry/equipment
+       delete) — used for genuinely destructive row removal.
+   (b) single-click, icon-only `↩`, no confirm (H22's new basket-undo)
+       — used for a cheap, non-destructive boolean flip.
+   (c) single-click, full-text-labeled button, no confirm ("↩ Revert to
+       draft (unschedule)", H20) — used for a real state-machine
+       transition that also cleans up a linked calendar row.
+   None of these are wrong in isolation — a genuinely destructive DELETE
+   deserves more friction than a reversible boolean flip — but the
+   pattern was never named or written down, so a future add is a coin
+   flip on which of the 3 it should copy.
+
+STEP 3 — real Council-of-5-shaped scrutiny on what a fix should look
+like (honest pros/cons, not reflexive "yes, build it")
+------------------------------------------------------------
+**The real fix, if approved**: one shared button-styling helper (rule 8
+— dedup, not 42 hand-rolled `cssText` strings) inside cookingOracle,
+something like `ui._mkBtn(text, variant, opts)` returning a real,
+consistently-styled `<button>`, with a small, named set of real
+variants derived directly from the ACTUAL roles already present in the
+evidence above (primary/secondary/tertiary/inline-action/icon-ghost/
+delete-arm) rather than an invented abstract system. Every one of the 42
+real call sites gets migrated to call it.
+
+**Real risk, named honestly**: 42 call sites is real surface area — a
+mis-migrated button (wrong variant, dropped onclick, lost a loading-
+state swap) is a real regression risk on features that mostly work
+today, several still flagged "untested by Alex's own hand." This needs
+a real, careful pass with a real headless-Chromium re-verification of
+every touched popup afterward (re-running H16/H18/H19/H20/H21/H22's own
+existing suites, which between them already click through most of these
+buttons, plus new assertions for any button none of those suites cover).
+
+**Real "why NOT to build this now" case, stated honestly**: the Cooking
+module already has a large real hand-test backlog (H11-H22 are ALL
+still flagged "untested by Alex's own hand"). A pure visual-consistency
+pass adds zero new capability and touches almost every popup in the
+module at once — if something breaks, it could break several different
+untested features simultaneously, making it harder to isolate which
+change caused which regression during his eventual hand-test pass. The
+counter-case: doing it now, in one deliberate pass with full headless
+verification, is cheaper and safer than doing it piecemeal later once
+more features (and more inconsistent buttons) have been added on top.
+Given Alex explicitly asked for this now, by name, with the heaviest
+protocols in the project, the real weight favors proceeding — but the
+risk is named here, not hidden.
+
+STEP 4 — real open forks that would change the actual build
+(per /interrogation's own rule: never guess at anything consequential)
+------------------------------------------------------------
+Put to Alex directly via AskUserQuestion, not assumed:
+1. Scope — cookingOracle only, or should the resulting shared button
+   system become the new standard other modules migrate to over time?
+2. Primary-CTA color — keep the existing green/gold semantic split
+   (formalized and documented), or collapse to one canonical color?
+3. The basket-undo interaction (single-click, no confirm) — keep it as
+   a deliberately lighter-weight pattern than delete's 2-click
+   arm/confirm, or bring it in line with delete's own discipline?
+4. The `border-left:3px solid` "side-tab" pattern Impeccable flagged,
+   used by every colored status row (not just buttons) — worth a real
+   visual redesign in the same pass, or leave status-row styling
+   untouched and scope this purely to buttons as literally asked?
+
+Real, low-risk fixes bundled in regardless of the answers above (Tier 1,
+not worth asking about): the 2 missing `font-family` declarations, and
+the `'…'` → `'⏳ Adding...'` loading-text fix on the basket button.
+
+NEXT STEPS
+------------------------------------------------------------
+Alex's real answers land via AskUserQuestion in the same turn this file
+was written. Once in hand: draft the actual variant set + `_mkBtn`
+helper, migrate all 42 real call sites, re-verify via headless Chromium
+(every touched popup + full re-runs of every existing H-series suite),
+ship, and update this `ceo_plans` row's `status`/`notes` with the real
+outcome.
+==========================================================================

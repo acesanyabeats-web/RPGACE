@@ -36414,6 +36414,142 @@ RPGACE.register('cookingOracle', {
   // ============================================================
   ui: {
 
+    // H23 (Sep 17 2026, real Alex ask — "the cooking DOM and all buttons
+    // inside are not uniform and rather poorly structured, I want neat
+    // and tidy display with intention" — run through /impeccable +
+    // /GODMODE + /CEO + /interrogation + /paranoia's own compile-then-
+    // interrogate-then-execute shape; full record: records/2026-09/
+    // cooking_ui_uniformity_paranoia_compile_2026-09-17.txt) — the real
+    // shared button-style token set every one of this module's 42 real
+    // button call sites now draws from (rule 8), replacing 12 scattered
+    // padding values, 5 font-sizes (one a stray 11.5px outlier), and 4
+    // border-radius values with a small, named set of REAL variants
+    // derived directly from the roles already present in the module —
+    // never an invented abstract design system. Alex's own confirmed
+    // scope: Cooking module only (not app-wide yet); the existing
+    // green="commits data/stock"/gold="commits to journal/calendar"
+    // split is now a real, formalized rule instead of an undocumented
+    // habit — no button's actual color changes, the SPLIT itself is
+    // just now a real named contract future buttons must follow.
+    BTN_VARIANTS: {
+      // Strong, full-width call-to-action — green = commits real DATA
+      // or STOCK (Generate/Confirm/Bought/Save Settings/Set stock/Add
+      // equipment).
+      primary: 'width:100%;padding:11px;background:rgba(76,175,130,0.12);border:1px solid rgba(76,175,130,0.35);border-radius:8px;color:var(--green);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;',
+      // Same strength/shape as primary — gold = commits to the real
+      // JOURNAL or CALENDAR (Save to Journal/Schedule cook time/Accept
+      // schedule/Revert to draft).
+      primaryGold: 'width:100%;padding:11px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);border-radius:8px;color:var(--gold);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;',
+      // Full-width, bordered, real-text-color — a genuine, notable
+      // optional action (e.g. "+ Add another saved recipe").
+      secondary: 'width:100%;padding:9px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;',
+      // Same shape as secondary, muted text — a lower-emphasis optional
+      // action (e.g. "⚙ Habits Settings", "📦 Pantry").
+      ghost: 'width:100%;padding:9px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;',
+      // No border/background at all — a plain text-link action (e.g.
+      // "Done for now", "← Back to edit", "Close").
+      plainLink: 'width:100%;padding:8px;background:none;border:none;border-radius:8px;color:var(--muted);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;',
+      // Row-context (inline, not full-width) bordered small action —
+      // Bought/Add to basket/Redo/Confirm/timer-start/+Add ingredient.
+      // opts.color/opts.bg on _mkBtn override the neutral default for a
+      // colored inline action.
+      inline: 'padding:5px 10px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;',
+      // Row-context icon-only, muted — a real, deliberately LIGHTER
+      // reversible action than delete (e.g. the basket "↩" undo, a
+      // cheap non-destructive boolean flip — Alex's own confirmed call:
+      // single-click, no arm/confirm, since nothing real is lost).
+      iconGhost: 'padding:5px 8px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;',
+      // Row-context icon-only, real 2-click arm/confirm delete (see
+      // _mkDeleteArmBtn below — this string alone doesn't wire the
+      // interaction). font-family was silently missing on 2 of the 3
+      // original hand-rolled copies this consolidates — a real bug,
+      // now impossible to reintroduce since there's only one real copy.
+      deleteArm: 'background:none;border:none;color:rgba(226,84,84,.4);font-size:13px;cursor:pointer;padding:2px 4px;flex-shrink:0;font-family:Rajdhani,sans-serif;',
+      // Rounded selector chip — dish-type/narrow-down picks only.
+      pillChip: 'padding:6px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:16px;color:var(--text);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;',
+      // Segmented tab-switcher (Current Stock's Pantry/Fridge/Freezer/
+      // Equipment tabs) — font-size corrected from a real stray 11.5px
+      // one-off to the module's real 11px scale.
+      tab: 'flex:1;min-width:88px;padding:8px 6px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;',
+      // The module-hub's own 3-option chooser card (label + sub-line) —
+      // a real, deliberately distinct navigational-card role, not a
+      // normal action button; kept as its own named variant rather than
+      // a local hardcoded string so it's still one real, checkable
+      // entry in this same token set (rule 8).
+      hubCard: 'width:100%;text-align:left;padding:12px 14px;margin-bottom:10px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;',
+      // A real, full-width, left-aligned, selectable LIST item (a
+      // Suggest-5-ideas result) — genuinely distinct from a normal
+      // action button, kept as its own named role rather than forced
+      // into secondary/ghost.
+      listItem: 'display:block;width:100%;text-align:left;padding:9px 12px;margin-bottom:6px;background:rgba(76,175,130,0.08);border:1px solid rgba(76,175,130,0.25);border-radius:8px;color:var(--text);font-size:13px;cursor:pointer;font-family:Rajdhani,sans-serif;',
+      // The stock-match-finder's own recipe-card row (makeable vs. not,
+      // border color set dynamically via opts.borderColor). Uses the
+      // border-left "side-tab" treatment — Alex's own confirmed answer
+      // was to leave that visual pattern out of scope this pass, so
+      // this variant only wraps the EXISTING look in the shared token
+      // system for real code-structure consistency (rule 8), it does
+      // not change how it looks.
+      recipeCard: 'display:block;width:100%;text-align:left;padding:10px 12px;margin-bottom:8px;background:rgba(255,255,255,0.03);border-radius:0 8px 8px 0;color:var(--text);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;',
+    },
+
+    // Real, shared button factory (rule 8) — every one of this module's
+    // real buttons now goes through this ONE function instead of a
+    // hand-rolled `document.createElement('button')` + its own
+    // `style.cssText` literal. `opts.color`/`opts.bg`/`opts.borderColor`
+    // append AFTER the base variant string, so they correctly override
+    // it for a real per-row dynamic color (e.g. the 5-color ingredient-
+    // status meta) without needing a whole new variant per color.
+    _mkBtn: function(text, variant, opts) {
+      var self = RPGACE.modules.cookingOracle;
+      opts = opts || {};
+      var btn = document.createElement('button');
+      btn.textContent = text;
+      var css = self.ui.BTN_VARIANTS[variant] || self.ui.BTN_VARIANTS.secondary;
+      if (opts.color) css += 'color:' + opts.color + ';';
+      if (opts.bg) css += 'background:' + opts.bg + ';';
+      if (opts.borderColor) css += 'border-color:' + opts.borderColor + ';';
+      if (opts.extra) css += opts.extra;
+      btn.style.cssText = css;
+      if (opts.title) btn.title = opts.title;
+      return btn;
+    },
+
+    // Real, shared 2-click arm/confirm delete button (rule 8) —
+    // consolidates 3 near-identical hand-rolled copies (session-recipe/
+    // pantry-stock/equipment delete) into one real implementation. The
+    // shared part is purely the interaction state machine (armed/busy/
+    // 3s auto-disarm) and the consistent styling — each caller's own
+    // real delete operation and its own real success/failure UI
+    // (differing error-message shapes, a toast here, a bare row.remove
+    // there) stays exactly as distinct as it always was, passed in as
+    // `onConfirm(doneCb)`. The caller does its own real work and its
+    // own real UI response, then calls `doneCb(err)` purely so this
+    // shared button knows whether to reset itself (a failure) or leave
+    // itself alone (a success — the caller's own code already removed
+    // the row or closed the popup).
+    _mkDeleteArmBtn: function(onConfirm) {
+      var self = RPGACE.modules.cookingOracle;
+      var btn = self.ui._mkBtn('✕', 'deleteArm');
+      var armed = false, busy = false;
+      btn.onclick = function() {
+        if (busy) return;
+        if (!armed) {
+          armed = true; btn.textContent = '❌'; btn.style.color = '#CC4A4A';
+          setTimeout(function() { if (busy) return; armed = false; btn.textContent = '✕'; btn.style.color = 'rgba(226,84,84,.4)'; }, 3000);
+          return;
+        }
+        busy = true; btn.textContent = '…';
+        onConfirm(function(err) {
+          if (err) {
+            busy = false; armed = false; btn.textContent = '✕'; btn.style.color = 'rgba(226,84,84,.4)';
+          }
+          // A real success needs no reset here — the caller's own
+          // onConfirm already removed the row or closed the popup.
+        });
+      };
+      return btn;
+    },
+
     openMain: function() {
       var self = RPGACE.modules.cookingOracle;
       // H6 - resume an in-progress cook session instead of dropping straight
@@ -36470,8 +36606,7 @@ RPGACE.register('cookingOracle', {
       var box = pop.box;
 
       var mkBtn = function(label, sub, onClick) {
-        var btn = document.createElement('button');
-        btn.style.cssText = 'width:100%;text-align:left;padding:12px 14px;margin-bottom:10px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:14px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+        var btn = self.ui._mkBtn('', 'hubCard');
         var top = document.createElement('div');
         top.textContent = label;
         btn.appendChild(top);
@@ -36578,9 +36713,7 @@ RPGACE.register('cookingOracle', {
       errBox.style.cssText = 'font-size:12px;color:#CC4A4A;margin-bottom:10px;display:none;';
       box.appendChild(errBox);
 
-      var revertBtn = document.createElement('button');
-      revertBtn.textContent = '↩ Revert to draft (unschedule)';
-      revertBtn.style.cssText = 'width:100%;padding:11px;margin-bottom:8px;background:rgba(226,168,61,0.12);border:1px solid rgba(226,168,61,0.35);border-radius:8px;color:var(--gold);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var revertBtn = self.ui._mkBtn('↩ Revert to draft (unschedule)', 'primaryGold', { extra: 'margin-bottom:8px;' });
       revertBtn.onclick = function() {
         revertBtn.disabled = true;
         revertBtn.textContent = '⏳ Reverting...';
@@ -36601,9 +36734,7 @@ RPGACE.register('cookingOracle', {
       };
       box.appendChild(revertBtn);
 
-      var closeBtn = document.createElement('button');
-      closeBtn.textContent = 'Close';
-      closeBtn.style.cssText = 'width:100%;padding:8px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var closeBtn = self.ui._mkBtn('Close', 'ghost');
       closeBtn.onclick = function() { pop.close(); };
       box.appendChild(closeBtn);
     },
@@ -36666,9 +36797,7 @@ RPGACE.register('cookingOracle', {
       errBox.style.cssText = 'font-size:12px;color:#CC4A4A;margin-bottom:10px;display:none;';
       box.appendChild(errBox);
 
-      var genBtn = document.createElement('button');
-      genBtn.textContent = '⚡ Generate';
-      genBtn.style.cssText = 'width:100%;padding:11px;background:rgba(76,175,130,0.12);border:1px solid rgba(76,175,130,0.35);border-radius:8px;color:var(--green);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
+      var genBtn = self.ui._mkBtn('⚡ Generate', 'primary', { extra: 'margin-bottom:8px;' });
       genBtn.onclick = function() {
         var d = desc.value.trim();
         if (!d) { RPGACE.utils.toast('⚠️ Describe what you want to cook first', '#E2A83D', 2500); return; }
@@ -36689,9 +36818,7 @@ RPGACE.register('cookingOracle', {
       };
       box.appendChild(genBtn);
 
-      var settingsBtn = document.createElement('button');
-      settingsBtn.textContent = '⚙ Habits Settings';
-      settingsBtn.style.cssText = 'width:100%;padding:8px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var settingsBtn = self.ui._mkBtn('⚙ Habits Settings', 'ghost');
       settingsBtn.onclick = function() { pop.close(); self.ui._showSettings(cfg); };
       box.appendChild(settingsBtn);
 
@@ -36701,9 +36828,7 @@ RPGACE.register('cookingOracle', {
       // (defaulting to the Pantry tab) instead of the old standalone
       // _showPantry popup, which is now retired — one real stock UI, not
       // two (rule 8).
-      var pantryBtn = document.createElement('button');
-      pantryBtn.textContent = '📦 Pantry';
-      pantryBtn.style.cssText = 'width:100%;padding:8px;margin-top:6px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var pantryBtn = self.ui._mkBtn('📦 Pantry', 'ghost', { extra: 'margin-top:6px;' });
       pantryBtn.onclick = function() { pop.close(); self.ui._showCurrentStock('pantry'); };
       box.appendChild(pantryBtn);
 
@@ -36712,9 +36837,7 @@ RPGACE.register('cookingOracle', {
       // (this form is reachable mid-session via the session builder's own
       // "+ Add another recipe... or generate a new one" path below).
       if (self._session && self._session.recipeIds && self._session.recipeIds.length) {
-        var backBtn = document.createElement('button');
-        backBtn.textContent = '← Back to cook session (' + self._session.recipeIds.length + ' recipe' + (self._session.recipeIds.length === 1 ? '' : 's') + ')';
-        backBtn.style.cssText = 'width:100%;padding:8px;margin-top:6px;background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+        var backBtn = self.ui._mkBtn('← Back to cook session (' + self._session.recipeIds.length + ' recipe' + (self._session.recipeIds.length === 1 ? '' : 's') + ')', 'plainLink', { extra: 'margin-top:6px;' });
         backBtn.onclick = function() { pop.close(); self.ui._showSessionBuilder(); };
         box.appendChild(backBtn);
       }
@@ -36788,9 +36911,7 @@ RPGACE.register('cookingOracle', {
         });
       };
       DISH_TYPES.forEach(function(t) {
-        var b = document.createElement('button');
-        b.textContent = t;
-        b.style.cssText = 'padding:6px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:16px;color:var(--text);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+        var b = self.ui._mkBtn(t, 'pillChip');
         b.onclick = function() { selectedType = (selectedType === t) ? null : t; paintTypeButtons(); };
         typeButtons.push({ name: t, btn: b });
         typeRow.appendChild(b);
@@ -36815,9 +36936,7 @@ RPGACE.register('cookingOracle', {
       ideasBox.style.cssText = 'margin-bottom:12px;';
       box.appendChild(ideasBox);
 
-      var suggestBtn = document.createElement('button');
-      suggestBtn.textContent = '🎲 Suggest 5 ideas';
-      suggestBtn.style.cssText = 'width:100%;padding:9px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
+      var suggestBtn = self.ui._mkBtn('🎲 Suggest 5 ideas', 'secondary', { extra: 'margin-bottom:8px;' });
       suggestBtn.onclick = function() {
         suggestBtn.disabled = true;
         suggestBtn.textContent = '⏳ Asking Oracle...';
@@ -36828,9 +36947,7 @@ RPGACE.register('cookingOracle', {
           suggestBtn.textContent = '🎲 Suggest 5 ideas';
           if (err) { errBox.textContent = '⚠️ ' + err; errBox.style.display = 'block'; return; }
           ideas.forEach(function(idea) {
-            var ib = document.createElement('button');
-            ib.textContent = idea;
-            ib.style.cssText = 'display:block;width:100%;text-align:left;padding:9px 12px;margin-bottom:6px;background:rgba(76,175,130,0.08);border:1px solid rgba(76,175,130,0.25);border-radius:8px;color:var(--text);font-size:13px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            var ib = self.ui._mkBtn(idea, 'listItem');
             ib.onclick = function() {
               pop.close();
               var pop2 = RPGACE.modules.dashDeck._popup({
@@ -36849,9 +36966,7 @@ RPGACE.register('cookingOracle', {
       };
       box.appendChild(suggestBtn);
 
-      var genBtn = document.createElement('button');
-      genBtn.textContent = '✅ Generate with this info';
-      genBtn.style.cssText = 'width:100%;padding:11px;background:rgba(76,175,130,0.12);border:1px solid rgba(76,175,130,0.35);border-radius:8px;color:var(--green);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
+      var genBtn = self.ui._mkBtn('✅ Generate with this info', 'primary', { extra: 'margin-bottom:8px;' });
       genBtn.onclick = function() {
         var parts = [description];
         if (selectedType) parts.push(selectedType.toLowerCase() + ' dish');
@@ -36861,9 +36976,7 @@ RPGACE.register('cookingOracle', {
       };
       box.appendChild(genBtn);
 
-      var backBtn = document.createElement('button');
-      backBtn.textContent = '← Back to edit';
-      backBtn.style.cssText = 'width:100%;padding:8px;background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var backBtn = self.ui._mkBtn('← Back to edit', 'plainLink');
       backBtn.onclick = function() {
         pop.close();
         self.logic._loadConfig(function(c) { self.ui._showGenerateForm(c || {}, description); });
@@ -37201,9 +37314,7 @@ RPGACE.register('cookingOracle', {
       addIngUnit.type = 'text';
       addIngUnit.placeholder = 'unit';
       addIngUnit.style.cssText = 'flex:1;min-width:56px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:6px 8px;';
-      var addIngBtn = document.createElement('button');
-      addIngBtn.textContent = '+ Add';
-      addIngBtn.style.cssText = 'padding:6px 12px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var addIngBtn = self.ui._mkBtn('+ Add', 'inline');
       addIngRow.appendChild(addIngName);
       addIngRow.appendChild(addIngAmt);
       addIngRow.appendChild(addIngUnit);
@@ -37245,12 +37356,8 @@ RPGACE.register('cookingOracle', {
       methodUpdateText.style.cssText = 'margin-bottom:8px;';
       var methodUpdateRow = document.createElement('div');
       methodUpdateRow.style.cssText = 'display:flex;gap:8px;';
-      var methodUpdateBtn = document.createElement('button');
-      methodUpdateBtn.textContent = '🔮 Update Method for this';
-      methodUpdateBtn.style.cssText = 'padding:6px 12px;background:rgba(155,89,182,0.18);border:1px solid rgba(155,89,182,0.4);border-radius:6px;color:#9B59B6;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-      var methodUpdateDismiss = document.createElement('button');
-      methodUpdateDismiss.textContent = 'Not now';
-      methodUpdateDismiss.style.cssText = 'padding:6px 12px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var methodUpdateBtn = self.ui._mkBtn('🔮 Update Method for this', 'inline', { color: '#9B59B6', bg: 'rgba(155,89,182,0.18)', borderColor: 'rgba(155,89,182,0.4)', extra: 'font-weight:700;' });
+      var methodUpdateDismiss = self.ui._mkBtn('Not now', 'inline');
       methodUpdateRow.appendChild(methodUpdateBtn);
       methodUpdateRow.appendChild(methodUpdateDismiss);
       methodUpdateBanner.appendChild(methodUpdateText);
@@ -37307,9 +37414,7 @@ RPGACE.register('cookingOracle', {
       // DIRECTOR_CHOSEN:/EDL_JSON: already use (rule 8 - multiple distinct
       // trailers on one shared hook is this project's own established
       // precedent, not a new mechanism).
-      var suggestBtn = document.createElement('button');
-      suggestBtn.textContent = '💡 Suggest additions (uses your pantry)';
-      suggestBtn.style.cssText = 'width:100%;padding:8px;margin-bottom:8px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var suggestBtn = self.ui._mkBtn('💡 Suggest additions (uses your pantry)', 'ghost', { extra: 'margin-bottom:8px;' });
       box.appendChild(suggestBtn);
 
       var suggestBox = document.createElement('div');
@@ -37359,9 +37464,7 @@ RPGACE.register('cookingOracle', {
               left.appendChild(reasonLine);
             }
 
-            var addOneBtn = document.createElement('button');
-            addOneBtn.textContent = '+ Add';
-            addOneBtn.style.cssText = 'padding:5px 10px;background:rgba(76,175,130,0.12);border:1px solid rgba(76,175,130,0.35);border-radius:6px;color:var(--green);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;white-space:nowrap;';
+            var addOneBtn = self.ui._mkBtn('+ Add', 'inline', { color: 'var(--green)', bg: 'rgba(76,175,130,0.12)', borderColor: 'rgba(76,175,130,0.35)', extra: 'white-space:nowrap;' });
             addOneBtn.onclick = function() {
               recipe.ingredients.push({
                 name: s.name, amount: (s.amount != null ? s.amount : null),
@@ -37396,9 +37499,7 @@ RPGACE.register('cookingOracle', {
       nutBox.textContent = 'Not yet looked up.';
       box.appendChild(nutBox);
 
-      var nutBtn = document.createElement('button');
-      nutBtn.textContent = '🔎 Estimate Nutrition';
-      nutBtn.style.cssText = 'width:100%;padding:8px;margin-bottom:18px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var nutBtn = self.ui._mkBtn('🔎 Estimate Nutrition', 'ghost', { extra: 'margin-bottom:18px;' });
       nutBtn.onclick = function() {
         nutBtn.disabled = true;
         nutBtn.textContent = '⏳ Looking up (CoFID / Open Food Facts)...';
@@ -37474,9 +37575,7 @@ RPGACE.register('cookingOracle', {
         if (timerMin > 0) {
           var timerRow = document.createElement('div');
           timerRow.style.cssText = 'margin-top:6px;display:flex;align-items:center;gap:8px;';
-          var timerBtn = document.createElement('button');
-          timerBtn.textContent = '⏱ Start ' + timerMin + 'm timer';
-          timerBtn.style.cssText = 'background:none;border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          var timerBtn = self.ui._mkBtn('⏱ Start ' + timerMin + 'm timer', 'inline');
           var timerText = document.createElement('span');
           timerText.style.cssText = 'font-size:12px;color:var(--gold);font-weight:700;display:none;';
           timerBtn.onclick = function() {
@@ -37556,9 +37655,7 @@ RPGACE.register('cookingOracle', {
       // ensures the recipe row exists, no journal entry at all, so a
       // recipe can ride in a cook session without committing it to the
       // journal until Alex actually decides to save/rate it later.
-      var saveBtn = document.createElement('button');
-      saveBtn.textContent = '💾 Save to Journal';
-      saveBtn.style.cssText = 'width:100%;padding:11px;margin-top:14px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);border-radius:8px;color:var(--gold);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var saveBtn = self.ui._mkBtn('💾 Save to Journal', 'primaryGold', { extra: 'margin-top:14px;' });
       saveBtn.onclick = function() {
         saveBtn.disabled = true;
         saveBtn.textContent = '⏳ Saving...';
@@ -37596,9 +37693,7 @@ RPGACE.register('cookingOracle', {
       // depend on already knowing Save does it. Per the same-day follow-up
       // above, this ONLY ensures the recipe row exists and joins the
       // session - it deliberately never writes a journal entry.
-      var addToSessionBtn = document.createElement('button');
-      addToSessionBtn.textContent = '📅 Add to Cook Session';
-      addToSessionBtn.style.cssText = 'width:100%;padding:10px;margin-top:8px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var addToSessionBtn = self.ui._mkBtn('📅 Add to Cook Session', 'ghost', { extra: 'margin-top:8px;' });
       addToSessionBtn.onclick = function() {
         addToSessionBtn.disabled = true;
         addToSessionBtn.textContent = '⏳ Adding...';
@@ -37676,9 +37771,7 @@ RPGACE.register('cookingOracle', {
       stoveInput.style.cssText = inputStyle;
       stoveRow.appendChild(stoveInput);
 
-      var saveBtn = document.createElement('button');
-      saveBtn.textContent = '💾 Save Settings';
-      saveBtn.style.cssText = 'width:100%;padding:10px;margin-top:8px;background:rgba(76,175,130,0.12);border:1px solid rgba(76,175,130,0.35);border-radius:8px;color:var(--green);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var saveBtn = self.ui._mkBtn('💾 Save Settings', 'primary', { extra: 'margin-top:8px;' });
       saveBtn.onclick = function() {
         var patch = {
           habits_enabled: !!enabledInput.checked,
@@ -37781,22 +37874,11 @@ RPGACE.register('cookingOracle', {
         lbl.textContent = '🍽 ' + r.title;
         row.appendChild(lbl);
 
-        var delBtn = document.createElement('button');
-        delBtn.textContent = '✕';
-        delBtn.style.cssText = 'background:none;border:none;color:rgba(226,84,84,.4);font-size:13px;cursor:pointer;padding:2px 4px;flex-shrink:0;font-family:Rajdhani,sans-serif;';
-        var armed = false, busy = false;
-        delBtn.onclick = function() {
-          if (busy) return;
-          if (!armed) {
-            armed = true; delBtn.textContent = '❌'; delBtn.style.color = '#CC4A4A';
-            setTimeout(function() { if (busy) return; armed = false; delBtn.textContent = '✕'; delBtn.style.color = 'rgba(226,84,84,.4)'; }, 3000);
-            return;
-          }
-          busy = true; delBtn.textContent = '…';
+        var delBtn = self.ui._mkDeleteArmBtn(function(doneCb) {
           self.logic._removeRecipeFromSession(r.id, function(err) {
             if (err) {
-              busy = false; armed = false; delBtn.textContent = '✕'; delBtn.style.color = 'rgba(226,84,84,.4)';
               RPGACE.utils.toast('⚠️ Could not remove: ' + err, '#CC4A4A', 3200);
+              doneCb(err);
               return;
             }
             RPGACE.utils.toast('🗑 Removed ' + r.title, 'rgba(226,226,236,0.5)', 2200);
@@ -37804,24 +37886,21 @@ RPGACE.register('cookingOracle', {
             // empty session is meaningless and would resurface as a
             // stale "0 recipes" resume) - close the popup rather than
             // show an empty list with a dead Schedule/Shopping-list flow.
-            if (!self._session) { pop.close(); return; }
+            if (!self._session) { pop.close(); doneCb(null); return; }
             row.remove();
+            doneCb(null);
           });
-        };
+        });
         row.appendChild(delBtn);
         list.appendChild(row);
       });
       box.appendChild(list);
 
-      var addBtn = document.createElement('button');
-      addBtn.textContent = '+ Add another saved recipe to this session';
-      addBtn.style.cssText = 'width:100%;padding:9px;margin-bottom:8px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var addBtn = self.ui._mkBtn('+ Add another saved recipe to this session', 'secondary', { extra: 'margin-bottom:8px;' });
       addBtn.onclick = function() { pop.close(); self.ui._showAddToSessionPicker(); };
       box.appendChild(addBtn);
 
-      var genNewBtn = document.createElement('button');
-      genNewBtn.textContent = '⚡ ...or generate a new one to add';
-      genNewBtn.style.cssText = 'width:100%;padding:9px;margin-bottom:14px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var genNewBtn = self.ui._mkBtn('⚡ ...or generate a new one to add', 'ghost', { extra: 'margin-bottom:14px;' });
       genNewBtn.onclick = function() {
         pop.close();
         self.logic._loadConfig(function(cfg) { self.ui._showGenerateForm(cfg || {}); });
@@ -37834,9 +37913,7 @@ RPGACE.register('cookingOracle', {
       // shopping_lists row can exist with planned_cook_id still null;
       // _acceptSchedule below best-effort back-links it once a real
       // planned_cooks row exists (same pattern as its own agenda_id link).
-      var shopBtn = document.createElement('button');
-      shopBtn.textContent = sess.shoppingListId ? '🛒 View shopping list' : '🛒 Generate shopping list';
-      shopBtn.style.cssText = 'width:100%;padding:9px;margin-bottom:8px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var shopBtn = self.ui._mkBtn(sess.shoppingListId ? '🛒 View shopping list' : '🛒 Generate shopping list', 'secondary', { extra: 'margin-bottom:8px;' });
       shopBtn.onclick = function() {
         if (sess.shoppingListId) { pop.close(); self.ui._showShoppingList(sess.shoppingListId); return; }
         shopBtn.disabled = true;
@@ -37855,15 +37932,11 @@ RPGACE.register('cookingOracle', {
       };
       box.appendChild(shopBtn);
 
-      var schedBtn = document.createElement('button');
-      schedBtn.textContent = '📅 Schedule cook time';
-      schedBtn.style.cssText = 'width:100%;padding:11px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);border-radius:8px;color:var(--gold);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:8px;';
+      var schedBtn = self.ui._mkBtn('📅 Schedule cook time', 'primaryGold', { extra: 'margin-bottom:8px;' });
       schedBtn.onclick = function() { pop.close(); self.ui._showSchedulePreview(); };
       box.appendChild(schedBtn);
 
-      var doneBtn = document.createElement('button');
-      doneBtn.textContent = 'Done for now';
-      doneBtn.style.cssText = 'width:100%;padding:8px;background:none;border:none;color:var(--muted);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var doneBtn = self.ui._mkBtn('Done for now', 'plainLink');
       doneBtn.onclick = function() { pop.close(); };
       box.appendChild(doneBtn);
     },
@@ -37895,9 +37968,7 @@ RPGACE.register('cookingOracle', {
             var lbl = document.createElement('span');
             lbl.style.cssText = 'font-size:13px;color:var(--text);';
             lbl.textContent = '🍽 ' + r.title;
-            var btn = document.createElement('button');
-            btn.textContent = '+ Add';
-            btn.style.cssText = 'padding:4px 10px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--gold);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            var btn = self.ui._mkBtn('+ Add', 'inline', { color: 'var(--gold)' });
             btn.onclick = function() {
               self.logic._addRecipeToSession(r.id, r.title);
               pop.close();
@@ -38144,9 +38215,7 @@ RPGACE.register('cookingOracle', {
             errBox.style.cssText = 'font-size:12px;color:#CC4A4A;margin-bottom:10px;display:none;';
             box.appendChild(errBox);
 
-            var acceptBtn = document.createElement('button');
-            acceptBtn.textContent = '✅ Accept & add to Agenda';
-            acceptBtn.style.cssText = 'width:100%;padding:11px;background:rgba(76,175,130,0.12);border:1px solid rgba(76,175,130,0.35);border-radius:8px;color:var(--green);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            var acceptBtn = self.ui._mkBtn('✅ Accept & add to Agenda', 'primary');
             acceptBtn.onclick = function() {
               if (!dateInput.value || !timeInput.value) {
                 errBox.textContent = '⚠️ Pick a start date and time';
@@ -38225,9 +38294,7 @@ RPGACE.register('cookingOracle', {
       };
 
       TABS.forEach(function(t) {
-        var btn = document.createElement('button');
-        btn.textContent = t.label;
-        btn.style.cssText = 'flex:1;min-width:88px;padding:8px 6px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:var(--muted);font-size:11.5px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+        var btn = self.ui._mkBtn(t.label, 'tab');
         btn.onclick = function() { render(t.key); };
         tabBtns[t.key] = btn;
         tabBar.appendChild(btn);
@@ -38281,9 +38348,7 @@ RPGACE.register('cookingOracle', {
       var errBox = document.createElement('div');
       errBox.style.cssText = 'font-size:12px;color:#CC4A4A;margin-bottom:8px;display:none;';
 
-      var addBtn = document.createElement('button');
-      addBtn.textContent = '+ Set stock';
-      addBtn.style.cssText = 'width:100%;padding:9px;background:rgba(76,175,130,0.12);border:1px solid rgba(76,175,130,0.35);border-radius:8px;color:var(--green);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var addBtn = self.ui._mkBtn('+ Set stock', 'primary');
 
       var renderList = function() {
         self.logic._loadStockByLocation(location, function(rows, err) {
@@ -38309,27 +38374,17 @@ RPGACE.register('cookingOracle', {
             row.appendChild(lbl);
             row.appendChild(right);
 
-            var delBtn = document.createElement('button');
-            delBtn.textContent = '✕';
-            delBtn.style.cssText = 'background:none;border:none;color:rgba(226,84,84,.4);font-size:13px;cursor:pointer;padding:2px 4px;';
-            var armed = false, busy = false;
-            delBtn.onclick = function() {
-              if (busy) return;
-              if (!armed) {
-                armed = true; delBtn.textContent = '❌'; delBtn.style.color = '#CC4A4A';
-                setTimeout(function() { if (busy) return; armed = false; delBtn.textContent = '✕'; delBtn.style.color = 'rgba(226,84,84,.4)'; }, 3000);
-                return;
-              }
-              busy = true; delBtn.textContent = '…';
+            var delBtn = self.ui._mkDeleteArmBtn(function(doneCb) {
               self.logic._deleteStockItem(r.ingredient_id, location, function(err) {
                 if (err) {
-                  busy = false; armed = false; delBtn.textContent = '✕'; delBtn.style.color = 'rgba(226,84,84,.4)';
                   RPGACE.utils.toast('⚠️ Delete failed: ' + (err.message || 'unknown error'), '#CC4A4A', 3200);
+                  doneCb(err);
                   return;
                 }
                 row.remove();
+                doneCb(null);
               });
-            };
+            });
             row.appendChild(delBtn);
             container.insertBefore(row, addHeading);
           });
@@ -38419,9 +38474,7 @@ RPGACE.register('cookingOracle', {
       var errBox = document.createElement('div');
       errBox.style.cssText = 'font-size:12px;color:#CC4A4A;margin-bottom:8px;display:none;';
 
-      var addBtn = document.createElement('button');
-      addBtn.textContent = '+ Add equipment';
-      addBtn.style.cssText = 'width:100%;padding:9px;background:rgba(76,175,130,0.12);border:1px solid rgba(76,175,130,0.35);border-radius:8px;color:var(--green);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var addBtn = self.ui._mkBtn('+ Add equipment', 'primary');
 
       var renderList = function() {
         self.logic._loadEquipment(function(rows, err) {
@@ -38444,27 +38497,17 @@ RPGACE.register('cookingOracle', {
             row.appendChild(lbl);
             row.appendChild(right);
 
-            var delBtn = document.createElement('button');
-            delBtn.textContent = '✕';
-            delBtn.style.cssText = 'background:none;border:none;color:rgba(226,84,84,.4);font-size:13px;cursor:pointer;padding:2px 4px;';
-            var armed = false, busy = false;
-            delBtn.onclick = function() {
-              if (busy) return;
-              if (!armed) {
-                armed = true; delBtn.textContent = '❌'; delBtn.style.color = '#CC4A4A';
-                setTimeout(function() { if (busy) return; armed = false; delBtn.textContent = '✕'; delBtn.style.color = 'rgba(226,84,84,.4)'; }, 3000);
-                return;
-              }
-              busy = true; delBtn.textContent = '…';
+            var delBtn = self.ui._mkDeleteArmBtn(function(doneCb) {
               self.logic._deleteEquipment(r.id, function(err) {
                 if (err) {
-                  busy = false; armed = false; delBtn.textContent = '✕'; delBtn.style.color = 'rgba(226,84,84,.4)';
                   RPGACE.utils.toast('⚠️ Delete failed: ' + (err.message || 'unknown error'), '#CC4A4A', 3200);
+                  doneCb(err);
                   return;
                 }
                 row.remove();
+                doneCb(null);
               });
-            };
+            });
             row.appendChild(delBtn);
             container.insertBefore(row, addHeading);
           });
@@ -38632,12 +38675,15 @@ RPGACE.register('cookingOracle', {
               // paid stays a SEPARATE, later action once there's a real
               // receipt to enter (rule 7 — never invent purchase data that
               // doesn't exist yet).
-              var btn = document.createElement('button');
-              btn.textContent = '🧺 Add to basket';
-              btn.style.cssText = 'padding:5px 10px;background:' + meta.bg + ';border:1px solid ' + meta.color + ';border-radius:6px;color:' + meta.color + ';font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+              var btn = self.ui._mkBtn('🧺 Add to basket', 'inline', { color: meta.color, bg: meta.bg, borderColor: meta.color });
               btn.onclick = function() {
                 btn.disabled = true;
-                btn.textContent = '…';
+                // H23 (Sep 17 2026) — real fix, same session's own
+                // GODMODE evidence pass caught its own bug: every OTHER
+                // async button in this module uses the established
+                // "⏳ <verb>..." loading-text convention; this one had
+                // shipped with a bare "…" instead.
+                btn.textContent = '⏳ Adding...';
                 RPGACE.sb.secureWrite('shopping_list_items', 'update', { in_basket: true }, 'id=eq.' + r.id)
                   .then(function() {
                     RPGACE.utils.toast('🧺 Added to basket: ' + ingName, 'rgba(226,226,236,0.5)', 1800);
@@ -38679,10 +38725,7 @@ RPGACE.register('cookingOracle', {
                 // change at the shop) shouldn't be permanent; matches this
                 // project's own standing "reversible where it costs
                 // nothing" discipline.
-                var undoBtn = document.createElement('button');
-                undoBtn.textContent = '↩';
-                undoBtn.title = 'Remove from basket';
-                undoBtn.style.cssText = 'padding:5px 8px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+                var undoBtn = self.ui._mkBtn('↩', 'iconGhost', { title: 'Remove from basket' });
                 undoBtn.onclick = function() {
                   undoBtn.disabled = true;
                   RPGACE.sb.secureWrite('shopping_list_items', 'update', { in_basket: false }, 'id=eq.' + r.id)
@@ -38696,9 +38739,7 @@ RPGACE.register('cookingOracle', {
                 // The real, ONE place a purchase actually gets logged (rule
                 // 8) — unchanged from before, just moved here since this is
                 // now the real point in the flow where a receipt exists.
-                var boughtBtn = document.createElement('button');
-                boughtBtn.textContent = '✅ Bought';
-                boughtBtn.style.cssText = 'padding:5px 10px;background:rgba(76,175,130,0.12);border:1px solid rgba(76,175,130,0.35);border-radius:6px;color:var(--green);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+                var boughtBtn = self.ui._mkBtn('✅ Bought', 'inline', { color: 'var(--green)', bg: 'rgba(76,175,130,0.12)', borderColor: 'rgba(76,175,130,0.35)' });
                 boughtBtn.onclick = function() { self.ui._showPriceEntryPopup(r, renderItems); };
 
                 row.appendChild(undoBtn);
@@ -38785,9 +38826,7 @@ RPGACE.register('cookingOracle', {
       loadingMsg.textContent = 'Checking your saved recipes against current stock...';
       box.appendChild(loadingMsg);
 
-      var genBtn = document.createElement('button');
-      genBtn.textContent = '✨ Or generate a new one using only what I have';
-      genBtn.style.cssText = 'width:100%;padding:11px;margin-bottom:14px;background:rgba(76,175,130,0.12);border:1px solid rgba(76,175,130,0.35);border-radius:8px;color:var(--green);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var genBtn = self.ui._mkBtn('✨ Or generate a new one using only what I have', 'primary', { extra: 'margin-bottom:14px;' });
       genBtn.onclick = function() {
         pop.close();
         self.logic._loadConfig(function(cfg) { self.ui._showGenerateForm(cfg || {}, null, true); });
@@ -38815,9 +38854,8 @@ RPGACE.register('cookingOracle', {
           return a.title.localeCompare(b.title);
         });
         results.forEach(function(rec) {
-          var row = document.createElement('button');
           var borderColor = rec.makeable ? 'var(--green)' : 'var(--border)';
-          row.style.cssText = 'display:block;width:100%;text-align:left;padding:10px 12px;margin-bottom:8px;background:rgba(255,255,255,0.03);border:1px solid ' + borderColor + ';border-left:3px solid ' + borderColor + ';border-radius:0 8px 8px 0;color:var(--text);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          var row = self.ui._mkBtn('', 'recipeCard', { extra: 'border:1px solid ' + borderColor + ';border-left:3px solid ' + borderColor + ';' });
           var top = document.createElement('div');
           top.textContent = (rec.makeable ? '✅ ' : '') + rec.title;
           row.appendChild(top);
@@ -38891,19 +38929,14 @@ RPGACE.register('cookingOracle', {
       var btnRow = document.createElement('div');
       btnRow.style.cssText = 'display:flex;gap:8px;';
 
-      var redoBtn = document.createElement('button');
-      redoBtn.textContent = '↺ Redo';
-      redoBtn.title = 'Clear these fields to re-enter — found something better?';
-      redoBtn.style.cssText = 'flex:1;padding:9px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var redoBtn = self.ui._mkBtn('↺ Redo', 'inline', { title: 'Clear these fields to re-enter — found something better?', extra: 'flex:1;padding:9px;' });
       redoBtn.onclick = function() {
         brandInput.value = ''; weightInput.value = ''; priceInput.value = '';
         errBox.style.display = 'none';
         // store + unit deliberately kept — usually still correct on a redo
       };
 
-      var confirmBtn = document.createElement('button');
-      confirmBtn.textContent = '✅ Confirm';
-      confirmBtn.style.cssText = 'flex:2;padding:9px;background:rgba(76,175,130,0.12);border:1px solid rgba(76,175,130,0.35);border-radius:8px;color:var(--green);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var confirmBtn = self.ui._mkBtn('✅ Confirm', 'inline', { color: 'var(--green)', bg: 'rgba(76,175,130,0.12)', borderColor: 'rgba(76,175,130,0.35)', extra: 'flex:2;padding:9px;font-size:13px;font-weight:700;' });
       confirmBtn.onclick = function() {
         var brand = brandInput.value.trim() || null;
         var store = storeInput.value.trim();

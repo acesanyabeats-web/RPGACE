@@ -1,0 +1,125 @@
+H23: COOKING MODULE BUTTON/UI UNIFORMITY — /impeccable+/CEO+/paranoia+/GODMODE
+==========================================================================
+
+ALEX'S VERBATIM ASK
+------------------------------------------------------------
+"Now start UI accessing the cooking Dom and all buttons inside, they are
+not uniform and rather poorly structured, I want neat and tidy display
+with intention. Use /impeccable with /drift /CEO /paranoia /Godmode"
+
+REAL PROCESS FOLLOWED
+------------------------------------------------------------
+This ran as a real /CEO Loop 1 -> Loop 2 pass, not a freeform redesign.
+Loop 1 (compile -> interrogate -> ratify) is recorded in full in
+records/2026-09/cooking_ui_uniformity_paranoia_compile_2026-09-17.txt —
+a real /impeccable scan (35 findings, one directly relevant:
+`[side-tab] border-left:3px solid` flagged as a real AI-tell pattern),
+a real GODMODE evidence pass cataloguing all 42 real
+`document.createElement('button')` call sites across cookingOracle
+(12 distinct padding values, 5 font-sizes including a genuine 11.5px
+one-off, 4 border-radius values, 2 uncoordinated "primary CTA" colors,
+3 different undo/reversible-action interaction models), a real
+Council-of-5-shaped scrutiny (risk: 42 call sites is real regression
+surface on features mostly still flagged "untested by Alex's own
+hand"; counter-case: doing it now in one deliberate pass with full
+headless re-verification is safer than letting more inconsistent
+buttons accumulate first), and 4 real AskUserQuestion forks.
+
+ceo_plans row e6d9d839-47bc-4aee-9bcd-0070c16dd122 — ratified with
+Alex's 4 real answers, all "Recommended":
+1. Scope: Cooking module only (not an app-wide standard yet).
+2. Primary-CTA color: formalize the existing green/gold split rather
+   than collapse to one color (green = commits data/stock, gold =
+   commits to calendar/journal).
+3. Basket-undo (H22's single-click `↩`): keep it lighter-weight than
+   delete's 2-click arm/confirm — a boolean flip isn't destructive.
+4. The `border-left:3px solid` side-tab pattern (colored status rows,
+   not buttons): leave it out of this pass — buttons only, as literally
+   asked.
+
+REAL BUILD — Loop 2
+------------------------------------------------------------
+New shared token system inside `cookingOracle.ui`:
+- `BTN_VARIANTS` — 13 real named variants, each derived directly from
+  an ACTUAL role already present in the evidence (primary/primaryGold/
+  secondary/ghost/plainLink/inline/iconGhost/deleteArm/pillChip/tab/
+  hubCard/listItem/recipeCard), never an invented abstract system.
+- `ui._mkBtn(text, variant, opts)` — one real constructor every call
+  site now uses; `opts.color`/`opts.bg`/`opts.borderColor`/`opts.extra`
+  let a specific site override without duplicating the base CSS string.
+- `ui._mkDeleteArmBtn(onConfirm)` — the real, single, shared 2-click
+  arm(❌)->confirm state machine consolidating what used to be 3
+  independent hand-rolled copies (recipe-session delete, pantry-stock
+  delete, equipment delete). `onConfirm(doneCb)` callback contract
+  preserves each site's own distinct delete operation and success
+  side-effect (toast+session-close-check vs. plain row.remove) while
+  eliminating the real duplicated interaction-state-machine code.
+
+All 42 real button call sites migrated. Real normalizations applied
+during migration, evidence-based not arbitrary: several 9px/10px
+paddings moved to the real dominant 11px scale for primary/primaryGold
+full-width CTAs; Current Stock's tab-switcher font-size corrected from
+the genuine 11.5px one-off to the real 11px scale; the timer-start
+button's border-radius corrected from a lone 4px to the standard 6px
+(`inline` variant). Per Alex's answer to fork 4, the side-tab
+`border-left:3px solid` status rows (H18/H22's colored ingredient/basket
+rows) were wrapped in `_mkBtn`/`recipeCard` for CODE-STRUCTURE
+consistency only — their visual appearance is unchanged, out of scope
+for this pass as instructed.
+
+REAL BUGS FOUND AND FIXED (found via this pass's own systematic sweep,
+not from a user report)
+------------------------------------------------------------
+1. Two of the three original hand-rolled delete buttons (pantry-stock,
+   equipment) never set `font-family:Rajdhani,sans-serif` at all —
+   silently fell back to the browser default sans-serif, a visibly
+   different typeface than every other button in the app. Now
+   structurally impossible to reintroduce: `_mkDeleteArmBtn`'s one
+   shared implementation always includes it via the `deleteArm` variant.
+2. This SAME session's own H22 "Add to basket" button used a bare `'…'`
+   loading-state text, inconsistent with the module's established
+   `'⏳ <verb>...'` convention every other async button follows. Fixed
+   to `'⏳ Adding...'` — a real self-caught bug from this session's own
+   GODMODE pass, not a pre-existing one.
+3. A real bug introduced DURING this pass's own build, caught only by
+   re-running the pre-existing H18-H22 regression suites (not by
+   `node --check`, which only validates syntax): `_mkBtn`'s internal
+   variant lookup initially read `self.BTN_VARIANTS[variant]` instead
+   of `self.ui.BTN_VARIANTS[variant]` — `BTN_VARIANTS` lives nested
+   under `ui`, not on the module's top level. This would have broken
+   effectively every popup in the Cooking module in production
+   (`TypeError: Cannot read properties of undefined`) on the very first
+   button render. Fixed before shipping; re-verified clean afterward.
+
+VERIFICATION
+------------------------------------------------------------
+`node --check rpgace_core.js` clean. New real headless-Chromium suite
+(raw rpgace_core.js served directly, Supabase mocked), 19/19 assertions
+pass: all 13 BTN_VARIANTS exist as non-empty strings with zero stray
+extras; `_mkBtn` sets real textContent, every variant carries
+font-family:Rajdhani, opts overrides genuinely apply; `_mkDeleteArmBtn`'s
+full real state machine (starts unarmed, first click arms without
+calling onConfirm, second click confirms exactly once, a real failure
+resets back to unarmed); the module hub, generate form, and Current
+Stock popups all render with the new token system, the real primary/
+ghost color split holds, and the 11.5px outlier is confirmed corrected
+to 11px.
+
+One real test-construction bug was found and fixed in the new suite
+itself during verification (not a product bug): the original assertion
+read a single shared `confirmCalls` variable only once, at the very end
+of the sequence — after BOTH clicks had already fired — so the "first
+click doesn't call onConfirm yet" check could never pass regardless of
+correctness. Fixed by snapshotting `confirmCallsAfterArm` immediately
+after the first click, matching a standalone debug reproduction that
+had already confirmed the real shipped code behaves correctly.
+
+Full re-runs of every pre-existing Cooking module suite confirm zero
+regression: H18 27/27, H19 20/20, H20 16/16, H21 26/26, H22 17/17 — all
+unchanged, 106 total assertions.
+
+Re-minified (2520299 -> 1243075 bytes, 51% smaller), cache-bust bumped
+20260917d -> 20260917e.
+
+Untested by Alex's own hand.
+==========================================================================
