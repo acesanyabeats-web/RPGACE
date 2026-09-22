@@ -4349,6 +4349,10 @@ DIMENSION_PAGES = [
     # (ceo_plan_items G114).
     ('galaxy_map_local_pipeline.html', '🖥️', 'Local Analysis Pipeline', 'inter',
      'local_server.py + Whisper + a direct Anthropic call, as one cluster on Alex’s own machine.'),
+    # G117 (Sep 22 2026) — the real Generator Toolchain catalog, built via
+    # an explicit Sep 15 pause override (same shape as GMR-1..GMR-6).
+    ('galaxy_map_generator_toolchain.html', '🧰', 'Generator Toolchain', 'meta',
+     'The 11 real perspective_generate_*.py/smoke_test_generate_*.py/detector scripts, by family and shared dependency.'),
 ]
 
 DIMENSION_KIND_META = {

@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RPGACE — Galaxy Map (Generator Toolchain)</title>
+<style>
+  :root { --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; --accent:#4A90E2; --amber:#E2A83D; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:radial-gradient(ellipse at 50% 20%, #0e1420 0%, #050508 70%);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif}
+  .hero{padding:36px 24px 16px;text-align:center}
+  .hero .eyebrow{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}
+  .hero h1{font-family:Georgia,serif;font-size:26px;color:#fff;margin-bottom:8px}
+  .hero p{color:var(--dim);font-size:12px;max-width:820px;margin:0 auto;line-height:1.6}
+  .toggle-row{display:flex;justify-content:center;gap:8px;padding:16px 24px 0}
+  .toggle-btn{padding:8px 18px;border-radius:16px;font-size:11.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid rgba(255,255,255,0.1)}
+  .toggle-btn.active{background:var(--amber);color:#1a1608;border-color:var(--amber)}
+  .view{display:none} .view.active{display:block}
+  #view-table{max-width:960px;margin:0 auto;padding:20px 24px 40px}
+  .fam-section{margin-bottom:28px}
+  .fam-head{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+  .fam-head h2{font-family:Georgia,serif;font-size:18px;color:#fff}
+  .fam-count{font-size:10px;color:var(--amber);font-weight:700}
+  .fam-cards{display:flex;flex-direction:column;gap:10px}
+  .gen-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:14px 16px}
+  .gen-head{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap}
+  .gen-name{font-family:'Cascadia Code','Fira Mono',monospace;font-size:13px;font-weight:700;color:var(--gold)}
+  .gen-date{font-size:9.5px;color:var(--dim)}
+  .gen-purpose{font-size:11.5px;color:#c8c8d8;line-height:1.6;margin-bottom:8px}
+  .gen-meta{font-size:10.5px;color:var(--dim);margin-bottom:3px}
+  .gen-meta b{color:#a8a8b8}
+  .gen-evidence{font-size:10.5px;color:var(--amber);margin-top:6px}
+  .none{opacity:0.6;font-style:italic}
+  code{font-family:'Cascadia Code','Fira Mono',monospace;font-size:10px;background:rgba(255,255,255,0.06);padding:1px 5px;border-radius:3px}
+  #view-deps{max-width:900px;margin:0 auto;padding:20px 24px 40px}
+  .dep-row{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px 14px;margin-bottom:8px}
+  .dep-name{font-size:11.5px;margin-bottom:6px}
+  .dep-count{font-size:9.5px;color:var(--amber);margin-left:6px}
+  .dep-callers{display:flex;flex-wrap:wrap;gap:5px}
+  .dep-caller{font-size:10px;padding:2px 8px;border-radius:8px;background:rgba(74,144,226,0.14);color:var(--accent)}
+  .empty-note{font-size:11px;color:var(--dim);font-style:italic}
+  a{color:var(--accent)}
+  .note{max-width:900px;margin:20px auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}
+
+.dim-index{max-width:1180px;margin:18px auto 26px;padding:0 24px}
+.dim-index h2{font-family:Georgia,serif;font-size:19px;color:#fff;margin-bottom:4px;text-align:center}
+.dim-index .dim-sub{font-size:11px;color:#8a8a9a;text-align:center;margin-bottom:14px;line-height:1.6}
+.dim-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.dim-card{display:block;text-decoration:none;background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.1);border-left-width:3px;border-radius:10px;padding:11px 13px;transition:background .15s,border-color .15s}
+.dim-card:hover{background:rgba(255,255,255,0.07)}
+.dim-card .dim-name{font-size:12.5px;font-weight:700;color:#E2E2EC;margin-bottom:3px}
+.dim-card .dim-desc{font-size:10px;color:#8a8a9a;line-height:1.55}
+.dim-card .dim-kind{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;opacity:.9}
+
+
+.fc-bar{display:flex;gap:8px;align-items:center;margin:0 0 10px;flex-wrap:wrap}
+.fc-btn{padding:5px 14px;border-radius:14px;font-size:10.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:#8a8a9a;border:1px solid rgba(255,255,255,0.12);user-select:none}
+.fc-btn:hover{background:rgba(255,255,255,0.09)}
+.fc-btn.active{background:#C9A84C;color:#1a1608;border-color:#C9A84C}
+.fc-pick{display:none;gap:6px;flex-wrap:wrap;margin:0 0 12px}
+.fc-pick-btn{padding:4px 11px;border-radius:10px;font-size:9.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.04);border:1.5px solid var(--c,#8a8a9a);color:var(--c,#8a8a9a);user-select:none}
+.fc-pick-btn:hover{background:color-mix(in srgb, var(--c,#8a8a9a) 14%, transparent)}
+.fc-pick-btn.on{background:var(--c,#8a8a9a);color:#0a0a0f}
+.fc-pick-hint{font-size:10px;color:#6a6a78;padding:2px 0 8px;width:100%}
+/* (a) Infra-drilldown pages: Choice is the existing pane click-through
+   (zero change); Full force-opens every real pane at once. */
+.fc-scope.mode-full .idd-pane{display:block !important}
+.fc-scope.mode-full .idd-hint{display:none}
+/* (b) Level 2/3 evidence-bubble picker: Full shows every real
+   `.ev-group` at once (today's existing behaviour, unchanged); Choice
+   shows only the one currently picked. */
+.fc-scope.mode-choice .fc-pick{display:flex}
+.fc-scope.mode-choice .ev-group{display:none}
+.fc-scope.mode-choice .ev-group.picked{display:inline}
+/* An .ev-group wrapping a plain HTML block (Level 3's Tier 2 panels)
+   needs block, not inline, or its own padding/border render squeezed
+   to content width — a real HTML div and an SVG <g> both match
+   `.ev-group.picked` above, so this more-specific override (2 classes
+   + a tag qualifier beats 2 classes alone) fixes the div case only,
+   leaving the SVG <g> case governed by the rule above unchanged. */
+.fc-scope.mode-choice div.ev-group.picked{display:block}
+
+.gside-toggle{position:fixed;top:50%;left:0;transform:translateY(-50%);z-index:10001;background:#C9A84C;color:#1a1a1f;border:none;border-radius:0 8px 8px 0;padding:16px 6px;font-size:13px;cursor:pointer;writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:1.5px;font-weight:700;box-shadow:2px 0 10px rgba(0,0,0,0.4)}
+.gside-toggle:hover{background:#ddbb5c}
+.gside-nav{position:fixed;top:0;left:-300px;width:280px;height:100vh;overflow-y:auto;background:#0a0a0f;border-right:1px solid rgba(255,255,255,0.12);z-index:10000;transition:left .2s ease;padding:18px 16px 40px;box-shadow:4px 0 28px rgba(0,0,0,0.55)}
+.gside-nav.open{left:0}
+.gside-nav h3{font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#8a8a9a;margin:20px 0 8px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.07)}
+.gside-nav h3:first-child{margin-top:0;padding-top:0;border-top:none}
+.gside-def{font-size:10px;color:#7a7a88;line-height:1.6;margin-bottom:10px}
+.gside-level{display:block;text-decoration:none;padding:7px 9px;border-radius:7px;margin-bottom:2px}
+.gside-level:hover{background:rgba(255,255,255,0.05)}
+.gside-level.active{background:rgba(201,168,76,0.16)}
+.gside-level b{display:block;font-size:12.5px;color:#E2E2EC}
+.gside-level span{display:block;font-size:9px;color:#6a6a78;margin-top:2px}
+.gside-dim{display:block;text-decoration:none;padding:6px 9px;border-radius:7px;margin-bottom:2px;border-left:2px solid transparent}
+.gside-dim:hover{background:rgba(255,255,255,0.05)}
+.gside-dim.active{background:rgba(201,168,76,0.16)}
+.gside-dim b{display:block;font-size:11.5px;color:#E2E2EC}
+.gside-dim .gside-kind{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.gside-dim .gside-desc{display:block;font-size:9px;color:#6a6a78;line-height:1.5;margin-top:1px}
+.gside-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:9999;display:none}
+.gside-backdrop.open{display:block}
+/* G101 real correction — Levels is the one main category; each level's
+   own genuinely-relevant Dimension pages nest directly beneath it. */
+.gside-levelgroup{margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.gside-levelgroup:last-child{border-bottom:none}
+.gside-nested{margin:2px 0 2px 14px;padding-left:8px;border-left:1px solid rgba(255,255,255,0.08)}
+.gside-subhead{font-size:8.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#55555f;margin:6px 0 2px 14px}
+.gside-river{display:block;text-decoration:none;padding:4px 9px;border-radius:6px;margin-bottom:1px;border-left:2px solid transparent;font-size:10.5px}
+.gside-river:hover{background:rgba(255,255,255,0.05)}
+.gside-river b{font-weight:400;color:#b8b8c4}
+.gside-rivers{max-height:320px;overflow-y:auto}
+.gside-river-mod{margin-left:14px;font-size:9.5px;opacity:.85}
+.gside-river-mod b{color:#8a8a98}
+.gside-river-empty{color:#55555f;font-style:italic;padding:2px 9px 4px}
+
+details.doc-methodology{max-width:1000px;margin:24px auto 40px;padding:0 24px}
+details.doc-methodology > summary{cursor:pointer;list-style:none;font-size:10px;font-weight:700;
+  letter-spacing:.7px;text-transform:uppercase;color:#6a6a78;padding:6px 0;
+  border-top:1px solid rgba(255,255,255,0.07)}
+details.doc-methodology > summary::-webkit-details-marker{display:none}
+details.doc-methodology > summary::before{content:'▶ ';font-size:8px}
+details.doc-methodology[open] > summary::before{content:'▼ '}
+details.doc-methodology > summary:hover{color:#C9A84C}
+details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
+</style>
+</head>
+<body>
+<button class="gside-toggle" type="button" aria-label="Open Galaxy Map navigation">MAP ▸</button><div class="gside-backdrop"></div><nav class="gside-nav"><h3>🌌 Levels</h3><div class="gside-def">A Dimension is a real cross-cutting facet — the same modules and functions, seen through one lens. Deliberately <b>multi-membership</b>: a module can sit in several at once, which is exactly why a Dimension is never a numbered River (a River is a strict one-module-one-home partition). Nested under whichever Level(s) it's genuinely relevant to, not a separate category.</div><div class="gside-levelgroup"><a class="gside-level" href="galaxy_map.html"><b>🌌 L0</b></a><div class="gside-subhead">🌌 Dimensions</div><div class="gside-nested"><a class="gside-dim" href="galaxy_map_decision_matrix.html" style="border-left-color:#8a8a9a" title="Meta — synthesis across several dimensions"><b>🚦 Decision Matrix</b> <span class="gside-kind" style="color:#8a8a9a">🧭 meta</span><span class="gside-desc">Every real decision — gates, curated core logic, text inputs — by river.</span></a><a class="gside-dim" href="galaxy_map_dimensions.html" style="border-left-color:#8a8a9a" title="Meta — synthesis across several dimensions"><b>🧭 Dimensions Matrix</b> <span class="gside-kind" style="color:#8a8a9a">🧭 meta</span><span class="gside-desc">Which modules are multi-home across every other dimension.</span></a><a class="gside-dim" href="galaxy_map_loops.html" style="border-left-color:#8a8a9a" title="Meta — synthesis across several dimensions"><b>🔄 Loops</b> <span class="gside-kind" style="color:#8a8a9a">🧭 meta</span><span class="gside-desc">Real cycles across direct calls, cross-module event signals, and shared Supabase tables.</span></a><a class="gside-dim active" href="galaxy_map_generator_toolchain.html" style="border-left-color:#8a8a9a" title="Meta — synthesis across several dimensions"><b>🧰 Generator Toolchain</b> <span class="gside-kind" style="color:#8a8a9a">🧭 meta</span><span class="gside-desc">The 11 real perspective_generate_*.py/smoke_test_generate_*.py/detector scripts, by family and shared dependency.</span></a></div></div><div class="gside-levelgroup"><a class="gside-level" href="galaxy_map_river.html"><b>🏛️ L1</b><span>Infra</span></a><div class="gside-subhead">🌊 Live Rivers</div><div class="gside-nested gside-rivers"><a class="gside-river" href="galaxy_map_module.html#river-1" style="border-left-color:#cc4a4a"><b>🌊 River I</b></a><a class="gside-river" href="galaxy_map_module.html#river-2" style="border-left-color:#4a8ccc"><b>🌊 River II</b></a><a class="gside-river" href="galaxy_map_module.html#river-3" style="border-left-color:#c9a84c"><b>🌊 River III</b></a><a class="gside-river" href="galaxy_map_module.html#river-4" style="border-left-color:#9b6ec8"><b>🌊 River IV</b></a><a class="gside-river" href="galaxy_map_module.html#river-5" style="border-left-color:#4caf82"><b>🌊 River V</b></a><a class="gside-river" href="galaxy_map_module.html#river-6" style="border-left-color:#e8c96a"><b>🌊 River VI</b></a><a class="gside-river" href="galaxy_map_module.html#river-7" style="border-left-color:#cc7a3a"><b>🌊 River VII</b></a><a class="gside-river" href="galaxy_map_module.html#river-8" style="border-left-color:#5588ee"><b>🌊 River VIII</b></a><a class="gside-river" href="galaxy_map_module.html#river-9" style="border-left-color:#e05555"><b>🌊 River IX</b></a><a class="gside-river" href="galaxy_map_module.html#river-10" style="border-left-color:#868db8"><b>🌊 River X</b></a><a class="gside-river" href="galaxy_map_module.html#river-11" style="border-left-color:#3a4570"><b>🌊 River XI</b></a><a class="gside-river" href="galaxy_map_module.html#river-12" style="border-left-color:#4A90E2"><b>🌊 River XII</b></a></div><div class="gside-subhead">🗄️ Archived Rivers</div><div class="gside-nested gside-rivers"><a class="gside-river" href="galaxy_map_module.html#river-13" style="border-left-color:#2ABFB0"><b>🌊 River XIII</b></a><a class="gside-river" href="galaxy_map_module.html#river-14" style="border-left-color:#E2A83D"><b>🌊 River XIV</b></a><a class="gside-river" href="galaxy_map_module.html#river-15" style="border-left-color:#d4daf5"><b>🌊 River XV</b></a><a class="gside-river" href="galaxy_map_module.html#river-16" style="border-left-color:#20263a"><b>🌊 River XVI</b></a><a class="gside-river" href="galaxy_map_module.html#river-17" style="border-left-color:#2a3050"><b>🌊 River XVII</b></a></div><div class="gside-subhead">🌌 Dimensions</div><div class="gside-nested"><a class="gside-dim" href="galaxy_map_decisions.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>🗑️ Decisions — Human Gates</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">The real human-confirm gates before a destructive or taxonomy write.</span></a><a class="gside-dim" href="galaxy_map_level6.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>🔬 Branch Ledger</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">Exhaustive, mechanical if/else/switch branch extraction, listed not narrated.</span></a><a class="gside-dim" href="galaxy_map_supabase.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>💉 Supabase</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">Every real client-side Supabase table touch, by level/river/module.</span></a><a class="gside-dim" href="galaxy_map_externals.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>🔌 Externals</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">Whether each external connector genuinely touches real UI AND real backend.</span></a><a class="gside-dim" href="galaxy_map_load.html" style="border-left-color:#9B59B6" title="Infra — a resource attached to things"><b>⏳ Load Dimension</b> <span class="gside-kind" style="color:#9B59B6">💉 infra</span><span class="gside-desc">What actually triggers a load: boot task, page nav, or on-demand click.</span></a></div></div><div class="gside-levelgroup"><a class="gside-level" href="galaxy_map_module.html"><b>🌊 L2</b><span>Modules + Inter</span></a><div class="gside-subhead">🌊 Live Rivers &amp; Modules</div><div class="gside-nested gside-rivers"><a class="gside-river" href="galaxy_map_module.html#river-1" style="border-left-color:#cc4a4a"><b>🌊 River 1: River I</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-authGate"><b>🔽 authGate</b></a><a class="gside-river" href="galaxy_map_module.html#river-2" style="border-left-color:#4a8ccc"><b>🌊 River 2: River II</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-pathRouter"><b>🔽 pathRouter</b></a><a class="gside-river" href="galaxy_map_module.html#river-3" style="border-left-color:#c9a84c"><b>🌊 River 3: River III</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-agentsIntoOracle"><b>🔽 agentsIntoOracle</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-cookingOracle"><b>🔽 cookingOracle</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-feynman"><b>🔽 feynman</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-instaOraclePanel"><b>🔽 instaOraclePanel</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-mockOracle"><b>🔽 mockOracle</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-oracleAppGrounding"><b>🔽 oracleAppGrounding</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-oracleControl"><b>🔽 oracleControl</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-oracleDevBridge"><b>🔽 oracleDevBridge</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-oracleFetchGuard"><b>🔽 oracleFetchGuard</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-oracleProviderMode"><b>🔽 oracleProviderMode</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-oracleTreeGrounding"><b>🔽 oracleTreeGrounding</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-prodOraclePanel"><b>🔽 prodOraclePanel</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-scheduleOracle"><b>🔽 scheduleOracle</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-tiktokOracle"><b>🔽 tiktokOracle</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-youtubeOracle"><b>🔽 youtubeOracle</b></a><a class="gside-river" href="galaxy_map_module.html#river-4" style="border-left-color:#9b6ec8"><b>🌊 River 4: River IV</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-bookworm"><b>🔽 bookworm</b></a><a class="gside-river" href="galaxy_map_module.html#river-5" style="border-left-color:#4caf82"><b>🌊 River 5: River V</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-agendaReminder"><b>🔽 agendaReminder</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-journalQoL"><b>🔽 journalQoL</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-morningBrief"><b>🔽 morningBrief</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-scheduleFixes"><b>🔽 scheduleFixes</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-shiftSync"><b>🔽 shiftSync</b></a><a class="gside-river" href="galaxy_map_module.html#river-6" style="border-left-color:#e8c96a"><b>🌊 River 6: River VI</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-phylumPath"><b>🔽 phylumPath</b></a><a class="gside-river" href="galaxy_map_module.html#river-7" style="border-left-color:#cc7a3a"><b>🌊 River 7: River VII</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-encSync"><b>🔽 encSync</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-encTaxonomyLink"><b>🔽 encTaxonomyLink</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-encyclopediaQoL"><b>🔽 encyclopediaQoL</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-jargonEncyclopedia"><b>🔽 jargonEncyclopedia</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-refCorpus"><b>🔽 refCorpus</b></a><a class="gside-river" href="galaxy_map_module.html#river-8" style="border-left-color:#5588ee"><b>🌊 River 8: River VIII</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-taxonomyReviewQueue"><b>🔽 taxonomyReviewQueue</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-taxonomySync"><b>🔽 taxonomySync</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-taxonomyTree"><b>🔽 taxonomyTree</b></a><a class="gside-river" href="galaxy_map_module.html#river-9" style="border-left-color:#e05555"><b>🌊 River 9: River IX</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-knowledgeGap"><b>🔽 knowledgeGap</b></a><a class="gside-river" href="galaxy_map_module.html#river-10" style="border-left-color:#868db8"><b>🌊 River 10: River X</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-careerStatCard"><b>🔽 careerStatCard</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-chroniclesLog"><b>🔽 chroniclesLog</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-shoppingWishlist"><b>🔽 shoppingWishlist</b></a><a class="gside-river" href="galaxy_map_module.html#river-11" style="border-left-color:#3a4570"><b>🌊 River 11: River XI</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-beatLog"><b>🔽 beatLog</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-conidPot"><b>🔽 conidPot</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-contentProductionLive"><b>🔽 contentProductionLive</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-contentRepurpose"><b>🔽 contentRepurpose</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-videoPipeline"><b>🔽 videoPipeline</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-videoSummary"><b>🔽 videoSummary</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-visualOracle"><b>🔽 visualOracle</b></a><a class="gside-river" href="galaxy_map_module.html#river-12" style="border-left-color:#4A90E2"><b>🌊 River 12: River XII</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-ciAutoPropose"><b>🔽 ciAutoPropose</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-intelBatchList"><b>🔽 intelBatchList</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-intelDedup"><b>🔽 intelDedup</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-intelDelete"><b>🔽 intelDelete</b></a><a class="gside-river gside-river-mod" href="galaxy_map_current.html#mod-researchTabs"><b>🔽 researchTabs</b></a></div><div class="gside-subhead">🗄️ Archived Rivers</div><div class="gside-nested gside-rivers"><a class="gside-river" href="galaxy_map_module.html#river-13" style="border-left-color:#2ABFB0"><b>🌊 River 13: River XIII</b></a><span class="gside-river gside-river-mod gside-river-empty">— no modules —</span><a class="gside-river" href="galaxy_map_module.html#river-14" style="border-left-color:#E2A83D"><b>🌊 River 14: River XIV</b></a><span class="gside-river gside-river-mod gside-river-empty">— no modules —</span><a class="gside-river" href="galaxy_map_module.html#river-15" style="border-left-color:#d4daf5"><b>🌊 River 15: River XV</b></a><span class="gside-river gside-river-mod gside-river-empty">— no modules —</span><a class="gside-river" href="galaxy_map_module.html#river-16" style="border-left-color:#20263a"><b>🌊 River 16: River XVI</b></a><span class="gside-river gside-river-mod gside-river-empty">— no modules —</span><a class="gside-river" href="galaxy_map_module.html#river-17" style="border-left-color:#2a3050"><b>🌊 River 17: River XVII</b></a><span class="gside-river gside-river-mod gside-river-empty">— no modules —</span></div><div class="gside-subhead">🌌 Dimensions</div><div class="gside-nested"><a class="gside-dim" href="galaxy_map_skill_network.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>🕸️ Skills</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Real skill-to-skill invocation edges, plus each skill’s AI/UI/backend axes.</span></a><a class="gside-dim" href="galaxy_map_alex_path.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>🧑 Alex’s Decision Path</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Each dashboard card’s real flow, and the real Y/N fork Alex actually hits.</span></a><a class="gside-dim" href="galaxy_map_orchestrator_cc.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>🧭 Orchestrator CC</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Real full profile (role/input/processing/output/contribution/stakeholders) + shared dispatch history with OpenMontage CC.</span></a><a class="gside-dim" href="galaxy_map_openmontage_cc.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>🎬 OpenMontage CC</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Real full profile (role/input/processing/output/contribution/stakeholders) + shared dispatch history with Orchestrator CC.</span></a><a class="gside-dim" href="galaxy_map_oversight_sync.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>📚 Oversight Sync</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">Which oversight doc gets touched, in what order, during a push or ritual.</span></a><a class="gside-dim" href="galaxy_map_local_pipeline.html" style="border-left-color:#4A90E2" title="Inter — a connection/flow between things"><b>🖥️ Local Analysis Pipeline</b> <span class="gside-kind" style="color:#4A90E2">🔗 inter</span><span class="gside-desc">local_server.py + Whisper + a direct Anthropic call, as one cluster on Alex’s own machine.</span></a></div></div><div class="gside-levelgroup"><a class="gside-level" href="galaxy_map_current.html"><b>🔽 Current (L3)</b><span>Currents</span></a></div></nav>
+<div class="hero">
+  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Generator Toolchain</div>
+  <h1>🧰 The 11 Real Generator/Detector Scripts</h1>
+  <p>Closes RIVER_RETIRED[17]'s own honestly-named gap ("dev tooling itself was never promoted to a unit") the same way every other real recurring category got its own page. A catalog of the perspective_generate_*.py / smoke_test_generate_*.py / generate_method_module_map.py family and its genuine siblings — not the galaxy_map_*.py page-builder family, which already has its own catalog (galaxy_map_hub.html).</p>
+</div>
+<div class="toggle-row">
+  <div class="toggle-btn active" data-view="table">📊 By family</div>
+  <div class="toggle-btn" data-view="deps">🔗 Shared dependencies</div>
+</div>
+<div class="view active" id="view-table"><section class="fam-section" id="fam-perspective-report-generators">
+  <div class="fam-head"><h2>🔭 Perspective-Report Generators</h2><span class="fam-count">3 real script(s)</span></div>
+  <div class="fam-cards"><div class="gen-card">
+  <div class="gen-head"><span class="gen-name">perspective_generate_modules.py</span><span class="gen-date">Aug 14 2026 (G11)</span></div>
+  <p class="gen-purpose">Generates a real /perspective report (scope_level=module) for every RIVER_MODULES-tracked module, pulling from the SAME already-computed detection data the Galaxy Map itself renders from — never re-derived.</p>
+  <div class="gen-meta"><b>Writes to:</b> perspective_reports</div>
+  <div class="gen-meta"><b>Depends on:</b> <code>parse_module_functions()</code>, <code>compute_module_function_flow()</code>, <code>compute_intra_river_flow()</code>, <code>compute_cross_module_function_calls()</code>, <code>compute_hook_signal_edges()</code>, <code>compute_function_ui_signals()</code>, <code>compute_mainjs_window_bridge()</code></div>
+  <div class="gen-evidence">📊 58 of 58 real registered modules now covered (grew from 44 at Aug 14 launch via the Sep 15-16 GMR full-coverage push).</div>
+</div><div class="gen-card">
+  <div class="gen-head"><span class="gen-name">perspective_generate_onclick_features.py</span><span class="gen-date">Aug 14 2026 (G11)</span></div>
+  <p class="gen-purpose">Generates a real /perspective report (scope_level=onclick_feature) for every real index.html onclick-triggered function — the literal clickable buttons in the live app.</p>
+  <div class="gen-meta"><b>Writes to:</b> perspective_reports</div>
+  <div class="gen-meta"><b>Depends on:</b> <code>_legacy_mainjs_text()</code></div>
+  <div class="gen-evidence">📊 47 of 47 real distinct onclick-triggered functions covered.</div>
+</div><div class="gen-card">
+  <div class="gen-head"><span class="gen-name">perspective_generate_mainjs_functions.py</span><span class="gen-date">Sep 8 2026 (G11 continuation)</span></div>
+  <p class="gen-purpose">Generates a real /perspective report (scope_level=mainjs_function) for main.js legacy-block functions with zero coverage at any scope_level. Found and fixed a real bug during its own build: an early version hand-interpolated a raw f-string, producing invalid JSON for any multi-line code excerpt — caught via a direct Postgres test before applying, fixed with json.dumps().</p>
+  <div class="gen-meta"><b>Writes to:</b> perspective_reports</div>
+  <div class="gen-meta"><b>Depends on:</b> <code>_mainjs_function_bodies()</code>, <code>sql_escape()</code></div>
+  <div class="gen-evidence">📊 176 real rows generated and applied in 5 verified chunks, closing the legacy-block gap (219 total functions, 43 already covered elsewhere).</div>
+</div></div>
+</section><section class="fam-section" id="fam-smoke-test-generators">
+  <div class="fam-head"><h2>🧪 Smoke-Test Generators</h2><span class="fam-count">2 real script(s)</span></div>
+  <div class="fam-cards"><div class="gen-card">
+  <div class="gen-head"><span class="gen-name">smoke_test_generate_v1.py</span><span class="gen-date">Aug 14 2026</span></div>
+  <p class="gen-purpose">The first official smoke-test generation — one row per real module + one row per real dashboard card, at hand-testable granularity (never one row per function, ~427 of which would be impractical to click through).</p>
+  <div class="gen-meta"><b>Writes to:</b> smoke_test_items (outputs a reviewed SQL file, never auto-applied)</div>
+  <div class="gen-meta"><b>Depends on:</b> <code>compute_dashboard_card_flow()</code></div>
+  <div class="gen-evidence">📊 56 real rows at launch (44 modules + 12 dashboard cards); smoke_test_items has grown to 99 rows since via later passes.</div>
+</div><div class="gen-card">
+  <div class="gen-head"><span class="gen-name">smoke_test_generate_g_items.py</span><span class="gen-date">Aug 20 2026 (G51)</span></div>
+  <p class="gen-purpose">Generates a real smoke_test_items row for every currently-yellow ceo_plan_items row, each carrying a real, specific HOW TO TEST instruction pulled from that item's own title/evidence — self-sufficient, no chat history needed to hand-test it.</p>
+  <div class="gen-meta"><b>Writes to:</b> smoke_test_items</div>
+  <div class="gen-meta"><b>Depends on:</b> <span class="none">none — a real standalone script</span></div>
+  <div class="gen-evidence">📊 Powers the real yellow&lt;-&gt;smoke_test&lt;-&gt;green confirm loop — a genuine build only counts done once its own generated row gets Alex's real hand-confirm.</div>
+</div></div>
+</section><section class="fam-section" id="fam-consistency-checkers">
+  <div class="fam-head"><h2>🔍 Consistency Checkers</h2><span class="fam-count">3 real script(s)</span></div>
+  <div class="fam-cards"><div class="gen-card">
+  <div class="gen-head"><span class="gen-name">gmp_b_consistency_check.py</span><span class="gen-date">Sep 16 2026 (GMP-B)</span></div>
+  <p class="gen-purpose">A real consistency CHECK, never a regeneration — compares RIVER_FLOWS' claimed river-to-river edges against perspective_reports' own evidence.cross_refs, flagging a real mismatch for a human decision. Never auto-adds an edge.</p>
+  <div class="gen-meta"><b>Writes to:</b> system_map_flags (flags only, human decides)</div>
+  <div class="gen-meta"><b>Depends on:</b> <code>RIVER_MODULES()</code>, <code>RIVER_FLOWS()</code>, <code>_roman_to_int()</code></div>
+  <div class="gen-evidence">📊 Found 1 real mismatch (River III&lt;-&gt;XI) at 14/58 coverage; re-run at full 58/58 coverage found 11 real mismatches, all resolved with dated per-edge evidence.</div>
+</div><div class="gen-card">
+  <div class="gen-head"><span class="gen-name">gmr2_generate_cross_refs.py</span><span class="gen-date">Sep 16 2026 (GMR-2)</span></div>
+  <p class="gen-purpose">Audits module perspective_reports rows still missing a real evidence.cross_refs field, naming which real modules/tables their already-computed evidence counts refer to — reuses the same detection GMR-3/gmp_b_consistency_check.py needs, never re-grepped fresh.</p>
+  <div class="gen-meta"><b>Writes to:</b> perspective_reports (UPDATE via a real jsonb || merge, never clobbers existing evidence)</div>
+  <div class="gen-meta"><b>Depends on:</b> <code>compute_cross_module_function_calls()</code>, <code>compute_hook_signal_edges()</code>, <code>compute_intra_river_flow()</code>, <code>compute_supabase_table_touches()</code></div>
+  <div class="gen-evidence">📊 Closed real cross_refs coverage from 14/58 to 58/58 modules.</div>
+</div><div class="gen-card">
+  <div class="gen-head"><span class="gen-name">verify_anchors.py</span><span class="gen-date">Sep 15 2026 (CEO SKILL.md R28)</span></div>
+  <p class="gen-purpose">Cheap, regex-only, zero-AI-cost re-verification of every hand-cited 'anchor'/'lines' code citation across galaxy_map_decision_matrix.py/galaxy_map_decisions.py/galaxy_map_current.py against live rpgace_core.js, without running any generator or touching output files.</p>
+  <div class="gen-meta"><b>Writes to:</b> stdout report only — no writes</div>
+  <div class="gen-meta"><b>Depends on:</b> <span class="none">none — a real standalone script</span></div>
+  <div class="gen-evidence">📊 Caught 18 real stale citations on its first motivating incident (all last-verified Sep 8, silently drifted a week); now a standing session-start check.</div>
+</div></div>
+</section><section class="fam-section" id="fam-standalone-tools">
+  <div class="fam-head"><h2>🛠️ Standalone Tools</h2><span class="fam-count">3 real script(s)</span></div>
+  <div class="fam-cards"><div class="gen-card">
+  <div class="gen-head"><span class="gen-name">generate_method_module_map.py</span><span class="gen-date">Aug 26 2026 (G109)</span></div>
+  <p class="gen-purpose">Builds errorLog.METHOD_MODULE_MAP — a method-name -&gt; owning-module lookup, worked around a real V8 limitation (a stack trace for a method inside an RPGACE.register() object literal reports it generically, e.g. "Object._submit", never the real module name). Reads rpgace_core.js directly.</p>
+  <div class="gen-meta"><b>Writes to:</b> Nothing to Supabase — prints a JS object literal, pasted by hand into rpgace_core.js (the same regenerate-then-re-embed discipline the whole Galaxy Map pipeline already uses).</div>
+  <div class="gen-meta"><b>Depends on:</b> <span class="none">none — a real standalone script</span></div>
+  <div class="gen-evidence">📊 432 of 456 real distinct method names resolve to exactly one module; the remaining ~5% (generic names like _inject/init shared by 2+ modules) stay honestly ambiguous, never guessed.</div>
+</div><div class="gen-card">
+  <div class="gen-head"><span class="gen-name">supabase_dedup_scan.py</span><span class="gen-date">Aug 11 2026</span></div>
+  <p class="gen-purpose">A real, read-only, anon-key normalized-key-exact-match dedup scan across real Supabase tables — the same method intelDedup already proves correct in production, never fuzzy matching.</p>
+  <div class="gen-meta"><b>Writes to:</b> Nothing — findings are reviewed and merged by hand (no real Supabase backup exists, so no auto-merge)</div>
+  <div class="gen-meta"><b>Depends on:</b> <span class="none">none — a real standalone script</span></div>
+  <div class="gen-evidence">📊 Found 2 genuine duplicates on its first real run (intel_bibliography, content_productions) — both flagged for Alex, neither auto-merged.</div>
+</div><div class="gen-card">
+  <div class="gen-head"><span class="gen-name">session_lessons_retroactive_seed.py</span><span class="gen-date">Aug 15 2026</span></div>
+  <p class="gen-purpose">A real, mechanical scan of every patch_notes.html card-title for signal keywords (correction/misunderstanding/real bug/caught/found and fixed) — emits a lightweight blue "not yet fully written up" pointer per match, never a re-narrated summary (patch_notes.html still owns the real story).</p>
+  <div class="gen-meta"><b>Writes to:</b> session_lessons.html (a static oversight doc, not Supabase)</div>
+  <div class="gen-meta"><b>Depends on:</b> <span class="none">none — a real standalone script</span></div>
+  <div class="gen-evidence">📊 Per Alex's own explicit scope: flagged for a future full write-up, not fully authored by this script.</div>
+</div></div>
+</section></div>
+<div class="view" id="view-deps"><div class="dep-row">
+  <div class="dep-name"><code>RIVER_FLOWS()</code> <span class="dep-count">1 real caller(s)</span></div>
+  <div class="dep-callers"><span class="dep-caller">gmp_b_consistency_check.py</span></div>
+</div><div class="dep-row">
+  <div class="dep-name"><code>RIVER_MODULES()</code> <span class="dep-count">1 real caller(s)</span></div>
+  <div class="dep-callers"><span class="dep-caller">gmp_b_consistency_check.py</span></div>
+</div><div class="dep-row">
+  <div class="dep-name"><code>_legacy_mainjs_text()</code> <span class="dep-count">1 real caller(s)</span></div>
+  <div class="dep-callers"><span class="dep-caller">perspective_generate_onclick_features.py</span></div>
+</div><div class="dep-row">
+  <div class="dep-name"><code>_mainjs_function_bodies()</code> <span class="dep-count">1 real caller(s)</span></div>
+  <div class="dep-callers"><span class="dep-caller">perspective_generate_mainjs_functions.py</span></div>
+</div><div class="dep-row">
+  <div class="dep-name"><code>_roman_to_int()</code> <span class="dep-count">1 real caller(s)</span></div>
+  <div class="dep-callers"><span class="dep-caller">gmp_b_consistency_check.py</span></div>
+</div><div class="dep-row">
+  <div class="dep-name"><code>compute_cross_module_function_calls()</code> <span class="dep-count">2 real caller(s)</span></div>
+  <div class="dep-callers"><span class="dep-caller">perspective_generate_modules.py</span><span class="dep-caller">gmr2_generate_cross_refs.py</span></div>
+</div><div class="dep-row">
+  <div class="dep-name"><code>compute_dashboard_card_flow()</code> <span class="dep-count">1 real caller(s)</span></div>
+  <div class="dep-callers"><span class="dep-caller">smoke_test_generate_v1.py</span></div>
+</div><div class="dep-row">
+  <div class="dep-name"><code>compute_function_ui_signals()</code> <span class="dep-count">1 real caller(s)</span></div>
+  <div class="dep-callers"><span class="dep-caller">perspective_generate_modules.py</span></div>
+</div><div class="dep-row">
+  <div class="dep-name"><code>compute_hook_signal_edges()</code> <span class="dep-count">2 real caller(s)</span></div>
+  <div class="dep-callers"><span class="dep-caller">perspective_generate_modules.py</span><span class="dep-caller">gmr2_generate_cross_refs.py</span></div>
+</div><div class="dep-row">
+  <div class="dep-name"><code>compute_intra_river_flow()</code> <span class="dep-count">2 real caller(s)</span></div>
+  <div class="dep-callers"><span class="dep-caller">perspective_generate_modules.py</span><span class="dep-caller">gmr2_generate_cross_refs.py</span></div>
+</div><div class="dep-row">
+  <div class="dep-name"><code>compute_mainjs_window_bridge()</code> <span class="dep-count">1 real caller(s)</span></div>
+  <div class="dep-callers"><span class="dep-caller">perspective_generate_modules.py</span></div>
+</div><div class="dep-row">
+  <div class="dep-name"><code>compute_module_function_flow()</code> <span class="dep-count">1 real caller(s)</span></div>
+  <div class="dep-callers"><span class="dep-caller">perspective_generate_modules.py</span></div>
+</div><div class="dep-row">
+  <div class="dep-name"><code>compute_supabase_table_touches()</code> <span class="dep-count">1 real caller(s)</span></div>
+  <div class="dep-callers"><span class="dep-caller">gmr2_generate_cross_refs.py</span></div>
+</div><div class="dep-row">
+  <div class="dep-name"><code>parse_module_functions()</code> <span class="dep-count">1 real caller(s)</span></div>
+  <div class="dep-callers"><span class="dep-caller">perspective_generate_modules.py</span></div>
+</div><div class="dep-row">
+  <div class="dep-name"><code>sql_escape()</code> <span class="dep-count">1 real caller(s)</span></div>
+  <div class="dep-callers"><span class="dep-caller">perspective_generate_mainjs_functions.py</span></div>
+</div></div>
+
+
+<script>
+(function() {
+  var toggles = document.querySelectorAll('.toggle-btn');
+  var views = document.querySelectorAll('.view');
+  toggles.forEach(function(t) {
+    t.addEventListener('click', function() {
+      toggles.forEach(function(x) { x.classList.toggle('active', x === t); });
+      views.forEach(function(v) { v.classList.toggle('active', v.id === 'view-' + t.dataset.view); });
+    });
+  });
+})();
+</script>
+
+<details class="doc-methodology"><summary>🛠 How this page is generated (methodology)</summary><div class="note">
+  Generated by <code>scripts/galaxy_map_generator_toolchain.py</code> — G117 of the ratified "RPGACE Total Systems
+  Galaxy Map" /CEO plan, built Sep 22 2026 (real, explicit override of the Sep 15 2026 standing pause on new Galaxy
+  Map work, same as the GMR-1..GMR-6 batch). Every row sourced directly from that script's own docstring, read Sep 22
+  2026 — no description here paraphrases beyond what each script already states about itself.
+</div></details>
+<script>
+(function() {
+  // Event delegation on document, not a per-instance script tag —
+  // many real .fc-scope regions can share one page (every band-canvas
+  // on Current, every connector tab on Connectors), and this handles
+  // all of them with zero per-instance wiring.
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.fc-btn');
+    if (btn) {
+      var scope = btn.closest('.fc-scope');
+      if (!scope) return;
+      scope.classList.remove('mode-full', 'mode-choice');
+      scope.classList.add('mode-' + btn.dataset.mode);
+      scope.querySelectorAll('.fc-btn').forEach(function(b) { b.classList.toggle('active', b === btn); });
+      return;
+    }
+    var pick = e.target.closest('.fc-pick-btn');
+    if (pick) {
+      var scope2 = pick.closest('.fc-scope');
+      if (!scope2) return;
+      var key = pick.dataset.key;
+      scope2.querySelectorAll('.fc-pick-btn').forEach(function(x) { x.classList.toggle('on', x === pick); });
+      scope2.querySelectorAll('.ev-group').forEach(function(g) { g.classList.toggle('picked', g.dataset.unit === key); });
+    }
+  });
+})();
+</script><script>
+(function() {
+  var toggle = document.querySelector('.gside-toggle');
+  var nav = document.querySelector('.gside-nav');
+  var backdrop = document.querySelector('.gside-backdrop');
+  if (!toggle || !nav) return;
+  function setOpen(open) {
+    nav.classList.toggle('open', open);
+    if (backdrop) backdrop.classList.toggle('open', open);
+  }
+  toggle.addEventListener('click', function() { setOpen(!nav.classList.contains('open')); });
+  if (backdrop) backdrop.addEventListener('click', function() { setOpen(false); });
+})();
+</script></body>
+</html>

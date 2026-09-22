@@ -144,6 +144,9 @@ PAGES = [
     {'file': 'galaxy_map_local_pipeline.html', 'label': 'Local Analysis Pipeline', 'level': 'Dimension', 'kind': 'inter',
      'scope': '3 cluster members, 7 pipeline stages, 3 real client call sites, host River XII',
      'desc': 'G110 (Sep 1 2026) — local_server.py\'s first real Galaxy Map identity, built as ONE Inter dimension joining local_server.py + Whisper + a DIRECT Anthropic call (Alex\'s own ratified direction, not 3 peer connector bubbles), with the governing job-lifecycle logic attached inline. Every citation read directly from local_server/local_server.py, local_server/rpgace_intel.py and rpgace_core.js. librosa deliberately excluded — its existence is still genuinely unconfirmed (G114).'},
+    {'file': 'galaxy_map_generator_toolchain.html', 'label': 'Generator Toolchain', 'level': 'Dimension', 'kind': 'meta',
+     'scope': '11 real generator/detector scripts, 4 families, 15 shared dependency functions',
+     'desc': 'G117 (Sep 22 2026, real Council-of-5 finding Sep 9 deferred until the script count justified its own page — built via an explicit override of the Sep 15 pause, same shape as GMR-1..GMR-6) — every real perspective_generate_*.py/smoke_test_generate_*.py/generate_method_module_map.py script plus its genuine siblings (consistency checkers, standalone auditors), grouped by family with a real shared-dependency bubble view. Closes RIVER_RETIRED[17]\'s own named gap ("dev tooling itself was never promoted to a unit").'},
 ]
 
 LEVEL_ORDER = ['L0', 'L1', 'L2', 'L2.5', 'Current (L3)', 'L3', 'Zoom (L4)', 'L4', 'L5', 'L6', 'Dimension']
