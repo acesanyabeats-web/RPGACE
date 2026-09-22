@@ -2352,6 +2352,15 @@ function startScheduledTask(id){
   }
   if(RPGACE.utils&&RPGACE.utils.toast)RPGACE.utils.toast('▶️ Started: '+(stored[idx].title||'task'),'#4A90E2',2200);
   if(typeof renderDailyGrid==='function')renderDailyGrid();
+  // H24 (Sep 17 2026, 10th pass, real Alex ask: "i clicked start on cook
+  // in schedule, nothing happened, can it take me to oracle...") — a
+  // planned-cook entry gets the real live-cooking experience on top of
+  // the existing toast/re-render/write-through above (rule 8, additive,
+  // never replacing the generic agenda-start behaviour every other
+  // scheduled task still relies on).
+  if(stored[idx].source_type==='planned_cook'&&stored[idx].source_id&&RPGACE.modules&&RPGACE.modules.cookingOracle){
+    RPGACE.modules.cookingOracle.ui._openLiveCookMode(stored[idx].source_id);
+  }
 }
 
 function completeScheduledTask(id){
@@ -37063,6 +37072,217 @@ RPGACE.register('cookingOracle', {
       return row;
     },
 
+    // H24 (Sep 17 2026, 10th pass, real Alex ask: "can it take me to
+    // oracle where i will have an on hand assisstant... this window in
+    // oracle can also be used as timers when cooking") — real, extracted
+    // shared builder (rule 8), pulled out of _showRecipeCard's own
+    // renderSteps so BOTH the recipe card's Method list AND the new Live
+    // Cook Mode panel (ui._openLiveCookMode) show and run the exact same
+    // real countdown/reminder mechanics, never 2 independent copies.
+    // Returns a real DOM fragment (0-2 rows) to append; `activeIntervals`
+    // is the caller's own shared array (leak-prevention — every real
+    // interval this builder starts gets pushed there so the caller can
+    // clear it on its own re-render/teardown, same discipline
+    // _showRecipeCard's own activeStepIntervals already established).
+    _mkStepTimerControls: function(step, activeIntervals) {
+      var self = RPGACE.modules.cookingOracle;
+      var frag = document.createDocumentFragment();
+
+      var timerMin = Math.max(step.active_duration_min || 0, step.passive_duration_min || 0);
+      if (timerMin > 0) {
+        var timerRow = document.createElement('div');
+        timerRow.style.cssText = 'margin-top:6px;display:flex;align-items:center;gap:8px;';
+        var timerBtn = self.ui._mkBtn('⏱ Start ' + timerMin + 'm timer', 'inline');
+        var timerText = document.createElement('span');
+        timerText.style.cssText = 'font-size:12px;color:var(--gold);font-weight:700;display:none;';
+        timerBtn.onclick = function() {
+          if (timerBtn._interval) return; // already running
+          var remaining = timerMin * 60;
+          timerBtn.style.display = 'none';
+          timerText.style.display = 'inline';
+          var tick = function() {
+            var m = Math.floor(remaining / 60), s = remaining % 60;
+            timerText.textContent = '⏱ ' + m + ':' + String(s).padStart(2, '0');
+            if (remaining <= 0) {
+              clearInterval(timerBtn._interval);
+              timerText.textContent = '✅ Time\'s up';
+              RPGACE.utils.toast('⏱ Timer done: ' + (step.description || 'step').slice(0, 60), '#C9A84C', 4000);
+              return;
+            }
+            remaining--;
+          };
+          tick();
+          timerBtn._interval = setInterval(tick, 1000);
+          if (activeIntervals) activeIntervals.push(timerBtn._interval);
+        };
+        timerRow.appendChild(timerBtn);
+        timerRow.appendChild(timerText);
+        frag.appendChild(timerRow);
+      }
+
+      var intervalMatch = /every\s+(\d+)(?:\s*(?:-|–|to)\s*(\d+))?\s*(?:minutes?|mins?|min)\b/i.exec(step.description || '');
+      if (intervalMatch) {
+        var intervalMin = parseInt(intervalMatch[1], 10);
+        var intervalLabel = intervalMatch[2] ? (intervalMatch[1] + '-' + intervalMatch[2] + 'm') : (intervalMatch[1] + 'm');
+        var remindRow = document.createElement('div');
+        remindRow.style.cssText = 'margin-top:6px;';
+        var remindBtn = self.ui._mkBtn('🔁 Remind me every ' + intervalLabel, 'inline', { color: '#9B59B6', borderColor: 'rgba(155,89,182,0.4)' });
+        remindBtn.onclick = function() {
+          if (remindBtn._interval) {
+            clearInterval(remindBtn._interval);
+            remindBtn._interval = null;
+            remindBtn.textContent = '🔁 Remind me every ' + intervalLabel;
+            RPGACE.utils.toast('🔁 Reminder stopped', '#E2A83D', 1800);
+            return;
+          }
+          remindBtn.textContent = '⏹ Stop reminder (every ' + intervalLabel + ')';
+          RPGACE.utils.toast('🔁 Reminder started — every ' + intervalLabel + ', starting now', '#9B59B6', 2400);
+          remindBtn._interval = setInterval(function() {
+            RPGACE.utils.toast('🔁 ' + intervalLabel + ' reminder — ' + (step.description || 'this step').slice(0, 70), '#9B59B6', 4500);
+          }, intervalMin * 60 * 1000);
+          if (activeIntervals) activeIntervals.push(remindBtn._interval);
+        };
+        remindRow.appendChild(remindBtn);
+        frag.appendChild(remindRow);
+      }
+
+      return frag;
+    },
+
+    // H24 (Sep 17 2026, 10th pass, real Alex ask: "i clicked start on cook
+    // in schedule, nothing happened, can it take me to oracle where i will
+    // have an on hand assisstant with the scaffolding for live events
+    // happening, this window in oracle can also be used as timers when
+    // cooking so its all happenning as i go") — real root cause found
+    // first (rule 4): startScheduledTask's own write to rpgace_agendas.
+    // started_at DOES succeed (confirmed via a direct live Supabase query,
+    // a real row shows a real started_at timestamp) — the actual gap is
+    // that a successful click produced no meaningful live-cooking
+    // experience, only a small Daily Schedule grid flag. This is the real
+    // fix: navigate to Oracle and show a persistent panel with the real
+    // computed step schedule (reusing logic._computeSessionSchedule's own
+    // already-correct output, rule 8 — never re-derived), each step
+    // wired to the SAME real timer/reminder controls
+    // (ui._mkStepTimerControls) the recipe card already uses.
+    _liveCookIntervals: [],
+    _clearLiveCookIntervals: function() {
+      var self = RPGACE.modules.cookingOracle;
+      (self._liveCookIntervals || []).forEach(function(id) { clearInterval(id); });
+      self._liveCookIntervals = [];
+    },
+    _openLiveCookMode: function(plannedCookId) {
+      var self = RPGACE.modules.cookingOracle;
+      if (!plannedCookId) { RPGACE.utils.toast('⚠️ No cook session to open', '#E2A83D', 2200); return; }
+      if (typeof showPage === 'function') showPage('advisor');
+
+      var pageAdvisor = document.getElementById('page-advisor');
+      var chatWrap = pageAdvisor ? pageAdvisor.querySelector('.chat-wrap') : null;
+      if (!pageAdvisor || !chatWrap) { RPGACE.utils.toast('⚠️ Could not open Oracle', '#E2A83D', 2200); return; }
+
+      var existing = document.getElementById('live-cook-panel');
+      if (existing) existing.remove();
+      self.ui._clearLiveCookIntervals();
+
+      var panel = document.createElement('div');
+      panel.id = 'live-cook-panel';
+      panel.style.cssText = 'background:rgba(76,175,130,0.06);border:1px solid rgba(76,175,130,0.3);border-radius:10px;padding:12px 14px;margin-bottom:14px;';
+      panel.innerHTML = '<div style="font-size:12px;color:var(--muted);">Loading live cook session...</div>';
+      pageAdvisor.insertBefore(panel, chatWrap);
+
+      RPGACE.sb.select('planned_cooks', 'select=id,recipe_ids,schedule,agenda_id&id=eq.' + plannedCookId)
+        .then(function(rows) {
+          var pc = rows && rows[0];
+          if (!pc || !pc.schedule || !pc.schedule.blocks) {
+            panel.innerHTML = '';
+            panel.appendChild(self.ui._errNode('Could not load this cook session\'s schedule'));
+            return;
+          }
+          if (!pc.agenda_id) { self.ui._renderLiveCookPanel(panel, pc, null); return; }
+          RPGACE.sb.select('rpgace_agendas', 'select=started_at&id=eq.' + pc.agenda_id)
+            .then(function(aRows) {
+              var startedAt = (aRows && aRows[0] && aRows[0].started_at) || null;
+              self.ui._renderLiveCookPanel(panel, pc, startedAt);
+            })
+            .catch(function() { self.ui._renderLiveCookPanel(panel, pc, null); });
+        })
+        .catch(function(e) {
+          panel.innerHTML = '';
+          panel.appendChild(self.ui._errNode('Could not load cook session: ' + (e.message || 'unknown error')));
+        });
+    },
+
+    _renderLiveCookPanel: function(panel, pc, startedAt) {
+      var self = RPGACE.modules.cookingOracle;
+      panel.innerHTML = '';
+
+      var header = document.createElement('div');
+      header.style.cssText = 'display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;';
+      var titleBox = document.createElement('div');
+      var eyebrow = document.createElement('div');
+      eyebrow.style.cssText = 'font-family:\'Cinzel\',serif;font-size:11px;color:var(--green);letter-spacing:1px;';
+      eyebrow.textContent = '🍳 LIVE COOK SESSION';
+      titleBox.appendChild(eyebrow);
+      var elapsedLine = document.createElement('div');
+      elapsedLine.style.cssText = 'font-size:12px;color:var(--muted);margin-top:2px;';
+      titleBox.appendChild(elapsedLine);
+      header.appendChild(titleBox);
+      var closeBtn = self.ui._mkBtn('✕ Close', 'plainLink', { extra: 'width:auto;padding:4px 8px;' });
+      closeBtn.onclick = function() {
+        self.ui._clearLiveCookIntervals();
+        var p = document.getElementById('live-cook-panel');
+        if (p) p.remove();
+      };
+      header.appendChild(closeBtn);
+      panel.appendChild(header);
+
+      if (startedAt) {
+        var startMs = new Date(startedAt).getTime();
+        var tick = function() {
+          var mins = Math.max(0, Math.round((Date.now() - startMs) / 60000));
+          elapsedLine.textContent = 'Started ' + self.logic._fmtMin(mins) + ' ago';
+        };
+        tick();
+        var elapsedInterval = setInterval(tick, 30000);
+        self._liveCookIntervals.push(elapsedInterval);
+      } else {
+        elapsedLine.textContent = 'Not marked as started yet';
+      }
+
+      var list = document.createElement('div');
+      pc.schedule.blocks.slice().sort(function(a, b) { return a.start - b.start; }).forEach(function(b) {
+        var meta = self.ui.STEP_META[b.type] || { color: 'var(--muted)', label: b.type || 'Step' };
+        var row = document.createElement('div');
+        row.style.cssText = 'border-left:3px solid ' + meta.color + ';background:rgba(255,255,255,0.03);border-radius:0 6px 6px 0;padding:7px 12px;margin-bottom:6px;font-size:12px;';
+        var top = document.createElement('div');
+        top.style.cssText = 'display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;color:' + meta.color + ';font-weight:700;font-size:11px;text-transform:uppercase;';
+        var left = document.createElement('span');
+        left.textContent = self.logic._fmtMin(b.start) + '–' + self.logic._fmtMin(b.end) + ' · ' + meta.label;
+        var right = document.createElement('span');
+        right.textContent = b.recipeTitle;
+        top.appendChild(left);
+        top.appendChild(right);
+        row.appendChild(top);
+        var desc = document.createElement('div');
+        desc.style.cssText = 'color:var(--text);margin-top:2px;';
+        desc.textContent = b.description || '';
+        row.appendChild(desc);
+        var blockIng = self.ui._renderStepIngredients({ ingredients_used: b.ingredientsUsed });
+        if (blockIng) row.appendChild(blockIng);
+        // Real, shared timer/reminder controls (rule 8) — a schedule
+        // block only carries a computed [start,end) window, not the
+        // original step's separate active/passive split, so a single
+        // honest countdown covering the block's real duration is passed
+        // in as active_duration_min — never a guessed split.
+        row.appendChild(self.ui._mkStepTimerControls({
+          description: b.description,
+          active_duration_min: Math.max(0, b.end - b.start),
+          passive_duration_min: 0,
+        }, self._liveCookIntervals));
+        list.appendChild(row);
+      });
+      panel.appendChild(list);
+    },
+
     // H18 (Sep 16 2026) — the ONE shared render for a single ingredient's
     // 5-color status row (rule 8), used by the recipe card, the schedule
     // preview, and the shopping list — never 3 hand-rolled copies of the
@@ -38015,78 +38235,11 @@ RPGACE.register('cookingOracle', {
         var stepIng = self.ui._renderStepIngredients(step);
         if (stepIng) row.appendChild(stepIng);
 
-        // Real, simple per-step timer - the "timers" half of the original
-        // ask. Times the LONGER of active/passive duration (whichever is
-        // present); a real countdown, not decorative.
-        var timerMin = Math.max(step.active_duration_min || 0, step.passive_duration_min || 0);
-        if (timerMin > 0) {
-          var timerRow = document.createElement('div');
-          timerRow.style.cssText = 'margin-top:6px;display:flex;align-items:center;gap:8px;';
-          var timerBtn = self.ui._mkBtn('⏱ Start ' + timerMin + 'm timer', 'inline');
-          var timerText = document.createElement('span');
-          timerText.style.cssText = 'font-size:12px;color:var(--gold);font-weight:700;display:none;';
-          timerBtn.onclick = function() {
-            if (timerBtn._interval) return; // already running
-            var remaining = timerMin * 60;
-            timerBtn.style.display = 'none';
-            timerText.style.display = 'inline';
-            var tick = function() {
-              var m = Math.floor(remaining / 60), s = remaining % 60;
-              timerText.textContent = '⏱ ' + m + ':' + String(s).padStart(2, '0');
-              if (remaining <= 0) {
-                clearInterval(timerBtn._interval);
-                timerText.textContent = '✅ Time\'s up';
-                RPGACE.utils.toast('⏱ Timer done: ' + (step.description || 'step').slice(0, 60), '#C9A84C', 4000);
-                return;
-              }
-              remaining--;
-            };
-            tick();
-            timerBtn._interval = setInterval(tick, 1000);
-            activeStepIntervals.push(timerBtn._interval);
-          };
-          timerRow.appendChild(timerBtn);
-          timerRow.appendChild(timerText);
-          row.appendChild(timerRow);
-        }
-
-        // H24 (Sep 17 2026, 9th pass, real Alex ask: "stiring every 8-10
-        // minutes should have a timer too so i can focus on getting shit
-        // done rather than the time") — a real, second, REPEATING
-        // reminder, genuinely different from the single countdown above
-        // (which only ever fires once, at the end of the whole step).
-        // Only ever offered when the step's own real description text
-        // actually states an interval (rule 7 — never invented; "every
-        // 8-10 minutes" is real text already in this recipe, not a
-        // guessed cadence) — a step with no stated interval gets no
-        // reminder button at all. Uses the real LOWER bound of a stated
-        // range (e.g. "8" from "every 8-10 minutes") so the reminder
-        // never fires later than the recipe's own real minimum.
-        var intervalMatch = /every\s+(\d+)(?:\s*(?:-|–|to)\s*(\d+))?\s*(?:minutes?|mins?|min)\b/i.exec(step.description || '');
-        if (intervalMatch) {
-          var intervalMin = parseInt(intervalMatch[1], 10);
-          var intervalLabel = intervalMatch[2] ? (intervalMatch[1] + '-' + intervalMatch[2] + 'm') : (intervalMatch[1] + 'm');
-          var remindRow = document.createElement('div');
-          remindRow.style.cssText = 'margin-top:6px;';
-          var remindBtn = self.ui._mkBtn('🔁 Remind me every ' + intervalLabel, 'inline', { color: '#9B59B6', borderColor: 'rgba(155,89,182,0.4)' });
-          remindBtn.onclick = function() {
-            if (remindBtn._interval) {
-              clearInterval(remindBtn._interval);
-              remindBtn._interval = null;
-              remindBtn.textContent = '🔁 Remind me every ' + intervalLabel;
-              RPGACE.utils.toast('🔁 Reminder stopped', '#E2A83D', 1800);
-              return;
-            }
-            remindBtn.textContent = '⏹ Stop reminder (every ' + intervalLabel + ')';
-            RPGACE.utils.toast('🔁 Reminder started — every ' + intervalLabel + ', starting now', '#9B59B6', 2400);
-            remindBtn._interval = setInterval(function() {
-              RPGACE.utils.toast('🔁 ' + intervalLabel + ' reminder — ' + (step.description || 'this step').slice(0, 70), '#9B59B6', 4500);
-            }, intervalMin * 60 * 1000);
-            activeStepIntervals.push(remindBtn._interval);
-          };
-          remindRow.appendChild(remindBtn);
-          row.appendChild(remindRow);
-        }
+        // H24 (Sep 17 2026, 10th pass) — real, shared builder (rule 8),
+        // extracted so the exact same countdown/reminder mechanics also
+        // drive the new Live Cook Mode panel (ui._openLiveCookMode) —
+        // see ui._mkStepTimerControls's own comment for the full reasoning.
+        row.appendChild(self.ui._mkStepTimerControls(step, activeStepIntervals));
 
         stepList.appendChild(row);
         }); // end (recipe.steps || []).forEach

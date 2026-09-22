@@ -1,0 +1,115 @@
+H24 10TH PASS: A REAL "START COOK" BUG, FIXED BY BUILDING A REAL LIVE
+COOK MODE PANEL IN ORACLE — RE-USING THE SAME REAL TIMER/REMINDER
+MECHANICS THE RECIPE CARD ALREADY BUILT
+==========================================================================
+
+ALEX'S VERBATIM REPORT
+------------------------------------------------------------
+"i clicked start on cook in schedule, nothing happened, can it take me to
+oracle where i will have an on hand assisstant with the scaffolding for
+live events happening, this window in oracle can also be used as timers
+when cooking so its all happenning as i go"
+
+REAL EVIDENCE FIRST (rule 4), NOT A GUESSED FIX
+------------------------------------------------------------
+An initial hypothesis (a UUID-type mismatch between rpgace_agendas.id and
+a client-generated string id) was checked and found FALSE — a direct
+information_schema query confirmed rpgace_agendas.id is `text`, not
+`uuid`. The real check that mattered: a direct query of Alex's own live
+rpgace_agendas row (source_type='planned_cook') confirmed started_at WAS
+genuinely written by startScheduledTask's real Supabase call
+(2026-09-17 18:01:38+00). The click was never silently failing — the
+real gap was that a successful click produced no meaningful live-cooking
+experience, only a small, easy-to-miss flag flip inside the Daily
+Schedule grid. That's the real thing this pass fixes.
+
+THE REAL BUILD
+------------------------------------------------------------
+A new real, persistent panel — ui._openLiveCookMode(plannedCookId) +
+ui._renderLiveCookPanel — navigates to the Oracle page (showPage
+('advisor'), the same real, already-established navigation call used at
+~12 other sites in this codebase) and inserts a real #live-cook-panel
+div directly before Oracle's own .chat-wrap, so the assistant stays
+genuinely on-screen and reachable the whole time Alex is cooking, per
+his own explicit ask ("on hand assisstant... so its all happenning as i
+go").
+
+The panel loads the real, already-computed schedule straight from
+planned_cooks.schedule.blocks (H6's own real multi-recipe scheduler
+output, reused verbatim, rule 8 — never re-derived), renders each real
+step block (recipe title, real [start,end) time range via the same
+logic._fmtMin/STEP_META treatment the existing Schedule Preview popup
+already uses, description, real ingredient chips via
+ui._renderStepIngredients), and gives each block the exact SAME real
+timer/reminder controls the recipe card's own Method list already has.
+
+A REAL, NECESSARY EXTRACTION BEFORE THE BUILD (rule 8)
+------------------------------------------------------------
+The recipe card's per-step countdown timer + H24-9th-pass recurring
+"every N minutes" reminder used to live inline inside _showRecipeCard's
+own renderSteps closure. Pulled out into a new shared
+ui._mkStepTimerControls(step, activeIntervals) FIRST, verified via
+node --check and a full re-run of every pre-existing suite that touches
+this code path (H24 9th pass: 28/28, H24 8th pass: 30/30, zero
+regressions), THEN reused by both _showRecipeCard's Method list (now a
+one-line call instead of ~70 duplicated lines) and the new Live Cook
+Mode panel. Since a schedule block only carries a computed [start,end)
+window, not the original step's separate active/passive duration split,
+the panel passes a real, honest single duration (block.end - block.start
+as active_duration_min, 0 as passive) — never a guessed split of a value
+that no longer exists once the step became part of a merged multi-recipe
+schedule.
+
+A REAL LEAK-PREVENTION CHECK, BUILT AND VERIFIED, NOT ASSUMED
+------------------------------------------------------------
+The panel is re-openable (a real re-open replaces the existing panel and
+clears every real tracked interval first, self._liveCookIntervals,
+mirroring _showRecipeCard's own activeStepIntervals discipline) — a
+headless test proved re-opening never doubles the real tracked interval
+count and never leaves 2 real #live-cook-panel nodes in the DOM. The
+close button clears every real interval (the elapsed-since-start ticker
+plus any running per-step timer/reminder) and removes the panel.
+
+REAL WIRING — startScheduledTask
+------------------------------------------------------------
+startScheduledTask (the LEGACY global the Daily Schedule grid's "Start"
+button already calls) gained one real, additive check: when the clicked
+entry's own source_type is 'planned_cook' (H12's own real Schedule tag,
+carrying the true planned_cooks.id as source_id), it now also calls
+ui._openLiveCookMode(source_id) — on top of, never instead of, its
+existing toast/re-render/Supabase-write behaviour, which every other
+plain 'agenda' scheduled task still relies on unchanged.
+
+HONEST, REAL FAILURE HANDLING
+------------------------------------------------------------
+A genuinely missing/malformed schedule (a real load failure, or a
+planned_cooks row with no real schedule.blocks) shows a real error node
+via the shared ui._errNode, never a blank or silently broken panel. A
+session with no real agenda_id yet (never actually started) shows an
+honest "Not marked as started yet" line instead of faking an elapsed
+timer against nothing.
+
+VERIFICATION
+------------------------------------------------------------
+20 new real headless-Chromium assertions (the real _mkStepTimerControls
+extraction still renders/fires identically after being pulled out of
+_showRecipeCard — countdown button, interval-reminder regex match/no-
+match, real interval-id tracking; real navigation to page-advisor; the
+real panel inserted before .chat-wrap; real planned_cooks + rpgace_
+agendas reads with the correct real ids; a real elapsed-since-start line
+computed from a real started_at; both real recipe titles rendering from
+real schedule.blocks; the real stir-reminder control surfacing from a
+block's own real description text; a real countdown control per real
+block; the honest "not started yet" state with no real agenda_id; a real
+error node on a genuinely broken/missing schedule; the real close
+button's interval-clear + panel-removal; real re-open leak-prevention;
+and the real startScheduledTask wiring — a planned_cook entry opens Live
+Cook Mode with the correct real source_id, confirmed via a direct call
+audit, not just an absence of a crash). Plus a full re-run of the H24 9th
+pass suite (28/28) and H24 8th pass suite (30/30) confirming zero
+regression from the _mkStepTimerControls extraction. 78 total assertions
+across this pass and its 2 direct regression checks, zero failures, zero
+real page errors.
+
+node --check clean, re-minified, cache-bust bumped 20260917m -> 20260922a.
+==========================================================================
