@@ -7936,14 +7936,19 @@ RPGACE.register('contentRepurpose', {
     console.log('[RPGACE:contentRepurpose] Quick bar restructured');
   },
 
+  // F15 (Sep 22 2026) — real rewire, closing the rule-8 duplicate flagged
+  // Sep 4 while building F0 (quickActions.ui._setup, see that module's
+  // own header comment). Every button here used to run its own bespoke
+  // sendToOracle/fillGaps/RPGACE.api closure — a second, independent
+  // chat-relay/Composio-call implementation living right next to the one
+  // F0 already rewired for the .quick-row bar. Real spec: ceo_plan_items
+  // item_code F15. All 4 buttons now dispatch through the exact same
+  // oracleControl._showActionConfirm(row) confirm+execute mechanism F0
+  // already proved, using the same 4 real oracle_actions rows
+  // (new_quests/draft_email/yt_stats/log_notion) — never a second
+  // implementation of the same 4 actions.
   _injectAgentButtons: function() {
     if (document.getElementById('agent-quick-btns')) return;
-    // Pre-existing dead local, unused anywhere in this function's own
-    // body (checked directly — every onclick handler below calls
-    // RPGACE.utils/RPGACE.api directly, never `self.`) — kept and
-    // swapped to the module handle in place rather than deleted, same
-    // treatment as chroniclesLog.ui._openCard elsewhere in this series.
-    var self = RPGACE.modules.contentRepurpose;
     var agentPage = document.getElementById('page-agents');
     if (!agentPage) return;
 
@@ -7956,37 +7961,30 @@ RPGACE.register('contentRepurpose', {
     var btnGrid = document.createElement('div');
     btnGrid.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;';
 
-    var actions = [
-      { label: '📋 New Quests', onclick: function() {
-        if (typeof showPage==='function') showPage('advisor');
-        setTimeout(function(){ RPGACE.utils.sendToOracle('Give me 3 specific career quests for @AceSanyaBeats today. FL Studio beats, UK hip hop, aspiring producers 18-35. Each: QUEST: [name] | XP: [amount] | Category: [type]'); }, 300);
-      }},
-      { label: '📧 Draft Email', onclick: function() {
-        if (typeof showPage==='function') showPage('advisor');
-        setTimeout(function(){ RPGACE.utils.fillGaps('Draft a professional email for @AceSanyaBeats. PURPOSE: [DESCRIBE WHO YOU ARE EMAILING AND WHY]. Sign as: Alex | @AceSanyaBeats | acesanyabeats@gmail.com', function(f){ RPGACE.utils.sendToOracle(f); }); }, 300);
-      }},
-      { label: '📓 Log to Notion', onclick: function() {
-        var today = new Date().toISOString().split('T')[0];
-        RPGACE.api('NOTION_CREATE_NOTION_PAGE', {
-          parent_id: '3830f922-7ad0-8064-ac35-f6ebaff22b99',
-          title: 'RPGACE Session — ' + today,
-          markdown: '## Session Log\n**Date:** ' + today + '\n\nLogged from RPGACE.'
-        }).then(function(){ RPGACE.utils.toast('📓 Logged to Notion', '#9B6EC8', 3000); })
-          .catch(function(e){ RPGACE.utils.toast('Error: '+e.message, '#CC4A4A', 3000); });
-      }},
-      { label: '🎬 YT Stats', onclick: function() {
-        RPGACE.api('SUPADATA_GET_YOUTUBE_CHANNEL', { id: '@AceSanyaBeats' })
-          .then(function(r){ var d=r.data||r; RPGACE.utils.sendToOracle('📊 YouTube Stats:\nChannel: '+(d.name||'AceSanya')+'\nVideos: '+(d.videoCount||0)+'\nViews: '+(d.viewCount||0)+'\n\nWhat are my 3 most important growth actions this week?'); if(typeof showPage==='function') showPage('advisor'); })
-          .catch(function(e){ RPGACE.utils.toast('Error: '+e.message,'#CC4A4A',3000); });
-      }},
-    ];
+    var ACTION_ID = {
+      '📋 New Quests':    'new_quests',
+      '📧 Draft Email':   'draft_email',
+      '📓 Log to Notion': 'log_notion',
+      '🎬 YT Stats':      'yt_stats',
+    };
 
-    actions.forEach(function(a) {
-      var btn = document.createElement('button');
-      btn.className = 'agent-btn';
-      btn.textContent = a.label;
-      btn.onclick = a.onclick;
-      btnGrid.appendChild(btn);
+    var oc = RPGACE.modules.oracleControl;
+    if (!oc || !oc._fetchActions) { console.warn('[contentRepurpose] oracleControl unavailable, agent quick-action bar not wired'); return; }
+
+    oc._fetchActions().then(function() {
+      Object.keys(ACTION_ID).forEach(function(label) {
+        var actionId = ACTION_ID[label];
+        var btn = document.createElement('button');
+        btn.className = 'agent-btn';
+        btn.textContent = label;
+        btn.onclick = function() {
+          var row = oc._byId(actionId);
+          if (!row) { RPGACE.utils.toast('⚠️ This quick action isn\'t configured yet', '#E2A83D', 2500); return; }
+          oc._showActionConfirm(row);
+        };
+        btnGrid.appendChild(btn);
+      });
+      console.log('[RPGACE:contentRepurpose] Agent quick-action bar patched (F15 rewire — all 4 through oracleControl)');
     });
 
     wrap.appendChild(lbl); wrap.appendChild(btnGrid);
