@@ -1,0 +1,43 @@
+REAL, ARCHIVED COPY — error_log row 81bcf07f-bbda-46ea-b684-6b290a2c726c's
+ORIGINAL `attempts` field, cleared Sep 22 2026 as part of the /Routine
+data-integrity fix (see CLAUDE.md's swipe-gesture-freeze bullet, Sep 22
+correction).
+==========================================================================
+
+WHY THIS WAS CLEARED FROM THE LIVE ROW
+------------------------------------------------------------
+This row's error_signature ("ui_toast|toast()|App froze for <n>ms
+(logged)") and message are unambiguously about the real, recurring
+perfWatch freeze toast — but its `attempts` array (below) is a full
+investigation narrative about a COMPLETELY DIFFERENT, already-closed
+bug: the Aug 27 quest-creation "Unexpected token '<', <!DOCTYPE" /
+Vercel-SSO issue, closed per CLAUDE.md Sep 4 (commit f4abb3a). The
+attempt is dated 2026-08-27T13:38:35, the same day as this row's own
+first_seen_at (2026-08-27T13:23:46) — almost certainly a prior session
+ran a manual UPDATE against this exact row id while working the quest-
+creation bug, then the row got silently repurposed for the real,
+distinct freeze symptom (whose signature naturally matches on any
+future "App froze for Nms" toast), without its stale attempts ever
+being cleared. Kept here, not deleted, per this project's own archive-
+never-delete discipline (rule 8/achiever.html precedent) — the
+quest-creation investigation itself is real, valuable history, it was
+just attached to the wrong row.
+
+THE ORIGINAL ATTEMPTS CONTENT (verbatim, as read from Supabase Sep 22
+2026 before being cleared)
+------------------------------------------------------------
+[
+  {
+    "at": "2026-08-27T13:38:35.224523+00:00",
+    "by": "orchestrator_cc_session_2026-08-27",
+    "result": "Real progress, not a resolution: 3 real candidate hypotheses (SSO gate, missing-auth-header, service-worker fallback) were each checked against direct evidence and RULED OUT, one by one, rather than left as untested guesses. The original hypothesis in this row's own backtrack_note (a routing/platform-layer intercept before the function ever runs, evidenced by zero request-path log lines despite real repeated calls) still stands as the leading theory and is now on firmer ground for having survived 3 real attempts to disprove it - but the SPECIFIC mechanism (archiver cold-start import crash in the shared api/data-write.js? a genuinely different platform-level cause?) is still unconfirmed. Per rule 4, stopping here rather than guessing a 4th blind theory.",
+    "next_step": "Two concrete, cheap things only Alex can do (rule 10 - handed with a real checkable outcome, not just \"look into it\"): (a) Vercel dashboard -> rpgace project -> Deployments -> the current production deployment -> Functions tab -> open api/data-write.js's own function detail page and check its Build/Invocation logs directly for an import-time error mentioning `archiver` (this project's own Vercel MCP tools could not surface this - it needs the dashboard's own function-level view); (b) next time this quest-creation toast fires live, open DevTools -> Network tab -> find the failing /api/data-write POST -> report its actual HTTP status code and the first ~200 characters of the raw response body (not just the parsed error) - that single piece of evidence would very likely settle which of the remaining candidates is real.",
+    "what_was_tried": "Real, direct evidence-gathering via Vercel MCP tools + direct code read (not a guess) before touching anything, per rule 4. (1) Confirmed via mcp__Vercel__get_project_deployment_protection: SSO/Vercel-Authentication IS enabled on this project (all_except_custom_domains) - a real, separate finding worth Alex knowing about regardless of this bug, but the evidence below argues against it being THIS bug's cause. (2) mcp__Vercel__get_runtime_logs group_by=requestPath over a reliable 1h window (Hobby plan's real log-retention ceiling - a 24h/7d query silently clamps to whatever is actually retained, learned the hard way this pass) shows /api/auth and /api/composio succeeding normally in the SAME timeframe error_log shows repeated /api/data-write failures (last_seen_at up to :13:05:46) - if SSO protection blocked the whole domain, those would fail too; they do not. (3) mcp__Vercel__get_runtime_errors over 7d: zero clustered runtime errors/crashes for any route. (4) Direct code read of api/_context.js requireAuth(): a missing/wrong X-RPGACE-Auth header returns a real, valid JSON 401 ({error:Unauthorized}), never HTML - rules out the missing-auth-header theory as an explanation for this specific \"Unexpected token <, <!DOCTYPE\" symptom (a real, valid JSON error would parse fine, not throw this). (5) Direct code read of sw.js: explicitly, correctly excludes every /api/* path from its fetch handler (`if (url.pathname.indexOf('/api/')===0) return;`) - rules out the service-worker-serving-cached-index.html-as-a-fallback theory, a real candidate that would otherwise perfectly explain \"got HTML back with zero server log trace.\" (6) Direct code read of authGate._installFetchWrap(): structurally correct, and independently confirmed working in this exact session (the composio/auth calls above prove _apiSecret was set and the header attached correctly post-login)."
+  }
+]
+
+This investigation is real and already reflected in CLAUDE.md's own
+"real, superseding correction" for the quest-creation bug (closed
+Sep 4 2026, commit f4abb3a) — nothing here is lost, it was simply
+attached to the wrong error_log row.
+==========================================================================

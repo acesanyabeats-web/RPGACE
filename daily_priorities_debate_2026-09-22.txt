@@ -1,0 +1,135 @@
+/ROUTINE — DAILY PRIORITIES DEBATE, Sep 22 2026
+==========================================================================
+Run immediately after /Bedtime closed out the H24 10th pass (Live Cook
+Mode). This session had no Alex message pending a task — the evidence
+pass below is what actually surfaced the day's real backlog.
+
+TEAM 1 — GODMODE EVIDENCE PASS
+------------------------------------------------------------
+Checked: git log (last 15 commits, all H1-H24 cooking work, clean);
+oracle_dev_suggestions (0 new); graphify_jobs (0 undrained);
+error_log (3 active); system_map_flags (2 flagged); oracle_actions
+(4 rows still unwired beyond log_beat); ceo_plan_items (26 red/yellow,
+mostly Galaxy-Map-family items covered by the standing Sep 15 pause,
+not re-litigated here); reference_tracks.scale/genre (confirmed still
+0/32 via a live query, not assumed from CLAUDE.md's own text).
+
+REAL FINDING #1 (the headline one) — CLAUDE.md's own swipe-freeze
+landmine text is now confirmed STALE, and the underlying freeze DID
+recur, extensively:
+  - error_log row 81bcf07f (signature "App froze for <n>ms (logged)")
+    shows first_seen_at 2026-08-27, last_seen_at 2026-09-20,
+    occurrence_count 69 — the exact freeze CLAUDE.md's Sep 15 bullet
+    said a live error_log query had come up empty for. It has NOT
+    stayed empty; it started firing the day after G109 shipped and
+    kept firing for over 3 weeks, real evidence, not guessed.
+  - CLAUDE.md's own claim ("it should already hold the real duration
+    + a stack") is checked against the real perfWatch.init code
+    (rpgace_core.js, the PerformanceObserver('longtask') listener) and
+    found FALSE for the "stack" half — only `ms` (rounded duration) is
+    ever passed into the toast/error_log capture. The browser's native
+    Long Task API gives no call stack; `console.warn`'s own richer
+    `entry` object is never persisted anywhere, only devtools-visible.
+    A future session trusting the old claim would waste time hunting
+    for a stack that was never built.
+  - Real, separate data-integrity anomaly found on the SAME row: its
+    `attempts` array holds a full investigation narrative that is
+    plainly about a DIFFERENT, already-closed bug (the Aug 27 quest-
+    creation "Unexpected token '<'" / SSO issue, closed per CLAUDE.md
+    Sep 4) — dated the same day as this row's own first_seen_at. The
+    error_signature and message are unambiguously about the freeze,
+    not the quest bug. Likely cause: a prior session's manual UPDATE
+    against this row id instead of a fresh insert for the new real
+    symptom. Real, worth a correction so a future session doesn't read
+    the wrong investigation history against the wrong bug.
+  - Severity read honestly: 669ms (the latest occurrence) is nowhere
+    near the original ~12,265ms report — this may be routine main-
+    thread work (large JSON renders, minified-file parse on boot)
+    tripping the >=500ms threshold, not a reproduction of the dramatic
+    original freeze. The row's `message` only ever shows the LATEST
+    occurrence's ms value, so whether any of the other 68 occurrences
+    were much worse is genuinely unknown from this data alone.
+
+REAL FINDING #2 — a `system_map_flags` row is already resolved but
+never marked so. The flagged gap (no RIVER_FLOWS edge from River III
+to River XI) was checked directly against `scripts/graphify_river_
+group.py` line 1387 and found ALREADY FIXED — GMR-3 (Sep 16, same day
+the flag was raised) added exactly this edge. A real, cheap doc-hygiene
+fix: mark the flag resolved with a resolution_note pointing at the
+real fix.
+
+REAL FINDING #3 — 4 real, Alex-approved `oracle_actions` rows have no
+coded dispatch branch yet (`new_quests`→questEngine.refresh,
+`draft_email`→Gmail draft via Composio, `yt_stats`→YouTube stats via
+Composio, `log_notion`→Notion page via Composio) — per CLAUDE.md's own
+standing session-start-check rule, an approved row with no branch is a
+real, live gap: the per-use confirm popup shows for it, Accept only
+ever produces oracleControl._execute's own "not wired up yet" toast.
+All 4 targets are real, already-proven mechanisms elsewhere in the
+codebase (Gmail/YouTube/Notion Composio calls, questEngine's own
+refresh) — this is real, bounded, mechanical wiring work, not a
+design question.
+
+REAL FINDING #4 — `galaxy_map_hub.html` self-contradicts its own page
+count ("20 real pages" vs "21 pages" in 2 different places, flagged
+Sep 15, still unfixed) — real but small, Galaxy-Map-adjacent, and the
+project is under a standing Sep 15 pause on NEW Galaxy Map work
+(56% of the prior 2 weeks' commits were Galaxy-Map/meta while real
+product debt sat untouched). Named, not silently dropped, but ranked
+low.
+
+REAL FINDING #5 — `reference_tracks.scale`/`genre` confirmed still
+0/32 via a live query. Checked the existing backfill mechanism
+(`refCorpus._showBackfillPopup`) directly rather than assuming it's
+automatable — it's explicitly a hand-judgment UI ("Scale/genre are
+your own judgment call per track"), genuinely not something a session
+can fill in without Alex's actual musical ear. Stays flagged for him,
+not attempted.
+
+Other 2 active error_log rows (a single 504 Gateway Timeout, Sep 13;
+a single "Oracle is still answering" busy-guard message, Aug 28) are
+each 1-occurrence and low-signal — logged, not chased.
+
+TEAM 2 — REAL COUNTER-CASE
+------------------------------------------------------------
+Argued: the Galaxy Map hub.html self-contradiction (Finding #4) is
+genuinely cheap (a 2-line generator-script fix) and the ratified GMR
+plan already established that closing a gap in ALREADY-SHIPPED work is
+exempt from the pause — this counts, since the page already exists and
+just says something false about itself. Worth doing today, not
+deferred indefinitely.
+Verdict: fair point, but it's cosmetic (zero functional impact, no
+reader is blocked by it) and genuinely Galaxy-Map generator work — kept
+on the list, ranked below the 3 mechanical/data-integrity items above
+it, not dropped.
+
+Also argued: the smoke_test.html 70-row hand-test backlog is the
+single largest standing item in the project and deserves a visible
+line item even though it can't be executed without Alex — silence on
+it would be worse than a flagged reminder.
+Verdict: agreed, kept as an explicit, low-ranked "needs Alex" item
+rather than omitted.
+
+FINAL TOP 10 (Council of 5 lock-in)
+------------------------------------------------------------
+1. Correct CLAUDE.md's stale swipe-freeze bullet with the real,
+   confirmed Sep 22 evidence (69 occurrences since Aug 27, no stack
+   ever captured — only duration).
+2. Fix the mismatched `attempts` history on error_log row 81bcf07f
+   (real data-integrity correction, not a code change).
+3. Resolve the stale `system_map_flags` row (River III->XI edge,
+   already fixed by GMR-3) with a real resolution_note.
+4. Wire `oracle_actions.new_quests` -> questEngine.refresh.
+5. Wire `oracle_actions.draft_email` -> Gmail draft (Composio).
+6. Wire `oracle_actions.yt_stats` -> YouTube channel stats (Composio).
+7. Wire `oracle_actions.log_notion` -> Notion page (Composio).
+8. Fix `galaxy_map_hub.html`'s self-contradictory page count (20 vs 21).
+9. Flag `reference_tracks.scale`/`genre` (still 0/32) to Alex directly
+   — needs his own musical judgment, not auto-buildable.
+10. Keep the smoke_test.html 70-row verification backlog visible as
+    the standing largest open item — needs Alex's own hands, not
+    executable today.
+
+Items 1-8 are real, bounded, executable without Alex today. Items 9-10
+are honest flags, not build tasks. Moving straight into item 1.
+==========================================================================
