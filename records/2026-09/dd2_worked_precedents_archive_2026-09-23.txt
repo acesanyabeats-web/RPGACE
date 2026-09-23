@@ -1,0 +1,82 @@
+RPGACE — DD-2: Aintergration Worked Precedents 1-6 archived
+Date: 2026-09-23
+Trigger: continuation of the ratified "Oversight Doc Dedup & Compression"
+plan, immediately following DD-1's completion (all 6 CLAUDE.md domains
+collapsed same session). DD-2's own scope, per the original ratified
+plan: archive Worked Precedents 1-6 out of CLAUDE.md's Aintergration
+section.
+
+===========================================================================
+What this block was and why it qualified for archiving
+===========================================================================
+CLAUDE.md's "### Aintergration" subsection (Invokable Frameworks) defines
+the protocol itself (still live, untouched by this pass) followed by 6
+"Worked precedent" entries (July 20-22) -- real illustrative case studies
+showing the protocol run against specific real proposals (a Framer
+Motion/Next.js website guide, OmniRoute, a safety-evading skill bundle,
+and 3 batches of a system-design cheat-sheet book). These are historical
+demonstrations of the protocol working, not durable operating facts a
+fresh session needs to re-read to understand current state -- the exact
+same "story vs. fact" distinction DD-1 already applied to Current State,
+just for a different section of the file. 17,039 chars across 29 lines.
+
+===========================================================================
+A real check before archiving: were any embedded open questions still
+open?
+===========================================================================
+Rather than archive blindly, each of the 3 real open findings the
+precedents themselves surfaced was individually re-checked against
+current state:
+
+  - XSS/`innerHTML` risk (Worked Precedent 6, flagged "NOT investigated
+    yet"): grepped patch_notes.html and found it was actually closed
+    July 28 (Round 30) -- `renderMarkdown()` now escapes HTML before its
+    markdown regex chain, confirmed via direct card read. Was stale
+    inside the block being archived; the collapsed pointer now states
+    the real current status (closed) with a link, not the archived
+    text's own "not yet" framing.
+  - Supabase backup/PITR question (Worked Precedent 4/5): already
+    confirmed closed elsewhere in CLAUDE.md itself (Known Landmines --
+    Alex confirmed staying on Supabase's Free plan, accepting the risk,
+    Sep 15 2026 `/paranoia` pass) -- the collapsed pointer references
+    this real, already-documented resolution rather than re-stating it.
+  - Website-performance-never-measured (Worked Precedent 5): re-checked,
+    genuinely STILL true and STILL open -- CLAUDE.md's own Known
+    Landmines section already carries this as its own dedicated entry
+    ("A real Lighthouse/PageSpeed audit cannot be run from inside a
+    Claude Code session..."), confirmed unchanged. The collapsed pointer
+    says so honestly rather than implying it was resolved.
+
+This matches the same discipline DD-1's Taxonomy batch used: an archived
+narrative block can still contain a genuinely live open item, and
+archiving must never silently bury that -- check each one, state the
+real current status in the collapsed pointer, and only archive the
+verbose historical detail once its outcome (open or closed) is honestly
+represented.
+
+===========================================================================
+Real, measured results
+===========================================================================
+Worked Precedents 1-6 block: 17,039 -> 1,302 chars (92% reduction --
+correctly this dramatic since, unlike Taxonomy, every real fact here was
+either purely illustrative history or already duplicated/resolved
+elsewhere; nothing here was itself a durable operating fact unique to
+this location).
+
+Whole-file running total: CLAUDE.md 250,429 -> 234,692 chars (~44%
+smaller than the 416,057-char size at ratification, across DD-1's 6
+batches plus this DD-2 pass).
+
+Verified before committing: CLAUDE.md bracket balance (84/84, exact) and
+backtick balance (even, 3166); the one new link (the XSS-fix card)
+confirmed to resolve to a real, present anchor in patch_notes.html; the
+Aintergration protocol's own definition (the numbered procedure, the
+Council-of-5-naming-collision note, the GODMODE-boundary note) is
+completely untouched -- only the 6 illustrative precedents moved.
+
+===========================================================================
+Remaining on the ratified plan
+===========================================================================
+DD-3 (fix interconnection_map.md/system_flow_map.md's 28 changelog-rule
+violations) and DD-4 (standing bloat-checker, confirmed to also cover
+link-rot) haven't started.
