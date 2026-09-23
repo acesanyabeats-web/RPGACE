@@ -1,0 +1,112 @@
+RPGACE — DD-1 batch 5: External-handoff-lanes collapse
+Date: 2026-09-23
+Trigger: Alex's own direct continuation — "Keep going into
+External-handoff-lanes" — following batches 1 (HABITS), 2 (Oracle),
+3 (Video/content pipeline), 4 (Open forks).
+
+===========================================================================
+Structural note: this section's Aug 11 cascade is written as bare
+paragraphs, not "- **" bullets
+===========================================================================
+The bulk of this section (10 of ~15 real items, 16,596 of the section's
+21,715 chars) is a chronological sequence of "Real extension, Aug 11..."
+paragraphs with NO leading bullet marker, separated by blank lines --
+this project's own existing local formatting convention for this
+specific cluster (confirmed by direct read before touching anything,
+rule 1). Every replacement one-liner in this batch matches that same
+bare-paragraph style, rather than introducing a new "- " marker style
+into the middle of an already-consistent block.
+
+===========================================================================
+Anchor-matching this cluster needed real care, not the first grep hit
+===========================================================================
+Aug 11 alone produced roughly 28 real patch_notes.html cards (a single
+giant build-out day), many topically adjacent (multiple cards about
+graphify/river-grouping/minotaur_map.html/CEO-framework work on the same
+date). Several automated substring searches for a CLAUDE.md bullet's own
+distinctive phrase landed on the WRONG card at first -- e.g. searching
+"A13" alone matched an unrelated card purely because "A13" appeared in
+its own unrelated text; searching "Whisper" for the external-contributor
+audit bullet matched a completely different Sep 1 card that also happens
+to mention Whisper in passing. Every final match in this batch was
+re-verified by reading the actual matched card's title/opening sentence
+against the CLAUDE.md bullet's own real content before being locked in --
+not accepted on the first substring hit.
+
+===========================================================================
+A real 4-line merge, not a flat collapse
+===========================================================================
+4 separate CLAUDE.md paragraphs -- "external-contributor audit +
+Oversight gains its own place in minotaur_map.html + the decompression/
+Headroom wiring" (line 122), "Oversight now has its own place in
+minotaur_map.html" (124, a direct sub-point of 122), "The decompression/
+Headroom wiring, with a real bug found" (126, same topic continued), and
+"Real implications for future development" (128, the same topic's
+follow-through) -- were confirmed to all be ONE real continuous story
+told by exactly ONE patch_notes.html card ("external-contributor audit
+closes 4 real gaps; Oversight gets its own place in the Minotaur Map;
+the decompression wiring found a real content-loss bug, not just a
+speed one"). Merged into a single durable one-liner rather than 4
+separate near-duplicate collapsed lines all pointing at the same card --
+a real dedup-of-the-dedup, not just a mechanical per-line pass.
+
+Real durable fact preserved during the merge, not lost: the "any NEW
+large-content AI call site should route through _condenseIfLarge() first"
+rule from the 4th paragraph is ALREADY duplicated verbatim as Building
+Guide rule 12 elsewhere in this same file -- confirmed before collapsing,
+so nothing durable was actually at risk of being dropped.
+
+===========================================================================
+10 bullets collapsed total, each confirmed to already have a matching
+patch_notes.html card
+===========================================================================
+  - The GPU-path pause for the Colibri music video (Aug 4)
+  - "Engineer CC" -> "OpenMontage CC" rename (Aug 13)
+  - A13's real report shape + reconciliation loop (Aug 11)
+  - Oversight scoped to the whole Total system, Alex's correction (Aug 11)
+  - The merged external-audit/minotaur-placement/Headroom-wiring cluster
+    (Aug 11, 4 CLAUDE.md paragraphs -> 1 collapsed line)
+  - minotaur_map.html's changelog-drift correction (Aug 11)
+  - The 76-file physical archive (Aug 11)
+  - The archive-report/"current capabilities" diagnostic + Supabase dedup
+    (Aug 11)
+  - The River XII-XVI paranoia+CEO pass (Aug 11)
+
+===========================================================================
+3 real durable architecture facts correctly left untouched, 1 real gap
+found and flagged
+===========================================================================
+`openmontage_jobs`'s own architecture description, `oracle_fallback_queue`'s
+own description -- both durable facts, not narrative, correctly kept
+as-is.
+
+The `"Total"` naming-convention bullet (Aug 4, Alex-named) was checked
+directly -- no matching patch_notes.html card was found anywhere for
+this specific naming decision (the closest candidates were about a LATER,
+different Aug 6 paranoia pass that merely USES the term, not the naming
+itself). Left uncollapsed this pass, per the confirmed Q2 threshold --
+a real, honest gap, not force-linked to an approximate match.
+
+===========================================================================
+Real, measured results
+===========================================================================
+External handoff lanes section: 21,715 -> 7,580 chars.
+Whole-file running total: CLAUDE.md 416,057 -> 256,270 chars (~39,950
+fewer auto-loaded tokens across all 5 DD-1 batches so far -- 38% smaller
+than at ratification this same session).
+
+Verified before committing: CLAUDE.md bracket balance (79/79, exact) and
+backtick balance (even), a real double-blank-line cosmetic artifact from
+the manual 4-line merge found and fixed before this batch's own script
+run (not left as debris), patch_notes.html div-balance (1304/1304) and
+<b> tag balance (877/877) after the new card, every new link checked to
+resolve to a real, present anchor.
+
+===========================================================================
+Remaining, tracked, not silently dropped
+===========================================================================
+Taxonomy (10,228 chars) is the last CLAUDE.md domain still needing this
+treatment -- the smallest remaining section, likely the final DD-1 batch.
+DD-3 (interconnection_map.md/system_flow_map.md's 28 changelog-rule
+violations) and DD-4 (standing bloat-checker, confirmed to also cover
+link-rot) haven't started.
