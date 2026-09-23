@@ -18,184 +18,203 @@
   .hero .eyebrow{font-size:10px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--blue);margin-bottom:10px}
   .hero h1{font-family:Georgia,serif;font-size:32px;color:#E2E2EC;margin-bottom:12px}
   .hero h1 .bull{font-size:28px;margin-right:8px}
-  .hero p{max-width:680px;margin:0 auto;color:var(--dim);font-size:13px;line-height:1.8}
-  .wrap{max-width:940px;margin:0 auto;padding:0 24px}
+  .hero p{max-width:700px;margin:0 auto;color:var(--dim);font-size:13px;line-height:1.8}
+  .wrap{max-width:980px;margin:0 auto;padding:0 24px}
 
-  .keys{display:flex;flex-wrap:wrap;gap:24px;justify-content:center;margin:32px auto 12px;max-width:760px}
-  .key-group{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 18px;flex:1;min-width:260px}
-  .key-group .kg-title{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
-  .key-row{display:flex;align-items:center;gap:10px;font-size:11px;color:var(--dim);margin-bottom:8px}
-  .key-row:last-child{margin-bottom:0}
+  .domain-nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:32px auto 0;max-width:820px}
+  .domain-nav a{font-size:11px;color:var(--dim);text-decoration:none;background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:6px 14px;transition:color .15s,border-color .15s}
+  .domain-nav a:hover{color:#E2E2EC;border-color:rgba(74,144,226,0.4)}
 
   .river-label{text-align:center;margin:56px 0 4px;font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--dim)}
-  .river-title{text-align:center;font-family:Georgia,serif;font-size:22px;color:#E2E2EC;margin-bottom:8px}
-  .river-sub{text-align:center;font-size:12px;color:var(--dim);max-width:600px;margin:0 auto 28px;font-style:italic}
+  .river-title{text-align:center;font-family:Georgia,serif;font-size:24px;color:#E2E2EC;margin-bottom:8px}
+  .river-sub{text-align:center;font-size:12px;color:var(--dim);max-width:640px;margin:0 auto 24px}
 
-  .flow{display:flex;flex-direction:column;align-items:center;gap:0}
-  .lane{display:flex;flex-wrap:wrap;justify-content:center;gap:16px;width:100%}
-  .arrow-down{width:2px;height:26px;background:linear-gradient(var(--teal),var(--teal));position:relative;margin:2px auto}
-  .arrow-down::after{content:'';position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid var(--teal)}
+  .domain-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px 26px;max-width:820px;margin:0 auto}
+  .domain-card .what{font-size:13px;color:var(--text);line-height:1.8;margin-bottom:16px}
+  .fn-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+  .fn{background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:12px 14px}
+  .fn .t{font-size:12px;font-weight:700;color:#E2E2EC;margin-bottom:4px}
+  .fn .d{font-size:11px;color:var(--dim);line-height:1.6}
 
-  .node{padding:14px 18px;text-align:center;position:relative}
-  .node.stadium{background:rgba(61,170,110,0.1);border:1.5px solid rgba(61,170,110,0.45);border-radius:22px;min-width:160px;max-width:220px}
-  .node.rect{background:rgba(74,144,226,0.08);border:1.5px solid rgba(74,144,226,0.4);border-radius:8px;min-width:170px;max-width:260px}
-  .node .t{font-size:13px;font-weight:700;color:#E2E2EC;margin-bottom:4px}
-  .node .d{font-size:11px;color:var(--dim);line-height:1.6}
+  .estuary{background:rgba(42,191,176,0.08);border:2px solid rgba(42,191,176,0.5);border-radius:14px;padding:20px 24px;text-align:center;max-width:600px;margin:0 auto}
+  .estuary .t{font-size:14px;font-weight:700;color:var(--teal);margin-bottom:6px}
+  .estuary .d{font-size:12px;color:var(--dim);line-height:1.7}
 
-  .estuary{background:rgba(42,191,176,0.08);border:2px solid rgba(42,191,176,0.5);border-radius:14px;padding:18px 22px;text-align:center;min-width:220px;max-width:380px}
-  .estuary .t{font-size:14px;font-weight:700;color:var(--teal);margin-bottom:4px}
-  .estuary .d{font-size:11px;color:var(--dim);line-height:1.7}
+  .ai-card{background:linear-gradient(135deg,rgba(74,144,226,0.08),rgba(155,89,182,0.06));border:1px solid rgba(74,144,226,0.25);border-radius:14px;padding:24px 28px;max-width:820px;margin:0 auto}
+  .ai-card .lede{font-size:13px;color:var(--text);line-height:1.8;margin-bottom:16px}
+  .tier-row{display:flex;flex-wrap:wrap;gap:12px}
+  .tier{flex:1;min-width:220px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:8px;padding:14px 16px}
+  .tier .t{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--blue);margin-bottom:6px}
+  .tier .d{font-size:11.5px;color:var(--dim);line-height:1.6}
 
-  .river-flow-next{text-align:center;font-size:11px;color:var(--teal);margin:24px auto 0;max-width:600px;padding:8px 16px;border-top:1px dashed rgba(42,191,176,0.25)}
-  .river-flow-next strong{color:#E2E2EC}
-
-  .footnote{max-width:760px;margin:60px auto 0;padding:22px 26px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:12px;color:var(--dim);line-height:1.8}
+  .footnote{max-width:800px;margin:60px auto 0;padding:22px 26px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:12px;color:var(--dim);line-height:1.8}
   .footnote strong{color:#E2E2EC}
 
   @media (max-width:700px){
-    .node,.estuary{min-width:140px;font-size:11px}
+    .domain-card{padding:18px 18px}
+    .ai-card{padding:18px 18px}
   }
 </style>
 </head>
 <body>
 
 <div class="hero">
-  <div class="eyebrow">RPGACE — how it thinks</div>
+  <div class="eyebrow">RPGACE — what it is, in plain language</div>
   <h1><span class="bull">🐂</span>The Minotaur Map</h1>
-  <p>A plain-language picture of how information moves through RPGACE — where something goes in, what happens to it, and where it comes back out. <strong>The Minotaur is a piece of information</strong> — a question, a book, an idea worth keeping — carried like water down a river. This page shows the journey, not the machinery. There's no code here, no table names, no internal wiring — just the real shape of what happens when you use RPGACE.</p>
+  <p>RPGACE is a personal AI operating system for making music and content — one place that plans, remembers, and helps carry an idea from a first thought all the way to something real and finished. <strong>The Minotaur is a piece of information</strong> — a question, a book, a beat, a recipe — carried through the app. This page shows the real shape of what RPGACE actually does, domain by domain, and what AI does the work — without the code-level detail; that lives in a separate, technical set of pages.</p>
+  <div class="domain-nav">
+    <a href="#oracle">💬 Oracle</a>
+    <a href="#tree">🌳 Knowledge Tree</a>
+    <a href="#bookworm">📖 Bookworm</a>
+    <a href="#content">🎬 Content &amp; Video</a>
+    <a href="#cooking">🍳 Cooking</a>
+    <a href="#wishlist">🛒 Shopping Wishlist</a>
+    <a href="#schedule">📅 Schedule &amp; Journal</a>
+    <a href="#chronicles">📜 Chronicles</a>
+    <a href="#quests">🏆 Quest Board</a>
+    <a href="#ai">🧠 The AI Itself</a>
+  </div>
 </div>
 
 <div class="wrap">
 
-  <div class="keys">
-    <div class="key-group">
-      <div class="kg-title">How to read this</div>
-      <div class="key-row">🐂 <strong style="color:#E2E2EC">The Minotaur</strong> — whatever you actually gave RPGACE</div>
-      <div class="key-row">🌊 <strong style="color:#E2E2EC">A river</strong> — one real journey that information can take</div>
-      <div class="key-row">🌀 <strong style="color:#E2E2EC">An estuary</strong> — where separate rivers meet and become one shared record</div>
-      <div class="key-row">🏖️ <strong style="color:#E2E2EC">The sea</strong> — where it finally lands somewhere you can see and use it</div>
+  <!-- ═══════════════ ORACLE ═══════════════ -->
+  <div class="river-label" id="oracle">The Core</div>
+  <div class="river-title">💬 Oracle — the assistant everything else talks to</div>
+  <div class="river-sub">One AI assistant, reachable from anywhere in RPGACE — the same assistant that generates a recipe also writes a treatment for a music video or answers a question about the app itself</div>
+  <div class="domain-card">
+    <div class="what">Oracle is a chat assistant, but it's grounded — before it answers, it's given the real, current facts about RPGACE and about you, so it doesn't confidently make things up about its own app. It's reachable from the main chat, from a floating button on any page, and from inside specific tools (a recipe card, a beat's production panel) where it already knows the context of what you're looking at.</div>
+    <div class="fn-grid">
+      <div class="fn"><div class="t">Grounded answers</div><div class="d">told the real, live state of the app first, so "what's built" questions get honest answers, not guesses</div></div>
+      <div class="fn"><div class="t">Context-aware</div><div class="d">open on a recipe or a beat's production panel and it already knows what you're looking at, without re-explaining</div></div>
+      <div class="fn"><div class="t">Catches good ideas</div><div class="d">flags a reply worth keeping and offers to save it properly, rather than letting it scroll away</div></div>
+      <div class="fn"><div class="t">Confirm before it acts</div><div class="d">anything Oracle can actually DO (not just say) shows you exactly what it would do first — you approve or decline</div></div>
     </div>
   </div>
 
-  <!-- ═══════════════ RIVER 1 — Talking to Oracle ═══════════════ -->
-  <div class="river-label">River One</div>
-  <div class="river-title">💬 Talking to Oracle</div>
-  <div class="river-sub">The most common journey — from a question to a real answer</div>
-
-  <div class="flow">
-    <div class="lane"><div class="node stadium"><div class="t">You ask something</div><div class="d">in chat, or from any page's own quick-ask button</div></div></div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="node rect"><div class="t">Oracle answers</div><div class="d">grounded in what RPGACE actually knows about itself and about you — it's told the truth first, so it can't confidently make something up</div></div></div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="node rect"><div class="t">If the reply is worth remembering</div><div class="d">a small prompt offers to save it properly, rather than letting a good idea just scroll away and disappear</div></div></div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="node stadium"><div class="t">🏖️ You see the answer, and — if you say yes — it's kept</div></div></div>
+  <!-- ═══════════════ KNOWLEDGE TREE ═══════════════ -->
+  <div class="river-label" id="tree">Learning</div>
+  <div class="river-title">🌳 The Knowledge Tree</div>
+  <div class="river-sub">A single, growing structured library — every real idea worth keeping, wherever it came from, ends up organized into one place</div>
+  <div class="domain-card">
+    <div class="what">Ideas get sorted into real subject areas — things like music theory, filmmaking, business, cooking, education, and more — each broken down into its own real structure, not just a flat pile of notes. New ideas are checked against the whole tree first, so the same concept doesn't get filed twice under two different names; two genuinely related ideas from different subjects can also get linked to each other.</div>
+    <div class="fn-grid">
+      <div class="fn"><div class="t">Real subject areas</div><div class="d">a genuine library spanning many disciplines, not just music — growing as more gets fed in</div></div>
+      <div class="fn"><div class="t">You get the final say</div><div class="d">every new idea is shown exactly where it would go before it's made permanent — nothing is filed without your approval</div></div>
+      <div class="fn"><div class="t">Duplicate-aware</div><div class="d">a genuinely new idea gets a new entry; the same idea again extends what's already there instead of cluttering it</div></div>
+      <div class="fn"><div class="t">Cross-subject links</div><div class="d">a real connection between two distant ideas (different subjects entirely) can be surfaced and confirmed</div></div>
+      <div class="fn"><div class="t">Write it up</div><div class="d">turn any branch of the tree into a real, readable article on demand</div></div>
+    </div>
   </div>
 
-  <div class="river-flow-next">🌊 anything worth keeping flows into → <strong>River Three, Deciding Where an Idea Belongs</strong></div>
-
-  <!-- ═══════════════ RIVER 2 — Reading books & research ═══════════════ -->
-  <div class="river-label">River Two</div>
-  <div class="river-title">📖 Reading Books &amp; Research</div>
-  <div class="river-sub">The longest journey — a whole book, or a piece of research, carried from cover to a finished, searchable shelf</div>
-
-  <div class="flow">
-    <div class="lane">
-      <div class="node stadium"><div class="t">🌊 A link, a hand-typed contents page, or your own file</div></div>
+  <!-- ═══════════════ BOOKWORM ═══════════════ -->
+  <div class="river-label" id="bookworm">Reading</div>
+  <div class="river-title">📖 Bookworm</div>
+  <div class="river-sub">Feed it a whole book — a link, a typed contents page, or your own file — and it reads it chapter by chapter, offering back what's genuinely worth keeping</div>
+  <div class="domain-card">
+    <div class="what">A book you upload is read only on your own device before anything else happens — it's never sent anywhere first. Bookworm finds the real chapter list, lets you confirm it's right, then works through the book one chapter at a time, surfacing real ideas for you to approve, skip, or fix as it goes. Finished books land on a real, searchable shelf.</div>
+    <div class="fn-grid">
+      <div class="fn"><div class="t">Three ways in</div><div class="d">a link, a hand-typed contents page, or your own purchased/downloaded file</div></div>
+      <div class="fn"><div class="t">Chapter-by-chapter</div><div class="d">real ideas surfaced as you read, not dumped all at once at the end</div></div>
+      <div class="fn"><div class="t">Feeds the Knowledge Tree</div><div class="d">everything you approve becomes a real, permanent part of what RPGACE knows</div></div>
+      <div class="fn"><div class="t">A real bookshelf</div><div class="d">every book you've read stays browsable, with what it taught you attached to it</div></div>
     </div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="node rect"><div class="t">The chapters are found first</div><div class="d">a file you upload is only ever read on your own device — it isn't sent anywhere first</div></div></div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="node stadium"><div class="t">You're shown the chapter list, to confirm it's right, before anything else happens</div></div></div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="node rect"><div class="t">You read a chapter</div><div class="d">real ideas in it are found, and offered back to you one at a time</div></div></div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="node stadium"><div class="t">For each one — you approve it, skip it, or fix it yourself</div></div></div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="node stadium"><div class="t">🏖️ The book itself, and everything worth keeping from it, both end up on your shelf</div></div></div>
   </div>
 
-  <div class="river-flow-next">🌊 every kept idea flows into → <strong>River Three, Deciding Where an Idea Belongs</strong></div>
-
-  <!-- ═══════════════ RIVER 3 — Judgment + review ═══════════════ -->
-  <div class="river-label">River Three</div>
-  <div class="river-title">🌳 Deciding Where an Idea Belongs</div>
-  <div class="river-sub">Every idea, wherever it came from, goes through the same real check before it becomes permanent</div>
-
-  <div class="flow">
-    <div class="lane">
-      <div class="node stadium"><div class="t">An idea worth keeping — from a chat, a book, or typed by hand</div></div>
+  <!-- ═══════════════ CONTENT & VIDEO ═══════════════ -->
+  <div class="river-label" id="content">Creative Work</div>
+  <div class="river-title">🎬 Content &amp; Video Pipeline</div>
+  <div class="river-sub">A beat or a video idea becomes a real, trackable project — carried through real stages from first idea to something posted</div>
+  <div class="domain-card">
+    <div class="what">Logging a beat starts a real, numbered project you can always return to, with Oracle staying available alongside it the whole way through. A tutorial-style video moves through planning, filming, and editing; a beat-to-music-video project gets its own real stages — matching reference tracks and visual style, writing a script and visual treatment, editing that script, and finally packaging everything to hand off to a real video-generation tool (RPGACE plans and briefs, it doesn't render video itself).</div>
+    <div class="fn-grid">
+      <div class="fn"><div class="t">Track a project start to finish</div><div class="d">a real entry that doesn't fade once you scroll past it, with stages you can move through and revisit</div></div>
+      <div class="fn"><div class="t">Reference matching</div><div class="d">finds tracks/artists with a similar real feel to a logged beat (tempo, key, mood, genre)</div></div>
+      <div class="fn"><div class="t">Director-style blending</div><div class="d">blend the visual style of up to 3 real film directors into a written treatment for a video idea</div></div>
+      <div class="fn"><div class="t">Captions &amp; listings</div><div class="d">generates real caption/description text for Instagram, YouTube, and TikTok, and a Beatstars listing draft for a beat you're selling</div></div>
+      <div class="fn"><div class="t">Hand off to render</div><div class="d">packages the finished brief for an outside video-generation tool — RPGACE briefs and tracks, it doesn't generate the video itself</div></div>
     </div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="node rect"><div class="t">A real fit is worked out</div><div class="d">where it belongs, how confident that placement actually is, and whether it's genuinely new or already covered elsewhere</div></div></div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="node rect"><div class="t">You get the final say</div><div class="d">shown exactly where it would go before it's real — nothing is ever written permanently without you seeing it first</div></div></div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="node stadium"><div class="t">🏖️ Accepted ideas become a real, permanent part of what RPGACE knows</div></div></div>
   </div>
 
-  <div class="river-flow-next">🌊 flows into → <strong>River Five, One Shared History</strong></div>
-
-  <!-- ═══════════════ RIVER 4 — Creative work tracking ═══════════════ -->
-  <div class="river-label">River Four</div>
-  <div class="river-title">🎬 Tracking Creative Work</div>
-  <div class="river-sub">A beat or an idea becomes a real, trackable piece of work, carried through its own real stages start to finish</div>
-
-  <div class="flow">
-    <div class="lane">
-      <div class="node stadium"><div class="t">🌊 A beat gets logged, or an idea gets saved as a project</div></div>
+  <!-- ═══════════════ COOKING / HABITS ═══════════════ -->
+  <div class="river-label" id="cooking">Daily Life</div>
+  <div class="river-title">🍳 Cooking</div>
+  <div class="river-sub">Recipes, planned cook sessions, pantry tracking, and a real shopping list — generated and kept in sync with what you actually have</div>
+  <div class="domain-card">
+    <div class="what">Describe what you feel like eating and Oracle generates a real recipe, scaled to your servings, with a step-by-step timeline and timers. Save it, cook it now, or schedule it into a real multi-recipe cook session that plans around your own time and equipment. Your pantry, fridge, freezer, and shopping list all stay connected — a recipe card shows, at a glance, what you already have, what's running low, and what you'd need to substitute or buy.</div>
+    <div class="fn-grid">
+      <div class="fn"><div class="t">Generate a real recipe</div><div class="d">from a short description, with a "narrow it down" step for anything vague</div></div>
+      <div class="fn"><div class="t">Schedule a cook</div><div class="d">plans a real multi-recipe session around your own time and kitchen capacity, with a live step-by-step cook mode when it starts</div></div>
+      <div class="fn"><div class="t">Know what you have</div><div class="d">a real status color per ingredient — plenty, running low, don't have, have a substitute — everywhere a recipe is shown</div></div>
+      <div class="fn"><div class="t">A real grocery list</div><div class="d">auto-generated from what you're missing, sorted by aisle</div></div>
+      <div class="fn"><div class="t">Nutrition, honestly</div><div class="d">real nutrition data per recipe, pulled from genuine food-composition sources, not guessed</div></div>
     </div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="node rect"><div class="t">It becomes a real, numbered piece of work</div><div class="d">not a chat message that fades once you scroll past it — a real entry you can always come back to</div></div></div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="node rect"><div class="t">It moves through its own real stages</div><div class="d">planning, then making, then finishing — Oracle stays available alongside it the whole way, so the conversation and the tracker never drift apart</div></div></div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="node stadium"><div class="t">🏖️ Marked finished, with the real details of what shipped</div></div></div>
   </div>
 
-  <div class="river-flow-next">🌊 flows into → <strong>River Five, One Shared History</strong></div>
-
-  <!-- ═══════════════ RIVER 5 — The Chronicles ═══════════════ -->
-  <div class="river-label">River Five</div>
-  <div class="river-title">📜 One Shared History</div>
-  <div class="river-sub">Everything above eventually lands in one place — a real, honest timeline of everything that's actually happened</div>
-
-  <div class="flow">
-    <div class="lane">
-      <div class="node stadium"><div class="t">Ideas kept, books finished, work shipped, money logged</div></div>
+  <!-- ═══════════════ SHOPPING WISHLIST ═══════════════ -->
+  <div class="river-label" id="wishlist">Daily Life</div>
+  <div class="river-title">🛒 Shopping Wishlist</div>
+  <div class="river-sub">A general future-purchases list — genuinely separate from the grocery list, for everything else you don't want to forget</div>
+  <div class="domain-card">
+    <div class="what">Everything from equipment upgrades to household basics to something for fun — kept in one list with a real budget target and priority, so you can see honestly what actually fits your budget right now, not just what you'd like to buy. Marking something bought logs the real amount you paid as an expense, automatically.</div>
+    <div class="fn-grid">
+      <div class="fn"><div class="t">Priority-aware budget fit</div><div class="d">shows what genuinely fits your set budget, highest priority first, not just a flat running total</div></div>
+      <div class="fn"><div class="t">Bought = logged</div><div class="d">marking an item bought asks the real price paid and logs it as a real expense automatically</div></div>
     </div>
-    <div class="arrow-down"></div>
-    <div class="lane">
-      <div class="estuary"><div class="t">🌊 The Confluence</div><div class="d">everything merged into one current, sorted by when it actually happened — not scattered across a dozen separate places</div></div>
-    </div>
-    <div class="arrow-down"></div>
-    <div class="lane">
-      <div class="node stadium"><div class="t">A glance</div><div class="d">the most recent few things, always visible on the dashboard</div></div>
-      <div class="node stadium"><div class="t">A deliberate look</div><div class="d">the full history — searchable, and honest about where each thing came from</div></div>
-    </div>
-    <div class="arrow-down"></div>
-    <div class="lane"><div class="node stadium"><div class="t">🏖️ Tap anything — see the real story behind it, not just its name</div></div></div>
   </div>
 
-  <div class="river-flow-next">🌊 this is the real end of the journey for everything else on this map</div>
-
-  <!-- ═══════════════ RIVER 6 — Staying honest ═══════════════ -->
-  <div class="river-label">River Six</div>
-  <div class="river-title">🪞 Staying Honest About Itself</div>
-  <div class="river-sub">RPGACE keeps its own notes on what's actually built, what's still being worked on, and what's only an idea — so nothing pretends to be finished before it really is</div>
-
-  <div class="flow">
-    <div class="lane">
-      <div class="node rect"><div class="t">If you ask what's built or what's still open</div><div class="d">Oracle answers from RPGACE's own real, current notes about itself — not a guess, and never a claim that something works before it's actually been checked</div></div>
+  <!-- ═══════════════ SCHEDULE & JOURNAL ═══════════════ -->
+  <div class="river-label" id="schedule">Daily Life</div>
+  <div class="river-title">📅 Schedule &amp; Journal</div>
+  <div class="river-sub">Your real day-to-day — shifts, agenda items, and your own written reflections, all in one place</div>
+  <div class="domain-card">
+    <div class="what">A daily/weekly/monthly schedule you can see at a glance, an agenda for things that need doing, and a journal for your own thoughts — genuinely separate from the AI-driven rivers above, kept simple on purpose.</div>
+    <div class="fn-grid">
+      <div class="fn"><div class="t">A real calendar</div><div class="d">daily, weekly, and monthly views of what's actually scheduled</div></div>
+      <div class="fn"><div class="t">Your own words</div><div class="d">a real journal — session write-ups land here too, alongside whatever you write yourself</div></div>
     </div>
-    <div class="arrow-down"></div>
-    <div class="lane">
-      <div class="node stadium"><div class="t">🏖️ A straight answer — including "not built yet" when that's the truth</div></div>
+  </div>
+
+  <!-- ═══════════════ CHRONICLES ═══════════════ -->
+  <div class="river-label" id="chronicles">One Shared History</div>
+  <div class="river-title">📜 The Chronicles</div>
+  <div class="river-sub">Everything above eventually lands in one place — a real, honest, searchable timeline of everything that's actually happened</div>
+  <div class="domain-card">
+    <div class="what">Ideas kept, books finished, beats logged, content shipped, recipes cooked, money spent — merged into one current, sorted by when it actually happened. A glance at the dashboard shows the most recent few things; a deliberate look opens the full, searchable history. Real income and expenses (beat sales, equipment, wishlist purchases) get their own honest ledger here too.</div>
+    <div class="fn-grid">
+      <div class="fn"><div class="t">One real timeline</div><div class="d">every domain above feeds it — nothing important is scattered across a dozen separate places</div></div>
+      <div class="fn"><div class="t">A real finance ledger</div><div class="d">sales and expenses, for your own eyes — a real receipt is still what matters at tax time</div></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════ QUEST BOARD ═══════════════ -->
+  <div class="river-label" id="quests">Motivation</div>
+  <div class="river-title">🏆 The Quest Board</div>
+  <div class="river-sub">Real progress, turned into something you can actually see move</div>
+  <div class="domain-card">
+    <div class="what">Real activity across RPGACE — beats logged, chapters read, recipes cooked — earns real progress on a quest/level system, so effort that would otherwise be invisible has something to show for it.</div>
+  </div>
+
+  <div class="estuary" style="margin-top:48px">
+    <div class="t">🌊 All roads lead back here</div>
+    <div class="d">Every domain above is genuinely connected — a cooked recipe logs itself to your Journal; a scheduled cook session lands on your real Calendar; an idea worth keeping from any chat lands in the Knowledge Tree; everything real that happens across every domain above shows up in the Chronicles. RPGACE isn't nine separate apps, it's one system with nine real doors into it.</div>
+  </div>
+
+  <!-- ═══════════════ THE AI ITSELF ═══════════════ -->
+  <div class="river-label" id="ai" style="margin-top:56px">Under The Hood, Briefly</div>
+  <div class="river-title">🧠 The AI Itself</div>
+  <div class="river-sub">What's actually doing the thinking, and why it's not the same AI for every job</div>
+  <div class="ai-card">
+    <div class="lede">RPGACE is built on <strong style="color:#E2E2EC">Claude, made by Anthropic</strong> — the same AI family behind Oracle's own answers, recipe generation, taxonomy placement, video treatments, and everything else that needs real judgment. Not every task needs the same amount of "thinking" though, so RPGACE deliberately uses more than one tier, matched to the job:</div>
+    <div class="tier-row">
+      <div class="tier"><div class="t">Judgment work</div><div class="d">deciding where an idea belongs, writing something you'll actually read, scoring how good a fit really is — the most capable tier handles this, since getting it wrong is the expensive mistake</div></div>
+      <div class="tier"><div class="t">Research &amp; outlining</div><div class="d">a lighter tier for scanning/summarizing large amounts of text before the judgment tier ever sees it — cheaper, and it's a job that doesn't need the heaviest model</div></div>
+      <div class="tier"><div class="t">Mechanical cleanup</div><div class="d">the cheapest tier, reserved for pure formatting/rewording with zero real judgment involved — never used for anything that actually decides something</div></div>
     </div>
   </div>
 
   <div class="footnote">
-    <strong>What this page is, and isn't.</strong> This is the plain-language shape of RPGACE — the real journeys information takes, without the internal detail of how any of it is actually built. There's a separate, much more technical set of pages for that (the development side of the project) — this page exists so the picture stays readable without needing any of that. If how RPGACE actually works ever changes in a way that changes one of these journeys, this page gets updated to match; day-to-day changes underneath a journey don't need a new page, only a genuinely new journey does.
+    <strong>What this page is, and isn't.</strong> This is a real, honest picture of what RPGACE actually does — every domain and function named here is really built, not aspirational. What it deliberately leaves out is the internal engineering: no code, no database structure, no internal file names. There's a separate, much more technical set of pages for that (the development side of the project). If a genuinely new domain or capability ships, this page gets updated to include it; small internal changes underneath an existing domain don't need a new page here.
   </div>
 
 </div>
