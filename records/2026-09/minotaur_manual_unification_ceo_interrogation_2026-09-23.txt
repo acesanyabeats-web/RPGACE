@@ -1,0 +1,112 @@
+RPGACE — Minotaur/Manual Unification: real /interrogation record + /CEO Loop 1 compile
+Date: 2026-09-23
+Trigger: Alex's own direct idea, immediately after minotaur_map.html's 2nd same-day
+rebuild (the domain/AI-tier recalibration). Verbatim ask: "i would be cool if minotaur
+map and full manual merge, concept and simplicity of minotaur with detail and data of
+full manual, interconnection map, system flow map, ai tooling and rules map,
+perspective truth map as truth for rpgace app, and all oversight docs as truth for
+rpgace total systems, with galaxy map as representation of rpgace total systems, and
+minotaur as consumer side only view, with some details on thinking revealed for
+tutorial purposes. /interrogation and /drift my idea here, then /paranoia /CEO and
+/misunderstanding if you feel like you didn't get me."
+
+===========================================================================
+Real evidence pass, before asking anything (per /interrogation's own Step 1)
+===========================================================================
+Checked what's already true against CLAUDE.md's own current Oversight section
+(re-read in full, already fresh in context from this session's earlier work):
+
+  - "Galaxy Map as representation of RPGACE Total Systems" -- ALREADY the stated
+    design, near-verbatim: "a drill-down graphify/Obsidian visualization of Total
+    Systems... the Galaxy Development Framework." No real gap.
+  - "Tier (b) docs = truth for the app" -- largely already true in spirit, but
+    ai_tooling_and_rules_map.md currently mixes RPGACE-internal facts with real
+    Total-systems-external facts (OpenMontage, Composio, Jina AI, Last.fm, etc.) in
+    the SAME doc, by its own stated design ("AND what exists external to RPGACE that
+    no Claude Code session can change code-wise"). Not a clean app-only split today.
+  - "Minotaur+manual merge" and "reveal some thinking for tutorial purposes" are the
+    two genuinely new, unbuilt asks -- both have multiple real readings that would
+    produce materially different builds.
+
+===========================================================================
+Real pushback stated alongside the questions (per /interrogation Step 4)
+===========================================================================
+1. Fully merging minotaur_map.html and manual.html into one file would break a real
+   number of existing cross-references across interconnection_map.md,
+   ai_tooling_and_rules_map.md, system_flow_map.md, and CLAUDE.md's own Oversight
+   section (Tier a description) -- all of which currently cite the two docs by
+   separate name and separate role. Real, bounded ripple work, not just writing.
+2. "Reveal some thinking for tutorial purposes" risks drifting back toward exactly
+   what THIS MORNING's simplification pass was built to close off (real Supabase
+   table names, connector architecture, internal mechanics), unless the boundary is
+   drawn precisely and held to.
+
+===========================================================================
+Real /interrogation questions asked (AskUserQuestion, 4 questions, all answered)
+===========================================================================
+Q1: Minotaur + manual merging -- one literal file/URL, or one content model kept as
+    two pages?
+    ANSWER: One real file. manual.html retires; minotaur_map.html becomes the single
+    consumer doc, carrying both the river/domain concept AND manual's own level of
+    detail. Every cross-reference to manual.html gets repointed.
+
+Q2: "Some details on thinking revealed for tutorial purposes" -- how deep?
+    ANSWER: A real worked-example walkthrough. One concrete end-to-end scenario per
+    domain (or several), showing the real decision sequence in plain language --
+    still zero code/table names, genuinely tutorial in feel, not a deeper reveal of
+    actual AI/prompting strategy.
+
+Q3: "Tier (b) = truth for the app" vs "all oversight docs = truth for Total Systems"
+    -- framing only, or real content reorganization?
+    ANSWER: Framing/description only. Update CLAUDE.md's Oversight section wording
+    to state this division explicitly. No content moves between docs for this part.
+
+Q4: Timing -- build now as a bounded task, or scope as a /CEO multi-session plan
+    first?
+    ANSWER: Scope as a /CEO plan first. Real multi-session work, matching this
+    project's own Sep 15 finding (56% of the prior 2 weeks' commits were
+    Galaxy-Map/meta work while real product debt sat untouched) -- named directly
+    by Alex's own choice here, not talked into it.
+
+===========================================================================
+Real /drift assessment (VERDICT / BASIS / grade, per the skill's own vocabulary)
+===========================================================================
+VERDICT: Mostly NOT YET on track -- this is new, unbuilt work. The Galaxy Map
+framing (already true) and the app/Total-systems truth framing (already close, just
+needs explicit wording) are the two parts already near-CAPTURED. The actual merge
+(M1-M4, M6 below) is real, unbuilt, multi-file work.
+
+BASIS: Provisional. No prior ratified plan covers this specific restructuring -- the
+real A17 Aug 11 oversight restructuring (still the standing architecture) explicitly
+treats manual.html and minotaur_map.html as two separate Tier (a) docs with distinct
+roles. This new idea is a real, direct amendment to that ratified structure, awaiting
+its own ratification via this very Loop 1 pass.
+
+GRADE: Mixed. M5 (the app/Total-systems framing edit) is MINOR -- wording only, on an
+already-true fact. M1/M3/M4/M6 (repointing references, the actual merge, worked
+examples, final verification) are MATERIAL -- real, bounded new build work across
+several files. M2 (the manual-content triage decision) is the one item flagged back
+to Alex directly rather than assumed, since guessing wrong here risks a THIRD "wrong
+shape" pass on this same doc in one day (minotaur_map.html has already been rebuilt
+twice today).
+
+Real, honest self-check, not a reason to refuse: today's whole session has been
+oversight/doc work end to end (the SELF_KNOWLEDGE fix, all 4 items of the Dedup &
+Compression plan, and now 2 real minotaur_map.html rebuilds before this 3rd one is
+even scoped) -- the same pattern the project's own Sep 15 finding already named.
+Alex named the /CEO-plan-first timing himself specifically because of this pattern,
+not because the idea itself is bad -- it's a real, valuable, bounded improvement to
+the one doc consumers actually read. Flagged here per rule 16/project discipline;
+does not change the plan's own real scope or value.
+
+===========================================================================
+Real, compiled plan -- "Minotaur/Manual Unification," awaiting Alex's ratification
+===========================================================================
+Logged to ceo_plans (basis='provisional', status='compiled') + 6 real ceo_plan_items
+(M1-M6), all status='red' (not built). See the chat report for the full item
+breakdown, including the one real open fork (M2, the manual-content triage) put back
+to Alex directly rather than guessed.
+
+No execution has started. Per Alex's own timing answer, this plan sits ready for a
+future session's real Loop 2 execution once he ratifies it (and answers M2's own
+open fork) -- not built in this session.
