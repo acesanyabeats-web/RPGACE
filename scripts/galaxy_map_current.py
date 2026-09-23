@@ -193,7 +193,7 @@ PLAIN_ENGLISH = {
     },
     ('refCorpus', 'findMatches'): {
         'anchor': '  findMatches: function(bpm, mood, scale, energy, genre) {',
-        'lines': (25460, 25493),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +56 lines from 25315-25369; also confirmed against a 2nd real match, the thin top-level pass-through wrapper at 25431 -- 25371 is the real logic:{} implementation
+        'lines': (25457, 25490),  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep), drifted -3 lines from 25460-25493; re-confirmed against a 2nd real match, the thin top-level pass-through wrapper at 25517 -- 25457 is the real logic:{} implementation
         'headline': 'Given a beat\'s tags, scores every reference track in the corpus and returns the closest ones.',
         'input': 'Five values off the beat: BPM, mood, scale, energy and genre. Missing BPM defaults to 130 and missing energy to 3, so it never fails on a half-filled form.',
         'does': 'Pulls the most recent 200 reference tracks and gives each one a score. Tempo is worth the most: within 5 BPM scores 4, within 10 scores 3, within 15 scores 1, and anything further away actively loses 2 points. A matching mood or genre adds 3 each, a matching scale adds 2, and an energy rating within one step adds 2. Anything that ends up at zero or below is dropped, and what is left comes back sorted best-first.',
@@ -213,7 +213,7 @@ PLAIN_ENGLISH = {
     },
     ('conidPot', '_quickDetectPhyla'): {
         'anchor': '  _quickDetectPhyla: function(text) {',
-        'lines': (28812, 28821),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +56 lines from 28660-28671; also confirmed against a 2nd real match, the thin top-level pass-through wrapper at 29312 -- 28716 is the real logic:{} implementation
+        'lines': (28809, 28818),  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep), drifted -3 lines from 28812-28821; re-confirmed against a 2nd real match, the thin top-level pass-through wrapper at 29405 -- 28809 is the real logic:{} implementation
         'headline': 'A free, instant guess at which taxonomy phyla an idea belongs to — plain keyword spotting, no AI involved.',
         'input': 'One string: the text of a content idea.',
         'does': 'Lowercases it and checks for a handful of giveaway words. Drums, 808 or kick suggests phylum 2; mix, EQ or compress suggests 4; FL Studio, plugin or VST suggests 6; tutorial, teach or learn suggests 12; YouTube, Instagram or content suggests 13. It returns whichever numbers matched, and an empty list is a perfectly normal answer.',
