@@ -73,6 +73,16 @@
 
 <div class="content">
 
+<div class="card green" id="card-2026-09-23-manual-html-real-update-habits" style="margin-bottom:30px;">
+    <div class="card-title">📘 Sep 23 — manual.html brought current: the whole HABITS/Cooking + Shopping Wishlist domains were invisible in RPGACE's own consumer-facing doc</div>
+    <div class="card-body">
+      Real Alex ask, pivoting from the in-progress DD-1/DD-2 dedup work: manual.html is "technically the consumer part of the app explanation, while galaxy map is the developer side... this manual either way needs to be updated." He separately flagged minotaur_map.html as undecided (leaning toward a simplified, non-revealing version) — deliberately not touched this pass, per his own words.<br><br>
+      Direct read of the whole file confirmed the real gap: the entire HABITS/Cooking module (cookingOracle, Sep 10-22, 10 real build passes H1-H24) and the standalone Shopping Wishlist module (Sep 14) had zero entries anywhere in the "Every Button, Cataloged" table — two whole shipped, consumer-facing domains invisible in the one doc a consumer would actually read. Real evidence pulled before writing a single button label (rule 1): both modules were directly grepped for real <code>_mkBtn(...)</code>/<code>createElement('button')</code>/<code>textContent=</code> patterns in <code>rpgace_core.js</code>, never paraphrased from CLAUDE.md's own narrative alone — confirmed the real 5-button Cooking hub, the real dashboard-card entry points, and the real dashboard-card count (13, up from 11, counted inside the actual <code>MODULES:[...]</code> array bounds via awk rather than a loose codebase-wide grep that would over-count unrelated object literals).<br><br>
+      Added 2 new collapsible domain-group sections (HABITS/COOKING, 17 real rows; SHOPPING WISHLIST, 4 rows), grouping related buttons into one row the same way the existing CONTENT/LEARNING sections already do — never a per-micro-button exhaustive dump. Fixed 6 more real stale facts found along the way: the Taxonomy table's "12 of 21 phyla" (stale since Aug 11's all-21-enabled build); 6 missing HABITS/Wishlist Supabase tables; the <code>oracle_actions</code> row's stale "seeded with log_beat" (now 5 real dispatch branches, F0/F15); OpenArt's row (was "deferred, connect later," now the real Sep 16 2026 confirmed non-integration finding) plus a missing fal.ai row, both sourced directly from <code>ai_tooling_and_rules_map.md</code>'s own canonical connector table; a stale "45 modules/11 dashboard cards" cross-reference (now 58/13); and the Standing Development Rules' own oversight-doc count (12 → 13, naming <code>perspective_map.html</code>).<br><br>
+      manual.html: 68,982 → 80,245 chars (398 → 437 lines). Verified: every HTML tag pair balanced (div 64/64, details 11/11, table 14/14, tr/td/th/strong/code/em all matched). Full record: <code>records/2026-09/manual_html_real_update_2026-09-23.txt</code>.
+    </div>
+</div>
+
 <div class="card gold" id="card-2026-09-23-dd-2-aintergration-worked-precedents" style="margin-bottom:30px;">
     <div class="card-title">📉 Sep 23 — DD-2: Aintergration Worked Precedents 1-6 archived (17,039 → 1,302 chars)</div>
     <div class="card-body">

@@ -1,0 +1,122 @@
+RPGACE — manual.html real update (consumer-facing doc)
+Date: 2026-09-23
+Trigger: Alex's own direct ask, pivoting from the DD-1/DD-2 dedup work
+in progress: "https://rpgace.vercel.app/manual.html, include full
+manual too (this is technically the consumer part of the app
+explanation, while galaxy map is the developer side)... this manual
+either way needs to be updated." He separately flagged minotaur_map.html
+as undecided (leaning toward keeping it simple/non-revealing) — NOT
+touched this pass, per his own explicit "havent decided on yet."
+
+===========================================================================
+The real gap, confirmed before touching anything (rule 1)
+===========================================================================
+manual.html's own sidebar tagged itself "edited to AUG 13 2026." Direct
+read of the whole file (via Read tool, all 398 original lines) confirmed
+two real, substantial gaps:
+
+  1. The ENTIRE HABITS/Cooking domain (cookingOracle module, Sep 10-22
+     2026, 10 real build passes H1-H24) and the standalone Shopping
+     Wishlist module (Sep 14 2026) had ZERO entries anywhere in the
+     "Every Button, Cataloged" table -- two whole shipped, real,
+     consumer-facing domains invisible in the one doc a consumer would
+     actually read.
+  2. The Taxonomy Supabase-table row still said "12 of 21 phyla live"
+     -- stale since Aug 11, when all 21 were enabled.
+
+Smaller stale facts found while fixing the above: the Total System
+table's own OpenArt row still said "Deferred... connect it at a later
+date" (a real Sep 16 2026 check confirmed it as a real, checked
+non-integration gap, not a someday-maybe); fal.ai (the actual real
+provider now live in the separate OpenMontage repo) was entirely
+missing; the oracle_actions Supabase-table row said "seeded with
+log_beat" when 5 real rows now have coded dispatch branches (F0/F15);
+the Total System section's own cross-reference text cited "45 modules"
+and "11 real dashboard cards" -- both stale (58 modules, 13 cards, one
+grep-verified directly, not guessed); the Standing Development Rules
+list's own oversight-doc count said "12 as of Aug 20/21," stale since
+Sep 15 2026's perspective_map.html shipped as the real 13th.
+
+===========================================================================
+Real evidence pulled before writing a single button label (rule 1)
+===========================================================================
+cookingOracle (rpgace_core.js:36158-42739, 6,581 lines) and
+shoppingWishlist (rpgace_core.js:42741-43190, 449 lines) were both
+directly grepped for real `_mkBtn(...)`/`createElement('button')`/
+`textContent=` button-creating patterns -- never guessed or paraphrased
+from CLAUDE.md's own narrative alone. Confirmed the real 5-button
+Cooking hub (Planned Cook / Grocery List / Recipe Generator / Current
+Stock / What Can I Cook Right Now?) by reading `_renderModuleHub`
+directly; confirmed the real dashboard-card entry point ("🍳 Cooking" /
+"🛒 Shopping Wishlist") via `dashDeck.MODULES`; confirmed the real
+dashboard-card count (13, up from 11) by counting `{ key:` entries
+inside the actual `MODULES:[...]` array bounds via awk, not a loose
+codebase-wide grep (which would have over-counted unrelated object
+literals).
+
+===========================================================================
+What was added/fixed, matching the manual's own existing per-domain
+row-grouping convention (not a per-micro-button exhaustive dump)
+===========================================================================
+Two new collapsible domain-group sections in the button catalog:
+  - HABITS / COOKING (17 real rows, grouped by real feature the same
+    way CONTENT/LEARNING already group related buttons into one row --
+    e.g. the whole 7-color ingredient-status confirm/pick/declare
+    system is one row, not 3+ separate ones)
+  - SHOPPING WISHLIST (4 real rows)
+
+Fixed in place:
+  - Taxonomy Supabase-table row: split into the real July 30 (11+14)
+    row plus a NEW Aug 11 row stating "all 21 of 21 phyla enabled,"
+    the real current phylum-number mapping, and the still-honest "9
+    phyla still flat, fusion-link pass deferred" caveat -- never
+    silently dropped the real still-open part.
+  - 6 new Supabase-table rows for HABITS/Wishlist (recipes/ingredients/
+    etc., habits_config/planned_cooks/etc., ingredient_aliases/
+    ingredient_substitution_confirmations/substitution_ratings,
+    kitchen_equipment, cofid_foods, wishlist_items/wishlist_config).
+  - oracle_actions row: real 5-branch dispatch count + the F0/F15
+    quickPrompt rewire fact.
+  - OpenArt/fal.ai Total-System rows, sourced directly from
+    ai_tooling_and_rules_map.md's own canonical connector table
+    (confirmed exact wording there before transcribing, never
+    re-derived from memory).
+  - "45 modules"/"11 real dashboard cards" cross-reference text ->
+    58 modules (with a live re-verify command cited inline, since this
+    number has drifted before) / 13 real dashboard cards.
+  - Oversight-doc count in Standing Development Rules: 12 -> 13,
+    naming perspective_map.html, with an explicit note that this count
+    has drifted stale twice already and should be re-verified against
+    CLAUDE.md before being cited elsewhere.
+  - Sidebar version tag: AUG 13 2026 -> SEP 23 2026.
+
+===========================================================================
+Deliberately NOT touched this pass
+===========================================================================
+minotaur_map.html -- Alex explicitly said he hasn't decided its
+treatment yet (leaning toward a simplified, non-revealing consumer
+version). Not a silent gap; his own words are the reason it's untouched.
+
+Every G-series Galaxy Map build detail, every individual H-pass's own
+sub-mechanic (curated substitution-ratio tables, the count-equivalence
+bridge, etc.) -- those are patch_notes.html's own explicitly-stated job
+(root-cause narrative, bug-by-bug detail), not manual.html's (a
+consumer button catalog + polished reference), per this project's own
+rule-8 dedup discipline already established for this exact doc (see its
+own "Real /deduplication pass, Aug 13" notes already in the file).
+
+===========================================================================
+Real, measured results
+===========================================================================
+manual.html: 68,982 -> 80,245 chars (398 -> 437 lines). Verified: div
+64/64, details 11/11, table 14/14, tr 137/137, td 369/369, th 42/42,
+strong 80/80, code 271/271, em 3/3 -- all HTML tags balanced.
+
+===========================================================================
+Remaining, tracked, not silently dropped
+===========================================================================
+The ratified "Oversight Doc Dedup & Compression" plan's own DD-3
+(interconnection_map.md/system_flow_map.md changelog-rule fixes) and
+DD-4 (standing bloat-checker) are still unstarted -- this manual.html
+pass was a real, separate, Alex-directed detour from that plan, not a
+DD-3/DD-4 substitute. minotaur_map.html awaits Alex's own decision.
