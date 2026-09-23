@@ -1,0 +1,123 @@
+RPGACE — DD-1 batch 2: Oracle collapse + real anchor-coverage bug fix
+Date: 2026-09-23
+Trigger: Alex's own direct continuation ask — "Keep going with the next
+domain now" — following batch 1 (HABITS).
+
+===========================================================================
+A real bug found and fixed before continuing, not shipped blind
+===========================================================================
+While anchoring a specific Oracle-domain bullet's matching card ("Full
+oracle_dev_suggestions review... Full record: <code>...</code>"), the
+card was found to have NO id attribute despite being a real Aug 6 card
+inside the already-anchored Aug batch.
+
+Root cause: scripts/patch_notes_add_anchors.py's CARD_RE used [^<]* to
+capture a card's title text -- this silently fails/skips the ENTIRE card
+whenever the title itself contains inline HTML markup (a nested <code>
+or <b> tag), since the regex's title group stops at the first < it
+meets, then expects an immediate </div> that never arrives.
+
+Direct measurement: 69 of 424 real card-title divs contain nested markup
+(mostly <code>...</code> around a filename or identifier). This means
+ALL THREE prior anchor batches (Sep 79, Aug 173, Jul 93) had silently
+undercounted -- real cards were skipped with no error, no warning.
+
+Fixed: CARD_RE's title group changed to a DOTALL, non-greedy match up to
+the FIRST </div> (safe, since a card-title never nests a real <div>,
+only inline tags) -- (.*?)</div> with re.DOTALL. slugify() now strips any
+inline tags via re.sub(r'<[^>]+>', ' ', title) before generating a slug,
+so a stray word like "code" doesn't leak in from a stripped tag name.
+
+Re-ran all 3 month batches -- idempotent by design, so this only filled
+in the previously-missed cards, never touched an already-anchored one:
+Sep +1 (the DD-1 batch-1 card itself, added after the original Sep run),
+Aug +23, Jul +7. Verified via direct scan: 0 duplicate ids, div-balance
+unchanged. 376 of 424 real cards now anchored (the remaining 48 are
+undated roadmap/still-open items -- F-series steps, 6a-6f future ideas,
+BUG items -- never in scope for this retrofit).
+
+===========================================================================
+A second, separate real bug found the same way -- the Jul batch itself
+===========================================================================
+The original Jul batch run (last turn) found 0 cards, which was wrongly
+read at the time as "nothing to anchor yet" rather than investigated.
+This turn, direct grep confirmed 100 real July-dated cards DO exist --
+the actual cause: this project's own patch_notes.html writes "July 31"
+in FULL for every July card, while every other month (Aug/Sep/etc.) uses
+a 3-letter abbreviation ("Aug 6", "Sep 23"). The original MONTH_RE only
+matched 3-letter forms, so "July" (4+ letters) never matched.
+
+Fixed: MONTH_RE extended to accept an optional full-name suffix for every
+month (Jan(?:uary)?, Jul(?:y)?, etc. -- future-proofed against any other
+month someone might one day write in full, not just a Jul-specific
+patch), plus a new norm_month() helper normalizing any captured month
+text down to its 3-letter code before comparing against a --month filter
+argument or building an id. Re-running Jul with the fix recovered 93
+real cards this session (this turn's re-run on top of that recovered 7
+more that had ALSO been missed by the inline-HTML bug above -- both bugs
+were real and independent, confirmed by testing each fix in isolation).
+
+===========================================================================
+The real collapse: 16 Oracle-domain bullets
+===========================================================================
+Every bullet confirmed via direct grep to already have a matching
+patch_notes.html card BEFORE collapsing (the same Q2 threshold confirmed
+in the original DD-1 interrogation, applied consistently):
+
+  - visualOracle._captureNextResponse dangling-capture race (fixed Aug 6)
+  - Oracle architecture/anatomy grounding live (July 31)
+  - Mock Oracle testing mode built (Aug 6)
+  - 3-mode Oracle Mode switch (Aug 6, 2nd pass)
+  - Fallback Scout dedup fix (Aug 6, 3rd pass)
+  - /update-logging-system skill built (Aug 6, 4th pass)
+  - graphify /paranoia+/restructure verdict: Adopt narrowly (Aug 6, 5th pass)
+  - graphify river-grouping (Aug 6, 8th pass)
+  - oracleDevBridge truncation cap fix (Aug 6)
+  - 120 orphaned scripts deleted (Aug 6, 2 rounds)
+  - circle-pack diagram + graphify spatial clustering + manual.html
+    regrouping (Aug 6, 12th pass)
+  - Minotaur restructure (Aug 6, 11th pass)
+  - /paranoia dedup pass across the other 4 oversight docs (Aug 6, 9th pass)
+  - main.js /paranoia dedup sweep, real _sbGet() consolidation (Aug 6)
+  - /paranoia on "graphify as a fourth Total member" (Aug 6)
+  - Graphify CC confirmed real, the 4th Total member (Aug 6)
+
+A 17th bullet (`oracleAppGrounding.SELF_KNOWLEDGE` must be updated in the
+same session...) needed a real SPLIT rather than a flat collapse -- it
+combined a genuinely still-active STANDING RULE with a large narrative
+addendum describing the Sep 23 recurrence (this same session's own
+earlier SK-1/SK-2 work). The rule stays in CLAUDE.md verbatim, unchanged;
+only the addendum (already told in full by 2 of today's own cards)
+collapsed to one sentence + 2 real links, moved verbatim to
+CLAUDE_archive.md.
+
+Two bullets were checked and confirmed to have NO matching
+patch_notes.html card -- deliberately left uncollapsed, per the same
+confirmed threshold:
+  - the `/investor` skill build (Aug 6)
+  - the `GRAPH_REPORT.md` `cluster-only` refresh (Aug 6)
+Flagged as real backfill candidates for a future pass, never guessed
+into existence to unblock a collapse.
+
+===========================================================================
+Real, measured results
+===========================================================================
+Oracle section: 40,304 -> 10,952 chars.
+Whole-file running total: CLAUDE.md 416,057 -> 315,423 chars (~25,150
+fewer auto-loaded tokens across both DD-1 batches so far).
+
+Verified before committing: patch_notes.html div-balance (1292/1292
+after the anchor recovery, 1295/1295 after the new summary card), all
+376 anchor ids unique (direct scan), CLAUDE.md bracket ([ ]: 51/51) and
+backtick balance intact, line count unchanged (481 -- no line-count
+corruption from either the batch script or the manual split-edit), every
+new link checked to resolve to a real, present anchor.
+
+===========================================================================
+Remaining, tracked, not silently dropped
+===========================================================================
+Taxonomy (10,228 chars)/Video-content-pipeline (36,057 chars)/External-
+handoff-lanes (21,715 chars)/Open-forks (32,643 chars) subsections still
+need the same treatment. DD-3 (sibling-doc rule violations) and DD-4
+(standing bloat-checker, now confirmed to also cover link-rot) haven't
+started.

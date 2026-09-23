@@ -33,15 +33,30 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 PATCH_NOTES = REPO_ROOT / "patch_notes.html"
 
-MONTH_RE = r'(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)'
+MONTH_RE = r'(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)'
 YEAR_DEFAULT = 2026  # this project's whole real timeline is 2026
+
+# Real bug found and fixed Sep 23 2026: the Aug-batch anchor pass silently
+# found 0 Jul cards, not because none exist (100 real ones do) but because
+# this project's own patch_notes.html writes "July 31" in FULL for that
+# one month only (every other month uses a 3-letter abbreviation) -- the
+# original abbreviation-only MONTH_RE never matched it. Normalize any
+# captured month text down to its 3-letter code before comparing/building
+# an id, so a --month filter of "Jul" correctly matches "July" too.
+def norm_month(raw):
+    return raw[:3].capitalize()
 
 STOPWORDS = {'a', 'the', 'and', 'of', 'to', 'for', 'is', 'in', 'on', 'this'}
 
 
 def slugify(title, max_words=6):
+    # Strip any inline HTML first (real bug found Sep 23 2026 -- 69 of 424
+    # card titles contain a nested <code>/<b> tag, e.g. "...found via
+    # Alex's own DevTools flame chart: <code>something</code>" -- leaving
+    # tags in would leak literal words like "code" into the slug).
+    t = re.sub(r'<[^>]+>', ' ', title)
     # Strip the leading date fragment + emoji/punctuation, keep real words
-    t = re.sub(r'^[^\w]*' + MONTH_RE + r'\s*\d{1,2}(,?\s*\d{4})?\s*[—\-–:]*\s*', '', title.strip())
+    t = re.sub(r'^[^\w]*' + MONTH_RE + r'\s*\d{1,2}(,?\s*\d{4})?\s*[—\-–:]*\s*', '', t.strip())
     t = re.sub(r'[^\w\s-]', ' ', t)  # strip remaining punctuation/emoji
     words = [w.lower() for w in t.split() if w]
     kept = [w for w in words if w.lower() not in STOPWORDS][:max_words]
@@ -51,7 +66,15 @@ def slugify(title, max_words=6):
 
 
 CARD_RE = re.compile(
-    r'(<div class="card([^"]*)"((?:\s+id="[^"]*")?)([^>]*)>)\s*<div class="card-title">([^<]*)</div>',
+    # Real bug found Sep 23 2026: the title group used to be [^<]*, which
+    # silently skipped any card whose title has inline markup (a nested
+    # <code>/<b> tag) -- 69 of 424 real cards, undercounting every batch
+    # run before this fix. DOTALL + non-greedy up to the FIRST </div>
+    # correctly closes on card-title's own closing tag (a title never
+    # nests a real <div>, only inline tags), while still capturing any
+    # inline markup so it can be stripped in slugify() instead of ignored.
+    r'(<div class="card([^"]*)"((?:\s+id="[^"]*")?)([^>]*)>)\s*<div class="card-title">(.*?)</div>',
+    re.DOTALL,
 )
 
 
@@ -65,9 +88,9 @@ def process(text, month_filter):
         if existing_id:
             continue  # idempotent: already anchored, leave untouched
         dm = re.search(MONTH_RE + r'\s+(\d{1,2})', title)
-        if not dm or dm.group(1) != month_filter:
+        if not dm or norm_month(dm.group(1)) != norm_month(month_filter):
             continue
-        mon, day = dm.group(1), int(dm.group(2))
+        mon, day = norm_month(dm.group(1)), int(dm.group(2))
         slug = slugify(title)
         base_id = f"card-{YEAR_DEFAULT}-{{:02d}}-{{:02d}}-{{}}".format(
             {'Jan': 1, 'Feb': 2, 'Mar': 3, 'Apr': 4, 'May': 5, 'Jun': 6,
