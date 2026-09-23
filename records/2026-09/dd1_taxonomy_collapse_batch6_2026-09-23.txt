@@ -1,0 +1,111 @@
+RPGACE — DD-1 batch 6 (final): Taxonomy collapse
+Date: 2026-09-23
+Trigger: Alex's own direct continuation pattern — after batches 1-5
+(HABITS/Oracle/Video-pipeline/Open-forks/External-handoff-lanes), this
+was the last remaining CLAUDE.md domain flagged as "likely the final
+DD-1 batch" in the batch-5 report.
+
+===========================================================================
+This section needed more judgment than a flat per-line collapse
+===========================================================================
+Unlike the earlier batches, Taxonomy's 15 real lines were NOT mostly
+resolved narrative -- several were durable current-state facts or
+genuinely still-open items that must never be collapsed to a link (per
+the confirmed Q2 threshold: collapse only where the full story is
+CONFIRMED already told elsewhere, and never where real work is still
+open). Each line was individually classified before touching anything:
+
+  - Durable facts / current-state (kept, lightly tightened at most):
+    Phylum 13 has no browsable tree; tree is structurally clean; the
+    fusion-link-confirm-rate caveat; the review-queue UI note;
+    phylumPath._injectNavTab() dead code.
+  - Genuinely still-open work (kept as real open items, NOT collapsed
+    to a link, since there is no "full story" of resolution to link to):
+    the phyla 13/15-21/11-14 deep-hierarchy rebuild; the per-node
+    "Rejuvenate" button (confirmed via direct grep of patch_notes.html
+    -- no later card exists showing either was ever completed).
+  - Real, fully resolved narrative (collapsed, each confirmed to have
+    a matching patch_notes.html card before linking): the Aug 11 phylum
+    renumber + nav-race-bug fix; the Aug 23 Bibliography branch (A6);
+    the Aug 11 "all 21 phyla enabled" + misfiled-Contentum-subtree-move
+    pair; the Aug 11 /CEO Loop 1+2 build (dedup fix + Phylum 12 proof-
+    of-concept + the permanent /Engineer Stage 5b upgrade).
+
+===========================================================================
+2 real dedup-of-the-dedup merges found while doing this
+===========================================================================
+(1) The original CEO-Loop-1+2 bullet's own trailing "not done yet"
+clause (phyla 13/15-21/11-14 still flat) and the separate "Rejuvenate
+button" bullet immediately after it were BOTH already describing the
+exact same real not-yet-built follow-up -- confirmed by reading the
+matching patch_notes.html card itself, which states the identical
+thing in its own closing line ("needs live Oracle to actually function,
+next up once phylum restructuring progresses"). Merged into one real
+open-item bullet instead of two separate ones repeating each other.
+
+(2) The original "all 21 phyla enabled" bullet and the "misfiled Phylum
+13 moved to Phylum 16" finding were two sub-stories inside ONE original
+CLAUDE.md line, but map to TWO separate patch_notes.html cards (the
+2nd-taxonomy-pass build, and its own same-day follow-up finding) --
+both linked from one collapsed bullet rather than force-fit into a
+single card reference.
+
+===========================================================================
+A real numbering-ambiguity trap avoided, not walked into
+===========================================================================
+The original "misfiled Phylum 13" finding happened BEFORE the same-day
+renumber (Contentum was Phylum 13 at the time; today Phylum 13 is Visio
+Cinematica). Writing the collapsed line as "Phylum 13 subtree moved" would
+have silently implied Visio Cinematica had a misfiled subtree -- wrong,
+and exactly the numbering-ambiguity class rule 13 already warns about
+(a renumber task needs to track both the display text AND every raw
+literal/reference, never just one). Fixed by naming the phylum BY NAME
+("the misfiled Contentum subtree") instead of by number, sidestepping
+the ambiguity entirely rather than trying to caveat it in prose.
+
+As a direct, useful side effect of collapsing the detailed old-numbering
+narrative out of CLAUDE.md's own body (moved verbatim to
+CLAUDE_archive.md, which is explicitly never read for orientation), the
+original bullet's own "read every bullet BELOW this one with the OLD
+numbering in mind" caveat is now moot for what remains in CLAUDE.md --
+every remaining bullet uses only current numbering or phylum names.
+
+===========================================================================
+A real, pre-existing minor inconsistency noticed, not fixed (out of
+DD-1's own scope)
+===========================================================================
+CLAUDE.md's original renumber bullet called itself the "4th taxonomy
+pass, same day," while the matching patch_notes.html card title calls
+the same event the "5th taxonomy pass." This is a genuine off-by-one
+somewhere in the historical count, not introduced by this batch and not
+something DD-1 (dedup/collapse) is scoped to resolve. Sidestepped rather
+than guessed at: the new collapsed bullet drops the specific ordinal
+pass-number entirely and just says "Aug 11," so it can't perpetuate
+whichever count was wrong.
+
+===========================================================================
+Real, measured results
+===========================================================================
+Taxonomy section: 10,228 -> 4,387 chars (57% reduction -- smaller than
+other batches' typical ~75-85%, correctly so: several real durable facts
+and 2 genuinely open items were kept in full rather than force-collapsed).
+
+Whole-file running total across all 6 DD-1 batches: CLAUDE.md 416,057 ->
+250,429 chars (~165,628 fewer auto-loaded chars, ~40% smaller than at
+ratification this same session).
+
+Verified before committing: CLAUDE.md bracket balance (83/83, exact) and
+backtick balance (even, 3240), all 5 new links checked to resolve to a
+real, present anchor in patch_notes.html (each id grepped and confirmed
+present exactly once before being used), no double-blank-line artifact
+at the splice boundary (single blank line preserved between sections,
+matching the file's own existing convention).
+
+===========================================================================
+DD-1 is now COMPLETE — every CLAUDE.md domain collapsed
+===========================================================================
+This was the last of the 6 real batches (HABITS, Oracle, Video/content
+pipeline, Open forks, External handoff lanes, Taxonomy). DD-2 (archive
+Worked Precedents 1-6), DD-3 (fix interconnection_map.md/system_flow_map.md's
+28 changelog-rule violations), and DD-4 (standing bloat-checker, confirmed
+to also cover link-rot) remain entirely unstarted.
