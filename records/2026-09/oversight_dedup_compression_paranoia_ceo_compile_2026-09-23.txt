@@ -1,0 +1,222 @@
+RPGACE — Oversight Doc Dedup/Compression pass
+Real /paranoia (via /GODMODE+/scope+/commit-archaeologist+/drift+/debate+
+/free-for-all-debate+/interrogation+Council of 5) run, per Alex's own
+direct trigger, same session as the SELF_KNOWLEDGE staleness/contradiction
+build:
+
+  "now i want you to assess what can be deduplicated from oversight doc,
+  so it uses up the least amount of space possible without mitigating
+  truth and accuracy of whats recorded and split info as much as possible
+  to make individual page as clear and concise and accurate as possible.
+  /paranoia /debate and /free-for-all-debate with /GODMODE /scope and
+  /commit-archaeologist with /drift this till all is analyzed and thought
+  through, then /interrogation me to get my input on what to change or
+  leave. think of everything and anything that improves RPGACE
+  documentation and understanding of total systems or output for simple
+  understanding. then council of 5 output for /ceo to pickup for build."
+
+===========================================================================
+GODMODE + /scope evidence (real, measured directly against the live files)
+===========================================================================
+CLAUDE.md: 416,057 chars (~104,014 tokens) — auto-loaded into EVERY session
+per its own header ("Read automatically by Claude Code at the start of
+every session in this folder"), regardless of what the session's actual
+task is.
+
+Breakdown of that file:
+  - "Current state — durable facts" section: 245,545 chars (~61,386
+    tokens) = 59% of the whole file. Its own July 31 rule states this
+    section should hold ONE-LINE durable facts with the full story living
+    in patch_notes.html — it does not; it is a second changelog.
+      - HABITS subsection alone: 83,578 chars (20% of the whole file),
+        self-labeled "full build narrative archived, see
+        CLAUDE_archive.md" while visibly still holding all 10 H24-pass
+        narratives, unarchived, verbatim.
+      - Oracle: 40,304 chars. Video/content pipeline: 36,057 chars.
+        Open forks: 32,643 chars. External handoff lanes: 21,715 chars.
+  - Invokable frameworks section: 36,872 chars (9%), of which Worked
+    Precedents 1-6 (July 20-22 Aintergration book-audit results, closed
+    and stable) = 19,695 chars.
+  - Core rules/landmines/oversight/process (the genuinely load-bearing
+    payload): 133,640 chars (32%).
+
+Confirmed REAL duplication, not just risk of it: the H24 10th-pass
+narrative exists as a 3,709-char CLAUDE.md bullet AND as its own full,
+separately-dated patch_notes.html card — same incident, same root cause,
+same fix, same verification count, told twice. Sampled as one
+representative instance of the pattern visible across the whole HABITS
+subsection's 10 H-passes.
+
+Separate, independent rule violation found: interconnection_map.md and
+system_flow_map.md are BOTH explicitly defined (CLAUDE.md's own "Context/
+logging efficiency rules" section) as "structural reference only, never a
+changelog... present tense." Direct grep found 9 and 19 real dated
+changelog-style phrases ("shipped"/"fixed Aug/Sep"/"built Aug/Sep")
+respectively inside them.
+
+Honest caveat, not hidden (rule 4): this session's git clone is SHALLOW,
+reaching back only to Sep 2 2026. An initial reading of "CLAUDE_archive.md
+has only 2 commits ever" as evidence the archival discipline had stalled
+was CHECKED and DISCARDED as unreliable — the real archival cadence
+before Sep 2 is invisible to this session's git log, so no conclusion was
+drawn from it. The file-SIZE evidence above is independent of git history
+and stands on its own.
+
+/commit-archaeologist: this is the same failure class the July 31 prune
+fixed (CLAUDE.md was ~154KB, cut to ~92KB) recurring at ~4.5x the
+post-prune size, with the file's own self-aware "should be archived"
+label sitting directly next to the un-archived content — strong evidence
+the underlying discipline is prose-only and has now failed to hold at
+scale at least twice.
+
+===========================================================================
+/drift check
+===========================================================================
+Source claim (CLAUDE.md's own July 31 rule): "when an entry's underlying
+event is done, verified, and no longer being actively re-litigated,
+collapse it to a single durable-fact bullet... don't leave the full
+incident narrative sitting in CLAUDE.md indefinitely."
+
+VERDICT: DRIFTED. BASIS: RATIFIED (an explicit, still-standing CLAUDE.md
+rule, not a guess). GRADE: MATERIAL — the goal (durable facts only,
+everything else archived) is intact as a stated rule; the live file has
+moved ~4.5x away from it with nothing that would have caught the drift
+early.
+
+===========================================================================
+/debate — collapse-in-place vs. physical domain-split
+===========================================================================
+Side A (collapse-in-place): every fact still fits in CLAUDE.md, just
+shrunk to durable one-liners + pointers into CLAUDE_archive.md/
+patch_notes.html. Zero new drift surface — rule 16's own hard lesson this
+same session ("a doc can be made false by a change made somewhere else
+entirely") argues against multiplying files without a structural reason.
+
+Side B (domain-split into separate state files): Alex explicitly asked to
+"split info as much as possible to make individual page as clear and
+concise and accurate as possible." CLAUDE.md's own precedent proves this
+CAN work without becoming pure liability — interconnection_map.md/
+system_flow_map.md/ai_tooling_and_rules_map.md are already split off, and
+are described as read ON DEMAND ("before any nontrivial task"), never
+auto-loaded, unlike CLAUDE.md. A per-domain split genuinely could shrink
+the ALWAYS-loaded baseline itself, a different and larger saving than
+collapsing alone produces.
+
+/free-for-all-debate — individual real problems, not just the two sides:
+  1. interconnection_map.md/system_flow_map.md's rule-violations are a
+     small, independent, cheap fix regardless of the split-vs-collapse
+     decision.
+  2. Worked Precedents 1-6 (19,695 chars) are closed/stable and duplicate
+     nothing live — a clean archival candidate under any scenario.
+  3. patch_notes.html (1.3MB/423 cards) is NOT auto-loaded every session
+     (a materially different cost profile from CLAUDE.md) — lower
+     priority, flagged not ratified this pass (see Deferred, below).
+  4. Prose discipline alone ("collapse when resolved") has already failed
+     at this scale at least once (pre-July-31) and arguably worse this
+     time — a prose reminder is not itself a fix, same lesson as this
+     session's own SELF_KNOWLEDGE staleness work.
+
+Council of 5 (pre-interrogation): unanimous that collapsing "Current
+state" is the single highest-value, lowest-risk move regardless of any
+other decision (targets 59%/61,400 tokens directly, proven mechanism,
+zero information loss if scoped correctly). Real open forks: how far to
+split beyond that, how aggressive the collapse threshold should be,
+whether to bundle the sibling-doc fix, and whether to build a standing
+mechanical check.
+
+===========================================================================
+/interrogation — 4 real questions, AskUserQuestion, all answered
+(all "Recommended" selected)
+===========================================================================
+Q1 (architecture): Collapse first, split after measuring. — CONFIRMED.
+  Do the safe, proven collapse pass now. Once CLAUDE.md's real post-
+  collapse size is known, decide SEPARATELY whether domain-splitting is
+  still worth the added drift surface. Physical domain-split is NOT
+  ratified this pass — logged as a real, deliberate future decision point,
+  not silently dropped.
+
+Q2 (collapse threshold): Only where patch_notes.html already has the full
+  story. — CONFIRMED. Zero information-loss risk: a CLAUDE.md narrative
+  block collapses to one line ONLY when its full story is confirmed
+  already sitting in a patch_notes.html card or a records/*.txt file. A
+  block whose story is NOT yet fully recorded elsewhere does not collapse
+  in this pass (deferred to a real backfill-then-collapse follow-up,
+  named but not built here).
+
+Q3 (sibling docs): Fix interconnection_map.md/system_flow_map.md's 28
+  dated-changelog instances now, same pass. — CONFIRMED.
+
+Q4 (mechanism): Build a standing mechanical bloat-check, same family as
+  today's check_self_knowledge_staleness.py/check_self_knowledge_
+  contradictions.py. — CONFIRMED.
+
+===========================================================================
+Council of 5 — FINAL RATIFIED PLAN, for /CEO Loop 2 pickup
+===========================================================================
+Plan name: "Oversight Doc Dedup & Compression"
+Basis: ratified (Alex's own real /interrogation answers, not a guessed
+default).
+
+Item DD-1 (Collapse CLAUDE.md's Current-state narrative):
+  Scope: HABITS/Taxonomy/Video-content-pipeline/Oracle/External-handoff-
+  lanes/Open-forks subsections of the "Current state" section.
+  Method, per Q2's confirmed threshold: for each dated narrative block,
+  confirm its full story already exists in a patch_notes.html card or a
+  records/*.txt file (grep for a matching title/date/keyword) BEFORE
+  collapsing. If confirmed: collapse to one durable-fact line + a
+  pointer ("see patch_notes.html's <date> card" or the record filename),
+  and move the FULL removed text verbatim into CLAUDE_archive.md (never
+  delete — same standing discipline as the July 31 prune). If NOT
+  confirmed (patch_notes.html doesn't yet carry the full story): leave in
+  place this pass, flag it as a real backfill candidate for a later pass
+  — do not guess/invent a patch_notes.html card just to unblock a collapse.
+  Target: cut the 245,545-char section toward something close to a true
+  durable-facts size, with zero information loss (everything either
+  collapses to a verified-safe one-liner, or stays untouched and flagged).
+
+Item DD-2 (Archive Worked Precedents 1-6):
+  Move the July 20-22 Aintergration book-audit Worked Precedents (19,695
+  chars, Invokable Frameworks section) into CLAUDE_archive.md verbatim,
+  leave a one-line index pointer in CLAUDE.md. The skill procedure
+  definitions themselves (Omnitrix/Council of 5/GODMODE/Aintergration)
+  are NOT touched — only the historical worked-example narrative.
+
+Item DD-3 (Fix sibling-doc rule violations):
+  interconnection_map.md (9 instances) + system_flow_map.md (19
+  instances): convert each dated changelog-style phrase to a present-
+  tense structural statement matching each doc's own stated role. Any
+  narrative-only content with no present-tense structural equivalent
+  moves to patch_notes.html instead of being deleted.
+
+Item DD-4 (Standing mechanical bloat-check):
+  New scripts/check_current_state_bloat.py, same family/shape as
+  check_self_knowledge_staleness.py (regex/size-only, zero AI cost).
+  Real design, to be confirmed at build time via the same real-evidence
+  discipline (not guessed): measures the "## Current state" section's
+  byte size against a real threshold (candidate: some multiple of the
+  post-DD-1 collapsed size, TBD once DD-1's real post-collapse number is
+  known — do NOT hardcode a number before DD-1 ships) and/or counts new
+  "shipped [date]"-style blocks added since the last real collapse pass
+  with no matching one-line collapse. Wired into the same two
+  enforcement points as SK-1/SK-2 (CLAUDE.md session-start check,
+  .claude/skills/Bedtime/SKILL.md Step 1c) — never a third, separate
+  ritual (rule 8).
+
+Deferred, flagged not dropped:
+  - Physical domain-split into per-domain state files — real, deliberate
+    future decision (Q1's own confirmed sequencing: measure DD-1's result
+    first, then decide).
+  - patch_notes.html's own further archive-cutoff (1.3MB/423 cards) —
+    not auto-loaded every session, lower priority, not ratified this
+    pass; a real open item for whenever DD-1-4 are done and Alex wants to
+    revisit "least space possible" more broadly.
+  - The narrative blocks DD-1's method finds NOT yet backed by a
+    patch_notes.html card — real backfill-then-collapse candidates for a
+    future pass, not guessed into existence here.
+
+Execution note for /CEO Loop 2: all 4 items are additive/non-destructive
+doc edits (no Supabase migration, no code behavior change) — Tier 2 under
+the standard Judgment Funnel, no Tier-3 confirmation needed per item, but
+each should still get its own real before/after size measurement and a
+patch_notes.html card on completion, same standing discipline as every
+other CEO-tracked item in this project.
