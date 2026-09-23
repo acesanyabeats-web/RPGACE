@@ -1,0 +1,176 @@
+RPGACE — /Routine daily priorities debate
+Date: 2026-09-23 (2nd run today — first /Routine of the day was implicitly satisfied by
+the morning's /paranoia pass into the Oversight Doc Dedup & Compression plan; this run
+follows the explicit "update oversight" + /Bedtime close-out, per Alex's own "/Routine"
+invocation).
+
+===========================================================================
+STEP 1 — Team 1's evidence-based Top 10 (GODMODE pass)
+===========================================================================
+Evidence gathered: CLAUDE.md's full "Open forks that need Alex" + Known Landmines
+sections (already in context, re-read for real content not headline); ceo_plan_items
+across ALL plans, not just the completed Dedup & Compression one (grouped-count query
+first, then real evidence pulled per non-complete plan); error_log active rows;
+smoke_test_items real status distribution; reference_tracks/journal/chronicles_finance
+live counts; session_memory's last 3 rows for open_threads.
+
+Real findings NOT yet surfaced in today's chat before this run:
+  - ceo_plan_items has 6 non-complete or partially-red/yellow plans beyond the
+    Dedup & Compression one just finished: "Fable Total-Systems Reconciliation &
+    Optimization Audit" (active, 3 red/4 yellow/5 green/3 blue), "HABITS Domain —
+    Cooking Module" (compiled, 1 red/8 yellow/1 green), "Massive Expansion" (active,
+    1 yellow remaining), "UI Consistency & Worm Family Cohesion — Batch 1" (active,
+    2 yellow), "Worm Family & Encyclopedia Wrapper" (active, 2 red/2 yellow/6 green).
+  - F12 (Fable audit plan): 5 real "setTimeout handler took Nms" console violations,
+    flagged Aug 22, never investigated — over a month unactioned, zero Alex-dependency.
+  - The swipe-freeze error_log row (ui_toast|toast()|App froze) now shows
+    occurrence_count=76 (CLAUDE.md's Known Landmines still says 69), last_seen_at
+    2026-09-23 20:00:18 UTC — literally today, hours before this /Routine run. Real,
+    live, self-reported recurring evidence — the exact class of signal this skill's
+    own G109 clause says should rank near the top because the app surfaced it itself.
+  - smoke_test_items real distribution: 28 confirmed_working / 70 unverified / 1
+    broken (99 total) — CLAUDE.md's own "27 of 99... 2 broken" line has drifted by
+    one in each direction since its last re-verification (Aug 30).
+  - 2 other error_log active rows checked and found NOT independently actionable:
+    a single-occurrence "Oracle is still answering" info toast (Aug 28, already
+    covered by F2's own logged finding — a known narrow G109 toast-capture
+    miscapture, benign) and a single-occurrence secureWrite failure (Sep 13,
+    isolated, no pattern, likely transient).
+  - F7 (CLAUDE.md/SELF_KNOWLEDGE bloat prune, the Fable-audit's own recommendation)
+    checked directly against today's real Dedup & Compression work: its own stated
+    trigger ("CLAUDE.md has grown back to ~442KB") is now stale (real current size:
+    250,429 chars, well under that) — BUT F7's real deferral condition is a
+    SEPARATE, deliberate Alex decision ("wait for the Oracle-orchestration system to
+    mature first," Aug 31) that today's work did not satisfy. F7 correctly stays red;
+    its evidence text's own stale number is a minor, non-blocking drift, not acted on
+    this pass (would need its own edit, out of scope for a priorities debate).
+  - journal has zero rows in the last 7 days — no real Alex-originated app activity
+    to cross-feed into today's list (the reverse-half check this skill's own Step 1
+    names).
+
+Team 1's real Top 10, evidence-ranked:
+  1. Fix 2 real live-number drifts in CLAUDE.md's Known Landmines (swipe-freeze
+     69->76/last-seen date; smoke_test 27->28 confirmed, 2->1 broken) — Tier 0,
+     ~2 minutes, keeps the doc's own "Live numbers, check them again" rule honest.
+  2. Investigate F12's 5 unactioned setTimeout violations (Aug 22, month-old,
+     zero Alex-dependency, plausibly related to the swipe-freeze main-thread class).
+  3. Backfill reference_tracks.scale/genre (0/32 populated) — the confirmed real
+     root cause of "beat matches are always the same"; the popup exists, has never
+     been run, since July 28.
+  4. Correlate the 76 swipe-freeze error_log occurrences against page/action context
+     — not a 5th blind code pass (the standing rule against that stays), a DATA
+     investigation into whether these cluster around one real feature or are
+     genuinely ambient main-thread noise crossing the 500ms threshold.
+  5. Flag to Alex: Encyclopedia page button-layout redesign (his own Aug 27 "those
+     buttons are useless" quote, still unanswered).
+  6. Flag to Alex: which paid video provider (if any) to configure — open since
+     July 31, the oldest standing Tier-3 fork in the project.
+  7. Flag to Alex: minotaur_map.html's own treatment — he raised it himself THIS
+     session and never actually answered which direction to take it.
+  8. Flag to Alex: the dead onclick="loadDemoShifts()" button — implement or delete.
+  9. F16/F17/F18 hand-test sweep — zero code required, pure execution debt.
+  10. Flag to Alex: Composio key rotation — open since July 12, oldest standing
+      security-hygiene item.
+
+===========================================================================
+STEP 2 — Team 2's real counter-case
+===========================================================================
+Team 2's honest case, not manufactured: today (Sep 23) was, like several recent
+sessions, 100% oversight/meta work — the SELF_KNOWLEDGE fix, the full 4-item
+Dedup & Compression plan, manual.html. This is the SAME pattern CLAUDE.md's own
+Sep 15 finding already named and flagged ("56% of the prior 2 weeks' commits were
+Galaxy-Map/meta work while real product debt sat untouched"). Team 1's own list
+still leans meta: items 1, 2, and 4 are investigation/maintenance, items 5-10 are
+all Alex-blocked flags that cost nothing to communicate but produce nothing without
+his answer. Only item 3 (reference_tracks backfill) is a genuine, zero-blocker,
+product-facing BUILD action — and it's ranked #3, not #1, despite being the single
+cheapest concrete step toward the project's own governing 48-hour rule available in
+the entire list, sitting untouched for almost two months despite being repeatedly
+named as the real root cause of a real user-facing quality bug.
+
+Team 2's real position: reference_tracks backfill should be #1, not #3. Team 2 also
+argues against spending today's limited remaining session time on item 2 (F12's
+setTimeout investigation) — real backlog, but genuinely another meta/infra rabbit
+hole with no clear product payoff, exactly the pattern Team 2 is pushing back on.
+Team 2's counter-proposal for that slot: turn item 9 (F16/F17/F18 hand-test sweep)
+from a passive "needs Alex" flag into an ACTIVE item — draft the exact click-through
+steps as a ready checklist, so Alex's own real verification cost drops from an
+open-ended "go check things" ask to a 5-minute checklist walk. That's real forward
+motion on a stalled item without needing Alex present to unblock it.
+
+===========================================================================
+STEP 3 — /Debate (Team 1 vs Team 2, Council of 5 cleanup)
+===========================================================================
+Team 2's case is real, not theater, and wins on its central claim: reference_tracks
+backfill moves to #1. It is genuinely the cheapest, most concrete, zero-blocker step
+toward the governing rule in the whole list, and has been sitting untouched since
+July 28 for no real reason other than nobody picking it up.
+
+Team 1's counter-defense on item 2 (F12) holds partially: it's real, evidence-based,
+month-old backlog, not invented busywork — it doesn't get dropped, but Team 2's point
+that today shouldn't ALSO lead with more meta-investigation is fair given the day's
+own pattern. F12 downgrades to a same-day stretch goal (do it if 1-3 finish with
+session time left), not a leading priority.
+
+Item 4 (freeze correlation) downgrades the same way and for the same reason — real,
+but secondary to actually shipping something concrete today.
+
+Team 2's F16/F17/F18-checklist counter-proposal is adopted outright: it costs the
+session nothing, and turns a stalled "needs Alex" item into something that actually
+moves forward without him in the room.
+
+===========================================================================
+STEP 4 — /5thDimension reconciliation (no Fable, inline)
+===========================================================================
+Cross-checked the reconciled list against the governing rule ("beat made or video
+posted within 48 hours? Yes -> build now") and the Tier funnel: reference_tracks
+backfill is Tier 1 (routine, single-feature, no architecture change) — no ceremony
+needed beyond normal source-pulling discipline, buildable today. The live-number
+fixes are Tier 0 (mechanical). Flagging items to Alex costs nothing regardless of
+build-priority ranking and should always happen. Nothing in the reconciled list
+conflicts with anything Alex has said explicitly this session (he named
+minotaur_map.html's undecided status himself — item 7's flag restates his own open
+question back to him, not a new ask).
+
+===========================================================================
+STEP 5 — Final Council of 5 lock-in
+===========================================================================
+FINAL TOP 10 FOR TODAY:
+  1. Fix 2 real live-number drifts in CLAUDE.md (Tier 0, done inline this run).
+  2. Backfill reference_tracks.scale/genre (0/32 populated) — the real top build
+     priority, directly serves the governing rule.
+  3. Draft a ready-to-click F16/F17/F18 walkthrough checklist for Alex (near-zero
+     cost, converts a stalled "needs Alex" flag into a real 5-minute unblock).
+  4. Flag to Alex: Encyclopedia button-layout redesign — needs his direction.
+  5. Flag to Alex: paid video provider decision — oldest open Tier-3 fork.
+  6. Flag to Alex: minotaur_map.html's own treatment — he raised it, never resolved.
+  7. Flag to Alex: the dead loadDemoShifts() button — implement or delete.
+  8. Flag to Alex: Composio key rotation — oldest standing security item.
+  9. [Stretch, if 1-3 finish with time left] Investigate F12's 5 unactioned
+     setTimeout violations.
+  10. [Stretch, if 1-3 finish with time left] Correlate the 76 swipe-freeze
+      error_log occurrences against page/action context.
+
+REAL, NAMED DROP LIST (not silently dropped):
+  - The videoSummary broken smoke_test_items row — ambiguous origin (likely Alex's
+    own hand-test flip, no note attached), not actionable without asking him
+    directly what he saw; flagging costs a line, chasing it blind doesn't.
+  - The single-occurrence secureWrite error_log row (Sep 13) — isolated, no
+    pattern, not worth investigating on one occurrence.
+  - F7 (CLAUDE.md/SELF_KNOWLEDGE bloat prune) — deliberately deferred by Alex's own
+    direct call (Aug 31) until the Oracle-orchestration system matures; correctly
+    NOT resurrected by today's unrelated Dedup & Compression work, even though that
+    work incidentally addressed F7's own stated trigger number. Its evidence text's
+    stale "~442KB" figure is a minor drift, not worth a dedicated edit this pass.
+  - F13 (Fable audit closing benchmark) — blocked on F1/F2/F8-F10 genuinely closing
+    first, not ready regardless of today's other work.
+  - H5 (shift/calendar collision-checking) — already deliberately deferred, needs
+    its own scoping pass Alex hasn't greenlit.
+  - W7/W10 (Worm Family Phase 2 items) — deliberately deferred per Alex's own
+    confirmed /interrogation answer (Aug 23), correctly left alone.
+
+===========================================================================
+Executed immediately (per this skill's own "move straight into item 1" guardrail)
+===========================================================================
+Item 1 (the 2 live-number fixes) executed in the same turn this record was written —
+see the matching commit for the real diff.
