@@ -141,7 +141,7 @@ status readout):**
   other oversight docs that are reporting truth" — not just corrected in
   place, actively REMOVED from every Tier (a)-(d) doc asserting it.**
   Concretely: (1) grep every Tier (a)-(d) doc (`patch_notes.html`,
-  `manual.html`, `minotaur_map.html`, `interconnection_map.md`,
+  `minotaur_map.html`, `interconnection_map.md`,
   `system_flow_map.md`, `ai_tooling_and_rules_map.md`,
   `oracleAppGrounding.SELF_KNOWLEDGE`, `smoke_test.html`) for the exact
   stale claim; (2) for a doc where the claim is one fact inside a larger
@@ -161,7 +161,7 @@ status readout):**
 is the real, load-bearing addition that makes `/colourgradient` interact
 with the rest of the oversight system, not just report to chat:
 - **🟢 Green items only** ever get written into the real Tier (a)/(b)/(c)/(d)
-  oversight docs (`patch_notes.html`, `manual.html`, `minotaur_map.html`,
+  oversight docs (`patch_notes.html`, `minotaur_map.html`,
   `interconnection_map.md`, `system_flow_map.md`,
   `ai_tooling_and_rules_map.md`, `oracleAppGrounding.SELF_KNOWLEDGE`,
   `smoke_test.html`) — those docs describe what's ACTUALLY TRUE right now,

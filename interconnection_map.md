@@ -328,9 +328,9 @@ Every level also carries a real, permanent "🧑 Alex" human-actor bubble, per t
 
 **The server-side half, same day, same session**: once `local_server.py`'s real source landed in the repo, its own `/push-to-supabase` handler was read directly and confirmed a genuine (not theoretical) gap — zero deduplication AND zero deletion-awareness, blindly re-POSTing every local `intel_*.json` file on every call. Fixed with the mirrored version of the same 2 real conditions (a Python `norm_url()` behaviorally matching `intelDedup.normUrl` exactly, verified against the same URL-normalization edge cases): an existing `intel_reports` row for a URL = skip; a pending `intel_reanalysis_pool` marker at least as new as the local file's own date = skip. `rpgace_intel.py`'s own direct encyclopedia push gained the same `encyclopedia.source_url` fix the client-side path already had, closing the one adjacent gap that would have silently kept server-pushed entries out of the reanalysis pool.
 
-## Accessibility — voice input
+## Accessibility — voice input (retired Aug 30 2026)
 
-`voiceInput` owns all speech-to-text in the app: the Oracle-chat 🎤 button and a persistent body-level floating 🎤 that targets whichever text field last had real focus, so voice input works on any page rather than only in chat. It tracks finalized-transcript idempotency by array position itself (`_finalizedCount`) rather than trusting `e.resultIndex`, and spawns a fresh `SpeechRecognition` object per auto-restart instead of reusing an ended one — both deliberate, because Android Chrome's implementation is less spec-reliable there than desktop Chrome's.
+`voiceInput` (the Oracle-chat 🎤 button + a persistent body-level floating 🎤) is **retired** — real Alex ask, ahead of Fish Audio shipping, not a bug fix (see CLAUDE.md's Known Landmines). Both buttons and the module are deleted; git history preserves the source. No voice-input path exists in the app until a real Fish Audio API key is activated (`oracleControl`/G41's dormant TTS/ASR scaffold). This paragraph is deliberately kept short rather than describing retired mechanics in present tense — see `patch_notes.html`'s Aug 30 card for the real removal narrative.
 
 ## Cross-doc sync conventions
 
@@ -348,6 +348,169 @@ Any module's boot-time UI injection registers via `RPGACE.registerBootTask(fn)` 
 
 ## Standing rule: Oversight
 
-**A real 2-tier + 3-layer system, not a flat list (per A17).** Tier (a) "Shown/explaining docs": Patch Notes (`patch_notes.html`), the Full Manual (`manual.html`), the Minotaur Map (`minotaur_map.html`). Tier (b) "Truth docs": this Interconnection Map, System Flow Map (`system_flow_map.md`), and the AI Tooling & Rules Map (`ai_tooling_and_rules_map.md`) — these cross-verify each other and get updated first; Tier (a) then updates to match. `taxonomy_map.html` sits outside this tier system by design (a live Supabase query, already its own real-time truth source). Three new layers: (c) Oracle self-awareness (`oracleAppGrounding.SELF_KNOWLEDGE`), (d) the real, new `smoke_test.html` (a genuine hand-tickable "what's confirmed working right now" checklist, Supabase-backed via `smoke_test_items`, grown from real completions, never pre-built empty), and (e) graphify/`obsidian-vault/` as the real structural truth source feeding (b)/(c) — reachable in practice via `graphify-out/obsidian_vault.html` (a static export with real working links; the raw vault's `[[wikilinks]]` only navigate inside the Obsidian app itself), linked from the same in-app Oversight popup as Graphify Map/Tree. **Scoped to the whole Total system, not RPGACE-internal architecture alone**: graphify's own river taxonomy is 16 unified rivers — I-XI carry in-app narrative information flow, XII-XVI carry real Total-systems traffic instead (River XII is the literal API/Auth layer every external connector — OpenMontage/Kimi/Luna/librosa/Composio — routes through; XIII-XVI are the dev-process/knowledge layer RPGACE CC, Graphify CC, and OpenMontage CC coordinate through). `ai_tooling_and_rules_map.md`'s own "External AI/tool providers" table is the canonical source for every connector's real status; `scripts/graphify_river_group.py`'s `EXTERNAL_CONNECTORS` hand-mirrors those same facts so they surface inside graphify's own node-info bridge and the Obsidian vault's River XII note. Chronicles (`system_updates`) remains the live, in-app record of the same work. Full durable version: `CLAUDE.md`'s own Oversight section.
+**Real, superseding update, Sep 23 2026 (Minotaur/Manual Unification, `ceo_plans` id `96c21d7f-1dfd-49d2-8479-1dacdaed991e`) — `manual.html` is retired.** Its dev-facing content (button catalog, Supabase table reference, architecture/build-workflow, Oracle background capabilities) is relocated into Tier (b) truth docs per Alex's own explicit ratification ("keep manual content in Tier b docs") — never ported into the consumer-facing doc. Tier (a) "Shown/explaining docs" is now: Patch Notes (`patch_notes.html`) and the Minotaur Map (`minotaur_map.html`, rebuilt Sep 23 2026 as the single consumer-facing doc, real domains/AI-tiers/worked examples, zero code/table identifiers). Tier (b) "Truth docs": this Interconnection Map (now also the home of the real button catalog + architecture/build-workflow + Oracle background capabilities — see the sections below), System Flow Map (`system_flow_map.md`, now also the home of the detailed per-table Supabase reference), and the AI Tooling & Rules Map (`ai_tooling_and_rules_map.md`, the canonical external-connector reference) — plus `perspective_map.html` (Tier (b)'s 4th doc, Sep 15 2026, a live-query cross-referenced evidence page). These four cross-verify each other and get updated first; Tier (a) then updates to match. **Framing, restated per the same ratification**: Tier (b) is the truth source for RPGACE the app; the full set of oversight docs together (Tier a/b plus layers c-f below) is the truth source for RPGACE Total Systems (RPGACE app + this Claude Code session + OpenMontage CC + Graphify CC + every external connector); the Galaxy Map (`graphify-out/galaxy_map.html`) is the real drill-down representation of that whole Total-Systems picture. `taxonomy_map.html` sits outside this tier system by design (a live Supabase query, already its own real-time truth source). Layers beyond the two tiers: (c) Oracle self-awareness (`oracleAppGrounding.SELF_KNOWLEDGE`), (d) `smoke_test.html`/`error_log.html`/`session_lessons.html`, (e) `future_integrations.html`/`achiever.html`, (f) Graphify/Obsidian + the Galaxy Map — see `CLAUDE.md`'s own Oversight section for the full, durable version of all of this; this paragraph is the Tier (b) mirror of it, not a second independent definition.
 
-**Current state (G102 retirement + G103 rechronologize) — read this note for what's true now; the paragraph above is left as historical record of what was true before it, same doc-discipline precedent as the Aug 11 phylum renumber/Aug 13 Engineer-CC rename notes.** Rivers XIII-XVII (renumbered from their original XII-XVI so River XII could open up for the real, live Research & Intel Stream river, moved there from XVII) are now marked **deprecated/merged** in `scripts/graphify_river_group.py`'s `RIVER_RETIRED`, per Alex's own confirmed answer ("all 5 and yes too") — not deleted, since real code/docs still cite them by name. Real evidence: all 5 always had zero real `rpgace_core.js` modules — they were a role-description of a Total-systems category, never a river of actual app code. The Galaxy Map's own L0 Infra/Inter system (G77-G100) gives each of those same real categories its own evidence-grounded bubble system at finer grain than one river-wide note ever gave, so this is a real upgrade in coverage, not a loss of it. Every Galaxy Map page that renders a retired river (Level 1's ring, Level 2's per-river section, the Logic Dimension page, and each retired river's own Obsidian vault note) now shows a real "⚠️ Retired — see instead" banner naming its L0-unit successor — Supabase/Oracle/Composio/Jina AI/Last.fm/librosa/n8n/Whisper for River XIII, the Skills unit for River XIV, the Oversight Docs unit for River XV, and Orchestrator CC's own unit (an honestly-flagged **partial** successor, not a full 1:1 match) for River XVI/XVII. `minotaur_map.html`'s "Rivers XIII-XVII — The Total System Gateway" section carries the same real note, per this file's own rare-touch design (a real wing changing, not an internal patch).
+**Scoped to the whole Total system, not RPGACE-internal architecture alone**: graphify's own river taxonomy is 12 live app-code rivers (I-XII, real `rpgace_core.js` modules) plus 5 retired Total-systems categories (XIII-XVII, see the current-state note below) now expressed as per-actor Infra/Inter breakdowns instead of numbered rivers. `ai_tooling_and_rules_map.md`'s own "External AI/tool providers" table is the canonical source for every connector's real status; `scripts/graphify_river_group.py`'s `EXTERNAL_CONNECTORS` hand-mirrors those same facts so they surface inside graphify's own node-info bridge and the Obsidian vault. Chronicles (`system_updates`) remains the live, in-app record of the same work.
+
+**Current state (G102 retirement + G103 rechronologize, real as of that pass; the Rivers XIII-XVII numbering is now further superseded — see `CLAUDE.md`'s own Galaxy Map bullet for the real, current 12-live-river/5-retired-row structure, Sep 15 2026)**: Rivers XIII-XVII (renumbered from their original XII-XVI so River XII could open up for the real, live Research & Intel Stream river, moved there from XVII) are marked **deprecated/merged** in `scripts/graphify_river_group.py`'s `RIVER_RETIRED`, per Alex's own confirmed answer ("all 5 and yes too") — not deleted, since real code/docs still cite them by name. Real evidence: all 5 always had zero real `rpgace_core.js` modules — they were a role-description of a Total-systems category, never a river of actual app code. The Galaxy Map's own L0 Infra/Inter system (G77-G100) gives each of those same real categories its own evidence-grounded bubble system at finer grain than one river-wide note ever gave, so this is a real upgrade in coverage, not a loss of it. Every Galaxy Map page that renders a retired river now shows a real "⚠️ Retired — see instead" banner naming its L0-unit successor — Supabase/Oracle/Composio/Jina AI/Last.fm/librosa/n8n/Whisper for River XIII, the Skills unit for River XIV, the Oversight Docs unit for River XV, and Orchestrator CC's own unit (an honestly-flagged **partial** successor, not a full 1:1 match) for River XVI/XVII. **`minotaur_map.html` no longer carries a "Rivers XIII-XVII — The Total System Gateway" section at all** (real, Sep 23 2026 — the doc was rebuilt as a deliberately simplified consumer page with zero internal architecture/connector detail; the Galaxy Map is now the sole real representation of this).
+
+## Architecture — three layers, two real hubs, the real build workflow
+
+*(Relocated verbatim from `manual.html`'s own "Architecture" section, Sep 23 2026, Minotaur/Manual Unification M2 — `rpgace_build.py` confirmed still real and present in the repo root before this move, not stale.)*
+
+```
+LAYER 1: main.js — LEGACY section, mechanically absorbed into rpgace_core.js Aug 20 2026 (see CLAUDE.md's Known landmines)
+LAYER 2: rpgace_core.js — all domain modules, via RPGACE.register()
+LAYER 3: api/ (Vercel serverless) — oracle.js, intel.js, composio.js, data-write.js
+```
+
+The two real hubs everything converges on (confirmed via the full interconnection audit above): **Oracle** (Claude API, generation) and **Taxonomy Tree** (knowledge structure). Only the Schedule system runs fully independent of both.
+
+Real build-command workflow (the "Master Build Tool," `rpgace_build.py`, confirmed live in the repo root):
+```
+py rpgace_build.py new DOMAIN moduleName
+# write logic in mod_moduleName.js
+py rpgace_build.py add DOMAIN mod_moduleName.js
+py rpgace_build.py check
+git add rpgace_core.js && git commit -m "..." && git push
+npx vercel --prod
+```
+This is a real, still-live tool — not the only way to edit `rpgace_core.js` (direct Edit-tool edits following the `/* ===MODULE:x=== */` marker convention are established precedent too, per CLAUDE.md's own Architecture section), but the documented CLI path for a from-scratch new module.
+
+## Every Button, Cataloged
+
+*(Relocated verbatim from `manual.html`, Sep 23 2026, Minotaur/Manual Unification M2/M3 — manual.html retired, git history preserves the original HTML/CSS presentation. Content unchanged; reformatted from HTML tables to markdown. For per-row fusion with the Galaxy Map's own Current(L3) series, see that doc's own note this section inherited: most rows' "Chain" cell already names the real module/function it calls, which is the row's real fusion point — deliberately not a per-row retrofit of static links, which would itself go stale; resolve a Chain cell's module name against `RIVER_MODULES` in `scripts/graphify_river_group.py`, or open that module's river section on `graphify-out/galaxy_map_module.html`, for the precise river.)*
+
+### GLOBAL (6 buttons)
+
+| Button | Chain |
+|---|---|
+| 🧪/✅/📥 Oracle Mode switch (top-right) | `mockOracle` module (Aug 6) — a real fixed pill cycling Real API → 🧪 Dummy (wiring-test replies, zero cost) → 📥 Fallback Scout (queues the send for free later answering) on click. A paired "📥 Scouted" pill browses every queued item. |
+| ☰ Left Nav Drawer | `leftNav` module (July 20) — hamburger in the slim sticky `.nav` shell slides in a left drawer listing top-level pages; Schedule expands inline. Research Lab drawer entry retired with the page itself (A5 Phase 1/UI2). |
+| 🃏 Dashboard command deck (12 cards) | `dashDeck` module (July 20) — command cards in three thematic rows plus a "Needs you now" panel. Each card either `showPage()`s or opens a widget popup (`_openBookworm`/`_openGaps`/`_openPipeline`/`_openMorningBrief`/`_openOversight`/`_openCorpus`, plus `taxonomyReviewQueue._openCard`/`chroniclesLog._openCard`). Research Lab card retired (UI2, Aug 23) — `dashDeck.MODULES` no longer carries a `key:'research'` entry. |
+| 🎤 Voice input — **RETIRED Aug 30 2026** | Built July 29 (`voiceInput` module), retired ahead of Fish Audio shipping per Alex's direct ask (Aug 30 Fable Total-Systems Audit). Both buttons and the module deleted; no voice-input path exists until a real Fish Audio key is activated. |
+| 🔮 Oracle Control (global floating overlay) | `oracleControl` module (Aug 26 2026, G41) — a real, persistent body-level floating button reusing the real dashboard `sendChatWithImage()`/`sendChat()` pipeline verbatim. A real Content Pipeline action ("log the beat") shows a real confirm popup (what happens / data touched / why / benefit) before doing anything. Oracle can also suggest growing its own recognized-action list, gated behind a separate approval popup. Genuinely unverified by Alex's own hand — headless-Chromium-verified only. |
+| 📜 The Chronicles (dashboard card) → View Full Log → | `careerStatCard` + `chroniclesLog` (July 22) — a real dashDeck card opening a popup with the 5 most recent real actions across 8 Supabase tables + a button to the full `#page-chronicles` log page (search box, type filter chips, full history). |
+
+### ORACLE (10 buttons)
+
+| Button | Chain |
+|---|---|
+| 🧪 Dummy / ✅ Real / 📥 Fallback Scout (top-of-page switch) | A real 3-mode toggle inside `callOracle()` itself, intercepting before the real `/api/oracle` fetch. Always visible regardless of state. |
+| 🎛 Prod. Oracle | 16 commands (incl. "Council of 5 — Decision Audit" and "5thDimension — Built vs Reported") → fillGaps → sendToOracle → chat display. |
+| 📋 Use this conversation (inside the Council of 5 fillGaps popup) | Opt-in button (`opts.allowConversationCapture`) capturing real chat history via `RPGACE.utils._captureChatHistory()` to fill a Council of 5 gap directly. |
+| 🧪 Flag for Claude Code (after any substantial Oracle reply) | `oracleDevBridge` module — writes the reply text into `oracle_dev_suggestions` via the shared `oracle:response-scanned` hook. Suggestions only, never instructions, promoted into CLAUDE.md only with explicit confirmation. |
+| 🎬 YouTube Oracle | 8 commands → same chain. |
+| 📸 Insta-Oracle | 13 commands → same chain. |
+| 🎬 Visual Oracle | 6 commands, reads Phylum 13 (Visio Cinematica) taxonomy. |
+| 🎬 Director-blend picker (inside Visual Treatment / Director Match) | `visualOracle._showDirectorPicker` — a real 3-director blend (primary/secondary/tertiary) over the 50-row `f14_filmmaker_library`. The structured choice saves to `creative_docs.director_blend` for later retroactive re-selection. |
+| 🎵 TikTok Oracle | A separate module (not folded into Insta-Oracle — TikTok's discovery mechanic is genuinely different) — 8 commands mirroring `youtubeOracle`'s architecture. |
+| 🌌 5thDimension — Built vs Reported (Prod. Oracle command 16) | Asks Oracle to self-report what it can actually confirm from its own live grounding vs. what it can't verify, plus one real rewiring idea and an honest counter-case. |
+
+### ORACLE/CONTENT (1 button)
+
+| Button | Chain |
+|---|---|
+| 🔀 Repurpose | 3-step popup → 4 outputs → auto-creates ConID. |
+
+### CONTENT (18 buttons)
+
+| Button | Chain |
+|---|---|
+| 💡 Save Ideas | `conidPot.saveIdea()` → dup check → `conid_pot`. |
+| ⚡ Log Beat + Find Artists | 4 parallel actions (see the Level 2 diagram in `system_flow_map.md`). |
+| → Mark [Status] | ConID status update → progress bar. |
+| 💬 Oracle session | Seeds Oracle with active ConID context. |
+| [Stage-aware primary action] / ↩ Redo [last stage] / ↩ Undo | Real second hand-test round (Aug 6) — replaces the old fixed button set. 4 lookup tables (`MUSIC_VIDEO_PRIMARY_ACTION`/`_REDO_ACTION`/`_PREV_STAGE`/`_BADGE_LABELS`) drive one primary action button matching the card's real current stage, paired with a redo-last-stage button and a standalone Undo. `_revertToStage()` clears only the `creative_docs` keys that stage produced. |
+| 💰 Sell This Beat ▾ (toggle) | Beatstars Listing + Manage Deliverables (Phase H) fold behind this toggle. Monetisation treated as a parallel track (`licence_type`), not a reorder of the shared `status` enum. |
+| 🎧 Generate Beatstars Listing | F16 — generates ready-to-paste copy, does not publish. Shown once `licence_type` set → pulls matching Beat Log entry → sendToOracle. |
+| → Mark [Stage] / 📋 Paths + exports (Production Panel Phase 4) | F17: `videoPipeline` tracker over `video_jobs` — stage advance + per-stage paths + 4 export slots, no rendering. Rendered inline inside a ConID's own Production Panel Phase 4. Second stage renamed `raw_footage` → `in_production`. |
+| 🎬 Start Visual Treatment (on a ConID card) | Pulls the row's real BPM/key/mood/genre, opens the director-blend picker; its own save auto-advances the ConID's status box (Idea→Scripted). |
+| 🎞️ Production Panel — 4 real phases (music_video ConIDs) | `contentProductionLive._openProductionPanel`'s music_video branch: 1. Reference + Style, 2. Direction + Script, 3. Script Editing (2 editable textareas, each independently saved), 4. Video Pipeline. Tutorial ConIDs keep their original 3-phase copy. |
+| ↩ Return to Beat Log / ↩ Redo Visual Treatment / ↩ Regenerate | 3 real retroactive edit-in-place buttons, one per phase 1-3 above — reuse an existing beat's creative record to regenerate new visuals without starting from zero. |
+| 🎬 Generate Video / 🧪 Simulate Response / ↩ View Kling Project | Generate Video packages beat metadata + Visual Treatment + script into the real `openmontage_jobs` row shape, gated behind `OPENMONTAGE_HANDOFF_ENABLED:false`. Simulate Response fakes a complete `[SIMULATED]`-labeled job result. View Kling Project shows whichever job most recently exists for the ConID. |
+| 📝 Generate Captions / 👁 View Captions | Production Panel Phase 4's real caption generator — one Oracle call built from the full ConID record, producing Instagram Reels/YouTube Shorts/TikTok captions via 3 labeled EXPERTISE blocks (`_findOracleCmdText`). Saves to `creative_docs.captions`, auto-advances status to `Posted`. Stops before any Composio auto-posting. |
+| 📦 Manage Deliverables | Real beat deliverable files (stems/wav/zips) per licence tier, uploaded to the `beat-deliverables` bucket. "Generate Bundle" server-side zips files applicable to a tier and hands back a 24h signed download URL (`api/data-write.js`'s `bundle-deliverables` action, using `archiver`). BeatStars has no upload/listing API — this stops at auto-preparing a downloadable bundle. |
+| 🗑 Delete ConID | A real cascade delete (Aug 6) — `video_jobs.content_production_id` AND `openmontage_jobs.content_production_id` both lack a DB cascade; one click deletes any linked rows first, then the ConID itself, failing loud on error. |
+| 🎬 Also generate Visual Treatment Doc | F18: Beat Log checkbox → waits for in-flight guard to clear → auto `visualOracle` Visual Treatment Doc, F13-grounded. |
+| 📅 Add to Agenda | ConIDPot idea → Schedule tab. |
+| ⚡ Activate ConID | Same endpoint as Repurpose. |
+
+### LEARNING (11 buttons)
+
+| Button | Chain |
+|---|---|
+| 🗑 DEL (Intel) | Cascade delete: `intel_reports` + `encyclopedia` + `taxonomy_nodes`. |
+| 🧠 Study Now | Feynman 3-phase loop → gap score update. |
+| ⚡ Apply Tonight | Direct `markApplied()`, no Oracle call. |
+| 🧬 Phylum Path (nav tab) | Grouped phylum switcher (vertical list grouped by `PHYLUM_SCOPE_GROUPS`; all 21 phyla live as of Aug 11) → Linnaean drill-down → `decidePlacement()` (extractor+ground-worker) → confirm/deny/modify popup → `insertNewSteps()` attach/extend `taxonomy_tree` → fusion-link search → per-node "Generate/Refresh Article" opens a confirm/deny popup → Encyclopedia. |
+| 🧬 Send to Phylum Path | Highlight any text (Oracle chat, Encyclopedia) → button on the native text-select popup → opens Phylum Path panel pre-filled. |
+| 🔗 Confirm Link / ✗ Reject (Fusion Link card) | Dashboard review queue's second card type → `RPGACE.sb.update(taxonomy_links, status=confirmed/rejected)`. |
+| 🌌 Create Merged Leaf / ✗ Reject (Concept Fusion card) | Dashboard review queue's 3rd card type — proposes a cross-phylum merge → Accept creates a new `taxonomy_tree` leaf + 2 confirmed `taxonomy_links`. |
+| 🔗 Fusion connection row → Interlink Article popup | Clicking any confirmed fusion link opens `_showLinkArticle()`: a lazy/cached Oracle synthesis of how the two linked concepts combine (`taxonomy_links.link_article`), plus 2 exit buttons jumping into either source node. |
+| 📖 Bookworm (Dashboard widget) | 3 entry points into the same pipeline (URL/Jina fetch, paste-TOC, PDF upload) → per chapter `_analyzeChapter()` streams insights → Council-of-5 confidence-scored placement → per-insight Approve/Reject/Edit review. Completed books land in the Bibliography section. |
+| Research Lab sub-nav — **RETIRED** | Gone as of Aug 23 2026 (UI2). Its 7 panels redistributed to the destinations that actually own them (Bookworm/Content Pipeline/its own MusicWorm card), each opening as a popup via `dashDeck._openPanelPopup()`/`PANEL_POPUPS`. |
+| 🌳 Propose lineage | Accept/edit/reject/morph cycle for 20 phyla; Phylum 1 routes through Phylum Path's structure-aware decision. |
+
+### DASHBOARD (1 button)
+
+| Button | Chain |
+|---|---|
+| 🌳 Taxonomy & Review (dashboard card) | Opens the review popup when anything's pending, falls back to the Phylum Path browse page when empty. Card's own count fed by one shared `Promise.all` in `dashDeck._refreshGlance()`. |
+
+### JOURNAL (1 button)
+
+| Button | Chain |
+|---|---|
+| ☀️ Morning Brief | 4-source (Gmail, shifts, YouTube, top gap). Also runs automatically every day at 6am UTC via a Claude Code Remote Routine, writing into `journal` and pushing a phone notification. The dashDeck card opens this real widget in a popup (`_openMorningBrief`). |
+
+### SCHEDULE (2 buttons)
+
+| Button | Chain |
+|---|---|
+| Free calendar rows | Opens Schedule modal, pre-filled. |
+| Start / Done | Task tracking + XP. |
+
+### CHRONICLES (1 button)
+
+| Button | Chain |
+|---|---|
+| + Log Sale / Expense | Form (date/item/category/amount/notes) writes to `chronicles_finance`. Personal-visibility tracker only, explicitly not bookkeeping-grade. |
+
+### HABITS / COOKING (real domain, Sep 10-22 2026, `cookingOracle` module, H1-H24)
+
+| Button | Chain |
+|---|---|
+| 🍳 Cooking (dashboard card) | Opens `cookingOracle.ui._showModuleHub` — 5 real entry buttons: 🍳 Planned Cook / 🛒 Grocery List / ⚡ Recipe Generator / 📦 Current Stock / 🥫 What Can I Cook Right Now? |
+| ⚡ Recipe Generator | Opens a generation form → real Oracle chat request (`RECIPE_JSON:` trailer) — short descriptions get a "Narrow it down" disambiguation step. H15: also fires from general Oracle chat, not only this button. |
+| 💾 Save to Journal / 📅 Add to Cook Session | Two real, distinct, deduplicated buttons — writes `recipes`/`recipe_ingredients` + a `journal` row, or joins the current Planned Cook session. `ensureRecipeSaved` guards against a double-insert. |
+| 💡 Suggest additions / ✨ generate using only what I have | Pantry-aware ingredient suggestions and stock-only generation, reading real `pantry_stock` rows. H18's stock-only constraint fails loud on a genuinely empty pantry. |
+| 🔮 Update Method for this / 🔄 Update recipe to match current stock | Both reuse the same critique → `RECIPE_UPDATE_JSON` → code-computed diff → Accept/Deny pipeline (rule 8). |
+| 📏 Add measurements to these steps | H24 9th pass — shown only when a recipe genuinely has zero per-step measurements. |
+| 🔁 Remind me every Xm / ⏱ per-step timer | H24 9th pass — a real recurring reminder only ever offered when a step's own text states an interval (real regex match, never invented). |
+| ✓ Use [substitute] / 🔍 Pick from stock instead / declare same item (2 names) | The real 7-color ingredient-status system. Confirming a substitute writes a real `ingredient_substitution_confirmations` row (a ✓ tick, not a color change). "Declare same item" writes a standing `ingredient_aliases` entry. |
+| ⚗️ Derive & use [ingredient] | H24 5th/6th pass — 🟤⚗️ maroon status: a byproduct-derivable ingredient deducts the real source ingredient from stock automatically. |
+| 👍/👎 (substitution rating) | H24 5th/6th pass — a real post-cook rating on any confirmed substitute, written to an append-only `substitution_ratings` table. |
+| 📅 Schedule cook time / ↩ Revert to draft / 🗑 (2-click delete a recipe from session) | The Planned Cook session (`ui._showSessionBuilder`) — schedules a real multi-recipe interval-packed cook block onto the calendar. |
+| 📦 Current Stock (Pantry / Fridge / Freezer / Equipment tabs) | A real 4-tab stock view with per-item staleness badges and a 2-click arm/confirm delete on every row. |
+| 🛒 Generate shopping list / 🧺 Add to basket / ✅ Bought / ↩ undo | A real 3rd shopping-list state, "in basket," between "need to find it" and "bought." |
+| 🥫 What Can I Cook Right Now? | A saved-recipe finder over every recipe classified live against real current stock. |
+| 🍳 LIVE COOK SESSION panel (inside Oracle) | H24 10th pass (Sep 22 2026) — a real, persistent panel inside Oracle: step timeline, per-step timers, a stir-reminder toggle, and a real elapsed-since-start ticker read from `rpgace_agendas.started_at`. |
+
+### SHOPPING WISHLIST (standalone domain, Sep 14 2026)
+
+| Button | Chain |
+|---|---|
+| 🛒 Shopping Wishlist (dashboard card) | Opens `shoppingWishlist.ui._showMain` — a general future-purchase list (batteries, household goods, gaming — deliberately not ingredients, which stay HABITS' own job). |
+| + Add | Adds an item with a real price estimate, priority, and an optional free-text category tag. A real priority-first greedy budget-fit algorithm shows which items currently fit a set budget target. |
+| 🛒 Bought | A distinct confirm asks what was actually PAID — writes a real `chronicles_finance` expense row using the real price paid, then flips the item's own status to bought. |
+| 🗑 (2-click arm/confirm) | Standard project-wide 2-click delete pattern — never deletes on a single click. |
+
+## Oracle's Background Capabilities (not buttons — behavior that runs automatically)
+
+*(Relocated verbatim from `manual.html`, Sep 23 2026, M2.)*
+
+| Capability | How to use it | Chain |
+|---|---|---|
+| Self-awareness (`oracleAppGrounding`, July 22) | Just ask Oracle a capability/roadmap-shaped question — "what can you do", "what's broken", "what should I build next" | Wraps `window.callOracle`, keyword-gated → injects the live `dashDeck.MODULES` card list + `SELF_KNOWLEDGE` → Oracle answers from real state, never invents a feature. Standing convention: whoever updates CLAUDE.md's Current State updates that string in the same session. |
+| Fetched-content hardening (`oracleFetchGuard`, July 22) | Automatic — fires whenever a URL/YouTube link/Instagram post is pasted into Oracle chat | Detects the `[FETCHED CONTENT FROM...]`/`[INSTAGRAM POST...]`/`[YouTube Video...]` markers main.js's URL-fetch path adds → tells Oracle to treat that content strictly as data, never as instructions.

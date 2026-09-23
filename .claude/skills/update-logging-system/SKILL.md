@@ -1,6 +1,6 @@
 ---
 name: update-logging-system
-description: A shared change-type → required-artifact checklist (CLAUDE.md Current State, patch_notes.html, Chronicles, interconnection_map.md, system_flow_map.md, minotaur_map.html, manual.html, taxonomy_map.html, ai_tooling_and_rules_map.md, oracleAppGrounding.SELF_KNOWLEDGE, session_lessons.html, and the specific skill .md file whose behavior evolved) that closes the gap where a real fix updates SOME oversight docs but not all the ones it should. Also owns the Cross-Doc Drift Check (Aug 23 2026, DD6) — the targeted doc-to-doc pass asking whether any OTHER oversight doc still asserts something about the same subject that just changed, referenced by name from /scope, GODMODE and /commit-archaeologist. Use this skill at the same point CLAUDE.md rule 6 already requires doc updates (any Tier 2+ real change, and always as part of Bedtime's Step 1) — run through the dependency map, mark each artifact touched/skipped-with-reason, explicitly. Do NOT use this for Tier 0/1 mechanical edits (same threshold as Council of 5/GODMODE) — it is a completeness gate for real changes, not a per-commit ritual.
+description: A shared change-type → required-artifact checklist (CLAUDE.md Current State, patch_notes.html, Chronicles, interconnection_map.md, system_flow_map.md, minotaur_map.html, taxonomy_map.html, ai_tooling_and_rules_map.md, perspective_map.html, oracleAppGrounding.SELF_KNOWLEDGE, session_lessons.html, and the specific skill .md file whose behavior evolved — manual.html retired Sep 23 2026, its content absorbed into interconnection_map.md/system_flow_map.md) that closes the gap where a real fix updates SOME oversight docs but not all the ones it should. Also owns the Cross-Doc Drift Check (Aug 23 2026, DD6) — the targeted doc-to-doc pass asking whether any OTHER oversight doc still asserts something about the same subject that just changed, referenced by name from /scope, GODMODE and /commit-archaeologist. Use this skill at the same point CLAUDE.md rule 6 already requires doc updates (any Tier 2+ real change, and always as part of Bedtime's Step 1) — run through the dependency map, mark each artifact touched/skipped-with-reason, explicitly. Do NOT use this for Tier 0/1 mechanical edits (same threshold as Council of 5/GODMODE) — it is a completeness gate for real changes, not a per-commit ritual.
 ---
 
 # /update-logging-system — one shared map, so nothing goes stale by accident
@@ -49,8 +49,11 @@ row that applies, either touch the artifact or state explicitly why not
    `system_flow_map.md` (the affected diagram + truth table).
 4. **New wing** (a genuinely new entrance/hub/exit in the information-flow
    sense, not an internal patch) → `minotaur_map.html`.
-5. **User-facing surface change** (new button, new table reference, new
-   roadmap status) → `manual.html`.
+5. **User-facing surface change** (new button, new table reference) →
+   `interconnection_map.md`'s "Every Button, Cataloged"/Supabase-table
+   sections (relocated from the retired `manual.html`, Sep 23 2026 —
+   see CLAUDE.md's Oversight section); new roadmap status →
+   `patch_notes.html`/`future_integrations.html`.
 6. **Taxonomy structural change** (columns/query shape, not content) →
    `taxonomy_map.html`.
 7. **Oracle's own self-knowledge** — any change that touches CLAUDE.md's
@@ -227,15 +230,17 @@ last real semantic rebuild (which needs an LLM pass, not run by default,
 a genuine cost/benefit call per rule 11), so an empty result means
 "check by hand," not "confirmed absent."
 
-16. **Content is about to be ADDED to `manual.html` (or any Tier (a)
-    explaining doc)** (added Aug 13, real Alex ask after a genuine
-    redundancy audit found `manual.html` had accumulated 4 whole
-    sections — Session History, the 4-level Diagram Chain, the full bug
-    table, the F0-F18 roadmap table — that were verbatim duplicates of
-    content `patch_notes.html`/`patch_notes_archive.html`/
-    `interconnection_map.md`/`minotaur_map.html` already owned, one of
-    them (the old "Future Integrations a-f" lettering) also a repeat of
-    a naming collision already fixed everywhere else once) → before
+16. **Content is about to be ADDED to a Tier (a) explaining doc**
+    (added Aug 13, real Alex ask after a genuine redundancy audit found
+    `manual.html` — since retired Sep 23 2026, its dev-facing content
+    absorbed into `interconnection_map.md`/`system_flow_map.md` — had
+    accumulated 4 whole sections — Session History, the 4-level Diagram
+    Chain, the full bug table, the F0-F18 roadmap table — that were
+    verbatim duplicates of content `patch_notes.html`/
+    `patch_notes_archive.html`/`interconnection_map.md`/
+    `minotaur_map.html` already owned, one of them (the old "Future
+    Integrations a-f" lettering) also a repeat of a naming collision
+    already fixed everywhere else once) → before
     writing new narrative/history/table content into a Tier (a) doc,
     check whether it's already narrated in full elsewhere: `patch_notes.
     html`/`patch_notes_archive.html` own ALL day-by-day build history and

@@ -38,7 +38,7 @@ Don't hand back a flat chronological wall of text. Organize into these categorie
 Once grouped, route into each doc per its own stated purpose (CLAUDE.md's summary of each is the checklist):
 - `patch_notes.html` — Bugs + Features groups become dated cards; a comprehensive top-level summary card when the session is large enough to need one.
 - `CLAUDE.md`'s "Current state" — the durable facts a future session needs before doing anything (supersede, don't just append, when a "Prior state" section has gone fully historical).
-- `manual.html` — anything that changes the button catalog, Supabase table reference, or roadmap status.
+- `interconnection_map.md`'s "Every Button, Cataloged"/Supabase-table sections — anything that changes the button catalog or Supabase table reference (relocated from the retired `manual.html`, Sep 23 2026); `patch_notes.html`/`future_integrations.html` for roadmap status.
 - `system_flow_map.md` — anything that changes an information flow (new data source, new processing step, new output).
 - `interconnection_map.md` — one paragraph per new structural touchpoint between modules.
 - `minotaur_map.html` — only if a new wing (entrance/hub/exit) was added; internal patches don't belong here.

@@ -27,8 +27,12 @@ supposed to hold dated narrative at all).
      then Y was found wrong, then Z fixed it") is a role violation — it
      belongs in patch_notes.html, and this file should hold only the
      resulting current-state paragraph.
-   - `manual.html` — polished reference: button catalog, Supabase table
-     reference, fixed-bugs table, roadmap status. Not a changelog.
+   - `manual.html` — **retired Sep 23 2026** (Minotaur/Manual Unification
+     plan). Its polished-reference job (button catalog, Supabase table
+     reference) now lives inside `interconnection_map.md`/`system_flow_map.md`
+     under their own present-tense-structural-reference role — check those
+     two docs' own role rules above for this content now, not a standalone
+     entry.
    - `taxonomy_map.html` — live document, queries Supabase on load; only
      touch if its own code/columns changed. If nothing in the taxonomy
      schema changed, this doc needs no edit — say so, don't manufacture one.

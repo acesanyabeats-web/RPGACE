@@ -14873,8 +14873,7 @@ RPGACE.register('dashDeck', {
     // dated/updated living doc like the other seven).
     var primary = [
       { icon: '📓', title: 'Patch Notes', desc: 'Tier (a) — Build history', href: '/patch_notes.html' },
-      { icon: '📘', title: 'Full Manual', desc: 'Tier (a) — Button + table reference', href: '/manual.html' },
-      { icon: '🐂', title: 'Minotaur Map', desc: 'Tier (a) — The labyrinth mental-map', href: '/minotaur_map.html' },
+      { icon: '🐂', title: 'Minotaur Map', desc: 'Tier (a) — Consumer-facing domains, functions, worked examples', href: '/minotaur_map.html' },
       { icon: '🔗', title: 'Interconnection Map', desc: 'Tier (b) — Module touchpoints, the truth', href: '/interconnection_map.md' },
       { icon: '🗺️', title: 'System Flow Map', desc: 'Tier (b) — Pipeline flow diagrams, the truth', href: '/system_flow_map.md' },
       { icon: '🤖', title: 'AI Tooling & Rules Map', desc: 'Tier (b) — Skills + rule files + external AI providers', href: '/ai_tooling_and_rules_map.md' },
