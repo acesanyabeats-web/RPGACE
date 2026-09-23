@@ -74,6 +74,17 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">📉 Sep 23 — DD-1 batch 1: HABITS collapsed in CLAUDE.md (83,578 → 12,296 chars) + real anchor links, per the ratified Oversight Doc Dedup &amp; Compression plan</div>
+    <div class="card-body">
+      Direct follow-through on Alex's own instruction to start DD-1, plus a real mid-build ask: "make oneliners have links to other sections of other oversight docs so it full story can be referenced if needed for build or execution." Real `/interrogation` (3 questions, AskUserQuestion, all Alex-confirmed): anchor ALL 424 existing patch_notes.html cards eventually, but in batches ("2 but in batches i feel") rather than one giant pass; links one-way only (CLAUDE.md → patch_notes.html, never a back-link — less drift surface); fold a future link-rot check into DD-4 (not yet built) rather than a separate mechanism.<br><br>
+      <b>New tooling, both idempotent and reusable, not one-off scripts</b>: <code>scripts/patch_notes_add_anchors.py</code> — deterministic <code>card-YYYY-MM-DD-&lt;slug&gt;</code> ids, collision-safe, skips already-anchored cards on re-run. <code>scripts/dd1_collapse_bullets.py</code> — finds a CLAUDE.md bullet by a short unique substring (fails loud on 0 or 2+ matches, never touches an ambiguous line), moves the full original text verbatim into <code>CLAUDE_archive.md</code>, replaces it with a durable one-liner + a real markdown link into the matching patch_notes.html anchor.<br><br>
+      <b>Batch 1 (this pass)</b>: all 79 real Sep 2026 cards anchored (real date-distribution check first: Sep 79 / Aug 196 / Jul 100 / roadmap-untitled 48 — Sep chosen first since HABITS, the single biggest offender, is almost entirely Sep-dated). All 22 HABITS narrative bullets (H11 through H24 10th pass) collapsed — each confirmed to already have a matching patch_notes.html card before collapsing (Q2's own confirmed threshold from the original interrogation), full text preserved verbatim in CLAUDE_archive.md, nothing invented or guessed.<br><br>
+      <b>Real, measured result</b>: CLAUDE.md 416,057 → 347,457 chars (~17,000 fewer auto-loaded tokens from this one batch alone). The HABITS subsection specifically: 83,578 → 12,296 chars. Verified: patch_notes.html div-balance unchanged (1289/1289) after the anchor pass, all 79 new ids unique, all 22 new CLAUDE.md links resolve to a real anchor, no paren/bracket corruption introduced (checked directly, not assumed) — the one pre-existing minor paren-count shift traced to prose already inside the moved (now-archived) text, not anything new.<br><br>
+      <b>Remaining, tracked, not silently dropped</b>: Taxonomy/Video-Content-Pipeline/Oracle/External-handoff-lanes/Open-forks subsections still need the same collapse treatment (their own confirmed patch_notes.html cards are mostly Aug/Jul-dated — the next anchor batches); DD-3 (fixing interconnection_map.md/system_flow_map.md's 28 changelog-rule violations) and DD-4 (the standing bloat-checker, now confirmed to also verify link-rot) are still queued. Full record: <code>records/2026-09/dd1_habits_collapse_batch1_2026-09-23.txt</code>.
+    </div>
+  </div>
+
+<div class="card gold" id="card-2026-09-23-content-correctness-half-self_knowledge-check-address-it" style="margin-bottom:30px;">
     <div class="card-title">🔍 Sep 23 — the content-correctness half of the SELF_KNOWLEDGE check: "address it" on the one honest limitation the staleness check left open</div>
     <div class="card-body">
       Direct follow-through on the staleness check's own honestly-named limitation, quoted back verbatim by Alex: "this catches calendar/volume drift, not content correctness — a session could touch SELF_KNOWLEDGE's date and still write something factually wrong, which is technically what the original Quest Board bug was." Instruction: "address it."<br><br>
@@ -84,7 +95,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-23-real-self_knowledge-staleness-check-shipped-closing" style="margin-bottom:30px;">
     <div class="card-title">🛡️ Sep 23 — the real SELF_KNOWLEDGE staleness check shipped, closing the gap the same-day /paranoia audit left open</div>
     <div class="card-body">
       Direct follow-through on the earlier same-day audit's own named, unsolved gap: "nothing yet catches SELF_KNOWLEDGE going stale again." Real `/interrogation` (3 questions, AskUserQuestion, all Alex-confirmed): the staleness signal is date-elapsed OR real-ship-count (whichever fires first — ship-count is the sharper one, it's what let 28 days pass unnoticed); enforced at both session-start (visibility) and `/Bedtime` (a real gate); threshold 7 days / 3 ships.<br><br>
@@ -95,7 +106,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-23-oversight-docs-just-an-appendix-real" style="margin-bottom:30px;">
     <div class="card-title">🔎 Sep 23 — "Is oversight docs just an appendix?": a real /paranoia audit, and a real 28-day-stale Oracle self-knowledge bug found and fixed</div>
     <div class="card-body">
       Alex's own philosophical question, run through a real evidence pass, not answered from the docs' own self-description: "is oversight docs just an appendix of what RPGACE is? is it a proper representation of how RPGACE total system is connected and coded, giving you and rpgace the best context of what is done?"<br><br>
@@ -105,7 +116,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-22-f15-shipped-agents-page-quick-actions-bar-rewired" style="margin-bottom:30px;">
     <div class="card-title">📋 Sep 22 — F15 shipped: the Agents-page quick-actions bar rewired through oracleControl, closing the F0-era rule-8 duplicate</div>
     <div class="card-body">
       Third and final item of the "do all 3, start with g117" build. F0 (Sep 4) rewired the dashboard's <code>.quick-row</code> bar through <code>oracleControl._showActionConfirm(row)</code> and, in passing, found a second, genuinely independent bar — <code>contentRepurpose.ui._injectAgentButtons</code>, on the Agents page — still using the old bespoke sendToOracle/fillGaps/raw-Composio pattern. Logged then as F15, "leave it for now."<br><br>
@@ -115,7 +126,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-22-g13-shipped-smoke_test-html-onclick_feature-coverage" style="margin-bottom:30px;">
     <div class="card-title">🔍 Sep 22 — G13 shipped: the smoke_test.html onclick_feature coverage check, closed after months blocked on G11</div>
     <div class="card-body">
       Second of the "do all 3, start with g117" build — following G117 in the same pass. G13 had been explicitly deferred since Aug 14, waiting on G11's own FEATURE-scope coverage (main.js functions + onclick handlers) to land; that landed Sep 15 (onclick_feature 47/47), closing the real block.<br><br>
@@ -126,7 +137,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-22-g117-shipped-real-generator-toolchain-galaxy" style="margin-bottom:30px;">
     <div class="card-title">🧰 Sep 22 — G117 shipped: the real Generator Toolchain Galaxy Map page, plus 20 stale anchor citations found and fixed</div>
     <div class="card-body">
       Real `/Routine` scoping pass earlier the same session flipped G117 (Galaxy Map plan) from blue to red — its own deferred threshold ("pick this up once the generator-script count genuinely justifies its own page") had quietly been met: 11 real scripts now, up from 6 when it was logged Sep 9. Alex's own direct ask followed: "Yes as I said we will be doing all 3, start with g117" — a real, explicit override of the Sep 15 2026 standing pause on new Galaxy Map work, same shape as the GMR-1..GMR-6 batch Sep 16.<br><br>
@@ -136,7 +147,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-22-h24-10th-pass-real-start-cook" style="margin-bottom:30px;">
     <div class="card-title">🍳 Sep 22 — H24 10th pass: a real "Start cook" bug fixed by building a Live Cook Mode panel inside Oracle</div>
     <div class="card-body">
       Alex's real report: "i clicked start on cook in schedule, nothing happened, can it take me to oracle where i will have an on hand assisstant with the scaffolding for live events happening, this window in oracle can also be used as timers when cooking so its all happenning as i go." Real evidence first (rule 4): a UUID-type-mismatch theory was checked and ruled OUT (<code>rpgace_agendas.id</code> confirmed <code>text</code> via schema query) — a direct query of Alex's own live row then confirmed <code>startScheduledTask</code>'s Supabase write genuinely succeeds. The real gap was that a successful click produced no meaningful live-cooking experience, only a small flag flip in the Daily Schedule grid.<br><br>
@@ -148,7 +159,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-17-h24-9th-pass-real-recipe-persistence-bug" style="margin-bottom:30px;">
     <div class="card-title">⏱️ Sep 17 — H24 9th pass: a real recipe-persistence bug fix, a measurements backfill button, a recurring stir reminder, unambiguous "need X more" wording, and a true interleaved scheduler</div>
     <div class="card-body">
       Real continuation of the same session, after Alex's repeated frustration — "please do it third time im saying this... im tired of this" — plus 3 more real follow-up asks. Verbatim: "...how many cups of coriander seeds? how many shallots at this stage... nothing is shown for measurements"; "need 3 more and need 2 more (we need 4 and 6 respectively) so it is more accurate in language for yellow"; "stiring every 8-10 minutes should have a timer too so i can focus on getting shit done rather than the time"; "marination of beef should be in beginning, as marinating for longer is a huge benefit."<br><br>
@@ -161,7 +172,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-17-h24-8th-pass-real-substitution-ratios" style="margin-bottom:30px;">
     <div class="card-title">🔄 Sep 17 — H24 8th pass: real substitution ratios, a garlic clove/bulb count-equivalent bridge, a "pick from stock" picker, and a real recipe-update button</div>
     <div class="card-body">
       Real, live continuation of the same hand-test, plus 2 real follow-up asks. Verbatim: "how about when all subsitutions and merge terms happen, instead of asking for something as same term, i have an option of agreeing or selecting from stock to determine... doubanjiang... yet i have no way in system to tell you this"; "a bulb consists of cloves - so make 8 cloves a bulb and vice versa. cumin powder for some odd reason wants sub with turmeric instead of trying to sub ground cumin"; "the recipe needs an update button, so it can take in all colour schematics of present ingredients and subs to make the recipe as precise as possible to current conditions"; "Tamarind concentrate is about three times stronger than standard tamarind paste... you need one-third the amount"; "i need these conversion ratios to always be looked up to make educated subsitutions."<br><br>
@@ -174,7 +185,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-17-h24-7th-pass-real-weight-bridge" style="margin-bottom:30px;">
     <div class="card-title">🔗 Sep 17 — H24 7th pass: a real weight bridge, the "large" unit bug, and a real "same item, 2 names" merge feature</div>
     <div class="card-body">
       Real, direct re-test of H24 5th+6th pass, verbatim: "the pink didnt appear for the coconut milk situation, egg and frozen chicken thighs still blue not green. also orange should have an option where i declare we talk about same item just 2 derivations of names."<br><br>
@@ -187,7 +198,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-17-h24-5th-6th-pass-maroon-derived" style="margin-bottom:30px;">
     <div class="card-title">✅ Sep 17 — H24 5th+6th pass: maroon (derived ingredients), pink (shared stock across recipes), and substitution ratings</div>
     <div class="card-body">
       3 real new features, interrogated via AskUserQuestion before building (rule 5). Alex's own verbatim asks: maroon — "i have whole eggs, so i have both egg whites and egg yolks (make these maroon - an ingredient that derives as by product from something in stock, with instructions)... toasted dessicated coconut would also be maroon"; pink — "i have 400ml of coconut milk, so it good for one recipe (make this pink... use one subsitute for one recipe with closest alternative possible)"; ratings — "id also like a system where at the end of a cook a rate the subsitutions so the system prunes to different alternatives."<br><br>
@@ -200,7 +211,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-17-h24-4th-pass-6-more-duplicate-ingredient" style="margin-bottom:30px;">
     <div class="card-title">✅ Sep 17 — H24 4th pass: 6 more duplicate-ingredient merges, a real "curated is authoritative" fix, and "confirm → tick" replaces "confirm → green"</div>
     <div class="card-body">
       Real, frustrated live hand-test, verbatim: "i have 4 shallots in stock, wtf. i have spring onion, yet you say we have none and offered yellow onion as replacement, yet want spring onion to replace shallot. wtf is this bullshit" — followed by more real examples (soy sauce/worcestershire, tamarind/vanilla, vegetable oil/olive oil, whole milk/evaporated milk) and a direct correction to yesterday's own confirm-to-green feature: "maybe not turn subs into green, but rather a tick on the left... keeping colours as is... so future sessions now what subs can be used."<br><br>
@@ -213,7 +224,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-17-h24-3rd-pass-clicking-planned-cook" style="margin-bottom:30px;">
     <div class="card-title">✅ Sep 17 — H24 3rd pass: clicking a Planned Cook recipe now opens its real recipe card</div>
     <div class="card-body">
       Real Alex ask, direct from a pasted Planned Cook popup: "when i click a recipe in this session, open up the recipe of the specific dish." Real gap: the session's recipe list only ever showed a plain label + a delete button — no way to see the actual recipe from inside a planned cook without leaving and re-finding it elsewhere.<br><br>
@@ -222,7 +233,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-17-h24-2nd-pass-real-confirm-substitute" style="margin-bottom:30px;">
     <div class="card-title">✅ Sep 17 — H24 2nd pass: real "confirm substitute → green" flow + the "whole"/"Count" unit bug</div>
     <div class="card-body">
       Real Alex re-test of the H24 fixes, verbatim: "Close - nothing changed - when orange subsitution or blue is presented, give me an option to confirm so it can turn green."<br><br>
@@ -233,7 +244,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-17-h24-real-ingredient-matching-bug-fixes-cup" style="margin-bottom:30px;">
     <div class="card-title">🍋 Sep 17 — H24: real ingredient-matching bug fixes + cup/tbsp display + a real Back button</div>
     <div class="card-body">
       Real Alex hand-test report on a live Schedule Cook Preview, verbatim: "but saying no limes when i literally put limes in fridge stock is most insane to me" — plus real examples (beef with bone for beef shin, chicken stock cubes for chicken stock, cabbage for white cabbage, garlic bulbs for garlic clove, ginger fresh for fresh ginger, whole coriander for fresh coriander).<br><br>
@@ -247,7 +258,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-17-h23-cooking-module-button-ui-uniformity" style="margin-bottom:30px;">
     <div class="card-title">🔘 Sep 17 — H23: Cooking module button/UI uniformity redesign</div>
     <div class="card-body">
       Real Alex ask, run through the full named-protocol stack: "Now start UI accessing the cooking Dom and all buttons inside, they are not uniform and rather poorly structured, I want neat and tidy display with intention. Use /impeccable with /drift /CEO /paranoia /Godmode."<br><br>
@@ -258,7 +269,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-17-h22-real-basket-state-shopping-list" style="margin-bottom:30px;">
     <div class="card-title">🧺 Sep 17 — H22: real "In basket" state for the shopping list</div>
     <div class="card-body">
       Real Alex ask: "while shopping for current list, make the buy buttons next to each ingredient say added to basket, which will keep it in a found state table, then after once receipt is made and produce is paid for, I click bought and enter details."<br><br>
@@ -268,7 +279,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-17-h21-orange-substitute-tier-brown-omittable" style="margin-bottom:30px;">
     <div class="card-title">🟠🟤 Sep 17 — H21: Orange substitute tier, Brown omittable tier, shop/no-shop toggle</div>
     <div class="card-body">
       Real Alex ask, via a pasted transcript of a conversation with RPGACE's in-app Oracle (a separate AI with no repo access — this session picked it up directly). Verbatim: "there are more greens blues and oranges here, also have no noodles, but I do have rice, and have pita bread and tortilla I can use as carb to go with soup curry or other dishes" and "I don't mean put rice into the soup instead of noodles, just skip the noodles... won't change the recipe, just omit if I'm not going shop (no shop or can go shop should be a toggle mode for cooking planning)."<br><br>
@@ -280,7 +291,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-17-h20-3-real-live-schedule-planned-cook" style="margin-bottom:30px;">
     <div class="card-title">🐛 Sep 17 — H20: 3 real live schedule/planned-cook bugs fixed</div>
     <div class="card-body">
       Real Alex report: "pressing start planned cook on schedule did nothing. scheduling planned cook did go on selected time slot - but end time was 26hrs which didnt make sense. no way to revert planned cook back from scheduled to planned cook in cooking module."<br><br>
@@ -292,7 +303,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-17-h19-recipes-lean-cups-weight-5-color" style="margin-bottom:30px;">
     <div class="card-title">🥄 Sep 17 — H19: recipes lean on cups + weight, 5-color system gets real cross-unit bridging</div>
     <div class="card-body">
       Real Alex ask, stated twice: "also use cups as much as possible (liquid and spices) and weight when makes sense, everywhere where a recipe is present. in pantry ill be using mostly weight and ml and count rather than cups."<br><br>
@@ -303,7 +314,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-16-h18-real-5-color-ingredient-status-system-what" style="margin-bottom:30px;">
     <div class="card-title">🟢 Sep 16 — H18: a real 5-color ingredient-status system + "What Can I Cook Right Now?" finder</div>
     <div class="card-body">
       Real Alex ask, verbatim: "green ingredients are what i have, yellow are not what enough of, red is what i dont have, blue is what i have as an alternative, but should buy in shop... purple is what will almost run out and should be replenished next shop after planned cooking session... now i can look for recipes that will only give me purple or green ingredients so i can have perfect recipes with my context."<br><br>
@@ -317,7 +328,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-16-h17-recipe-generation-no-longer-hangs" style="margin-bottom:30px;">
     <div class="card-title">⏱ Sep 16 — H17: recipe generation no longer hangs silently forever on a slow/failed Oracle reply</div>
     <div class="card-body">
       Real Alex report: "5 recipes not generating, with narrow down drop list... do it for when I'm ever generating recipes."<br><br>
@@ -329,7 +340,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-16-h16-planned-cook-session-gets-real" style="margin-bottom:30px;">
     <div class="card-title">🗑 Sep 16 — H16: Planned Cook session gets a real per-recipe delete button</div>
     <div class="card-body">
       Real Alex ask: "planned cook doesnt have a delete button, i wanted to delete the lime orange desert and choose one i have all ingredients for."<br><br>
@@ -340,7 +351,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-16-h15-recipe-generation-now-works-from" style="margin-bottom:30px;">
     <div class="card-title">💬 Sep 16 — H15: recipe generation now works from general Oracle chat, not only the dedicated Generate button</div>
     <div class="card-body">
       Real Alex ask, directly answering the open fork H14b's own investigation flagged rather than guessed at: "yes, general chat too — build it."<br><br>
@@ -353,7 +364,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-16-h14-scheduled-cook-plan-now-shows-real" style="margin-bottom:30px;">
     <div class="card-title">📋 Sep 16 — H14: scheduled-cook plan now shows real per-step measurements + a colour-coded pantry/grocery preview</div>
     <div class="card-body">
       Real Alex ask: "i like the proposed plan from the scheduled cook, but it needs to show me measurements of each ingredient at each step so i dont have to go back and fourth to agree plan. it should also make a list of ingredients i will use up and what will need to be added to future grocery list."<br><br>
@@ -365,7 +376,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-16-h13-grocery-list-need-buy-section" style="margin-bottom:30px;">
     <div class="card-title">🛒 Sep 16 — H13: grocery list "Need to buy" section now auto-sorts by aisle</div>
     <div class="card-body">
       Real Alex ask: "Make grocery list auto sort by aisle, too much scrolling and calculating needed."<br><br>
@@ -376,7 +387,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-16-h12-real-bug-fix-planned-cook" style="margin-bottom:30px;">
     <div class="card-title">🐛 Sep 16 — H12: real bug fix — a planned cook (2 real recipes) silently vanished, no grocery list either</div>
     <div class="card-body">
       Real Alex bug report: "i just planned 2 meals for a planned cook... but they didnt save in app, and the grocery list is nowhere to be seen." Follow-up ask once diagnosed: "build so this doesnt happen, it should be shown."<br><br>
@@ -387,7 +398,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-16-h11-real-4th-cooking-button-current" style="margin-bottom:30px;">
     <div class="card-title">📦 Sep 16 — H11: a real 4th Cooking button, "Current Stock" (Pantry/Fridge/Freezer/Equipment), plus a real recipe photo</div>
     <div class="card-body">
       Real Alex ask: "in cooking, a fourth button should exist called current stock, divided into pantry, fridge, freezer, equipment so i have live reads on current stock to make batch cooking less wasteful." Mid-turn follow-up, same session: "i also think recipes i choose should have a photo of the internet presented so i can see what im making."<br><br>
@@ -399,7 +410,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-15-perspective_reports-promoted-real-13th-oversight-doc" style="margin-bottom:30px;">
     <div class="card-title">🔭 Sep 15 — perspective_reports promoted to a real 13th oversight doc: perspective_map.html, Tier (b)'s 4th truth doc</div>
     <div class="card-body">
       Real Alex ask, run through a full <code>/paranoia</code> pass (dedup check against all 12 existing oversight artifacts, real evidence reconciliation via <code>/scope</code>+GODMODE+<code>/commit-archaeologist</code>, a real debate on division of labor against the still-queued "bake reports into each Galaxy Map page" item, a real 4-question <code>/interrogation</code> Alex answered directly, a fact-check pass), supervised by <code>/Engineer</code>: "make perspective report a b type oversight doc that constantly reports perspective of elements or group of elements relative to others… for truth documenting and galaxy map formation."<br><br>
@@ -410,7 +421,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-14-asian-ingredients-nutrition-expansion-real-sourcing" style="margin-bottom:30px;">
     <div class="card-title">🍜 Sep 14 — Asian ingredients/nutrition expansion: real sourcing pass + a generalized regional-food importer, no data imported yet</div>
     <div class="card-body">
       Same session, real Alex ask: "I would like to add Asian products to the list of products and ingredients we have made, where is best to get a dataset for you?" A real sourcing question, not a build request yet — answered with checked evidence, not guessed URLs, then narrowed with a real 3-region AskUserQuestion (Southeast/East/South Asia, Alex picked all three) before touching anything.<br><br>
@@ -422,7 +433,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-14-real-superseding-update-india-china-nutrition" style="margin-bottom:30px;">
     <div class="card-title">🍜 Sep 14 — real, superseding update: India + China nutrition data actually imported (5063 real foods now in cofid_foods)</div>
     <div class="card-body">
       Same session, later pass. Alex's follow-up: "Do korea and china too, dig deeper, and give me every website i need to visit for downloads." The prior card above (tooling only, zero rows imported) is now stale — real data landed for 2 of the 5 regions.<br><br>
@@ -435,7 +446,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-14-real-new-standalone-module-shopping-wishlist" style="margin-bottom:30px;">
     <div class="card-title">🛒 Sep 14 — real new standalone module: Shopping Wishlist (future purchases, priority-ranked against a real budget)</div>
     <div class="card-body">
       Same session, immediate follow-up. Alex, verbatim: "Now I want a general shopping list module where I keep my future purchases, I for instance need batteries for my scales, a non stick silicone baking mould, laundry detergent and fabric softener, a new wok, mixing stand, FIFA 27 etc, I want to add these things and plan out total budget I need to make informed decisions on what I can do and not have my ideas forgotten."<br><br>
@@ -447,7 +458,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-14-close-loop-floating-oracle-overlay-can" style="margin-bottom:30px;">
     <div class="card-title">🔄 Sep 14 — "close the loop": the floating Oracle overlay can now actually change the open recipe card, with a real diff-only confirm first</div>
     <div class="card-body">
       Same session, immediate follow-up on the card below. Alex asked directly: "So if I generate a recipe, and I don't like the method, I right in float oracle button chat to change steps, and it will update the method presented in the pop up, or the ingredients list etc?" Honest answer: no — the card below only made Oracle aware of the open recipe, nothing wrote changes back to the UI. Alex's own exact confirmed spec for the missing half: "Yes let me confirm changes first, but make sure only changes are shown, not the whole thing, so I can make a quick informed decision."<br><br>
@@ -457,7 +468,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-14-continuation-session-japan-mext-southeast-asia" style="margin-bottom:30px;">
     <div class="card-title">🍜 Sep 14 — continuation session: Japan (MEXT) and Southeast Asia (ASEAN FCD) nutrition data imported — 7865 real foods now in cofid_foods across 6 sources</div>
     <div class="card-body">
       New session, continuing the Asian-ingredients sourcing effort. Alex provided the real official MEXT 2015 Standard Tables of Food Composition (Seventh Revised Edition) xlsx and the real official ASEANFOODS FCD V1 2014 PDF directly as chat attachments — no accompanying text, matching the established pattern of the file arriving before the ask (same as CoFID's own XLSX files).<br><br>
@@ -469,7 +480,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-14-real-cross-source-deduplication-122-exact-name-duplicate" style="margin-bottom:30px;">
     <div class="card-title">🔗 Sep 14 — real cross-source deduplication: 122 exact-name duplicate rows merged into 109 canonical rows, zero data lost</div>
     <div class="card-body">
       Same session, immediate follow-up. Alex, verbatim: "Surely all the added tables cover the foods that are used in Asian cuisine, I would like all these rows to be deduplicated so all ingredients have one row with all columns in tact."<br><br>
@@ -481,7 +492,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-14-real-sub-grouping-columns-added-cofid_foods-base_ingredient" style="margin-bottom:30px;">
     <div class="card-title">🥘 Sep 14 — real sub-grouping columns added to cofid_foods: base_ingredient + prep_state, mechanically derived, zero AI cost</div>
     <div class="card-body">
       Same session, immediate follow-up again. Alex, verbatim: "Now deduplicate food names by how they are cooked, brand etc as sub groups to make values in one area for ease of navigation." A genuinely different operation from the merge above — non-destructive categorization, zero rows removed, zero rows changed shape.<br><br>
@@ -492,7 +503,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-14-recipe-prep-sequencing-fixed-floating-oracle" style="margin-bottom:30px;">
     <div class="card-title">🍤 Sep 14 — recipe prep sequencing fixed + the floating Oracle overlay is now context-aware on the Cooking module</div>
     <div class="card-body">
       Next day, real hand-test follow-up on the actual generated recipe. Alex, verbatim: "Close - the method is poor, why prep seafood before anything when it is added at the end? Prep should be for everything that is part of active cook without beforehand dead time, so why do this? I want oracle float button to be able to take criticisms while I'm on cooking module so I can discuss what I want changed, would be huge."<br><br>
@@ -503,7 +514,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-13-real-dedup-fix-save-cook-decoupling" style="margin-bottom:30px;">
     <div class="card-title">🔁 Sep 13 — real dedup fix + Save/Cook decoupling + a new 3-button Cooking module hub, all from Alex's own hand-test</div>
     <div class="card-body">
       Same session, immediate follow-up. Alex actually clicked both new buttons from the card above and reported: "Close - also clicked save to journal and add to planned cook, both are there, always do dedup, and make so that save to cook just saves to cook, but not to journal, so that I can then rate the dishes and save liked ones. I think clicking [the] module should also give way to a pop up for buttons to access either planned cook, grocery list planned or recipe generator."<br><br>
@@ -514,7 +525,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-13-cooking-recipe-card-manual-oracle-suggested-pantry-aware" style="margin-bottom:30px;">
     <div class="card-title">🥕 Sep 13 — Cooking recipe card: manual + Oracle-suggested (pantry-aware) ingredient additions, and an explicit "Add to Cook Session" button</div>
     <div class="card-body">
       Same session, immediate follow-up. Alex confirmed the just-shipped narrow-down bug fix worked (a real "Tom Yum Cabbage Soup" recipe generated correctly), then raised two more real, distinct gaps verbatim: "Close - the recipe looks great, but no option to add or suggest ingredients (like meat, love meat, or fish) also don't see the option to add it to current planned cook for grocery list." Genuinely ambiguous scope (rule 5) — resolved via a real <code>AskUserQuestion</code> pass rather than guessed defaults.<br><br>
@@ -525,7 +536,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-13-real-live-production-bug-cooking-narrow-down-feature" style="margin-bottom:30px;">
     <div class="card-title">🛠 Sep 13 — real live-production bug in the Cooking narrow-down feature, found from Alex's own screenshot and fixed — the first ship's headless test never actually exercised the real capture pipeline</div>
     <div class="card-body">
       Same session, immediate follow-up. Alex hit the just-shipped "Suggest 5 ideas" button (Korean → Rice → "Cabbage") and got a real error: "Could not parse dish ideas from the reply — try again," with a screenshot to prove it. <b>Real root cause, found by reading the actual capture pipeline, not guessed</b>: the original prompt asked Oracle for a numbered list, but <code>oracle:response-scanned</code>'s <code>text</code> comes from <code>lastMsg.textContent</code> read AFTER <code>renderMarkdown()</code> has already rendered the reply into the chat DOM. <code>renderMarkdown()</code>'s own <code>^\d+\. </code> regex strips a numbered list's digit prefix outright, and DOM <code>textContent</code> never reinserts a newline for the <code>&lt;br&gt;</code>/block-display markup that separated the original list items — a numbered/bulleted reply is genuinely unrecoverable by the time ANY consumer of this hook sees it. Every prior consumer (<code>RECIPE_JSON:</code>/<code>DIRECTOR_CHOSEN:</code>/<code>EDL_JSON:</code>/<code>ORACLE_ACTION:</code>) only ever hunts one inline marker followed by a single blob, never multiple distinct list items — this feature is the first consumer that needed real list extraction, which is exactly why it's the first to hit this.<br><br>
@@ -535,7 +546,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-13-cooking-bare-cuisine-word-korean-no" style="margin-bottom:30px;">
     <div class="card-title">🍜 Sep 13 — Cooking: a bare cuisine word ("Korean") no longer generates one blind recipe — a real "Narrow it down" step now runs first</div>
     <div class="card-body">
       Same-session follow-up, Alex's real complaint: "When i say in text field something Korean, I'm not given a list of 5 to choose from as discussed, I want a range or questions asking particular ingredients, or what type of dish (soup, noodle, rice, starter or dessert etc." Real evidence first (rule 1): <code>cookingOracle.logic._generate</code> took whatever was typed and sent exactly ONE Oracle call for exactly one recipe, with zero disambiguation step anywhere in the code — the "list of 5" mechanism Alex referenced was never actually built (checked <code>records/2026-09/habits_cooking_domain_interrogation_spec_2026-09-10.txt</code> and the rest of <code>records/</code> directly; no prior written agreement for it exists, so this is treated as a genuine new gap, not a regression of something built and lost).<br><br>
@@ -544,7 +555,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-13-h9-stage-2-complete-real-cofid" style="margin-bottom:30px;">
     <div class="card-title">🇬🇧 Sep 13 — H9 Stage 2 COMPLETE: real CoFID (McCance &amp; Widdowson) data imported and live — 3,280 real UK foods, checked before Open Food Facts</div>
     <div class="card-body">
       Same-session continuation, Alex: "Now do cofid." New <code>cofid_foods</code> table (<code>anon_read_only</code>/<code>authenticated_all</code>, trigram-indexed <code>food_name</code> for fast fuzzy search). <code>cookingOracle.logic._lookupCofid</code> — a plain client-side Supabase read, zero AI call, zero server round-trip — is now checked FIRST for every ingredient in <code>_ensureNutrition</code>, since a recipe lists generic/raw ingredients ("onion," "chicken breast") and CoFID is the real UK official databank for exactly that; Open Food Facts is the correct fallback for whatever CoFID doesn't have.<br><br>
@@ -556,7 +567,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-13-habits-domain-h7-h9-shipped-shopping-list" style="margin-bottom:30px;">
     <div class="card-title">🛒 Sep 13 — HABITS domain, H7-H9 shipped: shopping list + real pantry + price history (with Redo) + recipe-level nutrition estimate</div>
     <div class="card-body">
       Real CEO Loop 1 (<code>records/2026-09/habits_shopping_pantry_calories_spec_2026-09-13.txt</code>) → Loop 2, same session, after Alex's own explicit "log both questions as blue for later, do you to h9." Real evidence-gathering first: <code>ingredient_prices</code> was already shaped almost exactly right (<code>pack_size</code>/<code>pack_price</code>/<code>supermarket</code>/<code>shelf_life_days</code>/<code>leftover_usable</code>, zero unique constraint so it already naturally supports price history by insert-only) but had zero rows, no brand column, and no pantry-stock table at all despite those unused columns clearly anticipating one.<br><br>
@@ -569,7 +580,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-13-habits-domain-h6-shipped-multi-recipe-kitchen-session" style="margin-bottom:30px;">
     <div class="card-title">🍳 Sep 13 — HABITS domain, H6 shipped: the multi-recipe kitchen-session scheduler is real and live</div>
     <div class="card-body">
       Real Section 10 continuation of the Sep 10 interrogation (<code>records/2026-09/habits_cooking_domain_interrogation_spec_2026-09-10.txt</code>) — all 4 forks already resolved via AskUserQuestion, the only real blocker (Supabase MCP auth-gated) cleared this session. Built directly, no new stack.<br><br>
@@ -582,7 +593,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-10-habits-domain-cooking-module-real-ceo" style="margin-bottom:30px;">
     <div class="card-title">🍳 Sep 10 — HABITS domain, Cooking module: real /CEO Loop 1 build (H1-H4) shipped, H5/H6 real and specified, not yet built</div>
     <div class="card-body">
       Alex's own explicit go-ahead: "build the spec now, /CEO Loop 2," following the real, multi-round interrogation spec compiled Sep 10 (<code>records/2026-09/habits_cooking_domain_interrogation_spec_2026-09-10.txt</code>). Built directly (Sonnet-inline, no subagent dispatch — the plan already fully specified, matching Omnitrix's own July 20 rebalance), fully inside the existing app: no new stack, no new repo, no TypeScript, per Alex's own direct correction earlier in the same thread.<br><br>
@@ -597,7 +608,7 @@
     </div>
   </div>
 
-<div class="card" style="margin-bottom:30px;">
+<div class="card" id="card-2026-09-09-session-closed-sep-9-2026-bedtime" style="margin-bottom:30px;">
     <div class="card-title">🛌 SESSION CLOSED — Sep 9 2026 (/Bedtime, everything since last /Routine not already covered by the mid-session Bedtime at f6a6da4)</div>
     <div class="card-body">
       <b>Live and merged to main</b>: the <code>/auto</code> standing SQL-override rule (all Supabase SQL for the rest of this session, highlight-and-flag instead of stop-and-ask, per Alex's own Sep 8 confirmation — new CLAUDE.md rule). G115 (a real Galaxy Map pass-through-shadowing bug fix, 358/453 function bodies affected). G11's final coverage sweep (176 real <code>perspective_reports</code> rows for main.js legacy functions — all 3 of G11's real scopes now closed: module/onclick-feature/legacy-function). G116 (the Galaxy Map now represents G11's own build — a new <code>orchestrator_cc → perspective_reports</code> entry, 2 pages regenerated) plus new standing rule R27 (future structural/toolchain or cited-Supabase-table changes get a matching Galaxy Map update in the same pass). A real, separate 2-week-old R23 numbering collision found and fixed along the way (renumbered to R26, 2 wrong citations corrected).<br><br>
@@ -607,7 +618,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-09-g116-galaxy-map-now-represents-g11" style="margin-bottom:30px;">
     <div class="card-title">🌌 Sep 9 — G116: the Galaxy Map now represents G11's own build; a new standing rule (R27) makes this automatic going forward; a real 2-week-old R23 numbering collision found and fixed along the way</div>
     <div class="card-body">
       Alex: "now update galaxy map to represent these changes, I want every update on new build to portray through galaxy map for updated structures... /interrogation and /CEO with /drift /paranoia and /commit-archaeologist and council of 5 summing everything for me." Real evidence gathered first (the commit-archaeologist/GODMODE half): G11's own Sep 8 build touched <b>zero</b> <code>rpgace_core.js</code> structure — the whole Galaxy Map pipeline is derived from parsing that file, so there was nothing for the code-scanner to regenerate. What actually changed was the Map's OWN toolchain (a new generator script, an extended shared detector) plus 176 rows in a table (<code>perspective_reports</code>) the Map only ever cites in prose, never reads live. Also confirmed: "Dev Tooling" (River 17) is already a RETIRED river with an honest, pre-existing gap in its own text — <code>RIVER_RETIRED[17]</code>: "no L0 unit represents dev tooling as its own real actor... Orchestrator CC is the closest real relationship, but tooling itself was never promoted to a unit," pointing at <code>galaxy_map_orchestrator_openmontage.html#cat-sharedinfra</code> as the real completion target.<br><br>
@@ -618,7 +629,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-08-g11-continuation-shipped-176-real-perspective" style="margin-bottom:30px;">
     <div class="card-title">🧭 Sep 8 — G11 continuation shipped: 176 real /perspective reports for main.js's remaining legacy functions, closing the last of 3 real coverage sweeps (module/onclick-feature/legacy-function)</div>
     <div class="card-body">
       Real <code>/interrogation</code> pass (Alex: "let's turn more blues into reds" → selected this item from 4 offered candidates as a well-defined continuation of an already-twice-proven generator-script pattern) followed by "yes build". Module scope (44/44) and onclick-feature scope (47/47) both shipped Aug 14 — this closes the third and final scope: every real top-level function in <code>rpgace_core.js</code>'s legacy main.js block with no existing <code>perspective_reports</code> row of any kind.<br><br>
@@ -628,7 +639,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-08-g115-real-project-wide-galaxy-map-content-accuracy" style="margin-bottom:30px;">
     <div class="card-title">🗺️ Sep 8 — G115: a real, project-wide Galaxy Map content-accuracy bug found and fixed — 358 of 453 function bodies were showing G53's pass-through stubs instead of the real logic</div>
     <div class="card-body">
       Found during today's <code>/Routine</code> evidence pass, checking whether the Galaxy Map pipeline had gone stale relative to G53 (the 60-module ui/logic split, finished Sep 2-3 — pipeline last regenerated Sep 1, before G53 shipped). Not assumed stale-but-harmless — checked directly, and it wasn't harmless.<br><br>
@@ -640,7 +651,7 @@
     </div>
   </div>
 
-<div class="card" style="margin-bottom:30px;border-left-color:#8a8a9a;">
+<div class="card" id="card-2026-09-05-session-closed-via-bedtime-f0-f2" style="margin-bottom:30px;border-left-color:#8a8a9a;">
     <div class="card-title">🏁 Sep 5 — SESSION CLOSED via /Bedtime (F0 + F2 + UI14 Phase 1 shipped, F1 quest-bug closure evidence, a real cross-doc drift pass) — Alex out until Tuesday 1am</div>
     <div class="card-body">
       <b>Shipped, this segment (bounded between the Sep 3 SESSION CLOSED card and this one):</b> the daily <code>/Routine</code> Top 10 for Sep 4 (real evidence pass across git/Supabase/oversight docs, executed the 3 items doable without Alex — closed the 12 stale F1 quest-creation <code>error_log</code> rows with real evidence, re-surfaced a <code>videoSummary</code> smoke-test flag, fixed a stale CLAUDE.md bullet); F2 (a real gap closed — <code>toast()</code>'s error captures had zero module attribution for any call crossing an async boundary, a genuine structural JS limitation not a walk/regex bug — fixed with an explicit optional module param, wired for <code>questEngine</code>/<code>perfWatch</code>); F0 (all 4 quickPrompt buttons rewired to dispatch through <code>oracleControl._showActionConfirm</code>, closing Alex's own Aug 23-24 smoke-test note — a real, load-bearing conflict with <code>contentRepurpose._restructureQuickBar()</code>'s Aug 6 boot-time deletion was found via headless testing and resolved by asking directly rather than guessing); and UI14 Phase 1 (Bookworm's 7-state chapter-reading flow rebuilt from stacking <code>dashDeck._popup()</code> calls into real in-page navigation, closing a genuine architectural subtlety around <code>showPage()</code>'s always-refiring <code>page:show</code> hook, plus a real inline-style-leak bug found and fixed during testing). Commits: <code>4dee23d</code>, <code>8e6ec95</code>, <code>f2bd15d</code>, <code>039b6a5</code>, <code>7f6ab9a</code>.<br><br>
@@ -649,7 +660,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-05-ui14-phase-1-shipped-bookworm-s" style="margin-bottom:30px;">
     <div class="card-title">📖 Sep 5 — UI14 Phase 1 shipped: Bookworm's chapter-reading flow moves from stacking popups to real in-page navigation</div>
     <div class="card-body">
       Real <code>/interrogation</code> pass (Aug 24's "blue the other 23, we need to think it through" left this deliberately unscoped until now — see <code>records/2026-09/ui14_dashdeck_popup_audit_spec_2026-09-04.txt</code>). A direct re-grep found 49 real <code>dashDeck._popup()</code> call sites project-wide, not the stale "23" figure — UI11-13 had already converted several since that count was taken. Alex's own confirmed criteria: lists/dashboards and record-detail views convert to real pages; linear wizards and one-shot confirms correctly stay popups. Bookworm's own chapter-reading flow (a specific book is a real record you return to across sessions, exactly UI12's own Resume-button shape) was Alex's confirmed first slice.<br><br>
@@ -660,7 +671,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-04-f0-built-quickprompt-buttons-rewired-into" style="margin-bottom:30px;">
     <div class="card-title">🔮 Sep 4 — F0 built: quickPrompt buttons rewired into Oracle Control, a real conflicting boot-time deletion found and fixed</div>
     <div class="card-body">
       Alex's own directive from Aug 23-24, un-actioned until today's real `/interrogation`: "they actually work, but are pointless in this format — it needs to be changed by how it is wired into oracle." All 4 real quickPrompt buttons (New quests/Draft email/YT stats/Log to Notion) now dispatch through <code>oracleControl._showActionConfirm(row)</code> — the same real confirm+execute mechanism Oracle Control's G41 already built — instead of each having its own bespoke click handler.<br><br>
@@ -670,7 +681,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-04-f2-module-attribution-gap-closed-explicit-toast" style="margin-bottom:30px;">
     <div class="card-title">🔖 Sep 4 — F2 module-attribution gap closed: explicit toast() module tagging, questEngine + perfWatch wired</div>
     <div class="card-body">
       Real follow-on from the F1 quest-creation bug close-out earlier the same day: while checking the app-froze/quest-creation error_log rows, found every single one of the 15 real toast-sourced rows (including already-resolved ones) had <code>linked_perspective_id</code> NULL — the G109 error→perspective-baseline→smoke_test cascade has never once successfully attributed a module to a toast()-triggered capture, despite <code>toast()</code> always capturing a real stack trace.<br><br>
@@ -680,7 +691,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-03-session-closed-via-bedtime-g53-batches" style="margin-bottom:30px;">
     <div class="card-title">🏁 Sep 3 — SESSION CLOSED via /Bedtime (G53 batches 16-19 finish the whole 60-module split, F10 flipped green, a real no-manufactured-work backlog sweep)</div>
     <div class="card-body">
       <b>Shipped, this segment (bounded between the Sep 2 in-progress work and this close-out):</b> G53 batches 16 through 19, finishing the real, ratified <code>/CEO</code> plan item begun Aug 26 — <code>careerStatCard</code>/<code>oracleControl</code>/<code>mockOracle</code> (batch 16, dispatched to Opus given real stakes, independently re-verified in full), <code>visualOracle</code> + a <code>config</code> housekeeping note (batch 17, self-handled, first real instance of the boundary-asserted extraction method + the comment-misattribution bug class), <code>taxonomyTree</code> (batch 18, extra-care self-handled given 33 real external touchpoints, one genuine pre-existing bug deliberately preserved per rule 4), and <code>dashDeck</code> (batch 19 FINAL, the single most externally-depended-on module in the app — <code>_popup()</code> alone has 38+ real direct callers — self-handled, diff-hunk-confined proof that every external caller line is byte-identical). <b>All 60 of 60 real registered modules are now split into <code>ui</code>/<code>logic</code> namespaces</b> — 56 real splits plus 4 genuine no-op housekeeping notes, every single batch independently re-verified before shipping, never trusted from an agent's own report alone. Commits: <code>3440bbd</code>/<code>13596e8</code> (16), <code>766b2ef</code>/<code>8921f5c</code> (17), <code>b7cfac0</code>/<code>f03b02b</code> (18), <code>2ef4688</code>/<code>660ab55</code> (19).<br><br>
@@ -690,7 +701,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-03-g53-batch-19-final-dashdeck-split" style="margin-bottom:30px;">
     <div class="card-title">🏁🧩✅ Sep 3 — G53 batch 19 (FINAL): dashDeck split — ALL 60 of 60 modules now done, plan complete</div>
     <div class="card-body">
       <code>dashDeck</code> is the most-depended-on shared hub in the app — its <code>_popup()</code> helper alone has 38+ real direct external call sites plus dozens more via local alias — and was deliberately saved for last, given the same extra-care treatment as <code>visualOracle</code>/<code>taxonomyTree</code>: self-handled directly via a precisely-scoped, boundary-asserted Python extraction. Splits 18 <code>ui</code>/2 <code>logic</code> (<code>closeWidgetPopup</code>/<code>_openPanelById</code> are the only 2 functions in the whole module that construct/discover zero DOM of their own).<br><br>
@@ -701,7 +712,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-03-g53-batch-18-complete-taxonomytree-split" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 3 — G53 batch 18 complete: taxonomyTree split (extra care), 51 of 60 modules now done</div>
     <div class="card-body">
       <code>taxonomyTree</code> was deliberately saved for a later batch — 33 real external touchpoints (CLAUDE.md's own standing note) — and given the same extra-care treatment as <code>visualOracle</code>: self-handled directly via a precisely-scoped, boundary-asserted Python extraction, never a blind whole-file operation. Splits 4 <code>ui</code>/13 <code>logic</code>.<br><br>
@@ -712,7 +723,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-03-g53-batch-17-complete-visualoracle-split" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 3 — G53 batch 17 complete: visualOracle split + config housekeeping note, 50 of 60 modules now done</div>
     <div class="card-body">
       Self-handled directly (not dispatched) via a precisely-scoped Python extraction rather than the Edit tool — visualOracle's real functions were interleaved in source order (ui/logic/ui/logic/logic/ui), so no minimal surgical edit was possible. Every function was extracted as an exact, boundary-asserted text block (each boundary's expected content checked before touching anything, the exact discipline the batch-14 file-corruption incident established) and a full reconstruction self-check confirmed the slices exactly tiled the original module body with zero gaps or overlaps before any write happened.<br><br>
@@ -722,7 +733,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-02-g53-batch-16-complete-careerstatcard-oraclecontrol" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 batch 16 complete: careerStatCard + oracleControl + mockOracle split, 49 of 60 modules now done</div>
     <div class="card-body">
       Dispatched to Opus given the combined size and the real stakes of two of the three modules (oracleControl's human-consent-gate execution path, mockOracle's mode-persistence invariant guarding every real billable Anthropic call); independently re-verified in full before shipping — every changed line read directly from source, never trusted from the agent's own report alone.<br><br>
@@ -733,7 +744,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-02-g53-batch-15-complete-leftnav-refcorpus" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 batch 15 complete: leftNav + refCorpus + errorLog split, 46 of 60 modules now done</div>
     <div class="card-body">
       Dispatched to Opus given the combined size (~1400 lines) and <code>errorLog</code>'s real complexity (the G109 error→purple cascade); independently re-verified in full before shipping, same discipline as every prior batch. <code>leftNav</code> splits 10 <code>ui</code>/1 <code>logic</code> — the one real ui→logic call, <code>ui._buildDrawer</code>'s <code>self._items()</code>, is the single most dangerous line in the module (left bare, the hamburger would permanently open nothing). Two real touchpoints sit OUTSIDE the register() block at script-parse time (<code>_injectStyles</code>/<code>_injectHamburger</code>) — dropping those pass-throughs would have thrown uncaught mid-script and silently aborted every module registration after this point in the file, the exact failure this module's own comment documents having already happened once.<br><br>
@@ -743,7 +754,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-02-g53-batch-14-complete-contentrepurpose-oracleappgrounding" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 batch 14 complete: contentRepurpose + oracleAppGrounding split, 43 of 60 modules now done</div>
     <div class="card-body">
       <b>A real process failure caught cleanly mid-build, not shipped broken</b>: an early file-move script (safely relocating <code>oracleAppGrounding</code>'s giant ~22,000-char <code>SELF_KNOWLEDGE</code> field without retyping it) used an unscoped search and matched the WRONG <code>logic: {</code> line elsewhere in the file, corrupting the source. Caught immediately by <code>node --check</code>; reverted via <code>git checkout</code> (safe, batch 13 was already committed) and redone with every edit precisely scoped to the module's own real line range. Nothing corrupted was ever committed or pushed.<br><br>
@@ -753,7 +764,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-02-g53-batch-13-complete-researchtabs-taxonomysync" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 batch 13 complete: researchTabs + taxonomySync + chroniclesLog split, 41 of 60 modules now done</div>
     <div class="card-body">
       <code>researchTabs</code> splits 1 <code>logic</code>/4 <code>ui</code> (<code>_activeTab</code> alone in logic); <code>_resolveSections</code> stays <code>ui</code> despite always returning <code>{}</code> now (a real, honest side effect of A5 Phase 1's dismantling) since its body still does real DOM discovery. <code>taxonomySync</code> splits 1 <code>ui</code>/6 <code>logic</code> (<code>_injectUI</code> alone in ui). <code>chroniclesLog</code> — the highest-risk self-handled module so far — splits 7 <code>ui</code>/2 <code>logic</code>.<br><br>
@@ -762,7 +773,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-02-g53-batch-12-complete-authgate-inteldedup" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 batch 12 complete: authGate + intelDedup + oracleProviderMode split, 3 trivial modules noted, 38 of 60 modules now done</div>
     <div class="card-body">
       Self-handled directly (not dispatched) given genuine substance worth careful direct review — <code>authGate</code> especially, given real Tier-3 auth-chain sensitivity. <code>authGate</code> splits 0 <code>ui</code>/2 <code>logic</code> (<code>verify</code>, <code>_installFetchWrap</code>) — a genuine empty-ui case, zero DOM anywhere in the module, checked directly. <code>_apiSecret</code> stays module-scope since <code>morningBrief.logic._autoRun</code> reads it directly twice as a readiness probe. <code>intelDedup</code> splits 6 <code>logic</code>/1 <code>ui</code> (<code>_writeStats</code>) — <code>purge</code> stays <code>logic</code> despite calling <code>_writeStats</code> last, same fetch/render-seam precedent as <code>knowledgeGap._load</code>. <code>oracleProviderMode</code> splits 6 <code>logic</code>/2 <code>ui</code> (<code>_injectToggleButton</code>, <code>_renderState</code>). 3 genuinely trivial single-function modules (<code>intelBatchList</code>, <code>perfWatch</code>, <code>oracleFetchGuard</code>) reviewed and given a one-line housekeeping note — each has only <code>init</code>, nothing to split.<br><br>
@@ -771,7 +782,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-02-g53-batch-11-complete-knowledgegap-morningbrief" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 batch 11 complete: knowledgeGap + morningBrief + scheduleOracle split, 35 of 60 modules now done</div>
     <div class="card-body">
       <code>knowledgeGap</code> splits 2 <code>ui</code>/1 <code>logic</code> — <code>_load</code> stays <code>logic</code> since the source already splits fetch from render into two separate named functions, matching the <code>knowledgeGap._load</code>-shaped precedent. <code>morningBrief</code> splits 2 <code>ui</code>/5 <code>logic</code> — <code>_generate</code> is explicitly the mirror-image case, going to <code>ui</code> since it genuinely discovers its own DOM node first and interleaves 4 <code>.innerHTML</code> writes with its data work, contrasted directly against <code>knowledgeGap._load</code> in the module's own header comment. <code>scheduleOracle</code> splits 3 <code>ui</code>/1 <code>logic</code>, same fetch/render-seam judgment call on <code>_ingest</code>; documents the batch's most dangerous requalification — <code>self.TRIGGER_PREFIXES</code> inside the global <code>window.sendChat</code> wrapper <code>_injectEntryPoints</code> installs, which left bare would throw synchronously and break every Oracle chat send app-wide, not just this module.<br><br>
@@ -780,7 +791,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-02-g53-batch-10-complete-shiftsync-agendareminder" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 batch 10 complete: shiftSync + agendaReminder + oracleTreeGrounding split, 32 of 60 modules now done</div>
     <div class="card-body">
       3 more zero-touchpoint modules, re-confirmed via a repo-wide grep plus dedicated checks for the dynamic-bracket-lookup pattern and undeclared runtime-assigned module fields (the two bug classes found in prior batches) — neither found in any of the three.<br><br>
@@ -790,7 +801,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-02-g53-batch-9-complete-prodoraclepanel-journalqol" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 batch 9 complete: prodOraclePanel + journalQoL + ciAutoPropose split, 29 of 60 modules now done, 4 real bugs fixed</div>
     <div class="card-body">
       3 more zero-touchpoint modules. <code>prodOraclePanel</code> is a near-exact structural twin of <code>instaOraclePanel</code> (3 <code>ui</code>/1 <code>logic</code>). <code>journalQoL</code> splits 4/0 (all <code>ui</code>). <code>ciAutoPropose</code> splits 0/2 (both <code>logic</code>) — the "empty ui" precedent's third instance.<br><br>
@@ -800,7 +811,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-02-g53-batch-8-complete-6-trivial" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 batch 8 complete: 6 trivial modules split directly (no dispatch), 26 of 60 modules now done</div>
     <div class="card-body">
       Real correction found mid-session: the module-size scan used before batch 5 had a genuine bug (a brace-counting body extractor corrupted by string-escaping edge cases) that inflated several remaining modules to absurd sizes — re-derived every real size directly from the file's own <code>MODULE:</code>/<code>END:</code> markers (reliable ground truth) and found the true remaining set is much smaller than believed: none of the 34 modules left exceed ~1300 lines.<br><br>
@@ -809,7 +820,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-02-g53-batch-7-complete-oracledevbridge-quickactions" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 batch 7 complete: oracleDevBridge + quickActions + encTaxonomyLink split, 20 of 60 modules now done, 2 real requalification bugs fixed</div>
     <div class="card-body">
       3 more confirmed zero-external-touchpoint modules. <code>quickActions</code> splits honestly-empty (its two Composio calls live inside click closures it only attaches, never invokes). <code>oracleDevBridge._flag</code> and <code>encTaxonomyLink._propose</code> both mutate a caller-supplied button and construct no DOM of their own — tested against the same discriminator as <code>videoSummary.logic._runRetro</code>/<code>intelDelete.ui._hideCard</code> (does the function have a real data job behind the mutation?) — both answer yes and land in <code>logic</code>.<br><br>
@@ -819,7 +830,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-02-g53-batch-6-complete-jargonencyclopedia-encyclopediaqol" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 batch 6 complete: jargonEncyclopedia + encyclopediaQoL + pathRouter split, 17 of 60 modules now done</div>
     <div class="card-body">
       Real evidence-based batch — 3 confirmed zero-external-touchpoint modules (verified via a repo-wide grep excluding each module's own body, plus index.html), spanning a useful spread of shapes: 2 that split honestly-empty and 1 that splits for real.<br><br>
@@ -832,7 +843,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-02-taxonomyreviewqueue-fail-loud-fix-merged-from-separate" style="margin-bottom:30px;">
     <div class="card-title">🔀✅ Sep 2 — taxonomyReviewQueue fail-loud fix merged from a separate session (task_679a97ca)</div>
     <div class="card-body">
       A separate Claude Code session picked up the follow-up task queued during G53 batch 4 (the 7 silent-swallow taxonomy write failures flagged, not fixed, at the time — deliberately deferred out of that refactor pass given the real taxonomy-write sensitivity: rule 4's human-checkpoint requirement, and no Supabase backup at all). That session built the fix on its own branch (<code>claude/adoring-franklin-zgypcr</code>, commit <code>9669d77</code>), based off <code>746c7d6</code> — one commit before this session's own batch 5 work landed on <code>main</code>.<br><br>
@@ -842,7 +853,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-02-g53-batch-5-complete-youtubeoracle-tiktokoracle" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 batch 5 complete: youtubeOracle + tiktokOracle + instaOraclePanel split, 14 of 60 modules now done, 1 real rule-7 bug fixed</div>
     <div class="card-body">
       Real evidence-based batch — 3 thematically identical, self-contained Oracle persona-command panels (YouTube/TikTok/Instagram growth-command panels), picked after confirming zero external touchpoints anywhere in the codebase via 2 separate greps before dispatch (<code>RPGACE.modules.X.</code> and a search of index.html, both came back empty). <code>taxonomyTree</code>/<code>dashDeck</code> remain deliberately deferred as before.<br><br>
@@ -855,7 +866,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-02-g53-batch-4-complete-feynman-taxonomyreviewqueue" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 batch 4 complete: feynman + taxonomyReviewQueue split, 11 of 60 modules now done</div>
     <div class="card-body">
       Real evidence-based follow-up after the questEngine + intelDelete batch — picked by real function/DOM/Supabase-count evidence, with <code>taxonomyTree</code> (33 real external touchpoints) and <code>dashDeck</code> (the most-depended-on shared hub in the app) deliberately deferred again given their much higher interconnection risk vs. this batch's 1-2 touchpoints. Both modules built by dispatched Opus agents (each hit at least one background-agent usage-limit interrupt mid-evidence-gathering — confirmed via <code>git diff</code>/<code>git status</code> that zero real edits had landed before either interrupt, resumed the same agent from scratch with no work lost) and independently re-verified here the same way as every prior module: <code>node --check</code>, a fresh grep sweep for unqualified <code>self.</code>/<code>this.</code>, a fresh repo-wide grep of the <code>LEGACY:mainjs</code> section for every real external touchpoint, and headless-Chromium tests — never trusted on the dispatched agent's own report alone.<br><br>
@@ -867,7 +878,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-02-g53-batch-complete-questengine-inteldelete-split" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 batch complete: questEngine + intelDelete split, 3 real bugs found and fixed</div>
     <div class="card-body">
       Real evidence-based next batch after the pilot + Content Pipeline cluster — picked from a fresh function/DOM/Supabase-count scan of all remaining unsplit modules: <code>questEngine</code> (28 functions, Quest Board, zero external callers) and <code>intelDelete</code> (22 functions, Content Intelligence's delete/suppress path, 4 real external touchpoints). <code>dashDeck</code> (the most-depended-on shared hub in the app) deliberately deferred as higher-risk. Both independently re-verified the same way as every prior module — <code>node --check</code>, a fresh grep sweep for unqualified <code>self.</code>/<code>this.</code>, a fresh repo-wide grep confirming every real external touchpoint, and headless-Chromium tests run by this session.<br><br>
@@ -878,7 +889,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-02-g53-content-pipeline-cluster-complete-3" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 Content Pipeline cluster complete (3 modules), 2 real bugs found and fixed</div>
     <div class="card-body">
       Real follow-up batch after the 4-module G53 pilot, Alex-confirmed via a real <code>/interrogation</code> — the "Content Pipeline cluster": <code>contentProductionLive</code> (39 functions, the single largest unsplit module in the codebase, 2552 lines), <code>conidPot</code> (Idea Bank, 16 functions), and <code>videoSummary</code> (29 functions, zero external callers — the safest of the three). All three split into <code>ui</code>/<code>logic</code> namespaces following the exact shape the pilot proved, each independently re-verified the same way (node --check, a fresh grep sweep for unqualified <code>self.</code>/<code>this.</code>, a fresh repo-wide grep confirming every real external touchpoint, and headless-Chromium tests run by this session — never just trusted on the dispatched builder's own report).<br><br>
@@ -891,14 +902,14 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-02-toast-capture-tuning-fixed-one-confirmed-info-shaped" style="margin-bottom:30px;">
     <div class="card-title">🔔✅ Sep 2 — Toast-capture tuning: fixed the one confirmed info-shaped toast false-positive in error_log</div>
     <div class="card-body">
       Small, well-scoped fix from the Fable Total-Systems Audit's own flagged item. The chat-input "⏳ Oracle is still answering — wait for it to finish first" guard was colored <code>#CC4A4A</code> (the exact real error-toast color G109's <code>toast()→error_log</code> capture net keys off) despite being a benign rate-limit nudge, not a real error — it landed in <code>error_log</code> Aug 28 as a false positive. Recolored to <code>#E2A83D</code>, this codebase's own established soft-warning color. Checked all ~90 other <code>#CC4A4A</code> toast call sites for the same class rather than fixing only the reported instance — one structurally similar case (<code>_captureNextResponse</code>'s "reply still pending" guard) was deliberately left error-colored, since it warns of a real correctness risk (a reply "can save into the wrong ConID"), not a purely benign status message. <code>node --check</code> clean, re-minified, cache-bust <code>20260902d→20260902e</code>. Deployed and confirmed <code>READY</code> (commit <code>a14fb43</code>). The item's own 2nd half (deciding a real target duration for <code>perfWatch</code>'s freeze-detection threshold) stays open — a product/UX judgment call, deliberately left for Alex rather than picked unilaterally.
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-02-g53-pilot-4-4-complete-phylumpath" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 pilot 4/4 COMPLETE: phylumPath split into ui/logic, secureWrite error-handling fixed for good</div>
     <div class="card-body">
       Last of the 4 G53 pilot modules, closing out the overnight pilot. Built via a dispatched Opus agent (survived one mid-task usage-limit interrupt, resumed from real confirmed partial progress rather than restarted from scratch), independently re-verified by Sonnet before committing — same discipline as all 3 prior modules.<br><br>
@@ -910,7 +921,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-02-g53-pilot-3-4-bookworm-split" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 pilot 3/4: bookworm split into ui/logic (the largest of the 4 pilot modules), 1 real pre-existing production bug found and fixed</div>
     <div class="card-body">
       Continuing the overnight G53 pilot while Alex slept, per his own explicit instruction to keep going without pausing. Built via Opus, independently re-reviewed and re-verified by Sonnet before committing — the same discipline applied to <code>videoPipeline</code> and <code>beatLog</code>, refined further after beatLog's own review caught a documentation-honesty gap (a header comment promising something the code didn't actually deliver).<br><br>
@@ -922,7 +933,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-02-g53-pilot-2-4-beatlog-split" style="margin-bottom:30px;">
     <div class="card-title">🧩✅ Sep 2 — G53 pilot 2/4: beatLog split into ui/logic, 2 real pre-existing production bugs found and fixed along the way</div>
     <div class="card-body">
       Continuing the G53 UI/logic-split pilot (Aug 26's <code>videoPipeline</code> restructure was module 1/4). Built via Opus, independently reviewed and re-verified by Sonnet before committing — a real overnight pass while Alex was asleep, per his own explicit instruction to keep working without pausing to ask.<br><br>
@@ -934,7 +945,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-02-leftnav-gains-bookworm-content-pipeline-as" style="margin-bottom:30px;">
     <div class="card-title">🧭✅ Sep 2 — leftNav gains Bookworm + Content Pipeline as grouped entries, per a real /interrogation</div>
     <div class="card-body">
       Alex, directly: "add these to the primary leftNav tab bar, /interrogation me on what will be added and removed" — referring to UI11's own flagged open question from the Sep 1 build. Real 3-question <code>/interrogation</code> before touching code, all his own recommended answers.<br><br>
@@ -945,7 +956,7 @@
     </div>
   </div>
 
-<div class="card gold" style="margin-bottom:30px;">
+<div class="card gold" id="card-2026-09-01-g110-g113-shipped-real-local-analysis-pipeline" style="margin-bottom:30px;">
     <div class="card-title">🗺️✅ Sep 1 — G110-G113 shipped: a real Local Analysis Pipeline dimension, the Logic Dimension retired and dispersed, 5 messiest Currents rewritten, methodology text collapsed</div>
     <div class="card-body">
       Same night's real <code>/Routine</code> Top 10, item 2. Dispatched to Opus as a background build (Omnitrix builder role, real Python/HTML tooling work entirely separate from the UI10-13 app-code work above — disjoint files, run concurrently) — hit the session's own usage limit once mid-task ("Now update the hub catalogue entry:"), resumed from exactly where it left off per Alex's own "Try again," and finished clean on the second pass.<br><br>

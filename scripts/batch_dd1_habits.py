@@ -1,0 +1,53 @@
+"""DD-1 batch: HABITS subsection collapse (Sep 23 2026).
+Each (find_substr, new_oneliner) pair -- find_substr must match exactly
+one line in CLAUDE.md. new_oneliner replaces that whole line.
+"""
+
+ARCHIVE_HEADER = "## HABITS domain narrative — collapsed from CLAUDE.md Sep 23 2026 (DD-1, real Oversight Doc Dedup & Compression pass)\nFull dated stories, verbatim, moved here per the July 31 collapse rule. Each now has a real anchor link from CLAUDE.md's own durable one-liner into the matching patch_notes.html card."
+
+BULLETS = [
+    ("**H24 10th pass shipped Sep 22 2026",
+     '- **H24 10th pass (Sep 22 2026)**: starting a scheduled cook now opens a real Live Cook Mode panel inside Oracle (step timeline, per-step timers, a stir-reminder, elapsed-time ticker) instead of just flipping a schedule flag. [Full story](patch_notes.html#card-2026-09-22-h24-10th-pass-real-start-cook).'),
+    ("**H24 9th pass shipped Sep 17 2026",
+     '- **H24 9th pass (Sep 17 2026)**: fixed a structural bug where an already-saved recipe\'s RECIPE_UPDATE_JSON accept never actually reached Supabase (silently discarded on close/reload) — now a real UPDATE; also a "📏 Add measurements" backfill button, a recurring "🔁 Remind me every Xm" stir timer, unambiguous yellow-status wording, and a true cross-recipe interleaved scheduler that front-loads prep. [Full story](patch_notes.html#card-2026-09-17-h24-9th-pass-real-recipe-persistence-bug).'),
+    ("**H24 8th pass shipped Sep 17 2026",
+     '- **H24 8th pass (Sep 17 2026)**: curated substitution-potency ratios (e.g. tamarind concentrate ~3x paste), a real garlic clove/bulb count-equivalent bridge, a "pick from stock" declare picker, and a "🔄 Update recipe to match current stock" button. [Full story](patch_notes.html#card-2026-09-17-h24-8th-pass-real-substitution-ratios).'),
+    ("**H24 7th pass shipped Sep 17 2026",
+     '- **H24 7th pass (Sep 17 2026)**: a real weight-to-weight unit bridge (g↔kg), "large"/"medium"/etc. as countable-unit synonyms, and a real "declare same item, 2 names" permanent ingredient-merge feature (a standing `ingredient_aliases` row). [Full story](patch_notes.html#card-2026-09-17-h24-7th-pass-real-weight-bridge).'),
+    ("**H24 5th+6th pass shipped Sep 17 2026",
+     '- **H24 5th+6th pass (Sep 17 2026)**: 🟤⚗️ maroon (byproduct-derivable ingredients, e.g. egg→whites/yolks), 🩷 pink (shared stock across 2+ session recipes, Alex picks which recipe gets it), and a post-cook substitution-rating system (👍/👎, auto-prefers highly-rated subs going forward). [Full story](patch_notes.html#card-2026-09-17-h24-5th-6th-pass-maroon-derived).'),
+    ("**H24 4th pass shipped Sep 17 2026",
+     '- **H24 4th pass (Sep 17 2026)**: 6 more duplicate-ingredient-row merges; curated substitution groups are now authoritative (never fall through to the aisle+shared-word heuristic once a curated group exists); a generalized `_GENERIC_HEAD_STOPWORDS` fix for the shared-generic-word false-match bug class; and a correction to H24 2nd pass — confirming a substitute now shows a ✓ tick + persistent note rather than turning the row green. [Full story](patch_notes.html#card-2026-09-17-h24-4th-pass-6-more-duplicate-ingredient).'),
+    ("**H24 3rd pass shipped Sep 17 2026",
+     '- **H24 3rd pass (Sep 17 2026)**: clicking a recipe inside a Planned Cook session opens its real recipe card (reuses the Stock Match Finder\'s load sequence) instead of only showing a plain label + delete button. [Full story](patch_notes.html#card-2026-09-17-h24-3rd-pass-clicking-planned-cook).'),
+    ("**H24 2nd pass shipped Sep 17 2026",
+     '- **H24 2nd pass (Sep 17 2026)**: confirming an orange/blue substitute writes a real, persistent `ingredient_substitution_confirmations` row (superseded by H24 4th pass\'s correction: confirming no longer turns the row green, only adds a ✓ tick) — plus a real unit-synonym fix ("whole"/"Count"). [Full story](patch_notes.html#card-2026-09-17-h24-2nd-pass-real-confirm-substitute).'),
+    ("**H24 shipped Sep 17 2026",
+     '- **H24 (Sep 17 2026)**: real ingredient-matching fixes (a live "lime"/"limes" duplicate merged + a plural-fallback structural fix preventing recurrence), a cup/tbsp/tsp measurement display formatter, and a "← Back to Planned Cook" button. [Full story](patch_notes.html#card-2026-09-17-h24-real-ingredient-matching-bug-fixes-cup).'),
+    ("**H23 shipped Sep 17 2026",
+     '- **H23 (Sep 17 2026)**: Cooking module buttons/UI redesigned to a shared token system (`BTN_VARIANTS`, `_mkBtn`, `_mkDeleteArmBtn`) across all 42 real button call sites — green = commits data/stock, gold = commits to calendar/journal. [Full story](patch_notes.html#card-2026-09-17-h23-cooking-module-button-ui-uniformity).'),
+    ("**H22 shipped Sep 17 2026",
+     '- **H22 (Sep 17 2026)**: shopping list gains a real 3rd state, "🧺 In basket" (between "need to find it" and "bought") — a new `shopping_list_items.in_basket` column, with real "✅ Bought"/"↩ undo" actions. [Full story](patch_notes.html#card-2026-09-17-h22-real-basket-state-shopping-list).'),
+    ("**H21 shipped Sep 17 2026",
+     '- **H21 (Sep 17 2026)**: 🟠 Orange (real substitute in stock) and 🟤 Brown (separable/optional component, omittable in No-Shop mode) join the ingredient-status system; a real per-session shop/no-shop toggle ships. [Full story](patch_notes.html#card-2026-09-17-h21-orange-substitute-tier-brown-omittable).'),
+    ("**H20 shipped Sep 17 2026",
+     '- **H20 (Sep 17 2026)**: 3 real live schedule/planned-cook bugs fixed — the Daily Schedule "Start" button now actually toasts/re-renders/writes-through; cross-midnight schedule times display correctly (modulo-24 wrap); a scheduled planned-cook can be reverted back to draft from the Cooking hub. [Full story](patch_notes.html#card-2026-09-17-h20-3-real-live-schedule-planned-cook).'),
+    ("**H19 shipped Sep 17 2026",
+     '- **H19 (Sep 17 2026)**: recipes now lean on cups (liquids/spices) + weight, with real cross-unit bridging (`VOLUME_TO_ML` exact physics + a recipe\'s own `grams_estimate` for the weight bridge) so the 5-color ingredient-status system still works once pantry stock stays logged in weight/ml/count. [Full story](patch_notes.html#card-2026-09-17-h19-recipes-lean-cups-weight-5-color).'),
+    ("**H18 shipped Sep 16 2026",
+     '- **H18 (Sep 16 2026)**: a real 5-color ingredient-status system (🟢 plenty/🟡 not enough/🔴 don\'t have/🔵 have an alternative/🟣 will run low) applies everywhere ingredients are shown, plus a "🥫 What Can I Cook Right Now?" saved-recipe finder and a stock-only generation constraint. [Full story](patch_notes.html#card-2026-09-16-h18-real-5-color-ingredient-status-system-what).'),
+    ("**H17 shipped Sep 16 2026",
+     '- **H17 (Sep 16 2026)**: recipe generation (and its "Suggest 5 ideas" narrow-down) no longer hangs silently forever on a slow/failed Oracle reply — `_captureNextResponse` gained a real optional `onFail` callback, wired into all 3 real cookingOracle call sites. [Full story](patch_notes.html#card-2026-09-16-h17-recipe-generation-no-longer-hangs).'),
+    ("**H16 shipped Sep 16 2026",
+     '- **H16 (Sep 16 2026)**: the Planned Cook session gets a real per-recipe delete button (2-click arm/confirm, matching the project\'s standard pattern). [Full story](patch_notes.html#card-2026-09-16-h16-planned-cook-session-gets-real).'),
+    ("**H15 shipped Sep 16 2026",
+     '- **H15 (Sep 16 2026)**: recipe generation can now be triggered from general Oracle chat (main dashboard or the floating 🔮 overlay), not only the dedicated Cooking → "Generate a recipe" button — rides `oracleAppGrounding`\'s existing universal wrap, no 4th `window.callOracle` wrapper added. [Full story](patch_notes.html#card-2026-09-16-h15-recipe-generation-now-works-from).'),
+    ("**H14 shipped Sep 16 2026",
+     '- **H14 (Sep 16 2026)**: the scheduled-cook proposed plan shows real per-step ingredient measurements plus a real pantry-usage/grocery-need preview (green=have/gold=need-to-buy), reusing H13\'s aisle classifier. [Full story](patch_notes.html#card-2026-09-16-h14-scheduled-cook-plan-now-shows-real).'),
+    ("**H13 shipped Sep 16 2026",
+     '- **H13 (Sep 16 2026)**: the grocery list\'s "Need to buy" section auto-sorts by aisle — a pure client-side keyword classifier (`_AISLE_GROUPS`/`_classifyAisle`), zero schema change. [Full story](patch_notes.html#card-2026-09-16-h13-grocery-list-need-buy-section).'),
+    ("**H12 shipped Sep 16 2026",
+     '- **H12 (Sep 16 2026)**: `planned_cooks` gained a real draft lifecycle (a row is created the moment the first recipe joins a session and kept in sync) — fixes a real bug where an in-progress planned cook could silently vanish with no trace and no grocery list. [Full story](patch_notes.html#card-2026-09-16-h12-real-bug-fix-planned-cook).'),
+    ("**H11 shipped Sep 16 2026",
+     '- **H11 (Sep 16 2026)**: a real 4th Cooking button, "📦 Current Stock" (Pantry/Fridge/Freezer/Equipment) with per-location staleness badges, plus a recipe-photo lookup (Unsplash-first, Wikipedia fallback). [Full story](patch_notes.html#card-2026-09-16-h11-real-4th-cooking-button-current).'),
+]

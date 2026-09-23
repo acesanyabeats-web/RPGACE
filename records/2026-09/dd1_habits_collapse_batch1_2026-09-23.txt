@@ -1,0 +1,137 @@
+RPGACE — DD-1 batch 1: HABITS collapse + real anchor links
+Date: 2026-09-23
+Trigger: Alex's own direct kickoff of DD-1 (the ratified Oversight Doc
+Dedup & Compression plan's first item), plus a real mid-build ask:
+
+  "Start on DD-1 now, but make oneliners have links to other sections
+  of other oversight docs so it full story can be referenced if needed
+  for build or execution, if that makes sense. /interrogation and /CEO
+  and /drift and /paranoia"
+
+===========================================================================
+/drift check against the ratified DD-1 item
+===========================================================================
+Source claim (ceo_plan_items DD-1, ratified same session): "collapse to
+one line + pointer... move removed text verbatim into CLAUDE_archive.md."
+A real markdown link into patch_notes.html is a genuine AMENDMENT to
+"pointer" (upgrading a prose reference to a working anchor), and touches
+a THIRD file (patch_notes.html) DD-1's original evidence never named.
+
+VERDICT: amendment, not scope creep — the collapse GOAL is unchanged;
+the mechanism is enriched. BASIS: ratified via real /interrogation
+(3 new questions, answered below), not guessed.
+
+===========================================================================
+/interrogation — 3 real questions, AskUserQuestion, all answered
+===========================================================================
+Q1 (anchor retrofit scope): "2 but in batches i feel" — full retrofit of
+   all 424 existing patch_notes.html cards, done incrementally rather
+   than one giant pass, PLUS a new standing rule that every future card
+   gets a real id from the start (closing the coverage gap going
+   forward rather than needing a second retrofit later).
+
+Q2 (link direction): One-way only, confirmed (CLAUDE.md → patch_notes.html).
+   A back-link would need updating every time CLAUDE.md's own section
+   gets reorganized (the July 31 and this-session's own prunes both did
+   exactly that) — real extra drift surface for rarely-needed value.
+
+Q3 (link-rot check): Fold into DD-4 (not yet built), confirmed. DD-4's
+   own design note updated: it should also extract every
+   patch_notes.html#<id> reference from CLAUDE.md and confirm that id
+   still exists in the live file — the exact class of drift rule 16
+   already names.
+
+===========================================================================
+Real evidence: date distribution of patch_notes.html's 423 cards
+===========================================================================
+Sep: 79. Aug: 196. Jul: 100. Roadmap/still-open (no leading date, F-series
+steps + 6a-6f future ideas + BUG items): 48.
+
+Sep chosen as batch 1's anchor scope because HABITS — CLAUDE.md's single
+biggest offender (83,578 chars, 20% of the whole file) — is almost
+entirely Sep-dated (all H6-H24 passes). Anchoring Sep first directly
+unblocks the highest-value collapse target.
+
+===========================================================================
+Real tooling built (both idempotent + reusable, rule 8 — not one-off
+scripts)
+===========================================================================
+scripts/patch_notes_add_anchors.py:
+  Deterministic id scheme: card-YYYY-MM-DD-<slug> (slug = first ~6
+  significant words of the title, emoji/punctuation stripped, stopwords
+  dropped, kebab-case). Collisions (several cards share a date -- 15+ on
+  Sep 17 alone) resolved with a numeric suffix, stable given fixed file
+  order. Idempotent: skips any card that already carries a real id, so a
+  future batch (Aug/Jul/roadmap) can be run without disturbing this
+  batch's work.
+
+scripts/dd1_collapse_bullets.py:
+  Takes a batch module defining (find_substr, new_oneliner) pairs. Finds
+  each CLAUDE.md bullet by a short, unique substring (never the whole
+  multi-KB bullet text -- avoids transcription risk) -- FAILS LOUD if a
+  substring matches 0 or 2+ lines, refusing to touch anything until every
+  bullet in the batch is unambiguous. Appends the full original bullet,
+  verbatim, into CLAUDE_archive.md under a new dated header. Replaces the
+  CLAUDE.md line with the batch's real durable one-liner + a real
+  markdown link into the matching patch_notes.html anchor.
+
+===========================================================================
+Real, measured results (batch 1)
+===========================================================================
+Anchors: 79 new ids written to patch_notes.html (Sep 2026 cards), all
+unique (confirmed via direct scan, zero duplicates), div-balance
+unchanged (1289/1289 before -> after the anchor pass).
+
+Collapse: 22 HABITS bullets (H11 through H24 10th pass) -- every one
+confirmed via direct grep to have a real matching patch_notes.html card
+BEFORE collapsing (Q2's own confirmed threshold from the original DD-1
+interrogation: never collapse a block whose full story isn't already
+recorded elsewhere). Old total 78,808 chars -> new total 7,526 chars
+(71,282 char reduction from this one subsection alone).
+
+Whole-file result: CLAUDE.md 416,057 -> 347,457 chars (~17,000 fewer
+tokens auto-loaded into every future session from this one batch).
+HABITS subsection specifically: 83,578 -> 12,296 chars.
+
+===========================================================================
+/paranoia — real verification before committing, not shipped blind
+===========================================================================
+- patch_notes.html div-balance re-checked after BOTH the anchor pass and
+  the new summary card (1289/1289, then 1292/1292 matching the +3 divs
+  the new card itself adds) -- confirmed, not assumed.
+- All 22 new CLAUDE.md links checked to individually resolve to a real,
+  present patch_notes.html anchor id (grep-confirmed, `[Full story]
+  (patch_notes.html#card-...)` count == 22).
+- Whole-file bracket balance checked ([ ]: 34/34 exact, matching markdown
+  link syntax integrity) and backtick balance (4756, even).
+- A real minor paren-count shift was found (1678 open vs 1677 close,
+  whole file) and investigated rather than ignored: confirmed NONE of
+  the 22 new one-liner lines has an internal paren mismatch; the shift
+  traces to ordinary prose already inside the now-archived original
+  text (the previous commit's own paren count was a perfectly balanced
+  but much larger 1980/1980 -- removing an unevenly-parenthesized
+  original snippet, verbatim, into CLAUDE_archive.md is what surfaced
+  the pre-existing local imbalance, not anything introduced this pass).
+  Since CLAUDE.md is prose/markdown, not code, an unbalanced paren in
+  natural language has no rendering/parsing consequence -- confirmed as
+  a non-issue, not silently dismissed.
+- Line-count sanity: 481 lines before and after (each bullet is one
+  physical line in this project's own convention -- a 1-line-in,
+  1-line-out replacement can't silently corrupt line structure).
+
+===========================================================================
+Remaining, tracked, not silently dropped
+===========================================================================
+- Taxonomy / Video-content-pipeline / Oracle / External-handoff-lanes /
+  Open-forks subsections of CLAUDE.md's "Current state" section still
+  need the same collapse treatment -- their own confirmed-matching
+  patch_notes.html cards are mostly Aug/Jul-dated, so the next real
+  anchor batches (Aug: 196 cards, Jul: 100 cards) come first.
+- DD-3 (interconnection_map.md/system_flow_map.md's 28 changelog-rule
+  violations) not started this pass.
+- DD-4 (standing bloat-checker, now confirmed to also cover link-rot)
+  not built this pass -- its real byte-size threshold should be set from
+  the POST-collapse numbers once all 5 remaining subsections are done,
+  not guessed now from a partial result.
+- Roadmap/still-open cards (48, no leading date) not anchored this pass
+  -- lower priority, not tied to any Current-state collapse target.
