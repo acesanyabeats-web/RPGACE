@@ -1,0 +1,122 @@
+RPGACE — DD-4: standing Current-state bloat + link-rot checker
+Date: 2026-09-23
+Trigger: continuation of the ratified "Oversight Doc Dedup & Compression"
+plan, following DD-1 (CLAUDE.md collapse), DD-2 (Aintergration precedents
+archived), and DD-3 (interconnection_map.md/system_flow_map.md changelog-
+rule fixes). DD-4 is the plan's own last item.
+
+===========================================================================
+What the plan actually specified, including its own real amendment
+===========================================================================
+Original spec: "New scripts/check_current_state_bloat.py, same family/
+shape as check_self_knowledge_staleness.py (regex/size-only, zero AI
+cost). Measures the Current-state section byte size against a real
+threshold (set once DD-1's real post-collapse size is known -- do not
+hardcode before DD-1 ships) and/or counts new unarchived dated blocks
+since the last collapse pass. Wire into the same two enforcement points
+as SK-1/SK-2 (CLAUDE.md session-start check + Bedtime Step 1c), never a
+third ritual."
+
+Real amendment (Sep 23 2026, during the original /interrogation that
+ratified this plan): DD-4's own design was confirmed to ALSO check
+link-rot -- extract every patch_notes.html#<id> reference from CLAUDE.md
+(these didn't exist before DD-1 built the one-way anchor-link mechanism)
+and confirm that id still exists in the live file, same class of drift
+rule 16 already names.
+
+===========================================================================
+Real design, three checks, two that gate the exit code
+===========================================================================
+Built scripts/check_current_state_bloat.py in the exact same family/
+shape as check_self_knowledge_staleness.py/check_self_knowledge_
+contradictions.py -- cheap, regex-only, zero AI cost, no generator run
+required, prints a real human-readable report either way, never silent.
+
+1. SIZE -- real baseline measured directly against CLAUDE.md immediately
+   after DD-1+DD-2+DD-3 all shipped (79,917 chars for the "Current
+   state" section, taken this session, not guessed ahead of the work,
+   per the plan's own amendment requiring a REAL post-collapse number).
+   Flags if the section grows more than 25% past baseline (threshold:
+   99,896 chars) -- a real growth allowance, not zero-tolerance, since a
+   session adding genuine new durable facts (a new domain shipping, a
+   new open fork) shouldn't trip this on ordinary development; the point
+   is catching re-bloat toward the pre-DD-1 416,057-char size, not
+   punishing real growth.
+
+2. LINK-ROT -- every real patch_notes.html#<id> reference in CLAUDE.md
+   (73 unique references, 75 total uses, as of this run) checked against
+   patch_notes.html's own live id="..." anchors. A dangling reference is
+   the same class of drift rule 16 already names -- a doc made false by
+   a change elsewhere (here: an anchor renamed, removed, or a typo in
+   the reference itself).
+
+3. LONG-BULLET (informational only, never gates the exit code) -- a
+   rough proxy for "narrative creeping back into a one-line-per-fact
+   section," reusing the same real bullet-block-splitting logic used to
+   examine DD-1's candidates. Real, deliberate design decision: NOT a
+   hard gate. Testing against the live file found 4 real bullets over
+   the 2,500-char threshold (the "Skills that exist" list at 4,447
+   chars, the section's own intro paragraph at 3,918, the "deeper
+   wiring-sweep finding" at 3,629, the "docs as cached grep" pass at
+   2,988) -- all 4 were already individually reviewed during DD-1 and
+   correctly classified as dense-but-durable fact compilations, not
+   narrative that should collapse. A hard gate on bullet length would
+   have produced false positives against work already judged correct;
+   this stays a soft signal for a human/future session to weigh, same
+   "report, never silently auto-fix" discipline as the other two checks.
+
+Why a bare date-tag count (the most literal reading of "counts new
+unarchived dated blocks") was NOT used as the signal: testing the DD-3-
+style violation regex against CLAUDE.md's own live Current-state section
+found 59 matches, the overwhelming majority of which are CLAUDE.md's own
+LEGITIMATE convention -- HABITS H-pass bullet headers ("**H24 8th pass
+(Sep 17 2026)**:"), "(retired Aug 30)"-style pointer tags, and other
+Live-numbers-style snapshot dates that this file's own doc-discipline
+rule explicitly sanctions (a fact stating what's true now, pointing at a
+patch_notes.html card by date). Unlike interconnection_map.md/
+system_flow_map.md (DD-3's targets, both explicitly "never a changelog"),
+CLAUDE.md's own Current-state section is BY DESIGN a dated one-line-per-
+fact list -- so a bare date-tag count would have flagged almost the
+entire section as a false positive. The LONG-BULLET check (a length
+threshold, not a date-tag count) is the real, working proxy for this
+signal instead -- it catches paragraphs that have grown into genuine
+narrative regardless of whether they happen to carry a date tag.
+
+===========================================================================
+Real regression testing, before wiring anything in
+===========================================================================
+4 tests, same discipline as SK-1/SK-2's own regression-test convention:
+  1. A synthetic dangling link (a fake #id referenced but not present in
+     patch_notes.html) is correctly flagged.
+  2. A real resolving link is correctly NOT flagged.
+  3. A synthetic oversized section (200,000+ chars) correctly exceeds
+     the growth threshold.
+  4. A missing section boundary (no "## Current state" heading found)
+     correctly fails loud (returns a real error), rather than silently
+     matching nothing and reporting a false-clean result.
+
+All 4 passed. Live run against the real, current repo state: CLEAN --
+79,917 chars (at baseline, exactly, since this measurement WAS the
+baseline-setting run), all 73 unique link references resolve, 4 real
+long-bullet candidates reported informationally.
+
+===========================================================================
+Wired into the same two enforcement points as SK-1/SK-2, per the plan's
+own instruction ("never a third ritual")
+===========================================================================
+- CLAUDE.md gained a new "Session-start check — Current-state bloat +
+  link-rot" section, immediately after the SELF_KNOWLEDGE checks'
+  section, same visibility-every-session pattern.
+- .claude/skills/Bedtime/SKILL.md Step 1c (the same step that already
+  runs both SELF_KNOWLEDGE checks) now also runs this script -- a real
+  SIZE or LINK-ROT finding is a real gate: fix it in the same session if
+  it's this session's own doing, or name it as a deliberate logged
+  deferral if it's pre-existing drift found along the way. LONG-BULLET
+  never blocks close-out, consistent with its informational-only design.
+
+===========================================================================
+Remaining on the ratified plan
+===========================================================================
+None -- DD-1, DD-2, DD-3, and DD-4 are all now complete. The Oversight
+Doc Dedup & Compression plan itself should be marked complete in
+ceo_plans.
