@@ -146,7 +146,6 @@
       <input type="file" id="file-input" accept=".ics,.csv,.txt" onchange="handleFile(this.files[0])">
       <div class="import-methods">
         <button class="import-method-btn" onclick="showPasteArea()"><span class="method-title">📋 Paste schedule text</span>Copy from Fourth app or email and paste here</button>
-        <button class="import-method-btn" onclick="loadDemoShifts()"><span class="method-title">🔧 Load demo shifts</span>Preview with example shift data</button>
       </div>
       <textarea class="paste-area" id="paste-area" placeholder="Paste your schedule here e.g.:&#10;Mon 02 Jun - 09:00 to 17:00 - Bar Staff&#10;Tue 03 Jun - 14:00 to 22:00 - Floor Manager"></textarea>
       <button class="import-btn" id="parse-paste-btn" onclick="parsePasteInput()">Parse & Import Shifts</button>
