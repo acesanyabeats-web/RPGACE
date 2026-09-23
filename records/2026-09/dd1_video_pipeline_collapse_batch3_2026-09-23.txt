@@ -1,0 +1,68 @@
+RPGACE — DD-1 batch 3: Video/content pipeline collapse
+Date: 2026-09-23
+Trigger: Alex's own direct continuation — "Keep going into
+Video-content-pipeline" — following batch 1 (HABITS) and batch 2 (Oracle).
+
+===========================================================================
+Real bullets collapsed (12), each confirmed via direct grep to already
+have a matching patch_notes.html card BEFORE collapsing (Q2's own
+confirmed threshold, applied consistently across all 3 batches so far)
+===========================================================================
+  - "Delete doesn't stick" fixed (Aug 27)
+  - Massive Expansion build-out, 8 items (Aug 23-24)
+  - A5 shipped in full — Research Lab fully retired (Aug 15)
+  - A5 Phase 2, slice 1+2 (Aug 22)
+  - A2 — Dummy/Fallback Oracle banner overlap fix (Aug 22)
+  - Aug 22 real follow-up, 4 real fixes
+  - Aug 22 2nd hand-test follow-up, redesign + boot-task bug closed
+  - The separate "Video Pipeline" dashDeck card removed (Aug 6)
+  - Slice A + the July 30-31 UX pass, all untested
+  - Content/Video Pipeline unification, 8-phase A-H build (Aug 5)
+  - Content Pipeline UX overhaul (Aug 6, pass 12)
+  - "Content Production Live" vs "Content Pipeline" branding-bug verdict
+    (Aug 6)
+
+Several anchor lookups needed a 2nd or 3rd search phrase before landing
+on the real matching card (rule 13's own lesson, re-earned here) -- e.g.
+"Massive Expansion plan" alone matched an A3-specific card, but the
+bullet is a combined summary of the WHOLE build-out, so the real best
+match was the Aug 24 "SESSION CLOSED... Massive Expansion build-out
+finished" summary card instead. Confirmed each final match against the
+CLAUDE.md bullet's own actual content before locking it in, not just the
+first grep hit.
+
+===========================================================================
+Real durable facts correctly left untouched (not narrative)
+===========================================================================
+6 bullets in this subsection are standing architecture facts, not dated
+"shipped" narrative, and stayed exactly as-is:
+  - One shared `content_productions` table, split by `content_type`
+    discriminator (not two tables)
+  - Beat Log is the real Content Pipeline entry point
+  - `style_profiles` holds 3 real rows (corrected Aug 11)
+  - `reference_tracks.scale`/`genre` still 0/32 (a real, still-open gap)
+  - Real beat-grid audio sync does not exist
+  - RPGACE does not generate video itself (briefs and hands off to
+    OpenMontage)
+
+===========================================================================
+Real, measured results
+===========================================================================
+Video/content pipeline section: 36,057 -> 7,963 chars.
+Whole-file running total: CLAUDE.md 416,057 -> 287,329 chars (~32,180
+fewer auto-loaded tokens across all 3 DD-1 batches so far -- 31% smaller
+than when this plan was ratified this same session).
+
+Verified before committing: patch_notes.html div-balance (1298/1298),
+CLAUDE.md bracket balance (62/62, exact) and backtick balance (even),
+line count unchanged (481), all 12 new links checked to resolve to a
+real, present anchor.
+
+===========================================================================
+Remaining, tracked, not silently dropped
+===========================================================================
+Taxonomy (10,228 chars) / External-handoff-lanes (21,715 chars) /
+Open-forks (32,643 chars) subsections still need the same treatment.
+DD-3 (interconnection_map.md/system_flow_map.md's 28 changelog-rule
+violations) and DD-4 (standing bloat-checker, confirmed to also cover
+link-rot) haven't started.
