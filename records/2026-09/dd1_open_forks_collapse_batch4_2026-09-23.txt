@@ -1,0 +1,102 @@
+RPGACE — DD-1 batch 4: Open forks collapse + a real stale-claim fix
+Date: 2026-09-23
+Trigger: Alex's own direct continuation — "Keep going into Open-forks" —
+following batches 1 (HABITS), 2 (Oracle), 3 (Video/content pipeline).
+
+===========================================================================
+A real stale claim caught and fixed, not just collapsed
+===========================================================================
+The "Fable Total-Systems Reconciliation & Optimization Audit" bullet
+(originally logged Aug 27) still asserted, verbatim, "genuinely NOT
+interrogated or ratified yet" and gave instructions for "Next session's
+(or Fable's) first real job: Loop 1 — compile -> /interrogation...".
+
+Real evidence found this is stale: 2 real Aug 30 patch_notes.html cards
+("the Fable Total-Systems Audit begins: real /CEO Loop 1 compile +
+/interrogation, ratified, F1-F14 logged, 3 real fixes shipped" and
+"exhaustive yellow-item re-verification: 19 real green-flips") confirm
+the intent WAS interrogated, ratified, and executed -- just 3 days after
+being logged, not "not yet started" as the bullet still claimed. This is
+a real rule-16 cross-doc-drift instance (a doc made false by a change
+recorded elsewhere), fixed as a real correction, not a blind collapse.
+
+===========================================================================
+3 straightforward whole-line collapses (batch script), each confirmed to
+already have a matching patch_notes.html card
+===========================================================================
+  - The Fable-audit stale-claim correction above (2 links: the Aug 27
+    logging card + the Aug 30 execution card)
+  - Massive expansion spec compiled Aug 11 -> became the CEO framework,
+    /drift, /colourgradient, real prompt caching, session_memory (all
+    built same day)
+  - voiceInput module's real Aug 30 retirement
+
+===========================================================================
+2 real structural edits (manual, not the batch script -- it only does
+1-line-in/1-line-out; these needed a genuine merge and a genuine split)
+===========================================================================
+MERGE: the quest-creation bug's "found" (Aug 27) and "closed" (Sep 4)
+bullets were 2 separate physical lines describing ONE real incident.
+Merged into a single durable one-liner ("Quest creation intermittently
+failed Aug 27-Sep 4 2026... closed via /Routine's own evidence pass"),
+linking to the real F1 quest-bug-closure evidence card. Line count
+correctly dropped by 1 as a direct result.
+
+SPLIT: the "1 real, pre-existing dead onclick button remains" bullet
+mixed 4 genuinely different things in one physical line:
+  1. loadDemoShifts() -- a real, STILL-OPEN dead button, no directive
+     from Alex yet -- kept verbatim, unchanged.
+  2. debugComposio() closure (Aug 30) -- resolved, collapsed with a real
+     link to the same Aug 30 Fable-audit card (it was one of that
+     session's "3 real fixes").
+  3. quickPrompt(...)'s runtime-patch pattern -- a durable ARCHITECTURAL
+     fact (not narrative -- explains why 4 buttons that fail a static
+     grep test are NOT actually dead), kept, lightly tightened.
+  4. F0 (Sep 4)/F15 (Sep 22) quickPrompt-Oracle rewire narrative --
+     resolved, collapsed with 2 real links (both cards already anchored
+     from batch 1's Sep run).
+
+===========================================================================
+A real, honest gap found and flagged, not silently filled
+===========================================================================
+2 Sep 15 2026 bullets checked directly:
+  - "Real, deeper wiring-sweep finding, Sep 15 2026"
+  - 'Real, representative "docs as cached grep" verification pass, Sep 15
+    2026'
+
+Direct grep of patch_notes.html found exactly ONE real Sep 15 card
+("perspective_reports promoted to a real 13th oversight doc") -- neither
+of these two real findings has a matching card anywhere. This is a real
+rule-6 violation from that date (real confirmed work that should have
+gotten its own patch_notes.html card the same session and didn't) --
+NOT fixed by inventing a card retroactively, and NOT collapsed (per the
+confirmed Q2 threshold: only collapse where the full story is confirmed
+already elsewhere). Both bullets left exactly as-is. Logged to
+system_map_flags as a real, named backfill candidate for a future
+session with the real Sep 15 records/*.txt files in hand to write the
+missing cards from.
+
+===========================================================================
+Real, measured results
+===========================================================================
+Open forks section: 32,643 -> 15,719 chars (2 uncollapsed Sep 15 findings
+plus the genuinely-open items 156-167 account for the remaining size --
+correctly NOT zero, since real open work still lives there).
+
+Whole-file running total: CLAUDE.md 416,057 -> 270,405 chars (~36,410
+fewer auto-loaded tokens across all 4 DD-1 batches -- 35% smaller than
+at ratification this same session).
+
+Verified before committing: patch_notes.html div-balance (1301/1301),
+CLAUDE.md bracket balance (70/70, exact) and backtick balance (even),
+line count correctly dropped by exactly 1 (480, matching the real merge
+-- not a corruption), every new link checked to resolve to a real,
+present anchor.
+
+===========================================================================
+Remaining, tracked, not silently dropped
+===========================================================================
+External-handoff-lanes (21,715 chars) / Taxonomy (10,228 chars)
+subsections still need the same treatment. DD-3 (sibling-doc rule
+violations) and DD-4 (standing bloat-checker, confirmed to also cover
+link-rot) haven't started.
