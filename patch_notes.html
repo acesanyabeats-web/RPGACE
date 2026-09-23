@@ -74,6 +74,17 @@
 <div class="content">
 
 <div class="card gold" style="margin-bottom:30px;">
+    <div class="card-title">🛡️ Sep 23 — the real SELF_KNOWLEDGE staleness check shipped, closing the gap the same-day /paranoia audit left open</div>
+    <div class="card-body">
+      Direct follow-through on the earlier same-day audit's own named, unsolved gap: "nothing yet catches SELF_KNOWLEDGE going stale again." Real `/interrogation` (3 questions, AskUserQuestion, all Alex-confirmed): the staleness signal is date-elapsed OR real-ship-count (whichever fires first — ship-count is the sharper one, it's what let 28 days pass unnoticed); enforced at both session-start (visibility) and `/Bedtime` (a real gate); threshold 7 days / 3 ships.<br><br>
+      <b>The build</b>: <code>scripts/check_self_knowledge_staleness.py</code> — regex-only, no AI cost, same family as <code>verify_anchors.py</code>. Extracts SELF_KNOWLEDGE's own last real full date-fact, counts real patch_notes.html cards dated after it, flags STALE if either threshold fires. Never auto-rewrites the content — that stays a real semantic-judgment task.<br><br>
+      <b>Real `/paranoia` scrutiny before shipping, not just building</b>: regression-tested against the actual historical Aug 26 2026 stale state — correctly flags STALE (28 days, 87 real ships since, both thresholds blown). Edge cases tested and handled without crashing: no date present at all (flags maximally stale, honest failure mode), a malformed date like Feb 30 (skipped, real date still found), a cross-year card-date boundary guard. Honest, named limitation: this catches calendar/volume drift, not content correctness — a session could touch SELF_KNOWLEDGE's date and still write something factually wrong, same as the original Quest-Board bug technically was.<br><br>
+      <b>Wired into 2 real enforcement points, never duplicated</b>: a new CLAUDE.md session-start check bullet, and a new Step 1c in <code>.claude/skills/Bedtime/SKILL.md</code> — a real gate, not just a note, that flags before closing out if this session shipped an Oracle-facing change without touching SELF_KNOWLEDGE.<br><br>
+      <b>Real `/drift` verdict</b>: ON TRACK — the gap named in the earlier same-day pass is closed by construction, matching its own stated shape exactly. Logged as a real, ratified, complete `ceo_plans` row (SK-1). Full record: <code>records/2026-09/self_knowledge_staleness_check_ceo_interrogation_drift_paranoia_2026-09-23.txt</code>.
+    </div>
+  </div>
+
+<div class="card gold" style="margin-bottom:30px;">
     <div class="card-title">🔎 Sep 23 — "Is oversight docs just an appendix?": a real /paranoia audit, and a real 28-day-stale Oracle self-knowledge bug found and fixed</div>
     <div class="card-body">
       Alex's own philosophical question, run through a real evidence pass, not answered from the docs' own self-description: "is oversight docs just an appendix of what RPGACE is? is it a proper representation of how RPGACE total system is connected and coded, giving you and rpgace the best context of what is done?"<br><br>

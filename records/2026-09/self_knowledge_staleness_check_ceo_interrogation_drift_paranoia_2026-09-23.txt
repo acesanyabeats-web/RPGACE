@@ -1,0 +1,115 @@
+RPGACE — real /CEO + /interrogation + /drift + /paranoia build
+Date: 2026-09-23
+Trigger: Alex's own direct ask, following the same-day oversight-doc audit
+that closed with an explicitly named, open gap ("the missing ENFORCEMENT
+mechanism is real and still open"):
+  "build the standing check for SELF_KNOWLEDGE staleness, /CEO
+  /interrogation and /drift"
+  "and /paranoia" (added mid-turn)
+
+===========================================================================
+/interrogation — 3 real questions, AskUserQuestion, all answered
+===========================================================================
+Q1: What should count as the real staleness SIGNAL?
+  A: Date + real ship-count together (Recommended, confirmed). Elapsed
+     time alone is the weaker signal -- it's exactly what let 28 real
+     days pass unnoticed. A real accumulation of patch_notes.html cards
+     since SELF_KNOWLEDGE's own last-mentioned date is the sharper one.
+
+Q2: Where should this actually get enforced?
+  A: Session-start check + /Bedtime gate (Recommended, confirmed).
+     Session-start: cheap visibility report, same family as the existing
+     Galaxy Map headline-fact checks. /Bedtime: a real gate -- if THIS
+     session shipped real Oracle/architecture-facing changes but never
+     touched SELF_KNOWLEDGE, flag it explicitly before closing, not just
+     report old drift.
+
+Q3: How sensitive should the threshold be?
+  A: 7 days / 3 ships (Recommended, confirmed) -- matches how fast RPGACE
+     actually ships; the real historical gap (28 days/dozens of ships)
+     is caught far earlier under this threshold, roughly within a week
+     of normal activity.
+
+===========================================================================
+REAL BUILD
+===========================================================================
+scripts/check_self_knowledge_staleness.py -- a real, regex-only, no-AI-cost
+script, same family as verify_anchors.py and the Galaxy Map headline-fact
+checks:
+  1. extract_self_knowledge() -- one shared extraction function (rule 8),
+     the same non-greedy DOTALL pattern the Sep 23 rewrite script used.
+  2. last_mentioned_date() -- real full "Mon DD YYYY" mentions only (a
+     bare "Sep 2026" with no day, or "Sep 22" with no year, is
+     deliberately not counted -- too ambiguous to trust). Returns the
+     MAX real date found, or None (a real, honest failure mode -- flagged
+     as maximally stale, never silently treated as fresh).
+  3. count_ships_since() -- parses real patch_notes.html card-title date
+     prefixes ("Mon DD --", this project's own real, confirmed
+     convention, no year in the card itself), with a cross-year-boundary
+     guard so a Jan card doesn't get silently misdated once the project
+     timeline actually crosses a year boundary.
+  4. STALE if (days_stale > 7) OR (ships_since >= 3) -- an OR, matching
+     Q1's real confirmed answer (either signal alone is enough to flag).
+
+Never auto-rewrites SELF_KNOWLEDGE -- deliberately report-only. Rewriting
+it is a real semantic-judgment task (what's actually true, what's
+resolved, what's still open), the same discipline the Sep 23 2026 fix
+itself used -- automating that would risk exactly the kind of confidently
+wrong content this whole audit was triggered by in the first place.
+
+===========================================================================
+/paranoia — real scrutiny before shipping, not just building
+===========================================================================
+Regression test against the real historical bug (not a synthetic case):
+replayed the actual Aug 26 2026 stale SELF_KNOWLEDGE text through
+last_mentioned_date() and count_ships_since() against the real, current
+patch_notes.html. Result: 28 days stale, 87 real ships since -- both
+confirmed thresholds blown by a wide margin. The mechanism would have
+caught the real bug, not just a contrived one.
+
+Real edge cases tested, all handled without crashing:
+  - No full date present at all inside SELF_KNOWLEDGE -> returns None,
+    main() correctly reports STALE with an honest "no dated fact found"
+    reason, never silently treated as fresh.
+  - A malformed date (Feb 30 2026, which does not exist) -> caught by a
+    try/except around date() construction, skipped, the real surrounding
+    valid date still found and used.
+  - Cross-year card-date boundary (a hypothetical Jan-5 card compared
+    against a Dec-20 since_date) -> the >60-day-future guard correctly
+    reassigns the year rather than silently miscounting; confirmed via a
+    direct unit-level test, not just read of the code.
+
+Real, honest limitation stated plainly, not hidden: the /Bedtime gate
+(Step 1c) relies on a session's own honest self-report of whether it
+shipped an "Oracle/architecture/domain-facing" patch_notes.html card --
+there is no mechanical classifier deciding this, it's a judgment call
+written into the skill's own prose, same as every other Bedtime step.
+This mechanism catches CALENDAR/VOLUME drift reliably; it does not and
+cannot catch a session that touches SELF_KNOWLEDGE's date/line count
+correctly while still writing something factually WRONG into it (the
+exact Quest-Board-persistence bug this whole chain started from was a
+CONTENT error, not a staleness error by count alone -- this script
+detects "probably needs a look," never "is correct").
+
+===========================================================================
+/drift verdict — checked against the real gap named in the prior pass
+===========================================================================
+Source claim (records/2026-09/oversight_docs_appendix_or_representation_
+paranoia_2026-09-23.txt): "the missing enforcement mechanism... is real
+and still open -- nothing yet catches SELF_KNOWLEDGE going stale again
+the way the Galaxy Map session-start check catches module/page-count
+drift."
+
+VERDICT: ON TRACK. The named gap is closed by construction, not by
+promise -- a real, tested, regression-verified mechanism now exists at
+both the visibility point (session-start) and the enforcement point
+(/Bedtime gate), matching the exact shape ("the way the Galaxy Map
+session-start check catches...") the prior pass's own text specified.
+
+BASIS: RATIFIED -- Alex's own real, confirmed answers via /interrogation
+(not a guessed default), logged in ceo_plan_items SK-1.
+
+GRADE: no gap found on the stated scope. One real, honestly-named residual
+limit (content-correctness vs. staleness-by-signal, see /paranoia section
+above) -- not a gap against what was asked, a boundary of what THIS class
+of mechanism can ever catch. Flagged, not hidden.
