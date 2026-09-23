@@ -1,0 +1,163 @@
+RPGACE — real /paranoia+/scope+/commit-archaeologist+/godmode+/drift+/interrogation+/misunderstanding pass
+Date: 2026-09-23
+Trigger: Alex's own direct philosophical question, verbatim (2 messages):
+  "okay this one is a philosophical one, is oversight docs just an appendix of
+  what rpgace is? is it a proper representation of how RPGACE total system is
+  connected and coded, giving you and rpgace the best context of what is
+  done? i want you to /paranoia and /scope and /commit-archaeologist and
+  /godmode and /drift"
+  "and /interrogation the whole system and oversight doc with /drift and
+  /misunderstanding to diagnose whats done against what is coded and made,
+  then council of 5 all output"
+
+===========================================================================
+REAL EVIDENCE GATHERED (not the docs' own self-description)
+===========================================================================
+
+1. Falsifying test case: oracleAppGrounding.SELF_KNOWLEDGE (rpgace_core.js)
+   is the ONE oversight artifact that is actually wired into live production
+   behavior — it is injected into every grounded Oracle reply a real user
+   reads. Direct read confirmed its last real date-stamped fact was
+   "Aug 26 2026" — 28 days stale as of Sep 23. It mentioned cookingOracle/
+   HABITS/shoppingWishlist/G109 (mid-September facts) but zero mentions of
+   G53 (module ui/logic split, complete), F15, G117, G13, "Live Cook Mode",
+   or "58 registered" — the entire Sep 15-22 arc (the Galaxy Map pause, its
+   Sep 16 override, yesterday's 3-item build) was completely absent.
+
+2. It also contained an explicitly WRONG, falsified claim: "the Quest
+   Board's addXP()/completeQuest() have ZERO persistence at all... it is
+   NOT connected to the real career score" — this was true in July but was
+   made false by questEngine's real Aug 23-24 persistence build (quest_log
+   rows, boot-time XP restore). SELF_KNOWLEDGE never got corrected —
+   meaning for a full month, a real user asking Oracle "does my quest
+   completion actually save?" would have gotten a confidently wrong answer.
+
+3. Commit-archaeology, quantified: 66 of the last 124 commits (53%) since
+   Aug 26 touched CLAUDE.md. Only 15 touched a line containing
+   "SELF_KNOWLEDGE:" at all (mostly line-shift noise from the G53 refactor,
+   not real content additions) — zero of those 15 added real Sep 15-22
+   content. The artifact that's cheapest to keep current (prose, edited
+   constantly) gets constant attention; the artifact that's hardest (a
+   string competing with real code changes, with no syntax-check equivalent
+   watching it) gets neglected.
+
+4. CLAUDE.md's own headline numeric claims (58 modules, 23 Galaxy Map
+   pages) were re-checked live and found ACCURATE — but only because I
+   personally re-verified and fixed both the day before (G117's session).
+   That's the real tell: accuracy here is a snapshot from the last person
+   who happened to check, not a standing property enforced by anything.
+
+5. A live, additional cross-doc drift instance found IN THE ACT of this
+   audit: CLAUDE.md's own "Phylum XP Ledger" open-fork bullet still asserted
+   "Quest Board has zero persistence" — directly contradicted by this SAME
+   file's own "Massive Expansion" section a few thousand words below it,
+   which correctly describes questEngine's real Aug 23-24 fix. Two parts of
+   one file disagreed with each other. This is rule 16 (cross-doc drift)
+   caught in the wild, not hypothetically — fixed same pass (see below).
+
+6. The part of the system that IS a genuine representation rather than
+   hand-typed assertion — graphify/the Galaxy Map — has its own confirmed,
+   standing structural blind spot: its AST extractor cannot see
+   RPGACE.register() module boundaries as edges at all (documented,
+   "not fixed by a rebuild"). The Galaxy Map is a curated map layered on
+   top of that blind AST (RIVER_MODULES/RIVER_FLOWS are hand-maintained
+   lookup tables), not a compiled one — closer to true representation than
+   any prose doc, but not a solved problem either.
+
+===========================================================================
+COUNCIL OF 5 — THE REAL TENSION, BOTH SIDES
+===========================================================================
+
+FOR "load-bearing, not an appendix": CLAUDE.md is literally loaded as
+Claude Code's own operating instructions every session — it doesn't
+describe behavior, it IS behavior (the whole Tier/Judgment-Funnel system,
+rules 1-17). Every session-start check and skill (/scope, /drift,
+/cartographer) treats these docs as evidence sources gating real decisions.
+SELF_KNOWLEDGE and oracle_module_anatomy directly shape what a real end
+user reads. Deleting CLAUDE.md would visibly change how the very next
+session behaves — an appendix could be deleted without changing anything.
+
+FOR "an appendix wearing infrastructure's clothes": being READ doesn't mean
+being CURRENT. The "Known landmines" section is itself a running list of
+times the docs were caught lying about the system — repeatedly, over
+months (vercel.json, 2 Python scripts, .claude/settings.json, and a GitHub
+Action all independently referencing a deleted main.js for a week, found
+one at a time by 4 separate accidents). Rule 16 exists because the project
+had to formally admit "a doc can be made false by a change made somewhere
+else entirely" as a STANDING, unsolved risk — if the representation were
+proper by construction, rule 16 would be a one-time fix, not an ongoing
+procedure it still is.
+
+SYNTHESIS: these aren't really in tension — they're true of DIFFERENT
+layers the project has been quietly conflating under one word. CLAUDE.md's
+PROCESS layer (rules, decisions, the Judgment Funnel) is genuinely
+load-bearing and doesn't go stale the way facts do — a rule from July is
+still a valid rule in September. The Galaxy Map is a real, partially-
+derived structural map with a known hole. But the FACTS-OF-STATE layer —
+module counts, "what's built," Oracle's own self-knowledge, feature
+status — is structurally an appendix: written once by whoever shipped the
+thing, correct at that instant, then abandoned until an unrelated session
+happens to re-check it. Nothing keeps facts current BY CONSTRUCTION — only
+a discipline (rule 6) that keeps failing on exactly the artifact with the
+least visible failure mode.
+
+===========================================================================
+/drift VERDICT
+===========================================================================
+VERDICT: DRIFTED. "Oversight docs give RPGACE and Claude Code the best
+context of what is done" is not a standing property — it is intermittently
+true, restored by manual sweeps, degrading continuously between them.
+
+BASIS: PROVISIONAL, not ratified. Rule 6 states the intended invariant but
+nothing mechanically enforces it; the update-logging-system skill is a
+checklist, and its own text already says a checklist doesn't enforce
+itself — an honest, pre-existing admission of a weak basis.
+
+GRADE: MATERIAL. Nothing has broken in production from this (SELF_KNOWLEDGE
+fails open — a wrong answer, not a crash), but real, substantial,
+user-visible drift accumulated for a month with nobody tracking it until
+this question forced the check.
+
+===========================================================================
+DIRECT ANSWER
+===========================================================================
+No, not just an appendix — the process/governance layer (CLAUDE.md's own
+rules, the Judgment Funnel, session-start checks) is genuinely load-bearing
+infrastructure this session runs on. But no, it also is not a proper,
+continuously-accurate representation of "how the total system is connected
+and coded" — the one artifact that would need to be that (Oracle's own
+self-knowledge) was silently wrong for a month, and the parts that ARE
+currently accurate are accurate by luck of recent manual attention, not by
+design. Honest name for what exists: a governance layer that's genuinely
+load-bearing, wrapped around a facts layer that's structurally an
+appendix — accurate only immediately after someone checks, with no standing
+mechanism that notices when it stops being accurate in between checks.
+
+===========================================================================
+REAL ACTION TAKEN (Alex confirmed "Fix SELF_KNOWLEDGE now" via AskUserQuestion)
+===========================================================================
+- oracleAppGrounding.SELF_KNOWLEDGE (rpgace_core.js) rewritten from scratch:
+  66,332 chars -> 11,205 chars (83% reduction) while covering everything
+  real through Sep 22 2026 (G53 complete, HABITS H11-H24 full color/
+  substitution/Live-Cook-Mode system, F0/F15 oracleControl rewire,
+  perspective_map.html, the Sep 15 pause + its real overrides, G117/G13,
+  the swipe-freeze recurrence, voiceInput retirement, RLS tightening, the
+  Supabase Free-plan decision) — and the false "Quest Board has zero
+  persistence" claim corrected. Old bloated Galaxy Map G1-G76 blow-by-blow
+  narrative pruned to current-state-only facts (the narrative itself still
+  lives in patch_notes.html/CLAUDE_archive.md — nothing lost, just not
+  re-derived every time Oracle answers a question, per the same
+  doc-discipline CLAUDE.md itself was pruned under July 31).
+- CLAUDE.md's own "Phylum XP Ledger" bullet corrected in place (the
+  cross-doc drift instance found in step 5 above) — real narrowed-scope
+  finding kept (dashboard career-score phylum-tagging + quest_log-to-
+  career-score wiring both still genuinely unbuilt), stale part fixed.
+- node --check clean, re-minified, cache-bust bumped 20260922b->20260923a.
+
+Real, honest limitation of this fix: it closes the specific gap found. It
+does not build the missing ENFORCEMENT mechanism (a standing check that
+would catch SELF_KNOWLEDGE staleness automatically the way the Galaxy Map
+session-start check catches module/page-count drift) — Alex explicitly
+chose "fix content now" over "build the mechanism first" via the
+AskUserQuestion fork; the mechanism gap is real, named, and open, not
+silently solved by this pass.
