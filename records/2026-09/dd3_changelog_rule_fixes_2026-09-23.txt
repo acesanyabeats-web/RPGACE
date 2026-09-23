@@ -1,0 +1,193 @@
+RPGACE — DD-3: interconnection_map.md + system_flow_map.md changelog-rule fixes
+Date: 2026-09-23
+Trigger: continuation of the ratified "Oversight Doc Dedup & Compression"
+plan, following DD-1 (CLAUDE.md collapse) and DD-2 (Aintergration
+precedents archived). DD-3's own scope, per the original ratified plan:
+"Fix sibling-doc rule violations: interconnection_map.md (9 instances) +
+system_flow_map.md (19 instances): convert each dated changelog-style
+phrase to a present-tense structural statement matching each doc's own
+stated role. Any narrative-only content with no present-tense structural
+equivalent moves to patch_notes.html instead of being deleted."
+
+A real interleaved task also landed mid-session: a direct Alex ask to
+update manual.html (the consumer-facing doc, distinct from the Galaxy
+Map's developer-facing role) for HABITS/Cooking and Shopping Wishlist,
+which had zero button-catalog entries despite both domains shipping
+weeks earlier. Logged separately (own patch_notes.html card, own
+records/ file: manual_html_real_update_2026-09-23.txt) but noted here
+since it ran inside this same DD-3 continuation window.
+
+===========================================================================
+What CLAUDE.md's own rule actually requires, re-read before starting
+===========================================================================
+Both docs are explicitly defined (CLAUDE.md's "Context/logging efficiency
+rules") as "structural reference only, never a changelog... present
+tense... If a paragraph is narrating a sequence of events rather than
+describing current architecture, it belongs in patch_notes.html instead."
+The key distinction applied throughout: a dated SNAPSHOT fact ("Live
+count re-queried Aug 4: X rows") is CLAUDE.md's own sanctioned convention
+and was left alone; a dated NARRATIVE phrase ("X shipped, then Y was
+found wrong, then Z fixed it," or a bare "(built July NN)"/"NEW July NN"
+tag announcing an event) is the actual violation and was rewritten to a
+present-tense structural statement, with the historical detail either
+dropped (if already told in full in patch_notes.html per rule 8) or
+compressed+archived verbatim (if it was the ONLY copy of real information,
+matching this session's own DD-1 archive-before-delete precedent).
+
+===========================================================================
+interconnection_map.md -- real scope correction, then fixed in full
+===========================================================================
+The plan's own "9 instances" estimate came from a narrower grep pattern
+than the doc's actual stated rule requires. A comprehensive, iterative
+sweep found 48 real violations across 4 batches, not 9:
+  - Batch 1 (31 fixes): inline "(built July NN)"/"(shipped, live)"/
+    "(Aug N)" date-tags stripped from bullet headers, plus 6 section
+    headers carrying an embedded "-- added [date]" suffix.
+  - Batch 2 (4 fixes): 2 more narrative-sequence phrases reworded, 2
+    more embedded dates removed.
+  - Batch 3 (6 fixes): a dense paragraph about the Galaxy Map's Current
+    series with 4 separate sub-violations, plus 2 more standalone fixes.
+  - Batch 4 (17 fixes): a final sweep pass across the whole file.
+
+3 legitimate, deliberately-KEPT exceptions, per the same judgment DD-1
+already applied elsewhere in this project: the doc's own format-history
+meta-note (line 3), the "found 49 real sites as of Sep 4" snapshot-date
+convention (CLAUDE.md's own sanctioned "Live numbers, re-queried [date]"
+shape), and one intentional historical-correction-pointer note (line
+353) explicitly there to tell a reader an earlier paragraph is
+superseded -- removing its date would break its own stated purpose.
+
+Result: 353 lines unchanged (all fixes were within-line text
+substitutions, none added/removed a line), 103,634 -> 105,335 chars
+(character count went UP slightly -- several of the rewritten present-
+tense sentences needed a few more words than the terse dated-tag
+originals to stay grammatically complete and equally precise; this is
+expected and correct, DD-3's goal is rule-compliance, not compression --
+DD-1/DD-2 already did the compression pass on CLAUDE.md itself).
+Verified clean: backticks 1892 (even), brackets [15]=[15], bold ** 238
+(even).
+
+===========================================================================
+system_flow_map.md -- structural finding, not just a formatting sweep
+===========================================================================
+Comprehensive grep found 104 flagged lines for date mentions across the
+whole 811-line, 114,055-char file. Working through them surfaced a
+structural problem, not just phrasing:
+
+Section 10 ("Built vs NOT built -- the truth table") held a ~145-line
+changelog-style narrative (original lines 355-499) that was both (a)
+massively duplicating patch_notes.html's own dated cards, and (b)
+content-stale -- predating HABITS, the Galaxy Map's G13-G117 build-out,
+and everything shipped after this doc's own last full re-verification.
+Rather than mechanically strip dates and risk asserting false CURRENCY
+for items that may since have been superseded or verified, the "Built
+but NEVER verified" and "Claimed/discussed but NOT built" subsections
+(original lines 371-496, 53,595 chars) were archived verbatim to
+CLAUDE_archive.md under a new dated header, then replaced with a
+compressed present-tense summary that redirects to smoke_test.html
+(the current, Alex-hand-confirmed verification-status authority) and
+patch_notes.html (the full narrative authority), explicitly naming known
+supersessions (Research Lab retired, voice input retired, all 21 phyla
+now enabled, questEngine closing the persistence gap) rather than
+silently re-asserting stale facts as current.
+
+The separate "Built AND verified working" subsection (original lines
+358-367, sitting just above the already-fixed §10 block) had the exact
+same problem -- a July 18-31 2026 snapshot (12-phyla count, 544
+taxonomy_tree rows, 66 fusion links, Bookworm's first hand-tested
+chapter) that is stale relative to CLAUDE.md's current Live-numbers line
+(all 21 of 21 phyla enabled; taxonomy_tree/taxonomy_links/
+taxonomy_proposals counts have all moved since) and to smoke_test.html's
+own current tally. Archived verbatim to CLAUDE_archive.md alongside the
+other §10 block, replaced with a compressed present-tense list of what's
+real/shipped, redirecting to smoke_test.html for current per-feature
+hand-test status and patch_notes.html for the original debugging
+narrative (Bookworm's 8-round PDF-corruption debugging arc specifically
+named so that story isn't lost).
+
+===========================================================================
+The remaining ~35 flagged lines -- all fixed, all present-tense now
+===========================================================================
+Beyond §10's structural compression: 10 section headers (## 9 through
+## 18) had a "-- added [date]" suffix baked directly into the header
+text -- all 10 fixed in one batch. One more parenthetical fixed
+separately (line ~601 area, "(built Aug 25 2026, G77-G100)" ->
+"(G77-G100)").
+
+A final, careful pass covered the remaining genuinely-dated lines,
+excluding Mermaid fence content and legitimate filename citations:
+  - Section 0 (Verified Component Inventory): the module-count paragraph
+    ("Module inventory re-grepped Aug 23 2026... 56 real modules... the
+    count moved 53->56... gone stale twice") rewritten to a present-
+    tense statement pointing at CLAUDE.md's own Live-numbers line as the
+    authority, rather than restating a number this doc has already
+    proven it can't keep current on its own. A caveat line added noting
+    newer modules (cookingOracle/shoppingWishlist/oracleControl) aren't
+    backfilled into the illustrative domain table. The `api/` section's
+    "NEW July 23" tags and "as of July 23's deduplication fix" narrative
+    stripped to plain present-tense fact. The Supabase tables section's
+    "Rebuilt July 31 from a direct pg_policies query -- 28 real tables"
+    opener rewritten to point at a live pg_policies re-query rather than
+    assert a now-likely-stale fixed total (real new tables -- e.g.
+    wishlist_items/oracle_actions/session_memory/perspective_reports --
+    have shipped since). "oracle_module_anatomy (NEW July 31...)" and
+    "beat-deliverables bucket (Aug 5, Phase H...)" tags stripped.
+  - Section 8: the "**July 22 correction**:" tag rewritten to "**Real,
+    standing correction**:" -- the underlying fact (decidePlacement is
+    the one shared engine, no separate Sorting Agent was ever needed) is
+    still true and still worth stating structurally, the date-tag just
+    isn't.
+  - Section 12 (Oracle Mode pipeline doc): a dated aside about when the
+    L0 unit panel moved from a standalone page into galaxy_map.html
+    rewritten to state the current structural fact (it no longer exists
+    as a standalone page) without the "on Aug 21" narrative framing.
+  - Section 14 (Total-Systems Dispatch): the "(Aug 4)" tag on the
+    "Total" naming dropped. The "Live state, queried July 31, schema-
+    only facts re-confirmed Aug 5" paragraph -- which had real STALE
+    numbers in it (video_jobs "3 rows, all at stage 1/5" vs. the current
+    9-row/multi-stage reality per CLAUDE.md) -- rewritten to point at
+    CLAUDE.md's Live-numbers line rather than restate wrong numbers,
+    directly closing a real rule-16 cross-doc-drift instance this pass
+    would otherwise have left uncorrected. "per the July 24 verdict"
+    dropped in favor of "per CLAUDE.md's own standing verdict."
+  - Section 15 (Galaxy Map rivers retirement): a bug-fix narrative
+    ("found and fixed in passing... predated the Aug 18 River-v2
+    split...") rewritten to state the resulting present-tense structural
+    fact (the flag is derived from RIVER_RETIRED, not a hardcoded
+    boundary) without the narrative framing -- the story itself already
+    lives in patch_notes.html per rule 8.
+  - Section 16 (rechronologize): "originally numbered River XVII by the
+    Aug 18 G49 split" -> "...by the G49 split" (date dropped, the G-step
+    citation itself is the real, durable identifier).
+
+One deliberately KEPT exception, same judgment as interconnection_map.md's
+own 3: line 620's "same precedent as the Aug 11 phylum renumber" is a
+legitimate historical-correction-pointer note (explaining why old-
+numbering narrative text elsewhere is left as historical record rather
+than rewritten) -- removing the date would break its own stated purpose,
+same category already established as an allowed exception this session.
+
+===========================================================================
+Real, measured results
+===========================================================================
+system_flow_map.md: 114,055 -> 65,720 chars (811 -> 705 lines, a 42%
+character reduction) -- correctly this large since, unlike
+interconnection_map.md, a genuinely duplicative and stale ~53,595-char
+narrative block was structurally compressed (with full verbatim
+preservation in CLAUDE_archive.md), not just date-tag-stripped.
+
+Verified clean before committing: backticks 712 (even), Mermaid fences
+32 (even, 16 pairs), bold ** 116 (even), brackets [288]=[288] (exact).
+
+CLAUDE_archive.md: +38 lines, holding both archived §10 subsections
+verbatim under a new dated header
+("## system_flow_map.md §10 -- collapsed Sep 23 2026 (DD-3...)").
+
+===========================================================================
+Remaining on the ratified plan
+===========================================================================
+DD-4 (a standing bloat-checker script, scripts/check_current_state_bloat.py,
+confirmed to also cover link-rot) has not started -- proceed only if Alex
+explicitly asks to continue, matching this session's established pattern
+of shipping each DD item in full (record + Supabase + commit + push +
+Vercel-verify + report) before moving to the next.
