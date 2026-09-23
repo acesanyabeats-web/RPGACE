@@ -174,3 +174,33 @@ Executed immediately (per this skill's own "move straight into item 1" guardrail
 ===========================================================================
 Item 1 (the 2 live-number fixes) executed in the same turn this record was written —
 see the matching commit for the real diff.
+
+===========================================================================
+REAL, SAME-TURN CORRECTION — item 2 was mis-ranked, found before any wrong action
+was taken (rule 1: pull real source before editing)
+===========================================================================
+Before touching reference_tracks, pulled the real source for refCorpus._showBackfillPopup
+(rpgace_core.js ~line 25372) and its own governing patch_notes.html card (July 30 UX
+pass, item 4): "a UI helper for Alex's own judgment call per track, not an automated
+guess." The popup exists specifically because scale (musical key/mode) and genre are
+subjective calls about 32 real, specific songs Alex added — not data a session can
+correctly infer without either (a) his own ears, or (b) a real, separate design
+decision to wire in an automated metadata lookup (e.g. Last.fm tags for genre; no
+real source exists for scale short of real audio analysis this session has no file
+access to run). Writing guessed values into his real reference corpus would be
+exactly the kind of silent-wrong-data bug rule 4/rule 1 exist to prevent.
+
+Team 1/Team 2's original debate treated this as a "buildable today" item — that was
+wrong, caught before any write happened. Reclassified: reference_tracks backfill
+moves OFF the buildable list and onto the "needs Alex" flag list (his own 10-32
+minutes filling in the popup's inputs), alongside a genuine, scoped offer: a Last.fm-
+genre-suggestion feature that pre-fills the popup's genre field as an editable
+starting guess (never scale, never auto-committed) — real, buildable, but its own
+design decision Alex would need to confirm first, not built blind this pass.
+
+Pivoted the actual buildable slot to item 3 (F16/F17/F18 ready-to-click checklist)
+instead — genuinely zero-guessing, real button labels/stage names pulled from source
+before writing it (beatLog's "⚡ Log Beat + Find Artists", videoPipeline.STAGES =
+['beat_logged','in_production','edited','rendered','exported'], visualOracle's
+"🎬 Generate Visual Treatment Doc", contentProductionLive's "💰 Sell This Beat ▾" ->
+"🎧 Generate Beatstars Listing" gated on a licence_type set via "📋 Add post details").
