@@ -1,0 +1,143 @@
+RPGACE — real content-correctness mitigation for SELF_KNOWLEDGE
+Date: 2026-09-23
+Trigger: Alex's own direct instruction, quoting back verbatim the one
+honest, named limitation the SK-1 staleness-check record closed with:
+
+  "One honest limit, named not hidden: this catches calendar/volume
+  drift, not content correctness -- a session could touch SELF_KNOWLEDGE's
+  date and still write something factually wrong, which is technically
+  what the original Quest Board bug was. Flagged in the record, not
+  oversold."
+  "address it"
+
+===========================================================================
+WHAT WAS BUILT
+===========================================================================
+scripts/check_self_knowledge_contradictions.py -- a real, bounded,
+zero-AI-cost mechanism, deliberately NOT a general fact-checker (that
+would need a real AI call re-reading the whole string against the whole
+codebase's actual behavior every session -- real token cost, rule 11, out
+of scope for a per-session check).
+
+What it DOES catch, mechanically: a NEGATIVE/ABSOLUTE claim ("zero
+persistence", "not connected to", "does not exist"...) made near a real,
+named module (`/* ===MODULE:name=== */` marker) or Supabase table (a real
+`RPGACE.sb.insert/update/del/secureWrite('table', ...)` write-call
+target), where the codebase's OWN current write evidence for that exact
+entity now contradicts the claim. This is precisely the shape of the
+Quest Board bug -- a claim anchored to a real identifier that a later
+real code change silently falsified.
+
+10 curated negation phrases (rule 7 -- never a broad fuzzy net): 'zero
+persistence', 'no persistence', 'no real persistence', 'not connected
+to', 'NOT connected', 'does not exist', 'DOES NOT exist', 'nowhere
+persistent', 'has no real', 'has zero'.
+
+Reuses `extract_self_knowledge()` from check_self_knowledge_staleness.py
+(rule 8 -- one shared extractor, not re-derived).
+
+===========================================================================
+A REAL BUG FOUND AND FIXED DURING TESTING, NOT SHIPPED BLIND
+===========================================================================
+The first version's own real test run (against the just-rewritten, actual
+current SELF_KNOWLEDGE content) produced 2 false-positive findings
+(`questEngine` module, `quest_log` table) -- both from the SAME sentence,
+the Sep 23 2026 fix's own real correcting text:
+
+  "The Quest Board (addXP/completeQuest) now HAS real persistence via a
+  dedicated questEngine module (built Aug 23-24 2026) - completions write
+  real quest_log rows and boot-time restore re-derives XP/level/done-
+  state from them; this corrects an old, wrong claim this string used to
+  carry ("zero persistence") - never repeat that old claim, it has been
+  false since Aug 24."
+
+Root cause, found by direct diagnostic printing (not guessed): the
+sentence quotes the RETRACTED old claim with DOUBLE quotes
+("zero persistence"), not single quotes. The first version of
+`strip_quoted_spans()` only stripped single-quoted spans
+(`re.sub(r"'[^']*'", '', sentence)`) -- it never touched the double-quoted
+span, so the negation-phrase check still saw 'zero persistence' sitting
+right there and flagged the sentence, exactly the false-positive class
+this function was built to prevent, just for the wrong quote character.
+
+Real fix: `strip_quoted_spans()` now strips BOTH quote styles
+(`'[^']*'` and `"[^"]*"`), applied in sequence. Re-ran the exact same
+test after the fix: 0 findings, exit 0 -- confirmed via direct re-run,
+not assumed from reading the diff.
+
+===========================================================================
+/paranoia -- regression test against the REAL historical bug, not just a
+synthetic case
+===========================================================================
+Checked out rpgace_core.js from commit 22022cb (the last commit before
+this session's own Sep 23 rewrite -- the real, actually-stale 66,310-char
+SELF_KNOWLEDGE) and ran the fixed contradiction-checker against it
+directly.
+
+Result: 0 findings -- and this is the CORRECT, already-documented
+result, not a miss. The old text's real wording was:
+
+  "...the separate Quest Board (addXP()/completeQuest()...) has ZERO
+  persistence at all, pure in-memory, resets every reload - it is NOT
+  connected to the real career score..."
+
+The negation phrase 'NOT connected' IS detected in this sentence (checked
+directly) -- but no real module/table identifier (`questEngine`,
+`quest_log`) appears anywhere near it, only the bare function names
+`addXP()`/`completeQuest()`. This is EXACTLY the scope limit the script's
+own docstring already names up front: "Only catches a negative claim
+phrased near a REAL module/table identifier by name... The ORIGINAL
+bug's own exact wording... would NOT have been caught by this exact
+mechanism at the time it happened." Confirmed by direct test, not just
+asserted in a comment.
+
+A second, synthetic positive test confirmed the checker DOES catch the
+bug's shape going forward, now that the real rewrite names the owning
+module: a fabricated sentence, "The questEngine module has zero
+persistence and is not connected to any real Supabase table," correctly
+produced a real finding (`questEngine`, real write evidence in its own
+module body) -- proving the mechanism works when a claim is anchored to
+a real identifier, which is now standard practice per this rewrite's own
+example and the new Building Guide rule (see below).
+
+===========================================================================
+Honest, named scope limits (unchanged from the script's own docstring,
+confirmed accurate by the regression test above, not just claimed)
+===========================================================================
+- Only catches a negative claim phrased near a REAL module/table
+  identifier by name -- a claim about a bare function name alone (no
+  module named nearby) is invisible to this mechanism, same as the
+  original bug's own exact wording was.
+- Only checks the 10 curated negation phrases -- a real wrong claim
+  phrased without one of these exact markers is not caught.
+- Only checks PERSISTENCE/CONNECTION/EXISTENCE-shaped claims, not every
+  possible kind of factual error (a wrong NUMBER, a wrong DATE, a wrong
+  causal claim between two real things -- none of these are in scope).
+- This is a NEGATIVE-CONTRADICTION detector, not a general SELF_KNOWLEDGE
+  correctness prover -- a clean run means "no known-shape contradiction
+  found," never "SELF_KNOWLEDGE is fully accurate."
+
+===========================================================================
+/drift verdict
+===========================================================================
+Source claim (self_knowledge_staleness_check_ceo_interrogation_drift_
+paranoia_2026-09-23.txt): "this mechanism catches CALENDAR/VOLUME drift
+reliably; it does not and cannot catch a session that touches
+SELF_KNOWLEDGE's date/line count correctly while still writing something
+factually WRONG into it."
+
+VERDICT: ON TRACK. A real, tested, regression-verified second mechanism
+now closes the specific, bounded sub-class of content error that
+actually happened once (a negative/absolute claim about persistence/
+connection/existence, anchored or anchorable to a real code identifier).
+It does not claim to close the FULL content-correctness gap -- no cheap
+mechanical check can -- but it closes the real, concrete instance this
+whole chain started from, and the same shape going forward.
+
+BASIS: RATIFIED -- built directly per Alex's own explicit instruction
+("address it"), no guessed default substituted.
+
+GRADE: no gap found against what was asked. The residual "not a general
+fact-checker" limit is a boundary of what ANY zero-AI-cost mechanism can
+ever do, not a shortfall against the real, bounded thing that was asked
+for and built.
