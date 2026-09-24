@@ -231,6 +231,34 @@ def _river_chip(rnum):
     return f'<a class="tbl-link" href="galaxy_map_module.html#river-{rnum}"><code>🌊 {esc(label)}</code></a>'
 
 
+def _unit_evidence(unit_id):
+    """Real, shared evidence computation for one L0 unit's own table set
+    (SUPABASE_L0_UNIT_TOUCHES) cross-referenced against every real
+    rpgace_core.js module/function touching the SAME tables. Factored
+    out Sep 24 2026 (real interlink follow-up) — this used to be
+    computed twice, once inline here and once again inside main()'s own
+    diagnostic print loop, a real rule-8 duplication closed in the same
+    pass that also exposes a module-level DRILL for galaxy_map_river.py
+    to import."""
+    unit_tables = sorted(e['table'] for e in SUPABASE_L0_UNIT_TOUCHES.get(unit_id, ()))
+    all_touches = compute_all_supabase_table_touches()
+    return {tbl: all_touches[tbl] for tbl in unit_tables if tbl in all_touches}
+
+
+def _unit_drill(unit_id):
+    return build_infra_drilldown(_unit_evidence(unit_id))
+
+
+# Sep 24 2026 — real module-level DRILL per unit, the same shape Oracle/
+# Supabase/Decisions already expose, so galaxy_map_river.py's reverse-
+# link registry can import a real destination for THIS page too (it
+# writes 2 separate files from one script — orchestrator_cc/
+# openmontage_cc — so this is a real dict keyed by unit_id, not a bare
+# DRILL constant like the single-page scripts use).
+_DRILL_ORPHANS_BY_UNIT = {uid: _unit_drill(uid) for uid in ('orchestrator_cc', 'openmontage_cc')}
+DRILL_BY_UNIT = {uid: t[0] for uid, t in _DRILL_ORPHANS_BY_UNIT.items()}
+
+
 def build_shared_infra_section(unit_id='orchestrator_cc'):
     """G91-original, generalized Sep 15 2026 (real restructure — was
     hardcoded to orchestrator_cc only, the actual bug behind Alex's own
@@ -240,9 +268,8 @@ def build_shared_infra_section(unit_id='orchestrator_cc'):
     label = L0_UNIT_LABEL.get(unit_id, unit_id)
     icon = ACTOR_PROFILES.get(unit_id, {}).get('icon', '🧭')
     unit_tables = sorted(e['table'] for e in SUPABASE_L0_UNIT_TOUCHES.get(unit_id, ()))
-    all_touches = compute_all_supabase_table_touches()
-    evidence = {tbl: all_touches[tbl] for tbl in unit_tables if tbl in all_touches}
-    drill, orphans = build_infra_drilldown(evidence)
+    drill, orphans = _DRILL_ORPHANS_BY_UNIT[unit_id]
+    evidence = _unit_evidence(unit_id)
     map_view = render_infra_drilldown(
         drill, orphans, unit_icon=icon, unit_label=label,
         leaf_link_fn=lambda m: f'galaxy_map_current.html#mod-{m}' if m in LEVEL3_MODULES else None,
@@ -555,11 +582,13 @@ def main():
     linked = [t for t in named if t in _SB_TABLES]
     print(f"  Link coverage — {len(linked)}/{len(named)} named table(s) link a real Supabase-page section "
           f"(honestly unlinked: {', '.join(t for t in named if t not in _SB_TABLES) or 'none'}).")
-    _all_touches = compute_all_supabase_table_touches()
+    # Sep 24 2026 — reuses the real module-level _DRILL_ORPHANS_BY_UNIT
+    # (built once, above) instead of re-deriving a 3rd copy of the same
+    # evidence computation here (rule 8 — this print loop used to be its
+    # own independent 2nd copy of build_shared_infra_section's own logic).
     for _uid in ('orchestrator_cc', 'openmontage_cc'):
         _tables = sorted(e['table'] for e in SUPABASE_L0_UNIT_TOUCHES.get(_uid, ()))
-        _ev = {t: _all_touches[t] for t in _tables if t in _all_touches}
-        _drill, _orph = build_infra_drilldown(_ev)
+        _drill, _orph = _DRILL_ORPHANS_BY_UNIT[_uid]
         _c = infra_drilldown_counts(_drill, _orph)
         print(f"  {L0_UNIT_LABEL.get(_uid, _uid)} — Shared Infrastructure: {len(_tables)} real table(s), "
               f"{_c['rivers']} river(s) qualify, {_c['modules']} module(s) + {_c['orphan_modules']} river-less, "

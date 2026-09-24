@@ -59,6 +59,18 @@ for _r, _mods in RIVER_MODULES.items():
     for _m in _mods:
         _river_of[_m] = _r
 
+# Sep 24 2026 — real interlink follow-up: build_drilldown_section() below
+# computes DRILL per-connector, inline, on every call — real for
+# rendering, but not importable by galaxy_map_river.py's own reverse-
+# link registry (compute_river_reverse_links()), which needs a real
+# module-level DRILL constant the same shape Oracle/Supabase/Decisions
+# already expose. A module-level combined dict, computed once from the
+# SAME real CALLS data (rule 8, never re-derived) — resource key is the
+# connector name, matching the shape build_infra_drilldown() already
+# expects.
+EVIDENCE = {conn: CALLS.get(conn, []) for conn in DRILLDOWN_CONNECTORS}
+DRILL, ORPHANS = build_infra_drilldown(EVIDENCE)
+
 
 def esc(s):
     return (s or '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')

@@ -1,0 +1,134 @@
+RPGACE — Galaxy Map interlinking: DRILL refactor (3 pages) + a real correction
+Sep 24 2026 (same day, direct follow-up to interlink_web_bubble_pass_2026-09-24.txt
+and interlink_remaining_pages_2026-09-24.txt)
+
+===========================================================================
+A REAL CORRECTION, FOUND BEFORE BUILDING ANYTHING
+===========================================================================
+Alex's message quoted back this session's own prior "still open" line
+verbatim: "the 3 pages whose drilldown data isn't exposed at module level
+yet (Connectors, Orchestrator CC, OpenMontage CC, Oversight Sync), and
+Current/Module's own reverse-link to Decisions."
+
+Rule 1/4 applied before touching code: direct read of galaxy_map_current.py
+and galaxy_map_module.py, rather than trusting that claim (repeated
+across 3 consecutive turns without re-checking).
+
+**The "Current/Module's own reverse-link to Decisions" half of that claim
+was WRONG.** Both pages already import and call a real dispersal API from
+galaxy_map_decision_matrix.py — build_module_decisions_html()
+(galaxy_map_current.py:1119) and build_river_decisions_html()
+(galaxy_map_module.py:997) — shipped as part of G111 (Sep 1 2026, well
+before this session's own interlink pass began). Confirmed by direct
+grep of the generated HTML: 12 real modules on galaxy_map_current.html
+and 6 real rivers on galaxy_map_module.html already show real,
+evidence-checked "Curated decisions & core logic in X" cards, each with
+the decision's own trigger/logic/result plus real links to the Branch
+Ledger and Decision Matrix. This is a real, WORKING reverse-reference
+mechanism from Decisions back onto Current/Module — arguably a richer
+one than a bare migration bubble, since it shows full curated content
+inline, not just a link.
+
+This is the third time this session a claimed "gap" turned out to
+already be covered by existing code (after the decision_matrix/
+dimensions/skill_network false-gap correction two turns earlier) — named
+plainly here rather than silently building a redundant duplicate, per
+rule 8's own discipline.
+
+The REAL remaining half of the claim — the 3 pages' DRILL not being
+exposed at module level — was accurate. That's the actual work this pass
+did.
+
+===========================================================================
+THE REAL WORK — 3 pages refactored to expose a module-level DRILL
+===========================================================================
+Each of these 3 pages already had a working, correctly-rendering Map
+view built from build_infra_drilldown() — the gap was purely that the
+evidence/DRILL computation lived INLINE inside a function called once
+per render, never as an importable module-level constant the shape
+Oracle/Supabase/Decisions already expose.
+
+1. galaxy_map_connectors.py — build_drilldown_section(conn) computed
+   DRILL per-connector on every call, inside a loop over 3 connectors
+   (Composio/Jina AI/Last.fm). Added a real module-level EVIDENCE dict
+   (one key per connector, sourced from the SAME already-computed CALLS
+   data, rule 8) fed into build_infra_drilldown() once — DRILL/ORPHANS
+   now importable, zero change to the existing per-connector rendering
+   logic (which still computes its own narrower evidence for its own
+   real per-connector Map/Table toggle, unchanged).
+
+2. galaxy_map_orchestrator_openmontage.py — a real, PRE-EXISTING rule-8
+   duplication found and closed along the way: the evidence/DRILL
+   computation for each unit (orchestrator_cc/openmontage_cc) was
+   already computed TWICE independently — once inside
+   build_shared_infra_section() for the real rendered Map view, once
+   again inside main()'s own diagnostic print loop. Factored both into
+   one shared _unit_evidence()/_unit_drill() pair, cached once per unit
+   as module-level _DRILL_ORPHANS_BY_UNIT/DRILL_BY_UNIT dicts, and both
+   real call sites now read from the cache instead of re-deriving. A
+   real bug caught DURING this refactor, not shipped: DRILL_BY_UNIT's
+   first draft stored only drill (discarding orphans) via a careless
+   [0] index, which would have broken build_shared_infra_section()'s own
+   unpacking the moment it was switched to read from the cache — caught
+   by re-reading the function body before declaring the refactor done,
+   fixed by keeping a separate full-tuple cache (_DRILL_ORPHANS_BY_UNIT)
+   alongside the drill-only export (DRILL_BY_UNIT) river.py actually
+   needs.
+
+3. galaxy_map_oversight_sync.py — the exact same pre-existing
+   duplication class found in (2): evidence/DRILL computed inline in
+   build_shared_infra_section() AND again in main()'s diagnostic print.
+   Factored into _oversight_evidence() + a module-level DRILL/ORPHANS
+   pair, both real call sites now reuse it.
+
+All 3 re-run standalone post-refactor and produce byte-identical real
+counts to their pre-refactor output (confirmed by direct comparison of
+each script's own printed diagnostic line) — the refactor changed only
+WHERE the computation lives, never what it computes.
+
+===========================================================================
+WIRING — galaxy_map_river.py's reverse-link registry, now 7 sources
+===========================================================================
+_REVERSE_DIMENSIONS grew from 3 entries (Oracle/Supabase/Decisions) to 7:
++ Connectors (galaxy_map_connectors.DRILL)
++ Orchestrator CC (galaxy_map_orchestrator_openmontage.DRILL_BY_UNIT
+  ['orchestrator_cc'])
++ OpenMontage CC (galaxy_map_orchestrator_openmontage.DRILL_BY_UNIT
+  ['openmontage_cc'])
++ Oversight Sync (galaxy_map_oversight_sync.DRILL)
+
+Real result: river COUNT with at least one reverse-link stayed at 10 of
+12 (no genuinely new river gained coverage from these 4 sources — real,
+honest finding, not assumed away) — but real LINK DENSITY grew
+significantly: 18 -> 27 real migration-bubble links (River XI alone now
+shows 6 real Dimension-page references: Oracle/Supabase/Decisions/
+Connectors/Orchestrator CC/OpenMontage CC — the real Content Pipeline
+river, unsurprisingly the most externally-referenced one).
+
+===========================================================================
+VERIFICATION
+===========================================================================
+Full 21-script + hub pipeline re-run twice from a clean state: byte-
+identical across all 22 pages both times (R5 idempotent). verify_anchors.py
+26/26 fresh. Every page remains div/a/svg-balanced. Headless Chromium:
+River's own web section shows 10 real SVG panels + 27 real bubble links
+(matches REVERSE_LINKS' own Python-side count exactly); Connectors/
+Orchestrator CC/OpenMontage CC/Oversight Sync all still render real SVG
+content post-refactor (13/5/3/11 SVG elements respectively, confirming
+their own pre-existing Map views survived the refactor unchanged); 1
+pre-existing, unrelated sandboxed-network console error (same one logged
+by every prior pass this session).
+
+===========================================================================
+REAL, STANDING STATE — WHAT'S LEFT
+===========================================================================
+The Galaxy Map's "web-bubble" interlinking request is now substantively
+complete: every one of the 22 real pages has a real bubble/web system;
+River's reverse-link is a real SVG bubble panel per river, fed by 7 real
+Dimension-page sources (was 3); Current/Module already have a real,
+richer reverse-link to Decisions (G111, pre-dates this session, corrected
+above). Nothing genuinely load-bearing is known to remain deferred from
+Alex's original ask — any further extension (e.g. reverse-links FROM the
+Externals/Skill-Network/Loops/Decision-Matrix/Dimensions pages, which
+weren't part of the original 3-Dimension-page reverse registry) would be
+real, new, additive scope, not a gap in what was asked for.

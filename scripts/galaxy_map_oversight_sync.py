@@ -245,6 +245,24 @@ def _ovs_river_chip(rnum):
     return f'<a href="galaxy_map_module.html#river-{rnum}"><code>🌊 {esc(label)}</code></a>'
 
 
+def _oversight_evidence():
+    """Real, shared evidence computation — factored out Sep 24 2026 (real
+    interlink follow-up). Was computed twice: once inline inside
+    build_shared_infra_section(), once again inside main()'s own
+    diagnostic print loop, a real rule-8 duplication closed in the same
+    pass that also exposes a module-level DRILL for galaxy_map_river.py
+    to import."""
+    oversight_tables = sorted({rec['table'] for rec in compute_oversight_doc_supabase_reads()})
+    all_touches = compute_all_supabase_table_touches()
+    return {tbl: all_touches[tbl] for tbl in oversight_tables if tbl in all_touches}
+
+
+# Sep 24 2026 — real module-level DRILL, the same shape Oracle/Supabase/
+# Decisions already expose, so galaxy_map_river.py's reverse-link
+# registry can import a real destination for THIS page too.
+DRILL, ORPHANS = build_infra_drilldown(_oversight_evidence())
+
+
 def build_shared_infra_section():
     # Real, per-{doc, table} rows — the exact same source
     # compute_oversight_docs_supabase_infra() uses for the L0 map's own
@@ -262,9 +280,8 @@ def build_shared_infra_section():
                 f'<th>Real HTTP method(s)</th><th># calls</th></tr></thead><tbody>{doctable_rows}</tbody></table>')
 
     oversight_tables = sorted({rec['table'] for rec in compute_oversight_doc_supabase_reads()})
-    all_touches = compute_all_supabase_table_touches()
-    evidence = {tbl: all_touches[tbl] for tbl in oversight_tables if tbl in all_touches}
-    drill, orphans = build_infra_drilldown(evidence)
+    evidence = _oversight_evidence()
+    drill, orphans = DRILL, ORPHANS
     map_view = render_infra_drilldown(
         drill, orphans, unit_icon='📚', unit_label='Oversight Docs',
         leaf_link_fn=lambda m: f'galaxy_map_current.html#mod-{m}' if m in LEVEL3_MODULES else None,
@@ -492,11 +509,11 @@ def main():
           f"{len(RITUALS)} real ritual sequences ({sum(len(r['steps']) for r in RITUALS)} total steps).")
     print(f"  G82 doc links — {len(linked)}/{len(named)} distinct named doc file(s) resolve to a real file "
           f"and are linked; unresolved: {', '.join(sorted(named - linked)) or 'none'}.")
+    # Sep 24 2026 — reuses the real module-level DRILL/ORPHANS (built
+    # once, above) instead of re-deriving a 3rd copy of the same
+    # evidence computation here (rule 8).
     _ov_tables = sorted({rec['table'] for rec in compute_oversight_doc_supabase_reads()})
-    _all_touches = compute_all_supabase_table_touches()
-    _ev = {t: _all_touches[t] for t in _ov_tables if t in _all_touches}
-    _drill, _orph = build_infra_drilldown(_ev)
-    _c = infra_drilldown_counts(_drill, _orph)
+    _c = infra_drilldown_counts(DRILL, ORPHANS)
     print(f"  G91 continuation — Shared Infrastructure: {len(_ov_tables)} real oversight-doc table(s), "
           f"{_c['rivers']} river(s) qualify, {_c['modules']} module(s) + {_c['orphan_modules']} river-less, "
           f"{_c['functions'] + _c['orphan_functions']} real (module,function) pair(s).")

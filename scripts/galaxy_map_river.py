@@ -63,14 +63,29 @@ from graphify_river_group import render_bubble_row, INFRA_DRILLDOWN_CSS  # noqa:
 # build their DRILL per-tab inside main(), not at module level, and
 # wiring those in is real, separate follow-up work (see the Sep 24
 # interlink plan record), not done this pass.
+#
+# Sep 24 2026 — real follow-up ask: those 3 remaining pages each had a
+# small refactor (a module-level DRILL/DRILL_BY_UNIT constant factored
+# out of what used to be an inline-only, per-call computation — closing
+# a real pre-existing rule-8 duplication at each site along the way,
+# never just a cosmetic export) so they can feed this same registry too.
 import galaxy_map_oracle as _dim_oracle  # noqa: E402
 import galaxy_map_supabase as _dim_supabase  # noqa: E402
 import galaxy_map_decisions as _dim_decisions  # noqa: E402
+import galaxy_map_connectors as _dim_connectors  # noqa: E402
+import galaxy_map_orchestrator_openmontage as _dim_orch_om  # noqa: E402
+import galaxy_map_oversight_sync as _dim_oversight  # noqa: E402
 
 _REVERSE_DIMENSIONS = [
     ('galaxy_map_oracle.html', '🔮', 'Oracle', _dim_oracle.DRILL),
     ('galaxy_map_supabase.html', '🗄️', 'Supabase', _dim_supabase.DRILL),
     ('galaxy_map_decisions.html', '🚦', 'Decisions', _dim_decisions.DRILL),
+    ('galaxy_map_connectors.html', '🧩', 'Connectors', _dim_connectors.DRILL),
+    ('galaxy_map_orchestrator_cc.html', '🧭', 'Orchestrator CC',
+     _dim_orch_om.DRILL_BY_UNIT['orchestrator_cc']),
+    ('galaxy_map_openmontage_cc.html', '🎬', 'OpenMontage CC',
+     _dim_orch_om.DRILL_BY_UNIT['openmontage_cc']),
+    ('galaxy_map_oversight_sync.html', '📚', 'Oversight Sync', _dim_oversight.DRILL),
 ]
 
 
