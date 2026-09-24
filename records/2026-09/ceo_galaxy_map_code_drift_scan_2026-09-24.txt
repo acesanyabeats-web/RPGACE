@@ -1,0 +1,180 @@
+RPGACE — /CEO Loop 1: Galaxy Map <-> code representation scan + /drift synthesis
+Sep 24 2026 (real, fresh evidence, this pass)
+
+===========================================================================
+REQUEST THIS SERVES
+===========================================================================
+Alex's real, verbatim mega-request (this same session): run a full scan of
+the Galaxy Map, a full scan of the code, compare how they represent each
+other, use /drift to find gaps, then use /fableomnitrix on /paranoia +
+/interrogation to decide per-gap whether to fix the MAP or the CODE (or
+both), also identify /debloat candidates for token-injection efficiency,
+run the whole thing as a /CEO plan, and report a final plan for approval
+before any building happens.
+
+Real /interrogation answers locked before this scan began (AskUserQuestion,
+same session): (1) reuse/extend EXISTING consistency tooling to full
+coverage rather than build a new scanner; (2) tonight is CEO Loop 1 only
+(compile -> interrogate -> paranoia-advised draft -> drift-check -> report
+-> Alex approves) -- no code/doc fixes execute tonight; (3) the token-
+injection artifact routes through the existing /debloat skill rather than
+a new standalone doc.
+
+===========================================================================
+METHOD -- what "entire scan" meant here, per the confirmed answer
+===========================================================================
+Re-ran every existing map<->code consistency mechanism fresh against LIVE
+state (never trusted a prior doc's claim about its own result -- rule 1/4)
+at FULL coverage, not a sample:
+
+1. gmp_b_consistency_check.py's run_check(), fed all 58 real module-level
+   perspective_reports rows (confirmed via direct Supabase query: 58/58
+   active module reports, ALL 58 carry a real cross_refs array -- the
+   scope_level breakdown query is itself real, fresh evidence this pass
+   gathered, not assumed from GMR-2's own prior claim).
+2. verify_anchors.py -- all 26 hand-cited code-line anchors across the 3
+   generator scripts that carry them.
+3. Fresh module-count grep (RPGACE.register(' count) vs RIVER_MODULES
+   membership diff, vs the documented cross-cutting-exclusion list.
+4. Fresh Galaxy Map page count on disk vs galaxy_map_hub.py's own live
+   len(PAGES) computation.
+5. check_self_knowledge_staleness.py, check_self_knowledge_contradictions.py,
+   check_current_state_bloat.py -- the 3 existing standing doc-correctness
+   checkers, run fresh.
+6. Direct query of system_map_flags for any real, still-unresolved
+   flagged findings from prior sessions' own real trickle-down/up checks.
+
+===========================================================================
+FINDINGS
+===========================================================================
+
+--- CLEAN (no drift found -- a valid, real /drift outcome, not skipped) ---
+
+F0. Module count: 58 (grep-verified), matches CLAUDE.md's own current
+    Live-numbers line exactly.
+F0b. Galaxy Map page count: 22 real cataloged pages + galaxy_map_hub.html
+    itself = 23 files on disk, matches CLAUDE.md's own current claim.
+    galaxy_map_hub.py's page-count logic is confirmed genuinely fixed
+    (len(PAGES), computed live) -- the Sep 22 self-contradiction bug
+    stays closed.
+F0c. GMP-B (RIVER_FLOWS vs. module cross_refs), run fresh at TRUE full
+    coverage (58/58 modules, 0 unaudited -- a real, fresh improvement
+    over the docstring's own stale "14 audited" framing, see F2 below):
+    0 genuine mismatches, 15 real cross-river pairs checked. Every real
+    cross-module relationship a module's own report claims corresponds
+    to a real RIVER_FLOWS edge. This is the single most load-bearing
+    "does the map truthfully represent the code" check in the whole
+    Galaxy Map system, and it is clean.
+F0d. verify_anchors.py: 26/26 anchor citations fresh, zero drift.
+F0e. check_self_knowledge_contradictions.py: 0 real contradictions found
+    across 61 modules / 43 table-write-targets against the 10 curated
+    negation phrases.
+F0f. check_current_state_bloat.py: CLEAN. CLAUDE.md's Current-state
+    section sits at 84,969 chars against an 99,896-char threshold (25%
+    over the post-DD-1 baseline) -- real headroom, not yet in danger,
+    though see F5 for what this means for the token-injection goal.
+
+--- REAL GAPS FOUND ---
+
+Baseline: RATIFIED (this session's own /interrogation answers + the
+existing standing tooling's own documented design).
+Verdict: DRIFTED (3 real MINOR + 2 real MATERIAL findings; see grades).
+
+F1. MINOR -- CLAUDE.md's own "Session-start check -- Galaxy Map headline
+    facts" bullet (check #3, RIVER_MODULES coverage) literally enumerates
+    the documented cross-cutting-exclusion list as 9 names ("config/
+    dashDeck/leftNav/pwaInstall/perfWatch/quickActions/docsLinks/
+    suppressQuestPopup/errorLog") -- questEngine is missing from THIS
+    enumeration, even though graphify_river_group.py's own canonical
+    documented-exclusions comment (lines ~420-433) correctly documents
+    questEngine's exclusion with real cited evidence (added there Sep 15,
+    per this session's own re-read of that comment block). The CODE is
+    truthful; CLAUDE.md's own check-description text describing what the
+    code does is what's stale. A record is wrong, not the underlying
+    system -- textbook MINOR.
+    Fix if approved: one-line edit to CLAUDE.md's session-start-check
+    bullet, adding questEngine to the enumerated list.
+
+F2. MINOR -- gmp_b_consistency_check.py's own module docstring (lines
+    12-18) still says "Scoped honestly to the 14 module reports that
+    actually carry a real cross_refs array... the other 44 pre-existing
+    module reports do not yet use that jsonb shape." This was true when
+    the script was first written, but GMR-2 (Sep 16 2026) extended
+    cross_refs to all 58 modules, and this pass's own fresh Supabase
+    query confirms 58/58 carry it today. The script's BEHAVIOR is fine
+    (run_check() takes whatever module_reports list it's given, and this
+    pass fed it all 58) -- only the docstring's own stale self-description
+    is wrong. MINOR, code-comment-only.
+    Fix if approved: update the docstring to state current, correct
+    coverage (58/58) instead of the historical 14/44 split.
+
+F3. MINOR, cosmetic -- graphify_river_group.py's documented-exclusions
+    comment (same block as F1) still names "voiceInput" as one of the
+    real cross-cutting exclusions justifying RIVER_MODULES' shape.
+    voiceInput was retired as a module entirely on Aug 30 2026 (real,
+    confirmed CLAUDE.md standing fact) -- it no longer registers at all,
+    so it can never appear in the live module-count grep or the
+    RIVER_MODULES diff either way. Zero functional impact (the comment's
+    reasoning doesn't depend on voiceInput specifically, it's one example
+    among several), but the comment names a module that no longer exists
+    -- a real, small "prose doesn't match code" drift.
+    Fix if approved: drop "voiceInput" from the comment's example list,
+    or note it parenthetically as "(retired Aug 30 2026)".
+
+F4. MATERIAL, ALREADY FLAGGED, still unresolved -- system_map_flags rows
+    3b7222f9-edd0-4a16-98b0-e2a637a717c4 and e340d0a4-8a53-48a4-a992-
+    709d28157e4c (created Sep 22 2026, near-duplicate of each other --
+    itself a small, real flagging-mechanism dedup gap worth naming, not
+    fixing tonight). Real finding: toggleVoiceInput and runVideoWorkshop
+    onclick handlers are plausibly DEAD CODE -- toggleVoiceInput's real
+    target (the voiceInput module) was retired Aug 30 2026; runVideoWorkshop
+    is confirmed part of main.js's dead 4-agent PIPELINE subsystem
+    (getElementById('pipeline-output') matches nothing in current
+    index.html). This is a real CODE-side gap (not a doc-only drift) --
+    a live button that throws or no-ops, genuinely misrepresenting itself
+    to a user who clicks it. Real precedent already exists for the
+    resolution shape: debugComposio (Aug 30 2026) was resolved the same
+    way -- "make it useful or delete it" -> deleted, no real spec existed
+    for a "useful" version. This is exactly the shape of decision
+    /fableomnitrix exists for.
+
+F5. MATERIAL, current, freshly confirmed THIS pass -- oracleAppGrounding.
+    SELF_KNOWLEDGE (rpgace_core.js) is STALE per check_self_knowledge_
+    staleness.py's own live re-run: 10+ real patch_notes.html cards have
+    shipped since its last real edit, ALL dated today (Sep 24 2026) --
+    the debloat skill build, the full interlinking/web-bubble pass (4
+    sub-passes), the smoke_test.html coverage/discrepancy work (multiple
+    cards), and now tonight's own /fableomnitrix protocol build. This is
+    a real, LIVE representation gap in the in-app Oracle's own injected
+    context -- directly on-topic for Alex's stated "make context to
+    inject into claude so less tokens are used" goal, since SELF_KNOWLEDGE
+    IS exactly that kind of token-bounded injected-context artifact (just
+    for in-app Oracle rather than a Claude Code session). This is also a
+    real, live instance of the exact failure mode the Sep 23 2026 staleness-
+    checker mechanism was built to catch early -- it's doing its job by
+    flagging this now, before it goes 28 days stale the way it did before.
+
+===========================================================================
+GRADES SUMMARY (drift vocabulary)
+===========================================================================
+F1: MINOR  (CLAUDE.md doc text, one-line fix)
+F2: MINOR  (script docstring, one-line fix)
+F3: MINOR  (code comment, cosmetic)
+F4: MATERIAL (real dead code, needs a real keep-dormant-vs-delete decision)
+F5: MATERIAL (SELF_KNOWLEDGE genuinely stale right now, live production impact
+    on Oracle's own answers about itself)
+
+No CAPTURED-grade finding -- nothing found where the underlying goal
+itself moved without real say-so; every gap here is either a record
+that needs correcting (MINOR) or real unplanned drift with the goal
+still intact (MATERIAL), never a goal-level surprise.
+
+===========================================================================
+WHAT THIS FEEDS
+===========================================================================
+This record is the real evidence dossier for the /fableomnitrix dispatch
+that follows (Fable decides, per real gap: fix the map, fix the code, or
+both -- plus which of F1-F5 and any debloat candidate genuinely earns
+build time vs. which stays a named, deferred, honest gap). Nothing above
+has been fixed yet -- per the confirmed /interrogation answer, tonight is
+/CEO Loop 1 (compile+interrogate+paranoia-draft+drift-check+report) only.
