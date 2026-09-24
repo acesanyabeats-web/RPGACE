@@ -60,7 +60,7 @@ from pathlib import Path as _Path_rail
 _sys_rail.path.insert(0, str(_Path_rail(__file__).parent))
 from graphify_river_group import inject_level_rail, core_js_lines  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
-from graphify_river_group import LEVEL3_MODULES, compute_function_branches  # noqa: E402
+from graphify_river_group import LEVEL3_MODULES, LINKABLE_MODULES, compute_function_branches  # noqa: E402
 from graphify_river_group import (  # noqa: E402
     build_infra_drilldown, infra_drilldown_counts, render_infra_drilldown,
     INFRA_DRILLDOWN_CSS,
@@ -208,7 +208,7 @@ DRILL_COUNTS = infra_drilldown_counts(DRILL, ORPHANS)
 
 
 def _leaf_link(mod):
-    return f'galaxy_map_current.html#mod-{mod}' if mod in LEVEL3_MODULES else None
+    return f'galaxy_map_current.html#mod-{mod}' if mod in LINKABLE_MODULES else None
 
 
 def build_map_view():

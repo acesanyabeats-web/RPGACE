@@ -33,7 +33,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from graphify_river_group import (  # noqa: E402
     compute_all_connector_call_counts, EXTERNAL_CONNECTORS, RIVER_MODULES,
-    RIVER_NAME, LEVEL3_MODULES, TOTAL_ZONES,
+    RIVER_NAME, LEVEL3_MODULES, LINKABLE_MODULES, TOTAL_ZONES,
     build_infra_drilldown, infra_drilldown_counts, render_infra_drilldown,
     INFRA_DRILLDOWN_CSS,
 )
@@ -77,7 +77,7 @@ def esc(s):
 
 
 def _leaf_link(mod):
-    return f'galaxy_map_current.html#mod-{mod}' if mod in LEVEL3_MODULES else None
+    return f'galaxy_map_current.html#mod-{mod}' if mod in LINKABLE_MODULES else None
 
 
 def _river_link(rnum):
@@ -97,7 +97,7 @@ def build_drilldown_section(conn):
         fns = sorted({f for mm, f, _d in pairs if mm == m})
         rnum = _river_of.get(m)
         chip = _river_link(rnum) if rnum else '<span class="mod-chip-none">cross-cutting, no river</span>'
-        mod_link = f'<a class="mod-chip" href="galaxy_map_current.html#mod-{m}">🔽 {m}</a>' if m in LEVEL3_MODULES else f'<span class="mod-chip-none">{m}</span>'
+        mod_link = f'<a class="mod-chip" href="galaxy_map_current.html#mod-{m}">🔽 {m}</a>' if m in LINKABLE_MODULES else f'<span class="mod-chip-none">{m}</span>'
         fn_rows = ''.join(f'<div class="touch-row">{CONN_ICON[conn]} <code>{f}()</code></div>' for f in fns)
         table_rows.append(f'''<div class="table-section">
   <div class="thead"><span class="tdot" style="background:{"#3DAA6E" if conn == "Composio" else ("#4A90E2" if conn == "Jina AI" else "#E25454")}"></span><h2>{mod_link}</h2>

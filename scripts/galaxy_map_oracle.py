@@ -34,7 +34,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from graphify_river_group import (  # noqa: E402
     compute_all_oracle_call_counts, RIVER_MODULES, RIVER_NAME,
-    LEVEL3_MODULES, TOTAL_ZONES,
+    LEVEL3_MODULES, LINKABLE_MODULES, TOTAL_ZONES,
     build_infra_drilldown, infra_drilldown_counts, render_infra_drilldown,
     INFRA_DRILLDOWN_CSS,
 )
@@ -62,7 +62,7 @@ def esc(s):
 
 
 def _mod_link(mod):
-    if mod in LEVEL3_MODULES:
+    if mod in LINKABLE_MODULES:
         return f'<a class="mod-chip" href="galaxy_map_current.html#mod-{mod}">🔽 {mod}</a>'
     return f'<span class="mod-chip mod-chip-none">{mod}</span>'
 
@@ -73,7 +73,7 @@ def _river_link(rnum):
 
 
 def _leaf_link(mod):
-    return f'galaxy_map_current.html#mod-{mod}' if mod in LEVEL3_MODULES else None
+    return f'galaxy_map_current.html#mod-{mod}' if mod in LINKABLE_MODULES else None
 
 
 def build_module_row(mod, counts):

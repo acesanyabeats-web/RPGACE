@@ -60,7 +60,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from graphify_river_group import (  # noqa: E402
     compute_all_supabase_table_touches, RIVER_MODULES, RIVER_NAME,
-    LEVEL3_MODULES, compute_oversight_doc_supabase_reads, TOTAL_ZONES,
+    LEVEL3_MODULES, LINKABLE_MODULES, compute_oversight_doc_supabase_reads, TOTAL_ZONES,
     build_infra_drilldown, infra_drilldown_counts, render_infra_drilldown,
     INFRA_DRILLDOWN_CSS,
 )
@@ -89,7 +89,7 @@ def esc(s):
 
 
 def _mod_link(mod):
-    if mod in LEVEL3_MODULES:
+    if mod in LINKABLE_MODULES:
         return f'<a class="mod-chip" href="galaxy_map_current.html#mod-{mod}">🔽 {mod}</a>'
     return f'<span class="mod-chip mod-chip-none">{mod}</span>'
 
@@ -220,10 +220,13 @@ DRILL_COUNTS = infra_drilldown_counts(DRILL, ORPHANS)
 def _leaf_link(mod):
     """Real Current Series destination for a module, or None when there
     honestly isn't one. Same rule `_mod_link()` above already applies to
-    the table view's own chips (rule 8): LEVEL3_MODULES is exactly the
-    set of modules Current Series renders a section for, so a module
-    outside it has no `#mod-<name>` anchor to jump to."""
-    return f'galaxy_map_current.html#mod-{mod}' if mod in LEVEL3_MODULES else None
+    the table view's own chips (rule 8). Sep 24 2026 fix: LEVEL3_MODULES
+    alone undercounted this — it's river-owned modules only, but 5
+    cross-cutting modules (config/dashDeck/errorLog/questEngine/leftNav)
+    also get a real Current Series section via CROSS_CUTTING_MODULES;
+    LINKABLE_MODULES is the real union, the set that actually matches
+    what galaxy_map_current.html renders a `#mod-<name>` section for."""
+    return f'galaxy_map_current.html#mod-{mod}' if mod in LINKABLE_MODULES else None
 
 
 def build_oversight_note():

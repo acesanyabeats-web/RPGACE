@@ -50,7 +50,7 @@ from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # no
 from graphify_river_group import (  # noqa: E402
     build_infra_drilldown, render_infra_drilldown, infra_drilldown_counts,
     INFRA_DRILLDOWN_CSS, compute_all_supabase_table_touches,
-    compute_oversight_doc_supabase_reads, LEVEL3_MODULES,
+    compute_oversight_doc_supabase_reads, LEVEL3_MODULES, LINKABLE_MODULES,
     RIVER_MODULES, RIVER_NAME,
 )
 
@@ -284,7 +284,7 @@ def build_shared_infra_section():
     drill, orphans = DRILL, ORPHANS
     map_view = render_infra_drilldown(
         drill, orphans, unit_icon='📚', unit_label='Oversight Docs',
-        leaf_link_fn=lambda m: f'galaxy_map_current.html#mod-{m}' if m in LEVEL3_MODULES else None,
+        leaf_link_fn=lambda m: f'galaxy_map_current.html#mod-{m}' if m in LINKABLE_MODULES else None,
         resource_emoji='🗄️',
         orphan_note='Real cross-cutting (no-river) modules that touch a real table an oversight doc also reads/writes.')
     no_code = sorted(set(oversight_tables) - set(evidence))
@@ -311,7 +311,7 @@ def build_shared_infra_section():
                 river_chips.append(_ovs_river_chip(r))
         mod_links = ''.join(
             f'<a href="galaxy_map_current.html#mod-{m}"><code>🔽 {esc(m)}</code></a>'
-            if m in LEVEL3_MODULES else f'<code class="seqnum">{esc(m)}</code>'
+            if m in LINKABLE_MODULES else f'<code class="seqnum">{esc(m)}</code>'
             for m in mods
         ) if mods else '<span class="seqnum">no rpgace_core.js module touches this table</span>'
         detail_rows = ''.join(

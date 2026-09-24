@@ -56,7 +56,7 @@ from graphify_river_group import (  # noqa: E402
 # Orchestrator CC's own 3 curated tables.
 from graphify_river_group import (  # noqa: E402
     build_infra_drilldown, render_infra_drilldown, infra_drilldown_counts,
-    INFRA_DRILLDOWN_CSS, LEVEL3_MODULES, RIVER_MODULES, RIVER_NAME,
+    INFRA_DRILLDOWN_CSS, LEVEL3_MODULES, LINKABLE_MODULES, RIVER_MODULES, RIVER_NAME,
 )
 
 OUT_PATH = {
@@ -272,7 +272,7 @@ def build_shared_infra_section(unit_id='orchestrator_cc'):
     evidence = _unit_evidence(unit_id)
     map_view = render_infra_drilldown(
         drill, orphans, unit_icon=icon, unit_label=label,
-        leaf_link_fn=lambda m: f'galaxy_map_current.html#mod-{m}' if m in LEVEL3_MODULES else None,
+        leaf_link_fn=lambda m: f'galaxy_map_current.html#mod-{m}' if m in LINKABLE_MODULES else None,
         resource_emoji='🗄️',
         orphan_note=f'Real cross-cutting (no-river) modules that touch a real table {esc(label)} also reads/writes.')
     no_code = sorted(set(unit_tables) - set(evidence))
@@ -296,7 +296,7 @@ def build_shared_infra_section(unit_id='orchestrator_cc'):
                 river_chips_dedup.append(_river_chip(r))
         mod_links = ''.join(
             f'<a class="tbl-link" href="galaxy_map_current.html#mod-{m}"><code>🔽 {esc(m)}</code></a>'
-            if m in LEVEL3_MODULES else f'<code class="tbl-none">{esc(m)}</code>'
+            if m in LINKABLE_MODULES else f'<code class="tbl-none">{esc(m)}</code>'
             for m in mods
         ) if mods else '<span class="tbl-none">no rpgace_core.js module touches this table</span>'
         detail_rows = ''.join(
