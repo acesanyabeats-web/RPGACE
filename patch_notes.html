@@ -73,6 +73,17 @@
 
 <div class="content">
 
+<div class="card green" id="card-2026-09-24-smoke-test-loaddemoshifts-brown-3-coverage-gaps" style="margin-bottom:30px;">
+    <div class="card-title">🧪 Sep 24 — smoke_test.html: 1 real 🟤 brown (dead-button row deleted) + 3 real coverage gaps closed</div>
+    <div class="card-body">
+      Direct follow-through on Alex's own two-step ask: "check smoke_test.html for the 70 unverified rows," then "do both" on the findings.<br><br>
+      <strong>Real live tally re-verified against `smoke_test_items` directly</strong> (never trusted from the doc's own prior claim): 28 confirmed / 70 unverified / 1 broken, 99 total — matched CLAUDE.md exactly, no drift at that point. Grouped the 70 by category for a real, digestible report rather than a raw 70-row dump.<br><br>
+      <strong>Finding 1 — a real 🟤 brown, per `achiever.html`'s own standing convention.</strong> The `loadDemoShifts` row's own claim ("click the button, confirm a real console error") went false the moment yesterday's Minotaur/Manual Unification pass deleted the dead button outright — nothing left to test. Deleted the row outright (not re-flagged, matching the convention's own explicit rule: a claim-row with no real feature left to re-test gets removed), logged a real `achiever_archive` row naming the source/reason/current-true-value.<br><br>
+      <strong>Finding 2 — a real coverage gap, not previously named.</strong> Direct query confirmed `cookingOracle`/`shoppingWishlist`/`oracleControl`/`questEngine`/`errorLog` had zero `smoke_test_items` row each — invisible to the 99-row tally entirely, not just unverified. Before adding anything, checked for an existing row under a DIFFERENT name first (rule 8) — found real, already-existing coverage for 2 of the 5: `oracleControl`'s core dispatch is already tested via its 2 Oracle/API rows ("log the beat" text action, self-aware new-action suggestion); `errorLog`'s own cascade is already the Oracle/API "Error → perspective baseline → smoke_test broken → ceo_plan_items purple cascade" row. Adding a duplicate module-named row for either would have been a real rule-8 violation. The other 3 — `cookingOracle`/`shoppingWishlist`/`questEngine` — had genuinely zero coverage anywhere; confirmed each has a real `perspective_reports` baseline first (`scope_id` lookup), then added 3 new rows with real, concrete `HOW TO TEST` recipes grounded in already-documented real behavior (recipe generation + save, wishlist budget-fit + bought-expense write, Quest Board XP/level persistence across reload).<br><br>
+      <strong>Real, updated tally</strong>: 101 total (99 − 1 deleted + 3 added), 28 confirmed / 72 unverified / 1 broken. `smoke_test.html` itself needed no edit — it's a real live Supabase query page, not hardcoded — but CLAUDE.md's own Current-state bullet hardcoded the old 99/70 figures and was updated to match, per rule 16 (name the subject that changed, check what else asserts it). DD-4's bloat/link-rot checker re-run clean after the edit.
+    </div>
+</div>
+
 <div class="card green" id="card-2026-09-24-full-galaxy-map-pipeline-regenerated" style="margin-bottom:30px;">
     <div class="card-title">🌌 Sep 24 — Full Galaxy Map pipeline regenerated (23 pages), a real 25th generator script found and run, 2 more manual.html reference sites closed</div>
     <div class="card-body">
