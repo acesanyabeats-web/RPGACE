@@ -54,7 +54,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from graphify_river_group import (  # noqa: E402
     RIVER_NAME, RIVER_COLOR, RIVER_MODULES, LEVEL3_MODULES, inject_level_rail,
     core_js_lines, verify_core_js_anchor, dimension_index_html,
-    DIMENSION_INDEX_CSS,
+    DIMENSION_INDEX_CSS, build_bubble_ring,
 )
 from galaxy_map_decisions import DECISION_POINTS as GATE_POINTS, CATEGORIES as GATE_CATEGORIES  # noqa: E402
 
@@ -529,40 +529,34 @@ def build_bubble_map(decisions):
     """Real bubble system, per Alex's own rule ('bubble systems always
     follow and showcase what on table') — one bubble per river with at
     least one real decision, sized by real count, click-to-reveal
-    detail panel (same established pattern as galaxy_map_skill_network's
-    own map view). Derived entirely from the SAME data build_matrix_table
-    reads — never a second, independently-imagined dataset."""
+    detail panel. Derived entirely from the SAME data build_matrix_table
+    reads — never a second, independently-imagined dataset.
+
+    Sep 24 2026 — real copy-drift fix (Galaxy Map "slowly do 2"
+    consolidation, P2): this used to be its own hand-rolled ring layout
+    (plain circles, no hub, no edges) that had quietly drifted from
+    galaxy_map_dimensions.py's own equivalent (which DOES draw a hub +
+    curved edges). Now calls the shared build_bubble_ring() both files
+    use — real behavior upgrade, not just a refactor: this view gains a
+    real 🚦 Decisions hub node with curved edges to every river bubble,
+    matching every other working bubble panel in the Galaxy Map."""
     rivers = sorted({d['river'] for d in decisions if d['river']})
-    import math
-    n = len(rivers)
-    cx, cy, radius = 420, 420, 300
-    nodes = []
-    details = []
-    for i, r in enumerate(rivers):
-        angle = (360 / n) * i - 90
-        x = cx + radius * math.cos(math.radians(angle))
-        y = cy + radius * math.sin(math.radians(angle))
+    nodes_data = []
+    for r in rivers:
         river_pts = [d for d in decisions if d['river'] == r]
-        count = len(river_pts)
-        rsize = 26 + min(count, 10) * 3
         color = RIVER_COLOR.get(r, '#888')
         name = RIVER_NAME.get(r, f'River {r}')
         short = name.split('—', 1)[1].strip() if '—' in name else name
-        nodes.append(
-            f'<g class="dbubble" data-river="{r}" transform="translate({x:.0f},{y:.0f})">'
-            f'<circle r="{rsize}" fill="{color}" fill-opacity="0.18" stroke="{color}" stroke-width="2"/>'
-            f'<text text-anchor="middle" dy="-4" font-size="12" fill="#fff" font-weight="700">{count}</text>'
-            f'<text text-anchor="middle" dy="12" font-size="9" fill="{color}">{esc(short[:16])}</text>'
-            f'</g>'
-        )
         rows = ''.join(
             f'<li><b>{d["kind_label"]}</b> — <a href="{esc(d["link"])}">{esc(d["title"])}</a> '
             f'<span class="depthtag depth-{d["depth"]}">{esc(DEPTH_LABEL[d["depth"]])}</span></li>'
             for d in river_pts
         )
-        details.append(f'<div class="rdetail" id="rdetail-{r}" style="display:none"><h3>{esc(name)}</h3><ul>{rows}</ul></div>')
-    svg = f'<svg viewBox="0 0 840 840" width="100%" style="max-width:760px;display:block;margin:0 auto">{"".join(nodes)}</svg>'
-    return svg + '<div id="bubble-details">' + ''.join(details) + '</div>'
+        nodes_data.append(dict(
+            key=r, color=color, short_label=short, full_label=name,
+            n_dims=len(river_pts), detail_html=f'<ul>{rows}</ul>'))
+    svg, details = build_bubble_ring(nodes_data, hub_icon='🚦', hub_label='Decisions')
+    return svg + '<div id="bubble-details">' + details + '</div>'
 
 
 TEMPLATE = """<!DOCTYPE html>
@@ -672,13 +666,19 @@ TEMPLATE = """<!DOCTYPE html>
   // reimplemented (Fable report D2).
   // G74 — row HEADER click goes to the same real destination the
   // bubble view's own click already goes to for that river.
+  // Sep 24 2026 — detail-div ids are now 'dtl-' + key (not 'rdetail-'),
+  // matching the shared build_bubble_ring() renderer's own convention
+  // (P2 ring-bubble dedup); the .rdetail CLASS is unchanged, only the
+  // id prefix moved. The bubble itself now carries data-key (not
+  // data-river) since it's the same generic attribute every other page
+  // using the shared renderer already reads.
   document.querySelectorAll('th.rowjump').forEach(function(th) {{
     th.addEventListener('click', function() {{
       var r = th.dataset.river;
       toggles.forEach(function(x) {{ x.classList.toggle('active', x.dataset.view === 'bubble'); }});
       views.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-bubble'); }});
-      document.querySelectorAll('.rdetail').forEach(function(d) {{ d.style.display = (d.id === 'rdetail-' + r) ? '' : 'none'; }});
-      var el = document.getElementById('rdetail-' + r);
+      document.querySelectorAll('.rdetail').forEach(function(d) {{ d.style.display = (d.id === 'dtl-' + r) ? '' : 'none'; }});
+      var el = document.getElementById('dtl-' + r);
       if (el) el.scrollIntoView({{behavior:'smooth', block:'nearest'}});
     }});
   }});
@@ -688,16 +688,16 @@ TEMPLATE = """<!DOCTYPE html>
       var r = td.dataset.river;
       toggles.forEach(function(x) {{ x.classList.toggle('active', x.dataset.view === 'bubble'); }});
       views.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-bubble'); }});
-      document.querySelectorAll('.rdetail').forEach(function(d) {{ d.style.display = (d.id === 'rdetail-' + r) ? '' : 'none'; }});
-      var el = document.getElementById('rdetail-' + r);
+      document.querySelectorAll('.rdetail').forEach(function(d) {{ d.style.display = (d.id === 'dtl-' + r) ? '' : 'none'; }});
+      var el = document.getElementById('dtl-' + r);
       if (el) el.scrollIntoView({{behavior:'smooth', block:'nearest'}});
     }});
   }});
   document.querySelectorAll('.dbubble').forEach(function(b) {{
     b.addEventListener('click', function() {{
-      var r = b.dataset.river;
-      document.querySelectorAll('.rdetail').forEach(function(d) {{ d.style.display = (d.id === 'rdetail-' + r) ? '' : 'none'; }});
-      var el = document.getElementById('rdetail-' + r);
+      var r = b.dataset.key;
+      document.querySelectorAll('.rdetail').forEach(function(d) {{ d.style.display = (d.id === 'dtl-' + r) ? '' : 'none'; }});
+      var el = document.getElementById('dtl-' + r);
       if (el) el.scrollIntoView({{behavior:'smooth', block:'nearest'}});
     }});
   }});

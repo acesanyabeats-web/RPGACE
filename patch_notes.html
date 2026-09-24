@@ -73,6 +73,15 @@
 
 <div class="content">
 
+<div class="card green" id="card-2026-09-24-galaxy-map-p2-ring-bubble-dedup" style="margin-bottom:30px;">
+    <div class="card-title">🫧 Sep 24 — Galaxy Map "slowly do 2": first real P2 slice, the ring-bubble dedup</div>
+    <div class="card-body">
+      Alex's answer to the navigation-vs-consolidation fork was "1 and slowly do 2" — navigation-only as the primary path, the fuller consolidation pursued gradually in the background. This is the first real, small piece of "2": the earlier Fable report's own P2 item named "collapse 2 copy-drifted ring-bubble implementations."<br><br>
+      Real finding: <code>galaxy_map_dimensions.py</code> already had a shared <code>_bubble_ring()</code> helper (deduping 3 of its own callers — L0/River/Module bubbles) but it stayed private to that one file. Meanwhile <code>galaxy_map_decision_matrix.py</code>'s own <code>build_bubble_map()</code> was a second, genuinely copy-drifted ring layout — hand-rolled polar math, plain circles, no hub node, no connecting edges — the exact "separate, inferior one-off" the dimensions page's own docstring already warned against. Fixed by promoting the function to <code>graphify_river_group.py</code> as <code>build_bubble_ring()</code> (byte-identical behavior for its 3 existing callers) and repointing Decision Matrix's bubble view to call it instead of its own copy. Real behavior upgrade, not just a refactor: Decision Matrix's map view now draws a real 🚦 hub node with curved edges to every river bubble, matching every other working bubble panel in the Galaxy Map. 3 small JS click-handler updates in <code>galaxy_map_decision_matrix.py</code>'s own template (<code>rdetail-</code> → <code>dtl-</code> id prefix, <code>data-river</code> → <code>data-key</code> on the bubble itself) to match the shared renderer's own id/attribute convention.<br><br>
+      Verified: <code>py_compile</code> clean on all 3 touched files, full 22-script pipeline re-run twice (byte-identical md5, R5-idempotent), <code>verify_anchors.py</code> 26/26 fresh, all 23 pages div/a/svg-balanced, headless-Chromium confirms Decision Matrix's bubble view now renders 6 real river bubbles with a real hub + 18 edges and correct click-to-reveal, Dimensions page unaffected (43 module bubbles, hub, click-to-reveal all still work). <strong>Untested by Alex's own hand yet.</strong>
+    </div>
+</div>
+
 <div class="card green" id="card-2026-09-24-galaxy-map-hand-test-3-fixes" style="margin-bottom:30px;">
     <div class="card-title">🔭 Sep 24 — 3 real fixes from Alex's own first hand-test of the Galaxy Map</div>
     <div class="card-body">

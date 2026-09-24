@@ -42,7 +42,6 @@ real evidence every Infra/Inter page already shows for that unit.
 """
 from pathlib import Path
 import sys
-import math
 
 sys.path.insert(0, str(Path(__file__).parent))
 from graphify_river_group import (
@@ -55,7 +54,7 @@ from graphify_river_group import (
 from graphify_river_group import (  # noqa: E402
     inject_level_rail, inject_plan_overlay, RIVER_NAME, RIVER_COLOR,
     dimension_index_html, DIMENSION_INDEX_CSS, DIMENSION_PAGES,
-    _curved_edge, _build_markers,
+    _curved_edge, _build_markers, build_bubble_ring,
 )
 from galaxy_map_decisions import DECISION_POINTS
 from galaxy_map import (  # noqa: E402
@@ -345,55 +344,15 @@ def build_l0_matrix(l0_tags):
     return '<table class="dtable">' + header + ''.join(rows) + '</table>'
 
 
-def _bubble_ring(nodes_data, radius=300, cx=420, cy=420,
-                  hub_icon='🧭', hub_label='Dimensions', hub_href=None):
-    """Generic circular hub-and-spoke bubble layout — shared by L0/L1/L2
-    (rule 8, replacing what would otherwise be 3 near-identical hand-
-    written layouts). `nodes_data` is a list of dicts:
-    {key, color, short_label, n_dims, detail_html}. Returns
-    (svg, details_html).
-
-    Real bug fix (Sep 16 2026, Alex's own screenshot: "this bubble
-    system needs to change too, wtf is this?"): this function has
-    ALWAYS positioned leaf circles at real polar coordinates but never
-    drawn a hub node or a single connecting edge — so what its own
-    docstring already called "hub-and-spoke" actually rendered as
-    scattered, disconnected circles with no visible relationship
-    between them. Fixed by drawing a real hub (clickable to the level's
-    own dedicated page/tab when hub_href is given) and real curved
-    edges from hub to every leaf, reusing this pipeline's own shared
-    _curved_edge/_build_markers primitives (rule 8) — the exact same
-    drawing primitives every OTHER working bubble panel in the Galaxy
-    Map (Supabase/Oracle/Oversight-Sync's Map views, GMR-6's 3 new
-    panels) already uses, instead of a separate, inferior one-off."""
-    n = len(nodes_data) or 1
-    edges, nodes, details, colors = [], [], [], set()
-    for i, nd in enumerate(nodes_data):
-        angle = (360 / n) * i - 90
-        x = cx + radius * math.cos(math.radians(angle))
-        y = cy + radius * math.sin(math.radians(angle))
-        rsize = 24 + nd['n_dims'] * 4
-        colors.add(nd['color'])
-        edges.append(_curved_edge(cx, cy, x, y, nd['color'], real=nd['n_dims'] > 0,
-                                   dashed=nd['n_dims'] == 0, r1=42, r2=rsize, offset_mult=0.45,
-                                   from_label=hub_label, to_label=nd.get('short_label', nd['key']), kind='dimension_membership'))
-        nodes.append(
-            f'<g class="dbubble" data-key="{nd["key"]}" transform="translate({x:.0f},{y:.0f})">'
-            f'<circle r="{rsize}" fill="{nd["color"]}" fill-opacity="0.18" stroke="{nd["color"]}" stroke-width="2"/>'
-            f'<text text-anchor="middle" dy="-3" font-size="12" fill="#fff" font-weight="700">{nd["n_dims"]}</text>'
-            f'<text text-anchor="middle" dy="12" font-size="8" fill="{nd["color"]}">{esc(nd["short_label"][:16])}</text></g>')
-        details.append(
-            f'<div class="rdetail" id="dtl-{nd["key"]}" style="display:none">'
-            f'<h3>{esc(nd["full_label"])}</h3>{nd["detail_html"]}</div>')
-    hub_body = (
-        f'<circle cx="{cx}" cy="{cy}" r="42" fill="#12040f" stroke="#9B59B6" stroke-width="2.5"/>'
-        f'<text x="{cx}" y="{cy - 5}" text-anchor="middle" font-size="20">{hub_icon}</text>'
-        f'<text x="{cx}" y="{cy + 15}" text-anchor="middle" font-size="9" fill="#fff" font-weight="700">{esc(hub_label)}</text>')
-    hub = f'<a href="{hub_href}">{hub_body}</a>' if hub_href else hub_body
-    defs = f'<defs>{_build_markers(colors)}</defs>'
-    svg = ('<svg viewBox="0 0 840 840" width="100%" style="max-width:760px;display:block;margin:0 auto">'
-           + defs + ''.join(edges) + hub + ''.join(nodes) + '</svg>')
-    return svg, ''.join(details)
+# _bubble_ring() PROMOTED to graphify_river_group.py as build_bubble_ring()
+# Sep 24 2026 (Galaxy Map "slowly do 2" consolidation, P2 ring-bubble
+# dedup) — it was already the real shared function for THIS file's own
+# 3 callers (rule 8), but stayed private, so a second, genuinely
+# copy-drifted ring-bubble implementation (galaxy_map_decision_matrix.py's
+# own hand-rolled build_bubble_map, no hub/no edges) sat unfixed
+# elsewhere. Now imported from the shared module instead of defined
+# here — same signature, byte-identical output for all 3 call sites
+# below (verified by R5 idempotency + headless spot-check).
 
 
 def build_l0_bubbles(l0_tags):
@@ -423,7 +382,7 @@ def build_l0_bubbles(l0_tags):
             key=uid, color=meta['color'], short_label=meta['label'],
             full_label=f"{meta['icon']} {meta['label']}", n_dims=len(hit_dims),
             detail_html=f'<ul>{items}</ul>'))
-    svg, details = _bubble_ring(nodes_data, hub_icon='🧭', hub_label='Dimensions')
+    svg, details = build_bubble_ring(nodes_data, hub_icon='🧭', hub_label='Dimensions')
     return svg + '<div id="bubble-details">' + details + '</div>'
 
 
@@ -460,7 +419,7 @@ def build_river_bubbles(tags):
         nodes_data.append(dict(
             key=f'r{r}', color=color, short_label=short, full_label=full,
             n_dims=len(hit_dims), detail_html=f'<ul>{items}</ul>'))
-    svg, details = _bubble_ring(nodes_data, hub_icon='🏛️', hub_label='Rivers', hub_href='galaxy_map_river.html')
+    svg, details = build_bubble_ring(nodes_data, hub_icon='🏛️', hub_label='Rivers', hub_href='galaxy_map_river.html')
     return svg + '<div id="bubble-details">' + details + '</div>'
 
 
@@ -486,7 +445,7 @@ def build_module_bubbles(tags):
             n_dims=len(hit_dims), detail_html=f'<ul>{items}</ul>'))
     if not nodes_data:
         return '<p class="vhint">No real module currently carries 3+ dimension tags.</p>'
-    svg, details = _bubble_ring(nodes_data, hub_icon='🌊', hub_label='Modules', hub_href='galaxy_map_current.html')
+    svg, details = build_bubble_ring(nodes_data, hub_icon='🌊', hub_label='Modules', hub_href='galaxy_map_current.html')
     note = (f'<p class="vhint">Real hubs only (3+ dimension tags) — {len(nodes_data)} of {len(tags)} modules. '
             f'Every module, hub or not, still has its own real row in the Table view above.</p>')
     return note + svg + '<div id="bubble-details">' + details + '</div>'

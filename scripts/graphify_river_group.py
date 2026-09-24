@@ -4539,6 +4539,63 @@ def _curved_edge(x1, y1, x2, y2, color, real=True, dashed=False, offset_mult=1, 
         f'stroke="{color}" stroke-width="1.8" opacity="{op}"{dash} filter="url(#edgeglow)"{mk}/>')
 
 
+def _bubble_ring_esc(s):
+    return (s or '').replace('<', '&lt;').replace('>', '&gt;')
+
+
+def build_bubble_ring(nodes_data, radius=300, cx=420, cy=420,
+                       hub_icon='🧭', hub_label='Dimensions', hub_href=None):
+    """Generic circular hub-and-spoke bubble layout — promoted here Sep
+    24 2026 (Galaxy Map "slowly do 2" consolidation, the P2 ring-bubble
+    dedup Alex asked for) from `galaxy_map_dimensions.py`'s own private
+    `_bubble_ring()`, which already deduped 3 near-identical hand-written
+    layouts (L0/River/Module) inside that one file (rule 8) but had never
+    been promoted to a SHARED function other files could reuse — leaving
+    a second, genuinely copy-drifted ring-bubble implementation sitting
+    in `galaxy_map_decision_matrix.py` (plain circles, no hub node, no
+    edges, hand-rolled `math.cos`/`math.sin`) that this function now
+    replaces. `nodes_data` is a list of dicts: {key, color, short_label,
+    full_label, n_dims, detail_html}. Returns (svg, details_html) — same
+    signature the original private version already had, unchanged, so
+    every existing caller (`build_l0_bubbles`/`build_river_bubbles`/
+    `build_module_bubbles`) keeps working byte-identically once repointed
+    to import this instead of defining its own local copy.
+
+    Draws a real hub (clickable to the level's own dedicated page/tab
+    when hub_href is given) and real curved edges from hub to every leaf,
+    reusing this pipeline's own shared _curved_edge/_build_markers
+    primitives (rule 8) — the same drawing primitives every other working
+    bubble panel in the Galaxy Map already uses."""
+    n = len(nodes_data) or 1
+    edges, nodes, details, colors = [], [], [], set()
+    for i, nd in enumerate(nodes_data):
+        angle = (360 / n) * i - 90
+        x = cx + radius * math.cos(math.radians(angle))
+        y = cy + radius * math.sin(math.radians(angle))
+        rsize = 24 + nd['n_dims'] * 4
+        colors.add(nd['color'])
+        edges.append(_curved_edge(cx, cy, x, y, nd['color'], real=nd['n_dims'] > 0,
+                                   dashed=nd['n_dims'] == 0, r1=42, r2=rsize, offset_mult=0.45,
+                                   from_label=hub_label, to_label=nd.get('short_label', nd['key']), kind='dimension_membership'))
+        nodes.append(
+            f'<g class="dbubble" data-key="{nd["key"]}" transform="translate({x:.0f},{y:.0f})">'
+            f'<circle r="{rsize}" fill="{nd["color"]}" fill-opacity="0.18" stroke="{nd["color"]}" stroke-width="2"/>'
+            f'<text text-anchor="middle" dy="-3" font-size="12" fill="#fff" font-weight="700">{nd["n_dims"]}</text>'
+            f'<text text-anchor="middle" dy="12" font-size="8" fill="{nd["color"]}">{_bubble_ring_esc(nd["short_label"][:16])}</text></g>')
+        details.append(
+            f'<div class="rdetail" id="dtl-{nd["key"]}" style="display:none">'
+            f'<h3>{_bubble_ring_esc(nd["full_label"])}</h3>{nd["detail_html"]}</div>')
+    hub_body = (
+        f'<circle cx="{cx}" cy="{cy}" r="42" fill="#12040f" stroke="#9B59B6" stroke-width="2.5"/>'
+        f'<text x="{cx}" y="{cy - 5}" text-anchor="middle" font-size="20">{hub_icon}</text>'
+        f'<text x="{cx}" y="{cy + 15}" text-anchor="middle" font-size="9" fill="#fff" font-weight="700">{_bubble_ring_esc(hub_label)}</text>')
+    hub = f'<a href="{hub_href}">{hub_body}</a>' if hub_href else hub_body
+    defs = f'<defs>{_build_markers(colors)}</defs>'
+    svg = ('<svg viewBox="0 0 840 840" width="100%" style="max-width:760px;display:block;margin:0 auto">'
+           + defs + ''.join(edges) + hub + ''.join(nodes) + '</svg>')
+    return svg, ''.join(details)
+
+
 # ---------------------------------------------------------------------
 # G74 (Aug 25 2026) — one shared renderer for the real, evidence-gated
 # connector bubbles (Oracle / Composio / Last.fm / Supabase).
