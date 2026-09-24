@@ -1,0 +1,156 @@
+RPGACE — /CEO Loop 1 final report: Council of 5 pass on Fable's first real /fableomnitrix decision
+Sep 24 2026
+
+===========================================================================
+WHAT THIS RECORD IS
+===========================================================================
+The closing step of tonight's /CEO Loop 1 compile: Sonnet's real evidence
+scan (records/2026-09/ceo_galaxy_map_code_drift_scan_2026-09-24.txt) fed
+Fable's first live /fableomnitrix dispatch (full report delivered via
+agent handback, this session). This record is Council of 5's scrutiny
+pass over that report — five real angles, not five agreeable bullets —
+producing the actual ranked plan for Alex's approval. Nothing below has
+been built. Per Alex's own confirmed /interrogation answer this session,
+tonight stops here; Loop 2 (real file edits) starts only after his go-ahead.
+
+===========================================================================
+INDEPENDENT VERIFICATION BEFORE TRUSTING FABLE'S OWN CENTRAL CLAIM
+===========================================================================
+Fable's report reversed the dossier's own F4 grading — a MATERIAL finding
+flipping on a citation is exactly the kind of claim that shouldn't be
+taken on Fable's word alone (the same standard Fable itself applied to
+the dossier). Sonnet independently re-verified before accepting it:
+- `rpgace_core.js:4058` — runVideoWorkshop() reads vw-transcript/vw-type/
+  vw-duration, disables vw-run-btn, writes vw-output/vw-status.
+- All 6 real ids exist in index.html:393-452, including the real button
+  `onclick="runVideoWorkshop()"` at :418.
+- `grep -n "pipeline-output" rpgace_core.js` returns exactly one hit,
+  inside a COMMENT describing the already-removed dead PIPELINE subsystem
+  (line 2554) — runVideoWorkshop's own body never references it.
+CONFIRMED independently. Fable's F4 reversal stands on real, fresh
+evidence, not a relayed claim — the exact standard its own B1 section
+argues for.
+
+===========================================================================
+COUNCIL OF 5 — FIVE REAL ANGLES ON FABLE'S FULL REPORT
+===========================================================================
+
+1. TECHNICAL RISK
+   - F1/F2/F3: zero risk, doc/comment-only, one commit.
+   - F4 (re-graded): zero product-code risk — every real fix is doc/data
+     (system_map_flags resolution notes, a perspective_reports status
+     correction, 2 curated-list edits, 1 CLAUDE.md sentence). Real risk
+     avoided: had the original MATERIAL grading been accepted uncritically,
+     a Loop 2 pass might have "resolved" runVideoWorkshop by deleting a
+     genuinely live, working feature. This is the clearest concrete proof
+     tonight's whole approach (scan -> drift -> Fable decision -> Council
+     scrutiny -> Alex approval, never skip a gate) is earning its cost.
+   - F5 (SELF_KNOWLEDGE rewrite + debloat trim): real risk is content-loss
+     if the debloat trim is done carelessly — Fable's own report already
+     names the mitigation (block-by-block Council-of-5 review inside
+     /debloat itself, HABITS block reviewed not blanket-cut, re-run both
+     staleness/contradiction checkers after). Accepted with that guardrail
+     explicit in the plan item, not implied.
+   - CEO skill split (Fable's item 7, "largest injected-context saving"):
+     real risk is splitting a skeleton file used by every future /CEO
+     invocation — genuinely Tier 2/3-adjacent, correctly named by Fable as
+     needing Alex's explicit yes rather than being bundled into the doc-
+     truth batch.
+
+2. SCOPE / COST (tokens are a real design constraint, rule 11)
+   - This entire Loop 1 pass (Sonnet's 6-checker scan + one real Fable
+     dispatch + this Council pass) cost exactly ONE Fable dispatch —
+     matching fableomnitrix's own stated discipline exactly: research and
+     evidence-gathering stayed Sonnet-direct; Fable was spent only at the
+     real decision point, and inside that one dispatch it further rationed
+     its own effort (full /paranoia weight only on the 2 MATERIAL items,
+     light /drift-plus-scrutiny on the 3 MINOR ones) rather than spending
+     uniformly. This is the cost discipline working as designed, not
+     assumed — first real data point for it.
+   - The NEW mid-session ask (Galaxy Map as a unified web/zoom structure)
+     is correctly NOT folded into tonight's Fable dispatch or given its
+     own dispatch yet — it's real, additional scope, scheduled as its own
+     future plan item rather than diluting tonight's already-complete
+     decision or doubling tonight's Fable spend.
+
+3. MAINTAINABILITY
+   - F2's docstring fix (Fable's framing: "the docstring can't go stale
+     the same way again" by describing the mechanism's real behavior
+     rather than a point-in-time count) is the right shape — Council
+     endorses generalizing this instinct: prefer maintainable-by-
+     construction it can't be wrong.
+   - Fable's B1 finding #1 (a MATERIAL finding must carry a THIS-PASS
+     citation, not a relayed one) is a real, durable process fix — it
+     should land in fableomnitrix's own Step 3, not just be noted once.
+     Council upgrades this from "observation" to "required plan item."
+   - Fable's B3 verdict (CEOfable = a mode inside /CEO, not a new file)
+     is independently sound against this project's own precedent
+     (/stopCEO, /ResumeCEO, Grounded Mode are all sections, not files) —
+     Council adopts it as-is rather than re-litigating; Sonnet's original
+     working assumption (separate file) is superseded.
+
+4. USER EXPERIENCE / ALEX'S ACTUAL STATED GOALS
+   Alex's own framing: "either the system improves, or the mapping
+   improves... win-win no matter what... easier time understanding the
+   background... making context to inject into claude so less tokens are
+   used." Checked against what's actually on the table:
+   - Map improved (F1/F2/F3, F4's flag/list corrections): real, cheap,
+     ships fast, directly serves "easier to understand — accurately."
+   - Token-injection goal: SELF_KNOWLEDGE trim (F5) + the CEO-skill-split
+     idea (Fable's largest-single-saving candidate) both serve it
+     directly — Council keeps both in the plan, the second flagged for
+     Alex's explicit decision per Fable's own correct caution.
+   - "Win-win no matter what": every item found tonight fixes the MAP,
+     none require product-code rewiring — an honest result, not
+     engineered to look that way. Council notes this plainly rather than
+     inventing a code-side fix to look "balanced."
+
+5. HONEST WHY-NOT-BUILD CASE
+   - Why NOT ship F1-F5 tonight: Alex's own confirmed answer already
+     settles this (Loop 1 only) — Council has nothing to add against it.
+   - Why NOT adopt every one of Fable's B4 CEO-skill edits verbatim: two
+     of them (advisor cast becomes "default three, overridable"; Step 1
+     accepts an evidence audit as compile source) are prose-shape changes
+     Alex hasn't seen yet — real, but genuinely his call on wording, not
+     something to silently rewrite into a skill file he uses by name.
+     Recommend presenting the five items as a single reviewable diff, not
+     auto-applying.
+   - Why NOT run a second Fable dispatch on the new "Galaxy Map as a web"
+     ask right now: nothing has been interrogated yet (a real,
+     genuinely large architecture question — deserves its own real
+     /interrogation pass before a decision dispatch, same as tonight's
+     original ask got). Doing it in the same breath would repeat the
+     exact anti-pattern rule 5/the interrogation skill exist to prevent.
+
+===========================================================================
+FINAL RANKED PLAN — for Alex's approval, nothing built yet
+===========================================================================
+A. Fix the F4 map-truth chain (system_map_flags x2, DEAD_CODE_CANDIDATES,
+   CLAUDE.md:251, the toggleVoiceInput perspective row, a patch_notes/
+   achiever_archive note on the retraction itself) — zero product code.
+B. Rewrite oracleAppGrounding.SELF_KNOWLEDGE (rule 6) + trim its real
+   narrative bloat via /debloat Mode A in the same edit, HABITS block
+   reviewed not blanket-cut, both checkers re-run, min.js rebuilt.
+C. Add a /CEOfable MODE section inside .claude/skills/CEO/SKILL.md
+   (not a new file, per Fable's B3 verdict) + alias it in CLAUDE.md's
+   Invokable Frameworks, incorporating the dossier-freshness rule.
+D. Amend .claude/skills/fableomnitrix/SKILL.md Step 3 with the fresh-
+   citation-only rule for MATERIAL findings + a fixed dossier template.
+E. The 5 generalizable /CEO skill edits from Fable's B4, presented as one
+   reviewable diff (not auto-applied).
+F. F1/F2/F3 as one trivial doc-truth commit.
+G. Alex's explicit decision needed, not bundled: split the Galaxy
+   Development Framework rules out of CEO SKILL.md into a pointed-to
+   sibling file (the single largest injected-context saving found
+   tonight, but a real skeleton change).
+H. Deferred, named, not urgent: flag-dedup guard in the G13 script;
+   product-vs-dev card tagging for the staleness checker; optional
+   subagent tool deny-list hardening for the Plan profile used by Fable
+   dispatches.
+I. NEW, separate item (mid-session ask, not yet interrogated): restructure
+   the Galaxy Map so its pages are literal zoom-levels into one unified
+   web (level -> river -> unit), rather than the current mix of level-
+   pages plus ~14 cross-cutting Dimension/topic pages (real evidence:
+   galaxy_map_hub.py's own PAGES catalog). Needs its own real
+   /interrogation pass before any Fable decision dispatch — scoped as
+   the next plan item, not started tonight.
