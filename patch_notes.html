@@ -73,6 +73,14 @@
 
 <div class="content">
 
+<div class="card green" id="card-2026-09-24-galaxy-map-hand-test-3-fixes" style="margin-bottom:30px;">
+    <div class="card-title">🔭 Sep 24 — 3 real fixes from Alex's own first hand-test of the Galaxy Map</div>
+    <div class="card-body">
+      Alex actually looked at the map for the first time and pasted real feedback. 3 genuine findings, all shipped: <strong>(A)</strong> <code>galaxy_map.html</code>'s "L0 Units (15)" list was pure clutter at the top of the page — a rollup of data already shown in the diagram, sitting before any real content. Moved to a collapsed <code>&lt;details&gt;</code> at the bottom, matching the existing methodology-details pattern. <strong>(B)</strong> A real bug, not a design gap: <code>errorLog</code> showed "no Current Series page for this module" despite having one — <code>LEVEL3_MODULES</code> (river-owned modules only) was the wrong check; 5 cross-cutting modules get real pages via a separate list that 6 link-generator call sites never consulted. Added a canonical <code>LINKABLE_MODULES</code> union in <code>graphify_river_group.py</code> and fixed all 6 sites. <strong>(C)</strong> Decision Matrix and Alex's Decision Path read as confusing duplicates — they're genuinely different (exhaustive dev catalog vs. Alex's own click-path), so cross-linked both pages and sharpened their sidebar labels instead of merging or deleting either.<br><br>
+      All 3 verified: full 24-script pipeline re-run idempotent, <code>verify_anchors.py</code> clean, all pages div/a/svg-balanced, zero console errors across all 23 pages. Three commits: <code>a56b4a6</code> (A + B foundation), <code>53bd815</code> (B complete), <code>a4b1b80</code> (C). **Untested by Alex's own hand yet on this specific round — his own next look is the real verification.**
+    </div>
+</div>
+
 <div class="card green" id="card-2026-09-24-galaxy-map-redesign-p0-complete" style="margin-bottom:30px;">
     <div class="card-title">🌌 Sep 24 — Galaxy Map redesign P0 complete: CSS consolidation, edge evidence substrate (all 27 sites), logic_dimension.html stub, fork-3 resolved</div>
     <div class="card-body">
