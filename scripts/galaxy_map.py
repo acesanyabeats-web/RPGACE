@@ -62,7 +62,7 @@ sys.path.insert(0, str(Path(__file__).parent))
 from graphify_river_group import (  # noqa: E402
     EXTERNAL_CONNECTORS, SUPABASE_CORE,
     INTERACTION_TYPE_COLOR, INTERACTION_TYPE_LABEL,
-    RIVER_NAME, RIVER_FLOWS, compute_river_flow_cycles, _river_num_from_label,
+    RIVER_NAME, RIVER_COLOR, RIVER_FLOWS, RIVER_RETIRED, compute_river_flow_cycles, _river_num_from_label,
     EXTERNAL_RIVER_LINKS, RIVER_MODULES,
     L0_SUPABASE_UNITS, L0_UNIT_LABEL,
     compute_l0_unit_supabase_infra, compute_l0_unit_supabase_inter,
@@ -1588,6 +1588,15 @@ TEMPLATE = """<!DOCTYPE html>
   .tier-row{{cursor:pointer}}
   a.tier-row{{color:var(--dim)}}
   .tier-row:hover{{color:var(--text)}}
+  .river-preview{{max-width:1100px;margin:18px auto 0;padding:0 24px}}
+  .river-preview h3{{font-size:11px;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;text-align:center}}
+  .rp-grid{{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}}
+  .rp-chip{{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:14px;font-size:10.5px;font-weight:700;
+    background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);color:#cfd6e0;text-decoration:none}}
+  .rp-chip:hover{{border-color:var(--gold);color:#fff}}
+  .rp-chip .rp-dot{{width:8px;height:8px;border-radius:50%;flex-shrink:0}}
+  .rp-chip .rp-count{{color:var(--dim);font-weight:400}}
+  .rp-chip.archived{{opacity:.55}}
   .dot{{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:8px}}
   .itype-grid{{display:grid;grid-template-columns:1fr 1fr;gap:0 24px}}
   .note{{max-width:900px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
@@ -1698,6 +1707,8 @@ TEMPLATE = """<!DOCTYPE html>
   <p>The real top-level view of RPGACE Total Systems — 3 genuinely different KINDS of unit at Level 0, labeled explicitly below (GMP-C, Sep 16 2026): 4 galaxies rendered in the diagram, 3 harness nodes (Oracle/self-awareness/Human Gate) alongside them, and 15 real merged L0 units each with their own Infra/Inter facet bubble (Oracle's own 6 formerly-"External AI" constituents — Composio/Jina AI/Last.fm/librosa/n8n/Whisper — are each a real standalone unit since G99, not one aggregate). Oracle mediates all 3 AI providers (never a direct RPGACE→provider edge), every real external connector is shown — each edge colored by its own real interaction TYPE. <b>Click any unit — in the diagram, the tiers list below, or the bubble row — for a real CHOICE (not a toggle switch) between 💉 Infra (a real attached resource) and 🔗 Inter (a real dimension it participates in)</b>, expanding real detail inline and cross-highlighting every other unit sharing that same resource/dimension. <b>Click the RPGACE Architecture node's own center to drill into its 17 rivers (Level 1).</b></p>
   <p style="margin-top:10px"><b>New Aug 25 2026:</b> 🧑 <b>Alex</b>'s Infra tab is now purely the Decisions bubble system — all 21 real decisions (10 human-confirm gates, 7 curated logic choices, 4 curated text-input points), grouped by the real river each one lives in and ordered by real river flow, from the logging end toward the last untouched action. 🔮 <b>External AI</b>'s Infra tab names all 12 real external AI actors individually — Orchestrator CC, OpenMontage CC, Graphify CC, Composio, librosa, Jina AI, Last.fm, Whisper, n8n, Luna, Moonshot, Anthropic — each with its own real live/dormant/unconfirmed status read straight from source, instead of the vague aggregate it used to show. The <b>Table view</b> now carries the 5 bubble-row units' own facet content too, not just the 7×7 edge matrix.</p>
 </div>
+
+{river_preview}
 
 <div class="toggle-row">
   <div class="toggle-btn active" data-view="map">🌌 Map view</div>
@@ -2044,6 +2055,51 @@ TEMPLATE = """<!DOCTYPE html>
 """
 
 
+def build_river_preview():
+    """Real "level-down cohesive view" fix (Sep 24 2026, Alex's own
+    direct ask: "level 0 to level 3... so exploring whats built is more
+    coherent"). Evidence check before building anything (rule 1): L1
+    (galaxy_map_river.py) already renders real L2 module nodes directly
+    inline on its own page, and every L2 module node
+    (galaxy_map_module.py) already links straight to its own real L3
+    Current Series section (has_l3/🔽 badge) — both of those level
+    transitions were ALREADY real and built, no new work needed there.
+    The one genuine gap: RPGACE Architecture's own central L0 node has
+    zero real L1 content — just a generic "click: 16 rivers" label —
+    and, unlike every other L0 unit, it's a plain direct-nav <a href>
+    (confirmed via this session's own earlier headless verification,
+    see build_tiers_block()'s docstring), not a `.unit-node` that opens
+    the shared Infra/Inter click-panel — so a facet-panel entry would be
+    real, unreachable dead data, not a real fix. Real fix instead: a
+    compact, ALWAYS-VISIBLE chip grid (matching L1/L2's own "next level
+    is already on the page, not hidden behind a click" pattern), one
+    real chip per river (all 17, live and archived both shown honestly),
+    each with a real evidence-derived module count (RIVER_MODULES, never
+    invented prose) and a real link to that river's own L2 section
+    (galaxy_map_module.html#river-{n}, matching galaxy_map_river.py's
+    own already-established link convention — galaxy_map_river.html
+    itself has no per-river anchor id to target directly)."""
+    chips = []
+    for rnum in sorted(RIVER_NAME):
+        short = RIVER_NAME[rnum].split('—')[0].strip()
+        n_mods = len(RIVER_MODULES.get(rnum, []))
+        archived = rnum in RIVER_RETIRED
+        color = RIVER_COLOR.get(rnum, '#8a8a9a')
+        cls = ' archived' if archived else ''
+        count_txt = f'{n_mods} mod' if n_mods else 'dev-process'
+        chips.append(
+            f'<a class="rp-chip{cls}" href="galaxy_map_module.html#river-{rnum}">'
+            f'<span class="rp-dot" style="background:{color}"></span>{esc(short)}'
+            f'<span class="rp-count">· {count_txt}</span></a>'
+        )
+    return (
+        '<div class="river-preview">'
+        '<h3>🌊 Rivers (Level 1) — click any to jump straight to its own Level 2 modules</h3>'
+        f'<div class="rp-grid">{"".join(chips)}</div>'
+        '</div>'
+    )
+
+
 def build_tiers_block():
     """GMP-C (Sep 16 2026) — 3 real, explicitly-labeled L0 tiers.
 
@@ -2118,7 +2174,7 @@ def main():
                            matrix_rows=matrix_rows, table_details=table_details,
                            unit_facet_table=unit_facet_table,
                            unit_bubble_system_json=json.dumps(UNIT_BUBBLE_SYSTEM),
-                           tiers_block=build_tiers_block())
+                           tiers_block=build_tiers_block(), river_preview=build_river_preview())
     OUT.parent.mkdir(exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     # DD7 (Aug 23 2026) — live in-flight ceo_plan_items overlay,
