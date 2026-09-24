@@ -55,7 +55,7 @@ from graphify_river_group import (  # noqa: E402
     parse_module_functions, compute_module_function_flow,
     compute_external_call_sites, compute_lastfm_call_sites,
     compute_outbound_api_call_sites,
-    FLOWS_IN, attribute_river_connection_function, LEVEL3_MODULES,
+    FLOWS_IN, attribute_river_connection_function, LEVEL3_MODULES, CROSS_CUTTING_MODULES,
     render_evidence_bubble, render_bubble_row, dimension_index_html, DIMENSION_INDEX_CSS,
     INFRA_DRILLDOWN_CSS,
     compute_load_signal, compute_decision_targets, compute_logic_attribution_targets,
@@ -288,7 +288,13 @@ KIND_ICON = {'if': '🔀', 'else if': '🔁', 'else': '↩️', 'switch': '🔢'
 # same real Current coverage every river-having module already does —
 # a genuinely different, larger, more honest fix than a stub, and the
 # one Alex actually confirmed.
-CROSS_CUTTING_MODULES = sorted(['config', 'dashDeck', 'errorLog', 'questEngine', 'leftNav'])
+# Sep 24 2026: this list moved to graphify_river_group.py's own
+# CROSS_CUTTING_MODULES (rule 8, one real source) — every other Galaxy
+# Map script that needs to know "does this module have a real Current
+# Series section" now imports the same canonical set, closing the
+# errorLog dead-link bug that motivated the move. This module still
+# wants a real, sorted list for its own tab-rendering order.
+CROSS_CUTTING_MODULES = sorted(CROSS_CUTTING_MODULES)
 
 
 def _incoming_attribution_for_module(module_name):

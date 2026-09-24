@@ -1747,6 +1747,30 @@ LEVEL3_MODULES = set(m for mods in RIVER_MODULES.values() for m in mods)
 # behavior change), confirmed via a fresh parse: 44 of 44 modules now
 # return at least 1 real function.
 
+# Real bug fix, Sep 24 2026 — Alex's own direct hand-test finding
+# (galaxy_map_orchestrator_openmontage.html's drilldown showed a dead
+# "no Current Series page for this module" leaf for errorLog, which DOES
+# have a real Current(L3) section — it's one of 5 modules in
+# galaxy_map_current.py's own separate CROSS_CUTTING_MODULES list, which
+# LEVEL3_MODULES (derived only from RIVER_MODULES) never included since
+# these 5 are deliberately excluded from river ownership. LEVEL3_MODULES'
+# own doc comment above says its job is "the canonical list of modules
+# that actually have a built Level-3 page" — so it was factually wrong
+# for these 5 the moment CROSS_CUTTING_MODULES got its own real
+# sections. Real, scope-narrowed fix (Alex's own confirmed answer,
+# choosing the low-risk option over redefining LEVEL3_MODULES itself,
+# which is read by 40+ call sites including one-time Supabase seed
+# generators): a new canonical CROSS_CUTTING_MODULES here (moved from
+# its previous, harder-to-import home inside galaxy_map_current.py —
+# rule 8, one real source) plus LINKABLE_MODULES, the real union that
+# every link-generator (leaf_link_fn/_leaf_link across 6 real files)
+# should check instead of LEVEL3_MODULES alone. LEVEL3_MODULES itself is
+# deliberately left untouched — it still means "river-owned module,"
+# a real, different, still-correct fact used by river-grouping logic
+# elsewhere.
+CROSS_CUTTING_MODULES = frozenset({'config', 'dashDeck', 'errorLog', 'questEngine', 'leftNav'})
+LINKABLE_MODULES = LEVEL3_MODULES | CROSS_CUTTING_MODULES
+
 
 def _module_def_line_match(line):
     """Real, shared single-line definition-matcher (rule 8) — one regex
@@ -5256,16 +5280,27 @@ def inject_level_rail(html, current_file):
 # already calls, rather than 21 hand-edited templates — the same rule-8
 # precedent inject_left_nav()/inject_plan_overlay() already set.
 METHODOLOGY_DETAILS_CSS = '''
-details.doc-methodology{max-width:1000px;margin:24px auto 40px;padding:0 24px}
-details.doc-methodology > summary{cursor:pointer;list-style:none;font-size:10px;font-weight:700;
+details.doc-methodology,details.rollup-details{max-width:1000px;margin:24px auto 40px;padding:0 24px}
+details.doc-methodology > summary,details.rollup-details > summary{cursor:pointer;list-style:none;font-size:10px;font-weight:700;
   letter-spacing:.7px;text-transform:uppercase;color:#6a6a78;padding:6px 0;
   border-top:1px solid rgba(255,255,255,0.07)}
-details.doc-methodology > summary::-webkit-details-marker{display:none}
-details.doc-methodology > summary::before{content:'▶ ';font-size:8px}
-details.doc-methodology[open] > summary::before{content:'▼ '}
-details.doc-methodology > summary:hover{color:#C9A84C}
-details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
+details.doc-methodology > summary::-webkit-details-marker,details.rollup-details > summary::-webkit-details-marker{display:none}
+details.doc-methodology > summary::before,details.rollup-details > summary::before{content:'▶ ';font-size:8px}
+details.doc-methodology[open] > summary::before,details.rollup-details[open] > summary::before{content:'▼ '}
+details.doc-methodology > summary:hover,details.rollup-details > summary:hover{color:#C9A84C}
+details.doc-methodology .note,details.rollup-details .note{margin:0 auto;padding:8px 0 0}
 '''
+# details.rollup-details (Sep 24 2026, real Alex ask on galaxy_map.html's
+# own L0 Units list — "decongest this, its not needed in the beginning,
+# at the end as a roll up like methodology, such a bad habit this"):
+# a real, reusable pattern name for any page that renders a plain
+# already-shown-elsewhere data rollup prominently near the top instead
+# of collapsed at the bottom — extends the same real methodology-details
+# visual language rather than duplicating it (rule 8), since the shape
+# (collapsed-by-default summary + body) is identical; only the class
+# name differs so collapse_methodology()'s own idempotency check (which
+# looks for the literal string 'class="doc-methodology"') never
+# mistakes a rollup block for its own real methodology-footer wrap.
 
 
 def collapse_methodology(html):

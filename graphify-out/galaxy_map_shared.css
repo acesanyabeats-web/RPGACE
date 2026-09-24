@@ -104,12 +104,12 @@
 .fc-scope.mode-choice div.ev-group.picked{display:block}
 
 
-details.doc-methodology{max-width:1000px;margin:24px auto 40px;padding:0 24px}
-details.doc-methodology > summary{cursor:pointer;list-style:none;font-size:10px;font-weight:700;
+details.doc-methodology,details.rollup-details{max-width:1000px;margin:24px auto 40px;padding:0 24px}
+details.doc-methodology > summary,details.rollup-details > summary{cursor:pointer;list-style:none;font-size:10px;font-weight:700;
   letter-spacing:.7px;text-transform:uppercase;color:#6a6a78;padding:6px 0;
   border-top:1px solid rgba(255,255,255,0.07)}
-details.doc-methodology > summary::-webkit-details-marker{display:none}
-details.doc-methodology > summary::before{content:'▶ ';font-size:8px}
-details.doc-methodology[open] > summary::before{content:'▼ '}
-details.doc-methodology > summary:hover{color:#C9A84C}
-details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
+details.doc-methodology > summary::-webkit-details-marker,details.rollup-details > summary::-webkit-details-marker{display:none}
+details.doc-methodology > summary::before,details.rollup-details > summary::before{content:'▶ ';font-size:8px}
+details.doc-methodology[open] > summary::before,details.rollup-details[open] > summary::before{content:'▼ '}
+details.doc-methodology > summary:hover,details.rollup-details > summary:hover{color:#C9A84C}
+details.doc-methodology .note,details.rollup-details .note{margin:0 auto;padding:8px 0 0}
