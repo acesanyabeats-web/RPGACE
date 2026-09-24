@@ -40,7 +40,6 @@ never re-derived — rule 8). galaxy_map_skills.py/.html are deleted
 outright; every real cross-reference elsewhere in the pipeline that
 used to point at galaxy_map_skills.html now points here instead.
 """
-import math
 import re
 from pathlib import Path
 import sys
@@ -50,58 +49,18 @@ from galaxy_map_skills import SKILLS, GROUPS, build_group_section  # noqa: E402
 from graphify_river_group import SKILL_SECONDARY_RIVER, RIVER_NAME  # noqa: E402
 from graphify_river_group import inject_level_rail  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
+from graphify_river_group import build_node_link_web  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map_skill_network.html')
 SKILLS_DIR = Path('.claude/skills')
 
 
-def polar(cx, cy, r, angle_deg):
-    a = math.radians(angle_deg)
-    return cx + r * math.cos(a), cy + r * math.sin(a)
-
-
-def build_bubble_map(names, invocations):
-    """Real MAP view — a circular node-link layout, 24 real skill nodes
-    on a ring, 117 real curved edges (each a genuine /otherSkillName
-    mention, same data compute_skill_invocations() already found).
-    Hand-computed polar coordinates, no force-directed library (rule 8
-    — same convention galaxy_map.py/galaxy_map_river.py already use)."""
-    W, H = 900, 900
-    cx, cy = W / 2, H / 2
-    r = 360
-    pos = {}
-    n = len(names)
-    for i, name in enumerate(names):
-        ang = 360 * i / n - 90
-        pos[name] = polar(cx, cy, r, ang)
-
-    edges_svg = []
-    for caller, callees in invocations.items():
-        x1, y1 = pos[caller]
-        for callee in callees:
-            x2, y2 = pos[callee]
-            mx, my = (x1 + x2) / 2, (y1 + y2) / 2
-            # pull the midpoint toward center so edges curve inward,
-            # never straight chords across the whole circle
-            cx2 = mx + (cx - mx) * 0.35
-            cy2 = my + (cy - my) * 0.35
-            edges_svg.append(
-                f'<path d="M {x1:.1f} {y1:.1f} Q {cx2:.1f} {cy2:.1f} {x2:.1f} {y2:.1f}" '
-                f'class="net-edge" data-from="{esc(caller)}" data-to="{esc(callee)}" '
-                f'marker-end="url(#netarrow)"/>'
-            )
-
-    nodes_svg = []
-    for name in names:
-        x, y = pos[name]
-        n_out = len(invocations.get(name, []))
-        nodes_svg.append(
-            f'<g class="net-node" data-skill="{esc(name)}">'
-            f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{16 + min(n_out, 10)}" />'
-            f'<text x="{x:.1f}" y="{y:.1f}" text-anchor="middle" dominant-baseline="middle" '
-            f'font-size="9">{esc(name[:10])}</text></g>'
-        )
-    return ''.join(edges_svg), ''.join(nodes_svg), W, H
+# build_bubble_map()/polar() PROMOTED to graphify_river_group.py as
+# build_node_link_web() Sep 24 2026 (Galaxy Map "slowly do 2"
+# consolidation, P2's 2nd item) — this was the only real caller, so the
+# promotion is a pure move: same node/edge CSS classes, same data-skill
+# attribute, same #netarrow marker reference, byte-identical output
+# (verified by diff). See the call site below (build_node_link_web).
 
 
 def esc(s):
@@ -362,7 +321,7 @@ def main():
     # old standalone table page used to render as tab-switched sections.
     detail_panels = ''.join(build_skill_section(n, invocations.get(n, []), callers_of.get(n, [])) for n in names)
     n_edges = sum(len(v) for v in invocations.values())
-    map_edges, map_nodes, map_w, map_h = build_bubble_map(names, invocations)
+    map_edges, map_nodes, map_w, map_h = build_node_link_web(names, invocations)
     # Real table view — G28's own grouped-axis classification, imported
     # directly from galaxy_map_skills.py (rule 8, never re-derived).
     tabs = ''.join(f'<div class="tab" data-target="grp-{g["id"]}">{g["label"]}</div>' for g in GROUPS)

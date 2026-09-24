@@ -147,11 +147,25 @@ def esc(s):
     return (s or '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;')
 
 
-def build_dependency_bubbles():
-    """A real, R22-compliant bubble system — a pure rendering layer over
-    the SAME `depends_on` data the table already shows, grouping scripts
-    by which shared graphify_river_group.py function they real call.
-    Never invents a relationship the table doesn't already state."""
+def build_dependency_chips():
+    """Real, R22-compliant — a pure rendering layer over the SAME
+    `depends_on` data the table already shows, grouping scripts by which
+    shared graphify_river_group.py function they really call. Never
+    invents a relationship the table doesn't already state.
+
+    Honestly named (Sep 24 2026, P2's 3rd real item, per the ratified
+    ceo_plan_items row): this used to be called build_dependency_bubbles()
+    and its own docstring claimed "a real bubble system" — but the actual
+    render is a plain flex-wrap chip list (.dep-row/.dep-callers), never
+    an SVG ring/hub-and-spoke like every other real bubble panel in this
+    pipeline. Given the choice the plan named ("either a real ring or
+    honestly relabel it"), a real SVG ring adds no real value here — 15
+    shared functions x their real callers is a small, already-legible
+    grouped list, not a relationship graph that benefits from radial
+    layout — so this is the honest relabel, not a new visualization. The
+    toggle button's own user-facing label ("🔗 Shared dependencies") was
+    already honest; only this function's internal name/docstring were
+    overclaiming."""
     by_dep = {}
     for g in GENERATORS:
         for dep in g['depends_on']:
@@ -264,7 +278,7 @@ TEMPLATE = """<!DOCTYPE html>
 
 def main():
     sections = ''.join(build_family_section(f) for f in FAMILY_ORDER)
-    dep_bubbles = build_dependency_bubbles()
+    dep_bubbles = build_dependency_chips()
     html = TEMPLATE.format(n_gen=len(GENERATORS), sections=sections, dep_bubbles=dep_bubbles,
                            dim_index=dimension_index_html(OUT.name), dim_css="")
     OUT.parent.mkdir(parents=True, exist_ok=True)

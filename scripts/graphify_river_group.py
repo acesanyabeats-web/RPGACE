@@ -4596,6 +4596,67 @@ def build_bubble_ring(nodes_data, radius=300, cx=420, cy=420,
     return svg, ''.join(details)
 
 
+def build_node_link_web(names, edges_by_name, W=900, H=900, radius=360,
+                         node_class='net-node', edge_class='net-edge',
+                         key_attr='data-skill', label_len=10,
+                         marker_id='netarrow'):
+    """Generic circular NODE-LINK web — many-to-many curved edges between
+    nodes placed on a ring. Distinct shape from build_bubble_ring's own
+    hub-and-spoke above (no hub, no single center — edges go node-to-
+    node, any node can point at any other). Promoted here Sep 24 2026
+    (Galaxy Map "slowly do 2" consolidation, P2's 2nd item, Fable's own
+    report) from `galaxy_map_skill_network.py`'s private `build_bubble_map()`
+    — its only real caller today. Kept fully parameterized (node/edge CSS
+    class, the node's own key attribute name, the SVG marker id its edges
+    reference) so that file's existing CSS/JS — real hover-dim/highlight
+    interactions keyed off `data-skill`/`.net-node`/`.net-edge` — keeps
+    working completely unchanged, and so the NEXT page that needs an
+    arbitrary node-to-node graph (not a hub's fan-out) has a real, tested
+    primitive to reuse instead of hand-rolling a second copy.
+
+    Deliberately does NOT also promote `polar()` (a tiny duplicate
+    3-line helper also sitting in `galaxy_map.py` — a real, separate,
+    much smaller copy-drift, named here rather than silently expanded
+    into this pass's scope) — its own trig is inlined below instead.
+
+    `names` is the ordered list of node keys placed evenly around the
+    ring; `edges_by_name` is {source_name: [target_name, ...]} — a real
+    directed edge for every entry. Returns (edges_svg, nodes_svg, W, H) —
+    the same 4-tuple shape the existing caller already unpacks."""
+    cx, cy = W / 2, H / 2
+    pos = {}
+    n = len(names) or 1
+    for i, name in enumerate(names):
+        ang_rad = math.radians(360 * i / n - 90)
+        pos[name] = (cx + radius * math.cos(ang_rad), cy + radius * math.sin(ang_rad))
+
+    edges_svg = []
+    for source, targets in edges_by_name.items():
+        x1, y1 = pos[source]
+        for target in targets:
+            x2, y2 = pos[target]
+            mx, my = (x1 + x2) / 2, (y1 + y2) / 2
+            cx2 = mx + (cx - mx) * 0.35
+            cy2 = my + (cy - my) * 0.35
+            edges_svg.append(
+                f'<path d="M {x1:.1f} {y1:.1f} Q {cx2:.1f} {cy2:.1f} {x2:.1f} {y2:.1f}" '
+                f'class="{edge_class}" data-from="{_bubble_ring_esc(source)}" data-to="{_bubble_ring_esc(target)}" '
+                f'marker-end="url(#{marker_id})"/>'
+            )
+
+    nodes_svg = []
+    for name in names:
+        x, y = pos[name]
+        n_out = len(edges_by_name.get(name, []))
+        nodes_svg.append(
+            f'<g class="{node_class}" {key_attr}="{_bubble_ring_esc(name)}">'
+            f'<circle cx="{x:.1f}" cy="{y:.1f}" r="{16 + min(n_out, 10)}" />'
+            f'<text x="{x:.1f}" y="{y:.1f}" text-anchor="middle" dominant-baseline="middle" '
+            f'font-size="9">{_bubble_ring_esc(name[:label_len])}</text></g>'
+        )
+    return ''.join(edges_svg), ''.join(nodes_svg), W, H
+
+
 # ---------------------------------------------------------------------
 # G74 (Aug 25 2026) — one shared renderer for the real, evidence-gated
 # connector bubbles (Oracle / Composio / Last.fm / Supabase).
