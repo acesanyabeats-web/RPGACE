@@ -37,6 +37,9 @@ from graphify_river_group import EXTERNAL_CONNECTORS  # noqa: E402
 from graphify_river_group import EXTERNAL_RIVER_LINKS, RIVER_MODULES, RIVER_NAME  # noqa: E402
 from graphify_river_group import inject_level_rail  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
+from graphify_river_group import (  # noqa: E402
+    render_bubble_row, _curved_edge, _build_markers, INFRA_DRILLDOWN_CSS,
+)
 # G99 (Aug 25 2026) — the G91-continuation Oracle river/module/function
 # drill-down that used to live here has moved to its own real dedicated
 # page, galaxy_map_oracle.py, now that Oracle is its own real L0 unit
@@ -299,6 +302,59 @@ def build_connector_card(conn):
 </div>'''
 
 
+# Sep 24 2026 — real /debloat-shaped interlink pass (Alex's own web/
+# spiderweb ask): this page was a genuine, confirmed zero-bubble gap —
+# real tabbed cards with real per-connector destination resolution
+# (resolve_destinations above), but no SVG web/bubble section at all.
+# Reuses the SAME shared render_bubble_row() every other page's web
+# section already uses (rule 8) — a pure rendering layer over
+# resolve_destinations()'s own already-computed real targets, never a
+# second detector. Each leaf's href IS the real migration bubble link
+# Alex asked for: "a link migration bubble as it has a relationship to
+# dimension or other level unit module and/or function."
+_GROUP_COLOR = {'both': '#3DAA6E', 'partial': '#4A90E2', 'inactive': '#8a8a9a'}
+
+
+def _connector_leaf(conn, color):
+    targets, galaxy_page, _reason = resolve_destinations(conn)
+    href = None
+    for r, mod in targets:
+        if mod:
+            href = f'galaxy_map_current.html#mod-{mod}'
+            break
+    if not href and targets:
+        r0 = targets[0][0]
+        href = f'galaxy_map_module.html#river-{r0}'
+    if not href and galaxy_page:
+        href = galaxy_page
+    extra = len(targets) - 1 if len(targets) > 1 else 0
+    sub = conn['status'] + (f' · +{extra} more' if extra > 0 else '')
+    if href:
+        return dict(id=conn['name'], icon='🔗', label=conn['name'], sub=sub, color=color, href=href)
+    return dict(id=conn['name'], icon='🔗', label=conn['name'], sub=sub, color=color, dead=True,
+                note='no real in-app destination')
+
+
+def build_web_section():
+    rows = []
+    for grp in GROUPS:
+        conns = [c for c in EXTERNAL_CONNECTORS if classify_group(c['name']) == grp['id']]
+        if not conns:
+            continue
+        color = _GROUP_COLOR[grp['id']]
+        hub = dict(icon=grp['label'].split(' ', 1)[0], label=grp['label'].split(' ', 1)[1], color=color)
+        leaves = [_connector_leaf(c, color) for c in conns]
+        bubble = render_bubble_row(hub, leaves, _curved_edge, _build_markers, leaf_r=25, width=1000,
+                                    emit_defs=(len(rows) == 0))
+        rows.append(f'<div class="ext-web-row"><h3>{esc(grp["label"])} — {len(conns)} real connector(s)</h3>{bubble}</div>')
+    return (
+        '<p class="webnote">Every connector below is a real migration bubble — click one to jump to its own '
+        'real destination (a module\'s Current Series section, a river\'s own Level-2 section, or its own '
+        'galaxy page where one exists). A dimmed, non-clickable connector genuinely has no known in-app '
+        'destination yet, stated honestly rather than linked to a guess.</p>'
+        + ''.join(rows))
+
+
 def build_group_section(grp):
     conns = [c for c in EXTERNAL_CONNECTORS if classify_group(c['name']) == grp['id']]
     cards = ''.join(build_connector_card(c) for c in conns)
@@ -345,6 +401,15 @@ TEMPLATE = """<!DOCTYPE html>
   code{{font-family:'Cascadia Code','Fira Mono',monospace;font-size:10px;background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:3px}}
   a{{color:var(--blue)}}
   .note{{max-width:1100px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
+  .toggle-row{{display:flex;justify-content:center;gap:8px;padding:16px 24px 0}}
+  .toggle-btn{{padding:8px 18px;border-radius:16px;font-size:11.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid rgba(255,255,255,0.1)}}
+  .toggle-btn.active{{background:var(--blue);color:#0a0a0f;border-color:var(--blue)}}
+  .view{{display:none}}
+  .view.active{{display:block}}
+  .webwrap{{max-width:1100px;margin:20px auto;padding:0 24px}}
+  .webnote{{font-size:11px;color:var(--dim);line-height:1.6;margin-bottom:16px}}
+  .ext-web-row{{margin-bottom:28px}}
+  .ext-web-row h3{{font-family:Georgia,serif;font-size:14px;color:#fff;margin-bottom:6px;text-align:center}}
 {infra_dd_css}
 {dim_css}
 </style>
@@ -355,8 +420,17 @@ TEMPLATE = """<!DOCTYPE html>
   <h1>🔀 External AI &amp; Repos — The UI + Backend Dimension</h1>
   <p>All {n_conns} real external connectors, grouped by whether each one genuinely touches both a real UI trigger/output AND real backend processing — Alex's own real "parallel universe" framing. A connector counts as touching UI on EITHER a real trigger or a real displayed output (or both).</p>
 </div>
+<div class="toggle-row">
+  <div class="toggle-btn active" data-view="cards">📇 Cards</div>
+  <div class="toggle-btn" data-view="web">🌐 Web</div>
+</div>
+<div class="view active" id="view-cards">
 <div class="tabs">{tabs}</div>
 {sections}
+</div>
+<div class="view" id="view-web">
+<div class="webwrap">{web_section}</div>
+</div>
 {dim_index}
 
 <div class="note">
@@ -369,17 +443,29 @@ TEMPLATE = """<!DOCTYPE html>
 (function() {{
   var tabs = document.querySelectorAll('.tab');
   var sections = document.querySelectorAll('.gsection');
+  var mtToggles = document.querySelectorAll('.toggle-btn');
+  var mtViews = document.querySelectorAll('.view');
+  function showView(name) {{
+    mtToggles.forEach(function(x) {{ x.classList.toggle('active', x.dataset.view === name); }});
+    mtViews.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-' + name); }});
+  }}
+  mtToggles.forEach(function(t) {{
+    t.addEventListener('click', function() {{ showView(t.dataset.view); }});
+  }});
   function show(id) {{
     sections.forEach(function(s) {{ s.style.display = (s.id === id) ? '' : 'none'; }});
     tabs.forEach(function(t) {{ t.classList.toggle('active', t.dataset.target === id); }});
   }}
   tabs.forEach(function(t) {{ t.addEventListener('click', function() {{ location.hash = t.dataset.target; }}); }});
   window.addEventListener('hashchange', function() {{
-    var id = location.hash.replace('#', '') || (sections[0] && sections[0].id);
-    show(id);
+    var h = (location.hash || '').replace('#', '');
+    if (h === 'view-web') {{ showView('web'); return; }}
+    var id = h || (sections[0] && sections[0].id);
+    if (document.getElementById(id)) {{ showView('cards'); show(id); }}
   }});
-  var id0 = location.hash.replace('#', '') || (sections[0] && sections[0].id);
-  show(id0);
+  var id0 = location.hash.replace('#', '');
+  if (id0 === 'view-web') {{ showView('web'); }}
+  else {{ show(id0 || (sections[0] && sections[0].id)); }}
 }})();
 </script>
 </body>
@@ -391,8 +477,9 @@ def main():
     tabs = ''.join(f'<div class="tab" data-target="grp-{g["id"]}">{g["label"]}</div>' for g in GROUPS)
     sections = ''.join(build_group_section(g) for g in GROUPS)
     html = TEMPLATE.format(tabs=tabs, sections=sections, n_conns=len(EXTERNAL_CONNECTORS),
+                           web_section=build_web_section(),
                            dim_index=dimension_index_html(OUT.name),
-                           dim_css=DIMENSION_INDEX_CSS, infra_dd_css='')
+                           dim_css=DIMENSION_INDEX_CSS, infra_dd_css=INFRA_DRILLDOWN_CSS)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')

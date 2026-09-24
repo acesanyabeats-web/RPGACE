@@ -50,6 +50,9 @@ from graphify_river_group import (  # noqa: E402
 )
 from graphify_river_group import inject_level_rail  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
+from graphify_river_group import (  # noqa: E402
+    render_bubble_row, _curved_edge, _build_markers, INFRA_DRILLDOWN_CSS,
+)
 from galaxy_map_decision_matrix import build_unified  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map_loops.html')
@@ -179,6 +182,51 @@ def _alex_touch_html(members, decisions_by_module):
     return f'<p class="touchnote">🧑 Alex can actually see or act on this loop at:</p><ul class="touchlist">{"".join(rows)}</ul>'
 
 
+# Sep 24 2026 — real /debloat-shaped interlink pass (Alex's own web/
+# spiderweb ask): this page was a genuine, confirmed zero-bubble gap —
+# real loop cards with real member chips, but no SVG web/bubble section.
+# Reuses the SAME shared render_bubble_row() every other page's web
+# section already uses (rule 8) — one real bubble per real loop
+# (a loop's own membership IS the web this page already found, never a
+# second detector), each leaf a real migration bubble to that member's
+# own Current Series section.
+def _loop_bubble(idx, members, color):
+    hub = dict(icon='🔄', label=f'Loop {idx}', color=color)
+    leaves = []
+    for m in sorted(members):
+        if m in LEVEL3_MODULES:
+            leaves.append(dict(id=m, icon='🔽', label=m, sub=_river_chip_label(m), color=color,
+                                href=f'galaxy_map_current.html#mod-{m}'))
+        else:
+            leaves.append(dict(id=m, icon='🔽', label=m, sub='cross-cutting', color=color, dead=True,
+                                note='no Current Series page'))
+    return render_bubble_row(hub, leaves, _curved_edge, _build_markers, leaf_r=24, width=1000,
+                              emit_defs=(idx == 1))
+
+
+def _river_chip_label(m):
+    r = MODULE_RIVER.get(m)
+    return RIVER_NAME[r].split('—')[0].strip() if r else 'cross-cutting'
+
+
+def build_web_section(call_cycles, data_cycles):
+    rows = ['<p class="webnote">Every real loop below is its own real bubble — each member module a real '
+            'migration bubble jumping out to its own Current Series section. A dimmed, non-clickable member '
+            'genuinely has no Current Series page (cross-cutting, not tracked by any river).</p>']
+    idx = 0
+    if call_cycles:
+        rows.append('<h3 class="webgrouphead">Mechanism 1 — Direct calls + event signals</h3>')
+        for members in call_cycles:
+            idx += 1
+            rows.append(f'<div class="loop-web-row">{_loop_bubble(idx, members, "#E25454")}</div>')
+    if data_cycles:
+        rows.append('<h3 class="webgrouphead">Mechanism 2 — Shared Supabase tables</h3>')
+        for members in data_cycles:
+            idx += 1
+            rows.append(f'<div class="loop-web-row">{_loop_bubble(idx, members, "#4A90E2")}</div>')
+    return ''.join(rows)
+
+
 def build_loop_card(idx, members, mechanism_label, mechanism_note, edge_lines, decisions_by_module):
     rivers = sorted({MODULE_RIVER.get(m) for m in members if MODULE_RIVER.get(m)})
     river_txt = ', '.join(RIVER_NAME[r].split('—')[0].strip() for r in rivers) if rivers else 'cross-cutting only'
@@ -230,6 +278,16 @@ TEMPLATE = """<!DOCTYPE html>
   .notouch{{font-size:10.5px;color:#6a6a78;font-style:italic}}
   a{{color:var(--gold)}}
   .note{{max-width:1100px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
+  .toggle-row{{display:flex;justify-content:center;gap:8px;padding:16px 24px 0}}
+  .toggle-btn{{padding:8px 18px;border-radius:16px;font-size:11.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid rgba(255,255,255,0.1)}}
+  .toggle-btn.active{{background:var(--red);color:#fff;border-color:var(--red)}}
+  .view{{display:none}}
+  .view.active{{display:block}}
+  .webwrap{{max-width:1100px;margin:20px auto;padding:0 24px}}
+  .webnote{{font-size:11px;color:var(--dim);line-height:1.6;margin-bottom:16px}}
+  .webgrouphead{{font-family:Georgia,serif;font-size:15px;color:#fff;margin:22px 0 10px;text-align:center}}
+  .loop-web-row{{margin-bottom:20px}}
+{infra_dd_css}
 {dim_css}
 </style>
 </head>
@@ -239,6 +297,11 @@ TEMPLATE = """<!DOCTYPE html>
   <h1>🔄 Loops — Real Cycles Across Calls, Hooks, and Shared Tables</h1>
   <p>Alex's own real ask, after a chat-only pass badly undercounted: "identify loop between all levels and objects of levels, infra and inter, river and modules." Two genuinely different real mechanisms create a real cycle here — a module's own code reaching another's (directly or via a fired/listened event), or two modules never calling each other at all but sharing a Supabase table's write and read — kept as two separate groups below, never merged into one blob.</p>
 </div>
+<div class="toggle-row">
+  <div class="toggle-btn active" data-view="cards">📇 Cards</div>
+  <div class="toggle-btn" data-view="web">🌐 Web</div>
+</div>
+<div class="view active" id="view-cards">
 <div class="content">
 
 <div class="grouphead">Mechanism 1 — Direct calls + cross-module event signals</div>
@@ -249,6 +312,10 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="groupnote">Real edges: one module writes a table, another reads it — the exact same <code>(module, function, operation)</code> data <a href="galaxy_map_supabase.html">the Supabase page</a> already shows per table, cross-referenced here into "does this actually close a loop." A pair of modules can be in BOTH groups above and below — that's real, not a bug: two modules can genuinely call each other directly AND share a table.</div>
 {data_loops}
 
+</div>
+</div>
+<div class="view" id="view-web">
+<div class="webwrap">{web_section}</div>
 </div>
 {dim_index}
 
@@ -261,6 +328,18 @@ TEMPLATE = """<!DOCTYPE html>
   Real, honest scope limit: server-side (<code>api/*.js</code>) call/data relationships aren't reachable by this
   client-side detector — same limit every other Galaxy Map page states.
 </div>
+<script>
+(function() {{
+  var toggles = document.querySelectorAll('.toggle-btn');
+  var views = document.querySelectorAll('.view');
+  toggles.forEach(function(t) {{
+    t.addEventListener('click', function() {{
+      toggles.forEach(function(x) {{ x.classList.toggle('active', x === t); }});
+      views.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-' + t.dataset.view); }});
+    }});
+  }});
+}})();
+</script>
 </body>
 </html>
 """
@@ -312,7 +391,9 @@ def main():
 
     html = TEMPLATE.format(
         call_loops=''.join(call_html), data_loops=''.join(data_html),
+        web_section=build_web_section(call_cycles, data_cycles),
         dim_index=dimension_index_html(OUT.name), dim_css=DIMENSION_INDEX_CSS,
+        infra_dd_css=INFRA_DRILLDOWN_CSS,
     )
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)

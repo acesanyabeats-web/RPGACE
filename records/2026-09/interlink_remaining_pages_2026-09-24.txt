@@ -1,0 +1,113 @@
+RPGACE — Galaxy Map interlinking: the remaining pages, real corrected audit
+Sep 24 2026 (same day, direct follow-up to interlink_web_bubble_pass_2026-09-24.txt)
+
+===========================================================================
+REAL CORRECTION FOUND BEFORE BUILDING ANYTHING
+===========================================================================
+Alex's direct ask: "Build the remaining 6 zero-bubble pages next" — the "6"
+being decision_matrix/dimensions/externals/skill_network/loops (5) plus
+river's own full SVG-panel upgrade beyond its Sep 24 reverse-link line (1).
+
+Rule 1/4 (pull real source before editing, one failed evidence pass = get
+real evidence before a second attempt) applied before writing any code:
+read the actual Python source of all 4 remaining "zero-bubble" pages
+(decision_matrix, dimensions, externals, skill_network, loops) rather than
+trusting the earlier grep-based count.
+
+Real finding, a genuine self-correction: 3 of those 4 already have a real
+bubble/web system — just implemented as page-local functions instead of
+the shared graphify_river_group.py helpers the earlier grep searched for:
+  - galaxy_map_decision_matrix.py — build_bubble_map(), a real per-river
+    SVG bubble diagram with click-to-reveal detail, already toggled
+    against the table view ("📊 Table view (the matrix)" / "🫧 Bubble
+    view").
+  - galaxy_map_dimensions.py — build_l0_bubbles()/build_river_bubbles()/
+    build_module_bubbles(), real Table+Map toggles at all 3 real levels
+    (L0/L1/L2).
+  - galaxy_map_skill_network.py — build_bubble_map(), a real skill-
+    invocation web diagram, "🕸️ Map view" / "📊 Table view".
+
+Building a second bubble mechanism on any of these would have been
+exactly the dedup violation Alex is trying to eliminate (rule 8) — a
+second, independently-imagined web section sitting next to a real one
+already sourced from the same table data.
+
+The REAL remaining gap, confirmed by direct read (zero bubble/map/svg/
+circle content of any kind found): galaxy_map_externals.py and
+galaxy_map_loops.py. Both built this pass. galaxy_map_river.html's own
+6th item (upgrading its Sep 24 text-line reverse-link to a full per-river
+SVG bubble panel) is still real, deliberately scoped-down future work —
+see the "still deferred" section below.
+
+===========================================================================
+BUILT — galaxy_map_externals.html
+===========================================================================
+Real gap: tabbed connector cards with real per-connector destination
+resolution (resolve_destinations() — module-grain or river-grain, already
+computed), but zero SVG web/bubble presentation.
+
+Added a real "🌐 Web" toggle (alongside the existing "📇 Cards" tabs),
+reusing the SAME shared render_bubble_row()/_curved_edge()/_build_markers()
+every other page's web section already uses (rule 8, zero new bubble
+mechanism). One bubble per connector group (Both/Partial/Inactive — the
+SAME 3 groups the card tabs already use), each leaf a real connector whose
+href IS the real migration bubble Alex asked for: resolve_destinations()'s
+own already-computed target (a module's Current Series anchor first, a
+river's Level-2 anchor if no module resolves, honestly dead if neither).
+
+Real result: 3 bubble panels (5/4/7 connectors), 12 real clickable
+migration-bubble links, 0 console errors.
+
+===========================================================================
+BUILT — galaxy_map_loops.html
+===========================================================================
+Real gap: loop cards (real Tarjan-SCC cycle detection, member chips,
+edge lists) but zero SVG web/bubble presentation.
+
+Added a real "🌐 Web" toggle. One real bubble PER LOOP (not per mechanism
+group — a loop's own membership is the meaningful web unit, and lumping
+all loops' members into one fan would lose which module belongs to which
+cycle), hub = "Loop N", leaves = that loop's own real member modules, each
+a real migration bubble to its Current Series section (or honestly dead
+for the 2 real cross-cutting non-tracked members, dashDeck/config).
+
+Real result: 3 bubbles (1 call/event loop with 16 members, 2 data loops
+with 6 members each), 25 real clickable migration-bubble links, 0 console
+errors.
+
+===========================================================================
+VERIFICATION
+===========================================================================
+Full 21-script + hub pipeline re-run twice from a clean state: byte-
+identical across all 22 pages both times (R5 idempotent). verify_anchors.py
+26/26 fresh. Every page remains div/a/svg-balanced (direct regex count).
+Headless Chromium (file://): both pages' Cards view is active on load, the
+Web toggle correctly activates the bubble view on click, real SVG panel
+counts match the real loop/group counts, zero console errors on either
+page.
+
+===========================================================================
+STILL DEFERRED, NAMED PLAINLY
+===========================================================================
+1. galaxy_map_river.html's reverse-link line (Sep 24, Pilot B) stays text
+   + link, not a full per-river SVG bubble panel (17 of them) — a real,
+   deliberate scope call for a 17-node ring diagram, not an oversight.
+2. 3 pages that already have a real infra drilldown (Connectors/
+   Orchestrator CC/OpenMontage CC/Oversight Sync) still build their DRILL
+   dict per-tab inside main() rather than at module level, so still can't
+   feed galaxy_map_river.py's reverse-link registry without a small
+   refactor.
+3. Current(L3)/Module(L2) still don't show their own reverse-link back to
+   Decisions (only Oracle/Supabase, via the existing UNIT_BUBBLE_SYSTEM
+   mechanism, which Decisions isn't part of — it's a cross-cutting
+   grouping, not an L0 unit).
+4. Decision Matrix/Dimensions/Skill Network's own EXISTING bubble systems
+   were not touched or "upgraded" to the shared render_bubble_row()
+   mechanism this pass — they already work, already follow R22 (table is
+   source, bubble follows), and reworking a genuinely working page purely
+   for stylistic uniformity was judged real, disproportionate churn for
+   zero functional gain (rule 11), not attempted.
+
+Real, current state: every one of the 22 real Galaxy Map pages (core +
+Dimension) now has SOME real bubble/web presentation — the last confirmed
+zero-bubble gap is closed.
