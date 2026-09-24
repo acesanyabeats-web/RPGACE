@@ -1,0 +1,77 @@
+GALAXY MAP FULL REDESIGN — REAL /interrogation RECORD
+"Complete freedom" /fableomnitrix dispatch, full /paranoia+/CEO+/drift+
+/interrogation+/free-for-all-debate+/debate+Council-of-5 stack
+Date: 2026-09-24
+
+TRIGGER (Alex, verbatim):
+"So I want /fableomnitrix to use evidence in all galaxy map htmls and
+deduplicated and make more concise how everything is presented or
+recorded. Imagine you have no rules, complete freedom, tell me what you
+would do to make this web with minimal duplications possible to make it
+more of a web. I want web view always first, then table as second tab
+option. /paranoia /CEO /drift /interrogation /free-for-all-debate /debate
+and council of 5 at all times for /fableomnitrix to determine course of
+action to present to me"
+
+Follows directly after item I (a real /interrogation-confirmed, small,
+additive "zoom" labeling pass) shipped this same session — this new ask
+is explicitly bigger: full evidence-based dedup across ALL 22 real Galaxy
+Map pages, a genuinely unconstrained ("no rules") redesign proposal, and
+a mandate to run the project's heaviest named protocols for the decision.
+
+REAL EVIDENCE GATHERED BEFORE ASKING (rule 1/4):
+- 17 of 22 real pages carry a real Table/Map(/cards) toggle.
+- Direct grep of which view defaults active: only 2 of 17 default to
+  map/web first (galaxy_map.html, galaxy_map_skill_network.html) — the
+  other 15 default to table/cards/list first. Alex's complaint about
+  inconsistent, table-first ordering is real and grounded, not assumed.
+- CLAUDE.md's own /debloat record already names a real, deliberately
+  deferred ~90KB per-page embedded-CSS overlap beyond the already-shared
+  LEFT_NAV_CSS/JS (22 separately hand-authored <style> blocks) — a real,
+  known, un-fixed duplication surface directly on-topic for this ask.
+- The already-ratified architecture (per CLAUDE.md's own Galaxy
+  Development Framework section): Dimensions are deliberately
+  multi-membership and never become numbered Rivers (R-rule, reconfirmed
+  Sep 15 2026 when Alex said "forget this idea" on folding Dimensions-
+  Inter into the river system); no privileged L0 gateway (R16); bubble
+  systems always mirror real table data (R22). This ask's "no rules"
+  framing puts these back on the table for real reconsideration, per
+  Alex's own answer below — not assumed safe to leave untouched.
+
+QUESTIONS ASKED (AskUserQuestion, 3 real load-bearing forks):
+
+Q1 — Scope of "run the full protocol stack at all times": a standing
+change to /fableomnitrix's own default behavior for every future
+dispatch, or scoped to this one redesign question?
+  ANSWER: Just this redesign (Recommended). /fableomnitrix's own
+  cost-discipline (heavy ceremony reserved for real Tier 2+ decisions,
+  never a reflexive default) stays unchanged for future dispatches.
+
+Q2 — Does "no rules, complete freedom" include reconsidering the
+already-ratified River/Dimension/Module data model itself, or is it
+scoped to presentation/dedup/navigation with the data model fixed?
+  ANSWER: Everything including the data model. Fable is explicitly
+  authorized to propose reopening the River/Dimension partition itself,
+  R16, R22, or any other structural invariant — nothing is off-limits
+  for this one pass, even decisions Alex has ratified twice before.
+
+Q3 — Web-view-first/table-second: retroactively flip all 15+ pages that
+currently default to table first, or only new/redesigned pages?
+  ANSWER: Retroactive, all pages (Recommended). One consistent site-wide
+  rule — every toggle's default view becomes Map/Web first, Table second.
+
+SYNTHESIS — what this dispatch now concretely means:
+A real, one-off, maximally-scrutinized /fableomnitrix decision pass
+(genuinely invoking /paranoia's own full 6-step sequence — which itself
+already runs GODMODE+scope+commit-archaeologist+Omnitrix+5thDimension,
+debate+free-for-all-debate, interrogation, and a Council-of-5 fact-check
+— layered inside a real /CEO Loop 1 compile→report shape, with /drift
+checking the final proposal against this record's own pinned answers).
+Fable is free to propose ANYTHING — including reopening the River/
+Dimension data model — genuinely unconstrained, not pre-narrowed by
+Sonnet. The one hard, already-decided constraint going into the dispatch
+is Q3's answer: web/map view becomes the default first tab everywhere,
+site-wide, once this plan executes. Fable returns ONE report (a proposed
+plan, never code); Alex approves via a real Council of 5 presentation
+before any Loop 2 execution begins — same two-phase CEO pattern this
+session already used twice tonight.
