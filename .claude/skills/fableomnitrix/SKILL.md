@@ -1,0 +1,61 @@
+---
+name: fableomnitrix
+description: A narrower variant of Omnitrix where Fable is stripped down to exactly one job — read-only decision-making and verdict-writing at real judgment-call moments — and never builds, edits, or commits anything. Normal Omnitrix (Sonnet orchestrating inline, Opus building) runs the whole session with zero Fable dispatch and zero extra Fable usage cost, right up until a genuine Tier 2+ decision point or an ask's success/failure needs judging — at that moment, and only then, Sonnet hands Fable a full evidence dossier (current state, Alex's own relevant past+present prompts, any /interrogation answers on record) and Fable reads it, runs /drift (and /paranoia where the decision earns that weight) against it, may invoke any other global or project skill itself for read-only evidence-gathering, and returns ONLY a written report — a decision plus reasoning, a verdict on whether the prior ask succeeded, and what should be built/reworked/removed/rewired next. Sonnet/Opus then execute that report through normal Omnitrix. Use this skill whenever Alex says "/fableomnitrix" or "fable omnitrix", or asks for Fable to be used purely as a thinking/deciding/reporting layer rather than a researcher or builder. Named and defined by Alex Sep 24 2026, verbatim, specifically to make his limited Fable usage allowance count for real judgment calls instead of routine work. Do NOT use this for Tier 0/1 work (handle directly, no Fable at all) or as a way to dispatch Fable for general research — that stays Omnitrix's own default (Sonnet-direct, Fable only for genuine large exhaustive audits or true background parallelism per the base omnitrix skill's own rebalance).
+---
+
+# /fableomnitrix — Fable as a pure read-only decision-and-verdict layer
+
+Alex's own verbatim framing (Sep 24 2026), which this skill exists to encode exactly, not loosely paraphrase:
+
+> "whenever i run /omnitrix with fable (lets call it /fableomnitrix) - the pro subscription plan does everything as normal, no fable or usage credits are used, until a decision by ai has to be made. once a decision is reached, the pro plan stops, hands evidence as report of all context to fable, for fable to read-only, make decisions with /drift to my /interrogation answers and ask in relevant past and present prompts to make my choices work, itll then only write a report (never build) on what should be built, thought through more, changed and removed, reworked or rewired to make this as efficient as possible. I essentially only want fable to read given reports for context and decisions that needs to be made... fable should also use to decide whether an ask is successful via /drift and /paranoia. all global custom skills i have in skills.md and claude.md are used at any stage if fable deems it necessary for evidence gathering. i want fable only to think, period, nothing else."
+
+Full verbatim spec + rationale: `records/2026-09/fableomnitrix_protocol_spec_2026-09-24.txt`.
+
+**Source of truth**: `.claude/skills/omnitrix/SKILL.md` for the base 3-agent workflow and Judgment Funnel this skill narrows, `.claude/skills/drift/SKILL.md` and `.claude/skills/paranoia/SKILL.md` for the exact procedures Fable runs, `.claude/skills/interrogation/SKILL.md` for what "my /interrogation answers" means as a real evidence source. This file only wires them together in a fixed sequence — it invents no new reasoning of its own, same design discipline as `/5thDimension`/`/Routine`/`/Summary`.
+
+## The core split
+
+**Everything that is NOT a real decision point runs exactly as normal Omnitrix, with zero Fable involvement.** Sonnet orchestrates and plans inline, Opus builds, Sonnet reviews — the existing July 20 rebalance (Sonnet-direct research by default, Fable reserved for genuine large audits) is unchanged for this half of the work. No Fable dispatch, no Fable usage cost, for as long as work is mechanical (Tier 0/1) or is executing an already-decided plan.
+
+**The moment a real decision point is reached, Sonnet stops building and hands off to Fable — read-only, report-only.** "A real decision point" is the same threshold the base Judgment Funnel already uses for Tier 2 (CLAUDE.md rule 5's "3+ new pieces," an architecture fork, a genuinely ambiguous multi-subsystem call) — this skill doesn't invent a new bar, it routes an existing one to Fable instead of to inline Council-of-5 reasoning. It also fires on a second, distinct trigger: **judging whether a just-completed ask actually succeeded** — the verdict role normally split across `/Engineer`'s Stage 5 Truth Check and ad hoc review, now assigned to Fable specifically when `/fableomnitrix` is active.
+
+## Procedure, in order
+
+**Step 1 — Normal Omnitrix, uninterrupted.** Sonnet plans and orchestrates, Opus builds, per the base `omnitrix` skill. This continues until Step 2's trigger fires.
+
+**Step 2 — Detect the decision point.** Either:
+   (a) a real Tier 2+ fork appears — two or more genuinely different ways to proceed, where the choice changes real scope/schema/UX, same bar as the base Judgment Funnel; or
+   (b) a unit of work Sonnet/Opus just built needs a real success/failure verdict before anything proceeds further.
+
+**Step 3 — Compile the dossier.** Sonnet — never Fable — assembles the evidence Fable will read, so Fable's own context starts fully briefed rather than re-deriving state from scratch (the same cost lesson the base `omnitrix` skill already learned from over-dispatching Fable):
+   - The real current code/git/Supabase state relevant to the decision (GODMODE-shape evidence — file:line citations, query results, never a paraphrase).
+   - The specific fork or ask being judged, stated plainly.
+   - Alex's own relevant **past and present prompts** — pulled from this session's own conversation and, for anything predating it, `session_memory` (full-text search) — so Fable's decision is grounded in what Alex actually said, not an inferred default.
+   - Any existing `/interrogation` answers on record for this subject (a committed `.txt` backlog file, or an answer given earlier this session) — Fable must reconcile its decision against these, never re-litigate a question Alex already answered.
+
+**Step 4 — Dispatch Fable, read-only.** One Agent-tool call, `model: "fable"`, `subagent_type: "Plan"` (the closest built-in agent profile to a real read-only architect — it carries no Edit/Write/NotebookEdit tools). State explicitly in the dispatch prompt, every time: *"You are strictly read-only for this task. Do not create, edit, move, delete, or commit any file, and do not run any command that changes repository or Supabase state. Your only output is the text report you return."* **Honest limitation, not glossed over**: the `Plan` agent profile still carries `Bash`, so this is a strong prompt-level convention, not a hardware-enforced sandbox — same class of honesty this project already applies to its own limits (e.g. the swipe-freeze landmine, the Lighthouse-audit block). If a stricter enforcement is ever needed, that's a real, separate ask for Alex, not assumed here.
+
+**Step 5 — What Fable actually does with the dossier**, all real, none skipped:
+   1. Reads the dossier and, if genuinely necessary, pulls more read-only evidence itself — including invoking any other project (`.claude/skills/`) or global (`~/.claude/skills/`) skill's own procedure, per Alex's explicit "all global custom skills... used at any stage if fable deems it necessary for evidence gathering." Fable decides which skills earn their cost here — it is not required to invoke all of them, only the ones its own judgment says the decision needs.
+   2. Runs `/drift` against the pinned baseline (Alex's real interrogation answers, a ratified spec, or CLAUDE.md's own stated facts) — VERDICT + BASIS + graded findings, the skill's own fixed report shape.
+   3. For a decision genuinely big enough to warrant it (not reflexively — `/paranoia` is this project's single most expensive protocol by design), runs `/paranoia`'s procedure in full; for a smaller fork, a `/drift`-plus-plain-scrutiny pass is proportionate instead. Same "scale to the size of the ask" discipline every other RPGACE skill already carries.
+   4. When the trigger was Step 2(b) — judging a completed ask — the verdict is explicitly SUCCESS or NOT-SUCCESS, backed by the same `/drift`+`/paranoia`-shaped evidence, never a bare opinion.
+   5. Writes ONE report: the decision reached (with real reasoning, not just a conclusion), the success/failure verdict where relevant, and a concrete list of what should be built, thought through further, changed, removed, reworked, or rewired next. **Never a diff, never a file edit, never a commit** — a report is the only artifact Fable produces.
+
+**Step 6 — Sonnet receives the report and resumes Omnitrix.** Read Fable's report as real, evidence-backed input — not a rubber stamp, not a re-litigation. If the report itself surfaces something only Alex can decide (Tier 3, a genuine remaining ambiguity `/interrogation` couldn't resolve from evidence alone), surface that to Alex before proceeding, same as any other tier of this project's Judgment Funnel. Otherwise, hand the report straight to normal Omnitrix execution — Opus builds per it, Sonnet reviews — and return to Step 1 until the next decision point.
+
+## Interaction with `/CEO`/`/Engineer` — does not replace Stage 5
+
+CLAUDE.md rule 17 already names the real failure mode this section exists to prevent: a custom dispatch's own careful review is not the same discipline as `/Engineer`'s Stage 5 Truth Check, and skipping Stage 5 in favor of an ad hoc review once let a real self-contradiction ship unnoticed. **`/fableomnitrix`'s Fable-verdict is the SAME risk shape** — it must never be treated as a substitute for `/Engineer`'s Stage 5 when the work in question is tracked under an active `/CEO` plan. Fable's report feeds INTO that Stage 5 check as real evidence; it does not stand in for it. Outside an active `/CEO` plan, Fable's success/failure verdict is the real completion gate for that ask.
+
+## Cost discipline — the entire point of this skill
+
+Fable dispatch happens **only** at Step 2's real trigger — never as a default researcher, never for routine execution, never "just in case." This is Alex's own explicit ask (100 free credits, wants them spent on genuine judgment calls, not on work "other more efficient models" already handle well) and it is stricter than the base `omnitrix` skill's own July 20 rebalance, not merely a restatement of it: base Omnitrix still allows Fable for a large exhaustive audit with no decision attached; `/fableomnitrix` narrows that further — audits and research stay Sonnet-direct even under this skill, Fable's dispatch trigger is decision-and-verdict only.
+
+## Guardrails
+
+- **Fable never gets Edit/Write/NotebookEdit tools, and the dispatch prompt states the read-only constraint every single time** — this is not implied by using `subagent_type: "Plan"` alone, it must be stated explicitly, since `Plan` still retains `Bash`.
+- **A report that looks like code (a snippet, a sketch) is illustrative only** — Sonnet/Opus re-derive the real implementation themselves during the following Omnitrix build step; Fable's snippet is never pasted in verbatim as shipped code.
+- **Tier 3 (destructive/high-stakes) still needs Alex's explicit confirmation** even when Fable's report recommends a path with full confidence — rigor from Fable is not authorization, same boundary GODMODE's own section states.
+- **Don't manufacture decision points to justify a dispatch.** If Step 1's work genuinely has no real fork and no ask needing a verdict, `/fableomnitrix` produces zero Fable dispatches for that stretch of work — that is the skill working as intended, not a shortfall.
+- **Scale `/paranoia` vs. plain `/drift`+scrutiny honestly** — Fable's own judgment decides which a given decision earns; defaulting to the heaviest option every time defeats the cost discipline this skill exists for.

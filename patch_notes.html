@@ -73,6 +73,16 @@
 
 <div class="content">
 
+<div class="card green" id="card-2026-09-24-fableomnitrix-protocol-built" style="margin-bottom:30px;">
+    <div class="card-title">🧠 Sep 24 — new protocol: /fableomnitrix, Fable narrowed to a pure read-only decision/verdict layer</div>
+    <div class="card-body">
+      Real, verbatim Alex ask: he just got 100 free Fable credits and wants them spent only on genuine judgment calls, never routine research or building. New skill <code>.claude/skills/fableomnitrix/SKILL.md</code> (full verbatim spec: <code>records/2026-09/fableomnitrix_protocol_spec_2026-09-24.txt</code>), a stricter variant of the base Omnitrix workflow.<br><br>
+      <strong>The split</strong>: normal Omnitrix (Sonnet orchestrating inline, Opus building) runs the whole task with zero Fable dispatch and zero Fable usage cost, right up until a real Tier 2+ decision point or a completed ask needs a success/failure verdict. Only then does Sonnet compile a full evidence dossier — current code/git/Supabase state, Alex's own relevant past+present prompts (this session + a real <code>session_memory</code> full-text search), any <code>/interrogation</code> answers already on record — and dispatch Fable (<code>model:"fable"</code>, <code>subagent_type:"Plan"</code>, the closest built-in read-only-oriented profile, with the read-only constraint stated explicitly in every dispatch prompt since <code>Plan</code> still retains Bash — named as an honest convention-level guarantee, not a hard sandbox, same discipline this project already applies to its other real limits).<br><br>
+      Fable reads the dossier, may invoke any project or global skill itself for further read-only evidence at its own judgment (Alex's own explicit ask), runs <code>/drift</code> against the pinned baseline (full <code>/paranoia</code> only where the decision genuinely earns that weight, never reflexively), and returns <strong>only a written report</strong> — a decision with real reasoning, a success/failure verdict where relevant, and what should be built/reworked/removed/rewired next. Fable never edits, writes, or commits; Sonnet/Opus execute the report through normal Omnitrix afterward.<br><br>
+      A real, deliberate addition beyond the literal ask: rule 17's own lesson (a custom dispatch's own careful review is not the same discipline as <code>/Engineer</code>'s Stage 5 Truth Check) applies here directly — under an active <code>/CEO</code> plan, Fable's report feeds Stage 5 as evidence, it never substitutes for it. CLAUDE.md's Invokable Frameworks section gained a matching subsection. Invoke with "/fableomnitrix" or "fable omnitrix." <strong>Untested against a real live decision point yet</strong> — same standing flag as any freshly-shipped protocol.
+    </div>
+</div>
+
 <div class="card green" id="card-2026-09-24-smoke-test-loaddemoshifts-brown-3-coverage-gaps" style="margin-bottom:30px;">
     <div class="card-title">🧪 Sep 24 — smoke_test.html: 1 real 🟤 brown (dead-button row deleted) + 3 real coverage gaps closed</div>
     <div class="card-body">

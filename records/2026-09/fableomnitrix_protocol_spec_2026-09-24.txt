@@ -1,0 +1,118 @@
+RPGACE — /fableomnitrix protocol spec (real, verbatim, Alex-defined)
+Sep 24 2026
+
+===========================================================================
+CONTEXT
+===========================================================================
+Alex has just received 100 free (Fable) credits and wants to use them for
+maximum real value — not spent on routine work other, cheaper models
+already handle well, but reserved specifically for real judgment calls.
+He defined a new named protocol, verbatim, in one message, no prior
+back-and-forth needed to resolve it (rule 5's "record real answers
+verbatim" convention — this file IS that record; no further
+/interrogation round was run since the spec left no genuinely load-bearing
+ambiguity once mapped onto this project's existing vocabulary).
+
+===========================================================================
+THE REQUEST, VERBATIM
+===========================================================================
+"ive just got 100 credits free, and i want to use them to the best
+capabilities possible. whenever i run /omnitrix with fable (lets call it
+/fableomnitrix) - the pro subscription plan does everything as normal, no
+fable or usage credits are used, until a decision by ai has to be made.
+once a decision is reached, the pro plan stops, hands evidence as report
+of all context to fable, for fable to read-only, make decisions with
+/drift to my /interrogation answers and ask in relevant past and present
+prompts to make my choices work, itll then only write a report (never
+build) on what should be built, thought through more, changed and
+removed, reworked or rewired to make this as efficient as possible. I
+essentially only want fable to read given reports for context and
+decisions that needs to be made (fable is best used for thinking through
+things and topics and structure, leave building to other more efficient
+for token usage models). fable should also use to decide whether an ask
+is successful via /drift and /paranoia. all global custom skills i have
+in skills.md and claude.md are used at any stage if fable deems it
+necessary for evidence gathering. i want fable only to think, period,
+nothing else."
+
+===========================================================================
+HOW THIS WAS MAPPED ONTO REAL, EXISTING RPGACE VOCABULARY
+===========================================================================
+- "the pro subscription plan does everything as normal, no fable or usage
+  credits used, until a decision by ai has to be made" -> the existing
+  Judgment Funnel's Tier 2 threshold (CLAUDE.md rule 5 / omnitrix skill's
+  own "3+ new pieces" bar) is the real, already-defined line for "a real
+  decision" — reused directly rather than inventing a new one.
+
+- "hands evidence as report of all context to fable" -> the same dossier-
+  compilation discipline base Omnitrix already uses before any Fable
+  dispatch (briefing Fable from scratch is real cost — Sonnet compiles
+  the evidence FIRST so Fable's own context starts pre-briefed).
+
+- "fable to read-only... write a report (never build)" -> enforced via
+  Agent-tool dispatch with subagent_type:"Plan" (no Edit/Write/
+  NotebookEdit tools) + an explicit stated read-only constraint in every
+  dispatch prompt, since Plan still retains Bash — named as an honest,
+  convention-level guarantee, not a hard sandbox, matching this project's
+  standing discipline of naming real limits rather than overclaiming them.
+
+- "/drift to my /interrogation answers and ask in relevant past and
+  present prompts" -> Step 3 of the new skill: Sonnet's dossier includes
+  Alex's own relevant past+present prompts (this session's conversation +
+  session_memory full-text search for anything earlier) and any existing
+  /interrogation answers on record, and Fable's /drift pass (Step 5.2)
+  measures against exactly that as its pinned baseline.
+
+- "decide whether an ask is successful via /drift and /paranoia" ->
+  Step 2(b)'s second trigger (a completed ask needing a verdict, not just
+  a fork needing a decision) and Step 5.3-5.4 of the new skill — Fable's
+  own judgment decides /drift-plus-scrutiny vs. full /paranoia, scaled to
+  the decision's real size (never reflexive full /paranoia — that's this
+  project's single most expensive protocol by design).
+
+- "all global custom skills... used at any stage if fable deems it
+  necessary for evidence gathering" -> Step 5.1 — Fable may invoke any
+  project (.claude/skills/) or global (~/.claude/skills/) skill's own
+  procedure itself, at its own judgment, purely for read-only evidence.
+
+- "fable only to think, period, nothing else" -> the skill's central
+  guardrail, restated three separate ways in the skill file (dispatch
+  constraint, "report never diff," Tier 3 confirmation still needed) so
+  no single enforcement point is a silent single point of failure.
+
+===========================================================================
+A REAL, DELIBERATE ADDITION NOT LITERALLY IN THE REQUEST
+===========================================================================
+Rule 17 (CLAUDE.md) already documents a real, confirmed failure mode: a
+careful ad hoc review is not the same discipline as /Engineer's own
+Stage 5 Truth Check, and skipping Stage 5 for a custom dispatch's own
+review once let a real self-contradiction ship. /fableomnitrix's Fable-
+verdict carries the identical risk shape, so the new skill states
+explicitly: under an active /CEO plan, Fable's report feeds Stage 5 as
+evidence, it never substitutes for it. This wasn't asked for directly,
+but is a direct, load-bearing application of an already-ratified rule to
+a genuinely new mechanism that could otherwise recreate the exact bug
+rule 17 was written to close — flagged here plainly rather than silently
+folded into the skill with no note, per rule 16's own "name the subject
+that changed" discipline.
+
+===========================================================================
+WHAT WAS BUILT
+===========================================================================
+- .claude/skills/fableomnitrix/SKILL.md — the new project skill, full
+  procedure as mapped above.
+- CLAUDE.md's "## Invokable frameworks" section — a new subsection
+  cross-referencing it, same pattern as 5thDimension/restructure/paranoia.
+- This record file.
+- patch_notes.html + system_updates (Chronicles) — logged same session,
+  per rule 6 ("every confirmed idea or fix updates the Oversight docs in
+  the same session, not optional, not batched").
+
+===========================================================================
+STATUS
+===========================================================================
+Real, usable immediately — say "/fableomnitrix" (or "fable omnitrix") to
+invoke it for any task. Untested against a real live decision point yet
+(same standing "untested by Alex's own hand" flag this project applies to
+nearly everything on first ship) — the real proof of this protocol is the
+first genuine Tier 2 fork or completion-verdict it gets used on.
