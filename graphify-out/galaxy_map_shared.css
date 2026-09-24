@@ -11,6 +11,7 @@
 .gside-level.active{background:rgba(201,168,76,0.16)}
 .gside-level b{display:block;font-size:12.5px;color:#E2E2EC}
 .gside-level span{display:block;font-size:9px;color:#6a6a78;margin-top:2px}
+.gside-zoomcap{font-size:9px;font-style:italic;color:#C9A84C;opacity:.85;margin:-2px 0 4px 9px}
 .gside-dim{display:block;text-decoration:none;padding:6px 9px;border-radius:7px;margin-bottom:2px;border-left:2px solid transparent}
 .gside-dim:hover{background:rgba(255,255,255,0.05)}
 .gside-dim.active{background:rgba(201,168,76,0.16)}

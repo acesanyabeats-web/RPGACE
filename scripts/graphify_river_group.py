@@ -5285,6 +5285,32 @@ LEFT_NAV_LEVEL_ANNOTATION = {
     'galaxy_map_module.html': 'Modules + Inter',
     'galaxy_map_current.html': 'Currents',
 }
+
+# Item I of the "Galaxy Map <-> code representation audit" /CEO plan
+# (ceo_plans 8481e7c9-..., item I, Sep 24 2026) — real /interrogation-
+# confirmed scope: Alex asked for the Galaxy Map to read as "a web...
+# htmls just being a zoom in area of the web based on level, river and
+# units involved." Both real answers picked the cheapest options: (Q1)
+# reframe the ALREADY-BUILT L0->L1->L2->Current page sequence itself as
+# the zoom, no new pages, no new pan/zoom UI; (Q2) the 14 Dimension
+# pages stay separate cross-cutting entry points, unchanged — matches
+# the already-ratified "Dimensions are multi-membership, never a numbered
+# rung of the Level ladder" architecture decision a few sections above.
+# This dict is the one real, additive piece of that reframe: a short
+# "you are zoomed to X" caption per level, deliberately a SEPARATE dict
+# from LEFT_NAV_LEVEL_ANNOTATION above rather than repurposing it — that
+# dict already carries a real, different, load-bearing meaning (which
+# Dimension-kind nests under this level, per LEFT_NAV_LEVEL_KINDS), and
+# overloading one string with two facts would blur both (rule 8 applies
+# to reusing a MATCHING meaning, not to merging two different ones into
+# one slot). Full interrogation record:
+# records/2026-09/galaxy_map_web_zoom_interrogation_2026-09-24.txt
+LEFT_NAV_ZOOM_CAPTION = {
+    'galaxy_map.html': '🌐 The whole web — zoom in from here',
+    'galaxy_map_river.html': '🔎 Zoomed to: Rivers (the web’s real code partitions)',
+    'galaxy_map_module.html': '🔎 Zoomed to: a River’s own Modules',
+    'galaxy_map_current.html': '🔎 Zoomed to: a Module’s own functions',
+}
 LEFT_NAV_LEVEL_KINDS = {
     'galaxy_map.html': ('meta',),
     'galaxy_map_river.html': ('infra',),
@@ -5350,6 +5376,7 @@ LEFT_NAV_CSS = '''
 .gside-level.active{background:rgba(201,168,76,0.16)}
 .gside-level b{display:block;font-size:12.5px;color:#E2E2EC}
 .gside-level span{display:block;font-size:9px;color:#6a6a78;margin-top:2px}
+.gside-zoomcap{font-size:9px;font-style:italic;color:#C9A84C;opacity:.85;margin:-2px 0 4px 9px}
 .gside-dim{display:block;text-decoration:none;padding:6px 9px;border-radius:7px;margin-bottom:2px;border-left:2px solid transparent}
 .gside-dim:hover{background:rgba(255,255,255,0.05)}
 .gside-dim.active{background:rgba(201,168,76,0.16)}
@@ -5478,6 +5505,8 @@ def left_nav_html(current_file):
         annot = LEFT_NAV_LEVEL_ANNOTATION.get(fname)
         sub = f'<span>{annot}</span>' if annot else ''
         head = f'<a class="gside-level{cls}" href="{fname}"><b>{icon} {label}</b>{sub}</a>'
+        zoom_cap = LEFT_NAV_ZOOM_CAPTION.get(fname)
+        head += f'<div class="gside-zoomcap">{zoom_cap}</div>' if zoom_cap else ''
         nested = ''
         if fname == 'galaxy_map_module.html':
             # L2 gets the ONE combined river->module nested list (rivers
@@ -5517,7 +5546,11 @@ def left_nav_html(current_file):
         '<button class="gside-toggle" type="button" aria-label="Open Galaxy Map navigation">MAP ▸</button>'
         '<div class="gside-backdrop"></div>'
         '<nav class="gside-nav">'
-        '<h3>🌌 Levels</h3>'
+        '<h3>🌌 Zoom Levels</h3>'
+        '<div class="gside-def">RPGACE Total Systems is one connected web. Each level below is a real zoom '
+        'step into it — River zooms into a group of Modules, Module zooms into one River’s real members, '
+        'Current zooms into one Module’s own functions — never a separate map, the same web at a tighter '
+        'grain each step in.</div>'
         '<div class="gside-def">A Dimension is a real cross-cutting facet — the same modules and functions, '
         'seen through one lens. Deliberately <b>multi-membership</b>: a module can sit in several at once, '
         'which is exactly why a Dimension is never a numbered River (a River is a strict one-module-one-home '

@@ -1,0 +1,81 @@
+GALAXY MAP "WEB ZOOM" REFRAME — REAL /interrogation RECORD (item I)
+Plan: "Galaxy Map <-> code representation audit + /fableomnitrix first live use"
+ceo_plans id: 8481e7c9-25da-4e92-bb59-d33d6be1fe60
+ceo_plan_items id (I): 9501020b-2648-4b04-8daf-a783703ca9a2
+Date: 2026-09-24
+
+TRIGGER (Alex, verbatim, mid-turn during the Loop 2 execution window):
+"i'd like /fableomnitrix to scan how to make the galaxy map more of a web mapped
+out, and its htmls just being a zoom in area of the web based on level, river and
+units involved at which level. use everything at disposal with /drift
+/interrogation /CEO /paranoia /commit-archaeologist to get this done"
+
+Deliberately scoped as its own new plan item (I) rather than folded into the
+in-flight Fable dispatch for the drift-scan mega-request — starting a second
+Fable dispatch before the first had returned would have been the exact
+"manufacture a second decision point before the first is resolved" anti-pattern
+/fableomnitrix exists to prevent.
+
+EVIDENCE GATHERED BEFORE ASKING (rule 1/4 — real state, not guessed):
+- galaxy_map_hub.py's own PAGES catalog: today's real structure is one page per
+  LEVEL (L0 galaxy_map.html, L1 galaxy_map_river.html — all 12 rivers on one
+  page, L2 galaxy_map_module.html — all 48 river-homed modules on one page,
+  Current/L3 galaxy_map_current.html — all functions on one page) PLUS 14
+  separate cross-cutting "Dimension" pages (Oracle, Supabase, Connectors,
+  Decisions, Decision Matrix, Dimensions, Externals, Skill Network, Loops,
+  Load, Alex Path, Generator Toolchain, Orchestrator CC, OpenMontage CC,
+  Oversight Sync, Local Pipeline, Level6).
+- CLAUDE.md documents a deliberate, already-ratified architecture decision
+  (R16-era + the Sep 15 Thread-1 "fold Dimensions-Inter into the river system"
+  DROP) that Dimension pages never become numbered rivers or fold into the
+  level/river/module hierarchy — they stay reachable via migration bubbles
+  instead.
+- The exact "web-bubble" interlinking mechanism Alex is describing already
+  exists and was built earlier THIS session (render_bubble_row() /
+  build_infra_drilldown() / render_infra_drilldown(), extended today across
+  externals/loops/decision_matrix/river reverse-links, see the interlink
+  records already logged this session) — real prior art directly on point.
+
+QUESTIONS ASKED (AskUserQuestion, 2 real load-bearing forks — the choice
+between options would produce materially different builds):
+
+Q1 — "Zoom granularity: what should 'zoom' actually mean structurally?"
+  (a) Reframe existing pages as the zoom [RECOMMENDED] — treat the
+      already-built bubble/drill-down sections within each level-page as the
+      zoom; mostly a navigation/labeling/polish pass, no new page count.
+  (b) Real new per-(level x river) or per-(level x unit) pages — a genuine
+      page-count expansion, more granular real navigation.
+  (c) A real interactive pan/zoom graph UI — the largest, newest build, a
+      genuinely different UI paradigm (canvas/SVG pan-zoom, not a page-per-view).
+
+Q2 — "Dimension pages: should the 14 cross-cutting Dimension pages become
+part of the level/river/unit zoom hierarchy, or stay separate?"
+  (a) Stay separate cross-cutting entry points [RECOMMENDED] — matches the
+      existing, already-ratified architecture decision plus today's
+      already-built web-bubble system.
+  (b) Fold Dimensions into the zoom hierarchy too — a real, larger
+      architecture change reversing an existing decision.
+
+ALEX'S REAL ANSWERS (verbatim as returned by the tool):
+Q1 = "Reframe existing pages as the zoom (Recommended)"
+Q2 = "Stay separate cross-cutting entry points (Recommended)"
+
+SYNTHESIS — what item I concretely means now:
+Both real answers are the cheapest, most-conservative options. Together they
+mean item I is NOT a new UI paradigm and NOT a page-count expansion. It is a
+navigation/framing/labeling pass over the Galaxy Map's ALREADY-BUILT
+structure: present the existing L0->L1->L2->Current(L3) page sequence
+explicitly AS a "zoom" (a real narrative/labeling frame — e.g. sidebar/page
+copy that says "you are zoomed to <level> x <river> x <unit>" as you drill
+through the existing bubble/drilldown system), while the 14 Dimension pages
+keep their current, already-correct status as separate cross-cutting entry
+points, unchanged architecturally.
+
+This confirms the honest pushback that would otherwise need stating
+separately: given the standing Sep 15 finding (56% of the prior 2 weeks'
+commits were Galaxy-Map/meta work while real product debt sat untouched) and
+that the Sep 16 pause override was granted for a SCOPED 6-item plan already
+completed, item I's now-narrowed scope is real but small — closer to a
+polish/copy pass over infrastructure that already does the described job,
+not a new subsystem. No further /interrogation round is needed; both
+questions were sufficient to resolve the load-bearing ambiguity.
