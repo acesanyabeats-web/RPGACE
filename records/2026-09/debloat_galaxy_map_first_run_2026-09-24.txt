@@ -1,0 +1,193 @@
+RPGACE — /debloat's first real run: Galaxy Map HTML family
+Sep 24 2026
+
+===========================================================================
+CONTEXT
+===========================================================================
+Alex's direct ask: "now lets run same audit on all galaxy map htmls, their
+design and how the same information can be debloated - id like this
+debloat system as a skill called /debloat." Followed immediately by a
+precise procedure spec: "/paranoia /drift /misunderstanding towards me
+then straight /interrogation with /misunderstanding to answer, then
+council of 5 on /paranoia and /commit-archaeologist to see what can be
+shortend without losing any info. also when context window gets to 60% -
+it should use /debloat to offload context."
+
+Built .claude/skills/debloat/SKILL.md (project) + ~/.claude/skills/debloat/
+SKILL.md (global) first, per that spec, with one real reconciliation
+stated plainly rather than silently worked around: /misunderstanding's own
+file is explicit ("never self-triggered... only Alex can experience his
+own confusion") — /debloat borrows its 3-step FORMAT as a self-check, it
+never literally auto-invokes the named skill.
+
+Two real forks confirmed via AskUserQuestion before building:
+1. No hook exists for a literal "context window at 60%" trigger in this
+   harness (confirmed directly — no tool reports live token percentage).
+   Mode B runs on self-monitored judgment instead. Alex confirmed this.
+2. Skill scope: both project (RPGACE-tuned) and global (any session),
+   matching the existing omnitrix/aintergration precedent. Alex confirmed.
+
+===========================================================================
+STEP 1 — REAL EVIDENCE (quantified, not guessed)
+===========================================================================
+23 real galaxy_map*.html pages, 5.7MB total (before this run).
+
+- gside-nav left sidebar: ~99.96% byte-identical across all 23 pages,
+  confirmed via direct Python difflib.SequenceMatcher comparison against
+  a baseline page — ~374KB of the 5.7MB total is this ONE block, varying
+  only by which link carries the 'active' class (a small, scattered delta,
+  not a contiguous region).
+- Embedded <style> blocks: ~34% shared across pages / ~90KB estimated
+  extractable via the same SequenceMatcher method — most per-page CSS is
+  genuinely unique styling for that page's own distinct visual components
+  (SVG hub-and-spoke systems, bubble panels, tables), not waste.
+- galaxy_map_current.html alone is 3MB — confirmed this is REAL, UNIQUE
+  per-function content (a Current-series entry for every real function
+  across 58 modules), not duplication. A real example of Step 1 needing to
+  tell genuine size apart from genuine duplication before recommending
+  anything.
+- Design-token check (extending GMR-4's Sep 16 2026 canonical-palette
+  audit): galaxy_map_generator_toolchain.html (built Sep 22, after that
+  audit) used --accent:#4A90E2 where the canonical name is --blue — same
+  real value, wrong token name, same drift class GMR-4 already fixed 4
+  instances of once.
+
+===========================================================================
+STEP 2 — DRIFT CHECK
+===========================================================================
+Real, load-bearing finding BEFORE proposing any fix: left_nav_html()/
+inject_left_nav() (scripts/graphify_river_group.py) were ALREADY a single
+shared Python source — rule 8's source-level dedup already held. The real
+waste was purely OUTPUT bytes: one shared function re-inlining its full
+output fresh into 19+ separate static files on every build, with zero
+external-resource mechanism (no <link>/<script src> anywhere in any page).
+
+VERDICT: drifted (real, quantified duplication exists) — BASIS: none (no
+ratified rule ever said Galaxy Map pages must stay 100% self-contained
+with zero shared resources; that's specifically an index.html/live-app
+rule, confirmed by direct check, never extended to this generator output).
+This is a genuinely open architectural question, not a violation of an
+existing decision either way.
+
+===========================================================================
+STEP 3-4 — SCOPE CONFIRM + INTERROGATION (real, via AskUserQuestion)
+===========================================================================
+Real, load-bearing question surfaced before executing: extracting a shared
+external CSS/JS file would save ~464KB (~8% of 5.7MB) but (a) makes every
+page depend on that file being present alongside it (a single page copied
+elsewhere alone would lose its own nav), and (b) touches the shared
+generator function + a full pipeline re-verify — real execution risk for
+a modest byte savings on internal, never-load-time-measured dev docs.
+
+Alex's answer: "Yes, execute it now." Understood and confirmed back before
+acting: proceed with the real extraction, accepting the per-file
+dependency trade-off explicitly.
+
+===========================================================================
+STEP 5 — COUNCIL OF 5 + COMMIT-ARCHAEOLOGIST, BLOCK BY BLOCK
+===========================================================================
+Block 1 — gside-nav sidebar + LEFT_NAV_CSS/LEFT_NAV_JS: **SAFE TO SHORTEN.**
+Real reason: inject_left_nav()'s own docstring already called this
+"purely additive, injected once per build" — a mechanical post-process
+with a single call chain (inject_level_rail -> inject_left_nav ->
+left_nav_html), zero other callers found (confirmed by grep). No
+information lost by moving identical output to one shared location;
+the per-page 'active' delta is preserved via a tiny client-side script,
+not dropped.
+
+Block 2 — the ~90KB broader embedded-CSS overlap (beyond LEFT_NAV_CSS):
+**MUST STAY, for now.** Real reason: no shared Python function exists for
+this CSS (unlike the nav) — each of the 22 page scripts hand-authored its
+own <style> block independently. Extracting the common lines would mean
+manually diffing 22 separately-authored CSS strings and editing each one,
+a real, higher-regression-risk, lower-payoff (1.6% of total vs. the nav's
+6.5%) task better suited to its own dedicated, careful pass (matching
+this project's own established discipline of not bundling a messier,
+smaller win into a cleaner, bigger one just because both were found the
+same session). Flagged as a real, scoped future item, not silently
+dropped.
+
+Block 3 — galaxy_map_current.html's 3MB size: **MUST STAY**, not a
+debloat target at all — real, unique per-function content, confirmed
+directly (669 real Currents across 53 modules, one real entry each).
+
+Block 4 — the --accent/--blue token-name drift: **SAFE TO SHORTEN**
+(a one-line rename, zero functional change, matches the exact precedent
+GMR-4 already established 4 times) — Tier 0/1, executed directly without
+further ceremony.
+
+===========================================================================
+STEP 6 — EXECUTION (only what Council of 5 cleared)
+===========================================================================
+1. Added _write_shared_nav_assets() to scripts/graphify_river_group.py:
+   writes graphify-out/galaxy_map_shared.css (LEFT_NAV_CSS, 2936 bytes)
+   and graphify-out/galaxy_map_shared.js (LEFT_NAV_JS + the nav HTML
+   embedded as a JSON-encoded JS string, injected via
+   document.body.insertAdjacentHTML('afterbegin', ...) + a real
+   active-page-highlight script). Called idempotently from
+   inject_left_nav() on every invocation — writing the same deterministic
+   bytes 19+ times is harmless and guarantees the shared files can never
+   drift stale relative to their own Python source.
+
+2. Rewrote inject_left_nav() to insert <link rel="stylesheet"
+   href="galaxy_map_shared.css"> in <head> and <script
+   src="galaxy_map_shared.js"></script> after <body>, instead of inlining
+   full CSS/nav/JS content. Deliberately used <script src>, never
+   fetch()/XHR — confirmed before choosing this mechanism that fetch() of
+   a local file is blocked by CORS when a page is opened via file://,
+   while <script src="relative.js"> is not subject to that restriction.
+
+3. Real regression caught and fixed DURING implementation, not after
+   shipping: the client-side active-highlight script's first draft used a
+   selector (.gside-nav a[href]) broad enough to also match river/module
+   sub-links, which would have incorrectly highlighted every river row
+   sharing its href's base filename with the current page (e.g. every
+   river link under galaxy_map_module.html points at
+   "galaxy_map_module.html#river-N", stripping to the current page's own
+   name). Fixed to scope the selector to .gside-level/.gside-dim only,
+   matching the original server-side logic's exact scope.
+
+4. A second real, unplanned finding surfaced by regenerating the full
+   pipeline: galaxy_map_hub.py's own compute_real_edges() count dropped
+   from 378 to 38 real edges. Investigated before assuming either "broken"
+   or "fine" — confirmed this is a genuine IMPROVEMENT, not a regression:
+   that function already excludes the shared level-rail nav from its
+   edge-count as "chrome, not a real flow relationship" (a real Aug 21
+   2026 precedent), but the gside-nav sidebar was never given the same
+   carve-out, so its ~15-17 hrefs per page were being counted as real
+   page-to-page relationships despite being the exact same class of
+   generic chrome. Moving the sidebar external makes the metric naturally
+   correct itself with zero code change to compute_real_edges() — updated
+   its own docstring to document this rather than leave the improvement
+   unexplained.
+
+5. Applied the --accent -> --blue token rename in
+   scripts/galaxy_map_generator_toolchain.py (4 occurrences).
+
+6. Regenerated the full 21-script + hub pipeline twice from a clean
+   state — R5 idempotent, byte-identical md5 across all 23 pages both
+   times. All 23 pages remain div/a-balanced (verified directly, not
+   assumed). verify_anchors.py re-confirms all 26 citations fresh.
+   Headless-Chromium spot-check on 3 representative pages (module/
+   river/current) via file:// (the harder case than HTTP): nav renders
+   correctly, exactly 1 active link matching the real current page, 0
+   river/module links falsely highlighted, shared CSS link resolves
+   correctly, zero new console errors (one pre-existing, already-
+   documented sandboxed-network error on the river page, unrelated to
+   this change).
+
+===========================================================================
+STEP 7 — REPORT
+===========================================================================
+Real before/after: 5.7MB -> 5.2MB across the 23-page family (~500KB
+real reduction, ~8.8%), plus a 2nd real, unplanned improvement (the
+Galaxy Map's own cross-page edge-count metric got more honest: 378 ->
+38, chrome-inflated links removed, not a loss of real signal).
+
+Deliberately NOT done this pass, named plainly: the broader ~90KB
+per-page CSS overlap (Block 2, MUST STAY for now — real future item,
+needs its own dedicated pass); nothing about galaxy_map_current.html's
+real size was touched (it was never bloat to begin with).
+
+Committed to main, pushed. CLAUDE.md's own Galaxy Map bullet + patch_notes
+updated in the same session per rule 6.

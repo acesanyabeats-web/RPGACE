@@ -194,11 +194,11 @@ TEMPLATE = """<!DOCTYPE html>
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>RPGACE — Galaxy Map (Generator Toolchain)</title>
 <style>
-  :root {{ --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; --accent:#4A90E2; --amber:#E2A83D; }}
+  :root {{ --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; --blue:#4A90E2; --amber:#E2A83D; }}
   *{{box-sizing:border-box;margin:0;padding:0}}
   body{{background:radial-gradient(ellipse at 50% 20%, #0e1420 0%, #050508 70%);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif}}
   .hero{{padding:36px 24px 16px;text-align:center}}
-  .hero .eyebrow{{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:8px}}
+  .hero .eyebrow{{font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:var(--blue);margin-bottom:8px}}
   .hero h1{{font-family:Georgia,serif;font-size:26px;color:#fff;margin-bottom:8px}}
   .hero p{{color:var(--dim);font-size:12px;max-width:820px;margin:0 auto;line-height:1.6}}
   .toggle-row{{display:flex;justify-content:center;gap:8px;padding:16px 24px 0}}
@@ -226,9 +226,9 @@ TEMPLATE = """<!DOCTYPE html>
   .dep-name{{font-size:11.5px;margin-bottom:6px}}
   .dep-count{{font-size:9.5px;color:var(--amber);margin-left:6px}}
   .dep-callers{{display:flex;flex-wrap:wrap;gap:5px}}
-  .dep-caller{{font-size:10px;padding:2px 8px;border-radius:8px;background:rgba(74,144,226,0.14);color:var(--accent)}}
+  .dep-caller{{font-size:10px;padding:2px 8px;border-radius:8px;background:rgba(74,144,226,0.14);color:var(--blue)}}
   .empty-note{{font-size:11px;color:var(--dim);font-style:italic}}
-  a{{color:var(--accent)}}
+  a{{color:var(--blue)}}
   .note{{max-width:900px;margin:20px auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
 {dim_css}
 </style>

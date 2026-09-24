@@ -5524,26 +5524,79 @@ def left_nav_html(current_file):
     )
 
 
+def _write_shared_nav_assets():
+    """/debloat's first real fix (Sep 24 2026, Alex-confirmed: "execute
+    it now" — real evidence first, per that skill's own Step 1-2:
+    left_nav_html()/inject_left_nav() were ALREADY the one real shared
+    Python source for the nav (rule 8's source-level dedup already held)
+    — the actual waste was purely OUTPUT bytes, ~99.96% byte-identical
+    nav HTML + a byte-identical LEFT_NAV_CSS/LEFT_NAV_JS pair, inlined
+    fresh into all 19+ pages every build (~374KB of the 5.7MB total,
+    confirmed via direct SequenceMatcher comparison). Writes the nav's
+    real page-agnostic HTML (left_nav_html(None) — no page ever equals
+    None, so zero 'active' class gets baked in, matching every page's
+    real content byte-for-byte) plus LEFT_NAV_CSS into two small shared
+    static files ONCE. Called idempotently on every inject_left_nav()
+    invocation — writing the same deterministic bytes 19+ times is
+    harmless and guarantees the shared files can never drift stale
+    relative to the Python source that generates them, the same
+    single-source-of-truth guarantee the old fully-inlined version had
+    by construction. The active-page highlight moves from server-side
+    string interpolation (current_file baked in at generation time) to
+    a tiny client-side script reading location.pathname — a genuinely
+    different mechanism, same real visual behavior, verified via
+    headless Chromium (see the debloat record file)."""
+    Path('graphify-out/galaxy_map_shared.css').write_text(LEFT_NAV_CSS)
+    nav_html = left_nav_html(None)
+    # Deliberately scoped to .gside-level/.gside-dim only, matching the
+    # original server-side logic exactly (left_nav_html()'s own `cls`
+    # bake-in never touched river/module sub-links) -- a naive
+    # '.gside-nav a[href]' selector would incorrectly active-highlight
+    # every river/module link sharing its href's base filename with the
+    # current page (e.g. every river row under galaxy_map_module.html
+    # points at 'galaxy_map_module.html#river-N', which strips to the
+    # current page's own filename) -- caught before shipping, not after.
+    active_js = (
+        "(function(){var p=location.pathname.split('/').pop();"
+        "document.querySelectorAll('.gside-nav a.gside-level[href],.gside-nav a.gside-dim[href]').forEach(function(a){"
+        "if(a.getAttribute('href').split('#')[0]===p)a.classList.add('active');});})();"
+    )
+    Path('graphify-out/galaxy_map_shared.js').write_text(
+        'document.body.insertAdjacentHTML("afterbegin", ' + json.dumps(nav_html) + ');\n'
+        + LEFT_NAV_JS + '\n' + active_js
+    )
+
+
 def inject_left_nav(html, current_file):
     """Mechanical post-process — same discipline as inject_level_rail()
     itself (which calls this), purely additive, injected once per
     build. Called automatically by inject_level_rail() for all 19
-    existing call sites; not meant to be called standalone."""
-    if '.gside-nav{' not in html:
-        if '</style>' in html:
-            html = html.replace('</style>', LEFT_NAV_CSS + '</style>', 1)
-        else:
-            html = html.replace('</head>', f'<style>{LEFT_NAV_CSS}</style></head>', 1)
-    nav = left_nav_html(current_file)
+    existing call sites; not meant to be called standalone.
+
+    /debloat fix (Sep 24 2026): the real nav HTML/CSS/JS content now
+    lives in two shared static files (galaxy_map_shared.css/.js,
+    written by _write_shared_nav_assets() above) instead of being
+    re-inlined into every page — a genuine ~374KB reduction across the
+    23-page family, confirmed by direct before/after measurement. Every
+    page now references the shared files via a real <link>/<script src>
+    (never fetch()/XHR, which file:// blocks via CORS — <script src>
+    does not have that restriction, confirmed before choosing this
+    mechanism), so a page opened locally via file:// still renders its
+    nav correctly, same as before."""
+    _write_shared_nav_assets()
+    if 'galaxy_map_shared.css' not in html:
+        link = '<link rel="stylesheet" href="galaxy_map_shared.css">'
+        if '</head>' in html:
+            html = html.replace('</head>', link + '</head>', 1)
+        elif '<style>' in html:
+            html = html.replace('<style>', link + '<style>', 1)
+    if 'galaxy_map_shared.js' in html:
+        return html
     m = re.search(r'(<body[^>]*>)', html)
     if m:
         after = html[m.end():m.end() + 4000]
-        if 'class="gside-nav"' not in after:
-            html = html[:m.end()] + '\n' + nav + html[m.end():]
-    if '</body>' in html:
-        marker = '<script>' + LEFT_NAV_JS + '</script></body>'
-        if marker not in html:
-            html = html.replace('</body>', marker, 1)
+        if 'class="gside-nav"' not in after and 'galaxy_map_shared.js' not in after:
+            html = html[:m.end()] + '\n<script src="galaxy_map_shared.js"></script>' + html[m.end():]
     return html
 
 

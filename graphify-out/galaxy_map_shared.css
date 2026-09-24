@@ -1,0 +1,34 @@
+
+.gside-toggle{position:fixed;top:50%;left:0;transform:translateY(-50%);z-index:10001;background:#C9A84C;color:#1a1a1f;border:none;border-radius:0 8px 8px 0;padding:16px 6px;font-size:13px;cursor:pointer;writing-mode:vertical-rl;text-orientation:mixed;letter-spacing:1.5px;font-weight:700;box-shadow:2px 0 10px rgba(0,0,0,0.4)}
+.gside-toggle:hover{background:#ddbb5c}
+.gside-nav{position:fixed;top:0;left:-300px;width:280px;height:100vh;overflow-y:auto;background:#0a0a0f;border-right:1px solid rgba(255,255,255,0.12);z-index:10000;transition:left .2s ease;padding:18px 16px 40px;box-shadow:4px 0 28px rgba(0,0,0,0.55)}
+.gside-nav.open{left:0}
+.gside-nav h3{font-size:10px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:#8a8a9a;margin:20px 0 8px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.07)}
+.gside-nav h3:first-child{margin-top:0;padding-top:0;border-top:none}
+.gside-def{font-size:10px;color:#7a7a88;line-height:1.6;margin-bottom:10px}
+.gside-level{display:block;text-decoration:none;padding:7px 9px;border-radius:7px;margin-bottom:2px}
+.gside-level:hover{background:rgba(255,255,255,0.05)}
+.gside-level.active{background:rgba(201,168,76,0.16)}
+.gside-level b{display:block;font-size:12.5px;color:#E2E2EC}
+.gside-level span{display:block;font-size:9px;color:#6a6a78;margin-top:2px}
+.gside-dim{display:block;text-decoration:none;padding:6px 9px;border-radius:7px;margin-bottom:2px;border-left:2px solid transparent}
+.gside-dim:hover{background:rgba(255,255,255,0.05)}
+.gside-dim.active{background:rgba(201,168,76,0.16)}
+.gside-dim b{display:block;font-size:11.5px;color:#E2E2EC}
+.gside-dim .gside-kind{font-size:8px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.gside-dim .gside-desc{display:block;font-size:9px;color:#6a6a78;line-height:1.5;margin-top:1px}
+.gside-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.35);z-index:9999;display:none}
+.gside-backdrop.open{display:block}
+/* G101 real correction — Levels is the one main category; each level's
+   own genuinely-relevant Dimension pages nest directly beneath it. */
+.gside-levelgroup{margin-bottom:6px;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,0.05)}
+.gside-levelgroup:last-child{border-bottom:none}
+.gside-nested{margin:2px 0 2px 14px;padding-left:8px;border-left:1px solid rgba(255,255,255,0.08)}
+.gside-subhead{font-size:8.5px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#55555f;margin:6px 0 2px 14px}
+.gside-river{display:block;text-decoration:none;padding:4px 9px;border-radius:6px;margin-bottom:1px;border-left:2px solid transparent;font-size:10.5px}
+.gside-river:hover{background:rgba(255,255,255,0.05)}
+.gside-river b{font-weight:400;color:#b8b8c4}
+.gside-rivers{max-height:320px;overflow-y:auto}
+.gside-river-mod{margin-left:14px;font-size:9.5px;opacity:.85}
+.gside-river-mod b{color:#8a8a98}
+.gside-river-empty{color:#55555f;font-style:italic;padding:2px 9px 4px}

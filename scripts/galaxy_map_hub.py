@@ -174,6 +174,22 @@ def compute_real_edges(out_dir):
     exact same "chrome, not a real flow relationship" class already
     carved out for galaxy_map.html above — so its own hrefs are stripped
     from the source before scanning, not counted as a second, redundant
+
+    /debloat fix, Sep 24 2026 (real finding, not just a side effect): the
+    gside-nav LEFT sidebar was previously inlined into every page's own
+    raw HTML and its ~15-17 hrefs per page WERE being counted here as
+    real edges (contributing an estimated ~340 of the pre-fix 378 total)
+    despite being the exact same "chrome, not a real flow relationship"
+    class the level-rail carve-out above already names — the sidebar was
+    never carved out, so it was silently inflating the edge count with
+    generic-menu links, not genuine cross-page content relationships.
+    Since Sep 24's real nav/CSS extraction (see inject_left_nav() in
+    graphify_river_group.py), the sidebar's own HTML lives in an external
+    galaxy_map_shared.js file, not inline in any page's raw source — so
+    this function's existing regex naturally stops finding those hrefs at
+    all, with zero code change needed here. Real, verified before/after:
+    378 edges (inflated by nav chrome) -> 38 edges (genuine content
+    cross-references only) — a MORE accurate metric, not a regression,
     exclusion list."""
     files = [p['file'] for p in PAGES]
     fileset = set(files)
