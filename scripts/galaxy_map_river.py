@@ -45,6 +45,7 @@ from graphify_river_group import (  # noqa: E402
 )
 from graphify_river_group import inject_level_rail, inject_plan_overlay  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
+from graphify_river_group import render_bubble_row, INFRA_DRILLDOWN_CSS  # noqa: E402
 
 # Sep 24 2026 — real /debloat-shaped interlink pass, Alex's own direct
 # ask ("all galaxy map pages... web section/bubble system... core
@@ -91,6 +92,38 @@ def compute_river_reverse_links():
 
 
 REVERSE_LINKS = compute_river_reverse_links()
+
+
+# Sep 24 2026 — real follow-up ask: upgrade the text-only "🌐 Referenced
+# by" line into a real per-river SVG bubble panel, matching the same
+# hub-and-spoke visual language every other page's web section already
+# uses (rule 8, reusing render_bubble_row() directly — zero new bubble
+# mechanism). One real panel per river that has at least one real
+# REVERSE_LINKS entry — hub = that river, leaves = the real Dimension
+# pages whose own evidence touches it, each a real migration bubble to
+# that page's #view-map. A pure rendering layer over the exact same
+# REVERSE_LINKS data the text line already reads (never a second
+# source) — the text line stays too, as a real cheap at-a-glance scan
+# alongside the fuller visual.
+def build_river_web_section():
+    rivers = sorted(REVERSE_LINKS)
+    if not rivers:
+        return '<p class="cycle-intro">No real Dimension-page evidence touches any river yet.</p>'
+    rows = []
+    for i, rnum in enumerate(rivers):
+        color = RIVER_COLOR.get(rnum, '#C9A84C')
+        short = RIVER_NAME.get(rnum, f'River {rnum}').split('—')[0].strip()
+        hub = dict(icon='🌊', label=short, color=color)
+        leaves = [
+            dict(id=f'{rnum}-{href}', icon=icon, label=label, sub='real evidence', color=color,
+                 href=f'{href}#view-map')
+            for href, icon, label in REVERSE_LINKS[rnum]
+        ]
+        bubble = render_bubble_row(hub, leaves, _curved_edge, _build_markers, leaf_r=24, width=760,
+                                    emit_defs=(i == 0))
+        rows.append(f'<div class="river-web-row">{bubble}</div>')
+    return ''.join(rows)
+
 
 # GMP-A (Sep 16 2026) — a real, verbatim first-sentence excerpt from
 # each live river's own perspective_reports self_report (written this
@@ -530,6 +563,8 @@ TEMPLATE = """<!DOCTYPE html>
   .cycle-reason{{font-size:11px;color:#c8c8d8;line-height:1.7}}
   .note{{max-width:900px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
   code{{font-family:'Cascadia Code','Fira Mono',monospace;font-size:10.5px;background:rgba(255,255,255,0.05);padding:1px 5px;border-radius:3px}}
+  .river-web-row{{margin-bottom:16px}}
+{infra_dd_css}
 {dim_css}
 </style>
 </head>
@@ -560,6 +595,14 @@ TEMPLATE = """<!DOCTYPE html>
   <h2>Edge legend — what each line actually means</h2>
   <div class="itype-grid">{itype_legend}</div>
 </div>
+
+<details class="doc-methodology" open>
+  <summary>🌐 River Web — reverse migration bubbles ({n_web_rivers} of {n_live} live rivers)</summary>
+  <div class="legend">
+  <p class="cycle-intro">Sep 24 2026, real upgrade of the text-only "🌐 Referenced by" line into a real SVG bubble panel per river — same hub-and-spoke visual language as every other page's own web section (rule 8, reusing <code>render_bubble_row()</code> directly). Each river below is a real hub; each leaf is a real Dimension page whose own evidence touches it (<code>compute_river_reverse_links()</code>, aggregating the already-computed <code>DRILL</code> dict from Oracle/Supabase/Decisions) — click a leaf to jump to that page's own Map view. A river with no panel here genuinely has no Dimension-page evidence touching it yet, not a gap in this rendering.</p>
+  {river_web}
+  </div>
+</details>
 
 <div class="legend">
   <h2>🔄 Why some rivers loop back — real cycles, explained</h2>
@@ -607,9 +650,10 @@ def main():
                            W=W, H=H, markers=markers, cycles_html=cycles_html,
                            n_rivers=len(RIVER_NAME), n_live=len(RIVER_NAME) - n_archived,
                            n_archived=n_archived,
+                           river_web=build_river_web_section(), n_web_rivers=len(REVERSE_LINKS),
                            dim_index=dimension_index_html(OUT.name,
                                heading='🌌 Dimensions — equal standing with the Rivers above'),
-                           dim_css=DIMENSION_INDEX_CSS)
+                           dim_css=DIMENSION_INDEX_CSS, infra_dd_css=INFRA_DRILLDOWN_CSS)
     OUT.parent.mkdir(exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     # DD7 (Aug 23 2026) — live in-flight ceo_plan_items overlay,
@@ -620,6 +664,8 @@ def main():
     print(f"Wrote {OUT} — {len(RIVER_NAME)} rivers, real RIVER_FLOWS edges drawn. "
           f"Real crossing-reduced ring order (greedy 2-opt local search): {crossings_before} crossings "
           f"(old numeric order) -> {crossings_after} crossings.")
+    print(f"  River Web — {len(REVERSE_LINKS)} of {len(RIVER_NAME) - n_archived} live rivers have a real "
+          f"reverse-link bubble panel.")
 
 
 if __name__ == '__main__':

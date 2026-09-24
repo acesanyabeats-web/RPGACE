@@ -153,6 +153,17 @@
     </div>
 </div>
 
+<div class="card green" id="card-2026-09-24-river-svg-upgrade" style="margin-bottom:30px;">
+    <div class="card-title">🕸️ Sep 24 — River's text reverse-link upgraded to a real per-river SVG bubble panel</div>
+    <div class="card-body">
+      Direct follow-through on Alex's same-day ask: "Build the river per-river SVG upgrade next."<br><br>
+      <code>galaxy_map_river.html</code>'s text-only "🌐 Referenced by" line (Pilot B of the interlink pass) is now ALSO a real SVG bubble panel per river — <code>build_river_web_section()</code> reuses the exact same <code>REVERSE_LINKS</code> data the text line already read (a pure rendering layer, never a second source, rule 8) and the same shared <code>render_bubble_row()</code> every other page's web section already uses. One real panel per river with at least one real reverse-link (10 of 12 live rivers): hub = that river, leaves = the real Dimension pages whose own evidence touches it, each a real migration bubble to that page's Map view. Placed in a real collapsible <code>&lt;details open&gt;</code> block ("🌐 River Web — reverse migration bubbles"), matching the page's own pre-existing archived-rivers <code>&lt;details&gt;</code> pattern — the text line stays too, as a cheap at-a-glance scan alongside the fuller visual.<br><br>
+      Real result: 10 SVG panels, 18 real migration-bubble links — matches <code>REVERSE_LINKS</code>' own Python-side count exactly.<br><br>
+      <strong>Verified</strong>: full 21-script + hub pipeline re-run twice, R5-idempotent (byte-identical); <code>verify_anchors.py</code> 26/26 fresh; all 22 pages div/a/svg-balanced; headless-Chromium confirms 10 real SVG panels render, 18 real links resolve, the <code>&lt;details&gt;</code> block opens correctly, zero new console errors (1 pre-existing, unrelated sandboxed-network error, same as every other pass this session).<br><br>
+      <strong>Real, still deferred, unchanged</strong>: the 3 pages needing a small DRILL refactor (Connectors/Orchestrator CC/OpenMontage CC/Oversight Sync) before they can feed this same reverse-link registry; Current(L3)/Module(L2)'s own reverse-link to Decisions. <strong>Untested by Alex's own hand.</strong>
+    </div>
+</div>
+
 <div class="card green" id="card-2026-09-24-full-galaxy-map-pipeline-regenerated" style="margin-bottom:30px;">
     <div class="card-title">🌌 Sep 24 — Full Galaxy Map pipeline regenerated (23 pages), a real 25th generator script found and run, 2 more manual.html reference sites closed</div>
     <div class="card-body">
