@@ -54,6 +54,8 @@
   .broken-note{font-size:11px;color:var(--red);margin-top:8px;padding:8px 10px;background:rgba(226,84,84,0.06);border-radius:6px;border-left:2px solid var(--red)}
   .crossref-note{font-size:11px;color:var(--text);margin-top:8px;padding:8px 10px;background:rgba(42,191,176,0.06);border-radius:6px;border-left:2px solid var(--teal)}
   .crossref-note b{color:var(--teal)}
+  .codeverified-note{font-size:11px;color:var(--text);margin-top:8px;padding:8px 10px;background:rgba(120,120,200,0.06);border-radius:6px;border-left:2px solid #7878c8;white-space:pre-wrap}
+  .codeverified-note b{color:#7878c8}
   .item.plan-untested{border:1px dashed rgba(224,196,80,0.4);background:rgba(224,196,80,0.05)}
   .untested-note{font-size:11px;color:var(--yellow);margin-top:8px;padding:8px 10px;background:rgba(224,196,80,0.06);border-radius:6px;border-left:2px solid var(--yellow)}
   .verified-at{font-size:10px;color:var(--dim);margin-top:6px;opacity:.6}
@@ -187,6 +189,7 @@ function itemHTML(it, ci) {
     '</div>' +
     (it.status === 'broken' && it.broken_note ? '<div class="broken-note">⚠ ' + esc(it.broken_note) + '</div>' : '') +
     (it.cross_ref_note ? '<div class="crossref-note">🗺️ <b>Cross-reference finding:</b> ' + esc(it.cross_ref_note) + '</div>' : '') +
+    (it.code_verified_note ? '<div class="codeverified-note">🔍 <b>Code-verified (prep for your hand-test, not a substitute for it):</b> ' + esc(it.code_verified_note) + '</div>' : '') +
     (it.verified_at ? '<div class="verified-at">Last confirmed: ' + new Date(it.verified_at).toLocaleString() + '</div>' : '') +
     '<div class="actions">' +
       (it.status !== 'confirmed_working' ? '<button class="ok" data-act="confirm">✅ Confirm Working</button>' : '<button data-act="unconfirm">↩ Un-confirm</button>') +
