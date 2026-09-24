@@ -1,0 +1,36 @@
+GALAXY MAP FULL REDESIGN — /fableomnitrix REPORT (verbatim, real dispatch)
+Dispatch: fable-readonly agent, agentId a4538644748ef133c
+Full /paranoia (6-step) + /CEO Loop-1 + /drift stack, per Alex's own explicit
+"complete freedom" ask + the edges-as-gateways addendum.
+Date: 2026-09-24
+
+[Full Fable report preserved verbatim in this session's own transcript —
+see the agent-message from a4538644748ef133c. Key structure: §0 decision
+in one paragraph (4-phase plan, do not reopen the River/Dimension data
+model), §1 /drift against the pinned interrogation baseline (4 MINOR
+factual corrections to the dossier — see the Sonnet correction below,
+one of these 4 was itself wrong), §2 ten graded duplication findings
+D1-D10 (D1/D2/D3/D6 MATERIAL, rest MINOR/cleared), §3 the 6 real
+/paranoia stage findings, §4 the edges-as-gateways addendum (MATERIAL
+gap, buildable mostly from evidence that already exists per edge class),
+§5 the "complete freedom" one-graph-many-lenses redesign proposal with a
+9-block consolidation list, §6 data-model verdict (KEEP the River/
+Dimension partition + R16 + R22, extend R22 to edges), §7 the honest
+why-NOT-to-build-all-of-it case, §8 a 4-phase (P0-P3 +P4) Council-of-5
+plan with 3 real open forks for Alex, §9 what Fable could not verify
+(no Supabase/browser access this dispatch).]
+
+REAL SONNET CORRECTION TO FABLE'S OWN §1 DRIFT-CHECK (found via direct
+re-verification, not trusted on Fable's word alone — same Stage-5
+self-consistency discipline rule 17 names):
+Fable's finding 2 claimed "49 distinct names across 12 rivers... CLAUDE.md's
+48 disagrees with this by one." Direct Python import of RIVER_MODULES
+(not a regex) gives 48 total, 48 distinct, zero duplicates -- CLAUDE.md's
+"48" was right all along. Root cause of Fable's own 49: its regex swept
+up the literal string 'Personal' sitting inside a comment near River X's
+entry (referencing shoppingWishlist's chronicles_finance 'Personal'
+category) -- the EXACT SAME comment-embedded-string false-positive class
+CLAUDE.md's own Live-numbers line already warns about for the historical
+57->56 module-count correction. Fable's other 3 drift findings (4 map-first
+pages not 2; DIMENSION_PAGES genuinely missing Oracle/Connectors; ~205KB
+per-page CSS) were independently re-verified and hold exactly as stated.
