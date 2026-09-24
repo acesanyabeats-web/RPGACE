@@ -717,7 +717,7 @@ def main():
                            n_total=n_total, n_logic=len(LOGIC_POINTS),
                            logic_writeups=build_logic_writeups(),
                            dim_index=dimension_index_html(OUT.name),
-                           dim_css=DIMENSION_INDEX_CSS)
+                           dim_css="")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')

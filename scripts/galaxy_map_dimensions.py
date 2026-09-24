@@ -375,7 +375,8 @@ def _bubble_ring(nodes_data, radius=300, cx=420, cy=420,
         rsize = 24 + nd['n_dims'] * 4
         colors.add(nd['color'])
         edges.append(_curved_edge(cx, cy, x, y, nd['color'], real=nd['n_dims'] > 0,
-                                   dashed=nd['n_dims'] == 0, r1=42, r2=rsize, offset_mult=0.45))
+                                   dashed=nd['n_dims'] == 0, r1=42, r2=rsize, offset_mult=0.45,
+                                   from_label=hub_label, to_label=nd.get('short_label', nd['key']), kind='dimension_membership'))
         nodes.append(
             f'<g class="dbubble" data-key="{nd["key"]}" transform="translate({x:.0f},{y:.0f})">'
             f'<circle r="{rsize}" fill="{nd["color"]}" fill-opacity="0.18" stroke="{nd["color"]}" stroke-width="2"/>'
@@ -676,7 +677,7 @@ def main():
                            l0_bubbles=build_l0_bubbles(l0_tags),
                            module_bubbles=build_module_bubbles(tags),
                            dim_index=dimension_index_html(OUT.name),
-                           dim_css=DIMENSION_INDEX_CSS)
+                           dim_css="")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     # DD7 (Aug 23 2026) — live in-flight ceo_plan_items overlay,

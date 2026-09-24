@@ -392,11 +392,13 @@ def build_river_section(rnum):
             if sig['output'] and m in primary_mods:
                 n_out += 1
                 ox = ALEX_X + (n_out * 13 if n_out % 2 == 0 else -n_out * 13)
-                edges_svg.append(_curved_edge(mx, my, ox, ALEX_Y, ALEX_COLOR, real=True, dashed=True, r1=22, r2=20, offset_mult=0.5))
+                edges_svg.append(_curved_edge(mx, my, ox, ALEX_Y, ALEX_COLOR, real=True, dashed=True, r1=22, r2=20, offset_mult=0.5,
+                                               from_label=m, to_label='Alex', kind='ui_output'))
             if sig['input']:
                 n_in += 1
                 ix = ALEX_X + (n_in * 17 if n_in % 2 == 1 else -n_in * 17)
-                edges_svg.append(_curved_edge(ix, ALEX_Y, mx, my, ALEX_COLOR, real=True, dashed=True, r1=20, r2=22, offset_mult=-0.5))
+                edges_svg.append(_curved_edge(ix, ALEX_Y, mx, my, ALEX_COLOR, real=True, dashed=True, r1=20, r2=22, offset_mult=-0.5,
+                                               from_label='Alex', to_label=m, kind='ui_input'))
         edge_colors_used.add(ALEX_COLOR)
         # Real fix, Aug 26 2026 — Alex's own direct report on the Current
         # (L3) page ("alex is still not clickable in video pipeline")
@@ -491,10 +493,13 @@ def build_river_section(rnum):
                 other_color = RIVER_COLOR[other]
                 other_short = RIVER_NAME[other].split('—')[0].strip()
                 ax_, ay_ = anchor_xy
+                hub_short = RIVER_NAME[rnum].split('—')[0].strip()
                 if source_side == 'out':
-                    edges_svg.append(_curved_edge(ax_, ay_, x, y, other_color, real=True, r1=22, r2=17))
+                    edges_svg.append(_curved_edge(ax_, ay_, x, y, other_color, real=True, r1=22, r2=17,
+                                                   from_label=hub_short, to_label=other_short, kind=itype))
                 else:
-                    edges_svg.append(_curved_edge(x, y, ax_, ay_, other_color, real=True, r1=17, r2=34))
+                    edges_svg.append(_curved_edge(x, y, ax_, ay_, other_color, real=True, r1=17, r2=34,
+                                                   from_label=other_short, to_label=hub_short, kind=itype))
                 edge_colors_used.add(other_color)
                 arrow = '→' if direction == 'out' else '←'
                 nodes_svg.append(
@@ -573,7 +578,8 @@ def build_river_section(rnum):
         entry_targets = buckets.get(0) or buckets.get(1) or terminal_mods
         for m in entry_targets:
             mx, my = mod_pos[m]
-            edges_svg.append(_curved_edge(X_HUB, cy, mx, my, color, real=True, r1=34, r2=22))
+            edges_svg.append(_curved_edge(X_HUB, cy, mx, my, color, real=True, r1=34, r2=22,
+                                           from_label=river_label.split(chr(8212))[0].strip(), to_label=m, kind='river_entry'))
 
         # Real, explicit terminal-DESTINATION rule (Aug 13, Alex's own
         # direct ask): "each level 2 should have an end point [that]
@@ -647,7 +653,8 @@ def build_river_section(rnum):
                 fx, fy = mod_pos[frm]
                 tx, ty = mod_pos[to]
                 dashed = kind != 'direct'
-                edges_svg.append(_curved_edge(fx, fy, tx, ty, color, real=True, dashed=dashed, r1=22, r2=22, offset_mult=1.3))
+                edges_svg.append(_curved_edge(fx, fy, tx, ty, color, real=True, dashed=dashed, r1=22, r2=22, offset_mult=1.3,
+                                               from_label=frm, to_label=to, kind=kind))
                 edge_colors_used.add(color)
                 edge_touched.add(frm); edge_touched.add(to)
                 if dashed:
@@ -692,7 +699,8 @@ def build_river_section(rnum):
             for i, c in enumerate(clist):
                 px, py = ax, ay - 90 - i * 60
                 dash = ' stroke-dasharray="3,3"' if c.get('partial') else ''
-                edges_svg.append(_curved_edge(ax, ay, px, py, '#C9A84C', real=True, dashed=True, r1=22, r2=19))
+                edges_svg.append(_curved_edge(ax, ay, px, py, '#C9A84C', real=True, dashed=True, r1=22, r2=19,
+                                               from_label=anchor_mod, to_label=c['label'], kind='dashboard_card'))
                 edge_colors_used.add('#C9A84C')
                 icon = c['label'].split(' ')[0]
                 label = ' '.join(c['label'].split(' ')[1:])
@@ -719,7 +727,8 @@ def build_river_section(rnum):
         ax, ay = flow_anchor
         for i, link in enumerate(links):
             ex, ey = ax + 55 + i * 14, ay + 130 + i * 68
-            edges_svg.append(_curved_edge(ax, ay, ex, ey, EXTERNAL_COLOR, real=True, dashed=True, r1=22, r2=19))
+            edges_svg.append(_curved_edge(ax, ay, ex, ey, EXTERNAL_COLOR, real=True, dashed=True, r1=22, r2=19,
+                                           from_label=river_label.split(chr(8212))[0].strip(), to_label=link['name'], kind='external_call'))
             edge_colors_used.add(EXTERNAL_COLOR)
             icon = _connector_icon(link['name'])
             pts = ' '.join(f'{ex + 19*math.cos(math.radians(a))},{ey + 19*math.sin(math.radians(a))}' for a in range(0, 360, 60))
@@ -733,7 +742,8 @@ def build_river_section(rnum):
         # (they govern/inform the whole process, not one pipeline stage).
         for i, (skill, note) in enumerate(skills_here):
             skx, sky = ax - 55 - i * 14, ay - 130 - i * 68
-            edges_svg.append(_curved_edge(ax, ay, skx, sky, skill_color, real=True, dashed=True, r1=22, r2=17))
+            edges_svg.append(_curved_edge(ax, ay, skx, sky, skill_color, real=True, dashed=True, r1=22, r2=17,
+                                           from_label=river_label.split(chr(8212))[0].strip(), to_label=skill, kind='skill_stream'))
             edge_colors_used.add(skill_color)
             pts5 = ' '.join(f'{skx + 17*math.cos(math.radians(a-90))},{sky + 17*math.sin(math.radians(a-90))}' for a in range(0, 360, 72))
             nodes_svg.append(
@@ -761,10 +771,13 @@ def build_river_section(rnum):
             bx, by = polar(cx, cy, conn_radius, ang)
             other_color = RIVER_COLOR[other]
             other_short = RIVER_NAME[other].split('—')[0].strip()
+            hub_short = river_label.split(chr(8212))[0].strip()
             if direction == 'out':
-                edges_svg.append(_curved_edge(cx, cy, bx, by, other_color, real=True, r1=40, r2=17))
+                edges_svg.append(_curved_edge(cx, cy, bx, by, other_color, real=True, r1=40, r2=17,
+                                               from_label=hub_short, to_label=other_short, kind=itype))
             else:
-                edges_svg.append(_curved_edge(bx, by, cx, cy, other_color, real=True, r1=17, r2=40))
+                edges_svg.append(_curved_edge(bx, by, cx, cy, other_color, real=True, r1=17, r2=40,
+                                               from_label=other_short, to_label=hub_short, kind=itype))
             edge_colors_used.add(other_color)
             arrow = '→' if direction == 'out' else '←'
             nodes_svg.append(
@@ -778,7 +791,8 @@ def build_river_section(rnum):
         for i, link in enumerate(links):
             ang = -90 + (360 * i / n_links) + (180 / n_links if n_links > 1 else 0) + 15
             ex, ey = polar(cx, cy, ext_radius, ang)
-            edges_svg.append(_curved_edge(cx, cy, ex, ey, EXTERNAL_COLOR, real=True, dashed=True, r1=40, r2=19))
+            edges_svg.append(_curved_edge(cx, cy, ex, ey, EXTERNAL_COLOR, real=True, dashed=True, r1=40, r2=19,
+                                           from_label=river_label.split(chr(8212))[0].strip(), to_label=link['name'], kind='external_call'))
             edge_colors_used.add(EXTERNAL_COLOR)
             icon = _connector_icon(link['name'])
             pts = ' '.join(f'{ex + 19*math.cos(math.radians(a))},{ey + 19*math.sin(math.radians(a))}' for a in range(0, 360, 60))
@@ -792,7 +806,8 @@ def build_river_section(rnum):
         for i, (skill, note) in enumerate(skills_here):
             ang = -90 + (360 * i / n_skills)
             skx, sky = polar(cx, cy, skill_radius, ang)
-            edges_svg.append(_curved_edge(cx, cy, skx, sky, skill_color, real=True, dashed=True, r1=40, r2=17))
+            edges_svg.append(_curved_edge(cx, cy, skx, sky, skill_color, real=True, dashed=True, r1=40, r2=17,
+                                           from_label=river_label.split(chr(8212))[0].strip(), to_label=skill, kind='skill_stream'))
             edge_colors_used.add(skill_color)
             pts5 = ' '.join(f'{skx + 17*math.cos(math.radians(a-90))},{sky + 17*math.sin(math.radians(a-90))}' for a in range(0, 360, 72))
             nodes_svg.append(

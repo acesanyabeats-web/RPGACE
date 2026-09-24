@@ -451,7 +451,8 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
         if a in pos and b in pos:
             ax, ay = pos[a]
             bx, by = pos[b]
-            edges_svg.append(_curved_edge(ax, ay, bx, by, color, real=True, r1=26, r2=26))
+            edges_svg.append(_curved_edge(ax, ay, bx, by, color, real=True, r1=26, r2=26,
+                                           from_label=a, to_label=b, kind='function_call'))
     for f in band_funcs:
         if f not in pos:
             continue
@@ -515,7 +516,8 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
             ax, ay = pos[a]
             sy = grid_cy + (i - (len(cross_out) - 1) / 2) * 40
             tgt_band = bands[func_to_band[b]]['label'] if b in func_to_band else '?'
-            edges_svg.append(_curved_edge(ax, ay, out_x, sy, color, real=True, dashed=True, r1=26, r2=8))
+            edges_svg.append(_curved_edge(ax, ay, out_x, sy, color, real=True, dashed=True, r1=26, r2=8,
+                                           from_label=a, to_label=f'{tgt_band}: {b}', kind='cross_band_call'))
             nodes_svg.append(
                 f'<rect x="{out_x-52}" y="{sy-10}" width="104" height="20" rx="5" fill="#0f0f1a" stroke="{color}" stroke-width="1.2" stroke-dasharray="3,2" opacity="0.85"/>'
                 f'<text x="{out_x}" y="{sy+4}" text-anchor="middle" font-size="7.5" fill="{color}">↦ {tgt_band}: {b}</text>'
@@ -527,7 +529,8 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
             bx, by = pos[b]
             sy = grid_cy + (i - (len(cross_in) - 1) / 2) * 40
             src_band = bands[func_to_band[a]]['label'] if a in func_to_band else '?'
-            edges_svg.append(_curved_edge(60, sy, bx, by, color, real=True, dashed=True, r1=8, r2=26))
+            edges_svg.append(_curved_edge(60, sy, bx, by, color, real=True, dashed=True, r1=8, r2=26,
+                                           from_label=f'{src_band}: {a}', to_label=b, kind='cross_band_call'))
             nodes_svg.append(
                 f'<rect x="8" y="{sy-10}" width="104" height="20" rx="5" fill="#0f0f1a" stroke="{color}" stroke-width="1.2" stroke-dasharray="3,2" opacity="0.85"/>'
                 f'<text x="60" y="{sy+4}" text-anchor="middle" font-size="7.5" fill="{color}">⬅ {src_band}: {a}</text>'
@@ -543,11 +546,13 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
         if sig.get('output'):
             n_out += 1
             ox = alex_x + (n_out * 11 if n_out % 2 == 0 else -n_out * 11)
-            edges_svg.append(_curved_edge(fx, fy, ox, alex_y, ALEX_COLOR, real=True, dashed=True, r1=26, r2=20, offset_mult=0.6))
+            edges_svg.append(_curved_edge(fx, fy, ox, alex_y, ALEX_COLOR, real=True, dashed=True, r1=26, r2=20, offset_mult=0.6,
+                                           from_label=f, to_label='Alex', kind='ui_output'))
         if sig.get('input'):
             n_in += 1
             ix = alex_x + (n_in * 15 if n_in % 2 == 1 else -n_in * 15)
-            edges_svg.append(_curved_edge(ix, alex_y, fx, fy, ALEX_COLOR, real=True, dashed=True, r1=20, r2=26, offset_mult=-0.6))
+            edges_svg.append(_curved_edge(ix, alex_y, fx, fy, ALEX_COLOR, real=True, dashed=True, r1=20, r2=26, offset_mult=-0.6,
+                                           from_label='Alex', to_label=f, kind='ui_input'))
     # Real fix, Aug 26 2026 — Alex's own direct report: "alex is still not
     # clickable in video pipeline." Root cause: this hub was hand-built
     # (deliberately NOT routed through render_evidence_bubble() — see
@@ -637,7 +642,8 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
             tcolor = RIVER_COLOR.get(_river_of.get(target_mod), '#C9A84C')
             for fname, target_fn in calls:
                 fx, fy = pos[fname]
-                edges_svg.append(_curved_edge(fx, fy, bx_col, by, tcolor, real=True, dashed=True, r1=26, r2=24))
+                edges_svg.append(_curved_edge(fx, fy, bx_col, by, tcolor, real=True, dashed=True, r1=26, r2=24,
+                                               from_label=fname, to_label=f'{target_mod}.{target_fn}', kind='backdoor_call'))
                 edge_colors_used.add(tcolor)
             t_rnum = _river_of.get(target_mod)
             nodes_svg.append(
@@ -1368,7 +1374,7 @@ def main():
     html = TEMPLATE.format(mod_tabs=mod_tabs, mod_sections=mod_sections,
                             n_funcs=total_funcs, n_mods=len(all_mods),
                             dim_index=dimension_index_html(OUT.name),
-                            dim_css=DIMENSION_INDEX_CSS, idd_css=INFRA_DRILLDOWN_CSS,
+                            dim_css="", idd_css="",
                             dd_css=DISPERSED_DECISIONS_CSS)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)

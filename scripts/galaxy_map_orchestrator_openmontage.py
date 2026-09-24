@@ -551,7 +551,7 @@ def main():
             actor_section=build_actor_section(unit_id),
             jobs=jobs_html, n_jobs=len(JOBS),
             dim_index=dimension_index_html(out.name),
-            dim_css=DIMENSION_INDEX_CSS, infra_dd_css=INFRA_DRILLDOWN_CSS)
+            dim_css="", infra_dd_css="")
         out.parent.mkdir(parents=True, exist_ok=True)
         html = inject_level_rail(html, out.name)
         out.write_text(html, encoding='utf-8')

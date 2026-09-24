@@ -371,7 +371,7 @@ def main():
                            map_edges=map_edges, map_nodes=map_nodes, map_w=map_w, map_h=map_h,
                            detail_panels=detail_panels,
                            dim_index=dimension_index_html(OUT.name),
-                           dim_css=DIMENSION_INDEX_CSS)
+                           dim_css="")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')

@@ -75,43 +75,6 @@
   .pc-body{font-size:11px;color:#c8c8d4;line-height:1.65}
   .pc-ladder{display:inline-block;margin:5px 0;font-size:10.5px;color:var(--gold);font-weight:700}
   .primer-foot{font-size:10.5px;color:#6a6a78;line-height:1.7;margin-top:12px}
-
-.fc-bar{display:flex;gap:8px;align-items:center;margin:0 0 10px;flex-wrap:wrap}
-.fc-btn{padding:5px 14px;border-radius:14px;font-size:10.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:#8a8a9a;border:1px solid rgba(255,255,255,0.12);user-select:none}
-.fc-btn:hover{background:rgba(255,255,255,0.09)}
-.fc-btn.active{background:#C9A84C;color:#1a1608;border-color:#C9A84C}
-.fc-pick{display:none;gap:6px;flex-wrap:wrap;margin:0 0 12px}
-.fc-pick-btn{padding:4px 11px;border-radius:10px;font-size:9.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.04);border:1.5px solid var(--c,#8a8a9a);color:var(--c,#8a8a9a);user-select:none}
-.fc-pick-btn:hover{background:color-mix(in srgb, var(--c,#8a8a9a) 14%, transparent)}
-.fc-pick-btn.on{background:var(--c,#8a8a9a);color:#0a0a0f}
-.fc-pick-hint{font-size:10px;color:#6a6a78;padding:2px 0 8px;width:100%}
-/* (a) Infra-drilldown pages: Choice is the existing pane click-through
-   (zero change); Full force-opens every real pane at once. */
-.fc-scope.mode-full .idd-pane{display:block !important}
-.fc-scope.mode-full .idd-hint{display:none}
-/* (b) Level 2/3 evidence-bubble picker: Full shows every real
-   `.ev-group` at once (today's existing behaviour, unchanged); Choice
-   shows only the one currently picked. */
-.fc-scope.mode-choice .fc-pick{display:flex}
-.fc-scope.mode-choice .ev-group{display:none}
-.fc-scope.mode-choice .ev-group.picked{display:inline}
-/* An .ev-group wrapping a plain HTML block (Level 3's Tier 2 panels)
-   needs block, not inline, or its own padding/border render squeezed
-   to content width — a real HTML div and an SVG <g> both match
-   `.ev-group.picked` above, so this more-specific override (2 classes
-   + a tag qualifier beats 2 classes alone) fixes the div case only,
-   leaving the SVG <g> case governed by the rule above unchanged. */
-.fc-scope.mode-choice div.ev-group.picked{display:block}
-
-details.doc-methodology{max-width:1000px;margin:24px auto 40px;padding:0 24px}
-details.doc-methodology > summary{cursor:pointer;list-style:none;font-size:10px;font-weight:700;
-  letter-spacing:.7px;text-transform:uppercase;color:#6a6a78;padding:6px 0;
-  border-top:1px solid rgba(255,255,255,0.07)}
-details.doc-methodology > summary::-webkit-details-marker{display:none}
-details.doc-methodology > summary::before{content:'▶ ';font-size:8px}
-details.doc-methodology[open] > summary::before{content:'▼ '}
-details.doc-methodology > summary:hover{color:#C9A84C}
-details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
 </style>
 <link rel="stylesheet" href="galaxy_map_shared.css"></head>
 <body>
@@ -133,14 +96,14 @@ details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
     </div>
     <div class="primer-card" style="border-left-color:#9B59B6">
       <div class="pc-title">🌌 Dimension — a cross-cutting lens</div>
-      <div class="pc-body">The same modules and functions, viewed through one facet. Deliberately <b>multi-membership</b>: one module can appear in several at once. There are <b>15</b>: Decision Matrix, Dimensions Matrix, Decisions — Human Gates, Branch Ledger, Supabase, Externals, Load Dimension, Skills, Alex’s Decision Path, Orchestrator CC, OpenMontage CC, Oversight Sync, Loops, Local Analysis Pipeline, Generator Toolchain. Equal standing with Rivers, different shape — a Dimension answers "what does this touch", a River answers "where does this live".</div>
+      <div class="pc-body">The same modules and functions, viewed through one facet. Deliberately <b>multi-membership</b>: one module can appear in several at once. There are <b>17</b>: Decision Matrix, Dimensions Matrix, Decisions — Human Gates, Branch Ledger, Supabase, Externals, Load Dimension, Skills, Alex’s Decision Path, Orchestrator CC, OpenMontage CC, Oversight Sync, Loops, Local Analysis Pipeline, Generator Toolchain, Oracle, Connectors. Equal standing with Rivers, different shape — a Dimension answers "what does this touch", a River answers "where does this live".</div>
     </div>
   </div>
   <p class="primer-foot">Real Aug 25 2026 correction (G75): the map used to show eight ladder stops. Four of them — L2.5, Zoom/L4, L5, L6 — failed the containment test above; they were lenses wearing a level's name. L2.5 is Level 2's own table view, Zoom is now an inline toggle on each Current, L5's write-ups are on the Decision Matrix, and L6 keeps its page as link-out-only branch detail. Nothing was deleted without its content landing somewhere real first.</p>
 </details>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Page Index (G59)</div>
-  <h1>🌌 The Page Index — 22 Real Pages, 38 Real Cross-References</h1>
+  <h1>🌌 The Page Index — 22 Real Pages, 37 Real Cross-References</h1>
   <p>Every real Galaxy Map page, catalogued and reachable from one index — grouped by real Level and real river/dimension, annotated with the real "→ flows into" links each page already carries. The pages themselves are untouched on disk; clicking a row or node loads that page's real content below, so this stays light on first paint (real evidence: the ~12,000ms boot-lag already logged this session made a single monolithic file a real regression risk, not a hypothetical one — see the spec).</p>
 </div>
 <div class="legend-row">
@@ -160,7 +123,7 @@ details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
     <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#8a8a9a"/></marker>
   </defs>
   <text x="170.0" y="20" class="col-label" text-anchor="middle">L0</text><text x="430.0" y="20" class="col-label" text-anchor="middle">L1</text><text x="690.0" y="20" class="col-label" text-anchor="middle">L2</text><text x="950.0" y="20" class="col-label" text-anchor="middle">Current (L3)</text><text x="1210.0" y="20" class="col-label" text-anchor="middle">L6</text><text x="1470.0" y="20" class="col-label" text-anchor="middle">Dimension</text>
-  <line x1="170.0" y1="70" x2="1470.0" y2="884" class="flow-edge" marker-end="url(#arrow)"/><line x1="170.0" y1="70" x2="690.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="170.0" y1="70" x2="430.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="958" x2="690.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="950.0" y1="70" x2="1470.0" y2="218" class="flow-edge" marker-end="url(#arrow)"/><line x1="950.0" y1="70" x2="1470.0" y2="1032" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="218" x2="950.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="218" x2="1470.0" y2="144" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="144" x2="1470.0" y2="218" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="144" x2="1210.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="884" x2="950.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="884" x2="1470.0" y2="144" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="884" x2="1470.0" y2="514" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="884" x2="1470.0" y2="1032" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="884" x2="1470.0" y2="662" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="884" x2="430.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="884" x2="1470.0" y2="292" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="514" x2="1470.0" y2="736" class="flow-edge" marker-end="url(#arrow)"/><line x1="1210.0" y1="70" x2="1470.0" y2="218" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="70" x2="950.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="70" x2="1470.0" y2="218" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="70" x2="1210.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="70" x2="690.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="70" x2="1470.0" y2="662" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="1106" x2="1470.0" y2="292" class="flow-edge" marker-end="url(#arrow)"/><line x1="690.0" y1="70" x2="950.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="690.0" y1="70" x2="1470.0" y2="218" class="flow-edge" marker-end="url(#arrow)"/><line x1="690.0" y1="70" x2="1470.0" y2="144" class="flow-edge" marker-end="url(#arrow)"/><line x1="690.0" y1="70" x2="1470.0" y2="884" class="flow-edge" marker-end="url(#arrow)"/><line x1="690.0" y1="70" x2="1210.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="690.0" y1="70" x2="1470.0" y2="662" class="flow-edge" marker-end="url(#arrow)"/><line x1="690.0" y1="70" x2="430.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="736" x2="1470.0" y2="662" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="366" x2="1470.0" y2="514" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="662" x2="1470.0" y2="736" class="flow-edge" marker-end="url(#arrow)"/><line x1="430.0" y1="70" x2="1470.0" y2="884" class="flow-edge" marker-end="url(#arrow)"/><line x1="430.0" y1="70" x2="690.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="430.0" y1="70" x2="1470.0" y2="662" class="flow-edge" marker-end="url(#arrow)"/>
+  <line x1="170.0" y1="70" x2="1470.0" y2="884" class="flow-edge" marker-end="url(#arrow)"/><line x1="170.0" y1="70" x2="690.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="170.0" y1="70" x2="430.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="958" x2="690.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="950.0" y1="70" x2="1470.0" y2="218" class="flow-edge" marker-end="url(#arrow)"/><line x1="950.0" y1="70" x2="1470.0" y2="1032" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="218" x2="950.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="218" x2="1470.0" y2="144" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="144" x2="1470.0" y2="218" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="144" x2="1210.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="884" x2="950.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="884" x2="1470.0" y2="144" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="884" x2="1470.0" y2="514" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="884" x2="1470.0" y2="1032" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="884" x2="1470.0" y2="662" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="884" x2="430.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="884" x2="1470.0" y2="292" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="514" x2="1470.0" y2="736" class="flow-edge" marker-end="url(#arrow)"/><line x1="1210.0" y1="70" x2="1470.0" y2="218" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="70" x2="950.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="70" x2="1470.0" y2="218" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="70" x2="1210.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="70" x2="690.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="1106" x2="1470.0" y2="292" class="flow-edge" marker-end="url(#arrow)"/><line x1="690.0" y1="70" x2="950.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="690.0" y1="70" x2="1470.0" y2="218" class="flow-edge" marker-end="url(#arrow)"/><line x1="690.0" y1="70" x2="1470.0" y2="144" class="flow-edge" marker-end="url(#arrow)"/><line x1="690.0" y1="70" x2="1470.0" y2="884" class="flow-edge" marker-end="url(#arrow)"/><line x1="690.0" y1="70" x2="1210.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="690.0" y1="70" x2="1470.0" y2="662" class="flow-edge" marker-end="url(#arrow)"/><line x1="690.0" y1="70" x2="430.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="736" x2="1470.0" y2="662" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="366" x2="1470.0" y2="514" class="flow-edge" marker-end="url(#arrow)"/><line x1="1470.0" y1="662" x2="1470.0" y2="736" class="flow-edge" marker-end="url(#arrow)"/><line x1="430.0" y1="70" x2="1470.0" y2="884" class="flow-edge" marker-end="url(#arrow)"/><line x1="430.0" y1="70" x2="690.0" y2="70" class="flow-edge" marker-end="url(#arrow)"/><line x1="430.0" y1="70" x2="1470.0" y2="662" class="flow-edge" marker-end="url(#arrow)"/>
   
 <g class="map-node" data-file="galaxy_map.html" transform="translate(170.0,70)">
   <rect x="-95" y="-24" width="190" height="48" rx="10" style="fill:#C9A84C22;stroke:#C9A84C" />
@@ -357,7 +320,7 @@ details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
   </div>
   <div class="pg-scope">98 edges across 17 rivers</div>
   <div class="pg-desc">G111 (Sep 1 2026) — retired as a standalone destination and de-registered from DIMENSION_PAGES, kept on disk so no link 404s. Its 21 curated decision/logic entries now render on their real home objects (each module's Current(L3) section, each river's Level 2 section), sourced from the Decision Matrix's own table. Its river-to-river/connector/skill passages were always a second presentation of what Level 2's per-river legend already draws from the same RIVER_FLOWS/FLOWS_IN/LINKS_BY_RIVER data. Level 6 (Branch Ledger) is untouched and stays link-out only.</div>
-  <div class="pg-flow"><span class="flow-label">→ flows into:</span> Current Series (map+table, function-level), Decision Matrix — Unified Table + Bubble System, Branch Ledger, Level 2 — Modules, Flow, Externals & Skills (+ Level 2.5 table view), Orchestrator CC</div>
+  <div class="pg-flow"><span class="flow-label">→ flows into:</span> Current Series (map+table, function-level), Decision Matrix — Unified Table + Bubble System, Branch Ledger, Level 2 — Modules, Flow, Externals & Skills (+ Level 2.5 table view)</div>
 </div>
 <div class="pg-row" data-file="galaxy_map_decisions.html">
   <div class="pg-head">
@@ -530,7 +493,7 @@ details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
   <iframe id="content-frame"></iframe>
 </div>
 <details class="doc-methodology"><summary>🛠 How this page is generated (methodology)</summary><div class="note">
-  Generated by <code>scripts/galaxy_map_hub.py</code> (G59, real /interrogation Aug 21 2026 — 4 forks, all recommended options confirmed, full record in <code>records/2026-08/galaxy_map_unified_gateway_spec_2026-08-21.txt</code>). 38 real edges computed fresh at build time from every page's own actual cross-references (galaxy_map.html excluded as a target — it's a universal home breadcrumb, not a real flow relationship). Honest limitation: a page-grain 🏁 terminal badge is NOT shown here — real out-degree never hits zero across this 22-page set (pages cross-link for reference as well as drill-down), so a terminal claim would be false; the 🚪/🏁 convention stays accurate at the function grain (Level 3/6/Decisions/Zoom) where it was built. The deeper infra/inter retrofit — converting a genuinely-shared infra bubble into a real per-edge selector INSIDE each of these 22 pages' own rendering — is G60, logged and deliberately not built this pass (phased build, per Alex's own confirmed choice).
+  Generated by <code>scripts/galaxy_map_hub.py</code> (G59, real /interrogation Aug 21 2026 — 4 forks, all recommended options confirmed, full record in <code>records/2026-08/galaxy_map_unified_gateway_spec_2026-08-21.txt</code>). 37 real edges computed fresh at build time from every page's own actual cross-references (galaxy_map.html excluded as a target — it's a universal home breadcrumb, not a real flow relationship). Honest limitation: a page-grain 🏁 terminal badge is NOT shown here — real out-degree never hits zero across this 22-page set (pages cross-link for reference as well as drill-down), so a terminal claim would be false; the 🚪/🏁 convention stays accurate at the function grain (Level 3/6/Decisions/Zoom) where it was built. The deeper infra/inter retrofit — converting a genuinely-shared infra bubble into a real per-edge selector INSIDE each of these 22 pages' own rendering — is G60, logged and deliberately not built this pass (phased build, per Alex's own confirmed choice).
 </div></details>
 <script>
 (function() {

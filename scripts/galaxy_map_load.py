@@ -329,7 +329,7 @@ def main():
     bubble = build_bubble_view(len(boot_regs), n_pagenav, n_click, n_events)
     html = TEMPLATE.format(tabs=tabs, sections=sections, bubble=bubble,
                            dim_index=dimension_index_html(OUT.name),
-                           dim_css=DIMENSION_INDEX_CSS)
+                           dim_css="")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')

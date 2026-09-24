@@ -200,7 +200,7 @@ def main():
     html = TEMPLATE.format(n_mods=len(CALLS), n_calls=n_calls, n_rivers=n_rivers,
                            table_sections=table_sections, map_view=build_map_view(),
                            dim_index=dimension_index_html(OUT.name),
-                           dim_css=DIMENSION_INDEX_CSS, idd_css=INFRA_DRILLDOWN_CSS)
+                           dim_css="", idd_css="")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')

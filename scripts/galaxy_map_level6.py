@@ -250,7 +250,7 @@ def main():
     bubble = build_bubble_view(kind_counts, n_total)
     html = TEMPLATE.format(tabs=tabs, sections=sections, bubble=bubble, n_total=n_total, n_mods=len(mods_with_branches),
                            dim_index=dimension_index_html(OUT.name),
-                           dim_css=DIMENSION_INDEX_CSS)
+                           dim_css="")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')

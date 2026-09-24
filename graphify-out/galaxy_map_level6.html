@@ -42,53 +42,6 @@
   .lp-bubble-block h3{font-family:Georgia,serif;font-size:15px;color:#fff;margin-bottom:5px}
   .lp-bnote{font-size:10.5px;color:var(--dim);line-height:1.65;margin-bottom:10px}
 
-.dim-index{max-width:1180px;margin:18px auto 26px;padding:0 24px}
-.dim-index h2{font-family:Georgia,serif;font-size:19px;color:#fff;margin-bottom:4px;text-align:center}
-.dim-index .dim-sub{font-size:11px;color:#8a8a9a;text-align:center;margin-bottom:14px;line-height:1.6}
-.dim-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
-.dim-card{display:block;text-decoration:none;background:rgba(255,255,255,0.035);border:1px solid rgba(255,255,255,0.1);border-left-width:3px;border-radius:10px;padding:11px 13px;transition:background .15s,border-color .15s}
-.dim-card:hover{background:rgba(255,255,255,0.07)}
-.dim-card .dim-name{font-size:12.5px;font-weight:700;color:#E2E2EC;margin-bottom:3px}
-.dim-card .dim-desc{font-size:10px;color:#8a8a9a;line-height:1.55}
-.dim-card .dim-kind{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;opacity:.9}
-
-
-.fc-bar{display:flex;gap:8px;align-items:center;margin:0 0 10px;flex-wrap:wrap}
-.fc-btn{padding:5px 14px;border-radius:14px;font-size:10.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:#8a8a9a;border:1px solid rgba(255,255,255,0.12);user-select:none}
-.fc-btn:hover{background:rgba(255,255,255,0.09)}
-.fc-btn.active{background:#C9A84C;color:#1a1608;border-color:#C9A84C}
-.fc-pick{display:none;gap:6px;flex-wrap:wrap;margin:0 0 12px}
-.fc-pick-btn{padding:4px 11px;border-radius:10px;font-size:9.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.04);border:1.5px solid var(--c,#8a8a9a);color:var(--c,#8a8a9a);user-select:none}
-.fc-pick-btn:hover{background:color-mix(in srgb, var(--c,#8a8a9a) 14%, transparent)}
-.fc-pick-btn.on{background:var(--c,#8a8a9a);color:#0a0a0f}
-.fc-pick-hint{font-size:10px;color:#6a6a78;padding:2px 0 8px;width:100%}
-/* (a) Infra-drilldown pages: Choice is the existing pane click-through
-   (zero change); Full force-opens every real pane at once. */
-.fc-scope.mode-full .idd-pane{display:block !important}
-.fc-scope.mode-full .idd-hint{display:none}
-/* (b) Level 2/3 evidence-bubble picker: Full shows every real
-   `.ev-group` at once (today's existing behaviour, unchanged); Choice
-   shows only the one currently picked. */
-.fc-scope.mode-choice .fc-pick{display:flex}
-.fc-scope.mode-choice .ev-group{display:none}
-.fc-scope.mode-choice .ev-group.picked{display:inline}
-/* An .ev-group wrapping a plain HTML block (Level 3's Tier 2 panels)
-   needs block, not inline, or its own padding/border render squeezed
-   to content width — a real HTML div and an SVG <g> both match
-   `.ev-group.picked` above, so this more-specific override (2 classes
-   + a tag qualifier beats 2 classes alone) fixes the div case only,
-   leaving the SVG <g> case governed by the rule above unchanged. */
-.fc-scope.mode-choice div.ev-group.picked{display:block}
-
-details.doc-methodology{max-width:1000px;margin:24px auto 40px;padding:0 24px}
-details.doc-methodology > summary{cursor:pointer;list-style:none;font-size:10px;font-weight:700;
-  letter-spacing:.7px;text-transform:uppercase;color:#6a6a78;padding:6px 0;
-  border-top:1px solid rgba(255,255,255,0.07)}
-details.doc-methodology > summary::-webkit-details-marker{display:none}
-details.doc-methodology > summary::before{content:'▶ ';font-size:8px}
-details.doc-methodology[open] > summary::before{content:'▼ '}
-details.doc-methodology > summary:hover{color:#C9A84C}
-details.doc-methodology .note{margin:0 auto;padding:8px 0 0}
 </style>
 <link rel="stylesheet" href="galaxy_map_shared.css"></head>
 <body>

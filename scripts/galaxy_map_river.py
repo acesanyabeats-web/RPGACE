@@ -331,10 +331,11 @@ def build_svg():
         if not is_archived:
             river_pos[rnum] = (rx, ry)
         color = RIVER_COLOR[rnum]
-        if not is_archived:
-            edges_svg.append(_curved_edge(cx, cy, rx, ry, color, real=True, dashed=False, r1=hub_r1, r2=30))
-            edge_colors_used.add(color)
         short_label = RIVER_NAME[rnum].split('—')[0].strip()
+        if not is_archived:
+            edges_svg.append(_curved_edge(cx, cy, rx, ry, color, real=True, dashed=False, r1=hub_r1, r2=30,
+                                           from_label='Rivers', to_label=short_label, kind='river_link'))
+            edge_colors_used.add(color)
         # G4 shipped — every river node is now a real clickable drill-down
         # into its own Level-2 module/dashboard-card detail, not a
         # decorative dead end (matches G3's own drill-link precedent on
@@ -476,7 +477,9 @@ def build_svg():
             col = INTERACTION_TYPE_COLOR.get(itype, '#6b7280')
             if tgt_num and tgt_num in river_pos:
                 tx, ty = river_pos[tgt_num]
-                edges_svg.append(_curved_edge(sx, sy, tx, ty, col, real=True, r1=30, r2=30))
+                edges_svg.append(_curved_edge(sx, sy, tx, ty, col, real=True, r1=30, r2=30,
+                                               from_label=RIVER_NAME[src_num].split('—')[0].strip(),
+                                               to_label=RIVER_NAME[tgt_num].split('—')[0].strip(), kind=itype))
                 edge_colors_used.add(col)
                 real_ring_edges.append((src_num, tgt_num))
             else:
@@ -668,7 +671,7 @@ def main():
                            river_web=build_river_web_section(), n_web_rivers=len(REVERSE_LINKS),
                            dim_index=dimension_index_html(OUT.name,
                                heading='🌌 Dimensions — equal standing with the Rivers above'),
-                           dim_css=DIMENSION_INDEX_CSS, infra_dd_css=INFRA_DRILLDOWN_CSS)
+                           dim_css="", infra_dd_css="")
     OUT.parent.mkdir(exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     # DD7 (Aug 23 2026) — live in-flight ceo_plan_items overlay,

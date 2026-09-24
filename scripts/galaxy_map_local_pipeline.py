@@ -370,7 +370,7 @@ def main():
         gaps=build_gaps_html(),
         bubbles=build_bubble_view(),
         dim_index=dimension_index_html(OUT.name),
-        dim_css=DIMENSION_INDEX_CSS,
+        dim_css="",
     )
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)

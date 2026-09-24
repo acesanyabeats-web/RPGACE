@@ -384,8 +384,8 @@ def main():
     html = TEMPLATE.format(
         call_loops=''.join(call_html), data_loops=''.join(data_html),
         web_section=build_web_section(call_cycles, data_cycles),
-        dim_index=dimension_index_html(OUT.name), dim_css=DIMENSION_INDEX_CSS,
-        infra_dd_css=INFRA_DRILLDOWN_CSS,
+        dim_index=dimension_index_html(OUT.name), dim_css="",
+        infra_dd_css="",
     )
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)

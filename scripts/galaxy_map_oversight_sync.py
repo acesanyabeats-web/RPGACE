@@ -489,7 +489,7 @@ def main():
                 + build_shared_infra_section())
     html = TEMPLATE.format(tabs=tabs, sections=sections,
                            dim_index=dimension_index_html(OUT.name),
-                           dim_css=DIMENSION_INDEX_CSS, infra_dd_css=INFRA_DRILLDOWN_CSS)
+                           dim_css="", infra_dd_css="")
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')

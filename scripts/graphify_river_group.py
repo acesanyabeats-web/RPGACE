@@ -4359,6 +4359,19 @@ DIMENSION_PAGES = [
     # an explicit Sep 15 pause override (same shape as GMR-1..GMR-6).
     ('galaxy_map_generator_toolchain.html', '🧰', 'Generator Toolchain', 'meta',
      'The 11 real perspective_generate_*.py/smoke_test_generate_*.py/detector scripts, by family and shared dependency.'),
+    # P0 (Sep 24 2026) — real fork-3 fix, Alex-confirmed directly ("Real
+    # Dimensions") after Fable's own report flagged this exact drift:
+    # galaxy_map_hub.py's own separate hand-typed PAGES catalog already
+    # classified both of these as level:'Dimension', kind:'infra' — but
+    # this registry (the one left_nav_html() actually reads to build the
+    # sidebar's Dimensions grouping) never had them, so they were
+    # genuinely invisible in the real left-nav despite the hub page
+    # correctly listing them. Added here to close that gap at the
+    # source, rather than patch the symptom in the sidebar.
+    ('galaxy_map_oracle.html', '🔮', 'Oracle', 'infra',
+     'Every real function anywhere that calls Oracle, by river/module.'),
+    ('galaxy_map_connectors.html', '🔌', 'Connectors', 'infra',
+     'The 6 real non-Oracle "External AI" constituents, each its own real L0 unit.'),
 ]
 
 DIMENSION_KIND_META = {
@@ -4447,7 +4460,22 @@ def _build_markers(colors):
     return ''.join(out)
 
 
-def _curved_edge(x1, y1, x2, y2, color, real=True, dashed=False, offset_mult=1, r1=0, r2=0, markers=True):
+def _curved_edge(x1, y1, x2, y2, color, real=True, dashed=False, offset_mult=1, r1=0, r2=0, markers=True,
+                  from_label=None, to_label=None, kind=None):
+    """P0 edge evidence substrate (Sep 24 2026, Fable's D4/edges-as-
+    gateways addendum): from_label/to_label/kind are optional and
+    default to None — every one of the 27 real pre-existing call sites
+    keeps working unchanged if it never passes them. When a caller DOES
+    pass them, the rendered <path> carries real data-from/data-to/
+    data-kind attributes plus a native SVG <title> tooltip (hover-
+    explain, zero JS needed for the tooltip itself) — the real hover-
+    explain substrate P1 (turning edges into clickable gateways) builds
+    on. This pass wires real labels into every call site where the
+    endpoints' own real identity is already in scope (rule 1 — never
+    invented, always the same data the call site already computed x/y
+    from); a genuinely ambiguous/ornamental edge (e.g. a fan-out spoke
+    with no distinct per-edge identity) is left unlabeled rather than
+    given a fabricated label."""
     dx, dy = x2 - x1, y2 - y1
     length = math.hypot(dx, dy) or 1
     ux, uy = dx / length, dy / length
@@ -4464,8 +4492,27 @@ def _curved_edge(x1, y1, x2, y2, color, real=True, dashed=False, offset_mult=1, 
     dash = ' stroke-dasharray="5,4"' if dashed else ''
     op = '0.85' if real else '0.4'
     mk = f' marker-start="url(#xstart-{_cid(color)})" marker-end="url(#arrow-{_cid(color)})"' if markers else ''
+    def _e(s):
+        return (s or '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;')
+    data_attrs = ''
+    title_el = ''
+    if from_label or to_label or kind:
+        if from_label:
+            data_attrs += f' data-from="{_e(from_label)}"'
+        if to_label:
+            data_attrs += f' data-to="{_e(to_label)}"'
+        if kind:
+            data_attrs += f' data-kind="{_e(kind)}"'
+        tip = ' → '.join(x for x in (from_label, to_label) if x)
+        if kind:
+            tip = f'{tip} ({kind})' if tip else kind
+        if tip:
+            title_el = f'<title>{_e(tip)}</title>'
     return (f'<path d="M {tx1} {ty1} Q {cx_} {cy_} {tx2} {ty2}" fill="none" '
-            f'stroke="{color}" stroke-width="1.8" opacity="{op}"{dash} filter="url(#edgeglow)"{mk}/>')
+            f'stroke="{color}" stroke-width="1.8" opacity="{op}"{dash} filter="url(#edgeglow)"{mk}{data_attrs}>'
+            f'{title_el}</path>') if data_attrs else (
+        f'<path d="M {tx1} {ty1} Q {cx_} {cy_} {tx2} {ty2}" fill="none" '
+        f'stroke="{color}" stroke-width="1.8" opacity="{op}"{dash} filter="url(#edgeglow)"{mk}/>')
 
 
 # ---------------------------------------------------------------------
@@ -5156,12 +5203,15 @@ def inject_level_rail(html, current_file):
     the Full/Choice mechanism for free too, whether or not that specific
     page actually uses a `.fc-scope` region — harmless, unused CSS/JS on
     a page with no `.fc-scope` element, same precedent LEFT_NAV_CSS/JS
-    already set."""
-    if '.fc-bar{' not in html:
-        if '</style>' in html:
-            html = html.replace('</style>', FULL_CHOICE_CSS + '</style>', 1)
-        else:
-            html = html.replace('</head>', f'<style>{FULL_CHOICE_CSS}</style></head>', 1)
+    already set.
+
+    P0 CSS consolidation (Sep 24 2026): FULL_CHOICE_CSS now ships once
+    via galaxy_map_shared.css (_write_shared_nav_assets(), below) instead
+    of being re-inlined into every page's own <style> block — the real
+    byte savings this whole pass targets. FULL_CHOICE_JS stays inline
+    per page (small, and this pass is scoped to the CSS duplication
+    Fable's D1 finding flagged, not a JS consolidation, rule 11)."""
+    if "classList.remove('mode-full', 'mode-choice')" not in html:
         if '</body>' in html:
             html = html.replace('</body>', f'<script>{FULL_CHOICE_JS}</script></body>', 1)
         else:
@@ -5234,11 +5284,10 @@ def collapse_methodology(html):
                '<summary>🛠 How this page is generated (methodology)</summary>'
                f'{block}</details>')
     html = html[:start] + wrapped + html[end:]
-    if 'details.doc-methodology{' not in html:
-        if '</style>' in html:
-            html = html.replace('</style>', METHODOLOGY_DETAILS_CSS + '</style>', 1)
-        else:
-            html = html.replace('</head>', f'<style>{METHODOLOGY_DETAILS_CSS}</style></head>', 1)
+    # P0 CSS consolidation (Sep 24 2026): METHODOLOGY_DETAILS_CSS now
+    # ships once via galaxy_map_shared.css instead of being re-inlined
+    # here on every call — real duplicate-byte savings, same fix as
+    # FULL_CHOICE_CSS above.
     return html
 
 
@@ -5628,8 +5677,26 @@ def _write_shared_nav_assets():
     string interpolation (current_file baked in at generation time) to
     a tiny client-side script reading location.pathname — a genuinely
     different mechanism, same real visual behavior, verified via
-    headless Chromium (see the debloat record file)."""
-    Path('graphify-out/galaxy_map_shared.css').write_text(LEFT_NAV_CSS)
+    headless Chromium (see the debloat record file).
+
+    P0 CSS consolidation (Sep 24 2026, real /fableomnitrix D1 finding):
+    4 more Python constants — DIMENSION_INDEX_CSS/INFRA_DRILLDOWN_CSS/
+    FULL_CHOICE_CSS/METHODOLOGY_DETAILS_CSS — were ALREADY single-sourced
+    here (rule 8 held at the source level) but still re-inlined into
+    every page's own <style> block at generation time, the exact same
+    waste class LEFT_NAV_CSS had (65 rules byte-identical across 10-23
+    pages, ~89KB, confirmed via direct SequenceMatcher-style scan).
+    Folded into this one shared file too; the per-page call sites that
+    used to interpolate them now pass '' (DIMENSION_INDEX_CSS/
+    INFRA_DRILLDOWN_CSS) or were changed to skip their own inline-<style>
+    append entirely (FULL_CHOICE_CSS/METHODOLOGY_DETAILS_CSS, both
+    already routed through one shared post-process hook each —
+    inject_level_rail()/collapse_methodology() — so no per-page template
+    edit was needed for those two)."""
+    Path('graphify-out/galaxy_map_shared.css').write_text(
+        LEFT_NAV_CSS + '\n' + DIMENSION_INDEX_CSS + '\n' + INFRA_DRILLDOWN_CSS
+        + '\n' + FULL_CHOICE_CSS + '\n' + METHODOLOGY_DETAILS_CSS
+    )
     nav_html = left_nav_html(None)
     # Deliberately scoped to .gside-level/.gside-dim only, matching the
     # original server-side logic exactly (left_nav_html()'s own `cls`
