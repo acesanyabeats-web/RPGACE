@@ -4320,8 +4320,8 @@ LEVEL_RAIL = [
 #   infra = an attached-resource dimension (renders as a node bubble)
 #   meta  = a cross-dimension synthesis page (neither, by itself)
 DIMENSION_PAGES = [
-    ('galaxy_map_decision_matrix.html', '🚦', 'Decision Matrix', 'meta',
-     'Every real decision — gates, curated core logic, text inputs — by river.'),
+    ('galaxy_map_decision_matrix.html', '🚦', 'Decision Matrix (full catalog)', 'meta',
+     'The exhaustive dev-facing catalog — all 21 real decisions, gates/logic/text-inputs, by river. See Alex’s Decision Path for the narrower, click-by-click UX view of the same gates.'),
     ('galaxy_map_dimensions.html', '🧭', 'Dimensions Matrix', 'meta',
      'Which modules are multi-home across every other dimension.'),
     # G111 (Sep 1 2026) — 'galaxy_map_logic_dimension.html' REMOVED from
@@ -4353,8 +4353,8 @@ DIMENSION_PAGES = [
      'What actually triggers a load: boot task, page nav, or on-demand click.'),
     ('galaxy_map_skill_network.html', '🕸️', 'Skills', 'inter',
      'Real skill-to-skill invocation edges, plus each skill’s AI/UI/backend axes.'),
-    ('galaxy_map_alex_path.html', '🧑', 'Alex’s Decision Path', 'inter',
-     'Each dashboard card’s real flow, and the real Y/N fork Alex actually hits.'),
+    ('galaxy_map_alex_path.html', '🧑', 'Alex’s Decision Path (his own click-path)', 'inter',
+     'Not the full decision catalog (see Decision Matrix for that) — Alex’s own UX journey: each dashboard card’s real flow, and only the Y/N forks he actually hits clicking through it.'),
     # Sep 15 2026, real 2nd correction — was one combined entry for one
     # shared page; Alex's own direct words made clear he wanted genuinely
     # separate pages ("its still not 2 separate pages, just on one with

@@ -634,6 +634,7 @@ TEMPLATE = """<!DOCTYPE html>
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Decision Matrix</div>
   <h1>🚦🧭 The Decision Matrix — Every Real Decision, By River</h1>
   <p>Real unification of all 3 real decision kinds this project tracks: 🗑️ Gates (<a href="galaxy_map_decisions.html">10 human-confirm points</a>), 🧠 Logic Choices ({n_logic} curated core-logic points, <a href="#d-oracle-mode">written up in full further down this page</a>), and ⌨️ Text Inputs ({n_text} real, curated free-text entry points that drive an actual decision) — {n_total} real decisions total, grouped by which of the 17 real rivers they belong to. "Depth" shows how far down the existing Galaxy Map hierarchy each one is documented: every real decision reaches Current (L3) + the Branch Ledger (exhaustive branch detail); a real 🟣 purple depth tag means it's ALSO one of Level 5's own curated "core logic" points. <b>This table is the real source of truth — the bubble view below is a rendering layer over the exact same data, never a second, independently-imagined picture (Alex's own standing rule).</b></p>
+  <p style="margin-top:8px"><b>This is the full, exhaustive, dev-facing catalog</b> — every real decision in the codebase, organized by river. For the narrower UX view of just the decisions Alex personally hits clicking through his own dashboard, see <a href="galaxy_map_alex_path.html">🧑 Alex's Decision Path</a> instead.</p>
 </div>
 
 <div class="toggle-row">
