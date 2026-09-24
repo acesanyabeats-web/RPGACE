@@ -88,6 +88,53 @@ def last_mentioned_date(sk_text):
     return max(dates) if dates else None
 
 
+DEV_PROCESS_MARKERS = (
+    # H (item H of the Sep 24 2026 /fableomnitrix plan, "product-vs-dev
+    # card tagging for the staleness checker") — real problem confirmed
+    # by direct read of today's own patch_notes.html cards before writing
+    # this: this same session shipped 10+ cards, and every single one is
+    # internal Galaxy Map/CEO-process/doc-tooling work (the debloat pass,
+    # the web-bubble interlinking, the /fableomnitrix protocol itself,
+    # DD-1..DD-4 doc-collapse batches) — NONE describe a real user-facing
+    # app feature. Oracle's SELF_KNOWLEDGE answers questions about the
+    # APP (recipes, beats, taxonomy, wishlist budgets, etc.); it has no
+    # reason to reflect a change to how the Galaxy Map's own left-nav
+    # sidebar renders. Counting dev/process cards toward the staleness
+    # threshold dilutes the real signal with noise a session like today's
+    # would otherwise trip for no real reason.
+    #
+    # Deliberately a CONSERVATIVE marker list, same discipline as
+    # DEAD_CODE_CANDIDATES in galaxy_map_g13_onclick_coverage_check.py —
+    # a card is only classified 'dev' when its title clearly, textually
+    # matches one of these real, curated phrases; everything else
+    # defaults to 'product' (the safer default — under-classifying a
+    # dev card as product just costs one extra count toward a threshold
+    # that's already a real signal either way, but over-classifying a
+    # real PRODUCT change as 'dev' would silently suppress a genuine
+    # staleness flag, which is the actual failure mode worth avoiding).
+    'galaxy map', 'ceo loop', 'ceo skill', '/ceo', '/ceofable',
+    '/fableomnitrix', 'fableomnitrix', 'oversight doc', 'dd-1', 'dd-2',
+    'dd-3', 'dd-4', 'collapsed in claude.md', 'smoke_test.html',
+    'interlinking', 'web-bubble', 'bubble panel', 'bubble system',
+    '/debloat', 'anchor', 'manual.html', 'minotaur_map.html',
+    'minotaur/manual unification', 'current-state bloat', 'link-rot',
+    'session_lessons.html', 'achiever.html', 'error_log.html',
+    'perspective_map.html', 'skill.md', 'pipeline regenerated',
+    'galaxy development framework', 'generator toolchain',
+)
+
+
+def classify_card(title):
+    """'dev' if the card title matches a real, curated dev/process
+    marker; 'product' otherwise (the conservative default — see
+    DEV_PROCESS_MARKERS' own comment). Pure text classification, same
+    family as this project's existing _AISLE_GROUPS/_classifyAisle
+    precedent (cookingOracle, H13) — a cheap keyword heuristic, never
+    claimed as a perfect classifier."""
+    lowered = title.lower()
+    return 'dev' if any(marker in lowered for marker in DEV_PROCESS_MARKERS) else 'product'
+
+
 def count_ships_since(patch_notes_text, since_date):
     """Real patch_notes.html card-title date-prefixes only ('Mon DD —',
     no year -- this project's own real convention, confirmed by direct
@@ -99,6 +146,7 @@ def count_ships_since(patch_notes_text, since_date):
     titles = re.findall(r'card-title">([^<]*)', patch_notes_text)
     today = date.today()
     count = 0
+    product_count = 0
     counted_titles = []
     for title in titles:
         m = re.search(r'(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec) (\d{1,2}) ', title)
@@ -117,8 +165,11 @@ def count_ships_since(patch_notes_text, since_date):
                 continue
         if card_date > since_date:
             count += 1
-            counted_titles.append((card_date.isoformat(), title.strip()[:80]))
-    return count, counted_titles
+            kind = classify_card(title)
+            if kind == 'product':
+                product_count += 1
+            counted_titles.append((card_date.isoformat(), title.strip()[:80], kind))
+    return count, product_count, counted_titles
 
 
 def run_check():
@@ -145,15 +196,24 @@ def run_check():
         }
 
     days_stale = (today - last_date).days
-    ships_since, ship_titles = count_ships_since(PATCH_NOTES.read_text(encoding='utf-8'), last_date)
+    ships_since, product_ships_since, ship_titles = count_ships_since(
+        PATCH_NOTES.read_text(encoding='utf-8'), last_date
+    )
 
-    stale = (days_stale > DAYS_THRESHOLD) or (ships_since >= SHIPS_THRESHOLD)
+    # H (Sep 24 2026, /fableomnitrix plan item H): the ships-threshold
+    # half of the STALE signal now counts real PRODUCT cards only — a
+    # session's worth of pure Galaxy Map/CEO-process cards (this
+    # session's own real shape) no longer trips a false staleness flag
+    # on its own. The days-threshold half is untouched (a pure calendar
+    # signal, unaffected by what kind of work shipped).
+    stale = (days_stale > DAYS_THRESHOLD) or (product_ships_since >= SHIPS_THRESHOLD)
 
     return {
         'stale': stale,
         'last_date': last_date.isoformat(),
         'days_stale': days_stale,
         'ships_since': ships_since,
+        'product_ships_since': product_ships_since,
         'ship_titles': ship_titles,
         'days_threshold': DAYS_THRESHOLD,
         'ships_threshold': SHIPS_THRESHOLD,
@@ -174,11 +234,15 @@ def main():
     print(f"SELF_KNOWLEDGE CHECK: {status}")
     print(f"  last real date-fact inside SELF_KNOWLEDGE: {result['last_date']}")
     print(f"  days since then: {result['days_stale']} (threshold: >{result['days_threshold']})")
-    print(f"  real patch_notes.html cards shipped since then: {result['ships_since']} (threshold: >={result['ships_threshold']})")
-    if result['stale'] and result['ship_titles']:
-        print("  cards possibly unreflected in Oracle's own self-knowledge:")
-        for d, t in result['ship_titles'][:10]:
-            print(f"    - {d}: {t}")
+    print(f"  real patch_notes.html cards shipped since then: {result['ships_since']} total "
+          f"({result['product_ships_since']} product-facing, "
+          f"{result['ships_since'] - result['product_ships_since']} dev/process) "
+          f"(threshold: >={result['ships_threshold']} product-facing)")
+    if result['ship_titles']:
+        print("  cards shipped since then (product cards are what count toward staleness):")
+        for d, t, kind in result['ship_titles'][:10]:
+            tag = '🟢 product' if kind == 'product' else '⚙️  dev'
+            print(f"    - {d} [{tag}]: {t}")
         if len(result['ship_titles']) > 10:
             print(f"    ...and {len(result['ship_titles']) - 10} more")
     if result['stale']:

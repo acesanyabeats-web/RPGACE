@@ -88,7 +88,63 @@ def run_check(onclick_features, smoke_items):
     }
 
 
+def _normalize_detector(detected_by):
+    """'galaxy_map_g13_onclick_coverage_check.py' and
+    'galaxy_map_g13_onclick_coverage_check' (no .py) are the SAME real
+    detector — confirmed the hard way: system_map_flags rows
+    3b7222f9-edd0-4a16-98b0-e2a637a717c4 / e340d0a4-8a53-48a4-a992-
+    709d28157e4c (Sep 22 2026) were flagged twice for the identical
+    toggleVoiceInput/runVideoWorkshop finding because nothing normalized
+    this exact .py-suffix inconsistency before comparing. Strip it so a
+    future dedup check isn't fooled by the same cosmetic mismatch."""
+    return detected_by.strip().removesuffix('.py')
+
+
+def is_duplicate_flag(candidate_detected_by, candidate_subject_names, existing_flags):
+    """H (item H of the Sep 24 2026 /fableomnitrix plan, real /Engineer
+    build, per Alex's own "start item H" ask) — the flag-dedup guard
+    named in that plan's own item, built as the pure-function-library
+    check this script's docstring already commits to (never a writer
+    itself, same discipline as run_check() above and gmp_b_consistency_
+    check.py's own run_check()).
+
+    candidate_detected_by: the string this script (or a sibling
+    detector) would write into a new system_map_flags row's own
+    `detected_by` column.
+    candidate_subject_names: the real function/module/identifier names
+    the candidate finding is actually about (e.g. ['toggleVoiceInput',
+    'runVideoWorkshop']) — the same real entities a human reviewing two
+    flags side-by-side would recognize as "this is the same finding."
+    existing_flags: an iterable of dicts, each with at least
+    'detected_by', 'change_summary', 'friction_note' (system_map_flags'
+    own real columns) — status is NOT filtered here; a resolved flag for
+    the same subject is still real evidence a fresh flag would be a
+    duplicate of already-handled work, not just of another open one.
+
+    Returns True (a near-duplicate already exists — skip the insert) only
+    when BOTH the normalized detector name matches AND at least one real
+    candidate subject name appears, word-boundary-matched, inside that
+    existing flag's own combined change_summary+friction_note text —
+    matching detector alone is too loose (the same script can legitimately
+    flag two genuinely different findings), and matching a bare subject
+    name alone is too loose the other way (a common short identifier could
+    coincidentally appear in an unrelated flag's prose)."""
+    cand_detector = _normalize_detector(candidate_detected_by)
+    for flag in existing_flags:
+        if _normalize_detector(flag.get('detected_by', '')) != cand_detector:
+            continue
+        combined = (flag.get('change_summary', '') or '') + ' ' + (flag.get('friction_note', '') or '')
+        for name in candidate_subject_names:
+            if re.search(r'\b' + re.escape(name) + r'\b', combined):
+                return True
+    return False
+
+
 if __name__ == '__main__':
     print(__doc__)
     print("Pure function library — call run_check(onclick_features, smoke_items) "
-          "from a session that already has the real Supabase rows in hand.")
+          "from a session that already has the real Supabase rows in hand. "
+          "Before inserting a new system_map_flags row from this script's own "
+          "findings, call is_duplicate_flag(...) against the real existing rows "
+          "first — see its own docstring for the real Sep 22 2026 near-duplicate "
+          "this guard exists to prevent from recurring.")
