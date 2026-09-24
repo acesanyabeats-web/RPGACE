@@ -309,11 +309,11 @@ TEMPLATE = """<!DOCTYPE html>
   than three peer connector bubbles, with the governing logic attached inline.</p>
 </div>
 <div class="lp-toggle-row">
-  <div class="lp-tbtn active" data-view="table">📊 Table view</div>
-  <div class="lp-tbtn" data-view="map">🫧 Bubble view</div>
+  <div class="lp-tbtn" data-view="table">📊 Table view</div>
+  <div class="lp-tbtn active" data-view="map">🫧 Bubble view</div>
 </div>
 <div class="wrap">
-<div class="lp-view active" data-lpview="table">
+<div class="lp-view" data-lpview="table">
   <h2>The three members</h2>
   <p class="sub">Every citation below was read directly out of the real source in this repo during this build — never carried over from a prior session's summary.</p>
   <table><thead><tr><th>Member</th><th>Role in the cluster</th><th>Real evidence</th><th>Status</th></tr></thead>
@@ -332,7 +332,7 @@ TEMPLATE = """<!DOCTYPE html>
   <p class="sub">Stated plainly rather than smoothed over — each one is a real limit on what this page can claim.</p>
   {gaps}
 </div>
-<div class="lp-view" data-lpview="map">{bubbles}</div>
+<div class="lp-view active" data-lpview="map">{bubbles}</div>
 </div>
 {dim_index}
 

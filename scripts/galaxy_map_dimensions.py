@@ -574,30 +574,30 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="lvl-block active" id="lvl-l0">
   <div class="vhint">Every real L0 unit cross-referenced against every dimension it genuinely touches — reusing that unit's own already-computed real facet links (rule 8), never a new detector. A unit counts as touching a dimension when at least one of its real facets links to that dimension's own page.</div>
   <div class="toggle-row">
-    <div class="toggle-btn active" data-view="l0table">📊 Table</div>
-    <div class="toggle-btn" data-view="l0map">🌌 Map</div>
+    <div class="toggle-btn" data-view="l0table">📊 Table</div>
+    <div class="toggle-btn active" data-view="l0map">🌌 Map</div>
   </div>
-  <div class="view active" id="view-l0table"><div class="wrap">{l0_matrix}</div></div>
-  <div class="view" id="view-l0map"><div class="bubblewrap">{l0_bubbles}</div></div>
+  <div class="view" id="view-l0table"><div class="wrap">{l0_matrix}</div></div>
+  <div class="view active" id="view-l0map"><div class="bubblewrap">{l0_bubbles}</div></div>
 </div>
 
 <div class="lvl-block" id="lvl-l1">
   <div class="vhint">Every real river cross-referenced against every dimension it genuinely participates in — a roll-up of the module-grain data at L2, never re-derived. A cell shows how many of that river's own modules carry that dimension; hover it for their names, click it (or the river name) for the full breakdown.</div>
   <div class="toggle-row">
-    <div class="toggle-btn active" data-view="l1table">📊 Table</div>
-    <div class="toggle-btn" data-view="l1map">🌌 Map</div>
+    <div class="toggle-btn" data-view="l1table">📊 Table</div>
+    <div class="toggle-btn active" data-view="l1map">🌌 Map</div>
   </div>
-  <div class="view active" id="view-l1table"><div class="wrap">{river_matrix}</div></div>
-  <div class="view" id="view-l1map"><div class="bubblewrap">{river_bubbles}</div></div>
+  <div class="view" id="view-l1table"><div class="wrap">{river_matrix}</div></div>
+  <div class="view active" id="view-l1map"><div class="bubblewrap">{river_bubbles}</div></div>
 </div>
 
 <div class="lvl-block" id="lvl-l2">
   <div class="vhint">The finer grain the L1 roll-up deliberately loses: which individual module is a real cross-dimension hub, regardless of which river it is grouped under.</div>
   <div class="toggle-row">
-    <div class="toggle-btn active" data-view="l2table">📊 Table</div>
-    <div class="toggle-btn" data-view="l2map">🌌 Map</div>
+    <div class="toggle-btn" data-view="l2table">📊 Table</div>
+    <div class="toggle-btn active" data-view="l2map">🌌 Map</div>
   </div>
-  <div class="view active" id="view-l2table">
+  <div class="view" id="view-l2table">
     <div class="wrap">
       <table class="dtable">
         <thead><tr><th>Module</th><th>River</th>{dim_headers}<th>Tags</th></tr></thead>
@@ -605,7 +605,7 @@ TEMPLATE = """<!DOCTYPE html>
       </table>
     </div>
   </div>
-  <div class="view" id="view-l2map"><div class="bubblewrap">{module_bubbles}</div></div>
+  <div class="view active" id="view-l2map"><div class="bubblewrap">{module_bubbles}</div></div>
 </div>
 
 {dim_index}

@@ -298,10 +298,13 @@ TEMPLATE = """<!DOCTYPE html>
   <p>Alex's own real ask, after a chat-only pass badly undercounted: "identify loop between all levels and objects of levels, infra and inter, river and modules." Two genuinely different real mechanisms create a real cycle here — a module's own code reaching another's (directly or via a fired/listened event), or two modules never calling each other at all but sharing a Supabase table's write and read — kept as two separate groups below, never merged into one blob.</p>
 </div>
 <div class="toggle-row">
-  <div class="toggle-btn active" data-view="cards">📇 Cards</div>
-  <div class="toggle-btn" data-view="web">🌐 Web</div>
+  <div class="toggle-btn active" data-view="web">🌐 Web</div>
+  <div class="toggle-btn" data-view="cards">📇 Cards</div>
 </div>
-<div class="view active" id="view-cards">
+<div class="view active" id="view-web">
+<div class="webwrap">{web_section}</div>
+</div>
+<div class="view" id="view-cards">
 <div class="content">
 
 <div class="grouphead">Mechanism 1 — Direct calls + cross-module event signals</div>
@@ -314,9 +317,6 @@ TEMPLATE = """<!DOCTYPE html>
 
 </div>
 </div>
-<div class="view" id="view-web">
-<div class="webwrap">{web_section}</div>
-</div>
 {dim_index}
 
 <div class="note">
@@ -328,18 +328,10 @@ TEMPLATE = """<!DOCTYPE html>
   Real, honest scope limit: server-side (<code>api/*.js</code>) call/data relationships aren't reachable by this
   client-side detector — same limit every other Galaxy Map page states.
 </div>
-<script>
-(function() {{
-  var toggles = document.querySelectorAll('.toggle-btn');
-  var views = document.querySelectorAll('.view');
-  toggles.forEach(function(t) {{
-    t.addEventListener('click', function() {{
-      toggles.forEach(function(x) {{ x.classList.toggle('active', x === t); }});
-      views.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-' + t.dataset.view); }});
-    }});
-  }});
-}})();
-</script>
+<!-- Real Web/Cards toggle-click handling now lives ONCE in the shared
+     galaxy_map_shared.js (GM_TOGGLE_JS, P0 of the Sep 24 2026
+     /fableomnitrix full-redesign plan) -- this page's own copy removed,
+     not reimplemented (Fable report D2). -->
 </body>
 </html>
 """

@@ -332,16 +332,16 @@ TEMPLATE = """<!DOCTYPE html>
   <p style="margin-top:8px"><b>Map view</b> renders the same data as one real bubble system, drilled progressively: <b>Level 1</b> the rivers that genuinely touch Supabase → <b>Level 2</b> the modules in that river that genuinely touch a table → <b>Level 3</b> the real Currents (functions) that touch, each a migration bubble jumping out to that module's own Current Series section. Per R22 the table is the source and the bubbles follow it — same <code>TABLES</code> data, never a second source.</p>
 </div>
 <div class="toggle-row">
-  <div class="toggle-btn active" data-view="table">📊 Table view</div>
-  <div class="toggle-btn" data-view="map">🌌 Map view</div>
+  <div class="toggle-btn active" data-view="map">🌌 Map view</div>
+  <div class="toggle-btn" data-view="table">📊 Table view</div>
 </div>
 
-<div class="view active" id="view-table">
+<div class="view" id="view-table">
 <div class="tables">{table_sections}</div>
 {ovs_group}
 </div>
 
-<div class="view" id="view-map">{map_view}</div>
+<div class="view active" id="view-map">{map_view}</div>
 {dim_index}
 
 <script>

@@ -14,3 +14,23 @@ document.body.insertAdjacentHTML("afterbegin", "<button class=\"gside-toggle\" t
 })();
 
 (function(){var p=location.pathname.split('/').pop();document.querySelectorAll('.gside-nav a.gside-level[href],.gside-nav a.gside-dim[href]').forEach(function(a){if(a.getAttribute('href').split('#')[0]===p)a.classList.add('active');});})();
+
+function _gmInitToggles() {
+  document.querySelectorAll('.toggle-row').forEach(function(row) {
+    var toggles = row.querySelectorAll('.toggle-btn[data-view]');
+    var scopeSuffix = row.dataset.scope ? '-' + row.dataset.scope : '';
+    var views = (row.parentElement || document).querySelectorAll('.view[id^="view-"]');
+    toggles.forEach(function(t) {
+      t.addEventListener('click', function() {
+        toggles.forEach(function(x) { x.classList.toggle('active', x === t); });
+        var targetId = 'view-' + t.dataset.view + scopeSuffix;
+        views.forEach(function(v) { v.classList.toggle('active', v.id === targetId); });
+      });
+    });
+  });
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _gmInitToggles);
+} else {
+  _gmInitToggles();
+}

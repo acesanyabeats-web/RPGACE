@@ -313,14 +313,14 @@ TEMPLATE = """<!DOCTYPE html>
   <p style="margin-top:8px"><b>Map view</b> renders the same {n_points} decision points as one real bubble system, drilled progressively: <b>Level 1</b> the rivers whose modules own a real human-confirm gate → <b>Level 2</b> the modules in that river → <b>Level 3</b> the real decision points themselves, each a migration bubble jumping out to that module's own Current Series section.</p>
 </div>
 <div class="toggle-row">
-  <div class="toggle-btn active" data-view="table">📊 Table view</div>
-  <div class="toggle-btn" data-view="map">🌌 Map view</div>
+  <div class="toggle-btn active" data-view="map">🌌 Map view</div>
+  <div class="toggle-btn" data-view="table">📊 Table view</div>
 </div>
-<div class="view active" id="view-table">
+<div class="view" id="view-table">
 <div class="tabs">{tabs}</div>
 {sections}
 </div>
-<div class="view" id="view-map">{map_view}</div>
+<div class="view active" id="view-map">{map_view}</div>
 {dim_index}
 
 <div class="note">

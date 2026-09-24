@@ -637,16 +637,16 @@ TEMPLATE = """<!DOCTYPE html>
 </div>
 
 <div class="toggle-row">
-  <div class="toggle-btn active" data-view="table">📊 Table view (the matrix)</div>
-  <div class="toggle-btn" data-view="bubble">🫧 Bubble view</div>
+  <div class="toggle-btn active" data-view="bubble">🫧 Bubble view</div>
+  <div class="toggle-btn" data-view="table">📊 Table view (the matrix)</div>
 </div>
 
-<div class="view active" id="view-table">
-  <div class="matrix-wrap">{matrix_table}</div>
-</div>
-
-<div class="view" id="view-bubble">
+<div class="view active" id="view-bubble">
   <div class="bubblewrap">{bubble_map}</div>
+</div>
+
+<div class="view" id="view-table">
+  <div class="matrix-wrap">{matrix_table}</div>
 </div>
 
 <div class="legend">
@@ -665,14 +665,10 @@ TEMPLATE = """<!DOCTYPE html>
 
 <script>
 (function() {{
-  var toggles = document.querySelectorAll('.toggle-btn');
-  var views = document.querySelectorAll('.view');
-  toggles.forEach(function(t) {{
-    t.addEventListener('click', function() {{
-      toggles.forEach(function(x) {{ x.classList.toggle('active', x === t); }});
-      views.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-' + t.dataset.view); }});
-    }});
-  }});
+  // Real Table/Bubble toggle-click handling now lives ONCE in the
+  // shared galaxy_map_shared.js (GM_TOGGLE_JS, P0 of the Sep 24 2026
+  // /fableomnitrix full-redesign plan) -- removed here, not
+  // reimplemented (Fable report D2).
   // G74 — row HEADER click goes to the same real destination the
   // bubble view's own click already goes to for that river.
   document.querySelectorAll('th.rowjump').forEach(function(th) {{

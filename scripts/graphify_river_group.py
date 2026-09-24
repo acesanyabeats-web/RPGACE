@@ -5416,6 +5416,53 @@ LEFT_NAV_JS = '''
 '''
 
 
+# P0 (Sep 24 2026, /fableomnitrix full-redesign plan, ceo_plans
+# 16633827-90dd-4027-a1f2-624bf3fc4374) -- the real shared Table/Map
+# toggle handler. Fable's report (D2, MATERIAL) found 12 textually
+# distinct hand-written toggle-click implementations across the 17 real
+# pages that carry one -- the direct cause of the inconsistent default
+# view Alex noticed, since there was no single place a default could
+# ever have been set. Real evidence gathered before writing this (rule
+# 1): every existing implementation already shares one generic
+# behavioral contract -- a container holding `.toggle-btn[data-view]`
+# children, toggled against sibling `.view`/panel elements whose own id
+# is `'view-' + dataset.view` -- confirmed by direct read of
+# galaxy_map_hub.py/galaxy_map_decision_matrix.py/galaxy_map_generator_
+# toolchain.py/galaxy_map_loops.py/galaxy_map_orchestrator_openmontage.py's
+# own inline scripts. Deliberately does NOT rename any real data-view
+# value (map/table/bubble/cards/web/deps/l0map/ovsmap/...) -- a real,
+# checked risk: `#view-map` is already a real, live anchor target in
+# 77+ places across rendered pages AND generator scripts (river's own
+# reverse-link bubbles, module/skill_network/supabase's own cross-
+# refs), and renaming the vocabulary would silently break every one of
+# them for zero real benefit -- "web view first" is satisfied by
+# DEFAULT ORDERING, not by renaming an id. Scoped per closest
+# `.toggle-row` ancestor (a safe generalization of orchestrator_
+# openmontage.py's own already-correct multi-group-safe pattern) so it
+# works identically whether a page has one toggle group or several.
+GM_TOGGLE_JS = '''
+function _gmInitToggles() {
+  document.querySelectorAll('.toggle-row').forEach(function(row) {
+    var toggles = row.querySelectorAll('.toggle-btn[data-view]');
+    var scopeSuffix = row.dataset.scope ? '-' + row.dataset.scope : '';
+    var views = (row.parentElement || document).querySelectorAll('.view[id^="view-"]');
+    toggles.forEach(function(t) {
+      t.addEventListener('click', function() {
+        toggles.forEach(function(x) { x.classList.toggle('active', x === t); });
+        var targetId = 'view-' + t.dataset.view + scopeSuffix;
+        views.forEach(function(v) { v.classList.toggle('active', v.id === targetId); });
+      });
+    });
+  });
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _gmInitToggles);
+} else {
+  _gmInitToggles();
+}
+'''
+
+
 def _left_nav_dim_row(entry, current_file):
     fname, icon, label, kind, desc = entry
     cls = ' active' if fname == current_file else ''
@@ -5599,7 +5646,7 @@ def _write_shared_nav_assets():
     )
     Path('graphify-out/galaxy_map_shared.js').write_text(
         'document.body.insertAdjacentHTML("afterbegin", ' + json.dumps(nav_html) + ');\n'
-        + LEFT_NAV_JS + '\n' + active_js
+        + LEFT_NAV_JS + '\n' + active_js + '\n' + GM_TOGGLE_JS
     )
 
 
@@ -5620,19 +5667,30 @@ def inject_left_nav(html, current_file):
     mechanism), so a page opened locally via file:// still renders its
     nav correctly, same as before."""
     _write_shared_nav_assets()
-    if 'galaxy_map_shared.css' not in html:
-        link = '<link rel="stylesheet" href="galaxy_map_shared.css">'
+    # Real bug found + fixed same pass (P0, Sep 24 2026): the original
+    # guards below checked for the bare filename ANYWHERE in `html` —
+    # once several pages' own comments started mentioning
+    # "galaxy_map_shared.js"/".css" by name (documenting the GM_TOGGLE_JS
+    # consolidation), that bare-substring check false-positived and
+    # silently skipped injecting the real <script src>/<link> tags,
+    # breaking every toggle on those pages with zero visible error.
+    # Fixed to match the actual TAG, never the bare filename, so a
+    # future comment mentioning either file by name can't trip this
+    # again.
+    css_tag = '<link rel="stylesheet" href="galaxy_map_shared.css">'
+    if css_tag not in html:
         if '</head>' in html:
-            html = html.replace('</head>', link + '</head>', 1)
+            html = html.replace('</head>', css_tag + '</head>', 1)
         elif '<style>' in html:
-            html = html.replace('<style>', link + '<style>', 1)
-    if 'galaxy_map_shared.js' in html:
+            html = html.replace('<style>', css_tag + '<style>', 1)
+    js_tag = '<script src="galaxy_map_shared.js"></script>'
+    if js_tag in html:
         return html
     m = re.search(r'(<body[^>]*>)', html)
     if m:
         after = html[m.end():m.end() + 4000]
-        if 'class="gside-nav"' not in after and 'galaxy_map_shared.js' not in after:
-            html = html[:m.end()] + '\n<script src="galaxy_map_shared.js"></script>' + html[m.end():]
+        if 'class="gside-nav"' not in after and js_tag not in after:
+            html = html[:m.end()] + '\n' + js_tag + html[m.end():]
     return html
 
 

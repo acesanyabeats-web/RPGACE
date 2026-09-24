@@ -421,14 +421,14 @@ TEMPLATE = """<!DOCTYPE html>
   <p>All {n_conns} real external connectors, grouped by whether each one genuinely touches both a real UI trigger/output AND real backend processing — Alex's own real "parallel universe" framing. A connector counts as touching UI on EITHER a real trigger or a real displayed output (or both).</p>
 </div>
 <div class="toggle-row">
-  <div class="toggle-btn active" data-view="cards">📇 Cards</div>
-  <div class="toggle-btn" data-view="web">🌐 Web</div>
+  <div class="toggle-btn active" data-view="web">🌐 Web</div>
+  <div class="toggle-btn" data-view="cards">📇 Cards</div>
 </div>
-<div class="view active" id="view-cards">
+<div class="view" id="view-cards">
 <div class="tabs">{tabs}</div>
 {sections}
 </div>
-<div class="view" id="view-web">
+<div class="view active" id="view-web">
 <div class="webwrap">{web_section}</div>
 </div>
 {dim_index}

@@ -118,11 +118,11 @@ def build_drilldown_section(conn):
   <p class="conn-note">{esc(row.get('note', ''))} Real trigger: <code>{esc(row.get('via', ''))}</code>.</p>
   <p class="conn-summary">{len(pairs)} real (module,function) call pair(s) across {n_mods} module(s), {len(rivers_touched)} river(s) — a genuine client-side rpgace_core.js call site, detected the same way Oracle/Supabase's own Infra systems are.</p>
   <div class="toggle-row">
-    <div class="toggle-btn active" data-conn="{cid}" data-view="table">📊 Table</div>
-    <div class="toggle-btn" data-conn="{cid}" data-view="map">🌌 Map</div>
+    <div class="toggle-btn" data-conn="{cid}" data-view="table">📊 Table</div>
+    <div class="toggle-btn active" data-conn="{cid}" data-view="map">🌌 Map</div>
   </div>
-  <div class="view active" id="view-{cid}-table"><div class="tables">{''.join(table_rows)}</div></div>
-  <div class="view" id="view-{cid}-map">{map_view}</div>
+  <div class="view" id="view-{cid}-table"><div class="tables">{''.join(table_rows)}</div></div>
+  <div class="view active" id="view-{cid}-map">{map_view}</div>
 </section>'''
     return counts, n_mods, len(rivers_touched), section
 

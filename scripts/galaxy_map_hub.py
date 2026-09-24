@@ -440,14 +440,14 @@ TEMPLATE = """<!DOCTYPE html>
   <span>🚪 root · 🧭 hub-only (no other page links here yet)</span>
 </div>
 <div class="toggle-row">
-  <div class="toggle-btn active" data-view="table">📊 Table view</div>
-  <div class="toggle-btn" data-view="map">🌌 Map view</div>
+  <div class="toggle-btn active" data-view="map">🌌 Map view</div>
+  <div class="toggle-btn" data-view="table">📊 Table view</div>
 </div>
-<div class="view active" id="view-table">
-  {table_html}
-</div>
-<div class="view" id="view-map">
+<div class="view active" id="view-map">
   {map_html}
+</div>
+<div class="view" id="view-table">
+  {table_html}
 </div>
 <div id="pane-wrap">
   <div id="pane-head">
@@ -462,14 +462,12 @@ TEMPLATE = """<!DOCTYPE html>
 </div>
 <script>
 (function() {{
-  var toggles = document.querySelectorAll('.toggle-btn');
-  var views = document.querySelectorAll('.view');
-  toggles.forEach(function(t) {{
-    t.addEventListener('click', function() {{
-      toggles.forEach(function(x) {{ x.classList.toggle('active', x === t); }});
-      views.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-' + t.dataset.view); }});
-    }});
-  }});
+  // Real Table/Map toggle-click handling now lives ONCE in the shared
+  // galaxy_map_shared.js (GM_TOGGLE_JS, P0 of the Sep 24 2026
+  // /fableomnitrix full-redesign plan) -- this page's own copy was one
+  // of 12 real textually-distinct duplicates Fable's report (D2) found
+  // across the 17 pages that carry a toggle; removed here, not
+  // reimplemented.
   var frame = document.getElementById('content-frame');
   var title = document.getElementById('pane-title');
   var openLink = document.getElementById('pane-open');

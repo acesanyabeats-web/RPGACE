@@ -354,11 +354,11 @@ def build_shared_infra_section():
             f'<p class="catnote"><b>Which doc touches which table</b> (the real per-{{doc,table}} facts the L0 map\'s '
             f'own inline Infra list used to be the only place to see):</p>{doctable}{no_code_note}'
             f'<div class="toggle-row">'
-            f'<div class="toggle-btn active" data-view="ovstable">📊 Table view</div>'
-            f'<div class="toggle-btn" data-view="ovsmap">🌌 Map view</div>'
+            f'<div class="toggle-btn" data-view="ovstable">📊 Table view</div>'
+            f'<div class="toggle-btn active" data-view="ovsmap">🌌 Map view</div>'
             f'</div>'
-            f'<div class="view active" id="view-ovstable">{table_view}</div>'
-            f'<div class="view" id="view-ovsmap">{map_view}</div>'
+            f'<div class="view" id="view-ovstable">{table_view}</div>'
+            f'<div class="view active" id="view-ovsmap">{map_view}</div>'
             f'</section>')
 
 
