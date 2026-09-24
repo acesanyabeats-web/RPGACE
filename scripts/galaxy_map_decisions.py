@@ -61,6 +61,10 @@ _sys_rail.path.insert(0, str(_Path_rail(__file__).parent))
 from graphify_river_group import inject_level_rail, core_js_lines  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
 from graphify_river_group import LEVEL3_MODULES, compute_function_branches  # noqa: E402
+from graphify_river_group import (  # noqa: E402
+    build_infra_drilldown, infra_drilldown_counts, render_infra_drilldown,
+    INFRA_DRILLDOWN_CSS,
+)
 
 CORE_JS = Path('rpgace_core.js')
 OUT = Path('graphify-out/galaxy_map_decisions.html')
@@ -181,6 +185,41 @@ def esc(s):
     return (s or '').replace('<', '&lt;').replace('>', '&gt;')
 
 
+# Sep 24 2026 — real /debloat-shaped interlink pass (Alex's own web/
+# spiderweb ask): this page had zero real SVG bubble system, only flat
+# `mod-chip` text links — real evidence found in the same-day audit that
+# every OTHER Dimension page infra-shaped like this one (Oracle,
+# Supabase, Connectors, Orchestrator/OpenMontage CC, Oversight Sync)
+# already renders its module/function evidence through the shared
+# build_infra_drilldown()/render_infra_drilldown() bubble machinery
+# (G83/G106) — this page was the real, confirmed outlier. DECISION_
+# POINTS is already shaped exactly like every other page's own evidence
+# dict (module, func, a real detail string) once grouped by category, so
+# this reuses the SAME shared functions rather than inventing a second
+# bubble mechanism (rule 8) — never a second source, a pure rendering
+# layer over the same DECISION_POINTS the table view already renders.
+EVIDENCE = {
+    cat['label']: [(dp['module'], dp['func'], dp['title'])
+                   for dp in DECISION_POINTS if dp['category'] == cat['id']]
+    for cat in CATEGORIES
+}
+DRILL, ORPHANS = build_infra_drilldown(EVIDENCE)
+DRILL_COUNTS = infra_drilldown_counts(DRILL, ORPHANS)
+
+
+def _leaf_link(mod):
+    return f'galaxy_map_current.html#mod-{mod}' if mod in LEVEL3_MODULES else None
+
+
+def build_map_view():
+    return render_infra_drilldown(
+        DRILL, ORPHANS, unit_icon='🚦', unit_label='Decisions',
+        leaf_link_fn=_leaf_link, resource_emoji='🚦',
+        orphan_label='Cross-cutting (no river)',
+        orphan_note="RIVER_MODULES' own documented exclusions",
+        esc=esc, unit_color='#E25454')
+
+
 def _level6_chip(mod):
     """The real 'every branch in this module' chip — the second half of
     the depth the Decision Matrix already grades every one of these
@@ -257,6 +296,12 @@ TEMPLATE = """<!DOCTYPE html>
   .mod-chip{{font-size:10px;font-weight:700;padding:3px 10px;border-radius:10px;background:rgba(226,84,84,0.1);color:var(--red);text-decoration:none;border:1px solid rgba(226,84,84,0.3);display:inline-block;margin:12px 6px 0 0}}
   a{{color:var(--red)}}
   .note{{max-width:1000px;margin:0 auto 40px;padding:0 24px;font-size:11px;color:#6a6a78;line-height:1.7}}
+  .toggle-row{{display:flex;justify-content:center;gap:8px;padding:16px 24px 0}}
+  .toggle-btn{{padding:8px 18px;border-radius:16px;font-size:11.5px;font-weight:700;cursor:pointer;background:rgba(255,255,255,0.05);color:var(--dim);border:1px solid rgba(255,255,255,0.1)}}
+  .toggle-btn.active{{background:var(--red);color:#fff;border-color:var(--red)}}
+  .view{{display:none}}
+  .view.active{{display:block}}
+{idd_css}
 {dim_css}
 </style>
 </head>
@@ -265,9 +310,17 @@ TEMPLATE = """<!DOCTYPE html>
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Decision Grouping (G26 Phase 1)</div>
   <h1>🚦 Real Decisions &amp; Human Gates — Website Perspective</h1>
   <p>{n_points} real decision/human-confirmation points across {n_cats} categories, grouped by what kind of decision each one asks Alex to make — not by code structure. Every point cross-links to its own real Current Series (L3) function, to <a href="galaxy_map_level6.html">the exhaustive branch detail</a> for that module, and — where the same decision also has a curated core-logic write-up — straight to it on <a href="galaxy_map_decision_matrix.html">the Decision Matrix</a>. Phase 1 scope: RPGACE app code only — Total-systems process-level decisions (a /CEO approval, a migration confirm) are real, deliberately deferred future scope. Real Aug 21 2026 companion: <a href="galaxy_map_decision_matrix.html">🚦🧭 the Decision Matrix</a> — this page's own real gates unified with Level 5's logic points and a new curated text-input set, split by river and documentation depth.</p>
+  <p style="margin-top:8px"><b>Map view</b> renders the same {n_points} decision points as one real bubble system, drilled progressively: <b>Level 1</b> the rivers whose modules own a real human-confirm gate → <b>Level 2</b> the modules in that river → <b>Level 3</b> the real decision points themselves, each a migration bubble jumping out to that module's own Current Series section.</p>
 </div>
+<div class="toggle-row">
+  <div class="toggle-btn active" data-view="table">📊 Table view</div>
+  <div class="toggle-btn" data-view="map">🌌 Map view</div>
+</div>
+<div class="view active" id="view-table">
 <div class="tabs">{tabs}</div>
 {sections}
+</div>
+<div class="view" id="view-map">{map_view}</div>
 {dim_index}
 
 <div class="note">
@@ -283,17 +336,29 @@ TEMPLATE = """<!DOCTYPE html>
 (function() {{
   var tabs = document.querySelectorAll('.tab');
   var sections = document.querySelectorAll('.csection');
+  var mtToggles = document.querySelectorAll('.toggle-btn');
+  var mtViews = document.querySelectorAll('.view');
+  function showView(name) {{
+    mtToggles.forEach(function(x) {{ x.classList.toggle('active', x.dataset.view === name); }});
+    mtViews.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-' + name); }});
+  }}
+  mtToggles.forEach(function(t) {{
+    t.addEventListener('click', function() {{ showView(t.dataset.view); }});
+  }});
   function show(id) {{
     sections.forEach(function(s) {{ s.style.display = (s.id === id) ? '' : 'none'; }});
     tabs.forEach(function(t) {{ t.classList.toggle('active', t.dataset.target === id); }});
   }}
   tabs.forEach(function(t) {{ t.addEventListener('click', function() {{ location.hash = t.dataset.target; }}); }});
   window.addEventListener('hashchange', function() {{
-    var id = location.hash.replace('#', '') || (sections[0] && sections[0].id);
-    show(id);
+    var h = (location.hash || '').replace('#', '');
+    if (h === 'view-map') {{ showView('map'); return; }}
+    var id = h || (sections[0] && sections[0].id);
+    if (document.getElementById(id)) {{ showView('table'); show(id); }}
   }});
-  var id0 = location.hash.replace('#', '') || (sections[0] && sections[0].id);
-  show(id0);
+  var id0 = location.hash.replace('#', '');
+  if (id0 === 'view-map') {{ showView('map'); }}
+  else {{ show(id0 || (sections[0] && sections[0].id)); }}
 }})();
 </script>
 </body>
@@ -305,12 +370,29 @@ def main():
     tabs = ''.join(f'<div class="tab" data-target="cat-{c["id"]}">{c["label"]}</div>' for c in CATEGORIES)
     sections = ''.join(build_category_section(c) for c in CATEGORIES)
     html = TEMPLATE.format(tabs=tabs, sections=sections, n_points=len(DECISION_POINTS), n_cats=len(CATEGORIES),
+                           map_view=build_map_view(),
                            dim_index=dimension_index_html(OUT.name),
-                           dim_css=DIMENSION_INDEX_CSS)
+                           dim_css=DIMENSION_INDEX_CSS, idd_css=INFRA_DRILLDOWN_CSS)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(DECISION_POINTS)} real decision points across {len(CATEGORIES)} categories, all anchors verified live.")
+    c = DRILL_COUNTS
+    print(f"  Map view — L1 {c['rivers']} real river(s) qualify · "
+          f"L2 {c['modules']} module(s) + {c['orphan_modules']} river-less · "
+          f"L3 {c['functions'] + c['orphan_functions']} real migration bubble(s).")
+    # Real, build-time self-consistency gate, same discipline as
+    # galaxy_map_oracle.py's own G83 check — the drill-down must draw
+    # exactly the same number of (module, function) leaves DECISION_
+    # POINTS itself defines, or this page is telling two different
+    # truths between its table view and its map view.
+    real_pairs = {(dp['module'], dp['func']) for dp in DECISION_POINTS}
+    drawn = sum(len(fs) for mods in DRILL.values() for fs in mods.values())
+    drawn += sum(len(fs) for fs in ORPHANS.values())
+    if drawn != len(real_pairs):
+        raise SystemExit(
+            f"SELF-CONSISTENCY FAIL: drill-down draws {drawn} function leaf/leaves, "
+            f"DECISION_POINTS defines {len(real_pairs)} real (module, function) pair(s).")
     # Aug 25 2026 — real, measured destination coverage, printed so a
     # future build can never silently regress it.
     mods = sorted({dp['module'] for dp in DECISION_POINTS})

@@ -46,6 +46,52 @@ from graphify_river_group import (  # noqa: E402
 from graphify_river_group import inject_level_rail, inject_plan_overlay  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
 
+# Sep 24 2026 — real /debloat-shaped interlink pass, Alex's own direct
+# ask ("all galaxy map pages... web section/bubble system... core
+# included, bidirectional"): River (L1) is a CORE page every Dimension
+# page's own migration bubbles jump OUT of (via galaxy_map_module.html#
+# river-N), but had no real INBOUND signal of its own — no way to tell,
+# standing on a river's own node, which Dimension pages hold real
+# evidence about it. Reusing each Dimension page's own already-computed
+# DRILL (rule 8 — never re-derived, a pure aggregation over the exact
+# same build_infra_drilldown() output that page's own map view already
+# renders) rather than inventing a second detector. Real, honestly
+# scoped to the 3 Dimension pages that expose a real module-level DRILL
+# constant cleanly (Oracle/Supabase/Decisions) — the remaining infra-
+# drilldown pages (Connectors/Orchestrator-OpenMontage/Oversight Sync)
+# build their DRILL per-tab inside main(), not at module level, and
+# wiring those in is real, separate follow-up work (see the Sep 24
+# interlink plan record), not done this pass.
+import galaxy_map_oracle as _dim_oracle  # noqa: E402
+import galaxy_map_supabase as _dim_supabase  # noqa: E402
+import galaxy_map_decisions as _dim_decisions  # noqa: E402
+
+_REVERSE_DIMENSIONS = [
+    ('galaxy_map_oracle.html', '🔮', 'Oracle', _dim_oracle.DRILL),
+    ('galaxy_map_supabase.html', '🗄️', 'Supabase', _dim_supabase.DRILL),
+    ('galaxy_map_decisions.html', '🚦', 'Decisions', _dim_decisions.DRILL),
+]
+
+
+def _rivers_referenced_by(href, drill):
+    return {r for r in drill}
+
+
+def compute_river_reverse_links():
+    """{river_num: [(href, icon, label), ...]} — which Dimension pages
+    have real evidence touching each river, sourced from each page's own
+    already-built DRILL dict. Real, honest, evidence-checked — a river
+    only appears under a Dimension page if that page's own build-time
+    detector actually found a real (module, function) pair in it."""
+    out = {}
+    for href, icon, label, drill in _REVERSE_DIMENSIONS:
+        for r in _rivers_referenced_by(href, drill):
+            out.setdefault(r, []).append((href, icon, label))
+    return out
+
+
+REVERSE_LINKS = compute_river_reverse_links()
+
 # GMP-A (Sep 16 2026) — a real, verbatim first-sentence excerpt from
 # each live river's own perspective_reports self_report (written this
 # session, scope_level='river'), baked in at generation time since this
@@ -324,6 +370,16 @@ def build_svg():
                 f'<br><span class="meta">🔭 {excerpt} '
                 f'<a href="perspective_map.html#report-river-{rnum}">Full perspective report ↗</a></span>'
             )
+        # Real, evidence-gated reverse migration-bubble line (see
+        # compute_river_reverse_links() above) — which Dimension pages
+        # actually have real evidence touching this river, each a real
+        # link out to that page's own map view, never re-narrated here.
+        reverse_note = ''
+        if not is_archived and REVERSE_LINKS.get(rnum):
+            chips = ' '.join(
+                f'<a href="{href}#view-map">{icon} {label}</a>'
+                for href, icon, label in REVERSE_LINKS[rnum])
+            reverse_note = f'<br><span class="meta">🌐 Referenced by: {chips}</span>'
         target_legend = archived_legend_rows if is_archived else live_legend_rows
         target_legend.append(
             f'<div class="legend-row"><span class="dot" style="background:{color}"></span>'
@@ -332,6 +388,7 @@ def build_svg():
             + (f'<br><span class="meta">{role}</span>' if role else '')
             + oversight_note
             + perspective_note
+            + reverse_note
             + river_retirement_note_html(rnum, compact=True)
             + '</div>'
         )
@@ -482,7 +539,7 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 1 — Rivers</div>
   <h1>🏛️ RPGACE Architecture — {n_live} Live Rivers</h1>
-  <p>Drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a> — RPGACE Architecture's own internal structure, the same {n_rivers} rivers <code>minotaur_map.html</code> and the Obsidian vault already describe ({n_live} live, {n_archived} archived — see the 🗄️ section below), here laid out radially and cross-linked by real <code>RIVER_FLOWS</code> data (never a river acting on its own — every edge is a real, grounded aggregate of actual caller-level relationships, per <code>system_map_spec.md</code> §1a). Every edge carries a real ✕ mark at its start and a real arrowhead at its end. A 📚 badge marks River XV (the real Oversight hub) and any river with a real, direct connection into it (§6, G5). A 🧑 badge marks a river with at least one real module carrying real DOM/input evidence — a lightweight aggregate (real UI density is too fine-grained for 17 nodes; see Level 2/3 for the real "Alex" bubble + edges). <b>Click any river node to drill into its real modules + dashboard-card entry points (Level 2).</b></p>
+  <p>Drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a> — RPGACE Architecture's own internal structure, the same {n_rivers} rivers <code>minotaur_map.html</code> and the Obsidian vault already describe ({n_live} live, {n_archived} archived — see the 🗄️ section below), here laid out radially and cross-linked by real <code>RIVER_FLOWS</code> data (never a river acting on its own — every edge is a real, grounded aggregate of actual caller-level relationships, per <code>system_map_spec.md</code> §1a). Every edge carries a real ✕ mark at its start and a real arrowhead at its end. A 📚 badge marks River XV (the real Oversight hub) and any river with a real, direct connection into it (§6, G5). A 🧑 badge marks a river with at least one real module carrying real DOM/input evidence — a lightweight aggregate (real UI density is too fine-grained for 17 nodes; see Level 2/3 for the real "Alex" bubble + edges). A real 🌐 "Referenced by" line (below, per river) is the reverse half of the Dimension pages' own migration bubbles — which Dimension page(s) have real, checked evidence touching this river, so the web reads both directions. <b>Click any river node to drill into its real modules + dashboard-card entry points (Level 2).</b></p>
 </div>
 
 <div class="canvas-wrap">

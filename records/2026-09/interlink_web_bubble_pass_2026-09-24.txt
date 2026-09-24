@@ -1,0 +1,175 @@
+RPGACE — Galaxy Map interlinking: the "web/spiderweb" bubble-system pass
+Sep 24 2026
+
+===========================================================================
+CONTEXT — ALEX'S REAL ASK, VERBATIM
+===========================================================================
+"Now /debloat galaxy map htmls interlinks so each page show the section of
+the spiderwebs of RPGACE total systems. Each page is a section of the web,
+the web of RPGACE total system is the metaphor, the galaxy map is it's
+manifestation, showing how all elements interconnect. It's like the law
+of 7 handshakes... Every bubble in the built bubbles system is the
+representation of the web. That why I want all galaxy map pages to have a
+web section/bubble system like at level 3. /Deduplication and /debloat
+and /drift and /interrogation. I want the only overlapping content to be
+if a level is overarching, with migration bubbles by levels being
+visible. Then there are dimension migration bubbles (infra and inter)
+that will be entry point into both and back... Each connection should
+only be present once in one of galaxy maps htmls. If copy in other, then
+it's a link migration bubble as it has a relationship to dimension or
+other level unit module and/or function."
+
+Real /interrogation (2 questions, AskUserQuestion, both answered before
+any code was touched):
+1. Session pacing — "Audit + plan, then pilot 1-2 pages now" (not a full
+   22-page rebuild in one pass, not audit-only).
+2. Core pages (L0/L1/L2/Current) — "All 22 pages, core included... a
+   bidirectional web, reverse-links bubble section on core pages too."
+
+===========================================================================
+STEP 1 — REAL AUDIT (accurate coverage map, corrected mid-pass)
+===========================================================================
+A first grep for the literal words "bubble"/"migration" undercounted —
+the real shared component is `build_infra_drilldown()`/
+`render_infra_drilldown()`/`render_bubble_row()`/`render_evidence_bubble()`
+(graphify_river_group.py, G83/G106), and several pages use "drilldown"
+terminology instead. Re-audited by grepping the real function names.
+
+Pages WITH a real bubble/drilldown system already (14 of 22):
+  Core: galaxy_map.html (L0), galaxy_map_module.html (L2),
+        galaxy_map_current.html (Current/L3)
+  Full infra L1->L2->L3 drilldown: galaxy_map_oracle.html,
+        galaxy_map_supabase.html, galaxy_map_connectors.html,
+        galaxy_map_orchestrator_cc.html, galaxy_map_openmontage_cc.html,
+        galaxy_map_oversight_sync.html
+  render_bubble_row (lighter, GMR-6): galaxy_map_alex_path.html,
+        galaxy_map_level6.html, galaxy_map_load.html,
+        galaxy_map_local_pipeline.html
+  Own real bubble mechanism (build_dependency_bubbles, R22-compliant,
+        not the shared function but a genuine equivalent for a different
+        data shape): galaxy_map_generator_toolchain.html
+
+Pages with ZERO bubble/drilldown system (real gap, 7 of 22, excluding the
+retired Logic Dimension page which is deliberately reference-only):
+  galaxy_map_river.html (L1, CORE)
+  galaxy_map_decisions.html
+  galaxy_map_decision_matrix.html
+  galaxy_map_dimensions.html (meta index)
+  galaxy_map_externals.html
+  galaxy_map_skill_network.html
+  galaxy_map_loops.html (meta synthesis)
+
+Real, separate finding: most of these 7 already avoid raw CONTENT
+duplication (e.g. galaxy_map_decisions.html already used plain
+`<a class="mod-chip">` text links to Current(L3)/Level6/Decision Matrix,
+never re-pasting content) — the real gap Alex named is specifically the
+VISUAL bubble-system presentation ("like at level 3"), not a dedup
+violation in the data-duplication sense. G111 (Logic Dimension's own
+Sep 1 2026 retirement) is the existing real precedent for this exact
+"full content lives on ONE page, everywhere else gets a real link" rule
+— it already worked exactly the way Alex is now asking to generalize.
+
+===========================================================================
+STEP 2 — PILOT (2 pages, per the confirmed session pacing)
+===========================================================================
+
+PILOT A — galaxy_map_decisions.html gains a real Map view.
+DECISION_POINTS (10 real decision/human-gate points, module+func+title
+each) was already shaped almost exactly like every other page's own
+evidence dict — grouped by category (3: destructive/taxonomy/pipeline)
+and converted to `{category_label: [(module, func, title), ...]}`, fed
+straight into the SAME shared build_infra_drilldown()/
+render_infra_drilldown() every other infra page already uses (rule 8 —
+no second bubble mechanism invented). A Table/Map toggle (identical
+pattern to galaxy_map_oracle.py) was added; the existing category-tab
+table view is untouched. A real build-time self-consistency gate was
+added (same discipline as Oracle/Supabase's own G83 check) — the
+drill-down must draw exactly 10 leaves, matching DECISION_POINTS'
+own 10 (module, func) pairs, or the build fails loud.
+Real result: L1 5 rivers qualify, L2 7 modules, L3 10 real migration
+bubbles — matches DECISION_POINTS exactly.
+
+PILOT B — galaxy_map_river.html (a CORE page) gains a real reverse-link
+"🌐 Referenced by" line per river.
+Per Alex's confirmed "core included, bidirectional" answer: River (L1)
+is the page every Dimension-page migration bubble already jumps OUT TO
+(via galaxy_map_module.html#river-N) but had no INBOUND signal of its
+own. Built `compute_river_reverse_links()` in galaxy_map_river.py,
+importing the already-computed module-level `DRILL` dict from 3 pages
+that expose one cleanly (galaxy_map_oracle.py, galaxy_map_supabase.py,
+galaxy_map_decisions.py — the new Pilot A) — a pure aggregation over
+data those pages already computed, never a second detector (rule 8).
+Each qualifying river's legend row now shows a real, evidence-checked
+"🌐 Referenced by: 🔮 Oracle 🗄️ Supabase 🚦 Decisions" line, each a real
+link to that page's own #view-map anchor — same lightweight text+link
+pattern the page's own pre-existing 📚/🧑/🔮/🔭 badges already use,
+proportionate to a 17-node ring diagram (a full per-river SVG bubble
+PANEL, 17 of them, would be real, separate, larger future work — not
+built this pass, named plainly below).
+Real result: 10 of 17 rivers get a real reverse-link line, 18 real
+links total (verified against REVERSE_LINKS' own Python-side count,
+not just eyeballed).
+
+===========================================================================
+STEP 3 — VERIFICATION
+===========================================================================
+- Full 21-script + hub pipeline run twice from a clean state: byte-
+  identical output across all 22 real pages both times (R5 idempotent).
+- `verify_anchors.py`: 26/26 citations fresh.
+- Every one of the 22 real pages remains div/a/svg-balanced (direct
+  regex count, not assumed).
+- Headless Chromium (file://, the harder case than HTTP):
+  Decisions — table view active on load, Map view activates correctly
+  on toggle click, 13 real SVG bubble panels render (1 L1 + per-river
+  L2/L3 panes for the 5 qualifying rivers).
+  River — 10 real "Referenced by" rows render, 18 real reverse links
+  match REVERSE_LINKS' own Python-side count exactly (a 3rd-party
+  selector match briefly looked like 20 — traced to a real, PRE-
+  EXISTING, unrelated "⚠️ Deprecated" note on the same page that already
+  linked to Oracle/Supabase with the same #view-map fragment; not a
+  regression, confirmed by direct inspection of the surrounding HTML).
+  One console error on both pages: a pre-existing, already-documented
+  sandboxed-network resource block (unrelated to this change, same one
+  the Sep 24 debloat pass already logged).
+
+===========================================================================
+STEP 4 — HONEST SCOPE: WHAT'S DEFERRED, NAMED PLAINLY
+===========================================================================
+Real, NOT done this pass (deliberately, per the confirmed "pilot 1-2
+pages" pacing — this is the concrete follow-up backlog, not a silent gap):
+
+1. The remaining 6 real zero-bubble pages (decision_matrix, dimensions
+   index, externals, skill_network, loops, plus a full SVG treatment for
+   river beyond the reverse-link line) still need their own bubble/
+   web-section build — same shared-function-reuse approach as Pilot A
+   wherever the page's own data is (module, func, detail)-shaped;
+   loops/dimensions-index are pure synthesis pages and may need a
+   different, still-R22-compliant treatment (a table-of-tables bubble
+   view) rather than a literal infra drilldown.
+2. 3 pages that already HAVE a bubble/drilldown system build their DRILL
+   dict PER-TAB inside main() rather than at module level (connectors,
+   orchestrator_openmontage, oversight_sync) — these can't feed the
+   reverse-link registry cleanly yet without a small refactor exposing
+   a module-level DRILL, same shape Oracle/Supabase/Decisions now have.
+3. Current(L3) and Module(L2) — the other 2 core pages — don't yet show
+   their own reverse-link line back to Decisions (they already show
+   Oracle/Supabase via UNIT_BUBBLE_SYSTEM's existing L0-unit mechanism,
+   which Decisions isn't part of, being a cross-cutting grouping, not
+   an L0 unit).
+4. River's reverse-link is a text+link line, not a full SVG bubble PANEL
+   per river (17 of them) — a proportionate choice for a 17-node ring
+   diagram, named as a real, deliberate scope call, not an oversight.
+
+===========================================================================
+STEP 5 — REPORT
+===========================================================================
+2 real pages changed (galaxy_map_decisions.py, galaxy_map_river.py),
+both reusing 100% pre-existing shared machinery (build_infra_drilldown/
+render_infra_drilldown, INFRA_DRILLDOWN_CSS) — zero new bubble-rendering
+code invented, per rule 8. Full pipeline verified idempotent, anchor-
+clean, tag-balanced, headless-clean (1 pre-existing unrelated console
+error). Committed to main, pushed. CLAUDE.md's Galaxy Map bullet +
+patch_notes.html updated same session per rule 6. Remaining 6-page
+bubble-system gap + the 3-page DRILL-refactor + the 2 remaining core-page
+reverse-links are real, named, tracked follow-up work — not silently
+dropped.
