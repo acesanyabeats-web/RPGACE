@@ -11,11 +11,21 @@ callee side of a real relationship)?
 
 Deliberately a CHECK, not a regeneration (Thread (b)'s own confirmed
 scope) — RIVER_FLOWS stays the hand-curated source of truth; this only
-flags a genuine mismatch for human review via system_map_flags. Scoped
-honestly to the 14 module reports that actually carry a real cross_refs
-array (this session's own new module-report batch) — the other 44
-pre-existing module reports do not yet use that jsonb shape and are
-named plainly as "not yet audited," never silently treated as clean.
+flags a genuine mismatch for human review via system_map_flags.
+
+run_check() is coverage-agnostic by design — it audits exactly whatever
+module_reports list the caller feeds it and reports the real count back
+via unaudited_count, rather than this docstring asserting a fixed
+coverage number that can drift out of sync with live Supabase state (real
+lesson, Sep 24 2026: this docstring used to hardcode "14 audited / 44 not
+yet," true when first written, already stale by the time GMR-2 (Sep 16
+2026) extended cross_refs to all 58 real modules — see
+records/2026-09/ceo_galaxy_map_code_drift_scan_2026-09-24.txt F2). A
+fresh run on Sep 24 2026 fed all 58 real module-level perspective_reports
+rows (confirmed via direct Supabase query: 58/58 carry a real cross_refs
+array) and found 0 genuine mismatches across 15 real cross-river pairs
+checked — the caller should always re-query current coverage rather than
+trust any number stated here.
 
 Usage: python3 scripts/gmp_b_consistency_check.py
 Prints real findings; does not write to Supabase itself (the caller

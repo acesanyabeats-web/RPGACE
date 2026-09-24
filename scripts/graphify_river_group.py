@@ -417,7 +417,10 @@ def river_retirement_note_html(rnum, compact=False):
 # live count is 55, not the "54" this comment used to claim, a real
 # minor stale-count drift caught the same way this whole check exists
 # to catch). Modules that are genuinely cross-cutting UI/infra
-# (leftNav, popup scaffolding, voiceInput, perfWatch, pwaInstall,
+# (leftNav, popup scaffolding, voiceInput [retired Aug 30 2026 -- no
+# longer registers at all, kept here as historical evidence for why the
+# exclusion list has this shape, not a claim the module still exists;
+# corrected Sep 24 2026, real /fableomnitrix Loop 2 pass, F3], perfWatch, pwaInstall,
 # quickActions, docsLinks [dead], suppressQuestPopup, myFeature, config,
 # errorLog [added Aug 12, never reconciled into this list until the Aug
 # 22 pass above found it - a real, minor, standalone gap, not connected

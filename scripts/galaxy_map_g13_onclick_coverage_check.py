@@ -41,9 +41,19 @@ import re
 #     (getElementById('pipeline-output') has zero matching element
 #     anywhere in current index.html — cannot execute without throwing).
 DEAD_CODE_CANDIDATES = {
-    'toggleVoiceInput': 'voiceInput module retired Aug 30 2026 (CLAUDE.md standing fact) — this onclick handler may have no live target left.',
-    'runVideoWorkshop': "part of main.js's confirmed-dead PIPELINE subsystem (CLAUDE.md standing fact) — getElementById('pipeline-output') matches nothing in current index.html.",
+    'toggleVoiceInput': "voiceInput module retired Aug 30 2026 — toggleVoiceInput itself is already fully removed from rpgace_core.js/index.html (confirmed via grep + git log -S, real /fableomnitrix pass Sep 24 2026), not a live dead button. This onclick_feature perspective_reports row is archival residue for a retired feature, kept per the archive-never-delete convention — not a candidate for a real keep-or-delete code decision.",
 }
+# runVideoWorkshop was REMOVED from this dict Sep 24 2026 (real /fableomnitrix pass,
+# system_map_flags 3b7222f9-edd0-4a16-98b0-e2a637a717c4 / e340d0a4-8a53-48a4-a992-
+# 709d28157e4c): it is genuinely LIVE code (rpgace_core.js:4058, all 6 real vw-* DOM
+# ids present in index.html:393-452, zero reference to the dead PIPELINE subsystem's
+# pipeline-output id). The prior entry here repeated a claim patch_notes.html itself
+# had already retracted the same day it was made (Aug 6 2026) -- confirmed by direct
+# re-read of both patch_notes.html cards (the retraction at :3777 postdates the
+# original lumping at :3671). Real lesson: a curated list like this one is a doc that
+# can be wrong and needs the same live re-verification as this script's own output,
+# not just trusted as a fixed input -- see records/2026-09/
+# ceo_fableomnitrix_council_of_5_report_2026-09-24.txt.
 
 
 def run_check(onclick_features, smoke_items):
