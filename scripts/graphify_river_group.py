@@ -3712,12 +3712,13 @@ def build_component_zone_map(graph_json_path: Path, id_river):
       this is Claude Code's own dev-process tooling, a distinct kind of
       material from the docs it's read alongside.
     - root-level oversight docs (CLAUDE.md, patch_notes.html,
-      interconnection_map.md, system_flow_map.md, manual.html,
+      interconnection_map.md, system_flow_map.md,
       taxonomy_map.html, minotaur_map.html, ai_tooling_and_rules_map.md,
-      RPGACE_ARCHITECTURE.md, RPGACE.md, DESIGN.md,
+      perspective_map.html, RPGACE_ARCHITECTURE.md, RPGACE.md, DESIGN.md,
       RPGACE_ORACLE_NOTES.md, and their 2 archive files) go to Zone XIV
       (Oversight Docs) - the live, hand-maintained reference set this
-      file's own CLAUDE.md rules govern directly.
+      file's own CLAUDE.md rules govern directly. (manual.html retired
+      Sep 23 2026, Minotaur/Manual Unification.)
     - every dated backlog/spec/debate/session .txt or .md at repo root
       goes to Zone XV (Session Records / Backlog) - real, checkable:
       these are point-in-time verbatim records (rule 5's convention),
@@ -3779,11 +3780,13 @@ def build_component_zone_map(graph_json_path: Path, id_river):
         oversight_docs = (
             'CLAUDE.md', 'CLAUDE_archive.md', '.claude/CLAUDE.md',
             'patch_notes.html', 'patch_notes_archive.html',
-            'interconnection_map.md', 'system_flow_map.md', 'manual.html',
+            'interconnection_map.md', 'system_flow_map.md',
             'taxonomy_map.html', 'minotaur_map.html',
-            'ai_tooling_and_rules_map.md', 'RPGACE_ARCHITECTURE.md',
+            'ai_tooling_and_rules_map.md', 'perspective_map.html',
+            'RPGACE_ARCHITECTURE.md',
             'RPGACE.md', 'DESIGN.md', 'RPGACE_ORACLE_NOTES.md',
-        )
+        )  # manual.html retired Sep 23 2026 (Minotaur/Manual Unification);
+           # perspective_map.html added same pass, Tier (b)'s 4th doc, Sep 15 2026
         if src in oversight_docs:
             return 14  # Zone XIV — Oversight Docs
         if src.endswith('.txt') and '/' not in src:

@@ -118,7 +118,7 @@ PUSH_BUILD_TRIGGERS = [
     (2, 'Architecture/structural change (new module, new cross-module connection)', 'interconnection_map.md (current-state paragraph, never a changelog)'),
     (3, 'Pipeline/flow change (a built/not-built status moves)', 'system_flow_map.md (the affected diagram + truth table)'),
     (4, 'A genuinely new wing (entrance/hub/exit in the info-flow sense)', 'minotaur_map.html'),
-    (5, 'User-facing surface change (new button, new table ref, new roadmap status)', 'manual.html'),
+    (5, 'User-facing surface change (new button, new table ref, new roadmap status)', "interconnection_map.md's Every Button Cataloged / system_flow_map.md's Supabase-table reference (the old Full Manual doc retired Sep 23 2026); patch_notes.html/future_integrations.html for roadmap status"),
     (6, 'Taxonomy structural change (columns/query shape, not content)', 'taxonomy_map.html'),
     (7, "Oracle's own self-knowledge touched (Current State/landmines/open items)", 'oracleAppGrounding.SELF_KNOWLEDGE (rpgace_core.js) — the artifact that went stale and triggered this whole skill’s creation'),
     (8, 'Tooling/rules catalog change (new skill, new global tool, new rule file)', 'ai_tooling_and_rules_map.md'),
@@ -129,7 +129,7 @@ PUSH_BUILD_TRIGGERS = [
     (13, "This session's own evidence-gathering touches a fact a doc asserts as current", 'compare live value vs. the doc’s claim right there, in the same pass — mandatory on every real report/push, not just at Bedtime'),
     (14, 'A Supabase table this session touched gains rows/schema/a new write path', 'scripts/supabase_dedup_scan.py against that table, findings-only, appended to a dated record'),
     (15, 'A /colourgradient, /paranoia, or /drift pass produces a real blue/red/yellow finding', 'future_integrations.html (grouped by what it actually touches)'),
-    (16, 'Content is about to be ADDED to manual.html (or any Tier (a) doc)', 'real dedup discipline — find its existing group/table row first, never a new flat entry'),
+    (16, 'Content is about to be ADDED to a Tier (a) explaining doc', 'real dedup discipline — find its existing group/table row first, never a new flat entry'),
     (17, 'A real /misunderstanding, /drift finding, or genuine obstacle gets resolved', 'session_lessons.html (trigger, obstacle, reasoning, solution, resulting rule)'),
     (18, 'A /colourgradient pass finds a real stale CLAIM (not broken code)', 'achiever_archive (achiever.html) — PLUS active removal from every Tier (a)-(d) doc/smoke_test_items row still asserting it'),
 ]
