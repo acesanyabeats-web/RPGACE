@@ -96,6 +96,17 @@
     </div>
 </div>
 
+<div class="card green" id="card-2026-09-24-3-flagged-discrepancies-fixed" style="margin-bottom:30px;">
+    <div class="card-title">🔧 Sep 24 — the 3 discrepancies flagged in the code-verification pass, fixed at every layer that asserted them</div>
+    <div class="card-body">
+      Direct follow-through on Alex's own ask: "go fix those 3 discrepancies you flagged."<br><br>
+      <strong>(1) <code>phylumPath._showArticleConfirm</code></strong>'s row <code>description</code> named a narrower trigger ("dedup-extend article regeneration") than the real one — direct grep of its one real call site (<code>logic._generateArticle</code>) shows it fires on ANY article generate/refresh for a taxonomy node or the phylum root, not a specific dedup-extend scenario. Corrected the row's description to the real trigger + real button behavior ("✓ Save to Encyclopedia" / "✗ Discard", Discard writes nothing).<br><br>
+      <strong>(2) G45's row claimed "25 real tables" where <code>galaxy_map_supabase.html</code> currently catalogs 51</strong> (confirmed by direct grep of the live page's own <code>id="tbl-*"</code> rows, re-confirmed twice). Fixed at every real layer that asserted the stale figure, not just the visible symptom: the live <code>smoke_test_items</code> row (<code>item_name</code>+<code>description</code>); <code>scripts/smoke_test_generate_g_items.py</code>'s own hardcoded seed text (so a future re-run of this one-time generator can't reintroduce "25"); and a genuinely separate, independently-discovered site — <code>scripts/galaxy_map_hub.py</code>'s own static page-catalog entry for the Supabase page ALSO hardcoded "25 tables, 113 of 502 functions" as its <code>scope</code> field, live in the currently-served <code>galaxy_map_hub.html</code>. Fixed to "51 tables, 113+ of 502 functions" — the function-touch half is deliberately left as its own last-verified figure, not re-derived this pass, since only the table count had fresh evidence behind it. Regenerated <code>galaxy_map_hub.html</code>: R5-idempotent (2 fresh runs, identical md5), div/a/svg-balanced, <code>verify_anchors.py</code> reconfirms all 26 citations fresh.<br><br>
+      <strong>(3) The Oracle Control "log the beat" row's HOW-TO-TEST said the 🔮 floating overlay button sits "next to the mic"</strong> — stale since <code>voiceInput</code> (the mic) retired Aug 30 2026. Removed the phrase; the button's own real position ("bottom-right of the screen") is unchanged and unaffected.<br><br>
+      All 3 rows' <code>code_verified_note</code> got a short dated addendum marking them fixed (not just flagged) so a future session reading the note doesn't think the discrepancy is still open. CLAUDE.md's Hand-testing bullet updated to say "fixed," not "flagged." None of this touches any row's <code>status</code> — still Alex's own hand-tick to give.
+    </div>
+</div>
+
 <div class="card green" id="card-2026-09-24-full-galaxy-map-pipeline-regenerated" style="margin-bottom:30px;">
     <div class="card-title">🌌 Sep 24 — Full Galaxy Map pipeline regenerated (23 pages), a real 25th generator script found and run, 2 more manual.html reference sites closed</div>
     <div class="card-body">

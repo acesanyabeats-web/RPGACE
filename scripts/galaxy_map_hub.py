@@ -118,7 +118,12 @@ PAGES = [
     {'file': 'galaxy_map_decision_matrix.html', 'label': 'Decision Matrix — Unified Table + Bubble System', 'level': 'Dimension', 'kind': 'meta',
      'scope': '21 real decisions (10 gates + 7 logic + 4 text-input), 6 rivers', 'desc': 'Real Aug 21 2026 unification (Alex\'s own direct ask) of Decisions (G26) + Level 5\'s logic points + a new curated text-input set, split by river and documentation depth. The real source-of-truth table; its bubble view is a pure rendering layer over the same data (CEO SKILL.md R22\'s own new standing rule).'},
     {'file': 'galaxy_map_supabase.html', 'label': 'Supabase', 'level': 'Dimension', 'kind': 'infra',
-     'scope': '25 tables, 113 of 502 functions', 'desc': 'G45 — every real client-side Supabase table touch, by Level/River/Module.'},
+     # Table count corrected Sep 24 2026 (real code-verification pass, direct
+     # grep of the live page): 51, not 25 -- real growth since this catalog
+     # entry was written (HABITS/shoppingWishlist/oracle_actions/etc tables
+     # all post-date it). The function-touch figure is left as its own
+     # last-verified number, not re-derived this pass.
+     'scope': '51 tables, 113+ of 502 functions', 'desc': 'G45 — every real client-side Supabase table touch, by Level/River/Module.'},
     {'file': 'galaxy_map_oracle.html', 'label': 'Oracle', 'level': 'Dimension', 'kind': 'infra',
      'scope': '13 modules, 28 real (module,function) call pairs', 'desc': 'G99 — Oracle\'s own real Infra bubble system (promoted from the retired "External AI" L0 grouping): every real function anywhere that calls Oracle, by river/module.'},
     {'file': 'galaxy_map_connectors.html', 'label': 'Connectors (6 real L0 units)', 'level': 'Dimension', 'kind': 'infra',

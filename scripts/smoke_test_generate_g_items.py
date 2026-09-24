@@ -115,8 +115,13 @@ ITEMS = [
     {
         'code': 'G45',
         'category': 'Galaxy Development Framework — Yellow Confirm Queue',
-        'item_name': 'G45 — Supabase page (25 real tables x Level/River/Module usage)',
-        'description': ('HOW TO TEST: open graphify-out/galaxy_map_supabase.html. Confirm the 25 '
+        'item_name': 'G45 — Supabase page (51 real tables x Level/River/Module usage)',
+        # Count corrected Sep 24 2026 (real code-verification pass): the table
+        # count has grown from 25 (this item's own original Aug 2026 figure)
+        # to 51 real tables, confirmed by direct grep of the live
+        # galaxy_map_supabase.html output -- fixed here too so a future
+        # re-run of this one-time seed script can't reintroduce "25".
+        'description': ('HOW TO TEST: open graphify-out/galaxy_map_supabase.html. Confirm the 51 '
             'real tables list, each showing real client-side read/write touches with working links '
             'into the module(s) that touch them.'),
         'source_ref': 'scripts/galaxy_map_supabase.py',
