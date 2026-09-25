@@ -606,3 +606,42 @@ pick up correctly:
 Nothing in Section 10/11 has been built. P3 (leaf-card view) and P4
 Competitor B (fusion-link browse list) from Section 9 remain real,
 smaller, independently-buildable items not blocked by any of this.
+
+=====================================================================
+12. P1 BUILT (Alex's own ask: "Yes, start on P1"), Sep 25 2026
+=====================================================================
+phylumPath.ui._showTreeConfirm(phylumNumber, attachNode, treeNodes,
+  onAccept, onReject) — the real, generalized review popup. treeNodes
+  shape: an array of {name, explainer, children} root nodes (children
+  optionally empty = a real leaf), mutated in place as Alex edits,
+  same idiom as _showPlacementConfirm's own steps/expl arrays. Whole
+  subtree visible at once (collapsible per branch, default expanded),
+  inline name+description edit on every node, a real 2-click
+  arm/confirm delete, "+" to add a child or a sibling at any level, a
+  live node-count line, Accept/Reject.
+
+phylumPath.logic._insertTreeNodes(phylumNumber, attachNode, treeNodes,
+  sourceMeta) — the real tree-aware sibling of _insertNewSteps. Walks
+  the tree, inserts each node exactly once (never re-inserting a
+  shared ancestor per leaf path, the bug a naive "call _insertNewSteps
+  once per leaf" approach would have), threads the real inserted id to
+  children. A true leaf (no children) gets the same real side-effects
+  a new leaf already gets from _insertNewSteps — a linked Encyclopedia
+  row via sourceMeta, a real _findFusionLinks pass, real
+  _generateInsightContent — reusing both directly (rule 8).
+  MAX_TREE_DEPTH enforced per node during the walk; an honest toast
+  names how many nodes were skipped for depth, never a silent drop.
+  Real, explicit non-goal: no dedup-check against existing children —
+  Alex's own review pass in _showTreeConfirm is the real gate, a
+  second detector here would be redundant.
+
+Real, explicit scope boundary: this is the mechanism only. Nothing
+calls _showTreeConfirm with a real Oracle-generated proposal yet —
+that live-generation call is Phase 4 itself (piloting curriculum
+design on one phylum), the next real step, not built this pass.
+
+node --check clean, re-minified, cache-bust bumped 20260925c->
+20260925d. No live browser available this session — verified by
+direct structural re-read (closure scoping across the recursive
+render/delete functions, the freshly-added-node-with-no-children
+edge case in countNodes). Untested by Alex's own hand yet.

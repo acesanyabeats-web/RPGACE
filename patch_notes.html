@@ -73,6 +73,17 @@
 
 <div class="content">
 
+<div class="card green" id="card-2026-09-25-taxonomy-p1-tree-confirm" style="margin-bottom:30px;">
+    <div class="card-title">🌳 Sep 25 — P1 built: the nested curriculum-review popup + its real tree-commit backend</div>
+    <div class="card-body">
+      Real Phase 4 prerequisite, per the dependency chain recorded in the spec file (Section 11) — a curriculum-generation pilot can't run without its own human checkpoint (rule 4), and the existing <code>_showPlacementConfirm</code> only ever handles one flat chain, not a branching tree.<br><br>
+      <strong><code>phylumPath.ui._showTreeConfirm</code></strong> — a real, generalized popup: shows the whole proposed subtree at once (Alex's own "what the phylum path would look like when generated" ask), each node inline-editable (name + description), a real 2-click arm/confirm delete (same standing convention as Bookworm's own 🗑), "+" to add a child at any node or a sibling at any level, collapsible per branch (default expanded — the whole shape is visible unless you choose to collapse it), a live node-count line, Accept/Reject.<br><br>
+      <strong><code>phylumPath.logic._insertTreeNodes</code></strong> — the real tree-aware sibling of <code>_insertNewSteps</code>. Where <code>_insertNewSteps</code> only ever commits one linear root-to-leaf chain, this walks a real branching tree, inserting each node exactly once and threading the real inserted id to its children (never re-inserting a shared ancestor per leaf, the bug a naive "call _insertNewSteps once per leaf path" approach would have had). Real leaves get the same side-effects a new leaf from <code>_insertNewSteps</code> already gets — a linked Encyclopedia insight row when <code>sourceMeta.source</code> is set, a real <code>_findFusionLinks</code> pass, real <code>_generateInsightContent</code> — reusing both functions directly (rule 8), not a second copy. <code>MAX_TREE_DEPTH</code> enforced per node during the walk, with an honest toast if any nodes were skipped for depth, never a silent drop.<br><br>
+      <strong>Real, explicit scope boundary, named not hidden</strong>: this is the review/commit MECHANISM only — nothing yet calls it with a real Oracle-generated curriculum proposal. That live-generation call is Phase 4 itself (piloting curriculum design on one phylum), the next real step in the chain, not built this pass.<br><br>
+      <code>node --check</code> clean, re-minified, cache-bust bumped <code>20260925c</code>→<code>20260925d</code>. No live browser test available this session (same standing limitation as the rest of this session's work) — verified by direct structural re-read (closure scoping, recursive render/delete correctness, node-count edge cases for a freshly-added node with no <code>children</code> field yet). <strong>Untested by Alex's own hand yet.</strong>
+    </div>
+</div>
+
 <div class="card green" id="card-2026-09-25-taxonomy-curriculum-phase-1-3" style="margin-bottom:30px;">
     <div class="card-title">🧬 Sep 25 — taxonomy curriculum restructure, Phase 1-3 shipped (real /paranoia+/CEO+/interrogation+/drift+/commit-archaeologist pass first)</div>
     <div class="card-body">

@@ -18547,6 +18547,120 @@ RPGACE.register('phylumPath', {
     },
 
     // ══════════════════════════════════════════════════════════════════
+    // Sep 25 2026 — real P1 build, curriculum-restructure spec (records/
+    // 2026-09/taxonomy_curriculum_jargon_encyclopedia_merge_spec_2026-09-
+    // 25.txt Section 9/11). _insertNewSteps above only ever commits ONE
+    // linear chain (a single root-to-leaf path) — a real top-down
+    // curriculum breakdown is a genuine TREE (one Order can have several
+    // Classes, each with several jargon leaves), and calling
+    // _insertNewSteps once per leaf path would re-insert every shared
+    // ancestor as a separate duplicate row. This is the real, separate
+    // tree-aware sibling that does NOT have that bug — it inserts each
+    // node exactly once, threading the real inserted id to its children,
+    // same "Prefer:return=representation, thread the real id" discipline
+    // _insertNewSteps/_acceptLineage already use.
+    //
+    // treeNodes shape (an ARRAY of root nodes — a phylum can propose
+    // several top-level Orders at once, not just one):
+    //   [{ name, explainer, children: [ {name, explainer, children: [...]}, ... ] }, ...]
+    // A node with an empty/missing `children` array is a real leaf — it
+    // gets the SAME real leaf side-effects _insertNewSteps already gives
+    // a new leaf (an Encyclopedia companion row when sourceMeta.source is
+    // set, a real _findFusionLinks pass, real _generateInsightContent),
+    // reusing those two functions directly rather than a second copy
+    // (rule 8).
+    //
+    // Real, explicit non-goal, named rather than silently skipped: this
+    // does NOT dedup-check against existing children the way
+    // decidePlacementScored's bottom-up path does — a top-down curriculum
+    // proposal is reviewed and editable by Alex in _showTreeConfirm
+    // BEFORE this ever runs, so a human already had the chance to catch
+    // a real duplicate; adding a second detector here would be
+    // redundant, not safer.
+    //
+    // Real, explicit depth-cap handling: MAX_TREE_DEPTH is enforced per
+    // node during the walk (not just at the leaf, since a tree can
+    // overflow the cap at any branch) — a node past the cap, and
+    // everything under it, is skipped and counted, never silently
+    // dropped without a toast telling Alex how many were cut.
+    _insertTreeNodes: function(phylumNumber, attachNode, treeNodes, sourceMeta) {
+      var self = RPGACE.modules.phylumPath;
+      var cap = self.MAX_TREE_DEPTH || 10;
+      var baseDepth = attachNode ? attachNode.depth : 0;
+      var tt = RPGACE.modules.taxonomyTree;
+      var basePath = attachNode ? attachNode.path : (tt ? tt.PHYLUM_NAMES[phylumNumber] : ('Phylum ' + phylumNumber));
+      var baseParentId = attachNode ? attachNode.id : null;
+      var skipped = 0;
+      var insertedCount = 0;
+
+      function insertOne(node, parentId, parentPath, depth) {
+        if (depth > cap) { skipped++; return Promise.resolve(); }
+        // Defensive strip only, same spirit as sanitizePlacement's
+        // path-like-step guard — Alex's own review pass in
+        // _showTreeConfirm is the real gate here, this just stops a
+        // stray "/" from silently corrupting the real path column.
+        var name = String((node && node.name) || '').split('/')[0].trim();
+        if (!name) return Promise.resolve();
+        var path = parentPath + '/' + name;
+        var children = (node.children || []).filter(function(c) { return c && String(c.name || '').trim(); });
+        var isLeaf = !children.length;
+
+        return RPGACE.sb.secureWrite('taxonomy_tree', 'insert', {
+            parent_id: parentId, depth: depth, name: name, latin_name: null,
+            phylum_number: phylumNumber, path: path,
+            node_type: isLeaf ? 'leaf' : 'branch',
+            explainer: node.explainer || '',
+            sources: [{ type: 'phylum_path_tree', id: null }],
+          }).then(function(result) {
+          var row = Array.isArray(result) ? result[0] : result;
+          if (!row || !row.id) return;
+          insertedCount++;
+          RPGACE.sb.secureWrite('taxonomy_decision_log', 'insert', {
+            phylum_number: phylumNumber, node_id: row.id, path: path,
+            insight_text: (node.explainer || '').slice(0, 2000),
+            source: 'phylum_path_tree_commit',
+          }).catch(function() {});
+
+          if (isLeaf) {
+            if (sourceMeta && sourceMeta.source) {
+              RPGACE.sb.secureWrite('encyclopedia', 'insert', {
+                title: sourceMeta.title || name,
+                content: node.explainer || '',
+                source: sourceMeta.source,
+                taxonomy_node_id: row.id,
+              }).catch(function() {});
+            }
+            // Fire-and-forget, same real pattern _insertNewSteps already
+            // uses at its own leaf point — a missed fusion-link pass or a
+            // slow content-gen call must never hold up the rest of the
+            // tree commit still in flight.
+            self.logic._findFusionLinks(row, phylumNumber);
+            self.logic._generateInsightContent(row, phylumNumber, node.explainer || name);
+            return;
+          }
+
+          var chain = Promise.resolve();
+          children.forEach(function(child) {
+            chain = chain.then(function() { return insertOne(child, row.id, path, depth + 1); });
+          });
+          return chain;
+        }).catch(function(e) {
+          console.warn('[phylumPath] tree node insert failed:', name, e.message);
+        });
+      }
+
+      var rootChain = Promise.resolve();
+      (treeNodes || []).forEach(function(node) {
+        rootChain = rootChain.then(function() { return insertOne(node, baseParentId, basePath, baseDepth + 1); });
+      });
+      return rootChain.then(function() {
+        if (skipped) RPGACE.utils.toast('⚠️ ' + skipped + ' node(s) skipped — past the depth-' + cap + ' cap', '#E2A83D', 5000);
+        RPGACE.utils.toast('✅ Curriculum breakdown committed: ' + insertedCount + ' node(s)', '#4CAF82', 4000);
+        return insertedCount;
+      });
+    },
+
+    // ══════════════════════════════════════════════════════════════════
     // July 16: fusion links - cross-taxonomy connections between a new
     // leaf and topically-related nodes ANYWHERE else in the tree (any
     // rank, any phylum), staged in the new taxonomy_links table and
@@ -19380,6 +19494,180 @@ RPGACE.register('phylumPath', {
       box.appendChild(btnRow);
     },
 
+    // ══════════════════════════════════════════════════════════════════
+    // Sep 25 2026 — real P1 build, curriculum-restructure spec (records/
+    // 2026-09/taxonomy_curriculum_jargon_encyclopedia_merge_spec_2026-09-
+    // 25.txt Section 9/11). Same real checkpoint discipline as
+    // _showPlacementConfirm above (rule 4 — every taxonomy write gets a
+    // human confirm before it commits), generalized from a flat chain to
+    // a real nested TREE: a top-down curriculum proposal can branch
+    // (several Classes under one Order, several leaves under one Class),
+    // and Alex needs to see and edit the WHOLE proposed subtree at once —
+    // "what the phylum path would look like when generated," his own
+    // words — not one flat list.
+    //
+    // treeNodes: an array of root nodes, each {name, explainer, children}
+    // (children optionally absent/empty — that's a real leaf). Mutated
+    // in place as Alex edits, same idiom _showPlacementConfirm's own
+    // steps/expl arrays already use. Accept calls
+    // phylumPath.logic._insertTreeNodes (the real tree-aware sibling of
+    // _insertNewSteps built alongside this).
+    _showTreeConfirm: function(phylumNumber, attachNode, treeNodes, onAccept, onReject) {
+      var tt = RPGACE.modules.taxonomyTree;
+      var pop = RPGACE.modules.dashDeck._popup({
+        dim: '0.92', scroll: true, width: '620px', bg: '#0f0f1a', borderColor: 'rgba(61,170,110,0.3)',
+        accent: 'rgba(61,170,110,0.6)', eyebrow: 'Phylum Path · Confirm Curriculum Breakdown',
+        title: RPGACE.utils.phylumLabel(phylumNumber), noDefaultClose: true,
+      });
+      var overlay = pop.overlay, box = pop.box;
+
+      var attachLine = document.createElement('div');
+      attachLine.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.5);margin-bottom:14px;line-height:1.6;padding:10px 12px;background:rgba(61,170,110,0.04);border-left:2px solid rgba(61,170,110,0.3);border-radius:0 6px 6px 0;';
+      attachLine.innerHTML = attachNode
+        ? '<strong style="color:rgba(226,226,236,0.75);">Attaching under:</strong> ' + attachNode.path
+        : '<strong style="color:rgba(226,226,236,0.75);">Building from the phylum root:</strong> ' + (tt ? tt.PHYLUM_NAMES[phylumNumber] : ('Phylum ' + phylumNumber));
+      box.appendChild(attachLine);
+
+      var countLine = document.createElement('div');
+      countLine.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);margin-bottom:14px;';
+      box.appendChild(countLine);
+
+      var treeContainer = document.createElement('div');
+      treeContainer.style.cssText = 'margin-bottom:16px;max-height:50vh;overflow-y:auto;';
+      box.appendChild(treeContainer);
+
+      function countNodes(nodes) {
+        var n = 0;
+        (nodes || []).forEach(function(node) { n += 1 + countNodes(node.children); });
+        return n;
+      }
+      function updateCount() {
+        countLine.textContent = countNodes(treeNodes) + ' real node(s) in this proposed breakdown.';
+      }
+
+      // Real 2-click arm/confirm delete, same standing convention as
+      // Bookworm's own 🗑 (Building Guide rule 8) — no heavy modal for a
+      // single-node removal, but never a silent one-click delete either.
+      function mkDeleteBtn(onConfirm) {
+        var btn = document.createElement('button');
+        btn.textContent = '🗑';
+        btn.title = 'Delete this node and everything under it';
+        btn.style.cssText = 'background:none;border:none;color:rgba(226,84,84,0.5);cursor:pointer;font-size:13px;flex-shrink:0;';
+        var armed = false, armTimer = null;
+        btn.onclick = function() {
+          if (!armed) {
+            armed = true; btn.textContent = 'Confirm?'; btn.style.color = '#CC4A4A'; btn.style.fontWeight = '700';
+            armTimer = setTimeout(function() { armed = false; btn.textContent = '🗑'; btn.style.color = 'rgba(226,84,84,0.5)'; btn.style.fontWeight = 'normal'; }, 3000);
+            return;
+          }
+          clearTimeout(armTimer);
+          onConfirm();
+        };
+        return btn;
+      }
+
+      // Recursive renderer — one row per node, indented by real depth,
+      // collapsible when it has children (default expanded, matching
+      // Alex's own "make everything visually digestible" ask — a reader
+      // should see the whole shape at once, collapse only what they
+      // don't need right now).
+      function renderNodes(nodes, container, depth) {
+        container.innerHTML = '';
+        nodes.forEach(function(node, i) {
+          if (!node.children) node.children = [];
+          var row = document.createElement('div');
+          row.style.cssText = 'margin-left:' + (depth * 16) + 'px;margin-bottom:6px;';
+
+          var head = document.createElement('div');
+          head.style.cssText = 'display:flex;align-items:center;gap:6px;padding:7px 9px;background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:6px;';
+
+          var toggle = document.createElement('span');
+          toggle.style.cssText = 'font-size:10px;color:rgba(61,170,110,0.6);flex-shrink:0;cursor:' + (node.children.length ? 'pointer' : 'default') + ';width:12px;';
+          toggle.textContent = node.children.length ? (node._collapsed ? '▸' : '▾') : '·';
+          var childWrap = document.createElement('div');
+          toggle.onclick = function() {
+            if (!node.children.length) return;
+            node._collapsed = !node._collapsed;
+            toggle.textContent = node._collapsed ? '▸' : '▾';
+            childWrap.style.display = node._collapsed ? 'none' : 'block';
+          };
+          head.appendChild(toggle);
+
+          var nameInput = document.createElement('input');
+          nameInput.type = 'text'; nameInput.value = node.name || '';
+          nameInput.placeholder = 'Node name';
+          nameInput.style.cssText = 'flex:1;min-width:120px;background:none;border:none;color:#D4DAF5;font-size:12px;font-weight:700;font-family:Rajdhani,sans-serif;outline:none;';
+          nameInput.oninput = function() { node.name = nameInput.value; };
+          head.appendChild(nameInput);
+
+          var explInput = document.createElement('input');
+          explInput.type = 'text'; explInput.value = node.explainer || '';
+          explInput.placeholder = 'Description...';
+          explInput.style.cssText = 'flex:2;min-width:140px;background:none;border:none;color:rgba(226,226,236,0.5);font-size:11px;font-style:italic;font-family:Rajdhani,sans-serif;outline:none;';
+          explInput.oninput = function() { node.explainer = explInput.value; };
+          head.appendChild(explInput);
+
+          var addChildBtn = document.createElement('button');
+          addChildBtn.textContent = '+';
+          addChildBtn.title = 'Add a child under this node';
+          addChildBtn.style.cssText = 'background:none;border:1px solid rgba(61,170,110,0.25);border-radius:4px;color:#4CAF82;cursor:pointer;font-size:12px;font-weight:700;flex-shrink:0;width:20px;height:20px;line-height:1;';
+          addChildBtn.onclick = function() {
+            node.children.push({ name: 'New node', explainer: '', children: [] });
+            node._collapsed = false;
+            toggle.textContent = '▾';
+            childWrap.style.display = 'block';
+            renderNodes(node.children, childWrap, depth + 1);
+            updateCount();
+          };
+          head.appendChild(addChildBtn);
+
+          head.appendChild(mkDeleteBtn(function() {
+            nodes.splice(i, 1);
+            renderNodes(nodes, container, depth);
+            updateCount();
+          }));
+
+          row.appendChild(head);
+
+          childWrap.style.cssText = 'display:' + (node._collapsed ? 'none' : 'block') + ';';
+          if (node.children.length) renderNodes(node.children, childWrap, depth + 1);
+          row.appendChild(childWrap);
+
+          container.appendChild(row);
+        });
+
+        var addRootBtn = document.createElement('button');
+        addRootBtn.textContent = '+ Add ' + (depth === 0 ? 'root node' : 'sibling');
+        addRootBtn.style.cssText = 'margin-left:' + (depth * 16) + 'px;padding:5px 12px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.35);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+        addRootBtn.onclick = function() {
+          nodes.push({ name: 'New node', explainer: '', children: [] });
+          renderNodes(nodes, container, depth);
+          updateCount();
+        };
+        container.appendChild(addRootBtn);
+      }
+
+      renderNodes(treeNodes, treeContainer, 0);
+      updateCount();
+
+      var btnRow = document.createElement('div');
+      btnRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
+      var acceptBtn = document.createElement('button');
+      acceptBtn.textContent = '✓ Accept & Build';
+      acceptBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      acceptBtn.onclick = function() {
+        if (!countNodes(treeNodes)) { RPGACE.utils.toast('No nodes left to build', '#CC4A4A', 2500); return; }
+        overlay.remove();
+        onAccept(treeNodes);
+      };
+      var rejectBtn = document.createElement('button');
+      rejectBtn.textContent = '✗ Reject';
+      rejectBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:8px;color:#CC4A4A;font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      rejectBtn.onclick = function() { overlay.remove(); if (onReject) onReject(); };
+      btnRow.appendChild(acceptBtn); btnRow.appendChild(rejectBtn);
+      box.appendChild(btnRow);
+    },
+
     // Confirm/deny popup shown between article generation and saving - same
     // checkpoint pattern as _showPlacementConfirm, just simpler (nothing to
     // edit, an article is either worth keeping or it isn't). Approve saves
@@ -19869,6 +20157,7 @@ RPGACE.register('phylumPath', {
   decidePlacement: function(insightText, phylumNumber, fallbackContext) { return this.logic.decidePlacement(insightText, phylumNumber, fallbackContext); },
   _placeInsight: function(insightText, phylumNumber) { return this.logic._placeInsight(insightText, phylumNumber); },
   _insertNewSteps: function(phylumNumber, attachNode, newSteps, explainers, insightText, sourceMeta) { return this.logic._insertNewSteps(phylumNumber, attachNode, newSteps, explainers, insightText, sourceMeta); },
+  _insertTreeNodes: function(phylumNumber, attachNode, treeNodes, sourceMeta) { return this.logic._insertTreeNodes(phylumNumber, attachNode, treeNodes, sourceMeta); },
   _findFusionLinks: function(node, phylumNumber) { return this.logic._findFusionLinks(node, phylumNumber); },
   _generateInsightContent: function(node, phylumNumber, insightText) { return this.logic._generateInsightContent(node, phylumNumber, insightText); },
   _generateArticleText: function(node) { return this.logic._generateArticleText(node); },
@@ -19884,6 +20173,7 @@ RPGACE.register('phylumPath', {
   open: function(prefillText, phylumNumber) { return this.ui.open(prefillText, phylumNumber); },
   _renderTree: function() { return this.ui._renderTree(); },
   _showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject) { return this.ui._showPlacementConfirm(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject); },
+  _showTreeConfirm: function(phylumNumber, attachNode, treeNodes, onAccept, onReject) { return this.ui._showTreeConfirm(phylumNumber, attachNode, treeNodes, onAccept, onReject); },
   _showArticleConfirm: function(node, articleTitle, text, onApprove, onDeny) { return this.ui._showArticleConfirm(node, articleTitle, text, onApprove, onDeny); },
   _injectNavTab: function() { return this.ui._injectNavTab(); },
   _injectPageShell: function() { return this.ui._injectPageShell(); },
