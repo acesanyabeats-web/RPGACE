@@ -172,3 +172,120 @@ Phase 6 (optional, later, bigger lift, not scoped in detail yet) — the
 Nothing in this file has been built yet. Written per rule 5 before any
 code changes, per Alex's own "write it and come back with the phased
 plan" instruction.
+
+=====================================================================
+6. REAL SCRUTINY PASS (Alex's own ask: "use /paranoia /CEO
+   /interrogation /drift /commit-archaeologist to pack it out"),
+   Sep 25 2026, same session
+=====================================================================
+6a. /commit-archaeologist findings, real git history, not inferred:
+  - The depth-6 cap is NOT arbitrary. Commit 42ca91e ("Tree audit:
+    unify all 3 placement pipelines into one scored engine + guards")
+    fixed a REAL depth-14 corruption chain (a branch re-nested inside
+    itself, entered via an unsanitized manual Edit box that bypassed
+    every model-side prompt rule). taxonomy_placement_rules.txt R2
+    ("DEPTH NEVER EXCEEDS 6") names this explicitly, cites the same
+    incident as evidence, and the cleanup pass verified "0 rows above
+    depth 6" as a hard invariant afterward. Depth-flex is real risk,
+    not a free change — it needs a deliberate NEW ceiling, still
+    mechanically enforced, not the guard's removal.
+  - RANK_NAMES (Phylum/Order/Class/Family/Genus/Species/Variant) is a
+    COSMETIC display convention, confirmed via commit d992888 (the
+    original Phylum Path ship, July 14) — borrowed from
+    taxonomy_map.html's pre-existing display-only array, never chosen
+    for a structural/content-depth reason. rankNameForDepth already
+    falls back to 'Rank ' + depth past index 6 — naming was never the
+    real constraint, the numeric cap always was.
+
+6b. /drift finding: this whole plan has BASIS=none — it is a brand
+  new idea from this session, not yet ratified as a real /CEO plan.
+  VERDICT is therefore "not yet startable," which is exactly what CEO
+  Loop 1's own sequence expects at this stage (compile -> interrogate
+  -> paranoia-advised draft -> drift-check -> report -> Alex approves).
+  Nothing here should be treated as authorized until Alex ratifies it.
+
+6c. Real adversarial case (paranoia's "why NOT" requirement), weighed
+  honestly against Alex's own confirmed answers, not overridden by
+  them:
+  - Real cost risk (rule 11): a genuine top-down curriculum design for
+    21 phyla, SCAFFOLDED AHEAD OF CONTENT (Alex's own confirmed
+    choice, Section 6d below), is real, substantial Oracle-generation
+    spend — likely the largest single content-generation cost this
+    project has taken on. This needs an explicit go/no-go checkpoint
+    before Phase 5 actually runs, not a standing blank-cheque
+    authorization from this spec alone.
+  - Real philosophical tension: Phylum Path's founding scope was
+    explicitly "new insights only, no retroactive redesign," bottom-up
+    by design. Scaffolding-first is a genuine, deliberate reversal of
+    that for the STRUCTURE layer (insights still arrive bottom-up
+    under it) — named here so it's a conscious choice, not a silent
+    drift away from a standing principle.
+  - Real minor risk: extending jargon_encyclopedia's glossary to show
+    each term's linked encyclopedia rows needs care against an N+1
+    query pattern once real insight volume grows — batch it, don't
+    fire one query per term.
+  - decidePlacementScored is NOT currently shaped to design a whole
+    subtree — it reacts to one insight at a time. A real top-down
+    curriculum-design prompt is genuinely NEW build scope (Phase 4),
+    not a reuse of the existing engine as first implied.
+
+6d. Real /interrogation round 2 — 2 more questions this scrutiny
+  surfaced, both answered:
+  Q4. Should depth-flex mean a new FIXED, still-enforced ceiling, or
+      removing the numeric cap entirely?
+      ANSWER: Raise to a new fixed cap. (Proposed concrete value: 10 —
+      real reasoning, not arbitrary: doubles the old R2 ceiling,
+      giving real curriculum-depth headroom while keeping a hard
+      mechanical backstop against the exact corruption-chain failure
+      mode R2 was built to catch. Open to Alex adjusting the number;
+      the PRINCIPLE — a real fixed ceiling, not an open cap — is what's
+      confirmed, not this specific number yet.)
+  Q5. Should curriculum design scaffold a phylum's full empty branch
+      structure ahead of real content, or should structure only follow
+      content as it arrives (cheaper, closer to the existing bottom-up
+      philosophy)?
+      ANSWER: Scaffold ahead of content, matching Phylum 12's own
+      precedent. Real, explicit cost consequence: this is the more
+      expensive path (Section 6c above) — Phase 5's real go/no-go
+      checkpoint is not optional, it directly follows from this
+      answer.
+
+=====================================================================
+7. REVISED PHASED PLAN (supersedes Section 5's numbers where they
+   differ; Section 5 kept for the real historical record, not deleted)
+=====================================================================
+Phase 1 — mechanics: raise the depth cap from 6 to a new fixed ceiling
+  (proposed 10, Alex to confirm/adjust) rather than removing it; fix
+  the _insertNewSteps dedup-extend sourceMeta gap so every insight on
+  a jargon leaf creates a real linked encyclopedia row; extend
+  jargon_encyclopedia's glossary UI to show each term's real linked
+  insight collection (batched query, not N+1).
+
+Phase 2 — fusion-link evidence inspector (P1-pattern reuse, UI-only,
+  unchanged from Section 5).
+
+Phase 3 — coverage checker (unchanged from Section 5) — now also a
+  real, honest pre-Phase-5 evidence baseline given the scaffold-first
+  cost decision in 6d.
+
+Phase 4 — pilot the top-down, scaffold-ahead-of-content curriculum
+  methodology on ONE currently-flat phylum. Real deliverable: does the
+  "split until one jargon term" rule actually produce sensible
+  breadth/depth within the new cap, using genre/era axes where real,
+  with every resulting jargon leaf wired to a real encyclopedia
+  insight row. Alex reviews the real pilot output before Phase 5.
+
+Phase 5 — scale to the remaining ~19-20 phyla. REAL, EXPLICIT
+  CHECKPOINT: given scaffold-ahead-of-content is the confirmed choice
+  (a genuine, substantial spend across 21 phyla, rule 11/Tier-3
+  spirit), this phase does not start on Phase 4's approval alone — it
+  needs its own explicit go-ahead from Alex once the real pilot cost
+  is known, tracked as a real, ratified /CEO plan (ceo_plans/
+  ceo_plan_items), not assumed pre-authorized by this spec.
+
+Phase 6 — unchanged from Section 5 (Jargon Web bubble view, later,
+  optional).
+
+Nothing beyond this spec file has been built or ratified. This section
+is the real CEO Loop 1 "report" — ready for Alex's ratification, not
+yet an approved plan.
