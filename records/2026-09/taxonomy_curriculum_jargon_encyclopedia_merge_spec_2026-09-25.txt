@@ -1,0 +1,174 @@
+TAXONOMY CURRICULUM RESTRUCTURE + JARGON ENCYCLOPEDIA MERGE — spec backlog
+Sep 25 2026. Real /interrogation, verbatim record per rule 5.
+
+=====================================================================
+1. ALEX'S OWN VERBATIM REQUEST (first message, unedited)
+=====================================================================
+"i want it so that the 21 phylum get broken down into the next biggest
+separable chunks of groups, like a curriculum for a subject, with each
+group breaking down until on jargon word is left with an insight tied
+to it, the collection of insights tied to the jargon is the smallest
+group of insights and a penultimate step of the phylum path for the
+database. did you understand what i meant?"
+
+Followed, same session, by 3 real additions (verbatim, in order):
+
+"jargon encylopedia should come into play here too as the holder of
+jargon end point and where it belongs down phylum path"
+
+"a lot of these will have topics like by genre or time period, so
+having these would be planned out"
+
+"i did also want to see if galaxy map development concepts can be
+used into taxonomy development with jargon encyclopedia merge"
+
+=====================================================================
+2. REAL /interrogation — 3 QUESTIONS ASKED, ALEX'S ACTUAL ANSWERS
+=====================================================================
+Q1. Should each jargon leaf's insights become real, separately-stored
+    rows, or stay as the existing single deep_content blob?
+    ANSWER: Separate rows.
+
+Q2. Should the curriculum breakdown be designed top-down for all 21
+    phyla up front, or should this just be a rule change shaping the
+    existing bottom-up/organic placement engine?
+    ANSWER: Top-down, all 21 phyla.
+
+Q3. The tree is hard-capped at depth 6 today. Should that flex past 6
+    where genuinely needed, or should curriculum design stay within
+    the existing 6-rank limit?
+    ANSWER: Flex past 6 where genuinely needed.
+
+=====================================================================
+3. REAL EVIDENCE GATHERED THIS SESSION (grepped, not assumed)
+=====================================================================
+- taxonomy_tree: depth 0-6 (Phylum/Order/Class/Family/Genus/Species/
+  Variant), enforced by phylumPath.logic.sanitizePlacement's
+  `maxNew = 6 - attachDepth` hard cap. RANK_NAMES only names 7 ranks;
+  taxonomyTree.rankNameForDepth already falls back gracefully to
+  'Rank ' + depth beyond that — the display side is not a blocker for
+  flexing the cap.
+- decidePlacementScored (phylumPath.logic): the one real placement
+  engine (unified July 19), reacts to ONE insight at a time — attach
+  point + new steps + explainers + justification + confidence. It is
+  NOT currently shaped to design a whole subtree/curriculum in one
+  call; a top-down design pass needs a different prompt shape (see
+  Phase 4 below), not a reuse of this function as-is.
+- _insertNewSteps (phylumPath.logic, the one write choke-point):
+  already supports an optional sourceMeta {source, title,
+  bibliographyId} that creates ONE new `encyclopedia` row per insight,
+  linked via encyclopedia.taxonomy_node_id back-reference to the leaf.
+  REAL GAP FOUND: the dedup-extend branch (an insight landing on an
+  ALREADY-EXISTING leaf, newSteps.length===0) does NOT pass sourceMeta
+  and does NOT create an encyclopedia row — it only regenerates
+  deep_content via _generateInsightContent. This means today, a
+  second/third insight landing on the same jargon leaf does not
+  accumulate as a separate real row; it just overwrites deep_content.
+  This is the concrete mechanical blocker for "insights tied to the
+  jargon are a real collection."
+- jargon_encyclopedia: a real, existing, read-only Postgres VIEW
+  (security_invoker) over taxonomy_tree's leaf rows, built July 22
+  specifically because "Jargon Encyclopedia" was blocked on nothing
+  but a read-only view existing at all — zero new writes at the time.
+  Exposes name/path/explainer/phylum_number only, via
+  jargonEncyclopedia.ui._openGlossary (a searchable popup, injected
+  into Phylum Path's existing page shell). It does NOT currently
+  expose a leaf's linked encyclopedia rows — only the single
+  `explainer` string set at insert time. This is real, direct
+  confirmation that Alex's "jargon encyclopedia... holder of jargon
+  end point" maps onto something that already exists and half-does
+  the job, not something new.
+- taxonomy_links (fusion links, July 16): cross-branch, symmetric,
+  real evidence-bearing connections between any two nodes anywhere in
+  the tree (any rank, any phylum), each with a one-sentence
+  link_insight explaining HOW they connect, staged pending/confirmed
+  through the same review queue as taxonomy_proposals. Structurally
+  identical in shape to what Galaxy Map's P1 (shipped this session,
+  Sep 25) just built for cross-reference edges — real, evidence-
+  bearing, click-to-inspect connections with a stored explanation.
+  Currently rendered as a plain list (_renderFusionLinks), not as an
+  evidence-inspector element the way P1's edges now are.
+- Galaxy Map concepts confirmed as real, transferable patterns (not
+  vague inspiration — specific, named mechanisms):
+    (a) P1's edge-as-gateway pattern (_curved_edge's evidence_text/
+        evidence_source/zoom_href + the shared _gmInitEdgeInspector()
+        floating panel) — directly reusable CONCEPT for fusion links.
+    (b) verify_edge_evidence_coverage.py — a cheap, regex/query-only,
+        zero-AI-cost coverage checker reporting real percentages, not
+        claims. Directly reusable CONCEPT for a taxonomy coverage
+        checker (leaves with 0/1/2+ linked insights, depth
+        distribution, which branches are still coarse).
+    (c) R22 ("bubble systems always follow and showcase what's on
+        table") and the reverse-link pattern (pure rendering over
+        already-known data, never a second detector, rule 8) —
+        applicable to a future "Jargon Web" bubble view.
+  Confirmed NOT transferable: the Galaxy Map's static-HTML generation
+  pipeline itself (R5 idempotency, verify_anchors.py) is built for a
+  regenerated, read-only artifact from code — taxonomy is live
+  Supabase data edited through the running app, a different medium.
+  Only the UI/consistency-checking PATTERNS transfer, not the
+  generator architecture.
+
+=====================================================================
+4. THE REAL, CONFIRMED SHAPE (synthesis, not yet built)
+=====================================================================
+- A jargon leaf = a taxonomy_tree row, node_type:'leaf'. Stays the
+  PENULTIMATE step, exactly as Alex said.
+- Its insight collection = real `encyclopedia` rows linked via
+  taxonomy_node_id — the TRUE final/bottom layer. Already real,
+  already writable; the dedup-extend gap (Section 3) is what's
+  currently stopping it from actually accumulating as a collection.
+- jargon_encyclopedia (the view) becomes the real, authoritative
+  "holder of jargon end point and where it belongs down phylum path"
+  Alex asked for — extended to surface each term's real linked insight
+  rows, not just one explainer line.
+- The breakdown ABOVE the leaf (Order->Class->Family->Genus->Species->
+  jargon) gets deliberately, top-down curriculum-designed, phylum by
+  phylum — reusing genre/time-period (and other real, foreseeable
+  axes) as actual grouping criteria where a phylum's subject calls for
+  them, not invented arbitrarily.
+- Depth flexes past 6 wherever a phylum genuinely needs more splits to
+  reach one irreducible jargon term.
+- Fusion links get a real P1-style evidence-inspector treatment;
+  eventually a "Jargon Web" bubble view (lower priority, bigger lift,
+  only worth it once real curriculum data + real fusion links exist
+  in volume across phyla).
+
+=====================================================================
+5. PHASED PLAN (proposed — see chat message for the version presented
+   to Alex; this file is the durable record, not a duplicate)
+=====================================================================
+Phase 1 — mechanics (bounded, single session, Tier 2 funnel):
+  depth-cap flex; fix the dedup-extend sourceMeta gap so every insight
+  landing on a jargon leaf (new or existing) creates a real linked
+  encyclopedia row; extend jargon_encyclopedia's glossary UI to show
+  the real insight collection per term instead of one explainer line.
+
+Phase 2 — fusion-link evidence inspector (bounded, UI-only, no schema
+  risk): reuse P1's evidence_text/evidence_source/zoom_href +
+  floating-panel pattern for taxonomy_links rendering.
+
+Phase 3 — coverage checker (bounded, cheap, zero AI cost): a real
+  script reporting per-phylum leaf count, insight-row coverage, depth
+  distribution, which branches still look coarse — a real evidence
+  baseline BEFORE curriculum design starts, so later progress is
+  gradeable against real numbers, not a claim.
+
+Phase 4 — pilot the top-down curriculum-design methodology on ONE
+  currently-flat phylum (not 12, already done) — validate the "split
+  until one jargon term is left" rule, genre/era-axis usage, depth-
+  flex, and real encyclopedia-row wiring on one real subject before
+  scaling. Real Oracle-generation cost — proportionate to rule 11.
+
+Phase 5 — scale to the remaining ~19-20 phyla as a tracked, real
+  multi-session /CEO plan (matches CLAUDE.md's own existing stated
+  philosophy: "real, tracked multi-session work... not crammed into
+  one pass at the cost of quality").
+
+Phase 6 (optional, later, bigger lift, not scoped in detail yet) — the
+  "Jargon Web" bubble/graph view, once real curriculum data + fusion
+  links exist in enough volume to make it worth building.
+
+Nothing in this file has been built yet. Written per rule 5 before any
+code changes, per Alex's own "write it and come back with the phased
+plan" instruction.
