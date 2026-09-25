@@ -765,3 +765,274 @@ node --check clean, re-minified, cache-bust bumped 20260925e->
 20260925f. Untested by Alex's own hand in the live UI (the tree data
 itself was reviewed and approved by him directly in chat, not via the
 _showTreeConfirm popup, since no browser was available this session).
+
+=====================================================================
+15. NEW REQUEST — GENERATE ~90 JARGON TERMS/PHYLUM FOR ALL 21 PHYLA,
+    REDIRECTED MID-SCRUTINY INTO A REAL ARCHITECTURE CHANGE
+=====================================================================
+
+15.1 ALEX'S ORIGINAL ASK (verbatim)
+"Let's generate jargon encyclopedia for all phylums now so that is set
+for future taxonomy development. Each phylum has roughly 90 jargon
+terms each, so import them there and see what happens. /paranoia and
+/commit-archaeologist and /CEO and /drift and /debloat and
+/free-for-all-debate to see what can be done, improved or removed,
+then /interrogation with /paranoia for my input, then turn plan red
+for council of 5 and /simplify to explain the blue to red, red to
+green plan for this"
+
+15.2 REAL EVIDENCE GATHERED BEFORE ASKING ANYTHING (rule 1/4)
+- `jargon_encyclopedia` is a plain Postgres VIEW, not a table:
+    SELECT id AS node_id, name, latin_name, phylum_number, path,
+      explainer, deep_content, status
+    FROM taxonomy_tree
+    WHERE node_type='leaf' AND status='accepted'
+    ORDER BY name;
+  Confirmed live via information_schema.tables/views. This is the
+  single most load-bearing fact for this whole request: there is no
+  existing place to "put 90 terms into" independent of taxonomy_tree
+  as things stood before this pass.
+- Real current taxonomy_tree state: 410 accepted branch rows + 1
+  active branch + 260 accepted leaf rows, 21 phyla. Per-phylum leaf
+  counts range 0(#21)-75(#1), most sit 5-20 - far short of a real
+  ~90/phylum target (1,890 total).
+- Real call sites: `jargonEncyclopedia.ui._openGlossary`/`_renderTerms`
+  (rpgace_core.js ~33559-33785) read the view via
+  `RPGACE.sb.select('jargon_encyclopedia', 'select=node_id,name,path,
+  explainer,phylum_number&order=name.asc&limit=1000')`, then batch-
+  fetch linked `encyclopedia` rows by `taxonomy_node_id`. Every field
+  the UI reads today is a taxonomy_tree column surfaced through the
+  view - so redefining jargon_encyclopedia as a real table is a real,
+  not cosmetic, schema+UI-code change, not a drop-in rename.
+- Token/generation-cost note carried over from the original framing:
+  the OLD plan (generate full nested curriculum trees per phylum via
+  `_generateCurriculumTree`, max_tokens:4000) was flagged as likely
+  insufficient for a ~90-leaf tree. This risk DISAPPEARS under the
+  redirected plan below, since Step A no longer generates hierarchy at
+  all - flat term+explainer batches are a much smaller, safer
+  generation shape. Named explicitly so this isn't silently lost.
+
+15.3 FIRST INTERROGATION ROUND - 3 QUESTIONS ASKED
+Q1. Generation chunking: per-Order (nested, chunked) vs. per-phylum
+    (one large call)?
+Q2. Review granularity: full review every phylum, or batched?
+Q3. Cross-phylum dedup: run a real check or skip it?
+
+15.4 ALEX'S REAL ANSWERS - Q2/Q3 straightforward, Q1 a genuine
+     redirection, all recorded verbatim per rule 5
+Q2 ANSWER: "Full review, every phylum (Recommended)"
+Q3 ANSWER: "Yes, real cross-phylum check (Recommended)"
+Q1 ANSWER (verbatim, NOT a pick of either offered option): "I think we
+  first put the 90 into jargon encyclopedia for all phylum, then scrap
+  current phylum paths altogether and build a new once jargon
+  encyclopedia is built out per phylum, then work the structure for
+  jargon encyclopedia and phylum path to work in conjunction."
+
+This redirected the whole shape of the task: jargon-term generation
+  needed to happen BEFORE any hierarchy decision, not chunked inside
+  one. Rather than force this answer into the original two options,
+  it was treated as what it plainly was - a different, larger
+  architecture - and followed up with a second, sharply-scoped
+  interrogation round rather than guessed at, per rule 5/9's explicit
+  "read the answers carefully... follow what they actually say."
+
+15.5 SECOND INTERROGATION ROUND - REAL TECHNICAL FORKS SURFACED BY
+     15.2's EVIDENCE, 3 QUESTIONS ASKED WITH REAL RECOMMENDATIONS
+Q1. Since jargon_encyclopedia is currently just a view with nothing to
+    "put terms into," should Step A (a) keep it a view and write flat
+    leaves straight into taxonomy_tree, or (b) make it a real
+    standalone table decoupled from taxonomy_tree?
+Q2. "Scrap current phylum paths altogether," given zero Supabase
+    backup/PITR - archive (status flip, reversible) or hard DELETE
+    (unrecoverable)?
+Q3. Take a real manual snapshot export of taxonomy_tree before any
+    large write/restructure, given no backup exists at all?
+
+15.6 ALEX'S REAL ANSWERS, VERBATIM
+Q1 ANSWER (elaborated, not a bare pick of option (b)): "So I want 2, I
+  want it as a table that bases how phylum path would then trickle
+  down the term, with jargon encyclopedia being the anchor if it makes
+  sense."
+Q2 ANSWER: "Archive, don't delete (Recommended)"
+Q3 ANSWER: "Yes, export a real snapshot first (Recommended)"
+
+15.7 WHAT Q1'S REAL ANSWER MEANS - THE ACTUAL NEW ARCHITECTURE
+Alex's own framing ("jargon encyclopedia being the anchor," "phylum
+  path would then trickle down the term") reconnects directly to his
+  very first message in this whole thread (Section 1 above): "the
+  collection of insights tied to the jargon is... a penultimate step
+  of the phylum path" - the term was always meant to be the real
+  fixed point, with the curriculum tree being the thing built TO REACH
+  it, not the other way around. Making jargon_encyclopedia a real
+  table just gives that relationship its own honest, decoupled shape
+  instead of forcing it to live inside taxonomy_tree's own leaf rows
+  before a tree exists to attach them to.
+
+Two clean, separated roles going forward:
+  - jargon_encyclopedia (NEW REAL TABLE) = the anchor / source of
+    truth for term content. Every real jargon term for every phylum
+    lives here first, reviewed and accepted here, independent of
+    whether any curriculum structure yet exists to place it under.
+  - taxonomy_tree = the pure navigable structure ("phylum path").
+    Once a real curriculum hierarchy is designed for a phylum, each
+    leaf it creates ATTACHES to (links, does not duplicate) an
+    existing jargon_encyclopedia anchor row by setting that anchor's
+    taxonomy_node_id - "trickling down" to it.
+
+=====================================================================
+16. REAL SCRUTINY PASS ON THE REDIRECTED ARCHITECTURE
+    (/paranoia-weight evidence + /commit-archaeologist + /drift +
+    /debloat + /free-for-all-debate, run as one coherent pass -
+    condensed here per rule 11, not theater)
+=====================================================================
+
+16.1 Commit-archaeology / precedent check
+Rule 4 ("every taxonomy write gets a human checkpoint... no
+  exceptions, has caught real garbage twice") applies to
+  jargon_encyclopedia inserts exactly as it already applies to
+  taxonomy_tree: new table carries its own status column
+  ('pending'/'accepted'/'rejected'), same review-gate shape as
+  taxonomy_tree's own, never auto-accepted. The dual-authorship
+  mechanism built in Section 14 (taxonomy_decision_log.source /
+  sources jsonb carrying 'oracle' | 'claude_code_prebuild') extends
+  cleanly to this table with zero new mechanism (rule 8) - a jargon
+  term's own `source` column reuses the same vocabulary.
+
+16.2 /drift check against Alex's real stated goals
+VERDICT: on track. BASIS: ratified (Alex's own explicit, multi-round,
+  twice-clarified redirection this session, not a guessed default).
+  Taxonomy/knowledge-tree infrastructure work is already covered by
+  CLAUDE.md's own standing exception to the 48-hour governing rule
+  ("RPGACE infrastructure itself is exempt... building the system that
+  builds beats counts") - same precedent every other taxonomy pass
+  this project has run under. No real gap found.
+
+16.3 /debloat — what to cut before building
+- Do NOT build a structured axis_tags (genre/time-period) column up
+  front. Alex flagged genre/time-period as a REAL likely organizing
+  axis (Section 1, message 5), but no real term content exists yet to
+  confirm the right shape for it (a flat tag list? a controlled
+  vocabulary? per-phylum-specific axes?). Building this schema
+  speculatively violates the project's own "don't design for
+  hypothetical future requirements" rule. Fold genre/era signal into
+  the term's own explainer/deep_content text for the initial
+  generation pass; add a real structured column later, backed by real
+  evidence of what the ~1,890 real terms actually need, if/when a
+  concrete cross-phylum filtering feature calls for it.
+- Do NOT rewire `decidePlacementScored`'s real-time single-insight
+  bottom-up placement flow in this same pass. That flow currently
+  writes new leaves straight into taxonomy_tree; making it write to
+  jargon_encyclopedia first (for full architectural symmetry) is real,
+  legitimate follow-up work, but it's a separate, smaller change that
+  should land AFTER the bulk-generation path is proven, not bundled in
+  now. Named as Step E below, deliberately out of this plan's own
+  completion bar.
+- Do NOT attempt one Oracle call per phylum for all ~90 terms at once
+  - real generation-quality and token-budget risk for no real benefit
+  now that Step A carries no hierarchy design at all. Batch generation
+  in bounded chunks per phylum (real number to be tuned against actual
+  Oracle output quality, not guessed up front - see Step A below).
+
+16.4 /free-for-all-debate — alternatives considered and rejected
+(1) Leave existing branches fully untouched and build the new
+    structure under a parallel phylum_number+100 namespace to A/B
+    compare old vs new before cutting over. REJECTED - real added
+    complexity solving a comparison problem Alex never asked for;
+    archive-and-replace (his own confirmed answer) is simpler and
+    matches his stated intent directly.
+(2) Keep jargon_encyclopedia as a view AND add a separate new anchor
+    table under a different name (e.g. jargon_terms), unioned by the
+    view. REJECTED - a real rule-8 data-dedup violation (two term-
+    holding shapes for the same real concept); Alex explicitly asked
+    for jargon_encyclopedia ITSELF to become the table/anchor, not a
+    third concept layered on top.
+(3) Migrate the 260 existing accepted taxonomy_tree leaves into the
+    new jargon_encyclopedia table as real anchor rows (carrying their
+    name/explainer/deep_content forward) rather than archiving them
+    away with the branches. ADOPTED as a real, named open item (16.5
+    below) - losing 260 already-reviewed real terms to archival with
+    no forward path would be a real, avoidable regression.
+
+16.5 One real open sub-decision NOT resolved by Alex's 3 answers -
+     named explicitly rather than silently assumed
+The 260 currently-accepted taxonomy_tree LEAF rows sit inside the
+  branches Alex confirmed archiving. Two honest options:
+  (a) Migrate their content into new jargon_encyclopedia anchor rows
+      before archiving the branches (their real Encyclopedia-insight
+      links via taxonomy_node_id get carried forward as a reference on
+      the new anchor row, then re-pointed once the new tree reaches
+      that term) - RECOMMENDED, avoids losing 260 real, already-human-
+      reviewed terms.
+  (b) Archive the leaves along with the branches and let Step A's
+      fresh generation re-derive equivalent terms from scratch,
+      accepting the real, human-reviewed content already on those 260
+      rows is discarded.
+This is flagged to Alex directly in the RED plan below rather than
+  decided here - a real residual fork his 3 answers didn't cover.
+
+=====================================================================
+17. THE RED PLAN (specified, not yet built) - phased, per Alex's own
+    blue-to-red-to-green /colourgradient vocabulary
+=====================================================================
+Everything below is RED: real, specified, committed to this file -
+  zero code/schema has been written yet. Council of 5 + /simplify
+  summary presented to Alex in chat alongside this file.
+
+STEP A - Create the real jargon_encyclopedia table (schema only, no
+  data yet). Columns: id, term, phylum_number, explainer, deep_content,
+  status ('pending' default, human-gated per rule 4), source (jsonb,
+  reuses the dual-authorship vocabulary), taxonomy_node_id (nullable
+  FK -> taxonomy_tree.id, null until "trickled down" to), created_at.
+  The old VIEW is dropped in the same migration (name collision -
+  mechanical, not a judgment call).
+
+STEP B - Real safety snapshot (Alex's Q3 answer). Export current
+  taxonomy_tree (all columns, all rows) as a dated JSON file committed
+  to records/2026-09/ BEFORE any write in Step C runs.
+
+STEP C - Resolve 16.5, then archive. Either migrate the 260 existing
+  accepted leaves' content into new jargon_encyclopedia anchor rows
+  (option a) or skip straight to archiving (option b) - Alex's call.
+  Then: UPDATE taxonomy_tree SET status='archived' WHERE
+  node_type='branch' (and leaf, if 16.5 picked (b)) across all 21
+  phyla. Reversible - matches this project's own archive-never-delete
+  convention, satisfies "scrap... altogether" functionally (the app
+  stops using/showing archived rows) without an unrecoverable DELETE.
+
+STEP D - Bulk-generate ~90 real jargon terms per phylum (~1,890
+  total), all 21 phyla, into jargon_encyclopedia as status='pending'.
+  Batched per phylum in bounded chunks (tuned against real Oracle
+  output quality - no hierarchy design in this call, just term+
+  explainer pairs, a materially smaller/safer generation shape than
+  the original nested-tree plan). Real cross-phylum dedup check
+  (Alex's Q3 answer from 15.3) runs after generation, before review -
+  flags any term that's a near-duplicate of one already accepted
+  elsewhere, same discipline as intelDedup/the placement engine's own
+  per-chapter dedup (rule 8).
+
+STEP E - Full human review, every phylum (Alex's Q2 answer from 15.3)
+  - pending terms move to 'accepted'/'rejected' via a real reviewer
+  UI (reuses the _showTreeConfirm popup's real arm/confirm/edit
+  pattern - rule 8, not a new mechanism).
+
+STEP F - Once a phylum's jargon_encyclopedia terms are reviewed and
+  accepted, run curriculum-tree generation for that phylum (reuses
+  `_generateCurriculumTree`/`_insertTreeNodes`/`_showTreeConfirm` from
+  Phase 4/P1, already built) SEEDED FROM the real accepted anchor
+  terms for that phylum, instead of inventing leaf names from
+  scratch - Oracle organizes real existing terms into a real
+  curriculum hierarchy, a materially better use of that existing
+  mechanism than its original design. When a generated leaf matches an
+  existing anchor term, `_insertTreeNodes` links it (sets that anchor
+  row's taxonomy_node_id) instead of duplicating content - the real
+  "trickle down" step Alex named.
+
+STEP E (later follow-up, explicitly out of this plan's completion bar,
+  per 16.3) - rewire `decidePlacementScored`'s real-time bottom-up
+  placement so a genuinely NEW insight also lands in jargon_encyclopedia
+  first (pending review) before a taxonomy_tree leaf is minted to
+  attach it - full architectural symmetry between the bulk and organic
+  placement paths. Named, not built here.
+
+Real open question surfaced to Alex, needing his answer before Step C
+  runs: 16.5's migrate-vs-archive fork for the 260 existing leaves.
