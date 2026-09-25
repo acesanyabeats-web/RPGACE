@@ -289,3 +289,77 @@ Phase 6 — unchanged from Section 5 (Jargon Web bubble view, later,
 Nothing beyond this spec file has been built or ratified. This section
 is the real CEO Loop 1 "report" — ready for Alex's ratification, not
 yet an approved plan.
+
+=====================================================================
+8. PHASE 1-3 EXECUTED (Alex's own ask: "Start Phase 1 to 3"),
+   Sep 25 2026, same session
+=====================================================================
+8a. Phase 1a — DONE. phylumPath.MAX_TREE_DEPTH: 10 (new module
+  constant, replacing the bare "6" in sanitizePlacement's maxNew calc).
+  A deliberate new fixed ceiling, not a removed guard — matches the
+  confirmed Section 6d answer exactly.
+
+8b. Phase 1b — DONE. _insertNewSteps' dedup-extend branch (an insight
+  landing on an already-existing leaf) now passes sourceMeta through
+  to create a real linked encyclopedia row, same shape as the existing
+  new-leaf path. This is the real mechanical fix that makes "insights
+  as a collection tied to a jargon leaf" actually accumulate over
+  repeat insights, not just the first one.
+
+8c. Phase 1c — DONE. jargonEncyclopedia's glossary now fetches each
+  visible term's real linked encyclopedia rows in ONE batched query
+  (taxonomy_node_id=in.(...)), not N+1, and _renderTerms shows the
+  real insight collection under each term (with an honest "No linked
+  insights yet" state) instead of only the one explainer line. Real
+  live view definition confirmed via direct Supabase query first
+  (jargon_encyclopedia already selects `id AS node_id` — nothing
+  needed changing on the Postgres side).
+
+8d. Phase 2 — REAL FINDING: NOT NEEDED, nothing built. Direct read of
+  phylumPath.ui._renderFusionLinks/_showLinkArticle found fusion links
+  ALREADY have a full evidence-inspector mechanism — inline evidence
+  text on every row, a real click-through popup with exit buttons to
+  either connected node, and an Oracle-generated "Interlink Article"
+  on demand. This already exceeds P1's own Galaxy Map pattern (which
+  has no generated-article step). Building a second mechanism here
+  would have been a real rule-8 duplication — caught before writing
+  any code, not after.
+
+8e. Phase 3 — DONE. scripts/taxonomy_coverage_check.py built (same
+  family as verify_edge_evidence_coverage.py/supabase_dedup_scan.py —
+  cheap, zero-AI-cost, read-only, reports real numbers, never writes).
+  Run for real via mcp__Supabase__execute_sql (this session's own
+  sandboxed network blocks raw supabase.co access, same known
+  limitation supabase_dedup_scan.py already documents) — real current
+  baseline, Sep 25 2026:
+    - 246 real accepted leaves tree-wide; only 1 (0.4%) has any linked
+      Encyclopedia insight row. This is the honest starting point
+      Phase 1b's fix now builds forward from — it does not retroactively
+      backfill old insights that only ever wrote to deep_content.
+    - Phyla 1-10 are genuinely the deepest/most developed (max depth
+      5-6, avg depth 4.5-5.15).
+    - Phyla 12,13,14,15,17,18,19,20 sit at max_depth=1 — every leaf
+      directly under the phylum root, genuinely flat/not yet
+      curriculum-designed. Phylum 11 at max_depth=3, phylum 16 at
+      max_depth=4 (avg only 1.78 — most leaves still shallow), phylum
+      9 at max_depth=5 (avg 3.24).
+    - Phylum 21 has zero real leaves — matches the documented
+      deliberate "nothing here yet" design, not a bug.
+
+8f. REAL, SIGNIFICANT CROSS-DOC DRIFT FOUND WHILE BUILDING 8e (rule 16,
+  flagged to Alex directly, not silently corrected or ignored): CLAUDE.md's
+  Taxonomy section claims Phylum 12 was rebuilt Aug 11 into "a real
+  3-level hierarchy (6 Orders -> 16 Classes -> 16 leaves, 38 nodes
+  total, proof-of-concept for the rest)." Direct live query
+  (taxonomy_tree where phylum_number=12) found only 9 REAL rows total:
+  3 branches (depths 1/2/3) and 6 leaves, ALL 6 leaves sitting at
+  depth 1 (directly under the phylum root) — genuinely flat, not a
+  3-level hierarchy, and nowhere near 38 nodes. Not investigated
+  further this pass (real, separate scope from Phase 1-3 — whether
+  this is data loss, an inflated original claim, or a later
+  deliberate revert CLAUDE.md was never updated to reflect). This
+  materially affects Phase 4's own "pilot on ONE currently-flat
+  phylum, not 12, already done" framing — Phylum 12 may in fact be a
+  live, real candidate too, not "already done." Reported to Alex in
+  chat; CLAUDE.md not yet corrected (needs his steer on which of the
+  3 real explanations is true before writing a correction).

@@ -17874,6 +17874,23 @@ RPGACE.register('phylumPath', {
   // for a stale CLAIM rather than broken code).
   CONDENSE_THRESHOLD_CHARS: 6000,
 
+  // Sep 25 2026 — real /CEO Phase 1 item, curriculum-restructure spec
+  // (records/2026-09/taxonomy_curriculum_jargon_encyclopedia_merge_spec_
+  // 2026-09-25.txt). Raised from the original hard cap of 6 (Variant) —
+  // real /commit-archaeologist evidence found that cap was never
+  // arbitrary: taxonomy_placement_rules.txt's own R2 ("DEPTH NEVER
+  // EXCEEDS 6") was written after a real depth-14 corruption chain
+  // (commit 42ca91e), so this is a deliberate NEW fixed ceiling, not a
+  // removal of the guard — sanitizePlacement below still hard-trims
+  // anything past it, same mechanism, just roomier, giving real
+  // curriculum-breakdown depth (Order->Class->Family->Genus->Species->
+  // ...->one jargon term) more room before hitting a wall. RANK_NAMES
+  // stays a 7-entry cosmetic display list (confirmed via commit
+  // d992888 — borrowed from taxonomy_map.html, never a structural
+  // constraint); rankNameForDepth already falls back to 'Rank '+depth
+  // past index 6, so no new rank names are needed for this to work.
+  MAX_TREE_DEPTH: 10,
+
   _focusNodeId: null, // null = phylum root
 
   _renderGeneration: 0,
@@ -18237,11 +18254,12 @@ RPGACE.register('phylumPath', {
     // the depth-14 corruption found July 19) slips garbage past the model
     // rules. Splits path-like steps, drops steps that restate any rank
     // already in the attach path or an earlier step, and hard-caps the
-    // final depth at 6 (Variant) - on overflow it keeps the LAST step (the
-    // actual content leaf) plus as many leading intermediates as fit,
-    // because losing an intermediate grouping is recoverable while losing
-    // the leaf loses the insight itself.
+    // final depth at MAX_TREE_DEPTH - on overflow it keeps the LAST step
+    // (the actual content leaf) plus as many leading intermediates as
+    // fit, because losing an intermediate grouping is recoverable while
+    // losing the leaf loses the insight itself.
     sanitizePlacement: function(attachPath, attachDepth, newSteps) {
+      var self = RPGACE.modules.phylumPath;
       var cleaned = [];
       var notes = [];
       var soFarLower = (attachPath || '').split('/').map(function(s) { return s.trim().toLowerCase(); }).filter(Boolean);
@@ -18258,12 +18276,13 @@ RPGACE.register('phylumPath', {
           soFarLower.push(candidate.toLowerCase());
         });
       });
-      var maxNew = 6 - (attachDepth || 0);
+      var cap = self.MAX_TREE_DEPTH || 10;
+      var maxNew = cap - (attachDepth || 0);
       if (maxNew < 1) maxNew = 1;
       if (cleaned.length > maxNew) {
         var leaf = cleaned[cleaned.length - 1];
         cleaned = cleaned.slice(0, maxNew - 1).concat([leaf]);
-        notes.push('trimmed to depth cap 6 (kept leaf)');
+        notes.push('trimmed to depth cap ' + cap + ' (kept leaf)');
       }
       return { steps: cleaned, notes: notes };
     },
@@ -18365,6 +18384,27 @@ RPGACE.register('phylumPath', {
             insight_text: (insightText || '').slice(0, 2000),
             source: 'phylum_path_dedup_extend',
           }).catch(function() {});
+          // Sep 25 2026 — real Phase 1b fix, curriculum-restructure spec
+          // (records/2026-09/taxonomy_curriculum_jargon_encyclopedia_
+          // merge_spec_2026-09-25.txt). Real gap found: this branch never
+          // passed sourceMeta, so a SECOND (or third...) insight landing
+          // on an already-existing jargon leaf never created its own
+          // linked Encyclopedia row — only the "new leaf" branch below
+          // did. That's the exact mechanism the whole "insights are a
+          // real collection tied to a jargon leaf" idea depends on, so a
+          // dedup-extended leaf needs the SAME companion-entry write the
+          // new-leaf path already has, not a lesser version of it. Same
+          // shape as the new-leaf block below (rule 8, not a second
+          // pattern) — fire-and-forget, never blocks the real content
+          // regeneration this branch already does.
+          if (sourceMeta && sourceMeta.source) {
+            RPGACE.sb.secureWrite('encyclopedia', 'insert', {
+              title: sourceMeta.title || (insightText || '').slice(0, 80),
+              content: insightText || '',
+              source: sourceMeta.source,
+              taxonomy_node_id: attachNode.id,
+            }).catch(function() {});
+          }
           return self.logic._generateInsightContent(attachNode, phylumNumber, insightText);
         }
         return Promise.reject(new Error('Oracle returned no new steps to place this insight'));
@@ -33247,6 +33287,18 @@ RPGACE.register('jargonEncyclopedia', {
       title.insertAdjacentElement('afterend', btn);
     },
 
+    // Sep 25 2026 — real Phase 1c, curriculum-restructure spec
+    // (records/2026-09/taxonomy_curriculum_jargon_encyclopedia_merge_
+    // spec_2026-09-25.txt): jargon_encyclopedia is the real, confirmed
+    // "holder of jargon end point and where it belongs down phylum
+    // path" — but it only ever surfaced one explainer line per term,
+    // not the real insight COLLECTION that's supposed to live under a
+    // jargon leaf (Encyclopedia rows linked via taxonomy_node_id, per
+    // _insertNewSteps' sourceMeta path and this session's Phase 1b
+    // fix). Real live view definition confirmed via direct query
+    // (jargon_encyclopedia already selects `id AS node_id` from
+    // taxonomy_tree — it was never missing, just never asked for
+    // here), so this only needed the JS side to request it and join.
     _openGlossary: function() {
       var self = RPGACE.modules.jargonEncyclopedia;
       var dd = RPGACE.modules.dashDeck;
@@ -33255,14 +33307,31 @@ RPGACE.register('jargonEncyclopedia', {
       pop.box.innerHTML = '<input id="jarg-search" type="text" placeholder="Search terms..." style="width:100%;margin-bottom:12px;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Rajdhani,sans-serif;font-size:13px;"><div id="jarg-list" style="max-height:50vh;overflow-y:auto;">Loading…</div>';
       var listEl = pop.box.querySelector('#jarg-list');
       var searchInp = pop.box.querySelector('#jarg-search');
-      RPGACE.sb.select('jargon_encyclopedia', 'select=name,path,explainer,phylum_number&order=name.asc&limit=1000').then(function(rows) {
+      RPGACE.sb.select('jargon_encyclopedia', 'select=node_id,name,path,explainer,phylum_number&order=name.asc&limit=1000').then(function(rows) {
         rows = rows || [];
         self._allTerms = rows;
-        self._renderTerms(listEl, rows);
-        searchInp.addEventListener('input', function() {
-          var q = searchInp.value.toLowerCase();
-          var filtered = rows.filter(function(r) { return (r.name || '').toLowerCase().indexOf(q) !== -1; });
-          self._renderTerms(listEl, filtered);
+        // Real batched fetch — one query for every visible term's linked
+        // insight rows, never one query per term (N+1). A term with zero
+        // linked rows just gets an empty array; a failed fetch degrades
+        // to showing terms with no insight collection rather than
+        // failing the whole glossary.
+        var ids = rows.map(function(r) { return r.node_id; }).filter(Boolean);
+        var fetchInsights = ids.length
+          ? RPGACE.sb.select('encyclopedia', 'taxonomy_node_id=in.(' + ids.join(',') + ')&select=id,title,content,source,taxonomy_node_id&order=created_at.asc').catch(function() { return []; })
+          : Promise.resolve([]);
+        fetchInsights.then(function(insightRows) {
+          var byNode = {};
+          (insightRows || []).forEach(function(ins) {
+            if (!byNode[ins.taxonomy_node_id]) byNode[ins.taxonomy_node_id] = [];
+            byNode[ins.taxonomy_node_id].push(ins);
+          });
+          self._insightsByNode = byNode;
+          self._renderTerms(listEl, rows);
+          searchInp.addEventListener('input', function() {
+            var q = searchInp.value.toLowerCase();
+            var filtered = rows.filter(function(r) { return (r.name || '').toLowerCase().indexOf(q) !== -1; });
+            self._renderTerms(listEl, filtered);
+          });
         });
       }).catch(function(e) {
         listEl.textContent = 'Load failed: ' + e.message;
@@ -33271,10 +33340,23 @@ RPGACE.register('jargonEncyclopedia', {
 
     _renderTerms: function(listEl, rows) {
       if (!rows.length) { listEl.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0">No terms match.</div>'; return; }
+      var self = RPGACE.modules.jargonEncyclopedia;
+      var byNode = self._insightsByNode || {};
       listEl.innerHTML = rows.map(function(r) {
+        var insights = byNode[r.node_id] || [];
+        var insightsHtml = insights.length
+          ? '<div style="margin-top:6px;padding-left:10px;border-left:2px solid rgba(201,168,76,0.25);">'
+            + insights.map(function(ins) {
+                return '<div style="font-size:10.5px;color:rgba(226,226,236,0.55);margin-top:4px;line-height:1.5;">'
+                  + '<span style="color:var(--gold);">' + String(ins.source || 'insight').replace(/</g, '&lt;') + ':</span> '
+                  + String(ins.content || ins.title || '').replace(/</g, '&lt;') + '</div>';
+              }).join('')
+            + '</div>'
+          : '<div style="font-size:10.5px;color:rgba(226,226,236,0.3);margin-top:4px;font-style:italic;">No linked insights yet.</div>';
         return '<div style="padding:8px 0;border-bottom:1px solid var(--border);">'
-          + '<div style="font-size:13px;font-weight:700;color:var(--text);">' + String(r.name || '').replace(/</g, '&lt;') + '</div>'
+          + '<div style="font-size:13px;font-weight:700;color:var(--text);">' + String(r.name || '').replace(/</g, '&lt;') + (insights.length ? ' <span style="font-size:10px;font-weight:400;color:var(--muted);">(' + insights.length + ' insight' + (insights.length === 1 ? '' : 's') + ')</span>' : '') + '</div>'
           + '<div style="font-size:11px;color:var(--muted);margin-top:2px;">' + String(r.explainer || '').replace(/</g, '&lt;') + '</div>'
+          + insightsHtml
           + '</div>';
       }).join('');
     },
