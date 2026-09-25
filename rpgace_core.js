@@ -18784,6 +18784,162 @@ RPGACE.register('phylumPath', {
     },
 
     // ══════════════════════════════════════════════════════════════════
+    // Sep 25 2026 — AI pre-triage for the archived-leaf review queue,
+    // real follow-up per Alex's own ask ("build it out"). One batched
+    // Oracle call per chunk of up to 25 archived leaves (never one call
+    // per item — real token-cost discipline, rule 11) suggesting a
+    // starting keep/edit/discard + one-line reason per leaf. NEVER
+    // auto-applied — _showArchivedReviewQueue only shows it as a
+    // labeled hint Alex can accept or override with his own click,
+    // same "AI proposes, human confirms" shape as everywhere else.
+    // Fails open to no suggestions (an empty map) on any error — a
+    // missing pre-triage degrades to a fully manual queue, never blocks
+    // real review from happening.
+    // ══════════════════════════════════════════════════════════════════
+    _pretriageArchivedBatch: function(phylumNumber, leaves) {
+      var self = RPGACE.modules.phylumPath;
+      var chunks = [];
+      for (var i = 0; i < leaves.length; i += 25) chunks.push(leaves.slice(i, i + 25));
+      var suggestionsByIndex = {};
+      var chain = Promise.resolve();
+      chunks.forEach(function(chunk, chunkIdx) {
+        chain = chain.then(function() {
+          var listText = chunk.map(function(leaf, i) {
+            return (i + 1) + '. "' + leaf.name + '" - ' + (leaf.explainer || '(no explainer)');
+          }).join('\n');
+          var prompt = 'You are a private tutor with a PhD in ' + RPGACE.utils.phylumContext(phylumNumber) + ' as a formal academic discipline, reviewing a batch of archived taxonomy entries to decide which are worth carrying forward as real jargon terms.\n\n' +
+            'ENTRIES (numbered):\n' + listText + '\n\n' +
+            'For EACH entry, decide: KEEP (a genuinely useful, real jargon term or concept as-is), EDIT (the underlying idea is useful but the name/explainer is too vague, too broad, or reads as a category rather than one specific term - give a better single-term name + explainer), or DISCARD (redundant, not real jargon, or too broad a bucket to be one term). Give a one-sentence reason for every entry.\n\n' +
+            'Return ONLY JSON: {"suggestions": [{"index": 1, "action": "keep"|"edit"|"discard", "reason": "...", "suggestedTerm": "..." (only if action is edit), "suggestedExplainer": "..." (only if action is edit)}, ...]} - one entry per numbered item above, in order.';
+          return self.logic._callGroundWorkerJSON(prompt, 3000).then(function(parsed) {
+            var suggestions = (parsed && parsed.suggestions) || [];
+            suggestions.forEach(function(s) {
+              var localIdx = parseInt(s.index, 10);
+              if (isNaN(localIdx) || localIdx < 1 || localIdx > chunk.length) return;
+              var globalLeaf = chunk[localIdx - 1];
+              var globalIdx = leaves.indexOf(globalLeaf);
+              if (globalIdx === -1) return;
+              suggestionsByIndex[globalIdx] = {
+                action: (s.action === 'edit' || s.action === 'discard') ? s.action : 'keep',
+                reason: String(s.reason || '').slice(0, 300),
+                suggestedTerm: s.suggestedTerm ? String(s.suggestedTerm).slice(0, 200) : null,
+                suggestedExplainer: s.suggestedExplainer ? String(s.suggestedExplainer).slice(0, 500) : null,
+              };
+            });
+          }).catch(function(e) {
+            console.warn('[phylumPath] pretriage chunk ' + chunkIdx + ' failed:', e.message);
+          });
+        });
+      });
+      return chain.then(function() { return suggestionsByIndex; });
+    },
+
+    // ══════════════════════════════════════════════════════════════════
+    // Sep 25 2026 — Step D, real jargon-term generation (the mechanism
+    // for filling each phylum toward its ~90-term target, per Section
+    // 17-19 of the curriculum-restructure spec). One batched Oracle
+    // call generates up to `count` new, distinct jargon terms for a
+    // phylum, explicitly told to avoid the real existing terms passed
+    // in (same-phylum dedup at the PROMPT level, cheap and preventive).
+    // A real code-level dedup guard still runs at insert time in
+    // _buildOutJargonEncyclopedia below - the prompt asking nicely is
+    // never trusted alone (rule 5, never trust model JSON blindly).
+    // ══════════════════════════════════════════════════════════════════
+    _generateJargonTermsBatch: function(phylumNumber, existingTerms, count) {
+      var self = RPGACE.modules.phylumPath;
+      var existingList = (existingTerms && existingTerms.length)
+        ? existingTerms.join(', ')
+        : '(none yet)';
+      var prompt = 'You are a private tutor with a PhD in ' + RPGACE.utils.phylumContext(phylumNumber) + ' as a formal academic discipline.\n\n' +
+        'ALREADY-COVERED real jargon terms for this phylum (never repeat or trivially rephrase any of these): ' + existingList + '\n\n' +
+        'TASK: generate ' + count + ' more REAL, DISTINCT jargon terms actually used by real practitioners in this discipline - each a single word or short phrase (never a full sentence, never a broad category name), with one real, specific, concise sentence explaining what it means.\n\n' +
+        'Return ONLY JSON: {"terms": [{"term": "...", "explainer": "..."}, ...]} - exactly ' + count + ' entries, no duplicates among themselves either.';
+      var maxTok = Math.max(600, count * 70 + 300);
+      return self.logic._callGroundWorkerJSON(prompt, maxTok).then(function(parsed) {
+        var terms = (parsed && parsed.terms) || [];
+        return terms.map(function(t) {
+          return { term: String((t && t.term) || '').trim(), explainer: String((t && t.explainer) || '').trim() };
+        }).filter(function(t) { return t.term; });
+      });
+    },
+
+    // Orchestrator: for each enabled phylum, computes the real gap
+    // toward `perPhylumTarget` (accepted + pending rows already there,
+    // never counting rejected ones toward "have"), generates ONE batch
+    // (capped at `batchCap` per call - real, bounded cost, rule 11;
+    // reaching the full target needs multiple real runs, named plainly,
+    // never silently claimed done in one pass), and inserts new rows as
+    // status='pending' (Step D content is AI-generated and unreviewed -
+    // real rule-4 human checkpoint still required before 'accepted',
+    // unlike the C2 keep/edit path where Alex's own click IS the gate).
+    // Real dedup, two layers: same-phylum (case-insensitive exact match
+    // against every existing term for that phylum, any status) and
+    // cross-phylum (case-insensitive exact match against every OTHER
+    // phylum's existing terms - a genuine cross-cutting term is rare
+    // enough that an exact-name collision is worth a human look, not a
+    // silent skip disguised as success).
+    _buildOutJargonEncyclopedia: function(perPhylumTarget, batchCap, sourceTag) {
+      var self = RPGACE.modules.phylumPath;
+      perPhylumTarget = perPhylumTarget || 90;
+      batchCap = batchCap || 20;
+      var report = { generated: 0, skippedDuplicate: 0, perPhylum: {}, errors: [] };
+      return RPGACE.sb.select('jargon_encyclopedia', 'select=term,phylum_number,status').then(function(allRows) {
+        allRows = allRows || [];
+        var chain = Promise.resolve();
+        self.ENABLED_PHYLA.forEach(function(phylumNumber) {
+          chain = chain.then(function() {
+            var samePhylum = allRows.filter(function(r) { return r.phylum_number === phylumNumber; });
+            var haveCount = samePhylum.filter(function(r) { return r.status !== 'rejected'; }).length;
+            var gap = perPhylumTarget - haveCount;
+            if (gap <= 0) { report.perPhylum[phylumNumber] = { skipped: 'target already met' }; return; }
+            var genCount = Math.min(gap, batchCap);
+            var existingNames = samePhylum.map(function(r) { return r.term; });
+            var allLowerNames = allRows.map(function(r) { return (r.term || '').toLowerCase().trim(); });
+            return self.logic._generateJargonTermsBatch(phylumNumber, existingNames, genCount).then(function(terms) {
+              var chain2 = Promise.resolve();
+              var insertedThisPhylum = 0, skippedThisPhylum = 0;
+              terms.forEach(function(t) {
+                var lower = t.term.toLowerCase().trim();
+                if (allLowerNames.indexOf(lower) !== -1) { skippedThisPhylum++; report.skippedDuplicate++; return; }
+                allLowerNames.push(lower);
+                chain2 = chain2.then(function() {
+                  return RPGACE.sb.secureWrite('jargon_encyclopedia', 'insert', {
+                    term: t.term, phylum_number: phylumNumber, explainer: t.explainer,
+                    status: 'pending', source: [{ type: sourceTag || 'phylum_path_bulk_generate' }],
+                  }).then(function() { insertedThisPhylum++; report.generated++; })
+                    .catch(function(e) { report.errors.push(phylumNumber + ': ' + e.message); });
+                });
+              });
+              return chain2.then(function() {
+                report.perPhylum[phylumNumber] = { inserted: insertedThisPhylum, skippedDuplicate: skippedThisPhylum, gapRemaining: gap - insertedThisPhylum };
+              });
+            }).catch(function(e) {
+              report.errors.push(phylumNumber + ' generation failed: ' + e.message);
+            });
+          });
+        });
+        return chain.then(function() { return report; });
+      });
+    },
+
+    // Mirrors _resolveArchivedLeaf's shape for the simpler pending-term
+    // case - no second table involved (the row IS the anchor already),
+    // just its own status flip. Accept/edit-then-accept writes straight
+    // to 'accepted' (Alex's own click on this popup IS the checkpoint);
+    // reject flips to 'rejected', kept for audit, never deleted.
+    _resolvePendingTerm: function(row, action, editedTerm, editedExplainer) {
+      if (action === 'reject') {
+        return RPGACE.sb.secureWrite('jargon_encyclopedia', 'update',
+          { status: 'rejected', updated_at: new Date().toISOString() }, 'id=eq.' + row.id
+        ).catch(function() {});
+      }
+      var payload = { status: 'accepted', updated_at: new Date().toISOString() };
+      if (editedTerm) payload.term = editedTerm;
+      if (editedExplainer != null) payload.explainer = editedExplainer;
+      return RPGACE.sb.secureWrite('jargon_encyclopedia', 'update', payload, 'id=eq.' + row.id).catch(function() {});
+    },
+
+    // ══════════════════════════════════════════════════════════════════
     // July 16: fusion links - cross-taxonomy connections between a new
     // leaf and topically-related nodes ANYWHERE else in the tree (any
     // rank, any phylum), staged in the new taxonomy_links table and
@@ -19834,6 +19990,18 @@ RPGACE.register('phylumPath', {
         var total = queue.length;
         var idx = 0;
         var kept = 0, discarded = 0;
+        // Sep 25 2026 — real AI pre-triage (logic._pretriageArchivedBatch):
+        // fetched in the background so the queue is usable immediately,
+        // never blocking Alex's real review on a slow Oracle round-trip.
+        // Empty until it resolves; renderCurrent below reads whatever's
+        // there at the moment it's called, so a late-arriving suggestion
+        // just shows up on the next render (including a re-render this
+        // fetch triggers once it lands).
+        var suggestions = {};
+        self.logic._pretriageArchivedBatch(phylumNumber, queue).then(function(s) {
+          suggestions = s;
+          renderCurrent();
+        }).catch(function() {});
 
         var pop = RPGACE.modules.dashDeck._popup({
           dim: '0.92', width: '560px', bg: '#0f0f1a', borderColor: 'rgba(201,168,76,0.3)',
@@ -19863,7 +20031,28 @@ RPGACE.register('phylumPath', {
           progress.textContent = (idx + 1) + ' of ' + total + ' — ' + row.path;
           box.appendChild(progress);
 
-          var termInp = document.createElement('input');
+          var sugg = suggestions[idx];
+          var termInp, explInp;
+          if (sugg) {
+            var suggBox = document.createElement('div');
+            suggBox.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.7);background:rgba(201,168,76,0.06);border:1px solid rgba(201,168,76,0.2);border-radius:6px;padding:8px 10px;margin-bottom:10px;';
+            var actionLabel = sugg.action === 'keep' ? '✓ KEEP' : (sugg.action === 'discard' ? '✗ DISCARD' : '✏️ EDIT');
+            suggBox.innerHTML = '<strong style="color:var(--gold);">🤖 Suggested: ' + actionLabel + '</strong> — ' + String(sugg.reason || '').replace(/</g, '&lt;');
+            if (sugg.action === 'edit' && sugg.suggestedTerm) {
+              suggBox.innerHTML += '<div style="margin-top:4px;">→ "' + String(sugg.suggestedTerm).replace(/</g, '&lt;') + '"</div>';
+              var useSuggBtn = document.createElement('button');
+              useSuggBtn.textContent = 'Use this edit';
+              useSuggBtn.style.cssText = 'margin-top:6px;padding:4px 10px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);border-radius:5px;color:var(--gold);font-size:10.5px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+              useSuggBtn.onclick = function() {
+                termInp.value = sugg.suggestedTerm || termInp.value;
+                if (sugg.suggestedExplainer) explInp.value = sugg.suggestedExplainer;
+              };
+              suggBox.appendChild(useSuggBtn);
+            }
+            box.appendChild(suggBox);
+          }
+
+          termInp = document.createElement('input');
           termInp.type = 'text';
           termInp.value = row.name || '';
           termInp.style.cssText = 'width:100%;margin-bottom:8px;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;';
@@ -19921,6 +20110,115 @@ RPGACE.register('phylumPath', {
         renderCurrent();
       }).catch(function(e) {
         RPGACE.utils.toast('Error loading archived queue: ' + e.message, '#CC4A4A', 3500);
+      });
+    },
+
+    // ══════════════════════════════════════════════════════════════════
+    // Sep 25 2026 — real Step D counterpart to the archived-leaf queue
+    // above: reviews jargon_encyclopedia rows a bulk generation pass
+    // (logic._buildOutJargonEncyclopedia, or Claude Code's own direct
+    // authorship — both tag their real source) left status='pending'.
+    // Same queue-popup shape as _showArchivedReviewQueue (rule 8 — a
+    // shared visual pattern, not a shared backend op, since this one
+    // only ever touches jargon_encyclopedia's own status, never a
+    // second table). Accept/edit-then-accept writes 'accepted' (Alex's
+    // click IS the checkpoint); Reject writes 'rejected', kept for
+    // audit, never deleted.
+    // ══════════════════════════════════════════════════════════════════
+    _showPendingTermsReviewQueue: function() {
+      var self = RPGACE.modules.phylumPath;
+      var phylumNumber = self.PHYLUM_NUM;
+      RPGACE.sb.select('jargon_encyclopedia', 'phylum_number=eq.' + phylumNumber + '&status=eq.pending&order=term.asc&limit=500').then(function(queue) {
+        queue = queue || [];
+        if (!queue.length) { RPGACE.utils.toast('✅ No pending generated terms to review for this phylum', '#4CAF82', 3500); return; }
+        var total = queue.length;
+        var idx = 0;
+        var accepted = 0, rejected = 0;
+
+        var pop = RPGACE.modules.dashDeck._popup({
+          dim: '0.92', width: '560px', bg: '#0f0f1a', borderColor: 'rgba(201,168,76,0.3)',
+          accent: 'rgba(201,168,76,0.6)', eyebrow: '📋 Reviewing generated jargon terms',
+          title: RPGACE.utils.phylumLabel(phylumNumber), noDefaultClose: true,
+        });
+        var overlay = pop.overlay, box = pop.box;
+
+        function renderCurrent() {
+          box.innerHTML = '';
+          if (idx >= queue.length) {
+            var done = document.createElement('div');
+            done.style.cssText = 'text-align:center;padding:20px 0;color:var(--text);';
+            done.innerHTML = '<div style="font-size:14px;font-weight:700;margin-bottom:8px;">Review complete</div>'
+              + '<div style="font-size:12px;color:var(--muted);">' + accepted + ' accepted · ' + rejected + ' rejected, out of ' + total + '</div>';
+            box.appendChild(done);
+            var closeBtn = document.createElement('button');
+            closeBtn.textContent = 'Close';
+            closeBtn.style.cssText = 'width:100%;margin-top:14px;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            closeBtn.onclick = function() { overlay.remove(); };
+            box.appendChild(closeBtn);
+            return;
+          }
+          var row = queue[idx];
+          var progress = document.createElement('div');
+          progress.style.cssText = 'font-size:11px;color:var(--muted);margin-bottom:10px;';
+          var srcType = (row.source && row.source[0] && row.source[0].type) || 'unknown';
+          progress.textContent = (idx + 1) + ' of ' + total + ' — source: ' + srcType;
+          box.appendChild(progress);
+
+          var termInp = document.createElement('input');
+          termInp.type = 'text';
+          termInp.value = row.term || '';
+          termInp.style.cssText = 'width:100%;margin-bottom:8px;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;';
+          box.appendChild(termInp);
+
+          var explInp = document.createElement('textarea');
+          explInp.value = row.explainer || '';
+          explInp.rows = 3;
+          explInp.style.cssText = 'width:100%;margin-bottom:12px;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Rajdhani,sans-serif;font-size:12px;resize:vertical;';
+          box.appendChild(explInp);
+
+          var btnRow = document.createElement('div');
+          btnRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
+          var acceptBtn = document.createElement('button');
+          acceptBtn.textContent = '✓ Accept (edit above first if needed)';
+          acceptBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          acceptBtn.onclick = function() {
+            acceptBtn.disabled = true; rejectBtn.disabled = true;
+            var editedTerm = termInp.value.trim() !== (row.term || '').trim() ? termInp.value.trim() : null;
+            var editedExpl = explInp.value !== (row.explainer || '') ? explInp.value : null;
+            self.logic._resolvePendingTerm(row, 'accept', editedTerm, editedExpl).then(function() {
+              accepted++; idx++; renderCurrent();
+            });
+          };
+          var rejectBtn = document.createElement('button');
+          rejectBtn.textContent = '✗ Reject';
+          rejectBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:8px;color:#CC4A4A;font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          rejectBtn.onclick = function() {
+            acceptBtn.disabled = true; rejectBtn.disabled = true;
+            self.logic._resolvePendingTerm(row, 'reject').then(function() {
+              rejected++; idx++; renderCurrent();
+            });
+          };
+          btnRow.appendChild(acceptBtn); btnRow.appendChild(rejectBtn);
+          box.appendChild(btnRow);
+
+          var skipBtn = document.createElement('button');
+          skipBtn.textContent = 'Skip for now (leave pending, ask again later)';
+          skipBtn.style.cssText = 'width:100%;margin-top:8px;padding:6px;background:none;border:none;color:var(--muted);font-size:10.5px;cursor:pointer;font-family:Rajdhani,sans-serif;text-decoration:underline;';
+          skipBtn.onclick = function() { idx++; renderCurrent(); };
+          box.appendChild(skipBtn);
+        }
+
+        var closeX = document.createElement('button');
+        closeX.textContent = '✕';
+        closeX.style.cssText = 'position:absolute;top:14px;right:14px;background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;';
+        closeX.onclick = function() { overlay.remove(); };
+        box.style.position = 'relative';
+        var _origRenderCurrent2 = renderCurrent;
+        renderCurrent = function() { _origRenderCurrent2(); box.appendChild(closeX); };
+
+        renderCurrent();
+      }).catch(function(e) {
+        RPGACE.utils.toast('Error loading pending terms: ' + e.message, '#CC4A4A', 3500);
       });
     },
 
@@ -20026,6 +20324,15 @@ RPGACE.register('phylumPath', {
         reviewBtn.style.cssText = 'margin-bottom:10px;margin-left:8px;padding:6px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;display:inline-block;';
         reviewBtn.onclick = function() { self.ui._showArchivedReviewQueue(); };
         titleEl.insertAdjacentElement('afterend', reviewBtn);
+      }
+      // Sep 25 2026 — Step D's review entry point, same injection point.
+      if (titleEl && titleEl.parentNode && !document.getElementById('pp-review-pending-btn')) {
+        var pendingBtn = document.createElement('button');
+        pendingBtn.id = 'pp-review-pending-btn';
+        pendingBtn.textContent = '📋 Review Pending Terms';
+        pendingBtn.style.cssText = 'margin-bottom:10px;margin-left:8px;padding:6px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;display:inline-block;';
+        pendingBtn.onclick = function() { self.ui._showPendingTermsReviewQueue(); };
+        titleEl.insertAdjacentElement('afterend', pendingBtn);
       }
     },
 
@@ -20444,6 +20751,11 @@ RPGACE.register('phylumPath', {
   _insertTreeNodes: function(phylumNumber, attachNode, treeNodes, sourceMeta) { return this.logic._insertTreeNodes(phylumNumber, attachNode, treeNodes, sourceMeta); },
   _fetchArchivedLeafQueue: function(phylumNumber) { return this.logic._fetchArchivedLeafQueue(phylumNumber); },
   _resolveArchivedLeaf: function(row, action, editedTerm, editedExplainer) { return this.logic._resolveArchivedLeaf(row, action, editedTerm, editedExplainer); },
+  _pretriageArchivedBatch: function(phylumNumber, leaves) { return this.logic._pretriageArchivedBatch(phylumNumber, leaves); },
+  _generateJargonTermsBatch: function(phylumNumber, existingTerms, count) { return this.logic._generateJargonTermsBatch(phylumNumber, existingTerms, count); },
+  _buildOutJargonEncyclopedia: function(perPhylumTarget, batchCap, sourceTag) { return this.logic._buildOutJargonEncyclopedia(perPhylumTarget, batchCap, sourceTag); },
+  _resolvePendingTerm: function(row, action, editedTerm, editedExplainer) { return this.logic._resolvePendingTerm(row, action, editedTerm, editedExplainer); },
+  _showPendingTermsReviewQueue: function() { return this.ui._showPendingTermsReviewQueue(); },
   _findFusionLinks: function(node, phylumNumber) { return this.logic._findFusionLinks(node, phylumNumber); },
   _generateInsightContent: function(node, phylumNumber, insightText) { return this.logic._generateInsightContent(node, phylumNumber, insightText); },
   _generateArticleText: function(node) { return this.logic._generateArticleText(node); },

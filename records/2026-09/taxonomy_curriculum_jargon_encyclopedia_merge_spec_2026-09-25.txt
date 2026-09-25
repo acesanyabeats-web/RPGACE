@@ -1204,3 +1204,104 @@ Real, same-pass follow-through: oracleAppGrounding.SELF_KNOWLEDGE's own
   check_self_knowledge_contradictions.py and check_self_knowledge_
   staleness.py both run clean after the edit. Re-minified a second
   time, cache-bust bumped 20260925g -> 20260925h.
+
+=====================================================================
+20. "BUILD OUT JARGON ENCYCLOPEDIA" — ALEX'S DIRECT ASK, SAME SESSION
+=====================================================================
+
+20.1 ALEX'S ASK (verbatim)
+"Do it and build out jargon encyclopedia" - "it" being the AI pre-
+  triage suggestion offered at the end of Section 19's report; "build
+  out jargon encyclopedia" a direct instruction to populate the table
+  with real content, not just leave the mechanism unrun.
+
+20.2 A REAL CONSTRAINT SURFACED BEFORE BUILDING - NOT SILENTLY WORKED
+     AROUND
+This Claude Code Remote session cannot invoke the live app's real
+  Oracle endpoint (/api/oracle) or click any button in a real browser
+  - there is no live browser this session, same standing limitation
+  named throughout this whole spec file's own earlier sections (the
+  Phylum 12 dual-authorship worked example, Section 14, hit the exact
+  same wall). Step D's generation MECHANISM (logic._generateJargon
+  TermsBatch / logic._buildOutJargonEncyclopedia, real code, built and
+  shipped this pass) is therefore real, permanent, and ready for the
+  live app to run once Alex or a future session with a browser
+  triggers it - but it was NOT itself executed this pass, because
+  nothing in this session can make that live network call.
+
+20.3 WHAT WAS ACTUALLY BUILT AND RUN THIS PASS
+(a) AI pre-triage for the C2 archived-leaf review queue
+    (logic._pretriageArchivedBatch): one batched Oracle call per
+    ~25-item chunk, suggesting keep/edit/discard + a one-line reason
+    per archived leaf, fetched in the background so the queue stays
+    immediately usable. Shown as a labeled "🤖 Suggested: ..." hint
+    inside _showArchivedReviewQueue's own popup, with a "Use this
+    edit" button that copies a suggested edit into the real input
+    fields - never auto-applied, Alex's own click still does every
+    real write. This too cannot be exercised live this session for the
+    same reason as 20.2 - built, shipped, unrun until a browser is
+    available.
+(b) Step D generation mechanism (real code, unrun this session, see
+    20.2): logic._generateJargonTermsBatch (one Oracle call, up to
+    `count` new distinct terms for a phylum, explicitly told the real
+    existing terms to avoid repeating) and logic._buildOutJargon
+    Encyclopedia (the orchestrator: computes each phylum's real gap
+    toward a target, generates one bounded batch per phylum, real
+    same-phylum AND cross-phylum case-insensitive dedup check before
+    each insert, writes status='pending' - Step D content is AI-
+    generated and unreviewed, so it gets the real rule-4 human
+    checkpoint, unlike C2's keep/edit path where Alex's own click on
+    an ALREADY-ONCE-ACCEPTED archived leaf IS that checkpoint).
+(c) A real review UI for pending jargon_encyclopedia terms
+    (ui._showPendingTermsReviewQueue) - same one-item-at-a-time queue
+    shape as the archived-leaf reviewer (rule 8 - a shared VISUAL
+    pattern, not a shared backend op, since this one only ever touches
+    jargon_encyclopedia's own status). Accept/edit-then-accept writes
+    'accepted'; Reject writes 'rejected', kept, never deleted. A real
+    new "📋 Review Pending Terms" button ships on the Phylum Path page
+    alongside the existing "🗄️ Review Archived Terms" button.
+(d) A REAL PILOT BATCH OF CONTENT, directly authored and inserted by
+    this Claude Code session (the dual-authorship mechanism, Section
+    14 - source tagged 'claude_code_prebuild', same as the Phylum 12
+    worked example), since the live generator in (b) could not itself
+    be run: 120 real, curated jargon terms, 6 per phylum, across
+    phyla 1-20 (phylum 21 stays deliberately empty, matching its
+    design). Each term is a single word/short phrase (never a bucket
+    category) with a one-sentence explainer, chosen to be genuinely
+    DISTINCT from the already-archived leaf-bucket names for that
+    phylum (queried directly first, not guessed) - e.g. Phylum 12
+    already has real atomic archived terms (Bouncing, Chop, Digi,
+    Flip, Sliding, Type Beat, etc.), so this pass's 6 new Phylum 12
+    terms (Grimy, Hard, Vibe, On One, Stacked, Crispy) are deliberately
+    different ones, not re-authoring what's already there. All 120
+    rows inserted with status='pending' - Alex's own real review
+    (rule 4) still required before any of them count as 'accepted',
+    same as any AI-authored content in this pipeline.
+
+20.4 REAL VERIFICATION
+Post-insert query confirms exactly 120 rows, 6 per phylum, phyla 1-20
+  only (matches the real INSERT statement's own row count exactly).
+  A real cross-phylum + same-name dedup query (GROUP BY lower(term)
+  HAVING count(*) > 1) returns ZERO rows - no exact-name collision
+  anywhere in the table, same-phylum or cross-phylum, satisfying the
+  real "cross-phylum check" Alex confirmed wanting back in Section
+  15.4's Q3 answer.
+
+20.5 HONEST, NAMED SCOPE LIMITS - NOT HIDDEN
+- This is a real 120-term PILOT, not the full ~90-term/phylum target
+  (which would be ~1,800 terms across 20 phyla) - a first real
+  installment, explicitly not claimed as complete.
+- The AI-generated Step D path (logic._buildOutJargonEncyclopedia) has
+  never actually been run - it is real, shipped, ready code, not yet
+  live-exercised, same honest flag as most of this session's other
+  mechanism-vs-execution work.
+- Reaching full scale needs either: Alex opening the live app and
+  clicking "🌱 Generate Curriculum Breakdown"'s sibling mechanism
+  (once a real trigger button for _buildOutJargonEncyclopedia itself
+  is added - not yet wired to a button this pass, since it was run
+  directly via this session's own SQL access instead), or continued
+  direct Claude Code authorship in future sessions/turns.
+- All 120 rows are 'pending' - none are live/visible anywhere in the
+  app's own real UI paths yet (the glossary popup only shows
+  status='accepted' rows) until Alex reviews them via the new
+  "📋 Review Pending Terms" button.
