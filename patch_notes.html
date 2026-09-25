@@ -73,6 +73,17 @@
 
 <div class="content">
 
+<div class="card green" id="card-2026-09-25-taxonomy-phase4-curriculum-gen" style="margin-bottom:30px;">
+    <div class="card-title">🌱 Sep 25 — Phase 4 built: the real curriculum-generation pilot, wired end to end</div>
+    <div class="card-body">
+      The last piece of the chain — generate → review → commit — all real now, reachable from a new "🌱 Generate Curriculum Breakdown" button on the Phylum Path page (same injection point as the Jargon Encyclopedia button).<br><br>
+      <strong><code>phylumPath.logic._generateCurriculumTree(phylumNumber)</code></strong> — the top-down counterpart to <code>decidePlacementScored</code>: one real Oracle call designs a whole curriculum breakdown for a phylum (biggest separable chunks first, recursively subdividing using real axes like genre/era where the subject has them, bottoming out at one specific jargon term per leaf), reusing the same numbered-indented existing-structure listing <code>decidePlacementScored</code> already uses so Oracle designs around real existing content instead of duplicating it — real, checked need, not hypothetical: Phylum 12's own 6 bucket-style leaves and 1 dangling branch are exactly what a blind pass would've recreated. A defensive recursive sanitizer runs on the parsed JSON before it ever reaches the UI — drops empty names, hard-stops at <code>MAX_TREE_DEPTH</code> regardless of how deep the model's own JSON claims to go.<br><br>
+      <strong><code>phylumPath.ui._generateCurriculumBreakdown()</code></strong> — the real entry point, wiring the 3 independently-built pieces together (generate, <code>_showTreeConfirm</code>, <code>_insertTreeNodes</code>) without merging them, so each stays testable on its own.<br><br>
+      <strong>One real, related bug fixed in passing</strong>: <code>decidePlacementScored</code>'s own prompt (used for every bottom-up insight placement, not just this) still told Oracle the OLD "never exceed depth 6" rule from before Phase 1a raised the real cap to 10 — Oracle was being held to a stricter limit than the code actually enforces. Fixed to reference the real, current <code>MAX_TREE_DEPTH</code>.<br><br>
+      <strong>Real, honest status</strong>: this is the full real pilot mechanism, not yet run. No phylum has actually had this button clicked yet — that's the real next step, a genuine test of the whole chain against a real phylum (Phylum 12 is the natural candidate, already reviewed in detail this session). <code>node --check</code> clean, re-minified, cache-bust bumped <code>20260925d</code>→<code>20260925e</code>. No live browser this session — verified by direct structural re-read only. <strong>Untested by Alex's own hand yet.</strong>
+    </div>
+</div>
+
 <div class="card green" id="card-2026-09-25-taxonomy-p1-tree-confirm" style="margin-bottom:30px;">
     <div class="card-title">🌳 Sep 25 — P1 built: the nested curriculum-review popup + its real tree-commit backend</div>
     <div class="card-body">

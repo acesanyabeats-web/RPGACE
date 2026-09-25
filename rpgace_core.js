@@ -18185,10 +18185,83 @@ RPGACE.register('phylumPath', {
           '1. NAMING: every step name is a general CONCEPT label - never a video/song/book title, never an artist name, never a year, never platform text like "| FL Studio Tutorial". If the insight text is itself a content title, name the leaf after the TECHNIQUE it teaches.\n' +
           '2. NO NEAR-DUPLICATE SIBLINGS: if an existing leaf (or a batch leaf listed above) already covers this concept or a facet of it, attach to/extend THAT area - do not create another sibling restating it. Several narrow facets of one concept belong as ONE leaf, not five.\n' +
           '3. STEPS ARE SINGLE RANKS: each newSteps entry is ONE new rank\'s own name - never a "/"-joined path, never a restatement of the attach path or any earlier step, never two ideas joined by "; then" or similar.\n' +
-          '4. DEPTH: the rank chain is Phylum(0)→Order→Class→Family→Genus→Species→Variant(6) - a placement may NEVER exceed depth 6. Prefer 1-2 new steps; more than 3 is almost always padding.\n\n' +
+          '4. DEPTH: the rank chain starts Phylum(0)→Order→Class→Family→Genus→Species→Variant(6) and may continue past that - a placement may NEVER exceed depth ' + (self.MAX_TREE_DEPTH || 10) + '. Prefer 1-2 new steps for a single insight; more than 3 is almost always padding.\n\n' +
           'Return ONLY JSON: {"fits": true, "attachTo": 12, "newSteps": ["..."], "explainers": ["..."], "justification": "...", "confidenceScore": 8} (attachTo: node NUMBER or null)';
         return self.logic._callGroundWorkerJSON(prompt, 700, undefined, fallbackContext).then(function(parsed) {
           return self.logic._resolvePlacementDecision(parsed, phylumNumber, existing);
+        });
+      });
+    },
+
+    // ══════════════════════════════════════════════════════════════════
+    // Sep 25 2026 — real Phase 4 build, curriculum-restructure spec
+    // (records/2026-09/taxonomy_curriculum_jargon_encyclopedia_merge_
+    // spec_2026-09-25.txt Section 13). The top-down counterpart to
+    // decidePlacementScored above: that function reacts to ONE insight
+    // at a time; this designs a whole real CURRICULUM breakdown for a
+    // phylum in one call — "the next biggest separable chunks... like a
+    // curriculum... until one jargon word is left," Alex's own words.
+    // Reuses the same numbered-indented existing-structure list
+    // decidePlacementScored already uses (rule 8, rule 11 token cost) so
+    // Oracle designs AROUND real existing content instead of duplicating
+    // it — real, checked need: Phylum 12's own 6 bucket-style leaves + 1
+    // dangling branch chain (Section 10b) are exactly the kind of
+    // pre-existing content a blind top-down pass would otherwise repeat.
+    //
+    // Returns a real tree: [{name, explainer, children: [...]}, ...],
+    // the exact shape _showTreeConfirm/_insertTreeNodes already expect —
+    // built for that popup from the start, not adapted after the fact.
+    // A defensive recursive sanitizer runs on the parsed JSON before it
+    // ever reaches the UI (rule 5 — never trust model JSON blindly):
+    // drops any node with an empty/missing name, and hard-stops
+    // recursion at MAX_TREE_DEPTH below the phylum root regardless of
+    // how deep the model's own JSON claims to nest (the same "guard
+    // holds even if the prompt is ignored" discipline sanitizePlacement
+    // already established for the bottom-up path) — on top of, not
+    // instead of, _insertTreeNodes' own real per-node depth check at
+    // insert time.
+    _generateCurriculumTree: function(phylumNumber) {
+      var self = RPGACE.modules.phylumPath;
+      var cap = self.MAX_TREE_DEPTH || 10;
+      return RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&order=path.asc').then(function(existing) {
+        existing = existing || [];
+        var pathList = existing.length
+          ? existing.map(function(n, i) {
+              var indent = '';
+              for (var d = 0; d < (n.depth || 0); d++) indent += ' ';
+              return (i + 1) + '.' + indent + n.name + (n.node_type === 'leaf' ? ' *' : '');
+            }).join('\n')
+          : '(nothing mapped yet - this is a genuinely fresh phylum)';
+
+        var prompt = 'You are a private tutor with a PhD in ' + RPGACE.utils.phylumContext(phylumNumber) + ' as a formal academic discipline, designing a real curriculum syllabus for this whole subject.\n\n' +
+          'EXISTING STRUCTURE already in this phylum (numbered; indentation = depth under the phylum root; * marks a leaf) - design AROUND this, never recreate or duplicate anything already listed here:\n' + pathList + '\n\n' +
+          'TASK: design the real curriculum breakdown for this discipline, like a syllabus outline, not a flat list of trivia.\n\n' +
+          'METHOD: divide the discipline into its biggest genuinely SEPARABLE chunks first (major branches of the subject). Divide each of those into its own next-biggest separable chunks, recursively - using REAL organizing axes where the subject actually has them (e.g. by genre, by era/time period, by technique family, by instrument) rather than inventing arbitrary categories. Keep dividing a branch until it cannot be split further without landing on ONE SPECIFIC, INDIVIDUAL jargon term or concept - that is a real leaf, the bottom of that branch. Not every branch needs to reach the same depth - a genuinely simple sub-area should bottom out sooner than a genuinely deep one.\n\n' +
+          'HARD RULES:\n' +
+          '1. NAMING: every node name is a general CONCEPT/CATEGORY label, never a video/song/book title, never an artist name, never platform text.\n' +
+          '2. NO NEAR-DUPLICATE OF EXISTING CONTENT: if the existing structure above already covers a concept, do not recreate it - design around it instead.\n' +
+          '3. A LEAF IS ONE JARGON TERM: a leaf\'s name is a single specific term/concept, not a bucket covering several unrelated terms at once.\n' +
+          '4. DEPTH: this phylum currently sits at depth 0 (the root) unless the existing structure above already goes deeper - your new branches may go at most ' + cap + ' ranks below the phylum root. Prefer natural depth over padding every branch to the same level.\n' +
+          '5. Give every node a one-sentence explainer/description of what it covers.\n\n' +
+          'Return ONLY JSON: {"tree": [{"name": "...", "explainer": "...", "children": [{"name": "...", "explainer": "...", "children": []}]}]} - a real recursive array of root-level chunks. An empty or absent "children" array means that node is a real leaf.';
+
+        return self.logic._callGroundWorkerJSON(prompt, 4000).then(function(parsed) {
+          var tree = (parsed && parsed.tree) || [];
+          var sanitize = function(nodes, depth) {
+            if (!Array.isArray(nodes) || depth > cap) return [];
+            var out = [];
+            nodes.forEach(function(n) {
+              var name = String((n && n.name) || '').trim();
+              if (!name) return;
+              out.push({
+                name: name,
+                explainer: String((n && n.explainer) || '').trim(),
+                children: sanitize(n && n.children, depth + 1),
+              });
+            });
+            return out;
+          };
+          return sanitize(tree, 1);
         });
       });
     },
@@ -19668,6 +19741,30 @@ RPGACE.register('phylumPath', {
       box.appendChild(btnRow);
     },
 
+    // ══════════════════════════════════════════════════════════════════
+    // Sep 25 2026 — real Phase 4 entry point (the "🌱 Generate Curriculum
+    // Breakdown" button _injectPageShell now injects). Ties the whole
+    // pilot together: generate (logic._generateCurriculumTree) → review
+    // (this module's own _showTreeConfirm) → commit
+    // (logic._insertTreeNodes) — three real, separately-built pieces,
+    // wired here rather than merged into one function, so each stays
+    // independently testable/reusable (rule 8 — _showTreeConfirm/
+    // _insertTreeNodes have no idea this button exists, and shouldn't).
+    _generateCurriculumBreakdown: function() {
+      var self = RPGACE.modules.phylumPath;
+      var phylumNumber = self.PHYLUM_NUM;
+      RPGACE.utils.toast('🌱 Designing curriculum breakdown — this can take a moment...', '#4CAF82', 4000);
+      self.logic._generateCurriculumTree(phylumNumber).then(function(tree) {
+        if (!tree.length) { RPGACE.utils.toast('Oracle returned no real breakdown to review', '#CC4A4A', 3500); return; }
+        self.ui._showTreeConfirm(phylumNumber, null, tree, function(finalTree) {
+          self.logic._insertTreeNodes(phylumNumber, null, finalTree, { source: 'oracle', title: 'Curriculum breakdown' })
+            .then(function() { self._loadNodesAndRender(self._focusNodeId); });
+        });
+      }).catch(function(e) {
+        RPGACE.utils.toast('Error designing curriculum: ' + e.message, '#CC4A4A', 3500);
+      });
+    },
+
     // Confirm/deny popup shown between article generation and saving - same
     // checkpoint pattern as _showPlacementConfirm, just simpler (nothing to
     // edit, an article is either worth keeping or it isn't). Approve saves
@@ -19743,6 +19840,22 @@ RPGACE.register('phylumPath', {
       // Switcher only shows once there's more than one enabled phylum.
       if (self.ENABLED_PHYLA.length > 1) {
         document.getElementById('pp-phylum-switcher').appendChild(self.ui._renderPhylumSwitcher());
+      }
+      // Sep 25 2026 — real Phase 4 entry point, curriculum-restructure
+      // spec (records/2026-09/taxonomy_curriculum_jargon_encyclopedia_
+      // merge_spec_2026-09-25.txt Section 13). Same real injection point
+      // as jargonEncyclopedia's own button (right after #pp-phylum-title,
+      // this page shell only ever builds once — the early-return guard
+      // above), manual-trigger-only per the module's own standing
+      // convention (no auto-fire on a real Oracle curriculum-design call).
+      var titleEl = document.getElementById('pp-phylum-title');
+      if (titleEl && titleEl.parentNode && !document.getElementById('pp-gen-curriculum-btn')) {
+        var genBtn = document.createElement('button');
+        genBtn.id = 'pp-gen-curriculum-btn';
+        genBtn.textContent = '🌱 Generate Curriculum Breakdown';
+        genBtn.style.cssText = 'margin-bottom:10px;margin-left:8px;padding:6px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;display:inline-block;';
+        genBtn.onclick = function() { self.ui._generateCurriculumBreakdown(); };
+        titleEl.insertAdjacentElement('afterend', genBtn);
       }
     },
 
@@ -20151,6 +20264,7 @@ RPGACE.register('phylumPath', {
   _condenseIfLarge: function(text, context) { return this.logic._condenseIfLarge(text, context); },
   _checkFallbackAnswers: function() { return this.logic._checkFallbackAnswers(); },
   decidePlacementScored: function(insightText, phylumNumber, priorLeaves, fallbackContext) { return this.logic.decidePlacementScored(insightText, phylumNumber, priorLeaves, fallbackContext); },
+  _generateCurriculumTree: function(phylumNumber) { return this.logic._generateCurriculumTree(phylumNumber); },
   _resolvePlacementDecision: function(parsed, phylumNumber, existing) { return this.logic._resolvePlacementDecision(parsed, phylumNumber, existing); },
   resumeFallbackPlacement: function(rawAnswerText, phylumNumber) { return this.logic.resumeFallbackPlacement(rawAnswerText, phylumNumber); },
   sanitizePlacement: function(attachPath, attachDepth, newSteps) { return this.logic.sanitizePlacement(attachPath, attachDepth, newSteps); },
@@ -20174,6 +20288,7 @@ RPGACE.register('phylumPath', {
   _renderTree: function() { return this.ui._renderTree(); },
   _showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject) { return this.ui._showPlacementConfirm(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject); },
   _showTreeConfirm: function(phylumNumber, attachNode, treeNodes, onAccept, onReject) { return this.ui._showTreeConfirm(phylumNumber, attachNode, treeNodes, onAccept, onReject); },
+  _generateCurriculumBreakdown: function() { return this.ui._generateCurriculumBreakdown(); },
   _showArticleConfirm: function(node, articleTitle, text, onApprove, onDeny) { return this.ui._showArticleConfirm(node, articleTitle, text, onApprove, onDeny); },
   _injectNavTab: function() { return this.ui._injectNavTab(); },
   _injectPageShell: function() { return this.ui._injectPageShell(); },

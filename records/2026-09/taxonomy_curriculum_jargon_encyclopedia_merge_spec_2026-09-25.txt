@@ -645,3 +645,52 @@ node --check clean, re-minified, cache-bust bumped 20260925c->
 direct structural re-read (closure scoping across the recursive
 render/delete functions, the freshly-added-node-with-no-children
 edge case in countNodes). Untested by Alex's own hand yet.
+
+=====================================================================
+13. PHASE 4 BUILT (Alex's own ask: "Next phase"), Sep 25 2026
+=====================================================================
+phylumPath.logic._generateCurriculumTree(phylumNumber) — the top-down
+  counterpart to decidePlacementScored. One real Oracle call
+  (max_tokens 4000, single-call not extractor+worker for this first
+  pass — a real, named simplification, not an oversight) designs a
+  whole curriculum breakdown: biggest separable chunks first,
+  recursive subdivision using real axes (genre/era/technique family)
+  where the subject has them, bottoming out at one specific jargon
+  term per leaf. Reuses decidePlacementScored's own numbered-indented
+  existing-structure listing (rule 8/11) so Oracle designs around
+  real existing content — checked real need, not hypothetical: Phylum
+  12's 6 bucket-style leaves + 1 dangling branch (Section 10b) are
+  exactly what a blind pass would have recreated. A defensive
+  recursive sanitizer runs on the parsed JSON before the UI ever sees
+  it — drops empty names, hard-stops at MAX_TREE_DEPTH regardless of
+  how deep the model's own JSON claims to nest (on top of, not
+  instead of, _insertTreeNodes' own real per-node depth check at
+  insert time — defense in depth, not redundancy).
+
+phylumPath.ui._generateCurriculumBreakdown() — the real entry point,
+  reachable from a new "🌱 Generate Curriculum Breakdown" button
+  injected into the Phylum Path page shell (same real injection point
+  jargonEncyclopedia's own button uses). Wires the 3 independently-
+  built pieces together (generate -> _showTreeConfirm ->
+  _insertTreeNodes) without merging them into one function, so each
+  stays independently testable/reusable.
+
+Real, related bug fixed in passing: decidePlacementScored's own
+  prompt (used for EVERY bottom-up insight placement, not just this
+  new function) still told Oracle the pre-Phase-1a "never exceed
+  depth 6" rule — stale the moment MAX_TREE_DEPTH was raised to 10,
+  meaning Oracle was being held to a stricter real limit than the
+  code actually enforces. Fixed to cite the real, current cap.
+
+Real, honest status: the full pilot MECHANISM is built and wired end
+to end, but the button has not actually been clicked yet — no real
+phylum has been through this pass. That is the genuine next real
+step, not yet done. Phylum 12 remains the natural real candidate
+(already reviewed together in detail this session, Section 10b).
+
+node --check clean, re-minified, cache-bust bumped 20260925d->
+20260925e. No live browser this session — verified by direct
+structural re-read only (the sanitizer's depth-cap recursion, the
+generate->review->commit wiring, the self/self.ui resolution inside
+_injectPageShell's own button handler). Untested by Alex's own hand
+yet.
