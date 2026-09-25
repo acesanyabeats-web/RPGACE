@@ -694,3 +694,74 @@ structural re-read only (the sanitizer's depth-cap recursion, the
 generate->review->commit wiring, the self/self.ui resolution inside
 _injectPageShell's own button handler). Untested by Alex's own hand
 yet.
+
+=====================================================================
+14. DUAL AUTHORSHIP (Alex's own ask: "I don't want oracle to be the
+    only one to propose and build it... make each other aware of
+    changes via your own communication taxonomy system"), Sep 25 2026
+=====================================================================
+Real mechanism: taxonomy_decision_log.source + taxonomy_tree.sources
+  already tag every write by real origin (existing infrastructure,
+  zero new schema, rule 8) - a new distinct value, 'claude_code_
+  prebuild', gives direct Claude Code authorship the same real
+  attribution the JS mechanism's own 'oracle'/'phylum_path' tags
+  already have. Coherence was already structurally guaranteed before
+  this - both real authors re-fetch live tree state before proposing
+  anything (the same numbered-indented-structure pattern both
+  decidePlacementScored and _generateCurriculumTree use) - this makes
+  WHO built WHAT honestly traceable, which is the real, additive part.
+
+Real worked example, not just a mechanism: designed and wrote 2 real
+  new top-level Orders for Phylum 12 directly via Supabase SQL
+  (mcp__Supabase__execute_sql), matching the exact schema
+  _insertTreeNodes would produce:
+  - "Studio & Workflow Slang" (process/action vocabulary, genuinely
+    separable from the existing 6 mood/emotion-description leaves):
+    Sampling & Chopping Vocabulary (Chop, Flip, Loop Kit), Arrangement
+    & Mix Action Vocabulary (Riding the Fader, Bouncing, In the
+    Pocket), Creative-Process Vocabulary (Cooking Up, Type Beat).
+  - "Generational Slang Shift (UK Hip-Hop/Drill/Grime)" (the real
+    time-period axis Alex flagged earlier this session): 2000s Garage
+    & Grime Era Vocabulary (Sick, Riddim), 2010s Trap-Influenced UK
+    Vocabulary (Trapped Out, Certi), 2020s Drill & Hyperpop-Crossover
+    Vocabulary (Sliding, Digi).
+  22 new rows total (2 Orders + 6 Classes + 14 leaves). Real, honest
+  uncertainty flagged to Alex before commit: the slang-term meanings
+  are Claude's own best real-world knowledge, not certain - Alex is
+  the real domain expert here more than anywhere else this session.
+  Alex's real answer: "commit as-is" (not "let me correct terms
+  first") - real, informed approval, not a guessed default.
+
+Real verification after commit: Phylum 12 went from 9 rows to 31 rows
+  (depth 1: 3 branches + 6 leaves; depth 2: 7 branches; depth 3: 14
+  leaves + 1 pre-existing dangling branch) - confirmed by direct
+  re-query, exact match to the intended structure, no duplicates, no
+  broken parent/depth threading.
+
+Real, explicit scope boundary: Encyclopedia companion entries were
+  NOT created for these 14 leaves this pass - a deliberate choice, not
+  an oversight. The core ask was the dual-authorship mechanism plus a
+  real worked example, not full insight-collection population (that's
+  still a real, separate, later task per the standing Phase 1c
+  mechanism).
+
+Oversight fixed to match, same session: CLAUDE.md's own stale "38
+  nodes" Aug 11 claim corrected with the real current count and the
+  dual-authorship mechanism documented (its own "Real /CEO Loop 1+2
+  build, Aug 11" bullet). oracleAppGrounding.SELF_KNOWLEDGE updated to
+  describe both real authorship paths. check_self_knowledge_
+  contradictions.py and check_self_knowledge_staleness.py both clean
+  after the edit.
+
+Real, caught-in-the-act bug, worth keeping as its own lesson: a JS
+  single-quote apostrophe escaping mistake (author's instead of
+  author\'s) inside the SELF_KNOWLEDGE edit - exactly the rule-12
+  landmine this file's own history already names (the "SQL vs JS
+  escaping cross-contamination" risk from doing both kinds of work in
+  the same pass) - caught immediately by node --check, fixed same
+  pass, real proof the standing discipline works.
+
+node --check clean, re-minified, cache-bust bumped 20260925e->
+20260925f. Untested by Alex's own hand in the live UI (the tree data
+itself was reviewed and approved by him directly in chat, not via the
+_showTreeConfirm popup, since no browser was available this session).
