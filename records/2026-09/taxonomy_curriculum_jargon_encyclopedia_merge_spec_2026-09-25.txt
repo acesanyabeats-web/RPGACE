@@ -362,4 +362,110 @@ yet an approved plan.
   phylum, not 12, already done" framing — Phylum 12 may in fact be a
   live, real candidate too, not "already done." Reported to Alex in
   chat; CLAUDE.md not yet corrected (needs his steer on which of the
-  3 real explanations is true before writing a correction).
+  3 real explanations is true before writing a correction). Alex's
+  own real answer, asked directly: "investigate later, proceed now" —
+  Phylum 12 treated as a real flat-phylum candidate for now; the real
+  root-cause dig is a separate, deferred task, not blocking Phase 4.
+
+=====================================================================
+9. PHASE 4 IDEATION — /free-for-all-debate (Alex's own ask: real
+   /interrogation+/drift+/paranoia-grounded UI/visualization ideas for
+   the RPGACE app itself, not the dev-facing Galaxy Map), Sep 25 2026
+=====================================================================
+Real skill loaded and run at a proportionate scale (its own guardrail:
+"don't manufacture extra competitors just to look thorough") — 5 real
+problems, 2 competitors each, grounded in ACTUAL existing UI mechanisms
+in this codebase (rule 3: grep before proposing new UI behavior), not
+free-floating concepts.
+
+P1. Show a freshly-generated top-down curriculum breakdown for
+    review/approval before it commits.
+    Competitor A: generalize _showPlacementConfirm's per-row edit
+    pattern from a flat array into a nested, editable TREE popup —
+    Alex sees the whole proposed subtree, can edit/delete/rename any
+    node inline, Accept commits top-to-bottom via _insertNewSteps
+    (called once per branch, same proven chain-and-thread-the-id
+    pattern).
+    Competitor B: reveal level-by-level (Order -> confirm -> Classes
+    -> confirm -> ...) instead of the whole tree at once.
+    CONVERGED: adopt A as the default (matches Alex's own "what the
+    phylum path would look like when generated" framing), each branch
+    node collapsible/expandable (folding B's real value in as a UX
+    affordance, not a separate flow) — same collapsible pattern
+    already used in this project (Galaxy Map's river-archive
+    <details> section).
+
+P2. Make the depth-10 Phylum->...->jargon-leaf hierarchy navigable at
+    a glance.
+    Competitor A: a persistent, always-visible rank-ladder breadcrumb
+    (Phylum->Order->Class->...->current), each rank clickable.
+    Competitor B: a collapsed whole-phylum mini-map (nested-ring
+    bubble view, CONCEPT reused from the Galaxy Map's own bubble-ring
+    renderer, never its literal Python/static-HTML code) as an
+    optional toggle.
+    CONVERGED: both, not a fork — the breadcrumb (cheap, high value,
+    build now) plus a "🌐 Web view" toggle on the phylum root page
+    (same table/map toggle convention the Galaxy Map itself just
+    standardized this session) — B is a real, slightly bigger lift,
+    sequenced after the breadcrumb.
+
+P3. Visualize a jargon leaf + its real insight collection (Phase 1c)
+    as one unit.
+    Competitor A: reuse the Phase 1c glossary popup as-is, reachable
+    from a leaf click in the drill-down tree too (a 2nd entry point
+    into the SAME view, not a new one).
+    Competitor B: a richer dedicated "leaf card" — explainer + insight
+    timeline + fusion links FROM this leaf + a generate-article button
+    in one screen.
+    CONVERGED: B is really "A's insight-list renderer promoted to a
+    full destination" — adopt B, but implemented by extending Phase
+    1c's own insight-list rendering code (rule 8: one renderer, reused
+    in both the compact glossary row and the full leaf-card), not a
+    second one.
+
+P4. Fusion links across phyla as a real web, not just per-node.
+    Competitor A: a live in-app hub-and-spoke view centered on a
+    chosen node, radiating its real fusion links (CONCEPT reused from
+    the Galaxy Map's bubble/drilldown pattern).
+    Competitor B: a simpler filterable list — every fusion link across
+    all phyla, grouped by phylum-pair, reusing taxonomyReviewQueue's
+    existing card-list UI.
+    REAL, NAMED FORK (not resolved by convergence): A is genuinely the
+    bigger, more ambitious build — and it's already Phase 6 ("Jargon
+    Web bubble view") in the ratified spec. Recommendation: build B
+    now (cheap, reuses an existing pattern, real immediate utility),
+    keep A as Phase 6 exactly as already planned — don't pull Phase 6
+    forward under Phase 4's own scope (rule 11).
+
+P5. Any other real function where Alex's review is a bottleneck.
+    Competitor A: a real review-queue entry for curriculum-breakdown
+    proposals (reusing taxonomy_proposals + taxonomyReviewQueue's own
+    card-list UI) so 21 phyla's worth of breakdowns can be reviewed
+    asynchronously, not forced through one popup per phylum in one
+    sitting.
+    Competitor B: a real diff view for RE-running curriculum design on
+    an ALREADY-PARTIALLY-BUILT phylum — shows what would be ADDED
+    before committing (CONCEPT reused from cookingOracle's proven
+    Accept/Deny-gated diff-only recipe revision, RECIPE_UPDATE_JSON).
+    CONVERGED: both real and complementary. B has real, immediate
+    relevance beyond general usefulness — it's the SAFE way to re-run
+    curriculum design on Phylum 12 specifically, given Section 8f's
+    finding (existing partial structure, not a blank phylum).
+
+COUNCIL OF 5 — FINAL ORDERED PLAN for Phase 4's real build scope:
+  1. P1's nested curriculum-review popup — the core Phase 4 deliverable,
+     since piloting curriculum generation NEEDS a real review UI first.
+  2. P3's leaf-card view — cheap, direct extension of Phase 1c.
+  3. P2's breadcrumb rank ladder — cheap, high value.
+  4. P4 Competitor B — fusion-link browse list, cheap, reuses an
+     existing pattern.
+  5. P5 Competitor B — the diff view for re-running curriculum design
+     on a partially-built phylum (Phylum 12's own real use case).
+  DEFERRED, named plainly, not silently dropped: P2 Competitor B
+  (phylum mini-map/web toggle) and P4 Competitor A (full Fusion Web) —
+  both real, good ideas, bigger lifts, not needed for Phase 4's actual
+  pilot to work. P4 Competitor A stays exactly where it already was:
+  Phase 6.
+
+Nothing in this section has been built yet — a real ideation pass,
+ready for Alex's ratification before Phase 4 code starts.
