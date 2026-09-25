@@ -469,3 +469,98 @@ COUNCIL OF 5 — FINAL ORDERED PLAN for Phase 4's real build scope:
 
 Nothing in this section has been built yet — a real ideation pass,
 ready for Alex's ratification before Phase 4 code starts.
+
+=====================================================================
+10. THE "PRE-BUILT TABLE-PER-LEVEL, ORACLE-TRAVERSABLE" IDEA — Alex's
+    own verbatim request, real /paranoia+/drift+/CEO-shaped scrutiny,
+    Sep 25 2026
+=====================================================================
+10a. ALEX'S OWN VERBATIM REQUEST:
+"i want the phylum breakdown actually pre-built, with every phylum
+having a table with links to next step, the link opens the class
+table with description of itself, links to order table down below,
+and jargon node leaves and fusion leaves that end at the step. this
+structure should go all the way down to an individual jargon
+penultimate within the phylum path (context and concepts that are
+pre-loaded and pre-associated with the word) this way when oracle
+hits a topic, it can go down to give specifics, and go up to see what
+can be combined."
+
+10b. Real Phylum 12 breakdown shown to Alex first (per his own direct
+  ask), from the live query already run for Section 8f: 6 real leaves
+  directly under the phylum root (Cross-Sensory Language, Descriptive
+  Genre Language, Emotional Colour Descriptors, Genre-Specific Mood
+  Vocabulary (UK Drill/Trap), Mood-Based Production Language,
+  Sonic-to-Visual Mapping — each a bucket-style leaf whose explainer
+  lists MULTIPLE covered jargon words, not one term each — a real,
+  separate finding from Section 8f: even these leaves don't yet match
+  the "one jargon word per leaf" model), plus one real orphaned
+  3-level branch chain (Visual Identity & Mood Mapping -> Colour and
+  Tone Language by Genre -> Russian Trap & Hyperpop Visual Palette)
+  that dead-ends with no leaves under it at all.
+
+10c. REAL, LOAD-BEARING FINDING WHILE PULLING THIS DATA (not part of
+  the ask, surfaced because it was found): oracleAppGrounding.
+  SELF_KNOWLEDGE (the live, Oracle-facing self-awareness string) ALSO
+  claimed "phyla 1-10/12/13 are fully built (deep hierarchy + fusion
+  links + hand-test)" — a stronger, more actively-harmful version of
+  CLAUDE.md's own stale claim, since this one was actively feeding a
+  false answer to Oracle conversations in production. Fixed same
+  session (commit 730bc5a) — a small, safe, Tier-1 correction, kept
+  separate from the deferred "investigate root cause" decision (Alex's
+  own "investigate later, proceed now" answer was about WHY the
+  discrepancy exists, not about whether Oracle should keep repeating a
+  false claim in the meantime).
+
+10d. Real /drift finding: this idea is NOT a small addition to Phase
+  4's popup list — it substantially SUPERSEDES/subsumes P1 (curriculum
+  review), P2 (hierarchy navigability) and P3 (jargon leaf + insight
+  view) into one unified table-based system, and adds a genuinely NEW
+  requirement Phase 4 never scoped: Oracle itself traversing this
+  structure at chat-time ("go down for specifics, go up to combine").
+  Not a contradiction of the ratified plan — a real reshaping of it,
+  named explicitly rather than silently absorbed.
+
+10e. Real evidence gathered on the one genuinely new technical
+  requirement (Oracle traversal): oracleAppGrounding already has a
+  proven, live keyword-gate pattern (TRIGGER_KEYWORDS/ANATOMY_KEYWORDS
+  gating SELF_KNOWLEDGE/a per-module anatomy lookup into the system
+  prompt, rule 11 — never pay tokens on every message for a block only
+  relevant sometimes) — this is the real, reusable mechanism a
+  taxonomy-topic grounding gate would extend, not a new pattern from
+  scratch. But a fixed keyword LIST doesn't scale to matching
+  arbitrary jargon terms across 21 phyla — the real analog is
+  _findFusionLinks' own free keyword-PREFILTER-then-real-lookup
+  approach (score candidates by word overlap, only proceed past a real
+  threshold), not a hardcoded phrase list.
+
+10f. Real honest risk case (paranoia's "why not/what could go wrong"),
+  not silently skipped:
+  - This is now large enough to be its own tracked plan, not an ad hoc
+    build layered onto Phase 4 — real UI work (a new table-based
+    navigation paradigm) + real backend work (an Oracle-grounding gate
+    that scales past a fixed keyword list) + a real design fork on
+    whether it replaces or supplements the existing drill-down tree
+    page.
+  - Building this NOW, before Phase 5 has filled in real depth for
+    phyla 11-20 (currently flat/thin per Section 8e's baseline), means
+    most of the pre-built tables would render nearly empty at first —
+    a real sequencing question, not just a build-order preference.
+  - A live per-message lookup against a growing jargon_encyclopedia
+    (thousands of terms once Phase 5 completes) needs to stay cheap at
+    scale (rule 11) — needs real design, not just "wire it up."
+
+10g. Real /interrogation questions, asked directly (not guessed):
+  Q6. Should "Oracle can go down to give specifics" extend the
+      existing oracleAppGrounding keyword-gate pattern (cheap, proven,
+      but a fixed phrase list), or use a live keyword-scored lookup
+      against jargon_encyclopedia itself (scales to arbitrary terms,
+      same shape as _findFusionLinks' own free prefilter)?
+  Q7. Does the new pre-built table system REPLACE the current
+      drill-down tree page, or exist alongside it as a second view?
+  Q8. Build the table UI now (rendering thin/near-empty tables for the
+      11 still-flat phyla) so the shape exists early, or wait until
+      Phase 5 has filled in real depth so the UI only ever shows
+      real, substantial content?
+
+Answers pending — see chat for Alex's real responses once given.
