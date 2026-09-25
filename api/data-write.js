@@ -192,6 +192,15 @@ const ALLOWED_TABLES = new Set([
   // FK reassignment) happens alongside it, real Tier-3-adjacent stakes
   // given there is no Supabase backup, per the standing landmine.
   'ingredient_aliases',
+  // 2026-09-25 - jargon_encyclopedia anchor-table restructure (records/
+  // 2026-09/taxonomy_curriculum_jargon_encyclopedia_merge_spec_2026-09-
+  // 25.txt, Section 17-19). Replaces the old jargon_encyclopedia VIEW
+  // with a real table, created anon_read_only/authenticated_all FROM THE
+  // START (same "flip RLS first, then allowlist" by construction as
+  // oracle_actions/quest_log above). Same rule-4 human-checkpoint status
+  // gate as taxonomy_tree - phylumPath's curriculum-commit path is the
+  // intended real write source once Step C2/D land.
+  'jargon_encyclopedia',
 ]);
 
 async function handleBundleDeliverables(req, res, serviceKey) {

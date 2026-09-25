@@ -1036,3 +1036,171 @@ STEP E (later follow-up, explicitly out of this plan's completion bar,
 
 Real open question surfaced to Alex, needing his answer before Step C
   runs: 16.5's migrate-vs-archive fork for the 260 existing leaves.
+
+=====================================================================
+18. ALEX'S REAL ANSWER ON 16.5 - OPTION (b), PLUS A NEW REVIEW STEP
+    HE ADDED THAT THE RED PLAN DID NOT ORIGINALLY HAVE
+=====================================================================
+
+18.1 ALEX'S ANSWER, VERBATIM
+"Archive so b, then we review archived to see what fits, what needs
+changing and what needs removal"
+
+18.2 WHAT THIS ACTUALLY DECIDES
+Resolves 16.5: option (b) - the 260 existing accepted leaves are
+  archived along with the branches, NOT pre-migrated into the new
+  jargon_encyclopedia table before archiving.
+
+But this is not just "discard and regenerate fresh" (the plain reading
+  of option (b) as originally offered) - Alex adds a real third step:
+  after archiving, REVIEW the archived content itself, per-item, to
+  decide what fits (carry forward as-is), what needs changing (carry
+  forward edited), and what needs removal (stays archived, dropped for
+  good). This is more careful than either original option alone - nothing
+  already-reviewed gets silently thrown away, but nothing gets blindly
+  auto-migrated either. A real, deliberate curation pass in between.
+
+18.3 REVISED STEP C / NEW STEP C2 IN THE RED PLAN (Section 17)
+STEP C (unchanged mechanism, now explicit on scope): archive ALL
+  taxonomy_tree rows currently status IN ('accepted','active') -
+  branches AND leaves, all 21 phyla (671 rows total: 410 accepted
+  branch + 1 active branch + 260 accepted leaf) - to status='archived'.
+  Snapshot (Step B) already taken and committed FIRST:
+  records/2026-09/taxonomy_tree_snapshot_2026-09-25.json, 671 rows,
+  verified count matches live query.
+
+STEP C2 (NEW, Alex's own addition, inserted between C and D): a real
+  review tool over the 260 archived LEAF rows specifically (branches
+  don't carry real term content worth individually reviewing - their
+  job was pure organization, which Step F rebuilds from scratch
+  anyway). For each archived leaf: Keep as-is (migrate its name/
+  explainer/deep_content straight into a new jargon_encyclopedia
+  anchor row, status='pending' pending the SAME human-gate rule 4
+  already requires) / Edit then keep (same, with the content changed
+  before migrating) / Discard (stays archived, never migrated,
+  Step D's fresh generation covers that gap for its phylum instead).
+  Reuses the existing `_showTreeConfirm` popup's real arm/confirm/edit
+  pattern (rule 8 - not a new UI mechanism). Real, honest scope on
+  quantity: 260 items is a lot for a fully manual pass - an AI-
+  generated pre-triage suggestion (a first-guess Keep/Edit/Discard per
+  item, WITH a one-line reason, never auto-applied) is offered as a
+  starting point Alex can accept/override per item, same "AI proposes,
+  human confirms" shape as everywhere else in this project.
+
+STEP D (unchanged, now explicitly scoped to the GAP): bulk-generate
+  new terms to bring each phylum's real jargon_encyclopedia count up
+  toward ~90 - the number generated per phylum is now (~90 minus
+  however many of that phylum's archived leaves survived Step C2's
+  review), not a flat 90 from zero. A phylum that already had strong
+  archived content (e.g. #1's 75 leaves) may need very few new terms;
+  a phylum starting from 0 (#21) needs close to the full ~90 generated
+  fresh.
+
+18.4 REAL EXECUTION THIS PASS
+Given Alex's answer directly authorizes the archive operation itself
+  (the exact bulk UPDATE Tier 3 discipline required an explicit stop
+  for), Steps A/B/C were executed this same pass:
+  - Step B (snapshot): done and committed BEFORE any write, per 18.3.
+  - Step A (create table): see Section 19 below for real schema.
+  - Step C (archive): see Section 19 below for real row-count
+    before/after verification.
+  Step C2 (review UI) and Step D (bulk generation) are real, separate,
+  larger build items - not attempted in the same pass; Step C2 is
+  built next as the immediate follow-on (the tool Alex needs to
+  actually do the review he asked for).
+
+=====================================================================
+19. REAL EXECUTION RESULTS - STEPS A/B/C/C2 SHIPPED THIS PASS
+=====================================================================
+
+STEP A (real, verified): DROP VIEW jargon_encyclopedia; CREATE TABLE
+  jargon_encyclopedia (id uuid pk, term text, phylum_number int,
+  explainer text, deep_content jsonb default '{}', status text
+  default 'pending', source jsonb default '[]', taxonomy_node_id uuid
+  FK -> taxonomy_tree.id, created_at/updated_at). RLS: anon_read_only
+  (SELECT) + authenticated_all (ALL), confirmed live via pg_policies -
+  same posture as every other project table. Added to api/data-write.js
+  ALLOWED_TABLES (real code change, api/_context.js's requireAuth()
+  gate applies the same as every other secureWrite table).
+
+STEP B (real, verified): full taxonomy_tree exported BEFORE any write
+  - records/2026-09/taxonomy_tree_snapshot_2026-09-25.json, 671 rows,
+  row count independently verified against the live table (410
+  accepted branch + 1 active branch + 260 accepted leaf = 671).
+  Committed to main before Step C ran.
+
+STEP C (real, verified): UPDATE taxonomy_tree SET status='archived'
+  WHERE status IN ('accepted','active') - ran across all 21 phyla.
+  Post-write query confirms exactly 411 archived branch + 260 archived
+  leaf = 671, matching the snapshot count exactly, zero rows remain
+  accepted/active. Fully reversible (status flag, not a DELETE) -
+  satisfies "scrap... altogether" functionally (every live consumer -
+  phylumPath's drill-down pages, taxonomy_map.html, the jargon glossary
+  - now sees an empty/fresh tree per phylum) without an unrecoverable
+  write.
+
+REAL REGRESSION CAUGHT AND FIXED IN THE SAME PASS: dropping the old
+  jargon_encyclopedia view broke jargonEncyclopedia.ui._openGlossary/
+  _renderTerms, which still requested the old view's column names
+  (node_id/name/path) that don't exist on the new table (id/term, no
+  path column at all). Fixed before this pass ended - the glossary now
+  reads the real new schema (id/term/phylum_number/explainer/
+  taxonomy_node_id, filtered status=eq.accepted), correctly shows an
+  honest empty state naming the Sep 25 restructure (not a raw query
+  error) since the table starts genuinely empty, and distinguishes a
+  term with no taxonomy_node_id yet ("anchor only, not yet placed in
+  the tree") from one that's been attached and has real linked
+  Encyclopedia insights.
+
+STEP C2 (real, built and shipped, NOT yet run by Alex - the tool
+  exists, the actual 260-item review is real, separate human work):
+  a new "🗄️ Review Archived Terms" button on the Phylum Path page
+  shell, next to the existing curriculum-generation button. Opens a
+  real one-item-at-a-time queue (phylumPath.logic._fetchArchivedLeafQueue,
+  scoped to the currently-open phylum) over that phylum's archived
+  leaves. Per item: editable term/explainer fields double as both
+  "keep as-is" (untouched) and "edit then keep" (changed first) - one
+  action, not two buttons, since both resolve to the same write path.
+  Keep/Edit -> phylumPath.logic._resolveArchivedLeaf inserts a real
+  jargon_encyclopedia row (status='accepted' directly - Alex's own
+  click on this popup IS the rule-4 human checkpoint, not a second
+  pending gate) and flips the source taxonomy_tree row to a new,
+  additive 'archived_reviewed' status so it never resurfaces in the
+  queue. Discard flips the same status with no jargon_encyclopedia
+  insert - the term is dropped for good but the original archived row
+  stays in the database (not deleted), same non-destructive discipline
+  as everything else this pass. A "Skip for now" option leaves a row
+  at 'archived' (still findable later) for anything Alex isn't ready
+  to decide on yet.
+
+REAL, HONEST SCOPE NOTE: the AI pre-triage suggestion named in Section
+  16.3/18.3 (a first-guess Keep/Edit/Discard + one-line reason,
+  batched, never auto-applied) was NOT built this pass - the manual
+  review mechanism is real, complete, and immediately usable on its
+  own; pre-triage is a real, separate, smaller enhancement that can be
+  added on top without changing the underlying write path, named here
+  rather than silently dropped.
+
+Verification: node --check rpgace_core.js clean at every edit point,
+  api/data-write.js checked separately, full re-minify (52% size
+  reduction, node --check clean on the minified output per
+  scripts/minify_client.js's own standing safety check), cache-bust
+  bumped 20260925f -> 20260925g.
+
+STEP D (bulk-generate ~90 terms/phylum, filling the gap after C2) is
+  real, separate, larger follow-on work - not attempted this pass.
+  Alex needs to work through Step C2's real review queue (or enough of
+  it) before Step D's per-phylum generation target can be computed
+  honestly (the target is ~90 minus however many archived leaves
+  survive review, per Section 18.3).
+
+Real, same-pass follow-through: oracleAppGrounding.SELF_KNOWLEDGE's own
+  TAXONOMY paragraph (previously describing phyla 1-10 depth, Phylum
+  12's real Orders, and a "structurally clean" tree) was rewritten to
+  describe the real current state - the full archive, the new anchor
+  table, the real review tool - rather than left stale and confidently
+  wrong the way it went undetected for 28 days earlier this same week
+  (see the Sep 23 2026 staleness-check build this rule now catches).
+  check_self_knowledge_contradictions.py and check_self_knowledge_
+  staleness.py both run clean after the edit. Re-minified a second
+  time, cache-bust bumped 20260925g -> 20260925h.

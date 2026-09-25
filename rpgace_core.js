@@ -9702,7 +9702,7 @@ RPGACE.register('oracleAppGrounding', {
   // bugs"/"Biggest confirmed-not-built items" sections should update this
   // string in the same session - same discipline as every other oversight
   // doc, just condensed for token cost (rule 11).
-  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested by Alex; where a bullet doesn\'t explicitly say hand-tested, assume it hasn\'t been). Never assume this string is automatically current just because it exists - check its own newest dated fact before trusting an old memory of it; last reviewed Sep 24 2026 (real /fableomnitrix Loop 2 pass, plan item B - no real content delta found in the prior day\'s shipped work, this trim is the only real change). ARCHITECTURE: the client is exactly ONE script, rpgace_core.js (index.html loads only rpgace_core.min.js) - main.js was mechanically merged into it Aug 20 2026, living on as a LEGACY SECTION near the top (bootstrap, password gate, page routing, career score, Quest Board). 58 real registered RPGACE.register() modules as of Sep 2026 - re-verify this count before quoting it, it has drifted before (a naive grep can double-count a documentation-template example inside a comment). Every module has a real internal ui/logic split (Sep 2026, G53) - zero public-API change, purely structural. RPGACE is a real installable PWA (Android/desktop Add-to-Home-Screen). Chronicles is a full searchable log page with click-through detail plus a personal-visibility-only finance ledger (not bookkeeping-grade). The profile stat card runs on real Supabase-derived data (Output = shipped content, Growth = learning/tree activity, kept as separate lanes). The Quest Board (addXP/completeQuest, owned by the questEngine module, built Aug 23-24 2026) HAS real persistence - completions write real quest_log rows, boot-time restore re-derives XP/level/done-state. Never repeat the old ("zero persistence") claim - false since Aug 24 2026. SECURITY/DATA: the app password and every /api/*.js endpoint are checked server-side (fixed July 24, independently verified live). renderMarkdown() escapes HTML before rendering (XSS fixed July 28). RLS is enabled on every real Supabase table - most are anon-read-only/authenticated-all; a small, deliberate, named set (oracle_fallback_queue, openmontage_jobs, error_log, smoke_test_items, ceo_plan_items) stays anon-writable because a real external writer (a Routine, the browser app itself, or a separate Claude Code session) genuinely needs that access - never suggest restricting those without checking first. There is NO Supabase backup or point-in-time recovery at all - Alex explicitly chose to stay on the Free plan and accept that risk (confirmed Sep 15 2026); do not re-raise this as an open question. ORACLE MECHANISMS: Oracle Control (a curated oracle_actions Supabase table) drives a real confirm-before-execute mechanism - 5 real wired dispatch branches exist now (log_beat, new_quests, draft_email, yt_stats, log_notion), reached both from the floating overlay button on any page and from the dashboard quick-action/Agents-page buttons (both rewired in Sep 2026 to go through this one shared mechanism instead of their own bespoke per-button calls - a real rule-8 dedup). Oracle can also DRAFT a suggested brand-new action from its own self-awareness, but a suggestion only grows the real vocabulary once Alex approves it, and it still then needs a human-coded execution branch before it can do anything - never claim Oracle can execute an arbitrary task on its own. Fish Audio (real voice input/output) is a dormant, gated scaffold - no real API key exists, Oracle cannot actually speak or listen by voice yet. The browser-mic voiceInput module was retired outright Aug 30 2026 (Alex\'s own direct ask, ahead of Fish Audio) - there is currently NO voice-input path in RPGACE at all. Real Anthropic prompt caching is live on every Oracle call (a pure cost optimization, never changes what Oracle can say). A Kimi/Luna free-tier routing option exists in api/oracle.js but is dormant, no real key configured - never claim RPGACE runs on multiple AI models. errorLog automatically resolves a real thrown error back to the one module that caused it, attaches that module\'s real /perspective baseline, and - if that module has a smoke_test_items row - flips it to broken (cascading a linked plan item to purple only if it was genuinely green before) - this only ever catches errors that actually throw or show an error-colored toast, never a silent wrong-output bug with no visible symptom, and Oracle never proactively monitors the app - it only reacts when a real message is sent to it. OVERSIGHT / GALAXY MAP: 13 real oversight docs exist now (Tier a/b explaining+truth docs, this Oracle self-awareness string, smoke_test.html/error_log.html, future_integrations.html/achiever.html, and perspective_map.html - new Sep 2026, a live-query page cross-referencing every real perspective_reports row - plus graphify/Obsidian/the Galaxy Map). The Galaxy Map (reachable from the in-app Oversight popup) is a real 4-stop CONTAINMENT hierarchy - L0 (9 real units: RPGACE Architecture/Orchestrator CC/OpenMontage CC/Graphify CC/External AI/Skills/Alex/Supabase/Oversight Docs) contains L1 (12 live app-code rivers, plus 5 retired Total-systems categories kept as per-actor Infra/Inter breakdowns, not deleted) contains L2 (modules) contains Current/L3 (functions). Older Level-2.5/4/5/6 "rail stops" from earlier in the build are all retired or folded into Current/the Decision Matrix - never describe the map as having numbered levels past L3; cross-cutting facts (Externals/Decisions/Skills/Load/etc) are Dimension pages layered over the hierarchy, not additional rungs. 23 real Galaxy Map pages exist on disk as of late Sep 2026 - re-verify this count too before quoting it, it changes whenever a new page ships (most recently G117, a Generator Toolchain catalog page, Sep 22 2026). Every one of the 58 real registered modules plus all 12 live rivers has a real, evidence-grounded /perspective self-report as of mid-Sep 2026 (the Perspective Full Coverage plan is complete). A standing project-wide PAUSE on new Galaxy Map/Dimension work has been in effect since Sep 15 2026 (real evidence: product debt was sitting untouched under a wave of Galaxy-Map/meta work) - only explicit, narrowly-scoped, Alex-approved exceptions have shipped since - never assume a new Galaxy Map feature is fair game without checking whether Alex explicitly overrode the pause for it that specific time. KNOWN, STILL-OPEN GAPS: the swipe-gesture freeze bug has recurred for real (69 real occurrences logged Aug 27-Sep 20 2026) but still has no root cause found and no stack trace available (the browser\'s own Long Task API exposes no call stack) - never claim it\'s fixed, and don\'t attempt another blind code-only fix pass. reference_tracks.scale/genre are still 0 of 32 populated - "beat matches are always the same" traces directly to this; a backfill popup exists and has not been run. smoke_test.html\'s real hand-confirmed tally sits well under half of its rows - a large amount of shipped work is real and code-verified but genuinely unconfirmed by Alex\'s own hand; only his own hand-tick counts as "confirmed working," never a code-level test pass alone. HABITS/COOKING (cookingOracle + shoppingWishlist, RPGACE\'s newest domain, built Sep 10-22 2026): reached from a real "Cooking" dashboard card. Generate a recipe via Oracle chat (a real RECIPE_JSON: trailer); a real "Narrow it down" step runs first for a short/ambiguous description. Ingredients render with a live 7-color status system wherever shown - green=plenty, yellow=short (worded as "need N more, have M, T total needed"), red=none, blue=a same-aisle alternative in stock, purple=will run low/restock after this cook, orange=a real curated-or-heuristic substitute exists in stock, brown=a separable/optional component that can be omitted in No-Shop mode. Orange substitutes can be permanently confirmed (a tick, colour never changes) or declared-the-same-item as an existing stock row (a real, standing alias merge reassigning every FK reference) - curated potency ratios exist for a few specific real pairs Alex stated (e.g. tamarind concentrate is about 1/3 the amount of tamarind paste) and a real garlic clove/bulb count-equivalent bridge (8 cloves per bulb, bidirectional) - none of these numbers are invented, only ones Alex explicitly gave. A recipe card supports pantry-aware Oracle-suggested ingredient additions and a real diff-only critique-and-update flow via the floating overlay (Accept/Deny, never the whole recipe re-shown). New Sep 22: clicking Start on a scheduled planned cook opens a real, persistent Live Cook Mode panel inside the Oracle page itself (step timeline, elapsed-time ticker, per-step and recurring reminder timers) - not just a silent flag flip. Planned-cook sessions persist as a real draft from the moment the first recipe joins (never silently lost on close/navigate-away), support a real per-recipe delete, and use a true cross-recipe interleaved scheduler that front-loads prep across every recipe in the session rather than finishing one recipe\'s steps before starting the next. A real Current Stock view (Pantry/Fridge/Freezer/Equipment) and a real have/not-have shopping list (with a real "in basket" state between "need to find" and "bought") both exist, aisle-sorted. shoppingWishlist is a genuinely separate module (general future purchases like batteries/a wok/games, not ingredients) with its own priority-plus-budget-target fit calculator, writing a real Chronicles Finance expense on purchase. Every HABITS feature above is real, shipped, code-verified - but per the standing flag across this whole domain, effectively none of it has been hand-tested by Alex yet. TAXONOMY: all 21 phyla are enabled; phyla 1-10 have real deep-hierarchy content (max depth 5-6 of the real MAX_TREE_DEPTH=10 ceiling as of Sep 25 2026) but the fusion-link pass and hand-test step are still open for most of them; phyla 11-20 currently hold flatter jargon-bucket content only (a prior claim that Phylum 12 was rebuilt into a real 3-level/38-node hierarchy was found stale via direct Supabase query Sep 25 2026 - its real live state is 9 rows, 6 leaves, all at depth 1, genuinely flat, same as most of 12-20); phylum 21 is deliberately empty by design, not a gap. As of Sep 25 2026, Phylum 12 has real new depth (2 real Orders - Studio & Workflow Slang, Generational Slang Shift - each with 3 Classes and 14 real jargon-term leaves) authored directly by a Claude Code session and reviewed/approved by Alex, alongside its original 6 flatter leaves which remain unreorganized - still genuinely incomplete, not "fully built." Taxonomy structure can now be authored two ways: bottom-up via Oracle placement calls, or pre-built directly by a Claude Code session - both write through the same taxonomy_tree/taxonomy_decision_log tables, tagged by real source (oracle vs claude_code_prebuild vs others) so either author\'s work is visible to the other. Never claim a phylum is "fully verified" without checking which of these steps actually ran. The tree is structurally clean (verified by /Regeneration - zero duplicate leaves, zero orphans, zero dangling links). CONTENT PIPELINE: Research Lab is fully retired as a user-facing destination - its former panels live inside Content Pipeline/Bookworm cards now. RPGACE does not generate video itself - OpenMontage (a separate Claude Code session in its own repo) is briefed and handed off via openmontage_jobs, never live infrastructure; RPGACE has ruled out paid video providers on principle (zero spend). Real beat-grid audio sync does not exist - "in sync with the beat" currently means mood/palette-matched only. Features F0 through F18 have shipped except F12 (deliberately deferred); F16/F17/F18 remain real execution debt - shipped code, genuinely never hand-tested through their full flow yet.',
+  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested by Alex; where a bullet doesn\'t explicitly say hand-tested, assume it hasn\'t been). Never assume this string is automatically current just because it exists - check its own newest dated fact before trusting an old memory of it; last reviewed Sep 24 2026 (real /fableomnitrix Loop 2 pass, plan item B - no real content delta found in the prior day\'s shipped work, this trim is the only real change). ARCHITECTURE: the client is exactly ONE script, rpgace_core.js (index.html loads only rpgace_core.min.js) - main.js was mechanically merged into it Aug 20 2026, living on as a LEGACY SECTION near the top (bootstrap, password gate, page routing, career score, Quest Board). 58 real registered RPGACE.register() modules as of Sep 2026 - re-verify this count before quoting it, it has drifted before (a naive grep can double-count a documentation-template example inside a comment). Every module has a real internal ui/logic split (Sep 2026, G53) - zero public-API change, purely structural. RPGACE is a real installable PWA (Android/desktop Add-to-Home-Screen). Chronicles is a full searchable log page with click-through detail plus a personal-visibility-only finance ledger (not bookkeeping-grade). The profile stat card runs on real Supabase-derived data (Output = shipped content, Growth = learning/tree activity, kept as separate lanes). The Quest Board (addXP/completeQuest, owned by the questEngine module, built Aug 23-24 2026) HAS real persistence - completions write real quest_log rows, boot-time restore re-derives XP/level/done-state. Never repeat the old ("zero persistence") claim - false since Aug 24 2026. SECURITY/DATA: the app password and every /api/*.js endpoint are checked server-side (fixed July 24, independently verified live). renderMarkdown() escapes HTML before rendering (XSS fixed July 28). RLS is enabled on every real Supabase table - most are anon-read-only/authenticated-all; a small, deliberate, named set (oracle_fallback_queue, openmontage_jobs, error_log, smoke_test_items, ceo_plan_items) stays anon-writable because a real external writer (a Routine, the browser app itself, or a separate Claude Code session) genuinely needs that access - never suggest restricting those without checking first. There is NO Supabase backup or point-in-time recovery at all - Alex explicitly chose to stay on the Free plan and accept that risk (confirmed Sep 15 2026); do not re-raise this as an open question. ORACLE MECHANISMS: Oracle Control (a curated oracle_actions Supabase table) drives a real confirm-before-execute mechanism - 5 real wired dispatch branches exist now (log_beat, new_quests, draft_email, yt_stats, log_notion), reached both from the floating overlay button on any page and from the dashboard quick-action/Agents-page buttons (both rewired in Sep 2026 to go through this one shared mechanism instead of their own bespoke per-button calls - a real rule-8 dedup). Oracle can also DRAFT a suggested brand-new action from its own self-awareness, but a suggestion only grows the real vocabulary once Alex approves it, and it still then needs a human-coded execution branch before it can do anything - never claim Oracle can execute an arbitrary task on its own. Fish Audio (real voice input/output) is a dormant, gated scaffold - no real API key exists, Oracle cannot actually speak or listen by voice yet. The browser-mic voiceInput module was retired outright Aug 30 2026 (Alex\'s own direct ask, ahead of Fish Audio) - there is currently NO voice-input path in RPGACE at all. Real Anthropic prompt caching is live on every Oracle call (a pure cost optimization, never changes what Oracle can say). A Kimi/Luna free-tier routing option exists in api/oracle.js but is dormant, no real key configured - never claim RPGACE runs on multiple AI models. errorLog automatically resolves a real thrown error back to the one module that caused it, attaches that module\'s real /perspective baseline, and - if that module has a smoke_test_items row - flips it to broken (cascading a linked plan item to purple only if it was genuinely green before) - this only ever catches errors that actually throw or show an error-colored toast, never a silent wrong-output bug with no visible symptom, and Oracle never proactively monitors the app - it only reacts when a real message is sent to it. OVERSIGHT / GALAXY MAP: 13 real oversight docs exist now (Tier a/b explaining+truth docs, this Oracle self-awareness string, smoke_test.html/error_log.html, future_integrations.html/achiever.html, and perspective_map.html - new Sep 2026, a live-query page cross-referencing every real perspective_reports row - plus graphify/Obsidian/the Galaxy Map). The Galaxy Map (reachable from the in-app Oversight popup) is a real 4-stop CONTAINMENT hierarchy - L0 (9 real units: RPGACE Architecture/Orchestrator CC/OpenMontage CC/Graphify CC/External AI/Skills/Alex/Supabase/Oversight Docs) contains L1 (12 live app-code rivers, plus 5 retired Total-systems categories kept as per-actor Infra/Inter breakdowns, not deleted) contains L2 (modules) contains Current/L3 (functions). Older Level-2.5/4/5/6 "rail stops" from earlier in the build are all retired or folded into Current/the Decision Matrix - never describe the map as having numbered levels past L3; cross-cutting facts (Externals/Decisions/Skills/Load/etc) are Dimension pages layered over the hierarchy, not additional rungs. 23 real Galaxy Map pages exist on disk as of late Sep 2026 - re-verify this count too before quoting it, it changes whenever a new page ships (most recently G117, a Generator Toolchain catalog page, Sep 22 2026). Every one of the 58 real registered modules plus all 12 live rivers has a real, evidence-grounded /perspective self-report as of mid-Sep 2026 (the Perspective Full Coverage plan is complete). A standing project-wide PAUSE on new Galaxy Map/Dimension work has been in effect since Sep 15 2026 (real evidence: product debt was sitting untouched under a wave of Galaxy-Map/meta work) - only explicit, narrowly-scoped, Alex-approved exceptions have shipped since - never assume a new Galaxy Map feature is fair game without checking whether Alex explicitly overrode the pause for it that specific time. KNOWN, STILL-OPEN GAPS: the swipe-gesture freeze bug has recurred for real (69 real occurrences logged Aug 27-Sep 20 2026) but still has no root cause found and no stack trace available (the browser\'s own Long Task API exposes no call stack) - never claim it\'s fixed, and don\'t attempt another blind code-only fix pass. reference_tracks.scale/genre are still 0 of 32 populated - "beat matches are always the same" traces directly to this; a backfill popup exists and has not been run. smoke_test.html\'s real hand-confirmed tally sits well under half of its rows - a large amount of shipped work is real and code-verified but genuinely unconfirmed by Alex\'s own hand; only his own hand-tick counts as "confirmed working," never a code-level test pass alone. HABITS/COOKING (cookingOracle + shoppingWishlist, RPGACE\'s newest domain, built Sep 10-22 2026): reached from a real "Cooking" dashboard card. Generate a recipe via Oracle chat (a real RECIPE_JSON: trailer); a real "Narrow it down" step runs first for a short/ambiguous description. Ingredients render with a live 7-color status system wherever shown - green=plenty, yellow=short (worded as "need N more, have M, T total needed"), red=none, blue=a same-aisle alternative in stock, purple=will run low/restock after this cook, orange=a real curated-or-heuristic substitute exists in stock, brown=a separable/optional component that can be omitted in No-Shop mode. Orange substitutes can be permanently confirmed (a tick, colour never changes) or declared-the-same-item as an existing stock row (a real, standing alias merge reassigning every FK reference) - curated potency ratios exist for a few specific real pairs Alex stated (e.g. tamarind concentrate is about 1/3 the amount of tamarind paste) and a real garlic clove/bulb count-equivalent bridge (8 cloves per bulb, bidirectional) - none of these numbers are invented, only ones Alex explicitly gave. A recipe card supports pantry-aware Oracle-suggested ingredient additions and a real diff-only critique-and-update flow via the floating overlay (Accept/Deny, never the whole recipe re-shown). New Sep 22: clicking Start on a scheduled planned cook opens a real, persistent Live Cook Mode panel inside the Oracle page itself (step timeline, elapsed-time ticker, per-step and recurring reminder timers) - not just a silent flag flip. Planned-cook sessions persist as a real draft from the moment the first recipe joins (never silently lost on close/navigate-away), support a real per-recipe delete, and use a true cross-recipe interleaved scheduler that front-loads prep across every recipe in the session rather than finishing one recipe\'s steps before starting the next. A real Current Stock view (Pantry/Fridge/Freezer/Equipment) and a real have/not-have shopping list (with a real "in basket" state between "need to find" and "bought") both exist, aisle-sorted. shoppingWishlist is a genuinely separate module (general future purchases like batteries/a wok/games, not ingredients) with its own priority-plus-budget-target fit calculator, writing a real Chronicles Finance expense on purchase. Every HABITS feature above is real, shipped, code-verified - but per the standing flag across this whole domain, effectively none of it has been hand-tested by Alex yet. TAXONOMY: real architecture change Sep 25 2026, still in progress - the entire taxonomy_tree (671 rows, all 21 phyla, every branch and leaf) is now archived (status=\'archived\', a reversible flag, never a delete; a full pre-archive snapshot was taken first) as part of a real restructure Alex asked for directly: generate real jargon terms into a new standalone anchor table first, then rebuild phylum-path structure around them, rather than the reverse. jargon_encyclopedia is no longer a view over taxonomy_tree - it is a real standalone table (term/phylum_number/explainer/status/taxonomy_node_id), currently 0 rows. A real review tool now exists on the Phylum Path page (\'Review Archived Terms\') letting Alex decide per archived leaf what carries forward into the new table - built, not yet run by him. Never claim any specific phylum currently has real depth, real Orders/Classes, or a verified-clean tree - every earlier claim of that shape (phyla 1-10 depth, Phylum 12\'s real Orders, a structurally-clean tree) describes the PRE-archive state only and is not true again until the real rebuild happens. CONTENT PIPELINE: Research Lab is fully retired as a user-facing destination - its former panels live inside Content Pipeline/Bookworm cards now. RPGACE does not generate video itself - OpenMontage (a separate Claude Code session in its own repo) is briefed and handed off via openmontage_jobs, never live infrastructure; RPGACE has ruled out paid video providers on principle (zero spend). Real beat-grid audio sync does not exist - "in sync with the beat" currently means mood/palette-matched only. Features F0 through F18 have shipped except F12 (deliberately deferred); F16/F17/F18 remain real execution debt - shipped code, genuinely never hand-tested through their full flow yet.',
 
   init: function() {
     var self = this;
@@ -18734,6 +18734,56 @@ RPGACE.register('phylumPath', {
     },
 
     // ══════════════════════════════════════════════════════════════════
+    // Sep 25 2026 — Step C2 of the jargon-encyclopedia anchor-table
+    // restructure (records/2026-09/taxonomy_curriculum_jargon_
+    // encyclopedia_merge_spec_2026-09-25.txt, Section 18): Alex's own
+    // direct answer ("Archive so b, then we review archived to see
+    // what fits, what needs changing and what needs removal") — a real
+    // per-item review over the 260 archived leaf rows this session's
+    // Step C created. Fetches only rows not yet worked through this
+    // queue (status='archived', not yet flipped to 'archived_reviewed'
+    // by _resolveArchivedLeaf below) for the phylum currently open.
+    // ══════════════════════════════════════════════════════════════════
+    _fetchArchivedLeafQueue: function(phylumNumber) {
+      return RPGACE.sb.select('taxonomy_tree',
+        'phylum_number=eq.' + phylumNumber +
+        '&node_type=eq.leaf&status=eq.archived&order=path.asc&limit=500'
+      ).then(function(rows) { return rows || []; });
+    },
+
+    // One real, human-gated decision per archived leaf — Alex's own
+    // click IS the checkpoint rule 4 requires, so a 'keep'/'edit'
+    // resolution writes straight to jargon_encyclopedia with
+    // status='accepted' rather than sitting 'pending' behind a second
+    // review (that pending gate is for Step D's fresh AI-generated
+    // terms, a genuinely different, unreviewed-by-a-human source).
+    // 'discard' writes nothing — the term is simply not carried
+    // forward. Either way the source taxonomy_tree row is marked
+    // 'archived_reviewed' (a new, additive status value — nothing else
+    // in the codebase filters on it) so it never resurfaces in the
+    // queue, win or lose.
+    _resolveArchivedLeaf: function(row, action, editedTerm, editedExplainer) {
+      var self = RPGACE.modules.phylumPath;
+      var markReviewed = function() {
+        return RPGACE.sb.secureWrite('taxonomy_tree', 'update',
+          { status: 'archived_reviewed', updated_at: new Date().toISOString() },
+          'id=eq.' + row.id
+        ).catch(function() {});
+      };
+      if (action === 'discard') return markReviewed();
+      var term = (editedTerm || row.name || '').trim();
+      if (!term) return markReviewed();
+      return RPGACE.sb.secureWrite('jargon_encyclopedia', 'insert', {
+        term: term,
+        phylum_number: row.phylum_number,
+        explainer: (editedExplainer != null ? editedExplainer : (row.explainer || '')),
+        deep_content: row.deep_content || {},
+        status: 'accepted',
+        source: [{ type: 'archived_leaf_review', archived_node_id: row.id, edited: !!(editedTerm || editedExplainer != null) }],
+      }).then(function() { return markReviewed(); });
+    },
+
+    // ══════════════════════════════════════════════════════════════════
     // July 16: fusion links - cross-taxonomy connections between a new
     // leaf and topically-related nodes ANYWHERE else in the tree (any
     // rank, any phylum), staged in the new taxonomy_links table and
@@ -19765,6 +19815,115 @@ RPGACE.register('phylumPath', {
       });
     },
 
+    // ══════════════════════════════════════════════════════════════════
+    // Sep 25 2026 — Step C2's real UI, the tool Alex asked for directly
+    // ("then we review archived to see what fits, what needs changing
+    // and what needs removal"). One-item-at-a-time queue over that
+    // phylum's archived leaves (logic._fetchArchivedLeafQueue) — a full
+    // list of up to 75 rows at once (Phylum 1's real count) would be
+    // overwhelming; a queue keeps each real decision focused. Editable
+    // inline fields double as both "keep" (leave untouched) and "edit
+    // then keep" (change first) — one action, not two buttons, since
+    // the two are the same write with or without an edit first.
+    // ══════════════════════════════════════════════════════════════════
+    _showArchivedReviewQueue: function() {
+      var self = RPGACE.modules.phylumPath;
+      var phylumNumber = self.PHYLUM_NUM;
+      self.logic._fetchArchivedLeafQueue(phylumNumber).then(function(queue) {
+        if (!queue.length) { RPGACE.utils.toast('✅ Nothing archived left to review for this phylum', '#4CAF82', 3500); return; }
+        var total = queue.length;
+        var idx = 0;
+        var kept = 0, discarded = 0;
+
+        var pop = RPGACE.modules.dashDeck._popup({
+          dim: '0.92', width: '560px', bg: '#0f0f1a', borderColor: 'rgba(201,168,76,0.3)',
+          accent: 'rgba(201,168,76,0.6)', eyebrow: '🗄️ Reviewing archived jargon terms',
+          title: RPGACE.utils.phylumLabel(phylumNumber), noDefaultClose: true,
+        });
+        var overlay = pop.overlay, box = pop.box;
+
+        function renderCurrent() {
+          box.innerHTML = '';
+          if (idx >= queue.length) {
+            var done = document.createElement('div');
+            done.style.cssText = 'text-align:center;padding:20px 0;color:var(--text);';
+            done.innerHTML = '<div style="font-size:14px;font-weight:700;margin-bottom:8px;">Review complete</div>'
+              + '<div style="font-size:12px;color:var(--muted);">' + kept + ' kept · ' + discarded + ' discarded, out of ' + total + '</div>';
+            box.appendChild(done);
+            var closeBtn = document.createElement('button');
+            closeBtn.textContent = 'Close';
+            closeBtn.style.cssText = 'width:100%;margin-top:14px;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+            closeBtn.onclick = function() { overlay.remove(); };
+            box.appendChild(closeBtn);
+            return;
+          }
+          var row = queue[idx];
+          var progress = document.createElement('div');
+          progress.style.cssText = 'font-size:11px;color:var(--muted);margin-bottom:10px;';
+          progress.textContent = (idx + 1) + ' of ' + total + ' — ' + row.path;
+          box.appendChild(progress);
+
+          var termInp = document.createElement('input');
+          termInp.type = 'text';
+          termInp.value = row.name || '';
+          termInp.style.cssText = 'width:100%;margin-bottom:8px;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Rajdhani,sans-serif;font-size:13px;font-weight:700;';
+          box.appendChild(termInp);
+
+          var explInp = document.createElement('textarea');
+          explInp.value = row.explainer || '';
+          explInp.rows = 3;
+          explInp.style.cssText = 'width:100%;margin-bottom:12px;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Rajdhani,sans-serif;font-size:12px;resize:vertical;';
+          box.appendChild(explInp);
+
+          var btnRow = document.createElement('div');
+          btnRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
+          var keepBtn = document.createElement('button');
+          keepBtn.textContent = '✓ Keep (edit above first if needed)';
+          keepBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          keepBtn.onclick = function() {
+            keepBtn.disabled = true; discardBtn.disabled = true;
+            var editedTerm = termInp.value.trim() !== (row.name || '').trim() ? termInp.value.trim() : null;
+            var editedExpl = explInp.value !== (row.explainer || '') ? explInp.value : null;
+            self.logic._resolveArchivedLeaf(row, 'keep', editedTerm, editedExpl).then(function() {
+              kept++; idx++; renderCurrent();
+            });
+          };
+          var discardBtn = document.createElement('button');
+          discardBtn.textContent = '✗ Discard';
+          discardBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(226,84,84,0.2);border-radius:8px;color:#CC4A4A;font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+          discardBtn.onclick = function() {
+            keepBtn.disabled = true; discardBtn.disabled = true;
+            self.logic._resolveArchivedLeaf(row, 'discard').then(function() {
+              discarded++; idx++; renderCurrent();
+            });
+          };
+          btnRow.appendChild(keepBtn); btnRow.appendChild(discardBtn);
+          box.appendChild(btnRow);
+
+          var skipBtn = document.createElement('button');
+          skipBtn.textContent = 'Skip for now (leave archived, ask again later)';
+          skipBtn.style.cssText = 'width:100%;margin-top:8px;padding:6px;background:none;border:none;color:var(--muted);font-size:10.5px;cursor:pointer;font-family:Rajdhani,sans-serif;text-decoration:underline;';
+          skipBtn.onclick = function() { idx++; renderCurrent(); };
+          box.appendChild(skipBtn);
+        }
+
+        // Re-appended inside renderCurrent's own box.innerHTML='' reset
+        // would wipe a one-time-appended close button, so it's built
+        // once here and re-attached after every render instead.
+        var closeX = document.createElement('button');
+        closeX.textContent = '✕';
+        closeX.style.cssText = 'position:absolute;top:14px;right:14px;background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;';
+        closeX.onclick = function() { overlay.remove(); };
+        box.style.position = 'relative';
+        var _origRenderCurrent = renderCurrent;
+        renderCurrent = function() { _origRenderCurrent(); box.appendChild(closeX); };
+
+        renderCurrent();
+      }).catch(function(e) {
+        RPGACE.utils.toast('Error loading archived queue: ' + e.message, '#CC4A4A', 3500);
+      });
+    },
+
     // Confirm/deny popup shown between article generation and saving - same
     // checkpoint pattern as _showPlacementConfirm, just simpler (nothing to
     // edit, an article is either worth keeping or it isn't). Approve saves
@@ -19856,6 +20015,17 @@ RPGACE.register('phylumPath', {
         genBtn.style.cssText = 'margin-bottom:10px;margin-left:8px;padding:6px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;display:inline-block;';
         genBtn.onclick = function() { self.ui._generateCurriculumBreakdown(); };
         titleEl.insertAdjacentElement('afterend', genBtn);
+      }
+      // Sep 25 2026 — Step C2's entry point (records/2026-09/taxonomy_
+      // curriculum_jargon_encyclopedia_merge_spec_2026-09-25.txt,
+      // Section 18). Same injection point/pattern as the button above.
+      if (titleEl && titleEl.parentNode && !document.getElementById('pp-review-archived-btn')) {
+        var reviewBtn = document.createElement('button');
+        reviewBtn.id = 'pp-review-archived-btn';
+        reviewBtn.textContent = '🗄️ Review Archived Terms';
+        reviewBtn.style.cssText = 'margin-bottom:10px;margin-left:8px;padding:6px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;display:inline-block;';
+        reviewBtn.onclick = function() { self.ui._showArchivedReviewQueue(); };
+        titleEl.insertAdjacentElement('afterend', reviewBtn);
       }
     },
 
@@ -20272,6 +20442,8 @@ RPGACE.register('phylumPath', {
   _placeInsight: function(insightText, phylumNumber) { return this.logic._placeInsight(insightText, phylumNumber); },
   _insertNewSteps: function(phylumNumber, attachNode, newSteps, explainers, insightText, sourceMeta) { return this.logic._insertNewSteps(phylumNumber, attachNode, newSteps, explainers, insightText, sourceMeta); },
   _insertTreeNodes: function(phylumNumber, attachNode, treeNodes, sourceMeta) { return this.logic._insertTreeNodes(phylumNumber, attachNode, treeNodes, sourceMeta); },
+  _fetchArchivedLeafQueue: function(phylumNumber) { return this.logic._fetchArchivedLeafQueue(phylumNumber); },
+  _resolveArchivedLeaf: function(row, action, editedTerm, editedExplainer) { return this.logic._resolveArchivedLeaf(row, action, editedTerm, editedExplainer); },
   _findFusionLinks: function(node, phylumNumber) { return this.logic._findFusionLinks(node, phylumNumber); },
   _generateInsightContent: function(node, phylumNumber, insightText) { return this.logic._generateInsightContent(node, phylumNumber, insightText); },
   _generateArticleText: function(node) { return this.logic._generateArticleText(node); },
@@ -20289,6 +20461,7 @@ RPGACE.register('phylumPath', {
   _showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject) { return this.ui._showPlacementConfirm(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject); },
   _showTreeConfirm: function(phylumNumber, attachNode, treeNodes, onAccept, onReject) { return this.ui._showTreeConfirm(phylumNumber, attachNode, treeNodes, onAccept, onReject); },
   _generateCurriculumBreakdown: function() { return this.ui._generateCurriculumBreakdown(); },
+  _showArchivedReviewQueue: function() { return this.ui._showArchivedReviewQueue(); },
   _showArticleConfirm: function(node, articleTitle, text, onApprove, onDeny) { return this.ui._showArticleConfirm(node, articleTitle, text, onApprove, onDeny); },
   _injectNavTab: function() { return this.ui._injectNavTab(); },
   _injectPageShell: function() { return this.ui._injectPageShell(); },
@@ -33704,23 +33877,39 @@ RPGACE.register('jargonEncyclopedia', {
     // (jargon_encyclopedia already selects `id AS node_id` from
     // taxonomy_tree — it was never missing, just never asked for
     // here), so this only needed the JS side to request it and join.
+    //
+    // Sep 25 2026 (later same session) — real architecture change,
+    // Section 17-19 of the same spec: jargon_encyclopedia is no longer
+    // a view over taxonomy_tree, it's a real standalone anchor table
+    // (term, phylum_number, explainer, status, taxonomy_node_id —
+    // nullable, only set once a real curriculum leaf "trickles down"
+    // and attaches to this anchor). The old taxonomy_tree branch/leaf
+    // rows this view used to read were archived the same pass as part
+    // of that restructure, and the new table starts genuinely empty —
+    // Step C2 (archived-leaf review) and Step D (bulk generation) are
+    // real, separate follow-on work, not yet built. `r.taxonomy_node_id`
+    // (not `r.id`, the anchor's own id) is the real FK to look up
+    // linked Encyclopedia insights on — an anchor with no taxonomy_
+    // node_id yet has nothing to look up (honestly shown as "not yet
+    // placed in the tree" below, not an error).
     _openGlossary: function() {
       var self = RPGACE.modules.jargonEncyclopedia;
       var dd = RPGACE.modules.dashDeck;
       if (!dd || !dd._popup) return;
-      var pop = dd._popup({ eyebrow: '📖 Every leaf term across your tree', title: 'Jargon Encyclopedia', width: '640px', accent: 'var(--gold)' });
+      var pop = dd._popup({ eyebrow: '📖 Real jargon anchor terms (restructured Sep 25 2026)', title: 'Jargon Encyclopedia', width: '640px', accent: 'var(--gold)' });
       pop.box.innerHTML = '<input id="jarg-search" type="text" placeholder="Search terms..." style="width:100%;margin-bottom:12px;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Rajdhani,sans-serif;font-size:13px;"><div id="jarg-list" style="max-height:50vh;overflow-y:auto;">Loading…</div>';
       var listEl = pop.box.querySelector('#jarg-list');
       var searchInp = pop.box.querySelector('#jarg-search');
-      RPGACE.sb.select('jargon_encyclopedia', 'select=node_id,name,path,explainer,phylum_number&order=name.asc&limit=1000').then(function(rows) {
+      RPGACE.sb.select('jargon_encyclopedia', 'select=id,term,phylum_number,explainer,taxonomy_node_id&status=eq.accepted&order=term.asc&limit=1000').then(function(rows) {
         rows = rows || [];
         self._allTerms = rows;
         // Real batched fetch — one query for every visible term's linked
         // insight rows, never one query per term (N+1). A term with zero
-        // linked rows just gets an empty array; a failed fetch degrades
-        // to showing terms with no insight collection rather than
-        // failing the whole glossary.
-        var ids = rows.map(function(r) { return r.node_id; }).filter(Boolean);
+        // linked rows (including every not-yet-placed anchor, since it
+        // has no taxonomy_node_id) just gets an empty array; a failed
+        // fetch degrades to showing terms with no insight collection
+        // rather than failing the whole glossary.
+        var ids = rows.map(function(r) { return r.taxonomy_node_id; }).filter(Boolean);
         var fetchInsights = ids.length
           ? RPGACE.sb.select('encyclopedia', 'taxonomy_node_id=in.(' + ids.join(',') + ')&select=id,title,content,source,taxonomy_node_id&order=created_at.asc').catch(function() { return []; })
           : Promise.resolve([]);
@@ -33734,7 +33923,7 @@ RPGACE.register('jargonEncyclopedia', {
           self._renderTerms(listEl, rows);
           searchInp.addEventListener('input', function() {
             var q = searchInp.value.toLowerCase();
-            var filtered = rows.filter(function(r) { return (r.name || '').toLowerCase().indexOf(q) !== -1; });
+            var filtered = rows.filter(function(r) { return (r.term || '').toLowerCase().indexOf(q) !== -1; });
             self._renderTerms(listEl, filtered);
           });
         });
@@ -33744,22 +33933,24 @@ RPGACE.register('jargonEncyclopedia', {
     },
 
     _renderTerms: function(listEl, rows) {
-      if (!rows.length) { listEl.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0">No terms match.</div>'; return; }
+      if (!rows.length) { listEl.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0">No accepted jargon terms yet — the tree was restructured Sep 25 2026 (real archive, see patch_notes.html); term generation + review is real, separate follow-on work not yet run.</div>'; return; }
       var self = RPGACE.modules.jargonEncyclopedia;
       var byNode = self._insightsByNode || {};
       listEl.innerHTML = rows.map(function(r) {
-        var insights = byNode[r.node_id] || [];
-        var insightsHtml = insights.length
-          ? '<div style="margin-top:6px;padding-left:10px;border-left:2px solid rgba(201,168,76,0.25);">'
-            + insights.map(function(ins) {
-                return '<div style="font-size:10.5px;color:rgba(226,226,236,0.55);margin-top:4px;line-height:1.5;">'
-                  + '<span style="color:var(--gold);">' + String(ins.source || 'insight').replace(/</g, '&lt;') + ':</span> '
-                  + String(ins.content || ins.title || '').replace(/</g, '&lt;') + '</div>';
-              }).join('')
-            + '</div>'
-          : '<div style="font-size:10.5px;color:rgba(226,226,236,0.3);margin-top:4px;font-style:italic;">No linked insights yet.</div>';
+        var insights = r.taxonomy_node_id ? (byNode[r.taxonomy_node_id] || []) : [];
+        var insightsHtml = !r.taxonomy_node_id
+          ? '<div style="font-size:10.5px;color:rgba(226,226,236,0.3);margin-top:4px;font-style:italic;">Not yet placed in the tree — anchor only.</div>'
+          : (insights.length
+            ? '<div style="margin-top:6px;padding-left:10px;border-left:2px solid rgba(201,168,76,0.25);">'
+              + insights.map(function(ins) {
+                  return '<div style="font-size:10.5px;color:rgba(226,226,236,0.55);margin-top:4px;line-height:1.5;">'
+                    + '<span style="color:var(--gold);">' + String(ins.source || 'insight').replace(/</g, '&lt;') + ':</span> '
+                    + String(ins.content || ins.title || '').replace(/</g, '&lt;') + '</div>';
+                }).join('')
+              + '</div>'
+            : '<div style="font-size:10.5px;color:rgba(226,226,236,0.3);margin-top:4px;font-style:italic;">No linked insights yet.</div>');
         return '<div style="padding:8px 0;border-bottom:1px solid var(--border);">'
-          + '<div style="font-size:13px;font-weight:700;color:var(--text);">' + String(r.name || '').replace(/</g, '&lt;') + (insights.length ? ' <span style="font-size:10px;font-weight:400;color:var(--muted);">(' + insights.length + ' insight' + (insights.length === 1 ? '' : 's') + ')</span>' : '') + '</div>'
+          + '<div style="font-size:13px;font-weight:700;color:var(--text);">' + String(r.term || '').replace(/</g, '&lt;') + (insights.length ? ' <span style="font-size:10px;font-weight:400;color:var(--muted);">(' + insights.length + ' insight' + (insights.length === 1 ? '' : 's') + ')</span>' : '') + '</div>'
           + '<div style="font-size:11px;color:var(--muted);margin-top:2px;">' + String(r.explainer || '').replace(/</g, '&lt;') + '</div>'
           + insightsHtml
           + '</div>';
