@@ -1,0 +1,204 @@
+P3 ("one graph, one shell" Galaxy Map rebuild) — /paranoia pass
+(commit-archaeologist-adapted evidence + honest verdict), 2026-09-24
+
+Trigger: Alex asked to "start on P3 slowly," and to /interrogation him
+on what to do next, after a /paranoia pass with a /commit-archaeologist
+report on what changes + what decisions to make.
+
+Scope note on /commit-archaeologist: its own SKILL.md explicitly lists
+"the question is about project-wide architecture rather than one file
+or region" under "When not to use" — this is exactly that case (22
+page-generator files, not one). Applied the skill's SPIRIT (real git
+history evidence for why current architecture exists, not a guessed
+rationale) via direct git log / Supabase queries instead of the
+single-file archaeologist.py tool, and named that adaptation here
+rather than silently forcing the tool onto a shape it wasn't built for.
+
+=== STEP 1-2: REAL EVIDENCE (GODMODE + scope + commit-archaeology) ===
+
+1. Real, live ceo_plan_items state for the ratified "Galaxy Map Web
+   Redesign" plan (id 16633827-90dd-4027-a1f2-624bf3fc4374), queried
+   directly, not read from a doc's own claim:
+   - P0 (cheap reversible dedup): GREEN, complete.
+   - P1 (edges as interactive evidence-explaining gateways): RED, NOT
+     BUILT. Graded MATERIAL gap in Fable's own report. 1-2 session
+     estimate.
+   - P2 (bubble/ring consolidation): GREEN, complete (this session, 2
+     commits: 127ac5a, d7fb9dd).
+   - GATE ("Alex hand-tests 3 pages post P0-P2: confirms web-first
+     everywhere, edge-click explanation + zoom link works, no content
+     lost — before P3 is authorized"): RED. Its own evidence field
+     says plainly: "Zero Galaxy Map pages have been hand-tested by
+     Alex to date."
+   - P3 (one shell, hash-routed lenses, 22 templates -> 1): RED.
+     "3-5 session estimate. Real honest why-not case: Sep 15's
+     56%-meta-work finding still stands, zero hand-test feedback yet,
+     destabilizes the anchor-verification/link-checker system unless
+     rebuilt first. Explicitly gated behind Alex's own GATE decision,
+     never auto-started." (This is the plan's OWN recorded language,
+     not invented for this pass.)
+   - P4 (comment-block /debloat on graphify_river_group.py): RED,
+     deliberately deferred, never bundled into P0-P3.
+
+   REAL FINDING: the GATE's own hand-test explicitly needs to verify
+   "edge-click explanation... works" — that is P1's own deliverable
+   (the shared click inspector for interactive edges). P1 hasn't been
+   built. So the GATE cannot even be meaningfully attempted yet,
+   independent of whether Alex has time to hand-test — there is
+   nothing real for him to click yet. "post P0-P2" in the GATE's title
+   reads, on the evidence, as "after the P0-through-P2 range
+   inclusive" (i.e. after P1 too), not "P0 and P2 only" — P1's own
+   deliverable is literally what the GATE is testing.
+
+2. Real, live product debt, checked directly (not assumed from a
+   doc's own prior claim):
+   - `reference_tracks.scale`/`genre`: still 0/32 populated, confirmed
+     by a live count this session. CLAUDE.md's own Live-numbers line
+     already said this; re-verified true right now. Commit `0d7340b`
+     ("/Routine: correct item 2's ranking — reference_tracks backfill
+     needs Alex's hands") shows this session correctly recognized it
+     needs Alex's own input/audio data, not a blind code fix — it was
+     flagged, not silently left stale.
+   - The swipe-gesture/main-thread-freeze bug (`error_log` row
+     `81bcf07f-...`): still `status='active'`, 78 occurrences,
+     `last_seen_at` 2026-09-23 — still firing, still unresolved, not
+     re-confirmed as the original dramatic freeze but a real, live,
+     recurring symptom nonetheless.
+
+3. Real commit-history evidence for WHY the current 22-file
+   River/Dimension architecture exists, rather than one shell from the
+   start:
+   - It grew incrementally, G1 through G117+, each real page added
+     when a real evidence-gap was found (a module/river/dimension that
+     needed its own Current-Series page, a Dimension needing its own
+     drilldown). Never designed as 22 files up front.
+   - The project has ALREADY run two real consolidation passes at
+     smaller scale, not zero: G74-76 (Aug 25 2026) retired L2.5/Zoom/
+     L5/L6 as separate rail stops, folding them into other pages'
+     per-function expand-detail toggles; and this session's own P0
+     (CSS/edge-substrate/stub dedup) + P2 (ring-bubble + node-link-web
+     dedup) — both real, both shipped clean, both byte-identical-
+     verified, both incremental. The pattern that has actually worked
+     twice now is "find a real copy-drift or genuinely-retirable
+     stop, collapse it, verify byte-identical or upgraded output" —
+     not "rebuild the whole thing into one shell in one pass."
+   - R16 (no privileged L0 gateway) and R22 (bubble systems always
+     follow and showcase what's on the table) are real, load-bearing
+     architecture rules baked into dozens of real generator functions
+     across the 22 files. P3's own plan text says it would KEEP these
+     (Fable's §6 verdict: "KEEP the River/Dimension partition + R16 +
+     R22, extend R22 to edges") — meaning P3 is a physical/rendering
+     consolidation, not a data-model change. That lowers real risk
+     (the hard part — deciding what's true — stays the same; only
+     HOW it's packaged into files changes) but does not remove it.
+
+4. Real link-surface size, measured directly (not estimated):
+   - 3,219 raw internal `href="galaxy_map*.html..."` occurrences
+     across the 22 pages (1,143 distinct targets) — most of this is
+     the shared left-nav sidebar repeated on every page, which a
+     single hash-routed shell would eliminate by construction, not a
+     real risk in itself.
+   - `galaxy_map_hub.py`'s own curated "real content" edge count (not
+     nav chrome): 39 edges, 8 hub-only orphans — the smaller, more
+     meaningful number for what a rebuild must actually preserve.
+   - 274 real references to specific `galaxy_map_*.html` filenames (or
+     `#anchor` fragments) from OTHER live project docs: `patch_notes.
+     html` (53 to `galaxy_map.html` alone), `session_lessons.html`,
+     `smoke_test.html`, `interconnection_map.md`, `system_flow_map.md`,
+     `ai_tooling_and_rules_map.md`, `.claude/skills/CEO/galaxy_
+     development_framework.md`, and 5 `obsidian-vault/*.md` files.
+     Several of the 22 distinct filenames referenced no longer exist
+     today (`galaxy_map_l0.html`, `galaxy_map_zoom.html`, `galaxy_map_
+     level5.html`, etc.) — but those are in `CLAUDE_archive.md`,
+     explicitly historical, exempt by convention. The LIVE doc
+     references are the real ones P3 must not silently break.
+   - The plan's own recorded language: "link checker rebuilt against
+     the graph BEFORE the shell ships, not after" — already names
+     this as the real, load-bearing sequencing risk, not a new finding
+     here.
+
+5. Real commit-rate evidence, re-checked (not re-quoting Sep 15's
+   number on faith): of the 56 commits since Sep 20 2026, 34 (~61%)
+   touch Galaxy Map/Dimension/bubble work — the Sep 15 finding's own
+   56% concern has not improved; if anything it's slightly worse this
+   week. Not all of that is waste (real oversight-doc-compression work
+   — DD-1 through DD-4, the SELF_KNOWLEDGE staleness checks — is
+   genuinely valuable and distinct from Galaxy-Map-for-its-own-sake),
+   but the raw proportion against the project's own governing rule
+   ("does this result in a beat made or video posted within 48 hours")
+   is real and current, not stale.
+
+=== STEP 3: STRESS-TEST AGAINST ALEX'S ACTUAL WORKFLOW ===
+
+The real tension, stated plainly rather than manufactured: Alex
+explicitly asked to start P3 "slowly" — a real, deliberate,
+paced ask, not a demand to skip its own gate. But the plan HE
+ratified (Sep 24, same day) already named P3's own explicit
+precondition: P1 built + his own hand-test. Starting P3 "slowly" by
+writing scaffold code (the `galaxy_graph.js` dataset emitter, the
+shared shell) before either of those exist would be building against
+a gate the project's own already-approved plan says should stop that
+from happening — not a hypothetical risk, a documented one.
+
+The honest counter-case for proceeding anyway: "slowly" could
+reasonably mean "start the LOWEST-risk, fully-reversible groundwork
+that doesn't require the gate" — e.g. beginning real design work on
+the `galaxy_graph.js` dataset SHAPE (what data every page's generator
+already computes that the shell would need), without touching any
+live page or committing to the rebuild itself. That is defensible and
+genuinely slow/careful. What would NOT be defensible against the
+plan's own recorded language is beginning to replace live pages.
+
+=== STEP 5: FACT-CHECK (re-verified before writing, not assumed) ===
+Every number above was queried live this session (Supabase execute_sql
+for ceo_plan_items/error_log/reference_tracks, direct grep for href/
+doc-reference counts, direct git log for the commit-rate check) — none
+of it is restated from a prior doc's claim without a fresh check.
+
+=== STEP 6: THE REAL VERDICT ===
+
+Not "yes, unambiguously proceed" and not "no, this doesn't work at
+all" — the honest answer is a real, evidenced SEQUENCING problem, not
+a rejection of P3 itself:
+
+- P3 is not currently buildable-in-good-faith even "slowly," because
+  its own gate (which Alex himself set as a real, recorded
+  precondition the same day) has not fired, and cannot meaningfully
+  fire until P1 exists to test.
+- The real, ready, already-ratified next step in Alex's own plan is
+  P1 (edges as interactive gateways) — RED, MATERIAL, 1-2 sessions,
+  not gated on anything, buildable now.
+- Real, live product debt (reference_tracks 0/32, the freeze bug)
+  remains open and is not addressed by P3 or P1 either — a real,
+  separate fork Alex may want weighed against more Galaxy Map work
+  at all right now.
+
+This is not a refusal to help with P3 — it is the real, evidence-
+checked position that "P1, then your own hand-test, then P3" is the
+correct order Alex's own plan already set, and starting P3's actual
+build work now (even paced slowly) would mean building past a gate he
+asked to keep.
+
+=== REAL INTERROGATION QUESTIONS FOR ALEX — ANSWERED 2026-09-25 ===
+
+Q1 (P3 sequencing, given the GATE/P1 tension above): "Build P1 first
+(Recommended)" — confirmed. P1 is the real next step, not P3 directly.
+
+Q2 (pacing given "slowly"): "Design/planning only this session
+(Recommended)" — no live page edits this session; a real, concrete
+design write-up for review before any code changes. See the
+companion file: p1_edge_gateways_design_2026-09-25.txt.
+
+Q3 (real open product debt — reference_tracks 0/32, the active
+78-occurrence freeze bug — weighed in now or later): "Galaxy Map
+stays the priority (Recommended given your ask)" — confirmed. Both
+items stay logged and open, not silently dropped, but not addressed
+this pass.
+
+Real, honest outcome: the original ask ("start on P3 slowly") is
+satisfied by its own real substance — P1 design work, done slowly and
+carefully, IS the correct first slow step toward P3, since P3 cannot
+be meaningfully started (its own GATE can't even be tested) without
+P1 existing first. Nothing here overrides or silently reinterprets
+Alex's own ask; it's the literal next real step his own already-
+ratified plan names.

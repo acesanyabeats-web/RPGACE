@@ -1,0 +1,206 @@
+P1 (edges as interactive evidence-explaining gateways) — real design,
+planning-only pass, 2026-09-25
+
+Context: Alex's own /interrogation answers (2026-09-24 session, see
+p3_paranoia_commit_archaeology_pass_2026-09-24.txt): build P1 first
+(it's what P3's own GATE hand-test needs to exist before it can be
+tested); design/planning only this session, no live page edits;
+Galaxy Map stays the priority over the still-open reference_tracks/
+freeze-bug product debt for now.
+
+ceo_plan_items P1 row (id 61d510db-c59d-445f-80f2-032454391f9e), its
+own verbatim title: "Edges as interactive evidence-explaining gateways
+(Alex's live addendum) — EDGE_EVIDENCE map + shared click inspector +
+zoom_href, sourced from RIVER_FLOWS/attribute_river_connection_
+function/compute_cross_module_function_calls/build_infra_drilldown
+tuples that already carry the real evidence per edge. R22 extended:
+no graph row, no node AND no edge." Graded MATERIAL in Fable's own
+report. 1-2 session estimate.
+
+=== REAL EVIDENCE GATHERED THIS PASS (no code written) ===
+
+1. P0 already built half of this (Sep 24): `_curved_edge()`
+   (graphify_river_group.py ~4487) takes optional `from_label`/
+   `to_label`/`kind`, renders `data-from`/`data-to`/`data-kind`
+   attributes plus a native SVG `<title>` hover tooltip. Wired into
+   ALL 28 real call sites across 5+ files. 13 distinct real `kind`
+   values already in live use, counted directly:
+   ui_output(x2), ui_input(x2), skill_stream(x2), external_call(x2),
+   cross_band_call(x2), river_link, river_entry, galaxy_link,
+   function_call, dispatch_trigger, dimension_membership,
+   dashboard_card, backdoor_call.
+
+2. What P1 adds on top, per its own title: hover-only is a dead end on
+   mobile/touch (no hover state) and can't show more than one line —
+   P1 wants (a) a real CLICK-triggered inspector panel with the full
+   evidence text, not just a tooltip fragment, and (b) a real
+   `zoom_href` — the click inspector's own "Go there" link, jumping
+   straight to wherever that edge's full story already lives (a
+   Current(L3) function anchor, a river's own module list, a
+   Dimension page's drilldown section).
+
+3. The 4 real data sources named in the plan's own title, confirmed by
+   direct read (not assumed):
+   - `RIVER_FLOWS` (graphify_river_group.py:1369) — the base river-to-
+     river edge dict, each entry carrying a real `note` string.
+   - `attribute_river_connection_function(from_river, to_river, note,
+     ...)` (line 3232) — resolves EACH RIVER_FLOWS edge to the real
+     (module, function) that actually carries it, via 5 real ordered
+     evidence signals (a traced cross-module call; a wrap-installer
+     function when the note names a message/prefix mechanism; main.js
+     showPage() for nav_route edges; the outbound-API-call site when
+     the target river has no modules; the one real Supabase-reservoir
+     reader when the source river has no modules). This is real,
+     already-computed "why does this river connect to that one" — the
+     exact text a click inspector on a `river_link`/`river_entry` edge
+     should show.
+   - `compute_cross_module_function_calls()` (line 3414) — returns
+     [(from_module, from_func, to_module, to_func), ...], every real
+     `RPGACE.modules.X.fn(...)` cross-module call found in
+     rpgace_core.js. This is the real evidence backing `backdoor_call`/
+     `function_call` edges — a click inspector can show "function
+     `from_func` in `from_module` calls `to_func` in `to_module`
+     directly" verbatim from this tuple.
+   - `build_infra_drilldown(evidence_by_resource)` (line 4947) — the
+     shared river→module→function drilldown every Infra/Inter bubble
+     panel already uses; its own per-function `(resource, detail)`
+     pairs are the real evidence behind `skill_stream`/`dashboard_
+     card`/`external_call`/etc. edges.
+   None of these need to be re-derived — P1 is a REAL AGGREGATION
+   layer over data that already exists and is already computed at
+   render time in every one of the 22 pages, then thrown away once
+   the SVG string is built. This matches the plan's own framing
+   exactly ("buildable mostly from evidence already computed and
+   discarded at render time").
+
+4. Where the shared click-handling JS lives today:
+   `graphify-out/galaxy_map_shared.js` (36 lines) already holds 3 real
+   shared behaviors (nav sidebar injection, active-link highlighting,
+   `_gmInitToggles()` for the map/table toggle buttons) — this is the
+   established, right home for a 4th: an edge-click inspector, same
+   `_gmInit*`-on-DOMContentLoaded convention already in place.
+
+=== PROPOSED DESIGN (not built — for review before any code changes) ===
+
+**A. `EDGE_EVIDENCE`, a Python-side lookup built once in
+graphify_river_group.py, keyed by the real `(from_label, to_label,
+kind)` triple every `_curved_edge()` call site already has in scope:**
+
+    EDGE_EVIDENCE: dict[(str, str, str), dict] mapping to
+    {
+      'explanation': str,   # full sentence, not a hover-truncated one
+      'source': str,        # e.g. 'attribute_river_connection_function'
+                             # or a file:line-shaped citation
+      'zoom_href': str,     # real navigable URL+anchor
+    }
+
+    Populated per kind, from the sources already gathered above:
+      - river_link / river_entry -> attribute_river_connection_
+        function()'s own (module, function, signal) result, formatted
+        into a real sentence ("River III connects to River XI via
+        cookingOracle._dispatchToBeatLog(), a traced direct call.").
+        zoom_href -> galaxy_map_current.html#mod-<module> (the real
+        function's own Current(L3) anchor already computed elsewhere).
+      - function_call / backdoor_call -> the matching
+        compute_cross_module_function_calls() tuple, formatted
+        directly ("beatLog._submit() calls dashDeck.refresh()
+        directly."). zoom_href -> the CALLEE's own Current(L3) anchor
+        (where the reader would go to see what actually runs).
+      - skill_stream / dashboard_card / external_call / ui_input /
+        ui_output / cross_band_call / dimension_membership /
+        galaxy_link -> the matching build_infra_drilldown() (resource,
+        detail) pair for that (module, func), already real text.
+        zoom_href -> the Dimension/Infra page section that resource
+        already belongs to (every one of these pages already computes
+        its own real anchor ids for exactly this reason).
+      - dispatch_trigger -> whichever detector already produced this
+        edge (grep confirms it's a specific real call site; the design
+        does not invent new evidence, it reads the one that's there).
+
+    R22 extension, made literal and checkable: build a real
+    `verify_edge_evidence_coverage()` companion (same family/shape as
+    `gmp_b_consistency_check.py`/`galaxy_map_g13_onclick_coverage_
+    check.py`, rule 8) that, at generation time, asserts EVERY edge
+    any page draws has a matching EDGE_EVIDENCE entry for its own
+    (from_label, to_label, kind) — an edge with none either doesn't
+    render, or renders visibly `dashed` (the existing `_curved_edge`
+    `dashed` param already means "no real evidence," so this is a
+    real, not-invented convention to extend, not a new one).
+
+**B. A shared click-inspector, one new function in
+`galaxy_map_shared.js`, following the existing `_gmInit*` pattern:**
+
+    function _gmInitEdgeInspector() {
+      document.querySelectorAll('path[data-from][data-to]')
+        .forEach(function(edge) {
+          edge.addEventListener('click', function() {
+            var key = edge.dataset.from + '|' + edge.dataset.to + '|' + edge.dataset.kind;
+            var ev = window.GM_EDGE_EVIDENCE && window.GM_EDGE_EVIDENCE[key];
+            _gmShowEdgePanel(edge.dataset.from, edge.dataset.to, ev);
+          });
+        });
+    }
+
+    `window.GM_EDGE_EVIDENCE` would be a real, per-PAGE JSON object
+    (only the edges that page actually draws — never the whole
+    project's evidence map shipped to every page, real payload-size
+    discipline) emitted inline by each page's own Python generator,
+    same "compute once, embed as data, cheap JS reads it" pattern this
+    pipeline already uses everywhere else (never a runtime fetch()
+    call, which `file://` blocks via CORS anyway — already confirmed
+    and worked around once this session for the debloat pass).
+
+    `_gmShowEdgePanel()` renders a small floating panel (reusing the
+    established `.rdetail`/bubble-detail visual language already on
+    every page, not a new component) with: the real explanation text,
+    a `source` citation line (small, dim-colored, matching how every
+    other evidence-linked element on these pages already cites its own
+    source), and a real `<a href="{zoom_href}">Go there →</a>` link.
+
+**C. What does NOT change:** R16 (no privileged L0 gateway), R22's
+own existing "table first, bubble/edge follows" ordering, the River/
+Dimension data model — none of this touches architecture, only adds a
+real evidence lookup + one shared click handler on top of data that
+already exists. This is intentionally a P0/P2-shaped slice (additive,
+byte-identical-verifiable for every page that ISN'T touched, real and
+useful even if P3 never happens) — not a P3-shaped one.
+
+=== REAL BUILD-PLAN SKETCH FOR WHOEVER EXECUTES THIS (Opus, next
+session, Omnitrix — no Fable needed, same as P0/P2) ===
+
+  1. Write `verify_edge_evidence_coverage()` FIRST, against a
+     deliberately empty EDGE_EVIDENCE, confirming it correctly reports
+     100% missing (same "prove the checker can fail before trusting it
+     to pass" discipline the debloat/GMP-B checkers already used).
+  2. Populate EDGE_EVIDENCE per kind, cheapest-and-most-valuable first:
+     river_link/river_entry (11 real RIVER_FLOWS edges, already has a
+     resolver) and backdoor_call/function_call (already a flat tuple
+     list) are the fastest real wins; the build_infra_drilldown-backed
+     kinds (skill_stream/dashboard_card/etc.) take slightly more work
+     since they're currently computed per-page, not centrally.
+  3. Add the shared JS (`_gmInitEdgeInspector`/`_gmShowEdgePanel`) to
+     `galaxy_map_shared.js`, gated so pages with zero EDGE_EVIDENCE
+     rows for their own edges don't show a broken/empty panel.
+  4. Wire per-page `window.GM_EDGE_EVIDENCE` embeds into the ~10 pages
+     that actually draw kind-tagged edges (galaxy_map.py, galaxy_map_
+     dimensions.py, galaxy_map_module.py, galaxy_map_river.py,
+     galaxy_map_current.py, plus whichever of the 22 draw the other 8
+     kinds — confirm by grep before assuming the list is exactly 5).
+  5. Full pipeline re-run x2 (R5-idempotent), verify_anchors.py,
+     div/a/svg balance, headless-Chromium click-through test on a real
+     sample edge per kind (13 real kinds — spot-check at least the 5
+     highest-count ones), zero console errors.
+  6. This is the real, concrete thing Alex's own GATE hand-test can
+     then click on — "edge-click explanation... works" becomes a real,
+     testable claim for the first time.
+
+=== HONEST SCOPE CALL, NOT SILENTLY EXPANDED ===
+
+Not designed this pass (deliberately, per "design-only" + rule 11):
+the actual Python dict literal for all ~28 real edges' EDGE_EVIDENCE
+entries (that's real per-kind mapping work best done once building
+starts, not guessed here); the exact CSS for `_gmShowEdgePanel`'s
+panel (reuse an existing established look, decided at build time);
+whether `dispatch_trigger`'s one real call site needs its own new
+detector or already has one (a real grep during Step 2 of the build
+plan settles this, not assumed here).
