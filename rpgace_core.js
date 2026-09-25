@@ -11738,8 +11738,6 @@ RPGACE.register('taxonomyReviewQueue', {
         explainers: ((p.proposed_steps && p.proposed_steps.explainers) || []).slice(),
         sourceType: p.source_type,
         sourceId: p.source_id,
-        morphMatch: null,
-        suggestUpdate: false,
         queuedProposalId: p.id,
       };
     },
@@ -17222,18 +17220,6 @@ RPGACE.register('taxonomyTree', {
       box.appendChild(insightSummary);
     }
 
-    if (proposal.morphMatch) {
-      var morphNote = document.createElement('div');
-      if (proposal.suggestUpdate) {
-        morphNote.style.cssText = 'background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.25);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:#4CAF82;';
-        morphNote.innerHTML = '🔄 This exact leaf already exists: "<strong>' + proposal.morphMatch.name + '</strong>". This proposal looks like a refinement — accepting will <strong>update the existing node\'s content</strong> instead of creating a duplicate.';
-      } else {
-        morphNote.style.cssText = 'background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.25);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:11px;color:#CC4A4A;';
-        morphNote.innerHTML = '⚠️ A node named "<strong>' + proposal.morphMatch.name + '</strong>" already exists in this phylum. Consider attaching under it instead of creating a duplicate branch.';
-      }
-      box.appendChild(morphNote);
-    }
-
     var stepsContainer = document.createElement('div');
     stepsContainer.id = 'taxtree-steps-editor';
     stepsContainer.style.cssText = 'margin-bottom:16px;';
@@ -17328,16 +17314,12 @@ RPGACE.register('taxonomyTree', {
     btnRow.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;';
 
     var acceptBtn = document.createElement('button');
-    acceptBtn.textContent = proposal.suggestUpdate ? '✓ Update Existing Node' : '✓ Accept & Generate Content';
+    acceptBtn.textContent = '✓ Accept & Generate Content';
     acceptBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:8px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
     acceptBtn.onclick = function() {
       updatePreview();
       overlay.remove();
-      if (proposal.suggestUpdate && proposal.morphMatch) {
-        self._updateExistingNode(proposal.morphMatch, proposal);
-      } else {
-        self._acceptLineage(proposal);
-      }
+      self._acceptLineage(proposal);
     };
 
     var rejectBtn = document.createElement('button');
@@ -17578,169 +17560,64 @@ RPGACE.register('taxonomyTree', {
     });
   },
 
-  // ── Check if any step in the proposed path already exists ────────
-  // ── Now also detects if the NEW leaf's explainer is meaningfully      ──
-  // ── different/better-written than an existing matching leaf, and      ──
-  // ── offers to UPDATE the existing node's content instead of just      ──
-  // ── warning about duplication.                                        ──
-  _checkForMorph: function(phylumNumber, path, callback) {
-    RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&order=depth.asc')
-      .then(function(existing) {
-        existing = existing || [];
-        var matched = null;
-        var exactLeafMatch = null;
-        var lastStepName = path[path.length - 1];
-
-        path.forEach(function(stepName) {
-          var found = existing.find(function(n) {
-            return n.name.toLowerCase().trim() === stepName.toLowerCase().trim();
-          });
-          if (found && !matched) matched = found;
-        });
-
-        // Check specifically if the LEAF matches an existing leaf — this is the
-        // "duplicate insight" case, distinct from "shares a parent grouping" case
-        exactLeafMatch = existing.find(function(n) {
-          return n.node_type === 'leaf' && n.name.toLowerCase().trim() === lastStepName.toLowerCase().trim();
-        });
-
-        callback(matched, exactLeafMatch);
-      }).catch(function() { callback(null, null); });
-  },
-
-  // ── Update an existing node's content with a better-written version ──
-  _updateExistingNode: function(existingNode, proposal) {
-    var self = RPGACE.modules.taxonomyTree;
-    RPGACE.utils.toast('🔄 Updating existing node with improved content...', '#4CAF82', 2500);
-    var newExplainer = proposal.explainers[proposal.explainers.length - 1] || existingNode.explainer;
-
-    RPGACE.sb.secureWrite('taxonomy_tree', 'update', { explainer: newExplainer, updated_at: new Date().toISOString() }, 'id=eq.' + existingNode.id)
-    .then(function() {
-      RPGACE.utils.toast('✅ Node updated: ' + existingNode.name, '#4CAF82', 3000);
-      self._generateNodeContent(existingNode);
-    }).catch(function(e) {
-      RPGACE.utils.toast('Error updating node: ' + e.message, '#CC4A4A', 3000);
-    });
-  },
-
   // ── Write accepted lineage into taxonomy_tree, generate content ──
+  // Sep 25 2026 — real dedup pass (Alex-confirmed): this used to be a full,
+  // independently-maintained second copy of phylumPath.logic._insertNewSteps'
+  // chained-insert-with-real-id-threading logic, minus everything that
+  // function gained since (the sanitizePlacement guard, a taxonomy_decision_log
+  // audit row, the Encyclopedia companion entry, the bibliography back-link,
+  // _findFusionLinks) — a real, checked gap: this path silently skipped all
+  // five. It also called the older, thinner _generateNodeContent instead of
+  // _generateInsightContent's 3-layer-with-outline method (Alex's own Aug 11
+  // "I want more of this thinking" ask). Confirmed unreachable for any row
+  // written by live code today — every real taxonomy_proposals write sets
+  // engine:'phylum_path' or engine:'concept_fusion' (grepped, zero other
+  // literal), and _acceptLineage/_showProposalPopup are only ever called for
+  // neither — so this is now a thin pass-through kept as a safety net for a
+  // pre-unification row that might still be sitting pending, same one real
+  // write pipeline everything else already routes through (rule 8).
+  //
+  // Also folded in here (deleted as dead code, not moved): _checkForMorph
+  // and _updateExistingNode. Both were unreachable — the only place that
+  // builds a `proposal` for this popup (taxonomyReviewQueue._toProposal)
+  // hardcoded morphMatch:null/suggestUpdate:false, and nothing anywhere
+  // ever called _checkForMorph to set a real value. decidePlacementScored's
+  // own Hard Rule 2 + sanitizePlacement's dedup-extend branch already own
+  // duplicate-detection for the real, live path.
   _acceptLineage: function(proposal) {
     var self = RPGACE.modules.taxonomyTree;
+    var pp = RPGACE.modules.phylumPath;
     RPGACE.utils.toast('🌳 Writing lineage + generating content...', '#4CAF82', 3000);
 
-    var parentId = null;
-    var pathSoFar = proposal.phylumName;
-    var chain = Promise.resolve();
+    // Skip _insertNewSteps' own Encyclopedia-companion-entry write for the
+    // encyclopedia-sourced case — this path's real job there is updating
+    // the EXISTING entry's back-reference (below), not creating a new one.
+    var sourceMeta = (proposal.sourceType === 'encyclopedia')
+      ? null
+      : { source: proposal.sourceType, title: proposal.sourceId || (proposal.path || []).join(' / ') };
+    var insightText = (proposal.explainers && proposal.explainers.length)
+      ? proposal.explainers[proposal.explainers.length - 1]
+      : (proposal.path || []).join(' / ');
 
-    proposal.path.forEach(function(stepName, i) {
-      chain = chain.then(function() {
-        pathSoFar += '/' + stepName;
-        var isLeaf = (i === proposal.path.length - 1);
-        var currentPath = pathSoFar;
-        var currentParent = parentId;
-
-        // Needs the inserted row's real id back to chain parent_id correctly on
-        // the next step - RPGACE.sb.insert() defaults to Prefer:return=minimal
-        // (empty body), which silently broke this into a flat set of orphan
-        // nodes (parent_id always null) for any path longer than one step.
-        return RPGACE.sb.secureWrite('taxonomy_tree', 'insert', {
-            parent_id: currentParent,
-            depth: i + 1,
-            name: stepName,
-            latin_name: null,
-            phylum_number: proposal.phylumNumber,
-            path: currentPath,
-            node_type: isLeaf ? 'leaf' : 'branch',
-            explainer: proposal.explainers[i] || '',
-            sources: [{ type: proposal.sourceType, id: proposal.sourceId }],
-          }).then(function(result) {
-          var row = Array.isArray(result) ? result[0] : result;
-          if (row && row.id) parentId = row.id;
-          if (isLeaf && row) {
-            self._generateNodeContent(row);
-            // F7: Encyclopedia-sourced proposals need a two-table write on
-            // accept, not just the taxonomy_tree insert every other source
-            // uses - back-reference the leaf onto the originating entry so
-            // its card can show "already linked" instead of the propose
-            // button re-offering the same entry indefinitely.
-            if (proposal.sourceType === 'encyclopedia' && proposal.sourceId) {
-              RPGACE.sb.secureWrite('encyclopedia', 'update', { taxonomy_node_id: row.id }, 'id=eq.' + proposal.sourceId).catch(function() {});
-            }
-          }
-        });
+    pp.logic._insertNewSteps(proposal.phylumNumber, null, proposal.path, proposal.explainers, insightText, sourceMeta)
+      .then(function(finalRow) {
+        RPGACE.utils.toast('✅ Taxonomy lineage saved: ' + proposal.phylumName + '/' + (proposal.path || []).join('/'), '#4CAF82', 4000);
+        // F7: preserve the real back-reference this path always had — mark
+        // the originating Encyclopedia entry as "already linked" so its
+        // card stops re-offering the propose button indefinitely.
+        if (proposal.sourceType === 'encyclopedia' && proposal.sourceId && finalRow && finalRow.id) {
+          RPGACE.sb.secureWrite('encyclopedia', 'update', { taxonomy_node_id: finalRow.id }, 'id=eq.' + proposal.sourceId).catch(function() {});
+        }
+        // F6: if this lineage came from the review queue, close the loop on
+        // the taxonomy_proposals row it originated from.
+        if (proposal.queuedProposalId) {
+          RPGACE.sb.secureWrite('taxonomy_proposals', 'update',
+            { status: 'accepted', reviewed_at: new Date().toISOString() },
+            'id=eq.' + proposal.queuedProposalId).catch(function() {});
+        }
+      }).catch(function(e) {
+        RPGACE.utils.toast('Error saving lineage: ' + e.message, '#CC4A4A', 3500);
       });
-    });
-
-    chain.then(function() {
-      RPGACE.utils.toast('✅ Taxonomy lineage saved: ' + pathSoFar, '#4CAF82', 4000);
-      // F6: if this lineage came from the review queue, close the loop on
-      // the taxonomy_proposals row it originated from.
-      if (proposal.queuedProposalId) {
-        RPGACE.sb.secureWrite('taxonomy_proposals', 'update',
-          { status: 'accepted', reviewed_at: new Date().toISOString() },
-          'id=eq.' + proposal.queuedProposalId).catch(function() {});
-      }
-    }).catch(function(e) {
-      RPGACE.utils.toast('Error saving lineage: ' + e.message, '#CC4A4A', 3500);
-    });
-  },
-
-  // ── Generation template — merged tutor + expert prompt ────────────
-  // Trimmed July 14: real Phylum 1 data showed deep_content empty on every
-  // single leaf despite this function supposedly populating it. Best-
-  // supported theory (not empirically confirmed - no live browser access
-  // this session): this is the same already-documented Oracle 504 timeout
-  // on long structured responses, just manifesting silently here (this
-  // call is fire-and-forget, its .catch() only console.warns) instead of
-  // visibly in chat. The original prompt asked for 5 sections in one 1500-
-  // token call; sections 3-5 (spaced-repetition blueprint, stages/
-  // resources, practice assignment) overlap with what feynman's loop and
-  // prodOraclePanel's own commands already cover elsewhere, so cut down to
-  // the 2 sections that are actually this column's unique job - if this
-  // doesn't fully fix it, the timeout needs its own dedicated pass
-  // (streaming, or splitting into 2 sequential calls), not another blind
-  // prompt trim.
-  // July 24 audit fix: this used to hand-roll its own fetch('/api/oracle')
-  // instead of routing through phylumPath's shared ground-worker
-  // functions (rule 3 violation) - two real consequences, both fixed by
-  // switching to _callGroundWorkerText: (1) it never checked for
-  // data.error, so on any Anthropic failure it wrote
-  // {generated: '', ...} to taxonomy_tree and logged success - the
-  // likely real mechanism behind this column's long-standing "empty
-  // deep_content" mystery (previously blamed on the 504 alone, never
-  // confirmed); (2) it bypassed the credit-exhaustion detector entirely,
-  // so a real outage here never surfaced anywhere, not even a fallback
-  // queue row.
-  _generateNodeContent: function(node) {
-    // Aug 11 2026 — Alex's own real ask, pointing at a live example
-    // ("Second-Based Root Motion" under Phylum 1): "the caveat with the
-    // new and old is excellent, i want more of this thinking." That
-    // leaf's quality came from _generateInsightContent's 3-layer method
-    // (below) — this function is the thinner, OLDER 2-section prompt,
-    // and the one that actually fires by default on every new leaf a
-    // proposal creates (see taxonomyTree's leaf-insert path above and
-    // _updateExistingNode) — the highest-traffic content generator in
-    // the tree, and until now the one with the weakest instruction.
-    // Upgraded to the same 3-layer shape, with the comparison/contrast
-    // move made explicit rather than left to chance (that's what
-    // actually produced the praised "new vs old" caveat the first time
-    // — asking for it directly should make it reliable, not lucky).
-    var prompt = 'You are a neuro-optimized tutor AND a world-class expert in "' + node.name + '".\n\n' +
-      'Context: this is a node in a music production taxonomy tree, path: ' + node.path + '. ' +
-      'This is for FL Studio / UK hip hop production, aspiring producers 18-35.\n\n' +
-      'Teach "' + node.name + '" using the 3-layer method:\n' +
-      '1. SIMPLE TERMS — what this is, in plain language, 2-3 sentences\n' +
-      '2. TECHNICAL MECHANICS — the real, specific information (exact notes/settings/techniques/chord identities as relevant), not general theory. Where a genuinely different or older/more common alternative approach exists, contrast this against it directly and explain why the difference actually matters in practice — a real comparison beats a flat definition.\n' +
-      '3. EXPERT NUANCE — the one thing about this that most tutorials miss\n\n' +
-      'Be specific and technical, but concise — this is a reference entry, not a full course.';
-
-    RPGACE.modules.phylumPath._callGroundWorkerText(prompt, 900).then(function(text) {
-      return RPGACE.sb.secureWrite('taxonomy_tree', 'update', { deep_content: { generated: text, generated_at: new Date().toISOString() } }, 'id=eq.' + node.id);
-    }).then(function() {
-      console.log('[taxonomyTree] Content generated for node:', node.name);
-    }).catch(function(e) {
-      console.warn('[taxonomyTree] Content generation failed:', e.message);
-    });
   },
 
   },
@@ -17760,10 +17637,7 @@ RPGACE.register('taxonomyTree', {
   _silentProposeViaPhylumPath: function(topicText, phylumNumber, sourceType, sourceId) { return this.logic._silentProposeViaPhylumPath(topicText, phylumNumber, sourceType, sourceId); },
   _insertProposalFromDecision: function(decision, phylumNumber, sourceType, sourceId, topicText) { return this.logic._insertProposalFromDecision(decision, phylumNumber, sourceType, sourceId, topicText); },
   _resumeSilentProposeFromFallback: function(row) { return this.logic._resumeSilentProposeFromFallback(row); },
-  _checkForMorph: function(phylumNumber, path, callback) { return this.logic._checkForMorph(phylumNumber, path, callback); },
-  _updateExistingNode: function(existingNode, proposal) { return this.logic._updateExistingNode(existingNode, proposal); },
   _acceptLineage: function(proposal) { return this.logic._acceptLineage(proposal); },
-  _generateNodeContent: function(node) { return this.logic._generateNodeContent(node); },
 
 });
 /* ===END:taxonomyTree=== */
@@ -17774,8 +17648,11 @@ RPGACE.register('taxonomyTree', {
 // path FROM a phylum DOWN to a leaf, in one shot). This instead starts from
 // a granular teaching insight and builds UP: the insight anchors at the
 // deepest rank it needs, attaching under existing structure where possible
-// (same exact-path-matching idea as taxonomyTree._checkForMorph, just
-// applied per-rank instead of per-leaf), and any rank along the way can get
+// (real duplicate-detection lives in decidePlacementScored's own prompt +
+// sanitizePlacement's dedup-extend branch below — taxonomyTree used to have
+// a separate, parallel exact-name checker, _checkForMorph, but it was
+// unreachable dead code and deleted Sep 25 2026, see taxonomyTree's
+// _acceptLineage), and any rank along the way can get
 // its own synthesized reference article in Encyclopedia (reuses
 // saveOracleToEncyclopedia + taxonomy_node_id linking, same as F7's
 // encTaxonomyLink).
@@ -18614,8 +18491,18 @@ RPGACE.register('phylumPath', {
           // insight's own content generation, same pattern as F18's auto
           // Visual Treatment Doc trigger elsewhere in this file.
           self.logic._findFusionLinks(finalRow, phylumNumber);
-          return self.logic._generateInsightContent(finalRow, phylumNumber, insightText);
+          // Sep 25 2026 — content generation is now ALSO fire-and-forget
+          // (was: awaited/returned) so this promise resolves with the real
+          // inserted row instead of _generateInsightContent's own write
+          // result. Safe: every one of the 3 existing real callers
+          // (_placeInsight, taxonomyReviewQueue's _acceptPhylumPathProposal/
+          // _editPhylumPathProposal) already ignores the resolved value —
+          // confirmed by direct read, not assumed — so this only ADDS a real
+          // capability (taxonomyTree._acceptLineage's own dedup pass needs
+          // finalRow.id back for its Encyclopedia back-reference write).
+          self.logic._generateInsightContent(finalRow, phylumNumber, insightText);
         }
+        return finalRow;
       });
     },
 
@@ -18729,10 +18616,13 @@ RPGACE.register('phylumPath', {
     // ── Content generation for the new deepest node - extends Prod         ──
     // ── Oracle's "Master Learning" 3-layer method with a private-tutor-PhD  ──
     // ── persona, per the questionnaire's answer, rather than a new prompt   ──
-    // ── shape from scratch. Deliberately a separate call from taxonomyTree's ──
-    // ── _generateNodeContent - real Phylum 1 data shows deep_content is     ──
-    // ── empty on every node that call is supposed to have populated, an    ──
-    // ── open bug not investigated here (flagged in the plan doc instead).  ──
+    // ── shape from scratch. Originally a deliberate separate call from      ──
+    // ── taxonomyTree's own _generateNodeContent (real Phylum 1 data showed  ──
+    // ── deep_content empty on every node that older call was supposed to   ──
+    // ── have populated). Sep 25 2026: _generateNodeContent deleted outright ──
+    // ── — a real dedup pass (see taxonomyTree._acceptLineage) found it had  ──
+    // ── zero remaining callers once _acceptLineage was rerouted through     ──
+    // ── this function's own richer 3-layer-with-outline method instead.    ──
     // July 15 smoke test: real Phrygian-Dominant insight got cut off mid-
     // sentence at max_tokens:1200 asking for a full 3-layer teaching format.
     // Same class of issue as the already-open Oracle 504 timeout bug -
@@ -18773,7 +18663,8 @@ RPGACE.register('phylumPath', {
           // output is what's sitting in that node's deep_content. The
           // contrast wasn't explicitly asked for though; it emerged on its
           // own. Made explicit now so it's reliable rather than lucky —
-          // same real upgrade just applied to _generateNodeContent above.
+          // same real upgrade this pass's prompt used to carry over to
+          // taxonomyTree's own (now-deleted) _generateNodeContent by hand.
           var prompt = 'You are a private tutor with a PhD in ' + RPGACE.utils.phylumContext(phylumNumber) + ', teaching a UK hip hop / drill producer who works in FL Studio.\n\n' +
             'TOPIC: "' + node.name + '" (part of: ' + node.path + ')\n' +
             'THE INSIGHT THAT PROMPTED THIS: "' + insightText + '"' + outlineBlock + '\n\n' +
