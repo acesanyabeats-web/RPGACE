@@ -58,6 +58,19 @@
 
   <div class="card">
     <div class="card-top">
+      <div class="card-title">P1 build: a design record's own proposed architecture was superseded mid-build by a simpler one found while actually writing the code — named plainly, not silently swapped</div>
+      <div class="card-date">Sep 25 2026</div>
+    </div>
+    <span class="trigger drift">Found while executing Alex's own "build P1 now" ask, against a design record written the previous session</span>
+    <div class="block scope"><b>Prompt scope</b>The prior session's own design record (<code>records/2026-09/p1_edge_gateways_design_2026-09-25.txt</code>) proposed a global <code>EDGE_EVIDENCE</code> dict, keyed by <code>(from_label, to_label, kind)</code>, that would reconstruct each edge's real evidence text AFTER the fact by matching those bare label strings back to their real data sources (<code>RIVER_FLOWS</code>, <code>attribute_river_connection_function</code>, etc.).</div>
+    <div class="block obstacle"><b>Obstacle</b>Starting to actually populate that dict per real edge kind (river_link, river_entry, dashboard_card, external_call, skill_stream, function_call, backdoor_call, ui_input/output, galaxy_link — 13+ real distinct kinds across 28+ real call sites) made a real cost visible that wasn't obvious from the design alone: reconstructing evidence from a bare label string after the fact means re-deriving or re-matching data the ORIGINATING call site already had in hand a moment earlier — and a second table always risks drifting from the first the moment either side changes without the other.</div>
+    <div class="block reasoning"><b>Reasoning</b>Every real call site already computes its own real evidence text as a local variable at the exact moment it computes the edge's x/y coordinates (a <code>RIVER_FLOWS</code> note, a resolved module+function from <code>attribute_river_connection_function</code>, a dashboard card's own <code>via</code> field). Passing that value straight into the edge-drawing call, rather than writing it into a second global table to be looked up later by label match, removes an entire class of future drift risk for zero extra real work — the data doesn't need to be re-derived, only forwarded.</div>
+    <div class="block solution"><b>Solution</b><code>_curved_edge()</code> gained <code>evidence_text</code>/<code>evidence_source</code>/<code>zoom_href</code> params instead of building the design record's own <code>EDGE_EVIDENCE</code> dict; every real caller passes its own already-known data directly. The design record's own proposed architecture is superseded, not deleted — its real evidence-source research (which 4 data sources back which edge kinds) carried over completely unchanged, only the storage mechanism changed. Named plainly in the commit message, <code>ceo_plan_items</code>' own evidence field, and here, rather than silently presented as if this was always the plan.</div>
+    <div class="block rule"><b>Resulting rule</b>A design record written in one session is a real, useful starting point for the next session's build — not a literal spec to execute unquestioned. When a build reveals a simpler architecture achieving the same real goal (here: real per-edge evidence + navigation, without a second lookup table), take it — but say so explicitly, in the same places the original design was recorded, so a future reader isn't left reconciling two contradictory accounts of "the plan."</div>
+  </div>
+
+  <div class="card">
+    <div class="card-top">
       <div class="card-title">Wiring sweep: a "fails loud" anchor system and a documented rule (R27) both existed and were both still silently unfollowed for a week+ — the fix is a standing check, not another rule to remember</div>
       <div class="card-date">Sep 15 2026</div>
     </div>
