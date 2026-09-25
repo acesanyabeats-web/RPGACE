@@ -1261,7 +1261,8 @@ def build_svg():
             s += f'<text x="{x}" y="{y+r+16}" text-anchor="middle" font-size="9" fill="{lc}"{data_attr} class="{"unit-node-label" if unit_id else ""}">{label_below}</text>'
         return s
 
-    def edge(x1, y1, x2, y2, itype, tested=True, offset_mult=1, r1=0, r2=0, from_label=None, to_label=None):
+    def edge(x1, y1, x2, y2, itype, tested=True, offset_mult=1, r1=0, r2=0, from_label=None, to_label=None,
+             evidence_text=None, zoom_href=None):
         itype_used.add(itype)
         col = INTERACTION_TYPE_COLOR.get(itype, '#6b7280')
         edge_colors_used.add(col)
@@ -1269,8 +1270,14 @@ def build_svg():
         # real semantic edge kind every caller passes — reused as
         # data-kind for free, zero extra argument needed at any of this
         # closure's own call sites.
+        # P1 (Sep 25 2026): evidence_text/zoom_href pass straight through
+        # to _curved_edge — every real caller already has its own real
+        # note/via text in scope (INTERACTION_TYPE_LABEL + the caller's
+        # own dict), so this closure just forwards it, never invents one.
         return _curved_edge(x1, y1, x2, y2, col, real=tested, dashed=not tested, offset_mult=offset_mult, r1=r1, r2=r2,
-                             kind=itype, from_label=from_label, to_label=to_label)
+                             kind=itype, from_label=from_label, to_label=to_label,
+                             evidence_text=evidence_text, evidence_source='INTERACTION_TYPE_LABEL + caller note',
+                             zoom_href=zoom_href)
 
     # --- central RPGACE Architecture node — a real, clickable drill-down
     # into G3 (galaxy_map_river.html), not just a decorative label. The
@@ -1296,7 +1303,9 @@ def build_svg():
         sx, sy = polar(cx, cy, sat_radius, ang)
         galaxy_pos[gal['id']] = (sx, sy)
         edges_svg.append(_curved_edge(cx, cy, sx, sy, gal['color'], real=True, r1=46, r2=34,
-                                       from_label=rpgace['label'], to_label=gal['label'], kind='galaxy_link'))
+                                       from_label=rpgace['label'], to_label=gal['label'], kind='galaxy_link',
+                                       evidence_text=gal.get('role', f"{gal['label']} is a real galaxy in the Total system."),
+                                       evidence_source='GALAXIES'))
         edge_colors_used.add(gal['color'])
         nodes_svg.append(node_circle(sx, sy, 34, gal['color'], gal['icon'], gal['label'], glow=True, label_color=gal['color'], unit_id=gal['id']))
         legend_rows.append(
@@ -1322,7 +1331,8 @@ def build_svg():
         hx, hy = polar(cx, cy, harness_radius, ang)
         harness_xy[hn['id']] = (hx, hy)
         itype = 'ai_judgment_call' if hn['id'] == 'oracle_api' else ('read_query' if hn['id'] == 'self_awareness' else 'human_confirm_gate')
-        edges_svg.append(edge(cx, cy, hx, hy, itype, r1=46, r2=22, from_label=rpgace['label'], to_label=hn['label']))
+        edges_svg.append(edge(cx, cy, hx, hy, itype, r1=46, r2=22, from_label=rpgace['label'], to_label=hn['label'],
+                               evidence_text=hn.get('note', f"{hn['label']} is a real harness node.")))
         col = '#9B59B6' if hn['id'] != 'human_gate_alex' else '#E25454'
         # G99 real bug fix (Aug 25 2026, same class as the Supabase node
         # bug found this same day): oracle_api used to have no unit_id
@@ -1341,7 +1351,8 @@ def build_svg():
     prov_angles = [65, 100, 135]  # fans outward in the same direction oracle_api itself sits from center
     for prov, ang in zip(ORACLE_PROVIDERS, prov_angles):
         px, py = polar(ox, oy, prov_radius, ang)
-        edges_svg.append(edge(ox, oy, px, py, prov['itype'], tested=prov['tested'], r1=22, r2=15, from_label='Oracle', to_label=prov['name']))
+        edges_svg.append(edge(ox, oy, px, py, prov['itype'], tested=prov['tested'], r1=22, r2=15, from_label='Oracle', to_label=prov['name'],
+                               evidence_text=prov.get('role', f"{prov['name']} is a real Oracle AI provider.")))
         col = INTERACTION_TYPE_COLOR[prov['itype']]
         nodes_svg.append(node_circle(px, py, 15, col, prov['icon'], prov['name'], tested=prov['tested'], glow=False, label_color='#9a9aa8' if not prov['tested'] else '#cfd6e0'))
         badge = '' if prov['tested'] else ' <span class="warn">⚠ not tested</span>'
@@ -1384,7 +1395,11 @@ def build_svg():
         for conn, local_ang, itype, note in local_cluster:
             px, py = polar(omx, omy, 78, local_ang)
             connector_pos[conn['name']] = (px, py)
-            edges_svg.append(edge(omx, omy, px, py, itype, r1=34, r2=14, from_label='OpenMontage CC', to_label=conn['name']))
+            conn_ev = conn.get('note', '')
+            if note:
+                conn_ev = f'{conn_ev} {note}'.strip() if conn_ev else note
+            edges_svg.append(edge(omx, omy, px, py, itype, r1=34, r2=14, from_label='OpenMontage CC', to_label=conn['name'],
+                                   evidence_text=conn_ev or f"{conn['name']} is a real connector reached via OpenMontage CC."))
             col = INTERACTION_TYPE_COLOR[itype]
             nodes_svg.append(node_circle(px, py, 14, col, _connector_icon(conn['name']), conn['name'], glow=False, label_color='#cfd6e0'))
             legend_rows.append(
@@ -1428,7 +1443,8 @@ def build_svg():
         tested = c.get('tested', True)
         itype = CONNECTOR_ITYPE.get(c['name'], 'external_extract_call')
         col = INTERACTION_TYPE_COLOR[itype]
-        edges_svg.append(edge(cx, cy, px, py, itype, tested=tested, r1=46, r2=16, from_label=rpgace['label'], to_label=c['name']))
+        edges_svg.append(edge(cx, cy, px, py, itype, tested=tested, r1=46, r2=16, from_label=rpgace['label'], to_label=c['name'],
+                               evidence_text=c.get('note', f"{c['name']} is a real connector.")))
         nodes_svg.append(node_circle(px, py, 16, col, c['icon'], c['name'], tested=tested, glow=False, label_color='#9a9aa8' if not tested else '#cfd6e0'))
         badge = '' if tested else ' <span class="warn">⚠ not tested</span>'
         legend_rows.append(
@@ -1452,8 +1468,10 @@ def build_svg():
     # Real, distinct offsets so both edges are actually visible as two
     # separate lines, not one drawn silently on top of the other —
     # caught during the Aug 13 screenshot review (2nd pass).
-    edges_svg.append(edge(cx, cy, sup_x, sup_y, 'read_query', offset_mult=2.2, r1=46, r2=18, from_label=rpgace['label'], to_label=sup['name']))
-    edges_svg.append(edge(cx, cy, sup_x, sup_y, 'write_commit', offset_mult=-2.2, r1=46, r2=18, from_label=rpgace['label'], to_label=sup['name']))
+    edges_svg.append(edge(cx, cy, sup_x, sup_y, 'read_query', offset_mult=2.2, r1=46, r2=18, from_label=rpgace['label'], to_label=sup['name'],
+                           evidence_text=f"Real reads via {sup['via']}."))
+    edges_svg.append(edge(cx, cy, sup_x, sup_y, 'write_commit', offset_mult=-2.2, r1=46, r2=18, from_label=rpgace['label'], to_label=sup['name'],
+                           evidence_text=f"Real writes via {sup['via']}."))
     # G91 real bug fix (Aug 25 2026, Alex's own direct report — "supabase
     # still not clickable"): this node was rendered WITHOUT unit_id, so
     # it had no data-unit attribute at all — a plain decorative label,
@@ -1492,7 +1510,8 @@ def build_svg():
         if gal_id in galaxy_pos:
             gx2, gy2 = galaxy_pos[gal_id]
             edges_svg.append(edge(gx2, gy2, sup_x, sup_y, 'write_commit', offset_mult=SUPABASE_WRITE_OFFSET.get(gal_id, 1), r1=34, r2=18,
-                                   from_label=[g["label"] for g in GALAXIES if g["id"] == gal_id][0], to_label=sup['name']))
+                                   from_label=[g["label"] for g in GALAXIES if g["id"] == gal_id][0], to_label=sup['name'],
+                                   evidence_text=f'Writes directly to {real_table} with the plain anon key, bypassing RPGACE Architecture\'s own code entirely.'))
             legend_rows.append(
                 f'<div class="legend-row small"><span class="dot" style="background:{INTERACTION_TYPE_COLOR["write_commit"]}"></span>'
                 f'<b>{[g["label"] for g in GALAXIES if g["id"]==gal_id][0]} → Supabase (direct write)</b> — '
@@ -1516,7 +1535,8 @@ def build_svg():
     if 'graphify_cc' in galaxy_pos and 'openmontage_cc' in galaxy_pos:
         g2x, g2y = galaxy_pos['graphify_cc']
         o2x, o2y = galaxy_pos['openmontage_cc']
-        edges_svg.append(edge(g2x, g2y, o2x, o2y, 'read_query', r1=34, r2=34, from_label='Graphify CC', to_label='OpenMontage CC'))
+        edges_svg.append(edge(g2x, g2y, o2x, o2y, 'read_query', r1=34, r2=34, from_label='Graphify CC', to_label='OpenMontage CC',
+                               evidence_text='Graphify CC runs `graphify clone` on OpenMontage\'s own repo directly (11,280 real nodes merged into its cross-repo graph), independent of RPGACE Architecture — a real, one-way read relationship confirmed via total_system_members + graphify_jobs history.'))
         legend_rows.append(
             '<div class="legend-row"><span class="dot" style="background:'
             + INTERACTION_TYPE_COLOR['read_query'] + '"></span>'

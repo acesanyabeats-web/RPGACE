@@ -578,8 +578,11 @@ def build_river_section(rnum):
         entry_targets = buckets.get(0) or buckets.get(1) or terminal_mods
         for m in entry_targets:
             mx, my = mod_pos[m]
+            river_short_ = river_label.split(chr(8212))[0].strip()
             edges_svg.append(_curved_edge(X_HUB, cy, mx, my, color, real=True, r1=34, r2=22,
-                                           from_label=river_label.split(chr(8212))[0].strip(), to_label=m, kind='river_entry'))
+                                           from_label=river_short_, to_label=m, kind='river_entry',
+                                           evidence_text=f'{m} is a real registered module of {river_short_} (RIVER_MODULES membership).',
+                                           evidence_source='RIVER_MODULES', zoom_href=f'galaxy_map_current.html#mod-{m}'))
 
         # Real, explicit terminal-DESTINATION rule (Aug 13, Alex's own
         # direct ask): "each level 2 should have an end point [that]
@@ -700,7 +703,9 @@ def build_river_section(rnum):
                 px, py = ax, ay - 90 - i * 60
                 dash = ' stroke-dasharray="3,3"' if c.get('partial') else ''
                 edges_svg.append(_curved_edge(ax, ay, px, py, '#C9A84C', real=True, dashed=True, r1=22, r2=19,
-                                               from_label=anchor_mod, to_label=c['label'], kind='dashboard_card'))
+                                               from_label=anchor_mod, to_label=c['label'], kind='dashboard_card',
+                                               evidence_text=c.get('via', f"{c['label']} routes into {anchor_mod}."),
+                                               evidence_source='DASHBOARD_CARDS', zoom_href=f'galaxy_map_current.html#mod-{anchor_mod}'))
                 edge_colors_used.add('#C9A84C')
                 icon = c['label'].split(' ')[0]
                 label = ' '.join(c['label'].split(' ')[1:])
@@ -728,7 +733,9 @@ def build_river_section(rnum):
         for i, link in enumerate(links):
             ex, ey = ax + 55 + i * 14, ay + 130 + i * 68
             edges_svg.append(_curved_edge(ax, ay, ex, ey, EXTERNAL_COLOR, real=True, dashed=True, r1=22, r2=19,
-                                           from_label=river_label.split(chr(8212))[0].strip(), to_label=link['name'], kind='external_call'))
+                                           from_label=river_label.split(chr(8212))[0].strip(), to_label=link['name'], kind='external_call',
+                                           evidence_text=link.get('via', f"{link['name']} is a real external connector used here."),
+                                           evidence_source='EXTERNAL_RIVER_LINKS', zoom_href='galaxy_map_externals.html'))
             edge_colors_used.add(EXTERNAL_COLOR)
             icon = _connector_icon(link['name'])
             pts = ' '.join(f'{ex + 19*math.cos(math.radians(a))},{ey + 19*math.sin(math.radians(a))}' for a in range(0, 360, 60))
@@ -743,7 +750,9 @@ def build_river_section(rnum):
         for i, (skill, note) in enumerate(skills_here):
             skx, sky = ax - 55 - i * 14, ay - 130 - i * 68
             edges_svg.append(_curved_edge(ax, ay, skx, sky, skill_color, real=True, dashed=True, r1=22, r2=17,
-                                           from_label=river_label.split(chr(8212))[0].strip(), to_label=skill, kind='skill_stream'))
+                                           from_label=river_label.split(chr(8212))[0].strip(), to_label=skill, kind='skill_stream',
+                                           evidence_text=note or f'{skill} is a real skill cited for this river.',
+                                           evidence_source='SKILL_SECONDARY_RIVER', zoom_href='galaxy_map_skill_network.html'))
             edge_colors_used.add(skill_color)
             pts5 = ' '.join(f'{skx + 17*math.cos(math.radians(a-90))},{sky + 17*math.sin(math.radians(a-90))}' for a in range(0, 360, 72))
             nodes_svg.append(
@@ -792,7 +801,9 @@ def build_river_section(rnum):
             ang = -90 + (360 * i / n_links) + (180 / n_links if n_links > 1 else 0) + 15
             ex, ey = polar(cx, cy, ext_radius, ang)
             edges_svg.append(_curved_edge(cx, cy, ex, ey, EXTERNAL_COLOR, real=True, dashed=True, r1=40, r2=19,
-                                           from_label=river_label.split(chr(8212))[0].strip(), to_label=link['name'], kind='external_call'))
+                                           from_label=river_label.split(chr(8212))[0].strip(), to_label=link['name'], kind='external_call',
+                                           evidence_text=link.get('via', f"{link['name']} is a real external connector used here."),
+                                           evidence_source='EXTERNAL_RIVER_LINKS', zoom_href='galaxy_map_externals.html'))
             edge_colors_used.add(EXTERNAL_COLOR)
             icon = _connector_icon(link['name'])
             pts = ' '.join(f'{ex + 19*math.cos(math.radians(a))},{ey + 19*math.sin(math.radians(a))}' for a in range(0, 360, 60))
@@ -807,7 +818,9 @@ def build_river_section(rnum):
             ang = -90 + (360 * i / n_skills)
             skx, sky = polar(cx, cy, skill_radius, ang)
             edges_svg.append(_curved_edge(cx, cy, skx, sky, skill_color, real=True, dashed=True, r1=40, r2=17,
-                                           from_label=river_label.split(chr(8212))[0].strip(), to_label=skill, kind='skill_stream'))
+                                           from_label=river_label.split(chr(8212))[0].strip(), to_label=skill, kind='skill_stream',
+                                           evidence_text=note or f'{skill} is a real skill cited for this river.',
+                                           evidence_source='SKILL_SECONDARY_RIVER', zoom_href='galaxy_map_skill_network.html'))
             edge_colors_used.add(skill_color)
             pts5 = ' '.join(f'{skx + 17*math.cos(math.radians(a-90))},{sky + 17*math.sin(math.radians(a-90))}' for a in range(0, 360, 72))
             nodes_svg.append(

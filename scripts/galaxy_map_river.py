@@ -42,7 +42,14 @@ from graphify_river_group import (  # noqa: E402
     compute_module_ui_signal, rivers_needing_meanders,
     compute_river_flow_cycles, describe_river_cycle,
     compute_module_oracle_call_count,
+    compute_cross_module_function_calls, attribute_river_connection_function,
 )
+
+# P1 (Sep 25 2026) — computed once at module level, same "computed once,
+# not per-edge" precedent galaxy_map_current.py's own CROSS_CALLS already
+# set (rule 8, not re-derived differently here) — real evidence backing
+# every river-to-river RIVER_FLOWS edge's own click-to-inspect panel.
+_RIVER_CROSS_CALLS = compute_cross_module_function_calls()
 from graphify_river_group import inject_level_rail, inject_plan_overlay  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
 from graphify_river_group import render_bubble_row, INFRA_DRILLDOWN_CSS  # noqa: E402
@@ -333,8 +340,15 @@ def build_svg():
         color = RIVER_COLOR[rnum]
         short_label = RIVER_NAME[rnum].split('—')[0].strip()
         if not is_archived:
+            n_mods = len(RIVER_MODULES.get(rnum, []))
+            role_note = RIVER_ROLE_NOTE.get(rnum, '')
+            evidence = f'{short_label} is one of {n_live} live rivers, holding {n_mods} real module(s).'
+            if role_note:
+                evidence += f' {role_note}'
             edges_svg.append(_curved_edge(cx, cy, rx, ry, color, real=True, dashed=False, r1=hub_r1, r2=30,
-                                           from_label='Rivers', to_label=short_label, kind='river_link'))
+                                           from_label='Rivers', to_label=short_label, kind='river_link',
+                                           evidence_text=evidence, evidence_source='RIVER_MODULES/RIVER_ROLE_NOTE',
+                                           zoom_href=f'galaxy_map_module.html#river-{rnum}'))
             edge_colors_used.add(color)
         # G4 shipped — every river node is now a real clickable drill-down
         # into its own Level-2 module/dashboard-card detail, not a
@@ -477,9 +491,19 @@ def build_svg():
             col = INTERACTION_TYPE_COLOR.get(itype, '#6b7280')
             if tgt_num and tgt_num in river_pos:
                 tx, ty = river_pos[tgt_num]
+                evidence = f'{note} ({INTERACTION_TYPE_LABEL.get(itype, itype)}).'
+                attr = attribute_river_connection_function(src_num, tgt_num, note, cross_calls=_RIVER_CROSS_CALLS, itype=itype)
+                zoom = f'galaxy_map_module.html#river-{tgt_num}'
+                if attr:
+                    _from_mod, to_mod, to_func, reason = attr
+                    if to_mod and to_mod != 'main.js':
+                        evidence += f' Real attribution: {to_mod}.{to_func}() — {reason}.'
+                        zoom = f'galaxy_map_current.html#mod-{to_mod}'
                 edges_svg.append(_curved_edge(sx, sy, tx, ty, col, real=True, r1=30, r2=30,
                                                from_label=RIVER_NAME[src_num].split('—')[0].strip(),
-                                               to_label=RIVER_NAME[tgt_num].split('—')[0].strip(), kind=itype))
+                                               to_label=RIVER_NAME[tgt_num].split('—')[0].strip(), kind=itype,
+                                               evidence_text=evidence, evidence_source='RIVER_FLOWS/attribute_river_connection_function',
+                                               zoom_href=zoom))
                 edge_colors_used.add(col)
                 real_ring_edges.append((src_num, tgt_num))
             else:

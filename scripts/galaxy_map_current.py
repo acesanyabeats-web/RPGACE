@@ -458,7 +458,9 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
             ax, ay = pos[a]
             bx, by = pos[b]
             edges_svg.append(_curved_edge(ax, ay, bx, by, color, real=True, r1=26, r2=26,
-                                           from_label=a, to_label=b, kind='function_call'))
+                                           from_label=a, to_label=b, kind='function_call',
+                                           evidence_text=f'{a}() calls {b}() directly, within {module_name} — a real, traced same-module function call.',
+                                           evidence_source='compute_module_function_flow', zoom_href=f'#cur-{module_name}-{b}'))
     for f in band_funcs:
         if f not in pos:
             continue
@@ -523,7 +525,9 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
             sy = grid_cy + (i - (len(cross_out) - 1) / 2) * 40
             tgt_band = bands[func_to_band[b]]['label'] if b in func_to_band else '?'
             edges_svg.append(_curved_edge(ax, ay, out_x, sy, color, real=True, dashed=True, r1=26, r2=8,
-                                           from_label=a, to_label=f'{tgt_band}: {b}', kind='cross_band_call'))
+                                           from_label=a, to_label=f'{tgt_band}: {b}', kind='cross_band_call',
+                                           evidence_text=f'{a}() calls {b}() in the {tgt_band} band — a real, traced function call crossing this module\'s own ui/logic split.',
+                                           evidence_source='compute_module_function_flow', zoom_href=f'#cur-{module_name}-{b}'))
             nodes_svg.append(
                 f'<rect x="{out_x-52}" y="{sy-10}" width="104" height="20" rx="5" fill="#0f0f1a" stroke="{color}" stroke-width="1.2" stroke-dasharray="3,2" opacity="0.85"/>'
                 f'<text x="{out_x}" y="{sy+4}" text-anchor="middle" font-size="7.5" fill="{color}">↦ {tgt_band}: {b}</text>'
@@ -536,7 +540,9 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
             sy = grid_cy + (i - (len(cross_in) - 1) / 2) * 40
             src_band = bands[func_to_band[a]]['label'] if a in func_to_band else '?'
             edges_svg.append(_curved_edge(60, sy, bx, by, color, real=True, dashed=True, r1=8, r2=26,
-                                           from_label=f'{src_band}: {a}', to_label=b, kind='cross_band_call'))
+                                           from_label=f'{src_band}: {a}', to_label=b, kind='cross_band_call',
+                                           evidence_text=f'{a}() (in the {src_band} band) calls {b}() — a real, traced function call crossing this module\'s own ui/logic split.',
+                                           evidence_source='compute_module_function_flow', zoom_href=f'#cur-{module_name}-{a}'))
             nodes_svg.append(
                 f'<rect x="8" y="{sy-10}" width="104" height="20" rx="5" fill="#0f0f1a" stroke="{color}" stroke-width="1.2" stroke-dasharray="3,2" opacity="0.85"/>'
                 f'<text x="60" y="{sy+4}" text-anchor="middle" font-size="7.5" fill="{color}">⬅ {src_band}: {a}</text>'
@@ -552,13 +558,19 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
         if sig.get('output'):
             n_out += 1
             ox = alex_x + (n_out * 11 if n_out % 2 == 0 else -n_out * 11)
+            out_ev = f'{f}() produces real UI output Alex sees — its own body has a detected DOM write/render call (innerHTML, appendChild, _popup, or similar).'
             edges_svg.append(_curved_edge(fx, fy, ox, alex_y, ALEX_COLOR, real=True, dashed=True, r1=26, r2=20, offset_mult=0.6,
-                                           from_label=f, to_label='Alex', kind='ui_output'))
+                                           from_label=f, to_label='Alex', kind='ui_output',
+                                           evidence_text=out_ev, evidence_source='UI_OUTPUT_PATTERN', zoom_href=f'#cur-{module_name}-{f}'))
         if sig.get('input'):
             n_in += 1
             ix = alex_x + (n_in * 15 if n_in % 2 == 1 else -n_in * 15)
+            in_ev = f'{f}() receives real input from Alex — its own body has a detected event listener/click/form-value read.'
+            if sig.get('bridge'):
+                in_ev += f' Also bridged: {sig["bridge"]}.'
             edges_svg.append(_curved_edge(ix, alex_y, fx, fy, ALEX_COLOR, real=True, dashed=True, r1=20, r2=26, offset_mult=-0.6,
-                                           from_label='Alex', to_label=f, kind='ui_input'))
+                                           from_label='Alex', to_label=f, kind='ui_input',
+                                           evidence_text=in_ev, evidence_source='UI_INPUT_PATTERN', zoom_href=f'#cur-{module_name}-{f}'))
     # Real fix, Aug 26 2026 — Alex's own direct report: "alex is still not
     # clickable in video pipeline." Root cause: this hub was hand-built
     # (deliberately NOT routed through render_evidence_bubble() — see
@@ -649,7 +661,9 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
             for fname, target_fn in calls:
                 fx, fy = pos[fname]
                 edges_svg.append(_curved_edge(fx, fy, bx_col, by, tcolor, real=True, dashed=True, r1=26, r2=24,
-                                               from_label=fname, to_label=f'{target_mod}.{target_fn}', kind='backdoor_call'))
+                                               from_label=fname, to_label=f'{target_mod}.{target_fn}', kind='backdoor_call',
+                                               evidence_text=f'{fname}() calls {target_mod}.{target_fn}() directly — a real, traced RPGACE.modules.{target_mod}.{target_fn}() call.',
+                                               evidence_source='compute_cross_module_function_calls', zoom_href=f'galaxy_map_current.html#mod-{target_mod}'))
                 edge_colors_used.add(tcolor)
             t_rnum = _river_of.get(target_mod)
             nodes_svg.append(

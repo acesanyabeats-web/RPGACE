@@ -4485,21 +4485,35 @@ def _build_markers(colors):
 
 
 def _curved_edge(x1, y1, x2, y2, color, real=True, dashed=False, offset_mult=1, r1=0, r2=0, markers=True,
-                  from_label=None, to_label=None, kind=None):
+                  from_label=None, to_label=None, kind=None,
+                  evidence_text=None, evidence_source=None, zoom_href=None):
     """P0 edge evidence substrate (Sep 24 2026, Fable's D4/edges-as-
     gateways addendum): from_label/to_label/kind are optional and
     default to None — every one of the 27 real pre-existing call sites
     keeps working unchanged if it never passes them. When a caller DOES
     pass them, the rendered <path> carries real data-from/data-to/
     data-kind attributes plus a native SVG <title> tooltip (hover-
-    explain, zero JS needed for the tooltip itself) — the real hover-
-    explain substrate P1 (turning edges into clickable gateways) builds
-    on. This pass wires real labels into every call site where the
-    endpoints' own real identity is already in scope (rule 1 — never
-    invented, always the same data the call site already computed x/y
-    from); a genuinely ambiguous/ornamental edge (e.g. a fan-out spoke
-    with no distinct per-edge identity) is left unlabeled rather than
-    given a fabricated label."""
+    explain, zero JS needed for the tooltip itself).
+
+    P1 (Sep 25 2026, "edges as interactive evidence-explaining
+    gateways" — ceo_plan_items id 61d510db-...): evidence_text/
+    evidence_source/zoom_href are the real click-to-inspect substrate
+    this hover tooltip builds toward. A REASONED DEVIATION from the
+    original design record (records/2026-09/p1_edge_gateways_design_
+    2026-09-25.txt), named plainly rather than silently done: that
+    record proposed a separate global EDGE_EVIDENCE dict keyed by
+    (from_label, to_label, kind), reconstructed AFTER the fact from
+    bare label strings. Building it surfaced a simpler, more robust
+    real design — every call site already has the real evidence text
+    and zoom target as a LOCAL variable at the moment it computes x/y
+    (the RIVER_FLOWS note, the resolved module, the dashboard card's
+    primary module, etc.) — so passing it straight through here avoids
+    ever needing to re-match a label string back to its source later,
+    and avoids a second table that could drift from the first. Only
+    fires when evidence_text is actually passed — an edge with no real
+    evidence gets no data-evidence attribute, no `gm-edge-evidence`
+    class, and (per the shared JS) no click affordance at all, same
+    "no row no edge" honesty the dashed/real params already enforce."""
     dx, dy = x2 - x1, y2 - y1
     length = math.hypot(dx, dy) or 1
     ux, uy = dx / length, dy / length
@@ -4520,6 +4534,7 @@ def _curved_edge(x1, y1, x2, y2, color, real=True, dashed=False, offset_mult=1, 
         return (s or '').replace('&', '&amp;').replace('<', '&lt;').replace('>', '&gt;').replace('"', '&quot;')
     data_attrs = ''
     title_el = ''
+    cls = ''
     if from_label or to_label or kind:
         if from_label:
             data_attrs += f' data-from="{_e(from_label)}"'
@@ -4530,9 +4545,17 @@ def _curved_edge(x1, y1, x2, y2, color, real=True, dashed=False, offset_mult=1, 
         tip = ' → '.join(x for x in (from_label, to_label) if x)
         if kind:
             tip = f'{tip} ({kind})' if tip else kind
+        if evidence_text:
+            data_attrs += f' data-evidence="{_e(evidence_text)}"'
+            if evidence_source:
+                data_attrs += f' data-source="{_e(evidence_source)}"'
+            if zoom_href:
+                data_attrs += f' data-zoom="{_e(zoom_href)}"'
+            cls = ' class="gm-edge-evidence"'
+            tip = f'{tip} — click for details' if tip else 'click for details'
         if tip:
             title_el = f'<title>{_e(tip)}</title>'
-    return (f'<path d="M {tx1} {ty1} Q {cx_} {cy_} {tx2} {ty2}" fill="none" '
+    return (f'<path{cls} d="M {tx1} {ty1} Q {cx_} {cy_} {tx2} {ty2}" fill="none" '
             f'stroke="{color}" stroke-width="1.8" opacity="{op}"{dash} filter="url(#edgeglow)"{mk}{data_attrs}>'
             f'{title_el}</path>') if data_attrs else (
         f'<path d="M {tx1} {ty1} Q {cx_} {cy_} {tx2} {ty2}" fill="none" '
@@ -5642,6 +5665,74 @@ LEFT_NAV_JS = '''
 # `.toggle-row` ancestor (a safe generalization of orchestrator_
 # openmontage.py's own already-correct multi-group-safe pattern) so it
 # works identically whether a page has one toggle group or several.
+# P1 (Sep 25 2026) — "edges as interactive evidence-explaining gateways"
+# (ceo_plan_items id 61d510db-...). Real click-to-inspect substrate over
+# the data-evidence/data-source/data-zoom attributes _curved_edge() now
+# emits when a real caller passes evidence_text (28+ real call sites
+# across galaxy_map.py/galaxy_map_river.py/galaxy_map_module.py/
+# galaxy_map_current.py, all wired this same pass). Deliberately reads
+# the evidence straight off the clicked element's own dataset — no
+# separate lookup table to keep in sync (the original design record's
+# own EDGE_EVIDENCE global dict, superseded; see _curved_edge()'s own
+# docstring for the full reasoning). Only edges carrying the real
+# `gm-edge-evidence` class get a click handler — an edge with no real
+# evidence gets no click affordance at all, same "no row no edge"
+# honesty R22 already enforces elsewhere.
+GM_EDGE_PANEL_CSS = '''
+.gm-edge-evidence{cursor:pointer}
+.gm-edge-evidence:hover{filter:brightness(1.6)}
+.gm-edge-panel{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);
+  max-width:480px;width:calc(100% - 32px);z-index:99999;
+  background:#0f0f1a;border:1px solid #C9A84C;border-radius:10px;
+  padding:14px 16px;box-shadow:0 8px 32px rgba(0,0,0,0.55);
+  font-family:'Segoe UI',system-ui,sans-serif;color:#E2E2EC}
+.gm-edge-panel-head{display:flex;justify-content:space-between;align-items:flex-start;
+  gap:10px;font-size:12.5px;font-weight:700;color:#C9A84C;margin-bottom:8px}
+.gm-edge-panel-close{cursor:pointer;color:#8a8a9a;font-size:16px;line-height:1;padding:0 2px}
+.gm-edge-panel-close:hover{color:#E2E2EC}
+.gm-edge-panel-body{font-size:12px;line-height:1.6;color:#c8c8d8}
+.gm-edge-panel-source{font-size:10px;color:#6a6a78;margin-top:8px}
+.gm-edge-panel-zoom{display:inline-block;margin-top:10px;font-size:11.5px;font-weight:700;
+  color:#1a1608;background:#C9A84C;padding:5px 12px;border-radius:14px;text-decoration:none}
+.gm-edge-panel-zoom:hover{filter:brightness(1.1)}
+'''
+
+GM_EDGE_INSPECTOR_JS = '''
+function _gmInitEdgeInspector() {
+  var panel = null;
+  function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+  function closePanel() { if (panel) { panel.remove(); panel = null; } }
+  function showPanel(edge) {
+    closePanel();
+    var evidence = edge.dataset.evidence;
+    if (!evidence) return;
+    var source = edge.dataset.source, zoom = edge.dataset.zoom;
+    var from = edge.dataset.from, to = edge.dataset.to;
+    panel = document.createElement('div');
+    panel.className = 'gm-edge-panel';
+    panel.innerHTML =
+      '<div class="gm-edge-panel-head"><span>' + esc(from) + (to ? ' &#8594; ' + esc(to) : '') + '</span>' +
+      '<span class="gm-edge-panel-close">&times;</span></div>' +
+      '<div class="gm-edge-panel-body">' + esc(evidence) + '</div>' +
+      (source ? '<div class="gm-edge-panel-source">Source: ' + esc(source) + '</div>' : '') +
+      (zoom ? '<a class="gm-edge-panel-zoom" href="' + zoom + '">Go there &#8594;</a>' : '');
+    document.body.appendChild(panel);
+    panel.querySelector('.gm-edge-panel-close').addEventListener('click', closePanel);
+  }
+  document.querySelectorAll('.gm-edge-evidence').forEach(function(edge) {
+    edge.addEventListener('click', function(ev) { ev.stopPropagation(); showPanel(edge); });
+  });
+  document.addEventListener('click', function(ev) {
+    if (panel && !panel.contains(ev.target)) closePanel();
+  });
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _gmInitEdgeInspector);
+} else {
+  _gmInitEdgeInspector();
+}
+'''
+
 GM_TOGGLE_JS = '''
 function _gmInitToggles() {
   document.querySelectorAll('.toggle-row').forEach(function(row) {
@@ -5848,7 +5939,7 @@ def _write_shared_nav_assets():
     edit was needed for those two)."""
     Path('graphify-out/galaxy_map_shared.css').write_text(
         LEFT_NAV_CSS + '\n' + DIMENSION_INDEX_CSS + '\n' + INFRA_DRILLDOWN_CSS
-        + '\n' + FULL_CHOICE_CSS + '\n' + METHODOLOGY_DETAILS_CSS
+        + '\n' + FULL_CHOICE_CSS + '\n' + METHODOLOGY_DETAILS_CSS + '\n' + GM_EDGE_PANEL_CSS
     )
     nav_html = left_nav_html(None)
     # Deliberately scoped to .gside-level/.gside-dim only, matching the
@@ -5866,7 +5957,7 @@ def _write_shared_nav_assets():
     )
     Path('graphify-out/galaxy_map_shared.js').write_text(
         'document.body.insertAdjacentHTML("afterbegin", ' + json.dumps(nav_html) + ');\n'
-        + LEFT_NAV_JS + '\n' + active_js + '\n' + GM_TOGGLE_JS
+        + LEFT_NAV_JS + '\n' + active_js + '\n' + GM_TOGGLE_JS + '\n' + GM_EDGE_INSPECTOR_JS
     )
 
 

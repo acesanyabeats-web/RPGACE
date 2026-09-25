@@ -34,3 +34,38 @@ if (document.readyState === 'loading') {
 } else {
   _gmInitToggles();
 }
+
+
+function _gmInitEdgeInspector() {
+  var panel = null;
+  function esc(s) { var d = document.createElement('div'); d.textContent = s || ''; return d.innerHTML; }
+  function closePanel() { if (panel) { panel.remove(); panel = null; } }
+  function showPanel(edge) {
+    closePanel();
+    var evidence = edge.dataset.evidence;
+    if (!evidence) return;
+    var source = edge.dataset.source, zoom = edge.dataset.zoom;
+    var from = edge.dataset.from, to = edge.dataset.to;
+    panel = document.createElement('div');
+    panel.className = 'gm-edge-panel';
+    panel.innerHTML =
+      '<div class="gm-edge-panel-head"><span>' + esc(from) + (to ? ' &#8594; ' + esc(to) : '') + '</span>' +
+      '<span class="gm-edge-panel-close">&times;</span></div>' +
+      '<div class="gm-edge-panel-body">' + esc(evidence) + '</div>' +
+      (source ? '<div class="gm-edge-panel-source">Source: ' + esc(source) + '</div>' : '') +
+      (zoom ? '<a class="gm-edge-panel-zoom" href="' + zoom + '">Go there &#8594;</a>' : '');
+    document.body.appendChild(panel);
+    panel.querySelector('.gm-edge-panel-close').addEventListener('click', closePanel);
+  }
+  document.querySelectorAll('.gm-edge-evidence').forEach(function(edge) {
+    edge.addEventListener('click', function(ev) { ev.stopPropagation(); showPanel(edge); });
+  });
+  document.addEventListener('click', function(ev) {
+    if (panel && !panel.contains(ev.target)) closePanel();
+  });
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', _gmInitEdgeInspector);
+} else {
+  _gmInitEdgeInspector();
+}
