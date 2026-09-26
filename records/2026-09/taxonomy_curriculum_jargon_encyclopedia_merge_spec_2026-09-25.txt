@@ -1385,3 +1385,107 @@ partial view).
 - Open, real question for Alex: whether to continue with further
   batches of this same shape to close the remaining ~1,280-term gap,
   or pause here for his review pass first.
+
+================================================================
+SECTION 22 - REAL FULL WIPE: TAXONOMY_TREE EMPTIED FOR A FRESH
+REBUILD, JARGON_ENCYCLOPEDIA LEFT UNTOUCHED
+================================================================
+
+22.1 ALEX'S REAL VERBATIM INSTRUCTION
+"empty all phyla of all classes and lower steps, we are making
+fresh ones, the structure is horrible, hence why i need jargon to
+be filled out so i can then work through how to structure phylums"
+
+Read plainly: not "leave it archived" (already true since the Sep 25
+restructure) but a real, deliberate escalation - actually clear the
+old branch/leaf rows out entirely, since even sitting archived they
+still represent "the structure" Alex has already judged not worth
+keeping. The jargon_encyclopedia build-out (now 520 real pending
+terms) is explicitly the reason this is safe to do now - his own
+stated plan is jargon first, then a genuinely fresh phylum structure
+built around the reviewed terms, not the old tree.
+
+22.2 REAL EVIDENCE GATHERED BEFORE TOUCHING ANYTHHING (rule 1/4)
+  SELECT node_type, status, count(*) FROM taxonomy_tree GROUP BY
+    node_type, status;
+  -> {branch, archived, 411}, {leaf, archived, 260}. 671 total, ALL
+     archived, ZERO active/accepted rows. No phylum-root rows exist
+     in this table at all (phylum roots are a hardcoded concept via
+     phylum_number, never a stored row) - so every real row in the
+     table IS "classes and lower steps," confirming the literal
+     scope of Alex's ask matches a full DELETE FROM taxonomy_tree.
+
+Confirmed the real pre-archive safety snapshot
+  (records/2026-09/taxonomy_tree_snapshot_2026-09-25.json) is a
+  genuine, complete, restorable backup before deleting anything -
+  it is a wrapper object ({snapshot_taken_at, reason, table,
+  row_count, rows}), not a bare array (an earlier quick check
+  misread it as 5 rows for exactly this reason); row_count=671
+  matches len(rows)=671 exactly, sample row carries every real
+  column (id/parent_id/depth/name/latin_name/phylum_number/path/
+  node_type/explainer/deep_content/sources/gap_score/status/
+  created_at/updated_at). This is the real reason a hard DELETE
+  (rather than a 2nd archive-style soft flag) was judged safe here -
+  a genuine, already-committed, git-preserved restore path exists if
+  Alex ever wants any of this old structure back, even though
+  Supabase itself has no backup/PITR.
+
+22.3 REAL FOREIGN-KEY DEPENDENTS CHECKED BEFORE DELETING (rule 4)
+A first bare `DELETE FROM taxonomy_tree` correctly failed loud
+  (23503, FK violation via taxonomy_links.node_a_id) rather than
+  silently doing a partial delete - exactly the "fail loud" design
+  this project's own rule 7 asks for. Queried
+  information_schema.table_constraints for every real FK referencing
+  taxonomy_tree: taxonomy_tree.parent_id (self-ref, resolves on a
+  full delete), encyclopedia.taxonomy_node_id, taxonomy_links.
+  node_a_id/node_b_id, jargon_encyclopedia.taxonomy_node_id.
+Row-counted the real impact before deciding how to handle each:
+  taxonomy_links: 105 rows, ALL referencing now-deleted nodes - a
+    real fusion-link table that becomes entirely meaningless once
+    the concepts it links no longer exist; DELETED, not preserved,
+    since Alex's own "the structure is horrible, fresh ones" framing
+    covers derived link data exactly as much as the tree itself.
+  encyclopedia.taxonomy_node_id: only 1 real row set - genuine
+    Encyclopedia content, NOT deleted; its taxonomy_node_id was set
+    to NULL instead (SET NULL, not a row delete) so the real insight
+    content survives, just decoupled from the now-gone old tree node
+    it used to point at.
+  jargon_encyclopedia.taxonomy_node_id: 0 rows set (confirmed - the
+    real C2 "Review Archived Terms" keep/edit path that would set
+    this FK has never actually been run by Alex yet) - zero real
+    impact, no action needed.
+  taxonomy_proposals/taxonomy_decision_log: confirmed via the same
+    information_schema query to carry NO real FK constraint into
+    taxonomy_tree (they store node names/paths as loose text, not a
+    live reference) - left untouched, out of scope of this wipe,
+    their own historical rows stay exactly as they were.
+
+22.4 REAL EXECUTION
+  UPDATE encyclopedia SET taxonomy_node_id = NULL WHERE
+    taxonomy_node_id IS NOT NULL;                     (1 row)
+  DELETE FROM taxonomy_links;                          (105 rows)
+  DELETE FROM taxonomy_tree;                            (671 rows)
+
+22.5 REAL POST-DELETE VERIFICATION
+  taxonomy_tree: 0 rows.
+  taxonomy_links: 0 rows.
+  jargon_encyclopedia: unchanged, still 520 rows, all status=
+    'pending' - confirmed genuinely untouched by this operation,
+    exactly matching the real scope of Alex's ask (empty the PHYLUM
+    STRUCTURE, not the jargon anchor content he explicitly wants
+    kept and built out further).
+
+22.6 REAL, HONEST STATE NOW
+- Every phylum (1-21) is now a real, literally empty canvas below
+  the phylum level - zero branches, zero leaves, zero fusion links.
+  The phylum numbers/names themselves are unaffected (they were
+  never stored rows to begin with).
+- jargon_encyclopedia's 520 real pending terms are the real anchor
+  content Alex's own plan calls for reviewing/finishing FIRST, before
+  any new phylum structure gets built around them.
+- The C2 "Review Archived Terms" UI (`_showArchivedReviewQueue`) will
+  now correctly show an empty queue for every phylum, since there is
+  genuinely nothing archived left to review - this is the real
+  intended fresh-slate state, not a bug.
+- No code changed this pass (pure Supabase data operation) - no
+  re-minify/cache-bust needed.
