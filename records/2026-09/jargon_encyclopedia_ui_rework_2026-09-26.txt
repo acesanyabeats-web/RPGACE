@@ -1,0 +1,133 @@
+JARGON ENCYCLOPEDIA UI REWORK + TAXONOMY DOM RESTRUCTURE — Sep 26 2026
+=======================================================================
+
+1. REAL ALEX ASK, VERBATIM
+"i currently have no way of accessing jargon encyclopedia terms, it is
+poorly designed. making the taxonomy dom way better in structure with
+proper landing button page, and a jargon ui rework to get it working as
+if i was a consumer"
+
+2. REAL /interrogation ROUND 1 (AskUserQuestion, both answered)
+Q1 (what should the reworked view show): "All terms, status badge, act
+  inline (Recommended)" — browse all 520 pending + any accepted terms,
+  each tagged with status, Accept/Edit/Reject inline on the same view.
+Q2 (where should this live structurally): rejected all 3 offered
+  options outright — "no make jargon encyclopedia the same as video
+  worm is for book worm and 2" — a genuine real redirection to a
+  concrete existing precedent in the live codebase, not a guessed
+  default.
+
+3. REAL /interrogation ROUND 2 (clarifying "and 2")
+Asked what "and 2" meant. Answer: "no auidio worm and jargon
+  encyclopedia is the for book worm and taxonomy and proposal to each
+  other" — genuinely hard to parse; Sonnet's own synthesis (Bookworm<->
+  Taxonomy two-way proposal bridge) was WRONG, and Alex said so
+  directly and with real frustration: "no for fuck sake, bookworm has
+  auidio worm in it, i want jargon to have exact same set-up with exact
+  ui pop up as that in taxonomy, for fuck sake why are you not getting
+  it?"
+
+4. REAL EVIDENCE GATHERED BEFORE GUESSING AGAIN (rule 1/4)
+Direct grep of rpgace_core.js resolved "audio worm" as a real
+  mishearing/typo for "MusicWorm" — a real, already-shipped worm
+  identity inside Bookworm's own "worm picker." Read the real live
+  code:
+  - dashDeck.MODULES' 'bookworm' card: go() opens dashDeck._openBookworm()
+    — a real popup ("Choose where to go") listing jump buttons: Open
+    Bookworm, a real live-queried Resume button, "Open Videoworm",
+    "Videoworm: Find Videos", "Open MusicWorm", "Open Bibliography" —
+    each just calls self._openPage(panelId) or showPage(slug).
+  - leftNav's own item registry already nests Videoworm/Bibliography
+    under Bookworm's entry via a real `subItems` array
+    ({icon,label,page}), rendered as .ln-subcard buttons under the
+    parent card.
+  - CONFIG.pages carries real slugs for videoworm/musicworm/bibliography
+    etc; each is a real permanent #page-<slug> div, self-injected via
+    that module's own 'page:show' hook listener — never routed through
+    dashDeck.PAGE_PANELS/_openPage for these two mechanisms specifically
+    (leftNav._go and the picker's jump buttons both just call bare
+    showPage(slug) directly).
+This is THE real, already-proven "exact same setup" pattern Alex meant.
+
+5. REAL BUILD, PER THAT EXACT PRECEDENT
+(a) CONFIG.pages gained `jargonEncyclopedia: 'jargon-encyclopedia'`.
+(b) leftNav's Phylum Path entry gained a real `subItems` array
+    (`[{icon:'📖', label:'Jargon Encyclopedia', page:P.jargonEncyclopedia}]`)
+    — byte-for-byte the same mechanism Bookworm's own entry already
+    uses for Videoworm/Bibliography.
+(c) dashDeck's 'taxonomy' card go() changed from its old smart bypass
+    (auto-open the review queue when pending>0, else navigate) to a
+    real new picker popup, dashDeck._openTaxonomy() — same shape as
+    _openBookworm byte-for-byte (eyebrow/title/accent/width, a real
+    live-queried pending-count note, jump buttons: "Review Pending
+    Placements", "Browse Phylum Path", "Open Jargon Encyclopedia").
+    Real, deliberate behavior change named plainly: this card now
+    ALWAYS opens the picker first, matching Bookworm's own card
+    exactly, rather than auto-bypassing to one specific destination.
+(d) jargonEncyclopedia module rebuilt in full:
+    - Removed: _injectButton (the button crammed onto Phylum Path's
+      title) and _openGlossary (the accepted-only popup that rendered
+      permanently empty against 520 real pending rows — the actual
+      root cause of "no way of accessing jargon encyclopedia terms").
+    - Added: a real standalone page (#page-jargon-encyclopedia),
+      self-injected via its own 'page:show' hook listener, same
+      pattern phylumPath/bookworm already use.
+    - The new page queries EVERY status (pending/accepted/rejected),
+      not just accepted — real status badges (🟡/🟢/🔴), a filter chip
+      row (All/Pending/Accepted/Rejected), and a search box.
+    - Real inline Accept/Edit/Reject per pending term. Accept/Reject
+      call RPGACE.modules.phylumPath._resolvePendingTerm(row, action)
+      directly (cross-module call to the ALREADY-EXISTING, proven write
+      function — never a second, duplicate write path, rule 8). Edit
+      opens a small dashDeck._popup()-based editor (term + explainer
+      fields), then calls the same _resolvePendingTerm with the edited
+      values.
+    - Batched linked-Encyclopedia-insight fetch preserved unchanged
+      from the old code (one query for every visible term with a real
+      taxonomy_node_id, never N+1).
+(e) Phylum Path's own page shell: the "🗄️ Review Archived Terms" and
+    "📋 Review Pending Terms" buttons REMOVED. The archived-review one
+    is genuinely dead right now (taxonomy_tree is a real 0-row table
+    since the same-day full wipe — nothing to review); the pending one
+    is superseded by the new Jargon Encyclopedia page. Neither
+    underlying function was deleted (_showArchivedReviewQueue/
+    _showPendingTermsReviewQueue/_resolvePendingTerm all still exist,
+    kept-on-disk per this project's own "harmless unused" precedent —
+    _resolvePendingTerm specifically is very much still live, called
+    cross-module from the new page).
+(f) leftNav._go's own real defensive guard (previously phylumPath-only,
+    protecting against a click racing the page shell's own late
+    setTimeout injection) generalized to cover jargonEncyclopedia too —
+    same real race, same real fix, done once instead of copied twice
+    (rule 8).
+
+6. REAL VERIFICATION
+node --check rpgace_core.js clean at every edit point. Re-minified
+  (rpgace_core.min.js), cache-bust bumped 20260926a. No grep hits for
+  the removed function names/ids anywhere except: (a) other unrelated
+  modules' own _injectButton (morningBrief, oracle overlay — untouched,
+  different modules), and (b) a few historical COMMENT references in
+  other modules citing the old _openGlossary shape as a precedent
+  example — stale comment text only, not live code, left as a real,
+  minor, out-of-scope accepted debt (fixing every historical
+  cross-reference comment in the whole file is disproportionate to
+  this fix, rule 11).
+oracleAppGrounding.SELF_KNOWLEDGE's TAXONOMY paragraph updated to match:
+  names the new standalone page, its real entry points, and the
+  now-removed buttons, so Oracle doesn't describe a UI that no longer
+  exists. Both standing content-correctness checks
+  (check_self_knowledge_contradictions.py/check_self_knowledge_staleness.py)
+  and check_current_state_bloat.py all run clean after every edit.
+
+7. HONEST, NAMED SCOPE LIMITS
+- Untested by Alex's own hand — this session cannot load a real
+  browser against rpgace.vercel.app (standing, already-documented
+  proxy/network limitation, see CLAUDE.md's own Hand-testing bullet).
+- The old "audio worm"/two-way-proposal-bridge misread (Round 2 of the
+  interrogation) was a genuine wrong turn, corrected only once real
+  code evidence was checked rather than guessed at a third time — kept
+  in this record plainly, per this project's own "wrong turns are part
+  of the real record" convention (Bedtime skill's own guardrail).
+- Stale historical comment cross-references to the old _openGlossary
+  shape (in other, unrelated modules) were found and deliberately left,
+  named above — not a silent gap.

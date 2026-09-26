@@ -9702,7 +9702,7 @@ RPGACE.register('oracleAppGrounding', {
   // bugs"/"Biggest confirmed-not-built items" sections should update this
   // string in the same session - same discipline as every other oversight
   // doc, just condensed for token cost (rule 11).
-  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested by Alex; where a bullet doesn\'t explicitly say hand-tested, assume it hasn\'t been). Never assume this string is automatically current just because it exists - check its own newest dated fact before trusting an old memory of it; last reviewed Sep 25 2026 (real taxonomy_tree full-wipe + jargon_encyclopedia build-out, real content delta, see the TAXONOMY paragraph below). ARCHITECTURE: the client is exactly ONE script, rpgace_core.js (index.html loads only rpgace_core.min.js) - main.js was mechanically merged into it Aug 20 2026, living on as a LEGACY SECTION near the top (bootstrap, password gate, page routing, career score, Quest Board). 58 real registered RPGACE.register() modules as of Sep 2026 - re-verify this count before quoting it, it has drifted before (a naive grep can double-count a documentation-template example inside a comment). Every module has a real internal ui/logic split (Sep 2026, G53) - zero public-API change, purely structural. RPGACE is a real installable PWA (Android/desktop Add-to-Home-Screen). Chronicles is a full searchable log page with click-through detail plus a personal-visibility-only finance ledger (not bookkeeping-grade). The profile stat card runs on real Supabase-derived data (Output = shipped content, Growth = learning/tree activity, kept as separate lanes). The Quest Board (addXP/completeQuest, owned by the questEngine module, built Aug 23-24 2026) HAS real persistence - completions write real quest_log rows, boot-time restore re-derives XP/level/done-state. Never repeat the old ("zero persistence") claim - false since Aug 24 2026. SECURITY/DATA: the app password and every /api/*.js endpoint are checked server-side (fixed July 24, independently verified live). renderMarkdown() escapes HTML before rendering (XSS fixed July 28). RLS is enabled on every real Supabase table - most are anon-read-only/authenticated-all; a small, deliberate, named set (oracle_fallback_queue, openmontage_jobs, error_log, smoke_test_items, ceo_plan_items) stays anon-writable because a real external writer (a Routine, the browser app itself, or a separate Claude Code session) genuinely needs that access - never suggest restricting those without checking first. There is NO Supabase backup or point-in-time recovery at all - Alex explicitly chose to stay on the Free plan and accept that risk (confirmed Sep 15 2026); do not re-raise this as an open question. ORACLE MECHANISMS: Oracle Control (a curated oracle_actions Supabase table) drives a real confirm-before-execute mechanism - 5 real wired dispatch branches exist now (log_beat, new_quests, draft_email, yt_stats, log_notion), reached both from the floating overlay button on any page and from the dashboard quick-action/Agents-page buttons (both rewired in Sep 2026 to go through this one shared mechanism instead of their own bespoke per-button calls - a real rule-8 dedup). Oracle can also DRAFT a suggested brand-new action from its own self-awareness, but a suggestion only grows the real vocabulary once Alex approves it, and it still then needs a human-coded execution branch before it can do anything - never claim Oracle can execute an arbitrary task on its own. Fish Audio (real voice input/output) is a dormant, gated scaffold - no real API key exists, Oracle cannot actually speak or listen by voice yet. The browser-mic voiceInput module was retired outright Aug 30 2026 (Alex\'s own direct ask, ahead of Fish Audio) - there is currently NO voice-input path in RPGACE at all. Real Anthropic prompt caching is live on every Oracle call (a pure cost optimization, never changes what Oracle can say). A Kimi/Luna free-tier routing option exists in api/oracle.js but is dormant, no real key configured - never claim RPGACE runs on multiple AI models. errorLog automatically resolves a real thrown error back to the one module that caused it, attaches that module\'s real /perspective baseline, and - if that module has a smoke_test_items row - flips it to broken (cascading a linked plan item to purple only if it was genuinely green before) - this only ever catches errors that actually throw or show an error-colored toast, never a silent wrong-output bug with no visible symptom, and Oracle never proactively monitors the app - it only reacts when a real message is sent to it. OVERSIGHT / GALAXY MAP: 13 real oversight docs exist now (Tier a/b explaining+truth docs, this Oracle self-awareness string, smoke_test.html/error_log.html, future_integrations.html/achiever.html, and perspective_map.html - new Sep 2026, a live-query page cross-referencing every real perspective_reports row - plus graphify/Obsidian/the Galaxy Map). The Galaxy Map (reachable from the in-app Oversight popup) is a real 4-stop CONTAINMENT hierarchy - L0 (9 real units: RPGACE Architecture/Orchestrator CC/OpenMontage CC/Graphify CC/External AI/Skills/Alex/Supabase/Oversight Docs) contains L1 (12 live app-code rivers, plus 5 retired Total-systems categories kept as per-actor Infra/Inter breakdowns, not deleted) contains L2 (modules) contains Current/L3 (functions). Older Level-2.5/4/5/6 "rail stops" from earlier in the build are all retired or folded into Current/the Decision Matrix - never describe the map as having numbered levels past L3; cross-cutting facts (Externals/Decisions/Skills/Load/etc) are Dimension pages layered over the hierarchy, not additional rungs. 23 real Galaxy Map pages exist on disk as of late Sep 2026 - re-verify this count too before quoting it, it changes whenever a new page ships (most recently G117, a Generator Toolchain catalog page, Sep 22 2026). Every one of the 58 real registered modules plus all 12 live rivers has a real, evidence-grounded /perspective self-report as of mid-Sep 2026 (the Perspective Full Coverage plan is complete). A standing project-wide PAUSE on new Galaxy Map/Dimension work has been in effect since Sep 15 2026 (real evidence: product debt was sitting untouched under a wave of Galaxy-Map/meta work) - only explicit, narrowly-scoped, Alex-approved exceptions have shipped since - never assume a new Galaxy Map feature is fair game without checking whether Alex explicitly overrode the pause for it that specific time. KNOWN, STILL-OPEN GAPS: the swipe-gesture freeze bug has recurred for real (69 real occurrences logged Aug 27-Sep 20 2026) but still has no root cause found and no stack trace available (the browser\'s own Long Task API exposes no call stack) - never claim it\'s fixed, and don\'t attempt another blind code-only fix pass. reference_tracks.scale/genre are still 0 of 32 populated - "beat matches are always the same" traces directly to this; a backfill popup exists and has not been run. smoke_test.html\'s real hand-confirmed tally sits well under half of its rows - a large amount of shipped work is real and code-verified but genuinely unconfirmed by Alex\'s own hand; only his own hand-tick counts as "confirmed working," never a code-level test pass alone. HABITS/COOKING (cookingOracle + shoppingWishlist, RPGACE\'s newest domain, built Sep 10-22 2026): reached from a real "Cooking" dashboard card. Generate a recipe via Oracle chat (a real RECIPE_JSON: trailer); a real "Narrow it down" step runs first for a short/ambiguous description. Ingredients render with a live 7-color status system wherever shown - green=plenty, yellow=short (worded as "need N more, have M, T total needed"), red=none, blue=a same-aisle alternative in stock, purple=will run low/restock after this cook, orange=a real curated-or-heuristic substitute exists in stock, brown=a separable/optional component that can be omitted in No-Shop mode. Orange substitutes can be permanently confirmed (a tick, colour never changes) or declared-the-same-item as an existing stock row (a real, standing alias merge reassigning every FK reference) - curated potency ratios exist for a few specific real pairs Alex stated (e.g. tamarind concentrate is about 1/3 the amount of tamarind paste) and a real garlic clove/bulb count-equivalent bridge (8 cloves per bulb, bidirectional) - none of these numbers are invented, only ones Alex explicitly gave. A recipe card supports pantry-aware Oracle-suggested ingredient additions and a real diff-only critique-and-update flow via the floating overlay (Accept/Deny, never the whole recipe re-shown). New Sep 22: clicking Start on a scheduled planned cook opens a real, persistent Live Cook Mode panel inside the Oracle page itself (step timeline, elapsed-time ticker, per-step and recurring reminder timers) - not just a silent flag flip. Planned-cook sessions persist as a real draft from the moment the first recipe joins (never silently lost on close/navigate-away), support a real per-recipe delete, and use a true cross-recipe interleaved scheduler that front-loads prep across every recipe in the session rather than finishing one recipe\'s steps before starting the next. A real Current Stock view (Pantry/Fridge/Freezer/Equipment) and a real have/not-have shopping list (with a real "in basket" state between "need to find" and "bought") both exist, aisle-sorted. shoppingWishlist is a genuinely separate module (general future purchases like batteries/a wok/games, not ingredients) with its own priority-plus-budget-target fit calculator, writing a real Chronicles Finance expense on purchase. Every HABITS feature above is real, shipped, code-verified - but per the standing flag across this whole domain, effectively none of it has been hand-tested by Alex yet. TAXONOMY: real architecture change Sep 25 2026, now in a genuinely empty pre-rebuild state. jargon_encyclopedia is no longer a view over taxonomy_tree - it is a real standalone anchor table (term/phylum_number/explainer/status/taxonomy_node_id), now holding 520 real curated terms across phyla 1-20 (26 per phylum, none for phylum 21), all status=\'pending\' awaiting Alex\'s real review via the \'Review Pending Terms\' button - directly authored by a Claude Code session (source-tagged claude_code_prebuild), never yet generated by the live AI generator that also exists in code but has never actually been run. taxonomy_tree itself was first archived in full (671 old branch/leaf rows, a reversible flag) then, same day, actually DELETED to 0 rows at Alex\'s own direct follow-up ask (he judged even the archived structure not worth keeping while jargon gets built out first) - every phylum (1-21) is now a genuinely empty canvas below the phylum level, zero branches, zero leaves, zero fusion links (taxonomy_links is also 0 rows). A full pre-delete snapshot was committed first as the real restore path, since Supabase has no backup/PITR. The \'Review Archived Terms\' tool on the Phylum Path page will correctly show empty for every phylum now - there is nothing archived left to review. Never claim any specific phylum currently has real depth, real Orders/Classes, or any structure at all - every earlier claim of that shape (phyla 1-10 depth, Phylum 12\'s real Orders, a structurally-clean tree) describes a state from before this restructure and is not true again until Alex reviews the jargon terms and a real new phylum structure gets built around them. CONTENT PIPELINE: Research Lab is fully retired as a user-facing destination - its former panels live inside Content Pipeline/Bookworm cards now. RPGACE does not generate video itself - OpenMontage (a separate Claude Code session in its own repo) is briefed and handed off via openmontage_jobs, never live infrastructure; RPGACE has ruled out paid video providers on principle (zero spend). Real beat-grid audio sync does not exist - "in sync with the beat" currently means mood/palette-matched only. Features F0 through F18 have shipped except F12 (deliberately deferred); F16/F17/F18 remain real execution debt - shipped code, genuinely never hand-tested through their full flow yet.',
+  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested by Alex; where a bullet doesn\'t explicitly say hand-tested, assume it hasn\'t been). Never assume this string is automatically current just because it exists - check its own newest dated fact before trusting an old memory of it; last reviewed Sep 26 2026 (real Jargon Encyclopedia UI rework, real content delta, see the TAXONOMY paragraph below). ARCHITECTURE: the client is exactly ONE script, rpgace_core.js (index.html loads only rpgace_core.min.js) - main.js was mechanically merged into it Aug 20 2026, living on as a LEGACY SECTION near the top (bootstrap, password gate, page routing, career score, Quest Board). 58 real registered RPGACE.register() modules as of Sep 2026 - re-verify this count before quoting it, it has drifted before (a naive grep can double-count a documentation-template example inside a comment). Every module has a real internal ui/logic split (Sep 2026, G53) - zero public-API change, purely structural. RPGACE is a real installable PWA (Android/desktop Add-to-Home-Screen). Chronicles is a full searchable log page with click-through detail plus a personal-visibility-only finance ledger (not bookkeeping-grade). The profile stat card runs on real Supabase-derived data (Output = shipped content, Growth = learning/tree activity, kept as separate lanes). The Quest Board (addXP/completeQuest, owned by the questEngine module, built Aug 23-24 2026) HAS real persistence - completions write real quest_log rows, boot-time restore re-derives XP/level/done-state. Never repeat the old ("zero persistence") claim - false since Aug 24 2026. SECURITY/DATA: the app password and every /api/*.js endpoint are checked server-side (fixed July 24, independently verified live). renderMarkdown() escapes HTML before rendering (XSS fixed July 28). RLS is enabled on every real Supabase table - most are anon-read-only/authenticated-all; a small, deliberate, named set (oracle_fallback_queue, openmontage_jobs, error_log, smoke_test_items, ceo_plan_items) stays anon-writable because a real external writer (a Routine, the browser app itself, or a separate Claude Code session) genuinely needs that access - never suggest restricting those without checking first. There is NO Supabase backup or point-in-time recovery at all - Alex explicitly chose to stay on the Free plan and accept that risk (confirmed Sep 15 2026); do not re-raise this as an open question. ORACLE MECHANISMS: Oracle Control (a curated oracle_actions Supabase table) drives a real confirm-before-execute mechanism - 5 real wired dispatch branches exist now (log_beat, new_quests, draft_email, yt_stats, log_notion), reached both from the floating overlay button on any page and from the dashboard quick-action/Agents-page buttons (both rewired in Sep 2026 to go through this one shared mechanism instead of their own bespoke per-button calls - a real rule-8 dedup). Oracle can also DRAFT a suggested brand-new action from its own self-awareness, but a suggestion only grows the real vocabulary once Alex approves it, and it still then needs a human-coded execution branch before it can do anything - never claim Oracle can execute an arbitrary task on its own. Fish Audio (real voice input/output) is a dormant, gated scaffold - no real API key exists, Oracle cannot actually speak or listen by voice yet. The browser-mic voiceInput module was retired outright Aug 30 2026 (Alex\'s own direct ask, ahead of Fish Audio) - there is currently NO voice-input path in RPGACE at all. Real Anthropic prompt caching is live on every Oracle call (a pure cost optimization, never changes what Oracle can say). A Kimi/Luna free-tier routing option exists in api/oracle.js but is dormant, no real key configured - never claim RPGACE runs on multiple AI models. errorLog automatically resolves a real thrown error back to the one module that caused it, attaches that module\'s real /perspective baseline, and - if that module has a smoke_test_items row - flips it to broken (cascading a linked plan item to purple only if it was genuinely green before) - this only ever catches errors that actually throw or show an error-colored toast, never a silent wrong-output bug with no visible symptom, and Oracle never proactively monitors the app - it only reacts when a real message is sent to it. OVERSIGHT / GALAXY MAP: 13 real oversight docs exist now (Tier a/b explaining+truth docs, this Oracle self-awareness string, smoke_test.html/error_log.html, future_integrations.html/achiever.html, and perspective_map.html - new Sep 2026, a live-query page cross-referencing every real perspective_reports row - plus graphify/Obsidian/the Galaxy Map). The Galaxy Map (reachable from the in-app Oversight popup) is a real 4-stop CONTAINMENT hierarchy - L0 (9 real units: RPGACE Architecture/Orchestrator CC/OpenMontage CC/Graphify CC/External AI/Skills/Alex/Supabase/Oversight Docs) contains L1 (12 live app-code rivers, plus 5 retired Total-systems categories kept as per-actor Infra/Inter breakdowns, not deleted) contains L2 (modules) contains Current/L3 (functions). Older Level-2.5/4/5/6 "rail stops" from earlier in the build are all retired or folded into Current/the Decision Matrix - never describe the map as having numbered levels past L3; cross-cutting facts (Externals/Decisions/Skills/Load/etc) are Dimension pages layered over the hierarchy, not additional rungs. 23 real Galaxy Map pages exist on disk as of late Sep 2026 - re-verify this count too before quoting it, it changes whenever a new page ships (most recently G117, a Generator Toolchain catalog page, Sep 22 2026). Every one of the 58 real registered modules plus all 12 live rivers has a real, evidence-grounded /perspective self-report as of mid-Sep 2026 (the Perspective Full Coverage plan is complete). A standing project-wide PAUSE on new Galaxy Map/Dimension work has been in effect since Sep 15 2026 (real evidence: product debt was sitting untouched under a wave of Galaxy-Map/meta work) - only explicit, narrowly-scoped, Alex-approved exceptions have shipped since - never assume a new Galaxy Map feature is fair game without checking whether Alex explicitly overrode the pause for it that specific time. KNOWN, STILL-OPEN GAPS: the swipe-gesture freeze bug has recurred for real (69 real occurrences logged Aug 27-Sep 20 2026) but still has no root cause found and no stack trace available (the browser\'s own Long Task API exposes no call stack) - never claim it\'s fixed, and don\'t attempt another blind code-only fix pass. reference_tracks.scale/genre are still 0 of 32 populated - "beat matches are always the same" traces directly to this; a backfill popup exists and has not been run. smoke_test.html\'s real hand-confirmed tally sits well under half of its rows - a large amount of shipped work is real and code-verified but genuinely unconfirmed by Alex\'s own hand; only his own hand-tick counts as "confirmed working," never a code-level test pass alone. HABITS/COOKING (cookingOracle + shoppingWishlist, RPGACE\'s newest domain, built Sep 10-22 2026): reached from a real "Cooking" dashboard card. Generate a recipe via Oracle chat (a real RECIPE_JSON: trailer); a real "Narrow it down" step runs first for a short/ambiguous description. Ingredients render with a live 7-color status system wherever shown - green=plenty, yellow=short (worded as "need N more, have M, T total needed"), red=none, blue=a same-aisle alternative in stock, purple=will run low/restock after this cook, orange=a real curated-or-heuristic substitute exists in stock, brown=a separable/optional component that can be omitted in No-Shop mode. Orange substitutes can be permanently confirmed (a tick, colour never changes) or declared-the-same-item as an existing stock row (a real, standing alias merge reassigning every FK reference) - curated potency ratios exist for a few specific real pairs Alex stated (e.g. tamarind concentrate is about 1/3 the amount of tamarind paste) and a real garlic clove/bulb count-equivalent bridge (8 cloves per bulb, bidirectional) - none of these numbers are invented, only ones Alex explicitly gave. A recipe card supports pantry-aware Oracle-suggested ingredient additions and a real diff-only critique-and-update flow via the floating overlay (Accept/Deny, never the whole recipe re-shown). New Sep 22: clicking Start on a scheduled planned cook opens a real, persistent Live Cook Mode panel inside the Oracle page itself (step timeline, elapsed-time ticker, per-step and recurring reminder timers) - not just a silent flag flip. Planned-cook sessions persist as a real draft from the moment the first recipe joins (never silently lost on close/navigate-away), support a real per-recipe delete, and use a true cross-recipe interleaved scheduler that front-loads prep across every recipe in the session rather than finishing one recipe\'s steps before starting the next. A real Current Stock view (Pantry/Fridge/Freezer/Equipment) and a real have/not-have shopping list (with a real "in basket" state between "need to find" and "bought") both exist, aisle-sorted. shoppingWishlist is a genuinely separate module (general future purchases like batteries/a wok/games, not ingredients) with its own priority-plus-budget-target fit calculator, writing a real Chronicles Finance expense on purchase. Every HABITS feature above is real, shipped, code-verified - but per the standing flag across this whole domain, effectively none of it has been hand-tested by Alex yet. TAXONOMY: real architecture change Sep 25 2026, now in a genuinely empty pre-rebuild state. jargon_encyclopedia is no longer a view over taxonomy_tree - it is a real standalone anchor table (term/phylum_number/explainer/status/taxonomy_node_id), now holding 520 real curated terms across phyla 1-20 (26 per phylum, none for phylum 21), all status=\'pending\' - directly authored by a Claude Code session (source-tagged claude_code_prebuild), never yet generated by the live AI generator that also exists in code but has never actually been run. Jargon Encyclopedia is now a real standalone page (owned by the jargonEncyclopedia module, Sep 26 2026 UI rework) - reached via leftNav\'s Phylum Path subItem or the Taxonomy dashboard card\'s picker popup (dashDeck._openTaxonomy), never a button crammed onto Phylum Path\'s own title anymore. It shows EVERY term regardless of status (pending/accepted/rejected, each with a real status badge and filter chip), with real inline Accept/Edit/Reject actions per pending term (reusing phylumPath._resolvePendingTerm, the one real write path - never a second one). taxonomy_tree itself was first archived in full (671 old branch/leaf rows, a reversible flag) then, same day, actually DELETED to 0 rows at Alex\'s own direct follow-up ask (he judged even the archived structure not worth keeping while jargon gets built out first) - every phylum (1-21) is now a genuinely empty canvas below the phylum level, zero branches, zero leaves, zero fusion links (taxonomy_links is also 0 rows). A full pre-delete snapshot was committed first as the real restore path, since Supabase has no backup/PITR. The old \'Review Archived Terms\'/\'Review Pending Terms\' buttons on the Phylum Path page are gone - the former is genuinely dead (nothing archived left to review) and the latter is superseded by the new Jargon Encyclopedia page above. Never claim any specific phylum currently has real depth, real Orders/Classes, or any structure at all - every earlier claim of that shape (phyla 1-10 depth, Phylum 12\'s real Orders, a structurally-clean tree) describes a state from before this restructure and is not true again until Alex reviews the jargon terms and a real new phylum structure gets built around them. CONTENT PIPELINE: Research Lab is fully retired as a user-facing destination - its former panels live inside Content Pipeline/Bookworm cards now. RPGACE does not generate video itself - OpenMontage (a separate Claude Code session in its own repo) is briefed and handed off via openmontage_jobs, never live infrastructure; RPGACE has ruled out paid video providers on principle (zero spend). Real beat-grid audio sync does not exist - "in sync with the beat" currently means mood/palette-matched only. Features F0 through F18 have shipped except F12 (deliberately deferred); F16/F17/F18 remain real execution debt - shipped code, genuinely never hand-tested through their full flow yet.',
 
   init: function() {
     var self = this;
@@ -11088,10 +11088,19 @@ RPGACE.register('leftNav', {
   // did nothing at all, silently, no error shown. Guarded defensively -
   // same principle as _items()'s guard just above.
   _go: function(page) {
-    var pp = RPGACE.CONFIG && RPGACE.CONFIG.pages ? RPGACE.CONFIG.pages.phylumPath : null;
-    if (pp && page === pp && !document.getElementById('page-' + page)) {
-      if (RPGACE.utils && RPGACE.utils.toast) RPGACE.utils.toast('Phylum Path still loading — try again in a moment', '#C9A84C', 2500);
-      return;
+    // Sep 26 2026 — generalized from the phylumPath-only guard this used to
+    // be: jargonEncyclopedia's own new page shell is built on the same
+    // late (setTimeout) boot-time schedule, so it can race a very early
+    // click exactly the same way phylumPath already could. Real evidence
+    // this was worth generalizing rather than adding a 2nd copy (rule 8):
+    // both are late-injected pages reached via this same subItems path.
+    var pages = RPGACE.CONFIG && RPGACE.CONFIG.pages ? RPGACE.CONFIG.pages : {};
+    var LATE_PAGES = { phylumPath: 'Phylum Path', jargonEncyclopedia: 'Jargon Encyclopedia' };
+    for (var key in LATE_PAGES) {
+      if (pages[key] && page === pages[key] && !document.getElementById('page-' + page)) {
+        if (RPGACE.utils && RPGACE.utils.toast) RPGACE.utils.toast(LATE_PAGES[key] + ' still loading — try again in a moment', '#C9A84C', 2500);
+        return;
+      }
     }
     if (typeof showPage === 'function') showPage(page);
     // G53: one single `this` touch, qualified directly to the module
@@ -11209,7 +11218,14 @@ RPGACE.register('leftNav', {
       // the "Open Bookworm" quick-action link, same as before this pass.
       { icon: '📖', label: 'Encyclopedia',  desc: 'Saved insights + articles',           page: P.encyclopedia },
       { icon: '📓', label: 'Journal',       desc: 'Session logs, morning briefs',        page: P.journal },
-      { icon: '🧬', label: 'Phylum Path',   desc: 'Taxonomy drill-down + placement',     page: P.phylumPath },
+      // Sep 26 2026 — real Alex ask ("make jargon encyclopedia the same as
+      // videoworm is for bookworm") — same subItems mechanism as Bookworm's
+      // own entry below, Jargon Encyclopedia is now a real sibling page to
+      // Phylum Path, not a button crammed onto its title.
+      { icon: '🧬', label: 'Phylum Path',   desc: 'Taxonomy drill-down + placement',     page: P.phylumPath,
+        subItems: [
+          { icon: '📖', label: 'Jargon Encyclopedia', page: P.jargonEncyclopedia }
+        ] },
       { icon: '📜', label: 'Chronicles',    desc: 'Every real win, sale, and expense',   page: P.chronicles },
       // Sep 2 2026, real /interrogation with Alex before building — 3 real
       // forks resolved, all his own recommended answers: (1) grouped under
@@ -14201,12 +14217,14 @@ RPGACE.register('dashDeck', {
     // pending row — 51 real rows as of this session, genuinely long).
     // _openCard() itself has the skip-to-tree button; the empty-queue
     // short-circuit below is unchanged, since there's nothing to review.
-    { key: 'taxonomy', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '🌳', name: 'Taxonomy & Review', desc: 'Approve pending placements and fusion links, or browse your knowledge tree.', go: function() {
-      var d = RPGACE.modules.dashDeck;
-      var rq = RPGACE.modules.taxonomyReviewQueue;
-      if (d && d._pendingReviewCount !== 0 && rq && rq._openCard) { rq._openCard(); return; }
-      if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.phylumPath);
-    } },
+    // Sep 26 2026 — real Alex ask: give Taxonomy the exact same "picker
+    // popup -> real sub-page" setup Bookworm's card already uses for
+    // Videoworm/MusicWorm (dashDeck._openBookworm). Real, deliberate
+    // behavior change from the old bypass-straight-to-review-queue shortcut
+    // below: this card now ALWAYS opens the picker first, matching
+    // Bookworm's own card exactly (which never bypasses its picker either),
+    // rather than auto-opening one specific destination.
+    { key: 'taxonomy', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '🌳', name: 'Taxonomy & Review', desc: 'Approve pending placements, browse your knowledge tree, or open the Jargon Encyclopedia.', go: function() { RPGACE.modules.dashDeck._openTaxonomy(); } },
     { key: 'oracle', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '⚡', name: 'Oracle', desc: 'Chat grounded in your own gathered library — gaps become learning prompts.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.oracle); } },
     { key: 'agenda', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '📋', name: 'Agenda', desc: 'Today\'s agenda, priority quests, and the full career/health/lifestyle quest board.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.agenda); } },
     { key: 'morningBrief', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '🌅', name: 'Morning Brief', desc: 'Your day in one shot — priorities, pending reviews, today\'s focus.', go: function() { RPGACE.modules.dashDeck._openMorningBrief(); } },
@@ -14813,6 +14831,60 @@ RPGACE.register('dashDeck', {
         pop.box.appendChild(nt);
       }
     });
+  },
+
+  // Sep 26 2026 — real Alex ask ("make jargon encyclopedia the same as
+  // videoworm is for bookworm"), byte-for-byte the same shape as
+  // _openBookworm above: a real "choose where to go" picker, real
+  // live-queried pending count where one exists (never fabricated), plain
+  // showPage navigation for the two real routable destinations.
+  _openTaxonomy: function() {
+    var self = RPGACE.modules.dashDeck;
+    var pop = self._popup({
+      eyebrow: '🌳 Taxonomy',
+      title: 'Choose where to go',
+      accent: 'var(--green)',
+      width: '480px',
+      closeLabel: 'Close'
+    });
+    var BTN = 'display:block;width:100%;margin-top:8px;padding:11px;min-height:44px;background:rgba(76,175,130,0.15);border:1px solid var(--green);border-radius:8px;color:var(--green);font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;font-family:Rajdhani,sans-serif;';
+    var HD = 'margin-top:14px;margin-bottom:2px;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-family:Rajdhani,sans-serif;';
+
+    var reviewBtn = document.createElement('button');
+    reviewBtn.textContent = '🌳 Review Pending Placements';
+    reviewBtn.style.cssText = BTN;
+    reviewBtn.onclick = function() {
+      pop.close();
+      var rq = RPGACE.modules.taxonomyReviewQueue;
+      if (rq && rq._openCard) rq._openCard();
+    };
+    pop.box.appendChild(reviewBtn);
+
+    // Real, live-queried pending count — same field _refreshGlance already
+    // sets, never a second fetch (rule 8).
+    if (self._pendingReviewCount != null) {
+      var note = document.createElement('div');
+      note.textContent = self._pendingReviewCount + ' pending placement' + (self._pendingReviewCount === 1 ? '' : 's');
+      note.style.cssText = 'margin-top:4px;font-size:11px;color:var(--muted);line-height:1.5;font-family:Rajdhani,sans-serif;';
+      pop.box.appendChild(note);
+    }
+
+    var hd = document.createElement('div');
+    hd.textContent = 'Browse:';
+    hd.style.cssText = HD;
+    pop.box.appendChild(hd);
+
+    var treeBtn = document.createElement('button');
+    treeBtn.textContent = '🧬 Browse Phylum Path';
+    treeBtn.style.cssText = BTN;
+    treeBtn.onclick = function() { pop.close(); if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.phylumPath); };
+    pop.box.appendChild(treeBtn);
+
+    var jargonBtn = document.createElement('button');
+    jargonBtn.textContent = '📖 Open Jargon Encyclopedia';
+    jargonBtn.style.cssText = BTN;
+    jargonBtn.onclick = function() { pop.close(); if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.jargonEncyclopedia); };
+    pop.box.appendChild(jargonBtn);
   },
 
   // ── Research Lab card popup (July 23) — Alex's explicit ask: instead of
@@ -15463,6 +15535,7 @@ RPGACE.register('dashDeck', {
   _ensureStash: function() { return this.ui._ensureStash(); },
   _stashWidget: function(id, force) { return this.ui._stashWidget(id, force); },
   _openBookworm: function() { return this.ui._openBookworm(); },
+  _openTaxonomy: function() { return this.ui._openTaxonomy(); },
   _openResearch: function() { return this.ui._openResearch(); },
   _openOversight: function() { return this.ui._openOversight(); },
   _openGaps: function() { return this.ui._openGaps(); },
@@ -20300,11 +20373,12 @@ RPGACE.register('phylumPath', {
       }
       // Sep 25 2026 — real Phase 4 entry point, curriculum-restructure
       // spec (records/2026-09/taxonomy_curriculum_jargon_encyclopedia_
-      // merge_spec_2026-09-25.txt Section 13). Same real injection point
-      // as jargonEncyclopedia's own button (right after #pp-phylum-title,
-      // this page shell only ever builds once — the early-return guard
-      // above), manual-trigger-only per the module's own standing
-      // convention (no auto-fire on a real Oracle curriculum-design call).
+      // merge_spec_2026-09-25.txt Section 13). This page shell only ever
+      // builds once — the early-return guard above — manual-trigger-only
+      // per the module's own standing convention (no auto-fire on a real
+      // Oracle curriculum-design call). Sep 26 2026 — jargonEncyclopedia
+      // no longer injects a button here (see that module's own header
+      // comment); this is now the ONLY button on this title.
       var titleEl = document.getElementById('pp-phylum-title');
       if (titleEl && titleEl.parentNode && !document.getElementById('pp-gen-curriculum-btn')) {
         var genBtn = document.createElement('button');
@@ -20314,26 +20388,21 @@ RPGACE.register('phylumPath', {
         genBtn.onclick = function() { self.ui._generateCurriculumBreakdown(); };
         titleEl.insertAdjacentElement('afterend', genBtn);
       }
-      // Sep 25 2026 — Step C2's entry point (records/2026-09/taxonomy_
-      // curriculum_jargon_encyclopedia_merge_spec_2026-09-25.txt,
-      // Section 18). Same injection point/pattern as the button above.
-      if (titleEl && titleEl.parentNode && !document.getElementById('pp-review-archived-btn')) {
-        var reviewBtn = document.createElement('button');
-        reviewBtn.id = 'pp-review-archived-btn';
-        reviewBtn.textContent = '🗄️ Review Archived Terms';
-        reviewBtn.style.cssText = 'margin-bottom:10px;margin-left:8px;padding:6px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;display:inline-block;';
-        reviewBtn.onclick = function() { self.ui._showArchivedReviewQueue(); };
-        titleEl.insertAdjacentElement('afterend', reviewBtn);
-      }
-      // Sep 25 2026 — Step D's review entry point, same injection point.
-      if (titleEl && titleEl.parentNode && !document.getElementById('pp-review-pending-btn')) {
-        var pendingBtn = document.createElement('button');
-        pendingBtn.id = 'pp-review-pending-btn';
-        pendingBtn.textContent = '📋 Review Pending Terms';
-        pendingBtn.style.cssText = 'margin-bottom:10px;margin-left:8px;padding:6px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;display:inline-block;';
-        pendingBtn.onclick = function() { self.ui._showPendingTermsReviewQueue(); };
-        titleEl.insertAdjacentElement('afterend', pendingBtn);
-      }
+      // Sep 26 2026 — real Alex ask ("taxonomy dom way better in structure"):
+      // the "🗄️ Review Archived Terms" and "📋 Review Pending Terms" buttons
+      // that used to crowd this title (Sep 25) are REMOVED from here.
+      // Archived-terms review is genuinely dead right now (taxonomy_tree is
+      // a real 0-row table since the same-day full wipe — nothing to
+      // review), and pending-terms review is superseded by the new,
+      // real standalone Jargon Encyclopedia page (browse all 520 terms,
+      // status badges, inline Accept/Edit/Reject) — reached via leftNav's
+      // Phylum Path subItem or the Taxonomy dashboard card's picker, not a
+      // button on this title anymore. Neither underlying function
+      // (_showArchivedReviewQueue/_showPendingTermsReviewQueue/
+      // _resolvePendingTerm) was deleted — kept on disk, same "harmless
+      // unused" precedent as dashDeck._openResearch; _resolvePendingTerm
+      // is still real and live, called cross-module from the new Jargon
+      // Encyclopedia page.
     },
 
     // Fetches (fresh every render - cache-bust already covers writes) the
@@ -23130,6 +23199,11 @@ RPGACE.register('config', {
         journal:      'journal',
         phylumPath:   'phylumpath',
         chronicles:   'chronicles',
+        // Sep 26 2026 — real standalone page (Jargon Encyclopedia UI rework,
+        // same real routable-page shape as videoworm/musicworm below, own
+        // page:show listener + page shell, never a button crammed onto
+        // Phylum Path's title anymore).
+        jargonEncyclopedia: 'jargon-encyclopedia',
         // Aug 31 2026 (UI11) — 8 real routable pages, real content moved in
         // by dashDeck._openPage() (PAGE_PANELS).
         bookworm:        'bookworm',
@@ -34043,184 +34117,138 @@ RPGACE.register('chroniclesLog', {
 
 /* ===MODULE:jargonEncyclopedia=== */
 // July 22 — "biggest confirmed-not-built items" list (CLAUDE.md) named a
-// Taxonomy Sorting Agent and a Jargon Encyclopedia as blocked on it. Real
-// GODMODE finding before building anything: tracing the actual call chain
-// (bookworm._decidePlacementScored -> phylumPath.decidePlacementScored,
-// the exact same function encSync/ciAutoPropose already call) shows book
-// and non-book inputs already share ONE placement engine - the July 19
-// unification already did this. The Jargon Encyclopedia was never actually
-// blocked on new agent logic, just on a read-only view existing at all.
-// Built as a Postgres view (jargon_encyclopedia, security_invoker) over
-// taxonomy_tree's real leaf rows - zero new writes, same live-query-every-
-// load convention taxonomy_map.html already uses. Injected as a button
-// into Phylum Path's EXISTING page shell (not a new nav entry/page) per
-// Alex's explicit "build in to the existing rather than build on top."
+// Taxonomy Sorting Agent and a Jargon Encyclopedia as blocked on it.
+//
+// Sep 26 2026 — REAL FULL UI REWORK, Alex's own direct ask: "i currently
+// have no way of accessing jargon encyclopedia terms, it is poorly
+// designed... jargon ui rework to get it working as if i was a consumer,"
+// then, after real /interrogation, "make jargon encyclopedia the same as
+// videoworm is for bookworm" — i.e. the exact same real, already-proven
+// picker-popup -> real standalone page pattern dashDeck._openBookworm/
+// PAGE_PANELS already uses for Videoworm/MusicWorm, applied to Taxonomy
+// (dashDeck._openTaxonomy, new) and leftNav (Phylum Path's own new
+// subItems entry) — never a button crammed onto Phylum Path's title
+// again (the July 22 "build in to the existing" call is superseded by
+// this direct, later ask). Real, concrete cause this closes: ALL 520
+// real curated terms are `status='pending'` right now (2 same-day
+// batches, same session) and the OLD glossary only ever queried
+// `status=eq.accepted` — it rendered permanently empty, which is
+// literally the "no way of accessing" bug Alex reported. Confirmed via
+// direct /interrogation answer: the reworked view shows EVERY status
+// (pending/accepted/rejected), each with a real status badge, and lets
+// Alex Accept/Edit/Reject right there inline — no separate one-at-a-time
+// review queue anymore. `phylumPath._resolvePendingTerm` (the real,
+// already-proven write function) is reused unchanged via a cross-module
+// call, never re-implemented here (rule 8) — this module owns browsing/
+// display, phylumPath still owns the one real write path.
 RPGACE.register('jargonEncyclopedia', {
 
-  // ══════════════════════════════════════════════════════════════════
-  // G53 (Sep 2026) — real, ratified /CEO plan item, and the FIFTEENTH
-  // module to take this shape (after the videoPipeline/beatLog/bookworm/
-  // phylumPath pilot, then contentProductionLive, conidPot, videoSummary,
-  // questEngine, intelDelete, feynman, taxonomyReviewQueue, youtubeOracle,
-  // tiktokOracle and instaOraclePanel): split into two internal
-  // namespaces, `ui` (rendering/DOM) and `logic` (business logic/data),
-  // following the exact shape those fourteen already shipped and
-  // verified. Pure internal-structure refactor — zero functional,
-  // behavioural, UX, data or schema change; every function below was
-  // MOVED wholesale, never rewritten and never split down the middle,
-  // its own body otherwise untouched apart from the explicitly-listed
-  // `this` → module-handle requalifications below.
-  //
-  // 4 real members, all functions, no data fields (checked by direct
-  // read of every top-level key, not assumed). `init` stays a literal
-  // top-level function (RPGACE.register() calls `module.init()`
-  // directly and cannot see into a sub-object) — byte-identical, still
-  // calling the top-level pass-through.
-  //
-  // REAL, HONEST RESULT WORTH NAMING RATHER THAN HIDING: all 3 movable
-  // functions land in `ui`, and `logic` below is genuinely EMPTY. That
-  // is not a classification failure or a shortcut — it is what this
-  // module actually is once looked at squarely: an injected button
-  // (_injectButton), a popup builder that also runs the one Supabase
-  // read (_openGlossary), and a markup renderer (_renderTerms). Each
-  // was checked by a keyword grep of its own body, never inferred from
-  // its name:
-  //   • _injectButton — getElementById ×2, createElement,
-  //     insertAdjacentElement. DOM throughout.
-  //   • _openGlossary — builds the whole popup, writes `pop.box.
-  //     innerHTML`, querySelectors two children out of it, and attaches
-  //     a real `input` listener. Its Supabase read is genuinely NOT
-  //     separable into `logic` without splitting the function down the
-  //     middle (forbidden by this pass's own rules) — the query's
-  //     `.then` immediately renders into the DOM nodes the same
-  //     function just created, and its `.catch` writes an error string
-  //     straight into `listEl.textContent`.
-  //   • _renderTerms — builds a markup STRING and assigns it to
-  //     `listEl.innerHTML`. Per the established rule extension from
-  //     prior batches, returning/assigning built HTML to `.innerHTML`
-  //     counts as constructing DOM exactly as `createElement` does.
-  // The empty `logic: {}` is kept deliberately so the module still
-  // presents the same two-namespace shape as its fourteen siblings,
-  // with the emptiness stated outright rather than silently omitted —
-  // the same real precedent youtubeOracle already set.
-  //
-  // The one real risk this split has to get right, function by
-  // function: a function moved into `ui`/`logic` is invoked with `this`
-  // bound to THAT sub-object, not the module. Exact accounting for all
-  // 3 moved functions, so a later reader can check by grep rather than
-  // take it on trust:
-  //   • _injectButton — already had `var self = this;`, that one line
-  //     swapped for the module handle IN PLACE, so statement order is
-  //     literally unchanged. (It sits after the two early-return
-  //     guards, which use neither `this` nor `self`, so nothing needed
-  //     hoisting.) Left as `this`, `self._openGlossary()` in the
-  //     onclick would have resolved against `ui`, which has no
-  //     `_openGlossary` — a real TypeError on every button press.
-  //   • _openGlossary — same in-place swap of its existing first-line
-  //     `var self = this;`. THIS IS THE ONE GENUINELY LOAD-BEARING
-  //     CASE IN THIS MODULE, and it is not the obvious one: the line
-  //     `self._allTerms = rows;` is a DYNAMIC property assignment onto
-  //     a field that is NOT declared as a top-level object-literal key
-  //     anywhere in this module (verified by direct grep — its only
-  //     occurrence in the whole file is that single write). It is
-  //     created at runtime. With the module handle it lands on the
-  //     module, exactly as it does today; had `self` been left as
-  //     `this` inside `ui`, the field would have silently attached
-  //     itself to the `ui` sub-object instead — no error, no warning,
-  //     just a field quietly living on the wrong object. The handle
-  //     below therefore resolves to
-  //     `RPGACE.modules.jargonEncyclopedia`, never `this.ui`.
-  //     (Separately: nothing in the codebase ever READS `_allTerms` —
-  //     a real pre-existing dead write, flagged in this pass's report
-  //     and deliberately left exactly as-is, per the standing
-  //     "restructure only, never silently fix" rule.)
-  //   • _renderTerms — references neither `this` nor `self` anywhere in
-  //     its body; moved byte-identical, no handle needed and none
-  //     added.
-  // ══════════════════════════════════════════════════════════════════
+  // Real, honest status->badge lookup, module-scope data (G53-family
+  // convention: data fields grouped at module top-level, not interleaved
+  // with functions). `_allTerms`/`_insightsByNode` are populated at
+  // runtime by `_loadAndRenderTerms` — declared here explicitly rather
+  // than left as the old code's undeclared dynamic writes, since this is
+  // a real functional rewrite, not a pure structural move.
+  STATUS_META: {
+    pending:  { label: '🟡 Pending',  color: 'var(--gold)' },
+    accepted: { label: '🟢 Accepted', color: 'var(--green)' },
+    rejected: { label: '🔴 Rejected', color: 'var(--red)' }
+  },
+  _activeStatus: 'all',
+  _allTerms: null,
+  _insightsByNode: null,
 
   init: function() {
     var self = this;
     RPGACE.hooks.on('page:show', function(name) {
-      var pageId = RPGACE.CONFIG && RPGACE.CONFIG.pages ? RPGACE.CONFIG.pages.phylumPath : null;
-      if (pageId && name === pageId) setTimeout(function() { self._injectButton(); }, 200);
+      var pageId = RPGACE.CONFIG && RPGACE.CONFIG.pages ? RPGACE.CONFIG.pages.jargonEncyclopedia : null;
+      if (pageId && name === pageId) { self._injectPageShell(); self._loadAndRenderTerms(); }
     });
-    setTimeout(function() { self._injectButton(); }, 2000);
+    // Same real precedent as phylumPath._injectPageShell — build the page
+    // div early (unconditionally, idempotent), not gated on first visit,
+    // so a direct nav/leftNav click always finds real markup waiting.
+    setTimeout(function() { self._injectPageShell(); }, 1700);
   },
 
   // ============================================================
-  // logic — business logic/data: no DOM, pure computation + writes.
-  // Genuinely EMPTY for this module (see the G53 note above): all 3
-  // movable functions touch the DOM directly, so all 3 are `ui`. Kept
-  // rather than omitted so the two-namespace shape matches its
-  // fourteen siblings and the emptiness is stated, not silent.
+  // logic — genuinely EMPTY, same honest precedent as before this
+  // rewrite: every real function here touches the DOM directly (page
+  // shell, filter chips, term rows, the edit popup), and the one real
+  // WRITE this page triggers reuses phylumPath's own logic function
+  // rather than duplicating it (rule 8).
   // ============================================================
   logic: {},
 
   // ============================================================
-  // ui — rendering/DOM: injects the entry button into Phylum Path's
-  // existing page shell, builds the glossary popup (and runs the one
-  // read that fills it), and renders the term list markup.
+  // ui — the real standalone page: shell, filter chips, search, term
+  // rows with inline Accept/Edit/Reject, and the edit popup.
   // ============================================================
   ui: {
 
-    _injectButton: function() {
-      if (document.getElementById('jargon-enc-btn')) return;
-      var title = document.getElementById('pp-phylum-title');
-      if (!title || !title.parentNode) return;
+    _injectPageShell: function() {
       var self = RPGACE.modules.jargonEncyclopedia;
-      var btn = document.createElement('button');
-      btn.id = 'jargon-enc-btn';
-      btn.textContent = '📖 Jargon Encyclopedia';
-      btn.style.cssText = 'margin-bottom:10px;padding:6px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--gold);font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;display:block;';
-      btn.onclick = function() { self._openGlossary(); };
-      title.insertAdjacentElement('afterend', btn);
+      if (document.getElementById('page-' + RPGACE.CONFIG.pages.jargonEncyclopedia)) return;
+      var app = document.getElementById('app');
+      if (!app) return;
+      var page = document.createElement('div');
+      page.className = 'page';
+      page.id = 'page-' + RPGACE.CONFIG.pages.jargonEncyclopedia;
+      page.innerHTML =
+        '<div class="section-title">📖 Jargon Encyclopedia</div>' +
+        '<div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Every real curated term, across every phylum — browse, search, and review.</div>' +
+        '<input id="jarg-search" type="text" placeholder="Search terms..." style="width:100%;margin-bottom:10px;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Rajdhani,sans-serif;font-size:13px;">' +
+        '<div id="jarg-filters" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;"></div>' +
+        '<div id="jarg-list">Loading…</div>';
+      app.appendChild(page);
+      self.ui._renderFilterChips();
+      var searchInp = document.getElementById('jarg-search');
+      searchInp.addEventListener('input', function() { self.ui._applyFiltersAndRender(); });
     },
 
-    // Sep 25 2026 — real Phase 1c, curriculum-restructure spec
-    // (records/2026-09/taxonomy_curriculum_jargon_encyclopedia_merge_
-    // spec_2026-09-25.txt): jargon_encyclopedia is the real, confirmed
-    // "holder of jargon end point and where it belongs down phylum
-    // path" — but it only ever surfaced one explainer line per term,
-    // not the real insight COLLECTION that's supposed to live under a
-    // jargon leaf (Encyclopedia rows linked via taxonomy_node_id, per
-    // _insertNewSteps' sourceMeta path and this session's Phase 1b
-    // fix). Real live view definition confirmed via direct query
-    // (jargon_encyclopedia already selects `id AS node_id` from
-    // taxonomy_tree — it was never missing, just never asked for
-    // here), so this only needed the JS side to request it and join.
-    //
-    // Sep 25 2026 (later same session) — real architecture change,
-    // Section 17-19 of the same spec: jargon_encyclopedia is no longer
-    // a view over taxonomy_tree, it's a real standalone anchor table
-    // (term, phylum_number, explainer, status, taxonomy_node_id —
-    // nullable, only set once a real curriculum leaf "trickles down"
-    // and attaches to this anchor). The old taxonomy_tree branch/leaf
-    // rows this view used to read were archived the same pass as part
-    // of that restructure, and the new table starts genuinely empty —
-    // Step C2 (archived-leaf review) and Step D (bulk generation) are
-    // real, separate follow-on work, not yet built. `r.taxonomy_node_id`
-    // (not `r.id`, the anchor's own id) is the real FK to look up
-    // linked Encyclopedia insights on — an anchor with no taxonomy_
-    // node_id yet has nothing to look up (honestly shown as "not yet
-    // placed in the tree" below, not an error).
-    _openGlossary: function() {
+    _chipStyle: function(active) {
+      return 'padding:5px 12px;border-radius:14px;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;border:1px solid ' + (active ? 'var(--gold)' : 'var(--border)') + ';background:' + (active ? 'rgba(201,168,76,0.18)' : 'var(--panel2)') + ';color:' + (active ? 'var(--gold)' : 'var(--muted)') + ';';
+    },
+
+    _renderFilterChips: function() {
       var self = RPGACE.modules.jargonEncyclopedia;
-      var dd = RPGACE.modules.dashDeck;
-      if (!dd || !dd._popup) return;
-      var pop = dd._popup({ eyebrow: '📖 Real jargon anchor terms (restructured Sep 25 2026)', title: 'Jargon Encyclopedia', width: '640px', accent: 'var(--gold)' });
-      pop.box.innerHTML = '<input id="jarg-search" type="text" placeholder="Search terms..." style="width:100%;margin-bottom:12px;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Rajdhani,sans-serif;font-size:13px;"><div id="jarg-list" style="max-height:50vh;overflow-y:auto;">Loading…</div>';
-      var listEl = pop.box.querySelector('#jarg-list');
-      var searchInp = pop.box.querySelector('#jarg-search');
-      RPGACE.sb.select('jargon_encyclopedia', 'select=id,term,phylum_number,explainer,taxonomy_node_id&status=eq.accepted&order=term.asc&limit=1000').then(function(rows) {
+      var wrap = document.getElementById('jarg-filters');
+      if (!wrap) return;
+      var CHIPS = [
+        { key: 'all', label: 'All' },
+        { key: 'pending', label: '🟡 Pending' },
+        { key: 'accepted', label: '🟢 Accepted' },
+        { key: 'rejected', label: '🔴 Rejected' }
+      ];
+      wrap.innerHTML = '';
+      CHIPS.forEach(function(c) {
+        var chip = document.createElement('button');
+        chip.textContent = c.label;
+        chip.style.cssText = self.ui._chipStyle(c.key === (self._activeStatus || 'all'));
+        chip.onclick = function() { self._activeStatus = c.key; self.ui._renderFilterChips(); self.ui._applyFiltersAndRender(); };
+        wrap.appendChild(chip);
+      });
+    },
+
+    // Real fix for the actual reported bug: queries EVERY status, not
+    // just `accepted` (the old query's own filter is exactly why the
+    // glossary rendered permanently empty against 520 real pending
+    // rows). `r.taxonomy_node_id` (not `r.id`, the anchor's own id) is
+    // still the real FK to look up linked Encyclopedia insights on — an
+    // anchor with no taxonomy_node_id yet has nothing to look up
+    // (honestly shown as "not yet placed in the tree," not an error).
+    _loadAndRenderTerms: function() {
+      var self = RPGACE.modules.jargonEncyclopedia;
+      var listEl = document.getElementById('jarg-list');
+      if (!listEl) return;
+      listEl.textContent = 'Loading…';
+      RPGACE.sb.select('jargon_encyclopedia', 'select=id,term,phylum_number,explainer,status,taxonomy_node_id&order=phylum_number.asc,term.asc&limit=2000').then(function(rows) {
         rows = rows || [];
         self._allTerms = rows;
         // Real batched fetch — one query for every visible term's linked
         // insight rows, never one query per term (N+1). A term with zero
-        // linked rows (including every not-yet-placed anchor, since it
-        // has no taxonomy_node_id) just gets an empty array; a failed
-        // fetch degrades to showing terms with no insight collection
-        // rather than failing the whole glossary.
+        // linked rows (including every not-yet-placed anchor) just gets
+        // an empty array; a failed fetch degrades to showing terms with
+        // no insight collection rather than failing the whole page.
         var ids = rows.map(function(r) { return r.taxonomy_node_id; }).filter(Boolean);
         var fetchInsights = ids.length
           ? RPGACE.sb.select('encyclopedia', 'taxonomy_node_id=in.(' + ids.join(',') + ')&select=id,title,content,source,taxonomy_node_id&order=created_at.asc').catch(function() { return []; })
@@ -34232,57 +34260,160 @@ RPGACE.register('jargonEncyclopedia', {
             byNode[ins.taxonomy_node_id].push(ins);
           });
           self._insightsByNode = byNode;
-          self._renderTerms(listEl, rows);
-          searchInp.addEventListener('input', function() {
-            var q = searchInp.value.toLowerCase();
-            var filtered = rows.filter(function(r) { return (r.term || '').toLowerCase().indexOf(q) !== -1; });
-            self._renderTerms(listEl, filtered);
-          });
+          self.ui._applyFiltersAndRender();
         });
       }).catch(function(e) {
         listEl.textContent = 'Load failed: ' + e.message;
       });
     },
 
-    _renderTerms: function(listEl, rows) {
-      if (!rows.length) { listEl.innerHTML = '<div style="color:var(--muted);font-size:12px;padding:8px 0">No accepted jargon terms yet — the tree was restructured Sep 25 2026 (real archive, see patch_notes.html); term generation + review is real, separate follow-on work not yet run.</div>'; return; }
+    _applyFiltersAndRender: function() {
       var self = RPGACE.modules.jargonEncyclopedia;
+      var listEl = document.getElementById('jarg-list');
+      var searchEl = document.getElementById('jarg-search');
+      if (!listEl) return;
+      var rows = self._allTerms || [];
+      var status = self._activeStatus || 'all';
+      var q = ((searchEl && searchEl.value) || '').toLowerCase();
+      var filtered = rows.filter(function(r) {
+        if (status !== 'all' && r.status !== status) return false;
+        if (q && (r.term || '').toLowerCase().indexOf(q) === -1) return false;
+        return true;
+      });
+      self.ui._renderTerms(listEl, filtered);
+    },
+
+    // Real DOM per row (not an innerHTML string, unlike the old read-only
+    // renderer) — a pending term needs real, live Accept/Edit/Reject
+    // button handlers, not just markup.
+    _renderTerms: function(listEl, rows) {
+      var self = RPGACE.modules.jargonEncyclopedia;
+      listEl.innerHTML = '';
+      if (!rows.length) {
+        var empty = document.createElement('div');
+        empty.style.cssText = 'color:var(--muted);font-size:12px;padding:8px 0';
+        empty.textContent = 'No terms match this filter yet.';
+        listEl.appendChild(empty);
+        return;
+      }
       var byNode = self._insightsByNode || {};
-      listEl.innerHTML = rows.map(function(r) {
+      rows.forEach(function(r) {
+        var row = document.createElement('div');
+        row.style.cssText = 'padding:10px 0;border-bottom:1px solid var(--border);';
+
+        var head = document.createElement('div');
+        head.style.cssText = 'display:flex;align-items:center;gap:8px;flex-wrap:wrap;';
+        var meta = self.STATUS_META[r.status] || { label: r.status || '?', color: 'var(--muted)' };
+        var badge = document.createElement('span');
+        badge.textContent = meta.label;
+        badge.style.cssText = 'font-size:10px;font-weight:700;color:' + meta.color + ';';
+        var termEl = document.createElement('span');
+        termEl.style.cssText = 'font-size:13px;font-weight:700;color:var(--text);';
+        termEl.textContent = r.term || '';
+        var phylumEl = document.createElement('span');
+        phylumEl.style.cssText = 'font-size:10px;color:var(--muted);';
+        phylumEl.textContent = 'Phylum ' + r.phylum_number;
+        head.appendChild(badge); head.appendChild(termEl); head.appendChild(phylumEl);
+        row.appendChild(head);
+
+        var expl = document.createElement('div');
+        expl.style.cssText = 'font-size:11px;color:var(--muted);margin-top:3px;';
+        expl.textContent = r.explainer || '';
+        row.appendChild(expl);
+
         var insights = r.taxonomy_node_id ? (byNode[r.taxonomy_node_id] || []) : [];
-        var insightsHtml = !r.taxonomy_node_id
-          ? '<div style="font-size:10.5px;color:rgba(226,226,236,0.3);margin-top:4px;font-style:italic;">Not yet placed in the tree — anchor only.</div>'
-          : (insights.length
-            ? '<div style="margin-top:6px;padding-left:10px;border-left:2px solid rgba(201,168,76,0.25);">'
-              + insights.map(function(ins) {
-                  return '<div style="font-size:10.5px;color:rgba(226,226,236,0.55);margin-top:4px;line-height:1.5;">'
-                    + '<span style="color:var(--gold);">' + String(ins.source || 'insight').replace(/</g, '&lt;') + ':</span> '
-                    + String(ins.content || ins.title || '').replace(/</g, '&lt;') + '</div>';
-                }).join('')
-              + '</div>'
-            : '<div style="font-size:10.5px;color:rgba(226,226,236,0.3);margin-top:4px;font-style:italic;">No linked insights yet.</div>');
-        return '<div style="padding:8px 0;border-bottom:1px solid var(--border);">'
-          + '<div style="font-size:13px;font-weight:700;color:var(--text);">' + String(r.term || '').replace(/</g, '&lt;') + (insights.length ? ' <span style="font-size:10px;font-weight:400;color:var(--muted);">(' + insights.length + ' insight' + (insights.length === 1 ? '' : 's') + ')</span>' : '') + '</div>'
-          + '<div style="font-size:11px;color:var(--muted);margin-top:2px;">' + String(r.explainer || '').replace(/</g, '&lt;') + '</div>'
-          + insightsHtml
-          + '</div>';
-      }).join('');
+        if (!r.taxonomy_node_id) {
+          var na = document.createElement('div');
+          na.style.cssText = 'font-size:10.5px;color:rgba(226,226,236,0.3);margin-top:4px;font-style:italic;';
+          na.textContent = 'Not yet placed in the tree — anchor only.';
+          row.appendChild(na);
+        } else if (insights.length) {
+          var iwrap = document.createElement('div');
+          iwrap.style.cssText = 'margin-top:6px;padding-left:10px;border-left:2px solid rgba(201,168,76,0.25);';
+          insights.forEach(function(ins) {
+            var idiv = document.createElement('div');
+            idiv.style.cssText = 'font-size:10.5px;color:rgba(226,226,236,0.55);margin-top:4px;line-height:1.5;';
+            idiv.textContent = (ins.source || 'insight') + ': ' + (ins.content || ins.title || '');
+            iwrap.appendChild(idiv);
+          });
+          row.appendChild(iwrap);
+        }
+
+        if (r.status === 'pending') {
+          var actions = document.createElement('div');
+          actions.style.cssText = 'display:flex;gap:8px;margin-top:8px;';
+          var BTNBASE = 'padding:5px 12px;border-radius:8px;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;border:1px solid ';
+
+          var acceptBtn = document.createElement('button');
+          acceptBtn.textContent = '✓ Accept';
+          acceptBtn.style.cssText = BTNBASE + 'var(--green);background:rgba(76,175,130,0.15);color:var(--green);';
+          acceptBtn.onclick = function() {
+            var pp = RPGACE.modules.phylumPath;
+            if (!pp || !pp._resolvePendingTerm) return;
+            pp._resolvePendingTerm(r, 'accept').then(function() { self.ui._loadAndRenderTerms(); });
+          };
+
+          var editBtn = document.createElement('button');
+          editBtn.textContent = '✎ Edit';
+          editBtn.style.cssText = BTNBASE + 'var(--gold);background:rgba(201,168,76,0.15);color:var(--gold);';
+          editBtn.onclick = function() { self.ui._showEditPopup(r); };
+
+          var rejectBtn = document.createElement('button');
+          rejectBtn.textContent = '✗ Reject';
+          rejectBtn.style.cssText = BTNBASE + 'var(--red);background:rgba(204,74,74,0.15);color:var(--red);';
+          rejectBtn.onclick = function() {
+            var pp = RPGACE.modules.phylumPath;
+            if (!pp || !pp._resolvePendingTerm) return;
+            pp._resolvePendingTerm(r, 'reject').then(function() { self.ui._loadAndRenderTerms(); });
+          };
+
+          actions.appendChild(acceptBtn); actions.appendChild(editBtn); actions.appendChild(rejectBtn);
+          row.appendChild(actions);
+        }
+
+        listEl.appendChild(row);
+      });
+    },
+
+    // Small, self-contained edit popup — same real dashDeck._popup()
+    // scaffolding every other editor in this app uses (rule 8), never a
+    // bare window prompt()/confirm(). Reuses phylumPath._resolvePendingTerm
+    // for the actual write (the same function Accept above calls),
+    // passing the edited term/explainer through — one real write path,
+    // not a second one.
+    _showEditPopup: function(r) {
+      var self = RPGACE.modules.jargonEncyclopedia;
+      var dd = RPGACE.modules.dashDeck;
+      if (!dd || !dd._popup) return;
+      var pop = dd._popup({ eyebrow: '✎ Edit term', title: r.term || '', accent: 'var(--gold)', width: '480px' });
+      pop.box.innerHTML =
+        '<label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Term</label>' +
+        '<input id="jarg-edit-term" type="text" value="' + String(r.term || '').replace(/"/g, '&quot;') + '" style="width:100%;margin-bottom:10px;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Rajdhani,sans-serif;font-size:13px;">' +
+        '<label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px;">Explainer</label>' +
+        '<textarea id="jarg-edit-expl" rows="4" style="width:100%;margin-bottom:12px;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Rajdhani,sans-serif;font-size:13px;resize:vertical;">' + String(r.explainer || '').replace(/</g, '&lt;') + '</textarea>' +
+        '<button id="jarg-edit-save" style="width:100%;padding:10px;background:var(--green);border:none;border-radius:8px;color:#000;font-weight:700;font-size:13px;cursor:pointer;font-family:Rajdhani,sans-serif;">✓ Save &amp; Accept</button>';
+      pop.box.querySelector('#jarg-edit-save').onclick = function() {
+        var newTerm = pop.box.querySelector('#jarg-edit-term').value.trim();
+        var newExpl = pop.box.querySelector('#jarg-edit-expl').value;
+        var pp = RPGACE.modules.phylumPath;
+        if (!pp || !pp._resolvePendingTerm) { pop.close(); return; }
+        pp._resolvePendingTerm(r, 'edit', newTerm, newExpl).then(function() {
+          pop.close();
+          self.ui._loadAndRenderTerms();
+        });
+      };
     },
 
   },
 
-  // Thin top-level pass-throughs — preserve the exact existing public
-  // API. No external caller invokes any METHOD of this module (verified
-  // by grep of rpgace_core.js and index.html both, and of the whole repo
-  // for `RPGACE.modules.jargonEncyclopedia.` — zero hits outside this
-  // module's own body), so these exist for convention and for its OWN
-  // internal calls: `init` calls `self._injectButton()`, `ui.
-  // _injectButton`'s onclick calls `self._openGlossary()`, and
-  // `ui._openGlossary` calls `self._renderTerms(...)` twice — every one
-  // of those `self`s is the module, so each lands here first.
-  _injectButton: function() { return this.ui._injectButton(); },
-  _openGlossary: function() { return this.ui._openGlossary(); },
-  _renderTerms: function(listEl, rows) { return this.ui._renderTerms(listEl, rows); },
+  // Thin top-level pass-throughs — preserve the exact convention every
+  // other split module in this file uses. `init` calls `self.
+  // _injectPageShell()`/`self._loadAndRenderTerms()`, and every internal
+  // `self.ui.X()` call inside `ui` resolves directly against the `ui`
+  // sub-object (no pass-through needed there) — these exist for external
+  // callers and for the module's own top-level init.
+  _injectPageShell: function() { return this.ui._injectPageShell(); },
+  _loadAndRenderTerms: function() { return this.ui._loadAndRenderTerms(); },
 
 });
 /* ===END:jargonEncyclopedia=== */
