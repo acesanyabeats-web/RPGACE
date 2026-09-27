@@ -73,6 +73,16 @@
 
 <div class="content">
 
+<div class="card green" id="card-2026-09-27-jargon-encyclopedia-phylum-1-top-up" style="margin-bottom:30px;">
+    <div class="card-title">🎼 Sep 27 — Phylum 1 gets a real 25-term top-up; the "get rid of everything below phylum" ask confirmed already true</div>
+    <div class="card-body">
+      Two small, real, same-day items. First, Alex asked to "get rid of everything apart from the phylum, no classes orders or anything below" — checked with real evidence before touching anything: <code>taxonomy_tree</code> was already 0 rows (the Sep 25 wipe held), and the 21 phylum names/numbers are hardcoded constants (<code>phylumPath.ENABLED_PHYLA</code>/<code>phylumContext()</code>), not deletable tree rows — so nothing needed to change. Also checked <code>taxonomy_nodes</code> (91 rows) as the one other table shaped like sub-phylum content: confirmed unrelated (51 director profiles, 27 encyclopedia-sync rows, 10 beat-colour tags, 3 licence terms) and out of scope.<br><br>
+      Second, Alex reported browsing Phylum 1 (Compositio — melody/harmony/chords) live and judged it thin. A real, curated batch of 25 more terms was authored and inserted — <code>Cadence</code>, <code>Chord Inversion</code>, <code>Voice Leading</code>, <code>Diatonic</code>, <code>Chromaticism</code>, <code>Arpeggio</code>, <code>Passing Tone</code>, <code>Secondary Dominant</code>, <code>Borrowed Chord (Modal Interchange)</code>, <code>Relative Minor/Major</code>, <code>Melodic Contour</code>, <code>Homophony</code>, <code>Polyphony (Counterpoint)</code>, <code>Root Position</code>, <code>Chord Voicing</code>, <code>Extended Chord</code>, <code>Suspended Chord (Sus2/Sus4)</code>, <code>Circle of Fifths</code>, <code>Mode</code>, <code>Blue Note</code>, <code>Appoggiatura</code>, <code>Deceptive Cadence</code>, <code>Pivot Chord</code>, <code>Leading Tone</code>, <code>Functional Harmony</code> — dedup-checked against the whole table first (zero collisions, case-insensitive), same <code>claude_code_prebuild</code>/<code>status='pending'</code> shape as every prior batch. Phylum 1 now holds 51 real terms; the other 19 phyla stay at 26 each.<br><br>
+      Alex also stated the real next-phase intent plainly: "we will then make each phylum structure planned out, all 20" — logged, deliberately not started yet (523 of 545 jargon terms are still pending his own review; he said himself jargon needs filling out/reviewing first so the phylum structure can be worked out around it).<br><br>
+      Real, verified total: 545 rows (523 pending, 22 accepted — Alex is actively working through his own review queue, up from 13 accepted a few turns earlier in the same session). <code>oracleAppGrounding.SELF_KNOWLEDGE</code>'s TAXONOMY paragraph and count updated to match. <code>node --check</code> clean, re-minified, cache-bust bumped <code>20260926a</code>→<code>20260927a</code>. <strong>Untested by Alex's own hand beyond his own live browsing that prompted this.</strong>
+    </div>
+</div>
+
 <div class="card green" id="card-2026-09-26-jargon-encyclopedia-ui-rework" style="margin-bottom:30px;">
     <div class="card-title">📖 Sep 26 — real Jargon Encyclopedia UI rework: exact same "worm picker → real page" setup Bookworm already uses</div>
     <div class="card-body">
