@@ -73,6 +73,25 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-01-session-closed-cooking" style="margin-bottom:30px;">
+    <div class="card-title">🌙 Oct 1 — session closed via /Bedtime (RPGACE half; the session continues on Ube Express)</div>
+    <div class="card-body">
+      <strong>Live on production</strong> (Vercel READY on <code>main</code>): <code>6aa6f1a</code> (fix for recipe generation's "No RECIPE_JSON found") and <code>2cff5b7</code> (planned cooks can be started, finished and added to from inside Cooking). Oracle's self-knowledge text now covers the new cook controls; cache-bust is <code>20261001c</code>.<br><br>
+      <strong>What the evidence shows</strong>:
+      <ul>
+        <li>The parse fix is working. The 8th "No RECIPE_JSON" occurrence (16:09 local) still carried the old message text, so it came from a tab opened before the deploy. Two recipes saved fine after reload: "Stir-Fried Squid Chow Mein" at 16:19 and "Chocolate Orange Mousse" at 16:21.</li>
+        <li>Both now sit in an open cook session (<code>planned_cooks</code> <code>80094914</code>). Alex asked for "squid pad thai" to be added to the cook; no pad thai recipe exists, so the Chow Mein was taken to be the one he meant. It was already in the session, so nothing was written.</li>
+      </ul>
+      <strong>Still open, deliberately</strong>:
+      <ul>
+        <li>The <code>error_log</code> row <code>f565c1a5</code> stays active until Alex confirms a generation on fresh code.</li>
+        <li>Both earlier scheduled cooks (Laksa, scheduled for Oct 1, and the Sep 16 three-recipe cook) are gone from <code>planned_cooks</code>, and their agenda rows are gone too. This session wrote nothing to either. The likely cause is the app's own revert or empty-session delete paths, which is unconfirmed. The Laksa recipe itself still exists.</li>
+        <li>Alex said "we will circle back" to that last report.</li>
+        <li>The start/finish/join buttons have not yet been tested by hand.</li>
+      </ul>
+      Next RPGACE session: open with <code>/Routine</code>.
+    </div>
+</div>
 <div class="card green" id="card-2026-10-01-cook-start-finish-join" style="margin-bottom:30px;">
     <div class="card-title">🍳 Oct 1 — planned cooks can now be started, finished and grown from Cooking itself</div>
     <div class="card-body">
