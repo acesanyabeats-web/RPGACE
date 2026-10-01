@@ -37772,7 +37772,63 @@ RPGACE.register('cookingOracle', {
       errBox.style.cssText = 'font-size:12px;color:#CC4A4A;margin-bottom:10px;display:none;';
       box.appendChild(errBox);
 
-      var revertBtn = self.ui._mkBtn('↩ Revert to draft (unschedule)', 'primaryGold', { extra: 'margin-bottom:8px;' });
+      // Oct 1 2026 (real Alex hand-test) - a scheduled cook can now be
+      // started, finished, and grown from right here, never only via the
+      // Daily Schedule's own Start/Done. Both go through the shared
+      // logic._startCookNow/_finishCook paths (rule 8).
+      var startNowBtn = self.ui._mkBtn('▶ Start cooking now', 'primary', { extra: 'margin-bottom:8px;' });
+      startNowBtn.onclick = function() {
+        pop.close();
+        self.logic._startCookNow(scheduled.plannedCookId, scheduled.agendaId);
+      };
+      box.appendChild(startNowBtn);
+
+      var finishBtn = self.ui._mkBtn('✅ Cook finished', 'primaryGold', { extra: 'margin-bottom:8px;' });
+      finishBtn.onclick = function() {
+        finishBtn.disabled = true;
+        finishBtn.textContent = '⏳ Saving...';
+        self.logic._finishCook(scheduled.plannedCookId, scheduled.agendaId, scheduled.recipeIds, function(err) {
+          if (err) {
+            finishBtn.disabled = false;
+            finishBtn.textContent = '✅ Cook finished';
+            errBox.textContent = '⚠️ ' + err;
+            errBox.style.display = 'block';
+            return;
+          }
+          RPGACE.utils.toast('✅ Cook marked finished — rate it in your Journal', '#4caf82', 3200);
+          pop.close();
+        });
+      };
+      box.appendChild(finishBtn);
+
+      // Joining another recipe re-times the whole session (the interleaved
+      // schedule is computed across every recipe), so this deliberately
+      // reuses the real revert-to-draft path, then opens the same add
+      // picker the draft builder uses - Alex re-schedules (or Cook now)
+      // from the builder once the set is right.
+      var addMoreBtn = self.ui._mkBtn('+ Add another recipe to this cook', 'secondary', { extra: 'margin-bottom:8px;' });
+      addMoreBtn.onclick = function() {
+        addMoreBtn.disabled = true;
+        addMoreBtn.textContent = '⏳ Reopening session...';
+        self.logic._revertScheduleToDraft(scheduled, function(err) {
+          if (err) {
+            addMoreBtn.disabled = false;
+            addMoreBtn.textContent = '+ Add another recipe to this cook';
+            errBox.textContent = '⚠️ ' + err;
+            errBox.style.display = 'block';
+            return;
+          }
+          self._scheduledSession = null;
+          self._session = { recipeIds: scheduled.recipeIds.slice(), recipes: scheduled.recipes.slice(), plannedCookId: scheduled.plannedCookId, shopMode: 'can_shop' };
+          self._sessionChecked = true;
+          RPGACE.utils.toast('↩ Session reopened — add a recipe, then re-schedule or Cook now', '#E2A83D', 3400);
+          pop.close();
+          self.ui._showAddToSessionPicker();
+        });
+      };
+      box.appendChild(addMoreBtn);
+
+      var revertBtn = self.ui._mkBtn('↩ Revert to draft (unschedule)', 'ghost', { extra: 'margin-bottom:8px;' });
       revertBtn.onclick = function() {
         revertBtn.disabled = true;
         revertBtn.textContent = '⏳ Reverting...';
@@ -38241,7 +38297,31 @@ RPGACE.register('cookingOracle', {
         var p = document.getElementById('live-cook-panel');
         if (p) p.remove();
       };
-      header.appendChild(closeBtn);
+      // Oct 1 2026 (real Alex hand-test: "no way of confirming cook
+      // finished without agenda") - finish right where the cooking
+      // happens, via the shared logic._finishCook (rule 8).
+      var finishBtn = self.ui._mkBtn('✅ Finished', 'inline', { color: 'var(--green)' });
+      finishBtn.onclick = function() {
+        finishBtn.disabled = true;
+        finishBtn.textContent = '⏳';
+        self.logic._finishCook(pc.id, pc.agenda_id, pc.recipe_ids, function(err) {
+          if (err) {
+            finishBtn.disabled = false;
+            finishBtn.textContent = '✅ Finished';
+            RPGACE.utils.toast('⚠️ ' + err, '#CC4A4A', 4000);
+            return;
+          }
+          self.ui._clearLiveCookIntervals();
+          var p = document.getElementById('live-cook-panel');
+          if (p) p.remove();
+          RPGACE.utils.toast('✅ Cook finished — rate it in your Journal', '#4caf82', 3200);
+        });
+      };
+      var headerBtns = document.createElement('div');
+      headerBtns.style.cssText = 'display:flex;gap:6px;align-items:center;';
+      headerBtns.appendChild(finishBtn);
+      headerBtns.appendChild(closeBtn);
+      header.appendChild(headerBtns);
       panel.appendChild(header);
 
       if (startedAt) {
@@ -40034,6 +40114,35 @@ RPGACE.register('cookingOracle', {
               });
             };
             box.appendChild(acceptBtn);
+
+            // Oct 1 2026 (real Alex hand-test: "scheduling clicking do now
+            // didnt make cook active") - a real one-click "start this right
+            // now": the same _acceptSchedule write (stamped with today's
+            // date and the current time), then the shared _startCookNow,
+            // so the session is genuinely live (started_at + Live Cook
+            // Mode) instead of only sitting on the calendar.
+            var cookNowBtn = self.ui._mkBtn('▶ Cook now (start immediately)', 'primaryGold', { extra: 'margin-top:8px;' });
+            cookNowBtn.onclick = function() {
+              cookNowBtn.disabled = true;
+              acceptBtn.disabled = true;
+              cookNowBtn.textContent = '⏳ Starting...';
+              var now = new Date();
+              var todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+              self.logic._acceptSchedule(sess, schedule, todayStr, now.getHours(), now.getMinutes(), function(err, plannedCookId, agendaId) {
+                if (err) {
+                  cookNowBtn.disabled = false;
+                  acceptBtn.disabled = false;
+                  cookNowBtn.textContent = '▶ Cook now (start immediately)';
+                  errBox.textContent = '⚠️ ' + err;
+                  errBox.style.display = 'block';
+                  return;
+                }
+                self._session = null;
+                pop.close();
+                self.logic._startCookNow(plannedCookId, agendaId);
+              });
+            };
+            box.appendChild(cookNowBtn);
 
             // H24 (Sep 17 2026, real Alex ask: "make a return button for
             // previous slide of pop up") — same real
@@ -43788,9 +43897,79 @@ RPGACE.register('cookingOracle', {
             RPGACE.sb.secureWrite('shopping_lists', 'update', { planned_cook_id: row.id }, 'id=eq.' + sess.shoppingListId)
               .catch(function(e) { console.warn('[cookingOracle] shopping_lists.planned_cook_id back-link failed:', e.message); });
           }
-          cb(null, row.id);
+          cb(null, row.id, (agendaEntry && agendaEntry.id) || null);
         })
         .catch(function(e) { cb(e.message || 'schedule save failed'); });
+    },
+
+    // Oct 1 2026 (real Alex hand-test: "have no way of confirming cook
+    // finished without agenda... scheduling clicking do now didnt make
+    // cook active"). The ONE shared start path for a planned cook from
+    // inside Cooking itself (hub, schedule preview) - reuses the real
+    // Daily-Schedule Start (startScheduledTask: started_at write-through +
+    // Live Cook Mode) whenever this device holds the local agenda copy,
+    // and otherwise writes started_at directly so a cook scheduled on a
+    // different device still starts for real (rule 8 - never a 2nd live
+    // cook mechanism, only a 2nd entry point into the same one).
+    _startCookNow: function(plannedCookId, agendaId) {
+      var self = RPGACE.modules.cookingOracle;
+      if (!plannedCookId) { RPGACE.utils.toast('⚠️ No cook session to start', '#E2A83D', 2200); return; }
+      var local = [];
+      try { local = JSON.parse(localStorage.getItem('rpgace_sched_agendas') || '[]'); } catch (e) {}
+      var hasLocal = agendaId && local.some(function(a) { return a.id === agendaId; });
+      if (hasLocal && typeof startScheduledTask === 'function') { startScheduledTask(agendaId); return; }
+      if (!agendaId) { self.ui._openLiveCookMode(plannedCookId); return; }
+      RPGACE.sb.secureWrite('rpgace_agendas', 'update', { started_at: new Date().toISOString() }, 'id=eq.' + agendaId)
+        .catch(function(e) { console.warn('[cookingOracle] started_at write failed:', e.message); })
+        .then(function() {
+          RPGACE.utils.toast('▶️ Cook started', '#4A90E2', 2000);
+          self.ui._openLiveCookMode(plannedCookId);
+        });
+    },
+
+    // Same real ask as _startCookNow above - the ONE shared "cook
+    // finished" path, so finishing no longer depends on finding the
+    // calendar entry. Marks the planned_cooks row status='cooked' (no
+    // CHECK constraint on status, confirmed via pg_constraint), completes
+    // its agenda entry through the real completeScheduledTask when this
+    // device has it (actual_mins, daily log, journal note - rule 8) or a
+    // direct write-through otherwise, and flips every still-'saved'
+    // journal row for these recipes to cooked via the existing
+    // _markCooked. The planned_cooks write is the one that must succeed;
+    // the agenda/journal follow-ups are best-effort and toast on failure
+    // (rule 7) rather than undoing a real finished cook.
+    _finishCook: function(plannedCookId, agendaId, recipeIds, cb) {
+      var self = RPGACE.modules.cookingOracle;
+      cb = cb || function() {};
+      if (!plannedCookId) { cb('no cook session id'); return; }
+      RPGACE.sb.secureWrite('planned_cooks', 'update', { status: 'cooked' }, 'id=eq.' + plannedCookId)
+        .then(function() {
+          if (agendaId) {
+            var local = [];
+            try { local = JSON.parse(localStorage.getItem('rpgace_sched_agendas') || '[]'); } catch (e) {}
+            if (local.some(function(a) { return a.id === agendaId; }) && typeof completeScheduledTask === 'function') {
+              completeScheduledTask(agendaId);
+            } else {
+              RPGACE.sb.secureWrite('rpgace_agendas', 'update', { completed: true, ended_at: new Date().toISOString() }, 'id=eq.' + agendaId)
+                .catch(function(e) { RPGACE.utils.toast('⚠️ Cook marked finished, but its calendar entry did not update: ' + (e.message || 'unknown error'), '#CC4A4A', 4000); });
+            }
+          }
+          var ids = (recipeIds || []).filter(Boolean);
+          if (ids.length) {
+            RPGACE.sb.select('journal', 'select=id&status=eq.saved&recipe_id=in.(' + ids.join(',') + ')')
+              .then(function(rows) {
+                (rows || []).forEach(function(r) {
+                  self.logic._markCooked(r.id, function(err) {
+                    if (err) RPGACE.utils.toast('⚠️ Could not mark a journal recipe cooked: ' + err, '#CC4A4A', 3500);
+                  });
+                });
+              })
+              .catch(function(e) { console.warn('[cookingOracle] journal lookup on finish failed:', e.message); });
+          }
+          if (self._scheduledSession && self._scheduledSession.plannedCookId === plannedCookId) self._scheduledSession = null;
+          cb(null);
+        })
+        .catch(function(e) { cb(e.message || 'could not mark cook finished'); });
     },
 
   },

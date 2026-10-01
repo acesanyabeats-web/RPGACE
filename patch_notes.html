@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card green" id="card-2026-10-01-cook-start-finish-join" style="margin-bottom:30px;">
+    <div class="card-title">🍳 Oct 1 — planned cooks can now be started, finished and grown from Cooking itself</div>
+    <div class="card-body">
+      Alex's hand-test: "no way of confirming cook finished without agenda… scheduling clicking do now didn't make cook active… joining recipes to cook doesn't work, so only one recipe is possible at a time." Real evidence: today's <code>planned_cooks</code> row (Galangal Laksa) was <code>scheduled</code> with its agenda row's <code>started_at</code> still null, and a Sep 16 3-recipe cook was still sitting at <code>scheduled</code> two weeks on, because nothing ever moved a cook past that status. Confirmed in code: once scheduled, the hub's Planned Cook view offered only Revert/Close; Live Cook Mode had only Close; starting or finishing existed solely as the Daily Schedule's Start/Done, which reads this device's localStorage only.<br><br>
+      <strong>Fix</strong> (<code>cookingOracle</code>): there are now two shared paths, <code>logic._startCookNow</code> and <code>logic._finishCook</code>. Each reuses <code>startScheduledTask</code>/<code>completeScheduledTask</code> when this device holds the agenda entry, and otherwise writes straight through to Supabase, so a cook scheduled on another device still works. Finishing sets <code>planned_cooks.status='cooked'</code>, completes the agenda entry, and flips each still-saved journal row for those recipes to cooked via the existing <code>_markCooked</code>.<br><br>
+      New buttons:
+      <ul>
+        <li>The scheduled cook view has <em>▶ Start cooking now</em>, <em>✅ Cook finished</em> and <em>+ Add another recipe to this cook</em>. Adding reopens the session as a draft through the existing revert path, because adding a recipe changes the timing of the whole interleaved schedule.</li>
+        <li>The schedule preview has <em>▶ Cook now</em>, which schedules the cook for now and starts it.</li>
+        <li>Live Cook Mode has <em>✅ Finished</em>.</li>
+      </ul>
+      Separately, the earlier parse fix (<code>6aa6f1a</code>) went live at 14:45 UTC. The 14:57 "No RECIPE_JSON" error still carried the <em>old</em> message text, which means a tab opened before the deploy was still running the previous code. There have been no parse errors since.<br><br>
+      Verified with 16 headless-Chromium assertions (mocked Supabase, real module code) covering: finish via both the local and remote agenda paths, journal marked cooked, a failed write reported as an error, start-now writes plus Live Cook Mode opening, the add-recipe revert and picker, and the Live Cook Finished button. 0 page errors. <code>node --check</code> clean, re-minified, cache-bust <code>20261001a</code>→<code>20261001b</code>. <strong>Untested by Alex's own hand.</strong>
+    </div>
+</div>
 <div class="card green" id="card-2026-10-01-recipe-json-parse-fix" style="margin-bottom:30px;">
     <div class="card-title">🍳 Oct 1 — recipe generation "No RECIPE_JSON found" fixed at the root: fenced JSON + replies cut off by the token cap</div>
     <div class="card-body">
