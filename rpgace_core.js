@@ -40892,7 +40892,13 @@ RPGACE.register('cookingOracle', {
     _generateWithStockConstraint: function(description, servings, cb, stockRows) {
       var self = RPGACE.modules.cookingOracle;
       var prompt = 'Generate a real, cookable recipe for: ' + description + '. Base servings: ' + (servings || 4) + '. '
-        + 'Write it as a normal recipe (title, ingredient list, method) in your reply. '
+        // Oct 1 2026 (error_log: "No RECIPE_JSON found", 6x since Sep 28) - the
+        // prompt used to ask for the WHOLE recipe twice (prose + JSON). Since
+        // H14-H24 grew the JSON (per-step ingredients_used, timings, grams,
+        // is_separable) that regularly ran past sendChat's 3000-token cap and
+        // cut the JSON off. The card is built from the JSON alone, so the
+        // prose copy is dropped.
+        + 'Before the JSON, write ONLY a one- or two-sentence intro - do NOT write the ingredient list or method out as prose (the app builds the full recipe card from the JSON; writing it twice gets the reply cut off). '
         + 'Every step in the method must be tagged with a real type: prep_before_cooking (active work before any heat - chopping, marinating), '
         + 'actual_cooking (active, hands-on, heat applied), prep_while_cooking (active work that fits inside a PASSIVE window - your own or a step that runs unattended), '
         + 'or baking (goes in the oven - a brief active load/unload moment plus a passive oven-time duration). '
@@ -40924,7 +40930,7 @@ RPGACE.register('cookingOracle', {
         // than repeating the full amount in both.
         + 'For each step, also list exactly which ingredients it uses and how much of each, in the shape ingredients_used:[{"name":"...","amount":<number>,"unit":"..."}] - if an ingredient is used across more than one step, split its amount across those steps rather than repeating the full amount each time. '
         + self.SEPARABLE_TAG_TEXT
-        + 'Then, on its own final line, output exactly: RECIPE_JSON: followed by a compact JSON object in the shape '
+        + 'Then, on its own final line, output exactly: RECIPE_JSON: followed by a compact single-line JSON object (no code fences, no backticks) in the shape '
         + self.RECIPE_JSON_SHAPE(servings || 4) + '. '
         + 'Ingredient names must be simple, generic, singular/lowercase (e.g. "garlic clove" not "3 cloves of fresh garlic") so they can be tracked consistently across recipes.';
 
@@ -40962,9 +40968,9 @@ RPGACE.register('cookingOracle', {
       self._generateFlowArmedUntil = Date.now() + 60000;
       vo._captureNextResponse(function(text) {
         setTimeout(function() { self._generateFlowArmedUntil = 0; }, 0);
-        var recipe = self.logic._parseRecipeJSON(text);
-        if (!recipe) { cb('No RECIPE_JSON found in the reply — nothing generated. Try rephrasing what you want.', null, text); return; }
-        cb(null, recipe, text);
+        var parsed = self.logic._parseRecipeJSONDetailed(text);
+        if (!parsed.recipe) { cb(self.logic.RECIPE_PARSE_ERRORS[parsed.reason] || self.logic.RECIPE_PARSE_ERRORS.no_marker, null, text); return; }
+        cb(null, parsed.recipe, text);
       }, function(reason) {
         // Real fail-loud fix (Alex report: generation appearing to
         // silently do nothing) - without this, a busy/timed-out capture
@@ -40980,15 +40986,66 @@ RPGACE.register('cookingOracle', {
       });
     },
 
-    _parseRecipeJSON: function(text) {
-      var m = String(text || '').match(/RECIPE_JSON:\s*(\{[\s\S]*\})/);
-      if (!m) return null;
+    // Oct 1 2026 — real fix for error_log "No RECIPE_JSON found" (6x since
+    // Sep 28). Two reproduced failure modes, both through the real
+    // renderMarkdown -> textContent path oracle:response-scanned hands us:
+    // (1) Oracle fencing the JSON after the marker ("RECIPE_JSON:\n```json
+    // {...}```") — renderMarkdown has no fence handling and turns newlines
+    // into <br>, so the scanned text read "RECIPE_JSON:```json{...}" and the
+    // old /RECIPE_JSON:\s*\{/ regex never matched; (2) the reply hitting
+    // sendChat's 3000-token cap mid-JSON. Now: prefer the RAW reply
+    // (STATE.chatHistory, never rendered), skip any backticks/"json" label
+    // between marker and object, extract the object by a string-aware brace
+    // scan (not a greedy regex), and report WHY it failed so error_log shows
+    // the real cause next time instead of one generic message.
+    _rawLastReply: function() {
+      try {
+        var h = (typeof STATE !== 'undefined' && STATE.chatHistory) || [];
+        for (var i = h.length - 1; i >= 0; i--) if (h[i] && h[i].role === 'assistant') return String(h[i].content || '');
+      } catch (e) {}
+      return '';
+    },
+    _extractJSONAfterMarker: function(text, marker) {
+      text = String(text || '');
+      var at = text.lastIndexOf(marker);
+      if (at === -1) return { reason: 'no_marker' };
+      var i = at + marker.length;
+      while (i < text.length && /[\s`*]/.test(text[i])) i++;
+      if (text.substr(i, 4).toLowerCase() === 'json') { i += 4; while (i < text.length && /[\s`]/.test(text[i])) i++; }
+      if (text[i] !== '{') return { reason: 'no_object' };
+      var depth = 0, inStr = false, esc = false;
+      for (var j = i; j < text.length; j++) {
+        var c = text[j];
+        if (inStr) { if (esc) esc = false; else if (c === '\\') esc = true; else if (c === '"') inStr = false; continue; }
+        if (c === '"') inStr = true;
+        else if (c === '{') depth++;
+        else if (c === '}') { depth--; if (depth === 0) return { json: text.slice(i, j + 1) }; }
+      }
+      return { reason: 'truncated' };
+    },
+    _parseRecipeJSONDetailed: function(text, marker) {
+      var self = RPGACE.modules.cookingOracle;
+      marker = marker || 'RECIPE_JSON:';
+      var raw = self.logic._rawLastReply();
+      var src = raw.indexOf(marker) !== -1 ? raw : String(text || '');
+      var ex = self.logic._extractJSONAfterMarker(src, marker);
+      if (!ex.json) return { recipe: null, reason: ex.reason };
       var recipe;
-      try { recipe = JSON.parse(m[1]); } catch (e) { return null; }
-      if (!recipe || !Array.isArray(recipe.ingredients) || !Array.isArray(recipe.steps)) return null;
-      RPGACE.modules.cookingOracle.logic._sanitizeStepIngredientsUsed(recipe.steps);
-      RPGACE.modules.cookingOracle.logic._sanitizeIngredientSeparable(recipe.ingredients);
-      return recipe;
+      try { recipe = JSON.parse(ex.json); } catch (e) { return { recipe: null, reason: 'invalid' }; }
+      if (!recipe || !Array.isArray(recipe.ingredients) || !Array.isArray(recipe.steps)) return { recipe: null, reason: 'bad_shape' };
+      self.logic._sanitizeStepIngredientsUsed(recipe.steps);
+      self.logic._sanitizeIngredientSeparable(recipe.ingredients);
+      return { recipe: recipe, reason: null };
+    },
+    _parseRecipeJSON: function(text) {
+      return RPGACE.modules.cookingOracle.logic._parseRecipeJSONDetailed(text).recipe;
+    },
+    RECIPE_PARSE_ERRORS: {
+      no_marker: 'No RECIPE_JSON found in the reply — Oracle didn\'t finish with the recipe data. Try again.',
+      no_object: 'Oracle wrote RECIPE_JSON but no recipe data after it — try again.',
+      truncated: 'Oracle\'s reply was cut off before the recipe data finished (too long) — try again, or ask for a simpler recipe.',
+      invalid: 'Oracle\'s recipe data was malformed — try again.',
+      bad_shape: 'Oracle\'s recipe data was missing its ingredients or steps — try again.'
     },
 
     // H21 (Sep 17 2026) — real, defensive structural sanitize of the new
@@ -41045,10 +41102,14 @@ RPGACE.register('cookingOracle', {
       var self = RPGACE.modules.cookingOracle;
       RPGACE.hooks.on('oracle:response-scanned', function(text) {
         if (!text || !self._recipeCardOpen || !self._applyRecipeUpdate) return;
-        var m = /RECIPE_UPDATE_JSON:\s*(\{[\s\S]*\})/i.exec(text);
-        if (!m) return;
+        var raw = self.logic._rawLastReply();
+        var ex = self.logic._extractJSONAfterMarker(raw.indexOf('RECIPE_UPDATE_JSON:') !== -1 ? raw : text, 'RECIPE_UPDATE_JSON:');
+        if (!ex.json) {
+          if (ex.reason !== 'no_marker') RPGACE.utils.toast('⚠️ Oracle\'s recipe update ' + (ex.reason === 'truncated' ? 'was cut off before it finished' : 'had no data after RECIPE_UPDATE_JSON') + ' — try again.', '#CC4A4A', 5000, 'cookingOracle');
+          return;
+        }
         var updated;
-        try { updated = JSON.parse(m[1]); } catch (e) { console.warn('[cookingOracle] malformed RECIPE_UPDATE_JSON, ignored:', e.message); return; }
+        try { updated = JSON.parse(ex.json); } catch (e) { console.warn('[cookingOracle] malformed RECIPE_UPDATE_JSON, ignored:', e.message); return; }
         if (!updated || !Array.isArray(updated.ingredients) || !Array.isArray(updated.steps)) return;
         self.logic._sanitizeStepIngredientsUsed(updated.steps);
         self.logic._sanitizeIngredientSeparable(updated.ingredients);
@@ -41088,10 +41149,10 @@ RPGACE.register('cookingOracle', {
     // the ambiguity, which a bare word count can't see.
     buildRecipeGenBlock: function() {
       var self = RPGACE.modules.cookingOracle;
-      return '\n\nIf Alex is asking you to actually FINALIZE and generate a real, saveable recipe right now (not just discuss or suggest ideas), and you have enough specific detail to write a complete real recipe for one specific dish, write it out in full (title, ingredient list, method - same tagging rules as any other real recipe: each step typed prep_before_cooking/actual_cooking/prep_while_cooking/baking, active_duration_min and passive_duration_min per step, real gram estimates per ingredient, real ingredients_used per step). '
+      return '\n\nIf Alex is asking you to actually FINALIZE and generate a real, saveable recipe right now (not just discuss or suggest ideas), and you have enough specific detail to write a complete real recipe for one specific dish, give a one- or two-sentence intro only - do NOT write the ingredient list or method out as prose, the app builds the full recipe card from the JSON (same tagging rules as any other real recipe: each step typed prep_before_cooking/actual_cooking/prep_while_cooking/baking, active_duration_min and passive_duration_min per step, real gram estimates per ingredient, real ingredients_used per step). '
         + self.UNIT_PREFERENCE_TEXT
         + self.SEPARABLE_TAG_TEXT
-        + 'Then end your reply on its own final line with: RECIPE_JSON: followed by a compact JSON object in the shape '
+        + 'Then end your reply on its own final line with: RECIPE_JSON: followed by a compact single-line JSON object (no code fences, no backticks) in the shape '
         + self.RECIPE_JSON_SHAPE(4) + '. '
         + 'Only include this trailer when a specific dish is genuinely decided and you are finalizing it for real - if his request is still vague or you are only brainstorming/discussing options, answer normally with no trailer.';
     },

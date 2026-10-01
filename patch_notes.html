@@ -73,6 +73,16 @@
 
 <div class="content">
 
+<div class="card green" id="card-2026-10-01-recipe-json-parse-fix" style="margin-bottom:30px;">
+    <div class="card-title">🍳 Oct 1 — recipe generation "No RECIPE_JSON found" fixed at the root: fenced JSON + replies cut off by the token cap</div>
+    <div class="card-body">
+      Alex's report: "the recipe generation in DOM won't parse — check error log." Real evidence: <code>error_log</code> row <code>f565c1a5</code>, toast "⚠️ No RECIPE_JSON found in the reply — nothing generated", 6 occurrences since Sep 28, latest today. Raw Oracle replies aren't persisted anywhere (only browser memory), so the cause was <strong>reproduced</strong> rather than guessed: real reply shapes run through the real <code>renderMarkdown()</code> → <code>textContent</code> path that <code>oracle:response-scanned</code> hands consumers.<br><br>
+      <strong>Two real failure modes confirmed.</strong> (1) Oracle fencing the JSON after the marker (<code>RECIPE_JSON:</code> then a <code>```json</code> block) — <code>renderMarkdown</code> has no fence handling and turns newlines into <code>&lt;br&gt;</code>, so the scanned text read <code>RECIPE_JSON:```json{…}</code> and the old <code>/RECIPE_JSON:\s*\{/</code> regex never matched → exactly this toast. (2) The prompt asked for the whole recipe <em>twice</em> (prose title/ingredients/method, then the full JSON); since H14–H24 grew the JSON (per-step <code>ingredients_used</code>, timings, grams, <code>is_separable</code>) that runs past <code>sendChat</code>'s 3000-token cap and cuts the JSON off — same generic toast.<br><br>
+      <strong>Fix</strong> (<code>cookingOracle.logic</code>): parse the <em>raw</em> reply from <code>STATE.chatHistory</code> (never rendered) with the DOM text as fallback; skip any backticks/<code>json</code> label after the marker; extract the object by a string-aware brace scan instead of a greedy regex; report <em>why</em> it failed (<code>no_marker</code> / <code>truncated</code> / <code>invalid</code> / <code>bad_shape</code>) as distinct toasts so <code>error_log</code> shows the real cause next time. Both generation prompts (Generate button + chat-generated) now ask for a 1–2 sentence intro only, plus single-line JSON with no code fences. <code>RECIPE_UPDATE_JSON</code> (the critique/Accept-Deny flow) had the same regex weakness and now uses the same extractor, toasting instead of silently ignoring a cut-off update.<br><br>
+      Verified with a Node harness on the real <code>renderMarkdown</code> and the real new functions: compact, fenced-after-marker, marker-inside-fence, pretty-printed, bold marker and trailing-text replies all parse (including braces and escaped quotes inside strings); truncated / no-marker / missing-steps each report their own reason. <code>node --check</code> clean, re-minified, cache-bust <code>20260927a</code>→<code>20261001a</code>. <strong>Untested by Alex's own hand</strong> — the <code>error_log</code> row stays active until he confirms a real generation works.
+    </div>
+</div>
+
 <div class="card green" id="card-2026-09-27-jargon-encyclopedia-phylum-1-top-up" style="margin-bottom:30px;">
     <div class="card-title">🎼 Sep 27 — Phylum 1 gets a real 25-term top-up; the "get rid of everything below phylum" ask confirmed already true</div>
     <div class="card-body">
