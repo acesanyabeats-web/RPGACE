@@ -2382,6 +2382,15 @@ function completeScheduledTask(id){
   const summary=entry.actual_mins?'Estimated: '+entry.estimated_mins+'min Actual: '+entry.actual_mins+'min'+(diff!==null?' ('+(diff>0?'+':'')+diff+'min vs estimate)':''):' Completed';
   if(typeof logDailyAction==='function')logDailyAction(entry.date,entry.title,summary);
   if(typeof saveToJournal==='function')saveToJournal(entry.title+' Completed',entry.title+'\n'+summary,'schedule');
+  // Oct 5 2026: completing a planned-cook entry from the Daily Schedule
+  // never told planned_cooks the cook was done (only cookingOracle's own
+  // _finishCook did), so the row stayed 'scheduled' and could later be
+  // picked up and edited as if it were still open. Mark it cooked here
+  // too. (_finishCook calls this function, so no call back the other way.)
+  if(entry.source_type==='planned_cook'&&entry.source_id&&RPGACE.sb&&RPGACE.sb.secureWrite){
+    RPGACE.sb.secureWrite('planned_cooks','update',{status:'cooked'},'id=eq.'+entry.source_id+'&status=neq.cooked')
+      .catch(function(e){console.warn('[completeScheduledTask] planned_cooks cooked write failed:',e.message);});
+  }
   // H20 (Sep 17 2026) — same real "give visible feedback, don't just
   // silently update a cache" fix as startScheduledTask above (rule 8);
   // "Done" had the identical gap, just not the one Alex happened to
@@ -43536,9 +43545,16 @@ RPGACE.register('cookingOracle', {
       }
 
       if (!nextIds.length) {
-        RPGACE.sb.secureWrite('planned_cooks', 'delete', null, 'id=eq.' + sess.plannedCookId)
+        // Oct 5 2026 - real data-loss fix: this used to hard-DELETE the row,
+        // and the in-memory session could be pointing at a scheduled/cooked
+        // cook (Laksa Oct 1 and the Sep 16 three-recipe cook both vanished
+        // from planned_cooks with no trace). Now a soft discard, and only
+        // ever of a row that is still a draft - a scheduled or cooked row
+        // is never touched from a session edit. Draft loaders already
+        // filter status=eq.draft, so a discarded row simply stops showing.
+        RPGACE.sb.secureWrite('planned_cooks', 'update', { status: 'discarded' }, 'id=eq.' + sess.plannedCookId + '&status=eq.draft')
           .then(function() { self._session = null; cb(null); })
-          .catch(function(e) { cb(e.message || 'could not delete now-empty session'); });
+          .catch(function(e) { cb(e.message || 'could not clear now-empty session'); });
         return;
       }
 

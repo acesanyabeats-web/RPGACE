@@ -73,6 +73,26 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-05-planned-cooks-stop-vanishing" style="margin-bottom:30px;">
+    <div class="card-title">🍳 Oct 5 — planned cooks no longer vanish (soft discard + schedule "Done" marks the cook cooked)</div>
+    <div class="card-body">
+      <strong>The bug</strong>: two scheduled cooks (Laksa, Oct 1; the Sep 16 three-recipe cook) disappeared from <code>planned_cooks</code> with no trace.
+      <ul>
+        <li>No FK cascade can remove these rows. The only code that deletes one is the per-recipe delete in Cooking: removing the <em>last</em> recipe hard-deleted the session's row.</li>
+        <li>The Laksa was completed via the Daily Schedule's own "Done" (journal row, source=schedule, 15:09), and that path never told <code>planned_cooks</code> the cook was done. The row stayed "scheduled", where a later session edit could pick it up and delete it.</li>
+        <li>Most likely cause, but unconfirmed: a hard delete leaves no record.</li>
+      </ul>
+      <strong>Fix</strong>:
+      <ul>
+        <li>Emptying a session now sets the row to <code>discarded</code> instead of deleting it, and only if the row is still a draft. A scheduled or cooked cook is never touched from a session edit.</li>
+        <li>The Daily Schedule's "Done" on a planned-cook entry now marks that <code>planned_cooks</code> row <code>cooked</code>, matching what Cooking's own "Cook finished" already did.</li>
+        <li>Draft/scheduled loaders already filter by status, so discarded rows simply stop showing.</li>
+        <li>Cache-bust <code>20261005a</code>.</li>
+      </ul>
+      <strong>Untested by Alex's own hand.</strong> Can't restore the two lost rows (no backup); the Laksa recipe and its journal entries still exist.
+    </div>
+  </div>
+
 <div class="card" id="card-2026-10-01-session-closed-cooking" style="margin-bottom:30px;">
     <div class="card-title">🌙 Oct 1 — session closed via /Bedtime (RPGACE half; the session continues on Ube Express)</div>
     <div class="card-body">
