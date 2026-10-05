@@ -1,0 +1,71 @@
+/Routine — 5 Oct 2026 (RPGACE resumes after Oct 1-5 Ube Express work; Ube Express PAUSED, see UbeExpress/PAUSED.md + session_memory 7dfe2d84)
+
+EVIDENCE (live, this pass)
+- git: main @ f839b65 (Oct 1 Bedtime). No RPGACE commits since. Working tree clean.
+- SELF_KNOWLEDGE: fresh (4 days, 0 cards since).
+- oracle_dev_suggestions: 3 new. Two are flagged recipes (Slow Cooker Beef Bourguignon, Sep 28; Korean Spicy Octopus Bibimbap, Sep 28). One is Oracle saying it has no book list for "5 Amazon links" (Oct 5, 00:15).
+- error_log, 4 active:
+  - App froze: 106 occurrences (was 76 on Sep 23), last Oct 4.
+  - No RECIPE_JSON: 8 occurrences, last Oct 1 15:09, which is before the Oct 1 parse-fix commit landed.
+  - "Oracle is still answering": 1 occurrence, Aug 28. A benign UX notice wrongly coloured as an error.
+  - secureWrite 504: 1 occurrence, Sep 13, transient.
+- smoke_test_items broken: 1 (videoSummary, flipped Aug 30 with no note).
+- system_map_flags: 1 (Sep 15 CLAUDE.md findings have no patch_notes card).
+- ceo_plan_items red/yellow in live plans: 30. Purple: 0.
+- planned_cooks: exactly 1 row (draft 80094914, 2 recipes). No 'scheduled' or 'cooked' rows exist at all.
+- journal Oct 1:
+  - "Cook: Galangal Laksa ... Completed" (source=schedule, 15:09).
+  - 3 recipes saved 15:10-15:12.
+  - The new draft was created 15:19.
+- jargon_encyclopedia: 523 pending.
+
+VANISHED COOKS — real finding
+- The Laksa cook was COMPLETED via the Daily Schedule's own complete (journal row, source=schedule). That path never sets planned_cooks.status='cooked'; only cookingOracle._finishCook does.
+- No FK cascade can remove planned_cooks rows (only shopping_lists cascades FROM it).
+- The ONLY code path that deletes a planned_cooks row is the per-recipe delete removing the LAST recipe from the loaded session (rpgace_core.js ~43539, a hard DELETE).
+- Most likely cause: the session in memory was pointing at the old scheduled row, and removing its recipes (to start the squid cook) hard-deleted it. The Sep 16 row likely went the same way.
+- Unconfirmed: no audit trail exists. A hard delete leaves nothing behind.
+- Fix proposed: soft-delete. Set status='discarded' instead of DELETE, and only for draft rows; never touch scheduled/cooked rows from a session edit. Also have the Daily Schedule "complete" mark the linked planned_cooks row cooked (one shared _finishCook path, rule 8).
+
+TEAM 1 TOP 10 (evidence-ranked)
+1. Planned-cook soft delete + Daily Schedule complete → _finishCook (the vanished-cooks bug, Alex's carry-over)
+2. Triage the 3 oracle_dev_suggestions: save the 2 flagged recipes? The book-links ask was Oracle-side
+3. error_log hygiene:
+   - resolve RECIPE_JSON (fix shipped; confirm no recurrence)
+   - resolve the transient 504
+   - reclassify the "still answering" toast colour (it isn't an error)
+4. Freeze: 106 occurrences and climbing. Make perfWatch capture the current page/module/last action with each long task (adds evidence, not a blind fix — rule 4)
+5. videoSummary broken since Aug 30 with an empty note: diagnose from code
+6. Alex hand-tick the HABITS cook flow he actually used Oct 1 (start/finish/join) in smoke_test.html
+7. reference_tracks scale/genre backfill (0/32): Alex runs the popup
+8. Jargon review → phylum structure planning (523 pending)
+9. system_map_flags: add the 2 missing Sep 15 patch_notes cards (cheap doc truth)
+10. F16/F17/F18 hand-test sweep (long-standing execution debt)
+
+TEAM 2 COUNTER-CASE (real)
+- The governing 48-hour rule: nothing in Team 1's list makes a beat or posts a video. Content Pipeline has been untouched for weeks while HABITS/meta work dominated. Item 10 (F16/F17/F18 — Visual Treatment, video_jobs stages, Beatstars button) is the only beat/video-facing item and is pure hand-testing (zero build cost). Argue it above items 8 and 9.
+- Item 9 is doc hygiene with no user value. It can drop below the line.
+- Ube Express → "service for hospitality staff" is a real commercial idea (/investor angle), but premature while it lacks buy-in from even one bar. Log only, don't build.
+
+DEBATE / RECONCILIATION
+- Team 1 holds item 1 at the top: a real data-loss bug in a domain Alex is actively using, and his own carry-over ask.
+- Team 2 wins on F16/F17/F18: moved up to 5, since it's the only output-facing item and costs no build time.
+- Item 9 (doc cards) dropped below the line.
+- Freeze instrumentation stays: 106 occurrences is real, recurring, self-reported evidence, and adding context is the rule-4-compliant next step (not a 5th blind fix).
+
+FINAL TOP 10
+1. Planned cooks: soft-delete + Daily-Schedule complete routes through _finishCook (fix the vanishing)
+2. oracle_dev_suggestions triage (2 flagged recipes, 1 book-links ask)
+3. error_log hygiene (resolve RECIPE_JSON + 504, recolour the "still answering" toast)
+4. perfWatch: capture page/module/last action with each freeze
+5. F16/F17/F18 hand-test sweep (Alex, ~15 min; the only beat/video item)
+6. videoSummary broken: diagnose
+7. Hand-tick HABITS cook start/finish/join in smoke_test.html (Alex)
+8. reference_tracks scale/genre backfill popup (Alex)
+9. Jargon review → phylum structure planning (Alex-paced)
+10. Log "Ube Express as a hospitality-staff service" as a blue idea for /investor later
+
+DROPPED (named, not silent)
+- Sep 15 missing patch_notes cards (system_map_flags 04f15da4): doc hygiene, no user value today
+- Galaxy Map P1 GATE hand-test / P3: under the standing Galaxy Map pause
+- 30 red/yellow ceo_plan_items: mostly Galaxy/meta plans under the same pause
