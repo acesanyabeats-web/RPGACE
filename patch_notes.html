@@ -73,6 +73,20 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-10-n2-content-video" style="margin-bottom:30px;">
+    <div class="card-title">🎬 Oct 10 — N2 slice 2: Content &amp; Video pages</div>
+    <div class="card-body">
+      Alex confirmed slice 1: "oracle page is good". This slice covers the four Content &amp; Video pages: the ConID list, Idea Bank, Beat Log and Upload Workshop. Evidence first, from 400px headless screenshots with real-shaped sample rows. 16 of 16 ConID-list buttons and 13 of 13 Idea Bank buttons were under 36px tall, and 26 pieces of text on the ConID list were under 12px.
+      <ul>
+        <li><strong>Real bug fixed</strong>: on every ConID card the stage badge was unreadable. The old code tinted the badge background with <code>color.replace('rgb','rgba')</code>, which does nothing to a hex colour, so text and background were the same solid gold. It now tints with <code>color-mix()</code>. A grep found no other uses of the pattern. The badge reads e.g. "Visual Treatment ✓"; Alex's Aug 6 wording was "tick", and the old label literally said ": tick".</li>
+        <li>ConID titles wrap instead of being cut off to "Calibri …", and are 15px instead of 12px.</li>
+        <li>Doubled titles removed: the ConID list's "Ideas → Productions → Posts" label plus a second "Content Pipeline" heading (now just "Your productions"); the Idea Bank's "Idea Bank · ConIDPot" plus "Content Idea Bank"; and the Beat Log's "Beat Log · Phylum 16 — Venditionis Beatorum" label above "Log a Beat".</li>
+        <li>On all four pages, buttons are at least 40px tall with 13px text, and inline 10–11px text is raised to 13px. This is done with CSS scoped to the four page ids, because the controls set their sizes inline. The ConID list no longer sits in a 300px inner scroll box.</li>
+        <li>The Beat Log's 4-column row (rating, genre, licence, collab) now reflows to two columns on a phone instead of truncating to "— se".</li>
+      </ul>
+      <strong>Verified</strong>: the same headless audit run again found 0 buttons under 36px and 0 text under 12px on all four pages, no sideways scroll, zero page errors, and the badge visible. <strong>Not yet hand-tested by Alex.</strong> The next slice, Knowledge Tree/Encyclopedia, waits for his check of this one.
+    </div>
+  </div>
 <div class="card" id="card-2026-10-10-n2-oracle" style="margin-bottom:30px;">
     <div class="card-title">🔮 Oct 10 — N2 slice 1: the Oracle page, rebuilt around the chat</div>
     <div class="card-body">
