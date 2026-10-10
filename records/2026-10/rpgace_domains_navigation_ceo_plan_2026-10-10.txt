@@ -167,3 +167,14 @@ series = several articles grouped. The plan does both; Alex confirms (fork F4).
 
 F4 Deepstash: both (each article = a post of idea cards, articles grouped into series by topic)
    (recommended), or only the per-article card post?
+
+== 8. ALEX'S ANSWERS (AskUserQuestion, verbatim) — plan RATIFIED with these ==
+F1 Order: "App first, map last (Recommended)"
+F2 Auto article: "Automatic (Recommended)"
+F3 Back button: "1 but also revert back to page that accessed the page i went back on"
+   => Phone back closes the top popup first; after that, back returns to whichever page (or popup)
+      actually opened the current page — a real navigation trail, not a fixed parent. Includes jumps
+      made from inside a popup (e.g. a Cooking popup opening the Schedule page: back returns to Cooking
+      with that popup reopened).
+F4 Deepstash: "Posts + series (Recommended)"
+Ratified order: C1 -> N1 -> O1 -> P1 -> N2 (per-domain, hand-test gated) -> M1 -> T1 (blocked on tree rebuild).
