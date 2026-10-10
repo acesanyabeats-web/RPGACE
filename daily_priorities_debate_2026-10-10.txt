@@ -1,0 +1,41 @@
+/Routine — Oct 10 2026 (after /Bedtime, 2nd half of the day)
+
+EVIDENCE (live, this pass)
+- Plan "RPGACE Domains, Navigation & Deepstash Encyclopedia": C1/N1/X1/O1 yellow (built, headless-verified,
+  untested); P1/G1/L1/B1/D1/N2/M1/S1/T1 red.
+- encyclopedia = 1 row: the 37-article backfill has not run yet (needs Alex's first logged-in load on the new build).
+- error_log active: 6 secureWrite 400s on Oct 8 (5 of them "Could not remove"/planned-cook writes), which match the
+  planned_cooks CHECK bug fixed today (status CHECK widened); 1 recipe-generation "No RECIPE_JSON" x8, last Oct 1
+  (parse fix shipped Oct 1); 1 secureWrite 504 Sep 13; 1 "Oracle still answering" Aug 28; app freeze x113, last Oct 8.
+- oracle_dev_suggestions new: 3 (two recipes flagged Sep 28, one book-list ask Oct 5).
+- system_map_flags flagged: 2 (today's 3-new-modules flag, deliberately left for M1; a Sep 23 one).
+- SQL pop-ups: controlled by the claude.ai Supabase connector tool permissions, not .claude/settings.json.
+
+TEAM 1 (evidence-ranked Top 10)
+1. Alex: open the app logged in -> triggers the 37-article backfill; hand-test C1/N1/X1/O1 (4 tests, ~10 min).
+2. Alex: Supabase connector -> Always allow for Execute SQL / Apply migration (30 s; stops the pop-ups).
+3. Build P1 (5 pathways) — next ratified plan item.
+4. Alex: hand-confirm the planned-cook fix (Cook finished / remove last recipe on cook 80094914), then resolve the 6 Oct-8
+   error_log rows it explains.
+5. Build G1 money guardrails (Wishlist 24h cool-off + decision journal) — cheap, existing tables.
+6. Build B1 producer tools as Oracle commands (prompts only, no tables) — closest to the 48-hour rule.
+7. Check RECIPE_JSON errors since Oct 1 fix; resolve the row if none recur.
+8. Triage the 3 new oracle_dev_suggestions (mark reviewed; two are recipe outputs, not suggestions).
+9. Freeze x113: add page + last-action context to perfWatch's log line so the next occurrence is diagnosable.
+10. Build L1 (resurfacing + Bookworm flashcards) — after C1 has real data.
+
+TEAM 2 (counter-case)
+- M1 (rivers->domains) should come earlier: the Galaxy Map is now missing 3 modules and still shows rivers Alex wants gone.
+  Rebuttal accepted from the ratified plan: Alex chose "app first, map last". Not promoted.
+- The freeze (113 occurrences) outranks new features. Partly accepted: item 9 is the cheap diagnostic step; a fix
+  without context would be the 5th blind pass the landmine forbids.
+- D1 daily-life items have real data (pantry 65 rows). Not promoted above G1/B1 because they need photo input or a new
+  digest, both larger.
+
+/5thDimension reconcile: built-vs-reported matches (4 yellow items, all logged in patch_notes/CLAUDE.md/system_updates).
+The real gap is verification debt: nothing built today is hand-tested, and the C1 backfill depends on Alex opening the app.
+
+FINAL TOP 10 (Council of 5): as Team 1, with 9 (freeze context) moved above 7.
+1 hand-tests + backfill trigger, 2 connector Always allow, 3 P1, 4 planned-cook confirm, 5 G1, 6 B1,
+7 freeze context, 8 RECIPE_JSON check, 9 suggestions triage, 10 L1.
+Dropped for now, named: N2, M1, S1, T1, D1 (plan order); swipe-freeze code fix (no evidence yet).
