@@ -1,0 +1,169 @@
+RPGACE domains + navigation + pathways — /CEO Loop 1 (compile, debate, drift, Council of 5)
+Date: 2026-10-10. Status: PROPOSED, NOT APPROVED, NOTHING BUILT (Alex chose "Show me the plan first").
+Prior record: records/2026-10/rivers_to_domains_scrutiny_2026-10-10.txt (domain map, 58/58 modules).
+
+== ALEX'S ASK (verbatim) ==
+"explain 1 i didnt get it, where is content intelligence now? can its summaries of insights and methods
+exist in encyclopedia so i can access whole articles, but those articles are also used in knowledge tree
+as reference points for insights within the tree. 2. oracle, but i think the panels are poorly designed.
+all the modules are logically very poorly designed, and the galaxy map shows that, basics like back and
+navigation between adherent page of modules exist very minimally without thought, this scan and re-update
+needs to happen throughout RPGACE. go ahead, while also scrutinising what i said with /paranoia and
+/free-for-all-debate and /impeccable and /drift and /commit-archaeologist all together to plan out what can
+be made better, and what new pathways can be established between existing code bulks to make the app a
+1000/10, then /CEO it"
+
+Earlier same day: get rid of rivers -> Domain -> Module -> Function only. Fork 2 answered: caption
+panels (Insta/YouTube/TikTok) belong to the Oracle domain.
+
+GALAXY MAP PAUSE OVERRIDE (logged explicitly): the Sep 15 pause on new Galaxy Map work stands as fact
+(56% of commits were meta work). Alex's ask to remove rivers is an explicit override for item M1 only.
+
+== 1. COMPILE — live evidence (checked this pass) ==
+
+Content Intelligence (CI):
+- intel_reports: 37 rows. Every row's `insights` jsonb has the same 10 keys: verdict_score,
+  verdict_summary, production_techniques, content_strategy_insights, what_to_steal, what_to_avoid,
+  quests, add_to_watchlist, watchlist_reason, encyclopedia_entry.
+- encyclopedia_entry is a FINISHED ARTICLE OBJECT in all 37 rows (title, summary, tags...; 1,140-1,300+
+  chars each). Already generated and already paid for.
+- encyclopedia: 1 row total, 0 rows with source_url. intel_reanalysis_pool has 0 encyclopedia deletions.
+  => None of the 37 articles reached the Encyclopedia. Finding: a missing pathway, not missing content.
+- encyclopedia_insights: 106 rows, all linked by source_entry_id, but from only 2 distinct sources.
+- taxonomy_tree: 0 rows (wiped Sep 25, rebuild pending). jargon_encyclopedia: 545.
+- CI modules today: intelBatchList, intelDedup, intelDelete, ciAutoPropose, researchTabs = old River XII.
+  The insights list is rendered by intelDelete's UI half; there is no single "CI" page anymore since
+  Research Lab retired (Aug 15).
+
+Navigation:
+- pathRouter: page-level history only (16 pages, pushState on showPage). Popups are NOT in history.
+- dashDeck._popup (rpgace_core.js:14644) is the one shared popup scaffold (26 sites route through it).
+  Most module UI lives in popups (cookingOracle alone opens 19), so on a phone the back button leaves the
+  whole page instead of closing the popup you are in.
+- Back affordances per module (grep "back"): shoppingWishlist 0, jargonEncyclopedia 0, videoSummary 0,
+  the 3 caption panels 0, chroniclesLog 1, questEngine 1. Where back exists it's hand-rolled per module
+  (cookingOracle 12, bookworm 15), so each one behaves differently.
+- No "sibling modules" link anywhere: nothing inside a module points to its neighbours in the same domain.
+
+Caption panels (Oracle domain):
+- instaOraclePanel (209 lines), youtubeOracle (259), tiktokOracle (225): 3 near-copies of one panel,
+  injected into the Oracle page next to chat-input, each with its own buttons/ids (insta-op/yt-op/tt-op).
+  No back, no popup, no shared shape. tiktokOracle already reaches into yt-ob = copy drift.
+
+/impeccable (npx impeccable detect index.html style.css): 29 anti-patterns + 5 advisories.
+- Relevant here: tiny 11px body text, wide letter-spacing on body text, a kicker above the level-up
+  heading, a skipped heading level (h1 -> h4), a gold zero-offset glow, a 3px gold side-tab border
+  (style.css:398), and 4 low-contrast purples on the Insta panel gradient (4.2-4.3:1, need 4.5).
+  => fold these into the redesign items below, not a separate polish pass.
+
+/commit-archaeologist (git log since Jul 1):
+- 205 commits. 38 mention river/galaxy. 6 commits to rpgace_core.js mention nav/back/popup.
+  => Alex's read is correct: the map got 6x more attention than moving around the app.
+
+== 2. /free-for-all-debate (4 competitors, each picks 2 problems) ==
+A. Product-first: (1) CI articles — 37 already written, zero AI cost to land them; (2) a shared back/nav
+   in _popup — one change reaches 26 sites. Ship value Alex feels on day one.
+B. Map-first: (1) rivers -> domains before any redesign, or the redesign gets drawn on the old map;
+   (2) domain pages in the app mirror the map. Rebuttal from A: the map change is ~2,300 script mentions
+   and changes nothing Alex touches in the app; doing it first repeats the 56% meta pattern.
+C. Minimalist: (1) only the _popup nav stack; (2) only the caption-panel merge. Everything else is churn.
+   Rebuttal from D: Alex explicitly asked for whole-app scope; the minimalist cut drops pathways + CI.
+D. Skeptic of "1000/10": (1) "all modules logically redesigned" has no end; 58 modules / 66 showPage
+   calls cannot be redesigned in one plan; (2) 25+ things already untested by Alex's hand — more surface
+   without hand-tests is risk. Proposal: slice per domain, each slice gated on Alex's hand-test.
+Result: A's two items lead; B's rename goes AFTER the nav foundation (it then labels real domain
+pages, not abstractions); D's per-domain gating is adopted as the rule for the redesign; C's caption merge
+is kept as part of the Oracle slice.
+
+== 3. /drift vs Alex's ask ==
+- Explain fork 1: covered (report section A).            VERDICT on track
+- Panels -> Oracle + redesign: O1.                         on track
+- Back/nav scan across RPGACE: N1 (foundation) + N2 (per-domain pass). on track
+- New pathways between existing code: P1 (5 evidence-backed pathways). on track
+- Remove rivers: M1.                                       on track
+- "All modules logically redesigned / 1000/10": MATERIAL scope risk, bounded by per-domain slices with
+  hand-test gates (D2 below). Not CAPTURED: the goal is kept, but delivered in stages.
+BASIS: provisional until Alex approves.
+
+== 4. PROPOSED PLAN (ordered) ==
+C1  CI -> Encyclopedia articles. (a) One-off backfill: turn each intel_report's encyclopedia_entry into
+    a real encyclopedia row (source='content_intelligence', source_url=url), with a "Methods" section built
+    from production_techniques / what_to_steal / what_to_avoid / content_strategy_insights. Zero AI cost.
+    Deduped by source_url and title. (b) Going forward, every new CI analysis writes its article
+    automatically through the same function (one pipeline, rule 8). (c) Each article's insight rows
+    (encyclopedia_insights) stay linked to it, so an insight always knows its full source article.
+N1  Navigation foundation in dashDeck._popup (one change, 26 sites): phone/browser back closes the top
+    popup first (history state per popup); a standard header on every popup: Domain › Module › current
+    view, a ← Back that returns to the previous view, and chips for the other modules in the same domain.
+    The domain map from the prior record is the source for "same domain".
+O1  Oracle domain: merge the 3 caption panels into ONE "Captions" panel with an Instagram / YouTube /
+    TikTok switch (one code path, three platform presets), opened as a popup with N1's header. Fix the
+    4 low-contrast purples here.
+P1  New pathways (all existing code, just connected): (1) CI article -> "Make these quests" (every
+    report already contains quests; questEngine persists them); (2) CI article -> add creator to watchlist
+    (add_to_watchlist already computed); (3) Beat Log entry -> open Captions prefilled with that beat;
+    (4) Encyclopedia article -> "Read the source" / "Related jargon" (jargon_encyclopedia match on terms);
+    (5) Cooking shopping list -> "Add non-food item to Wishlist" (shoppingWishlist).
+N2  Per-domain logic + layout pass, one domain at a time, each gated on Alex's hand-test before the next:
+    order Oracle -> Content & Video -> Knowledge Tree/Encyclopedia -> Cooking -> the rest. Each pass
+    removes the impeccable findings in that domain (tiny text, side-tab border, glow, heading levels).
+M1  Galaxy Map: rivers -> domains. Rename RIVER_MODULES -> DOMAIN_MODULES with the 10-domain map, regenerate
+    pages, retire river pages to a stub (archive, never delete), relabel perspective_reports scope 'river'
+    and the 12 RIVER-* ceo_plan_items. Done after N1/C1 so the map describes the real domain pages.
+T1  Knowledge Tree references (DEFERRED BY DEPENDENCY): when the tree is rebuilt, each tree insight
+    links to the article(s) it came from. Additive column on encyclopedia_insights for the node link.
+    Can't be built while taxonomy_tree has 0 rows; prepared by C1(c).
+
+== 5. COUNCIL OF 5 ==
+- Technical risk: N1 changes the shared popup used 26 times; mitigated by a headless test that opens and
+  closes popups via back on 5 representative sites. C1 backfill is additive inserts only.
+- Cost: C1 has zero AI cost. M1 is the most expensive item (~30 generator scripts) and shows nothing in
+  the app, so it goes last.
+- Maintainability: O1 removes ~450 duplicated lines; N1 replaces hand-rolled back buttons over time.
+- UX/Alex's goals: C1 + N1 are the two things he'll feel immediately (articles he can read, back that
+  works).
+- Why NOT: Alex has 25+ untested features already; this plan adds more. Answer: N2 is gated on his own
+  hand-tests, and C1/N1/O1 are small enough to test in one sitting. If he doesn't want to hand-test, stop
+  after C1+N1.
+
+== 6. OPEN FORKS FOR ALEX ==
+F1 Order: C1 + N1 first, rivers->domains (M1) later (recommended), or map first?
+F2 New CI analyses become Encyclopedia articles automatically (recommended), or wait for approval?
+   (The human-checkpoint rule covers taxonomy writes; tree links in T1 still get confirmed.)
+F3 Phone back closes the popup you're in, not the page (recommended)?
+
+== 7. LATE ADDITION — Deepstash-style Encyclopedia (Alex, same turn, verbatim) ==
+"id like encyclopedia to make the articles like a post or series from deepstash to make it more productive.
+/paranoia and /CEO and /drift"
+
+Deepstash shape: an article becomes a short series of "idea" cards (one idea = a title + 2-4 sentences,
+read one at a time, swipe/next), each idea can be saved on its own, and related posts group into a series.
+
+Evidence it fits what exists (no new content needed):
+- Each CI report already splits into list-shaped parts: summary, production_techniques, what_to_steal,
+  what_to_avoid, content_strategy_insights, quests. Each list item = one idea card.
+- encyclopedia_insights (106 rows) is already "one insight per row, linked to its source article,
+  with macro_category". That IS a Deepstash idea table. Reuse it (rule 8), don't add a second one.
+- Tags on every encyclopedia_entry + macro_category = the grouping for a series.
+
+C1 amended: articles render as an idea-card post by default (progress dots "3 / 9", Next/Back, read-time
+label, "Save idea" per card, "Full article" one tap away), and the Encyclopedia home shows Series
+(articles grouped by tag/category) instead of one long list.
+
+/paranoia:
+- Risk: cards hide context. Your earlier ask was "access whole articles". Fix: the full article always sits one
+  tap away, and every card links back to it.
+- Risk: card text written by the AI as a list can read as fragments. The backfill only splits what is
+  already split; no rewording pass (rewording costs tokens and can drift from the source).
+- Risk: "Save idea" needs storage. Use a status value on encyclopedia_insights (e.g. 'saved'). Before
+  writing the new value, query pg_constraint first (Oct 10 lesson). Additive only.
+- Risk: duplicate card UI. Bookworm chapters and Jargon already have card lists; build one shared
+  idea-card renderer and let Jargon reuse it later, not a third copy.
+- Swipe on phone: reuse button Next/Back (thumb-sized), not a new touch-gesture handler — the app has
+  an unresolved swipe-freeze history (leftNav).
+
+/drift: on track. One real ambiguity: "post or series" — post = one article split into ideas;
+series = several articles grouped. The plan does both; Alex confirms (fork F4).
+
+F4 Deepstash: both (each article = a post of idea cards, articles grouped into series by topic)
+   (recommended), or only the per-article card post?
