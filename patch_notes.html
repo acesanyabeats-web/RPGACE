@@ -73,6 +73,18 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-10-page-back" style="margin-bottom:30px;">
+    <div class="card-title">↩️ Oct 10 — Sub-page Back goes to its menu, not the dashboard</div>
+    <div class="card-body">
+      Alex, testing slice 2: "not good, goes back to dashboard, not content pipeline". Checked in headless before fixing. Phone Back from Beat Log already returned to the Content Pipeline menu, thanks to N1. The bug was the on-page "← Back to Dashboard" button, hard-coded to <code>showPage('dashboard')</code> on 8 sub-pages: the 4 Content Pipeline pages and the 4 Bookworm pages. It also <em>added</em> a history entry, so pressing phone Back afterwards jumped forward into Beat Log again.
+      <ul>
+        <li><code>dashDeck._openPage</code> now records which card's menu the page was opened from; N1's history entry for that popup is still current at that moment.</li>
+        <li>New <code>dashDeck._pageBack(card)</code>: if you came from that menu, it calls <code>history.back()</code>, which reopens the menu exactly like phone Back and leaves no extra entry. If you arrived directly (link, bookmark, reload, left nav), it shows the dashboard and opens that card's menu.</li>
+        <li>The buttons now read "← Content Pipeline" and "← Bookworm".</li>
+      </ul>
+      <strong>Verified</strong>: headless Chromium, 10 checks, zero page errors. For each of the 4 Content Pipeline pages, the button returns to the Content Pipeline menu, and phone Back afterwards closes the menu instead of jumping forward. A page opened directly gets the dashboard with the menu open. Videoworm's button returns to the Bookworm menu. <strong>Not yet hand-tested by Alex.</strong>
+    </div>
+  </div>
 <div class="card" id="card-2026-10-10-n2-content-video" style="margin-bottom:30px;">
     <div class="card-title">🎬 Oct 10 — N2 slice 2: Content &amp; Video pages</div>
     <div class="card-body">

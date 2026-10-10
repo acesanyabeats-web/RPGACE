@@ -477,45 +477,45 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
      evidence): NOT added to the primary leftNav tab bar — these are real,
      URL-addressable sub-pages of Bookworm/Content Pipeline, not top-level
      destinations, reached via the rebuilt Bookworm/Content Pipeline nav
-     popups (UI12/UI13) or a direct link/bookmark. Each gets a real "Back to
-     Dashboard" button since none of them sit in the tab bar. -->
+     popups (UI12/UI13) or a direct link/bookmark. Each gets a Back button to its own menu
+     (dashDeck._pageBack - same as phone Back; Oct 10 2026). -->
 <div class="page" id="page-bookworm">
-  <button class="learn-btn" onclick="showPage('dashboard')" style="margin-bottom:14px">← Back to Dashboard</button>
+  <button class="learn-btn" onclick="RPGACE.modules.dashDeck._pageBack('bookworm')" style="margin-bottom:14px">← Bookworm</button>
   <div class="section-title">📖 Bookworm</div>
 </div>
 
 <div class="page" id="page-videoworm">
-  <button class="learn-btn" onclick="showPage('dashboard')" style="margin-bottom:14px">← Back to Dashboard</button>
+  <button class="learn-btn" onclick="RPGACE.modules.dashDeck._pageBack('bookworm')" style="margin-bottom:14px">← Bookworm</button>
   <div class="section-title">🐛 Videoworm</div>
 </div>
 
 <div class="page" id="page-musicworm">
-  <button class="learn-btn" onclick="showPage('dashboard')" style="margin-bottom:14px">← Back to Dashboard</button>
+  <button class="learn-btn" onclick="RPGACE.modules.dashDeck._pageBack('bookworm')" style="margin-bottom:14px">← Bookworm</button>
   <div class="section-title">🎼 MusicWorm</div>
 </div>
 
 <div class="page" id="page-bibliography">
-  <button class="learn-btn" onclick="showPage('dashboard')" style="margin-bottom:14px">← Back to Dashboard</button>
+  <button class="learn-btn" onclick="RPGACE.modules.dashDeck._pageBack('bookworm')" style="margin-bottom:14px">← Bookworm</button>
   <div class="section-title">📚 Bibliography</div>
 </div>
 
 <div class="page" id="page-content-pipeline">
-  <button class="learn-btn" onclick="showPage('dashboard')" style="margin-bottom:14px">← Back to Dashboard</button>
+  <button class="learn-btn" onclick="RPGACE.modules.dashDeck._pageBack('pipeline')" style="margin-bottom:14px">← Content Pipeline</button>
   <div class="section-title">🎬 Content Pipeline</div>
 </div>
 
 <div class="page" id="page-idea-bank">
-  <button class="learn-btn" onclick="showPage('dashboard')" style="margin-bottom:14px">← Back to Dashboard</button>
+  <button class="learn-btn" onclick="RPGACE.modules.dashDeck._pageBack('pipeline')" style="margin-bottom:14px">← Content Pipeline</button>
   <div class="section-title">💡 Idea Bank</div>
 </div>
 
 <div class="page" id="page-beat-log">
-  <button class="learn-btn" onclick="showPage('dashboard')" style="margin-bottom:14px">← Back to Dashboard</button>
+  <button class="learn-btn" onclick="RPGACE.modules.dashDeck._pageBack('pipeline')" style="margin-bottom:14px">← Content Pipeline</button>
   <div class="section-title">🥁 Beat Log</div>
 </div>
 
 <div class="page" id="page-upload-workshop">
-  <button class="learn-btn" onclick="showPage('dashboard')" style="margin-bottom:14px">← Back to Dashboard</button>
+  <button class="learn-btn" onclick="RPGACE.modules.dashDeck._pageBack('pipeline')" style="margin-bottom:14px">← Content Pipeline</button>
   <div class="section-title">🔀 Upload Workshop</div>
 </div>
 
@@ -568,7 +568,7 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
      here. The original rpgace_core.js remains the real, edited,
      fully-commented source - always edit that, never the .min.js file
      directly. -->
-<script src="rpgace_core.min.js?v=20261010o"></script>
+<script src="rpgace_core.min.js?v=20261010p"></script>
 
 <div class="page" id="page-encyclopedia">
   <div class="section-title">📖 Knowledge Encyclopedia ✦</div>
