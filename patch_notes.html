@@ -73,7 +73,23 @@
 
 <div class="content">
 
-<div class="card" id="card-2026-10-10-back-navigation" style="margin-bottom:30px;">
+<div class="card" id="card-2026-10-10-ask-my-data" style="margin-bottom:30px;">
+    <div class="card-title">📊 Oct 10 — Ask my data: Oracle answers from your real saved rows (X1)</div>
+    <div class="card-body">
+      <strong>What it does</strong>: ask Oracle something about your own data, like "do I have rice in my pantry?", "how many quests have I done", or "what's on my wishlist". Oracle asks for one read-only lookup, and the app fetches up to 30 rows from one of 18 allowed sources. It shows "📊 Looked at N rows from X" (tap to see them), and Oracle answers from those rows only.<br>
+      <strong>How</strong>: a new <code>askMyData</code> module. It is a 5th gate inside <code>oracleAppGrounding</code>'s existing <code>callOracle</code> wrap, never a new wrapper. A single-line <code>DATA_QUERY: source | search: …</code> trailer is read on <code>oracle:response-scanned</code>, because multi-line formats don't survive that hook. Lookups use fixed columns, a row cap and truncated text. There is one lookup per question, so it can't loop. All sources are already anon-readable, so no new API file was needed.<br>
+      <strong>Verified</strong>: headless Chromium, with the Oracle API and Supabase mocked:
+      <ul>
+        <li>trigger phrases match personal-data questions only;</li>
+        <li>trailer parsing and query building are correct;</li>
+        <li>the full flow works, with the lookup shown and the answer rendered;</li>
+        <li>the data list is not added to unrelated messages or to the follow-up;</li>
+        <li>zero errors.</li>
+      </ul>
+      <strong>Untested by Alex's hand, and against real Oracle wording.</strong>
+    </div>
+  </div>
+  <div class="card" id="card-2026-10-10-back-navigation" style="margin-bottom:30px;">
     <div class="card-title">← Oct 10 — Back works everywhere: phone Back closes popups, and returns you to where you came from (N1)</div>
     <div class="card-body">
       <strong>Problem</strong>: most module screens are popups. They were never in browser history, so phone Back left the whole page, and several modules had no Back button at all.<br>
