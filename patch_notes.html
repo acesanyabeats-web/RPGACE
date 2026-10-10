@@ -73,7 +73,22 @@
 
 <div class="content">
 
-<div class="card" id="card-2026-10-10-session-closed" style="margin-bottom:30px;">
+<div class="card" id="card-2026-10-10-encyclopedia-posts" style="margin-bottom:30px;">
+    <div class="card-title">📖 Oct 10 — Encyclopedia posts: every analysed video becomes a Deepstash-style article (C1)</div>
+    <div class="card-body">
+      <strong>Root cause found</strong>: all 37 <code>intel_reports</code> already contained a finished article (<code>insights.encyclopedia_entry</code>), but the Encyclopedia held 1 row and none came from Content Intelligence. The old auto-save in <code>syncIntelData</code> only looked at the newest 5 reports and was gated by a <code>localStorage</code> "already saved" marker that outlived the encyclopedia wipe, so it never saved them again.<br>
+      <strong>Fix</strong>: a new <code>encyclopediaPosts</code> module is the one pipeline. It turns each report into an <code>encyclopedia</code> article (source <code>intel</code>, real <code>source_url</code>) plus one <code>encyclopedia_insights</code> row per idea card. It dedupes against Supabase itself, not the browser, and honours the reanalysis tombstones. Additive migration: <code>idea_section</code>, <code>idea_order</code>, <code>saved_at</code>.<br>
+      <strong>UI</strong>: a "▶ Read" button on each entry, and a Posts strip on the Encyclopedia page showing Series (2+ posts sharing a tag) and Saved ideas. Cards have Back/Next, an "n / N" count, read time, ☆ Save idea, Full article, and "Next post →" inside a series.<br>
+      <strong>Verified</strong>: headless Chromium at 400px with Supabase mocked:
+      <ul>
+        <li>2 reports → 2 articles + 14 idea cards; a second run creates 0 (idempotent).</li>
+        <li>The Series chip, reading through the cards, Save, Full article and Next post all work.</li>
+        <li>Zero page errors.</li>
+      </ul>
+      The real backfill of the 37 runs on Alex's first logged-in load, because writes need his session. <strong>Untested by Alex's hand.</strong>
+    </div>
+  </div>
+  <div class="card" id="card-2026-10-10-session-closed" style="margin-bottom:30px;">
     <div class="card-title">🌙 Oct 10 — session closed via /Bedtime (Oct 1–10: Ube Express paused, RPGACE resumed)</div>
     <div class="card-body">
       <strong>Live on <code>main</code></strong>:
