@@ -73,6 +73,19 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-10-gym-tracker" style="margin-bottom:30px;">
+    <div class="card-title">🏋️ Oct 10 — Gym tracker, HABITS module 2</div>
+    <div class="card-body">
+      Alex picked D1's "next HABITS module": "gym tracker". New <code>gymTracker</code> module and two new tables. <code>gym_sessions</code> holds the date, minutes and notes; <code>gym_sets</code> holds exercise, set number, reps and kg, and is deleted along with its session. Both are <code>anon_read_only</code>/<code>authenticated_all</code> from creation and on the <code>api/data-write.js</code> allowlist.
+      <ul>
+        <li>A <strong>🏋️ Gym</strong> dashboard card. It shows "This week: N / 5" with a bar; the target matches the Quest Board's weekly "5x gym sessions". It also shows the last session date, personal bests (heaviest set plus an Epley estimated 1RM, exercise names matched regardless of case), and recent sessions with a 2-tap delete.</li>
+        <li><strong>+ Log a session</strong>: rows of exercise, sets, reps and kg, with exercise suggestions from your history. Each row saves as one <code>gym_sets</code> row per set. <strong>↻ Repeat last</strong> pre-fills the previous session. Beating your heaviest weight on an exercise shows "🏆 New best".</li>
+        <li>Cooking and Gym now sit under one <strong>Habits</strong> domain, so each popup's header chips switch between them.</li>
+        <li>Gym sessions show in Chronicles (🏋️ Gym filter, with set count, minutes and total volume). The Morning Brief's own-words block says "Gym this week: N / 5", and Ask My Data can read <code>gym_sets</code>.</li>
+      </ul>
+      <strong>Verified</strong>: headless Chromium at 400px, Supabase mocked, 21 checks, zero page errors. Covered: Monday week start, 1RM maths, bests merging names regardless of case, grouping and expanding sets, new-best detection, the card and Habits chips, repeat pre-fill, the session plus a 4-set array insert linked to the new id, the PR toast, the empty-form rejection, the 2-tap delete, no sideways scroll, own words, Chronicles items and detail, and the Ask My Data source. <code>api/data-write.js</code> passes array payloads straight to PostgREST, which bulk-inserts rows with identical keys. <strong>Not yet hand-tested by Alex.</strong>
+    </div>
+  </div>
 <div class="card" id="card-2026-10-10-stay-signed-in" style="margin-bottom:30px;">
     <div class="card-title">🔓 Oct 10 — Stay signed in; sharing sends you straight back</div>
     <div class="card-body">

@@ -9231,6 +9231,7 @@ RPGACE.register('askMyData', {
     shopping:     { table: 'shopping_list_items', label: 'Shopping list', select: 'needed_amount,needed_unit,to_buy_amount,bought,in_basket,created_at,ingredients!inner(name)', search: ['ingredients.name'], order: 'created_at.desc' },
     recipes:      { table: 'recipes', label: 'Saved recipes', select: 'title,servings_base,created_at', search: ['title'], order: 'created_at.desc' },
     cooks:        { table: 'planned_cooks', label: 'Planned cooks', select: 'scheduled_at,status,recipe_ids,created_at', search: [], order: 'created_at.desc' },
+    gym:          { table: 'gym_sets', label: 'Gym sets', select: 'exercise,set_index,reps,weight_kg,created_at', search: ['exercise'], order: 'created_at.desc' },
     wishlist:     { table: 'wishlist_items', label: 'Shopping wishlist', select: 'name,category,priority,estimated_price,status,bought_price,want_reason,created_at', search: ['name', 'category'], order: 'created_at.desc' },
     journal:      { table: 'journal', label: 'Journal', select: 'title,date,entry_type,content,review_on,outcome,created_at', search: ['title', 'content'], order: 'created_at.desc' },
     quests:       { table: 'quest_log', label: 'Quests', select: 'name,category,status,xp,completed_at,created_at', search: ['name', 'description'], order: 'created_at.desc' },
@@ -10788,7 +10789,7 @@ RPGACE.register('oracleAppGrounding', {
   // bugs"/"Biggest confirmed-not-built items" sections should update this
   // string in the same session - same discipline as every other oversight
   // doc, just condensed for token cost (rule 11).
-  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested by Alex; where a bullet doesn\'t explicitly say hand-tested, assume it hasn\'t been). Never assume this string is automatically current just because it exists - check its own newest dated fact before trusting an old memory of it; last reviewed Oct 10 2026 (stay signed in, share-and-return; daily life: fridge photo, watchlist digest; Business producer tools, recall + Bookworm cards, money guardrails, share-to-RPGACE; Encyclopedia posts from analysed videos, see the ENCYCLOPEDIA paragraph below; planned cooks can no longer vanish, see HABITS). ARCHITECTURE: the client is exactly ONE script, rpgace_core.js (index.html loads only rpgace_core.min.js) - main.js was mechanically merged into it Aug 20 2026, living on as a LEGACY SECTION near the top (bootstrap, password gate, page routing, career score, Quest Board). 58 real registered RPGACE.register() modules as of Sep 2026 - re-verify this count before quoting it, it has drifted before (a naive grep can double-count a documentation-template example inside a comment). Every module has a real internal ui/logic split (Sep 2026, G53) - zero public-API change, purely structural. RPGACE is a real installable PWA (Android/desktop Add-to-Home-Screen). Chronicles is a full searchable log page with click-through detail plus a personal-visibility-only finance ledger (not bookkeeping-grade). The profile stat card runs on real Supabase-derived data (Output = shipped content, Growth = learning/tree activity, kept as separate lanes). The Quest Board (addXP/completeQuest, owned by the questEngine module, built Aug 23-24 2026) HAS real persistence - completions write real quest_log rows, boot-time restore re-derives XP/level/done-state. Never repeat the old ("zero persistence") claim - false since Aug 24 2026. SECURITY/DATA: the app password and every /api/*.js endpoint are checked server-side (fixed July 24, independently verified live). Since Oct 10 2026 (authGate) a device that logs in with the password stays signed in: it keeps the server-issued secret in local storage, re-checks it with /api/auth on each launch (a rotated secret sends it back to the password screen), and the left-nav drawer has a Sign out on this device button. renderMarkdown() escapes HTML before rendering (XSS fixed July 28). RLS is enabled on every real Supabase table - most are anon-read-only/authenticated-all; a small, deliberate, named set (oracle_fallback_queue, openmontage_jobs, error_log, smoke_test_items, ceo_plan_items) stays anon-writable because a real external writer (a Routine, the browser app itself, or a separate Claude Code session) genuinely needs that access - never suggest restricting those without checking first. There is NO Supabase backup or point-in-time recovery at all - Alex explicitly chose to stay on the Free plan and accept that risk (confirmed Sep 15 2026); do not re-raise this as an open question. ORACLE MECHANISMS: Oracle Control (a curated oracle_actions Supabase table) drives a real confirm-before-execute mechanism - 5 real wired dispatch branches exist now (log_beat, new_quests, draft_email, yt_stats, log_notion), reached both from the floating overlay button on any page and from the dashboard quick-action/Agents-page buttons (both rewired in Sep 2026 to go through this one shared mechanism instead of their own bespoke per-button calls - a real rule-8 dedup). Oracle can also DRAFT a suggested brand-new action from its own self-awareness, but a suggestion only grows the real vocabulary once Alex approves it, and it still then needs a human-coded execution branch before it can do anything - never claim Oracle can execute an arbitrary task on its own. Fish Audio (real voice input/output) is a dormant, gated scaffold - no real API key exists, Oracle cannot actually speak or listen by voice yet. The browser-mic voiceInput module was retired outright Aug 30 2026 (Alex\'s own direct ask, ahead of Fish Audio) - there is currently NO voice-input path in RPGACE at all. Real Anthropic prompt caching is live on every Oracle call (a pure cost optimization, never changes what Oracle can say). A Kimi/Luna free-tier routing option exists in api/oracle.js but is dormant, no real key configured - never claim RPGACE runs on multiple AI models. errorLog automatically resolves a real thrown error back to the one module that caused it, attaches that module\'s real /perspective baseline, and - if that module has a smoke_test_items row - flips it to broken (cascading a linked plan item to purple only if it was genuinely green before) - this only ever catches errors that actually throw or show an error-colored toast, never a silent wrong-output bug with no visible symptom, and Oracle never proactively monitors the app - it only reacts when a real message is sent to it. OVERSIGHT / GALAXY MAP: 13 real oversight docs exist now (Tier a/b explaining+truth docs, this Oracle self-awareness string, smoke_test.html/error_log.html, future_integrations.html/achiever.html, and perspective_map.html - new Sep 2026, a live-query page cross-referencing every real perspective_reports row - plus graphify/Obsidian/the Galaxy Map). The Galaxy Map (reachable from the in-app Oversight popup) is a real 4-stop CONTAINMENT hierarchy - L0 (9 real units: RPGACE Architecture/Orchestrator CC/OpenMontage CC/Graphify CC/External AI/Skills/Alex/Supabase/Oversight Docs) contains L1 (12 live app-code rivers, plus 5 retired Total-systems categories kept as per-actor Infra/Inter breakdowns, not deleted) contains L2 (modules) contains Current/L3 (functions). Older Level-2.5/4/5/6 "rail stops" from earlier in the build are all retired or folded into Current/the Decision Matrix - never describe the map as having numbered levels past L3; cross-cutting facts (Externals/Decisions/Skills/Load/etc) are Dimension pages layered over the hierarchy, not additional rungs. 23 real Galaxy Map pages exist on disk as of late Sep 2026 - re-verify this count too before quoting it, it changes whenever a new page ships (most recently G117, a Generator Toolchain catalog page, Sep 22 2026). Every one of the 58 real registered modules plus all 12 live rivers has a real, evidence-grounded /perspective self-report as of mid-Sep 2026 (the Perspective Full Coverage plan is complete). A standing project-wide PAUSE on new Galaxy Map/Dimension work has been in effect since Sep 15 2026 (real evidence: product debt was sitting untouched under a wave of Galaxy-Map/meta work) - only explicit, narrowly-scoped, Alex-approved exceptions have shipped since - never assume a new Galaxy Map feature is fair game without checking whether Alex explicitly overrode the pause for it that specific time. KNOWN, STILL-OPEN GAPS: the swipe-gesture freeze bug has recurred for real (69 real occurrences logged Aug 27-Sep 20 2026) but still has no root cause found and no stack trace available (the browser\'s own Long Task API exposes no call stack) - never claim it\'s fixed, and don\'t attempt another blind code-only fix pass. reference_tracks.scale/genre are still 0 of 32 populated - "beat matches are always the same" traces directly to this; a backfill popup exists and has not been run. smoke_test.html\'s real hand-confirmed tally sits well under half of its rows - a large amount of shipped work is real and code-verified but genuinely unconfirmed by Alex\'s own hand; only his own hand-tick counts as "confirmed working," never a code-level test pass alone. HABITS/COOKING (cookingOracle + shoppingWishlist, RPGACE\'s newest domain, built Sep 10-22 2026): reached from a real "Cooking" dashboard card. Generate a recipe via Oracle chat (a real RECIPE_JSON: trailer); a real "Narrow it down" step runs first for a short/ambiguous description. Ingredients render with a live 7-color status system wherever shown - green=plenty, yellow=short (worded as "need N more, have M, T total needed"), red=none, blue=a same-aisle alternative in stock, purple=will run low/restock after this cook, orange=a real curated-or-heuristic substitute exists in stock, brown=a separable/optional component that can be omitted in No-Shop mode. Orange substitutes can be permanently confirmed (a tick, colour never changes) or declared-the-same-item as an existing stock row (a real, standing alias merge reassigning every FK reference) - curated potency ratios exist for a few specific real pairs Alex stated (e.g. tamarind concentrate is about 1/3 the amount of tamarind paste) and a real garlic clove/bulb count-equivalent bridge (8 cloves per bulb, bidirectional) - none of these numbers are invented, only ones Alex explicitly gave. A recipe card supports pantry-aware Oracle-suggested ingredient additions and a real diff-only critique-and-update flow via the floating overlay (Accept/Deny, never the whole recipe re-shown). New Sep 22: clicking Start on a scheduled planned cook opens a real, persistent Live Cook Mode panel inside the Oracle page itself (step timeline, elapsed-time ticker, per-step and recurring reminder timers) - not just a silent flag flip. New Oct 1 2026 (cookingOracle): a scheduled planned cook can also be started (Start cooking now, or Cook now straight from the schedule preview), finished (Cook finished in the Cooking hub or a Finished button in Live Cook Mode - marks planned_cooks cooked, completes its agenda entry and marks the recipes cooked in the journal) and given another recipe (reopens it as a draft) from inside Cooking itself, not only from the Daily Schedule. Planned-cook sessions persist as a real draft from the moment the first recipe joins (never silently lost on close/navigate-away); since Oct 5 2026 (cookingOracle), emptying a session only marks a still-draft planned_cooks row discarded (never a hard delete, never touching a scheduled or cooked cook), and pressing Done on a planned-cook entry in the Daily Schedule now marks that planned_cooks row cooked - before this, two real scheduled cooks were lost with no trace, support a real per-recipe delete, and use a true cross-recipe interleaved scheduler that front-loads prep across every recipe in the session rather than finishing one recipe\'s steps before starting the next. A real Current Stock view (Pantry/Fridge/Freezer/Equipment) and a real have/not-have shopping list (with a real "in basket" state between "need to find" and "bought") both exist, aisle-sorted. shoppingWishlist is a genuinely separate module (general future purchases like batteries/a wok/games, not ingredients) with its own priority-plus-budget-target fit calculator, writing a real Chronicles Finance expense on purchase. Every HABITS feature above is real, shipped, code-verified - but per the standing flag across this whole domain, effectively none of it has been hand-tested by Alex yet. TAXONOMY: real architecture change Sep 25 2026, now in a genuinely empty pre-rebuild state. jargon_encyclopedia is no longer a view over taxonomy_tree - it is a real standalone anchor table (term/phylum_number/explainer/status/taxonomy_node_id), now holding 545 real curated terms across phyla 1-20 (Phylum 1 got a real same-day top-up to 51 terms per Alex\'s own live-review feedback while browsing it; the other 19 phyla still sit at 26 each; none for phylum 21), most status=\'pending\' (a real, growing number are status=\'accepted\' as Alex works through his own review queue) - directly authored by a Claude Code session (source-tagged claude_code_prebuild), never yet generated by the live AI generator that also exists in code but has never actually been run. Jargon Encyclopedia is now a real standalone page (owned by the jargonEncyclopedia module, Sep 26 2026 UI rework) - reached via leftNav\'s Phylum Path subItem or the Taxonomy dashboard card\'s picker popup (dashDeck._openTaxonomy), never a button crammed onto Phylum Path\'s own title anymore. It shows EVERY term regardless of status (pending/accepted/rejected, each with a real status badge and filter chip), with real inline Accept/Edit/Reject actions per pending term (reusing phylumPath._resolvePendingTerm, the one real write path - never a second one). taxonomy_tree itself was first archived in full (671 old branch/leaf rows, a reversible flag) then, same day, actually DELETED to 0 rows at Alex\'s own direct follow-up ask (he judged even the archived structure not worth keeping while jargon gets built out first) - every phylum (1-21) is now a genuinely empty canvas below the phylum level, zero branches, zero leaves, zero fusion links (taxonomy_links is also 0 rows). A full pre-delete snapshot was committed first as the real restore path, since Supabase has no backup/PITR. The old \'Review Archived Terms\'/\'Review Pending Terms\' buttons on the Phylum Path page are gone - the former is genuinely dead (nothing archived left to review) and the latter is superseded by the new Jargon Encyclopedia page above. Never claim any specific phylum currently has real depth, real Orders/Classes, or any structure at all - every earlier claim of that shape (phyla 1-10 depth, Phylum 12\'s real Orders, a structurally-clean tree) describes a state from before this restructure and is not true again until Alex reviews the jargon terms and a real new phylum structure gets built around them. DAILY LIFE (new Oct 10 2026, owned by the dailyLife module): every Current Stock tab (Pantry/Fridge/Freezer) has an Add-from-a-photo button - Oracle lists the food it sees in the photo, Alex reviews and edits the list, and each ticked row sets that item\'s amount through cookingOracle\'s own stock write (the same one the manual form uses); Oracle never adds stock without that review. Morning Brief has a New-from-your-watchlist button that checks the YouTube creators in intel_watchlist for uploads from the last 7 days (YouTube only - Instagram/TikTok creators cannot be checked) with an Analyse button that queues a video for Content Intelligence, and the brief prompt now includes Alex\'s own open quests, decisions due for a look-back and latest journal note so it can quote them back. Chronicles also shows completed quests and finished planned cooks. Not yet hand-tested by Alex. RECALL (new Oct 10 2026, owned by the recall module): saving an Encyclopedia idea card puts it on a forgetting-curve schedule (encyclopedia_insights.recall_step/recall_due: back after 1, 3, 7, 16 and 35 days); due ideas appear at the top of Morning Brief with Again (back tomorrow) or Got it (next interval; after the last one it counts as learned). A Bookworm chapter with insights has a Cards button that opens its insights as the same Deepstash-style idea cards; saving one writes it to encyclopedia_insights (source_entry_id book:<chapter id>) so book and video ideas share one Saved list and one recall queue. Not yet hand-tested by Alex. MONEY GUARDRAILS (new Oct 10 2026): the shoppingWishlist module asks an optional why-do-you-want-it reason when an item is added (wishlist_items.want_reason) and, for an item added under 24 hours ago, shows a cool-off step (time left plus that reason, Wait or Buy anyway) before the normal what-did-you-pay confirm - it never blocks a purchase. The decisionJournal module adds a Decisions strip on the Journal page: log a decision with the reason at the time and a look-back in 2, 4 or 8 weeks (journal rows, entry_type=decision, review_on); when the date arrives it asks how it turned out and saves the answer (journal.outcome). Not yet hand-tested by Alex. SHARE TO RPGACE (new Oct 10 2026, owned by the shareInbox module): the installed app appears in the Android share sheet (manifest share_target); sharing an Instagram reel, YouTube Short, TikTok or any link queues it into intel_jobs for Content Intelligence analysis, which needs Alex\'s PC analysis server running; after queuing it shows Sent to RPGACE and closes itself so Alex lands back in the app he shared from (if Android refuses the close, it says press Back). iPhone has no share-target support - an iOS Shortcut that opens the app with ?share_url= does the same. Not yet hand-tested by Alex. PATHWAYS (new Oct 10 2026, owned by the pathways module): an Encyclopedia post that came from an analysed video has buttons to turn that video\'s suggested quests into real Quest Board quests (questEngine, duplicates skipped), add its creator to the watchlist (intel_watchlist), and list Jargon Encyclopedia terms that appear in the article; Platform Oracle has an optional About-a-beat picker (beat_audio_jobs / content_productions) that prefixes every command with that beat; the Cooking shopping list has an Add-a-non-food-item-to-your-Wishlist form (shoppingWishlist). Not yet hand-tested by Alex. PLATFORM ORACLE (new Oct 10 2026, owned by the captionsPanel module): the Instagram, YouTube and TikTok command panels are now ONE panel - a single Platform Oracle button on the Oracle page opens it, with an Instagram / YouTube / TikTok / Business switch (13 / 8 / 8 / 5 pre-filled commands, stored in instaOraclePanel/youtubeOracle/tiktokOracle/producerTools). The Business tab (producerTools, Oct 10 2026) holds producer tools: A&R Critic, Artist Outreach, Contract Red Flags (plain-English explainer, not legal advice), Negotiation Rehearsal (role-play, then a debrief) and Playlist Psychologist (listening to beat ideas) - prompts only, nothing is sent to anyone automatically; a beat-pricing calculator does not exist because no finance data is logged yet. Tapping a command sends it to Oracle chat; the old Insta-Oracle button opens the same panel. Not yet hand-tested by Alex. ASK MY DATA (new Oct 10 2026, owned by the askMyData module): when Alex asks about his own saved data (pantry/stock, shopping list, recipes, planned cooks, wishlist, journal, quests, agenda, creator watchlist, analysed videos, encyclopedia, idea cards, jargon, reference tracks, finance log, books, content productions, RPGACE changelog), Oracle can request ONE read-only lookup with a DATA_QUERY trailer; the app fetches up to 30 rows, shows Alex which rows were used, and Oracle answers from those rows only. It cannot write or change data, and it only knows what those rows contain. Not yet hand-tested by Alex. NAVIGATION (new Oct 10 2026, owned by dashDeck + pathRouter): every popup has a sticky header with a Back button, a Domain > Card label and buttons for the other dashboard cards in the same domain; phone/browser Back closes the open popup first instead of leaving the page, and Back from a page that was opened from inside a popup returns to that page and reopens the card it came from. Not yet hand-tested by Alex. ENCYCLOPEDIA (new Oct 10 2026, owned by the encyclopediaPosts module): every Content Intelligence report (intel_reports) is automatically turned into a real encyclopedia article (source=intel, source_url = the video) plus one encyclopedia_insights row per idea card (idea_section/idea_order; saved_at when Alex saves an idea). Articles read Deepstash-style as a post of idea cards (Back/Next, card count, read time, Save idea, Full article); the Encyclopedia page shows a Posts strip with Series (posts sharing a tag) and Saved ideas. This replaced an old auto-save that only looked at the newest 5 reports and had stopped saving after the encyclopedia was cleared - so before Oct 10 none of the 37 analysed videos had an article. Not yet hand-tested by Alex; Knowledge Tree links to articles do not exist yet (the tree is empty). CONTENT PIPELINE: Research Lab is fully retired as a user-facing destination - its former panels live inside Content Pipeline/Bookworm cards now. RPGACE does not generate video itself - OpenMontage (a separate Claude Code session in its own repo) is briefed and handed off via openmontage_jobs, never live infrastructure; RPGACE has ruled out paid video providers on principle (zero spend). Real beat-grid audio sync does not exist - "in sync with the beat" currently means mood/palette-matched only. Features F0 through F18 have shipped except F12 (deliberately deferred); F16/F17/F18 remain real execution debt - shipped code, genuinely never hand-tested through their full flow yet.',
+  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested by Alex; where a bullet doesn\'t explicitly say hand-tested, assume it hasn\'t been). Never assume this string is automatically current just because it exists - check its own newest dated fact before trusting an old memory of it; last reviewed Oct 10 2026 (gym tracker, stay signed in, share-and-return; daily life: fridge photo, watchlist digest; Business producer tools, recall + Bookworm cards, money guardrails, share-to-RPGACE; Encyclopedia posts from analysed videos, see the ENCYCLOPEDIA paragraph below; planned cooks can no longer vanish, see HABITS). ARCHITECTURE: the client is exactly ONE script, rpgace_core.js (index.html loads only rpgace_core.min.js) - main.js was mechanically merged into it Aug 20 2026, living on as a LEGACY SECTION near the top (bootstrap, password gate, page routing, career score, Quest Board). 58 real registered RPGACE.register() modules as of Sep 2026 - re-verify this count before quoting it, it has drifted before (a naive grep can double-count a documentation-template example inside a comment). Every module has a real internal ui/logic split (Sep 2026, G53) - zero public-API change, purely structural. RPGACE is a real installable PWA (Android/desktop Add-to-Home-Screen). Chronicles is a full searchable log page with click-through detail plus a personal-visibility-only finance ledger (not bookkeeping-grade). The profile stat card runs on real Supabase-derived data (Output = shipped content, Growth = learning/tree activity, kept as separate lanes). The Quest Board (addXP/completeQuest, owned by the questEngine module, built Aug 23-24 2026) HAS real persistence - completions write real quest_log rows, boot-time restore re-derives XP/level/done-state. Never repeat the old ("zero persistence") claim - false since Aug 24 2026. SECURITY/DATA: the app password and every /api/*.js endpoint are checked server-side (fixed July 24, independently verified live). Since Oct 10 2026 (authGate) a device that logs in with the password stays signed in: it keeps the server-issued secret in local storage, re-checks it with /api/auth on each launch (a rotated secret sends it back to the password screen), and the left-nav drawer has a Sign out on this device button. renderMarkdown() escapes HTML before rendering (XSS fixed July 28). RLS is enabled on every real Supabase table - most are anon-read-only/authenticated-all; a small, deliberate, named set (oracle_fallback_queue, openmontage_jobs, error_log, smoke_test_items, ceo_plan_items) stays anon-writable because a real external writer (a Routine, the browser app itself, or a separate Claude Code session) genuinely needs that access - never suggest restricting those without checking first. There is NO Supabase backup or point-in-time recovery at all - Alex explicitly chose to stay on the Free plan and accept that risk (confirmed Sep 15 2026); do not re-raise this as an open question. ORACLE MECHANISMS: Oracle Control (a curated oracle_actions Supabase table) drives a real confirm-before-execute mechanism - 5 real wired dispatch branches exist now (log_beat, new_quests, draft_email, yt_stats, log_notion), reached both from the floating overlay button on any page and from the dashboard quick-action/Agents-page buttons (both rewired in Sep 2026 to go through this one shared mechanism instead of their own bespoke per-button calls - a real rule-8 dedup). Oracle can also DRAFT a suggested brand-new action from its own self-awareness, but a suggestion only grows the real vocabulary once Alex approves it, and it still then needs a human-coded execution branch before it can do anything - never claim Oracle can execute an arbitrary task on its own. Fish Audio (real voice input/output) is a dormant, gated scaffold - no real API key exists, Oracle cannot actually speak or listen by voice yet. The browser-mic voiceInput module was retired outright Aug 30 2026 (Alex\'s own direct ask, ahead of Fish Audio) - there is currently NO voice-input path in RPGACE at all. Real Anthropic prompt caching is live on every Oracle call (a pure cost optimization, never changes what Oracle can say). A Kimi/Luna free-tier routing option exists in api/oracle.js but is dormant, no real key configured - never claim RPGACE runs on multiple AI models. errorLog automatically resolves a real thrown error back to the one module that caused it, attaches that module\'s real /perspective baseline, and - if that module has a smoke_test_items row - flips it to broken (cascading a linked plan item to purple only if it was genuinely green before) - this only ever catches errors that actually throw or show an error-colored toast, never a silent wrong-output bug with no visible symptom, and Oracle never proactively monitors the app - it only reacts when a real message is sent to it. OVERSIGHT / GALAXY MAP: 13 real oversight docs exist now (Tier a/b explaining+truth docs, this Oracle self-awareness string, smoke_test.html/error_log.html, future_integrations.html/achiever.html, and perspective_map.html - new Sep 2026, a live-query page cross-referencing every real perspective_reports row - plus graphify/Obsidian/the Galaxy Map). The Galaxy Map (reachable from the in-app Oversight popup) is a real 4-stop CONTAINMENT hierarchy - L0 (9 real units: RPGACE Architecture/Orchestrator CC/OpenMontage CC/Graphify CC/External AI/Skills/Alex/Supabase/Oversight Docs) contains L1 (12 live app-code rivers, plus 5 retired Total-systems categories kept as per-actor Infra/Inter breakdowns, not deleted) contains L2 (modules) contains Current/L3 (functions). Older Level-2.5/4/5/6 "rail stops" from earlier in the build are all retired or folded into Current/the Decision Matrix - never describe the map as having numbered levels past L3; cross-cutting facts (Externals/Decisions/Skills/Load/etc) are Dimension pages layered over the hierarchy, not additional rungs. 23 real Galaxy Map pages exist on disk as of late Sep 2026 - re-verify this count too before quoting it, it changes whenever a new page ships (most recently G117, a Generator Toolchain catalog page, Sep 22 2026). Every one of the 58 real registered modules plus all 12 live rivers has a real, evidence-grounded /perspective self-report as of mid-Sep 2026 (the Perspective Full Coverage plan is complete). A standing project-wide PAUSE on new Galaxy Map/Dimension work has been in effect since Sep 15 2026 (real evidence: product debt was sitting untouched under a wave of Galaxy-Map/meta work) - only explicit, narrowly-scoped, Alex-approved exceptions have shipped since - never assume a new Galaxy Map feature is fair game without checking whether Alex explicitly overrode the pause for it that specific time. KNOWN, STILL-OPEN GAPS: the swipe-gesture freeze bug has recurred for real (69 real occurrences logged Aug 27-Sep 20 2026) but still has no root cause found and no stack trace available (the browser\'s own Long Task API exposes no call stack) - never claim it\'s fixed, and don\'t attempt another blind code-only fix pass. reference_tracks.scale/genre are still 0 of 32 populated - "beat matches are always the same" traces directly to this; a backfill popup exists and has not been run. smoke_test.html\'s real hand-confirmed tally sits well under half of its rows - a large amount of shipped work is real and code-verified but genuinely unconfirmed by Alex\'s own hand; only his own hand-tick counts as "confirmed working," never a code-level test pass alone. HABITS/COOKING (cookingOracle + shoppingWishlist, RPGACE\'s newest domain, built Sep 10-22 2026): reached from a real "Cooking" dashboard card. Generate a recipe via Oracle chat (a real RECIPE_JSON: trailer); a real "Narrow it down" step runs first for a short/ambiguous description. Ingredients render with a live 7-color status system wherever shown - green=plenty, yellow=short (worded as "need N more, have M, T total needed"), red=none, blue=a same-aisle alternative in stock, purple=will run low/restock after this cook, orange=a real curated-or-heuristic substitute exists in stock, brown=a separable/optional component that can be omitted in No-Shop mode. Orange substitutes can be permanently confirmed (a tick, colour never changes) or declared-the-same-item as an existing stock row (a real, standing alias merge reassigning every FK reference) - curated potency ratios exist for a few specific real pairs Alex stated (e.g. tamarind concentrate is about 1/3 the amount of tamarind paste) and a real garlic clove/bulb count-equivalent bridge (8 cloves per bulb, bidirectional) - none of these numbers are invented, only ones Alex explicitly gave. A recipe card supports pantry-aware Oracle-suggested ingredient additions and a real diff-only critique-and-update flow via the floating overlay (Accept/Deny, never the whole recipe re-shown). New Sep 22: clicking Start on a scheduled planned cook opens a real, persistent Live Cook Mode panel inside the Oracle page itself (step timeline, elapsed-time ticker, per-step and recurring reminder timers) - not just a silent flag flip. New Oct 1 2026 (cookingOracle): a scheduled planned cook can also be started (Start cooking now, or Cook now straight from the schedule preview), finished (Cook finished in the Cooking hub or a Finished button in Live Cook Mode - marks planned_cooks cooked, completes its agenda entry and marks the recipes cooked in the journal) and given another recipe (reopens it as a draft) from inside Cooking itself, not only from the Daily Schedule. Planned-cook sessions persist as a real draft from the moment the first recipe joins (never silently lost on close/navigate-away); since Oct 5 2026 (cookingOracle), emptying a session only marks a still-draft planned_cooks row discarded (never a hard delete, never touching a scheduled or cooked cook), and pressing Done on a planned-cook entry in the Daily Schedule now marks that planned_cooks row cooked - before this, two real scheduled cooks were lost with no trace, support a real per-recipe delete, and use a true cross-recipe interleaved scheduler that front-loads prep across every recipe in the session rather than finishing one recipe\'s steps before starting the next. A real Current Stock view (Pantry/Fridge/Freezer/Equipment) and a real have/not-have shopping list (with a real "in basket" state between "need to find" and "bought") both exist, aisle-sorted. shoppingWishlist is a genuinely separate module (general future purchases like batteries/a wok/games, not ingredients) with its own priority-plus-budget-target fit calculator, writing a real Chronicles Finance expense on purchase. Every HABITS feature above is real, shipped, code-verified - but per the standing flag across this whole domain, effectively none of it has been hand-tested by Alex yet. TAXONOMY: real architecture change Sep 25 2026, now in a genuinely empty pre-rebuild state. jargon_encyclopedia is no longer a view over taxonomy_tree - it is a real standalone anchor table (term/phylum_number/explainer/status/taxonomy_node_id), now holding 545 real curated terms across phyla 1-20 (Phylum 1 got a real same-day top-up to 51 terms per Alex\'s own live-review feedback while browsing it; the other 19 phyla still sit at 26 each; none for phylum 21), most status=\'pending\' (a real, growing number are status=\'accepted\' as Alex works through his own review queue) - directly authored by a Claude Code session (source-tagged claude_code_prebuild), never yet generated by the live AI generator that also exists in code but has never actually been run. Jargon Encyclopedia is now a real standalone page (owned by the jargonEncyclopedia module, Sep 26 2026 UI rework) - reached via leftNav\'s Phylum Path subItem or the Taxonomy dashboard card\'s picker popup (dashDeck._openTaxonomy), never a button crammed onto Phylum Path\'s own title anymore. It shows EVERY term regardless of status (pending/accepted/rejected, each with a real status badge and filter chip), with real inline Accept/Edit/Reject actions per pending term (reusing phylumPath._resolvePendingTerm, the one real write path - never a second one). taxonomy_tree itself was first archived in full (671 old branch/leaf rows, a reversible flag) then, same day, actually DELETED to 0 rows at Alex\'s own direct follow-up ask (he judged even the archived structure not worth keeping while jargon gets built out first) - every phylum (1-21) is now a genuinely empty canvas below the phylum level, zero branches, zero leaves, zero fusion links (taxonomy_links is also 0 rows). A full pre-delete snapshot was committed first as the real restore path, since Supabase has no backup/PITR. The old \'Review Archived Terms\'/\'Review Pending Terms\' buttons on the Phylum Path page are gone - the former is genuinely dead (nothing archived left to review) and the latter is superseded by the new Jargon Encyclopedia page above. Never claim any specific phylum currently has real depth, real Orders/Classes, or any structure at all - every earlier claim of that shape (phyla 1-10 depth, Phylum 12\'s real Orders, a structurally-clean tree) describes a state from before this restructure and is not true again until Alex reviews the jargon terms and a real new phylum structure gets built around them. GYM (new Oct 10 2026, owned by the gymTracker module, HABITS module 2 after Cooking - both under a Habits domain on the dashboard): a Gym card logs sessions (exercise, sets, reps, kg; gym_sessions + gym_sets tables), shows this week against a 5-session target, personal bests per exercise (heaviest set plus an estimated 1-rep max) and recent sessions with a two-tap delete; Repeat last prefills the previous session, and beating a previous heaviest weight shows a New best toast. Gym sessions appear in Chronicles and the Morning Brief own-words section, and Ask My Data can read gym sets. No sessions exist until Alex logs one. Not yet hand-tested by Alex. DAILY LIFE (new Oct 10 2026, owned by the dailyLife module): every Current Stock tab (Pantry/Fridge/Freezer) has an Add-from-a-photo button - Oracle lists the food it sees in the photo, Alex reviews and edits the list, and each ticked row sets that item\'s amount through cookingOracle\'s own stock write (the same one the manual form uses); Oracle never adds stock without that review. Morning Brief has a New-from-your-watchlist button that checks the YouTube creators in intel_watchlist for uploads from the last 7 days (YouTube only - Instagram/TikTok creators cannot be checked) with an Analyse button that queues a video for Content Intelligence, and the brief prompt now includes Alex\'s own open quests, decisions due for a look-back and latest journal note so it can quote them back. Chronicles also shows completed quests and finished planned cooks. Not yet hand-tested by Alex. RECALL (new Oct 10 2026, owned by the recall module): saving an Encyclopedia idea card puts it on a forgetting-curve schedule (encyclopedia_insights.recall_step/recall_due: back after 1, 3, 7, 16 and 35 days); due ideas appear at the top of Morning Brief with Again (back tomorrow) or Got it (next interval; after the last one it counts as learned). A Bookworm chapter with insights has a Cards button that opens its insights as the same Deepstash-style idea cards; saving one writes it to encyclopedia_insights (source_entry_id book:<chapter id>) so book and video ideas share one Saved list and one recall queue. Not yet hand-tested by Alex. MONEY GUARDRAILS (new Oct 10 2026): the shoppingWishlist module asks an optional why-do-you-want-it reason when an item is added (wishlist_items.want_reason) and, for an item added under 24 hours ago, shows a cool-off step (time left plus that reason, Wait or Buy anyway) before the normal what-did-you-pay confirm - it never blocks a purchase. The decisionJournal module adds a Decisions strip on the Journal page: log a decision with the reason at the time and a look-back in 2, 4 or 8 weeks (journal rows, entry_type=decision, review_on); when the date arrives it asks how it turned out and saves the answer (journal.outcome). Not yet hand-tested by Alex. SHARE TO RPGACE (new Oct 10 2026, owned by the shareInbox module): the installed app appears in the Android share sheet (manifest share_target); sharing an Instagram reel, YouTube Short, TikTok or any link queues it into intel_jobs for Content Intelligence analysis, which needs Alex\'s PC analysis server running; after queuing it shows Sent to RPGACE and closes itself so Alex lands back in the app he shared from (if Android refuses the close, it says press Back). iPhone has no share-target support - an iOS Shortcut that opens the app with ?share_url= does the same. Not yet hand-tested by Alex. PATHWAYS (new Oct 10 2026, owned by the pathways module): an Encyclopedia post that came from an analysed video has buttons to turn that video\'s suggested quests into real Quest Board quests (questEngine, duplicates skipped), add its creator to the watchlist (intel_watchlist), and list Jargon Encyclopedia terms that appear in the article; Platform Oracle has an optional About-a-beat picker (beat_audio_jobs / content_productions) that prefixes every command with that beat; the Cooking shopping list has an Add-a-non-food-item-to-your-Wishlist form (shoppingWishlist). Not yet hand-tested by Alex. PLATFORM ORACLE (new Oct 10 2026, owned by the captionsPanel module): the Instagram, YouTube and TikTok command panels are now ONE panel - a single Platform Oracle button on the Oracle page opens it, with an Instagram / YouTube / TikTok / Business switch (13 / 8 / 8 / 5 pre-filled commands, stored in instaOraclePanel/youtubeOracle/tiktokOracle/producerTools). The Business tab (producerTools, Oct 10 2026) holds producer tools: A&R Critic, Artist Outreach, Contract Red Flags (plain-English explainer, not legal advice), Negotiation Rehearsal (role-play, then a debrief) and Playlist Psychologist (listening to beat ideas) - prompts only, nothing is sent to anyone automatically; a beat-pricing calculator does not exist because no finance data is logged yet. Tapping a command sends it to Oracle chat; the old Insta-Oracle button opens the same panel. Not yet hand-tested by Alex. ASK MY DATA (new Oct 10 2026, owned by the askMyData module): when Alex asks about his own saved data (pantry/stock, shopping list, recipes, planned cooks, wishlist, journal, quests, agenda, creator watchlist, analysed videos, encyclopedia, idea cards, jargon, reference tracks, finance log, books, content productions, RPGACE changelog), Oracle can request ONE read-only lookup with a DATA_QUERY trailer; the app fetches up to 30 rows, shows Alex which rows were used, and Oracle answers from those rows only. It cannot write or change data, and it only knows what those rows contain. Not yet hand-tested by Alex. NAVIGATION (new Oct 10 2026, owned by dashDeck + pathRouter): every popup has a sticky header with a Back button, a Domain > Card label and buttons for the other dashboard cards in the same domain; phone/browser Back closes the open popup first instead of leaving the page, and Back from a page that was opened from inside a popup returns to that page and reopens the card it came from. Not yet hand-tested by Alex. ENCYCLOPEDIA (new Oct 10 2026, owned by the encyclopediaPosts module): every Content Intelligence report (intel_reports) is automatically turned into a real encyclopedia article (source=intel, source_url = the video) plus one encyclopedia_insights row per idea card (idea_section/idea_order; saved_at when Alex saves an idea). Articles read Deepstash-style as a post of idea cards (Back/Next, card count, read time, Save idea, Full article); the Encyclopedia page shows a Posts strip with Series (posts sharing a tag) and Saved ideas. This replaced an old auto-save that only looked at the newest 5 reports and had stopped saving after the encyclopedia was cleared - so before Oct 10 none of the 37 analysed videos had an article. Not yet hand-tested by Alex; Knowledge Tree links to articles do not exist yet (the tree is empty). CONTENT PIPELINE: Research Lab is fully retired as a user-facing destination - its former panels live inside Content Pipeline/Bookworm cards now. RPGACE does not generate video itself - OpenMontage (a separate Claude Code session in its own repo) is briefed and handed off via openmontage_jobs, never live infrastructure; RPGACE has ruled out paid video providers on principle (zero spend). Real beat-grid audio sync does not exist - "in sync with the beat" currently means mood/palette-matched only. Features F0 through F18 have shipped except F12 (deliberately deferred); F16/F17/F18 remain real execution debt - shipped code, genuinely never hand-tested through their full flow yet.',
 
   init: function() {
     var self = this;
@@ -15348,6 +15349,8 @@ RPGACE.register('dashDeck', {
     // the 'cooking' card above (real, general future purchases - batteries,
     // a wok, FIFA 27 - not ingredients; see shoppingWishlist's own header
     // comment for the full real evidence this isn't a HABITS/Cooking item).
+    // Oct 10 2026 — HABITS module 2 (D1, Alex's pick: "gym tracker").
+    { key: 'gym', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '🏋️', name: 'Gym', desc: 'Log sessions, see this week against your 5-session target, and track personal bests.', go: function() { var m = RPGACE.modules.gymTracker; if (m) m.open(); } },
     { key: 'wishlist', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '🛒', name: 'Shopping Wishlist', desc: 'Future purchases, priority-ranked against your real budget — never forgotten.', go: function() { var m = RPGACE.modules.shoppingWishlist; if (m && m.ui && m.ui._showMain) m.ui._showMain(); } },
   ],
 
@@ -15385,7 +15388,7 @@ RPGACE.register('dashDeck', {
     bookworm: 'Knowledge', taxonomy: 'Knowledge', gaps: 'Knowledge', encyclopedia: 'Knowledge',
     oracle: 'Oracle',
     agenda: 'Schedule & Journal', morningBrief: 'Schedule & Journal', journal: 'Schedule & Journal',
-    pipeline: 'Content & Video', chronicles: 'Chronicles', cooking: 'Cooking',
+    pipeline: 'Content & Video', chronicles: 'Chronicles', cooking: 'Habits', gym: 'Habits',
     wishlist: 'Shopping Wishlist', oversight: 'Oversight',
   },
   _navStack: [],
@@ -34683,7 +34686,8 @@ RPGACE.register('careerStatCard', {
       // Oct 10 2026 (D1, one life timeline): completed quests and finished
       // cooks join the same feed. Display only - not in the XP weights.
       safe(sb.select('quest_log', 'select=name,description,category,xp,completed_at&status=eq.completed&completed_at=not.is.null&order=completed_at.desc&limit=200')),
-      safe(sb.select('planned_cooks', 'select=id,recipe_ids,scheduled_at,created_at&status=eq.cooked&order=scheduled_at.desc&limit=200'))
+      safe(sb.select('planned_cooks', 'select=id,recipe_ids,scheduled_at,created_at&status=eq.cooked&order=scheduled_at.desc&limit=200')),
+      safe(sb.select('gym_sessions', 'select=id,performed_on,duration_min,notes,created_at,gym_sets(exercise,reps,weight_kg)&order=performed_on.desc&limit=200'))
     ]).then(function(results) {
       return {
         content: Array.isArray(results[0]) ? results[0] : [],
@@ -34696,7 +34700,8 @@ RPGACE.register('careerStatCard', {
         systemUpdates: Array.isArray(results[7]) ? results[7] : [],
         bibliography: Array.isArray(results[8]) ? results[8] : [],
         quests: Array.isArray(results[9]) ? results[9] : [],
-        cooks: Array.isArray(results[10]) ? results[10] : []
+        cooks: Array.isArray(results[10]) ? results[10] : [],
+        gym: Array.isArray(results[11]) ? results[11] : []
       };
     });
     // Clear the in-flight lock once settled (success or failure) so a
@@ -34792,6 +34797,11 @@ RPGACE.register('careerStatCard', {
     });
     (data.quests || []).forEach(function(r) {
       items.push({ t: r.completed_at, icon: '⚔️', label: 'Quest done: ' + (r.name || 'quest'), type: 'quest', row: r });
+    });
+    (data.gym || []).forEach(function(r) {
+      var ex = {}; (r.gym_sets || []).forEach(function(x) { ex[x.exercise] = 1; });
+      var names = Object.keys(ex);
+      items.push({ t: r.performed_on ? r.performed_on + 'T12:00:00' : r.created_at, icon: '🏋️', label: 'Gym: ' + (names.length ? names.slice(0, 3).join(', ') + (names.length > 3 ? ' +' + (names.length - 3) : '') : 'session'), type: 'gym', row: r });
     });
     (data.cooks || []).forEach(function(r) {
       var n = (r.recipe_ids || []).length;
@@ -35072,6 +35082,15 @@ RPGACE.register('careerStatCard', {
         ['Where stored', 'quest_log table' + (r.category ? ' • ' + esc(r.category) : '')],
         ['Why significant', 'A finished quest - real progress, not a plan.']] };
     }
+    if (it.type === 'gym') {
+      var gs = r.gym_sets || [];
+      var vol = gs.reduce(function(a, x) { return a + (Number(x.reps) || 0) * (Number(x.weight_kg) || 0); }, 0);
+      return { eyebrow: '🏋️ Gym', title: 'Session ' + esc(r.performed_on || ''), rows: [
+        ['What was done', gs.length + ' set' + (gs.length === 1 ? '' : 's') + (r.duration_min ? ' in ' + r.duration_min + ' min' : '') + (vol ? ' · ' + Math.round(vol) + ' kg total volume' : '')],
+        ['Outcome', r.notes ? esc(r.notes) : 'Logged'],
+        ['Where stored', 'gym_sessions + gym_sets tables'],
+        ['Why significant', 'Training logged against the 5-a-week target.']] };
+    }
     if (it.type === 'cook') {
       var cn = (r.recipe_ids || []).length;
       return { eyebrow: '🍳 Cooking', title: 'Planned cook finished', rows: [
@@ -35142,8 +35161,8 @@ RPGACE.register('careerStatCard', {
 // id and class="page" to exist by click time, it doesn't care when or how
 // it was created). No main.js edit.
 RPGACE.register('chroniclesLog', {
-  FILTERS: ['all', 'proposal', 'journal', 'insight', 'content_shipped', 'content_idea', 'track', 'finance_sale', 'finance_expense', 'system_update', 'bibliography', 'quest', 'cook'],
-  FILTER_LABELS: { all: 'All', proposal: '🌳 Taxonomy', journal: '📓 Journal', insight: '🧠 Insight', content_shipped: '🚀 Shipped', content_idea: '💡 Ideas', track: '🎧 Reference', finance_sale: '💰 Sales', finance_expense: '🧾 Expenses', system_update: '🛠️ System', bibliography: '📚 Bibliography', quest: '⚔️ Quests', cook: '🍳 Cooks' },
+  FILTERS: ['all', 'proposal', 'journal', 'insight', 'content_shipped', 'content_idea', 'track', 'finance_sale', 'finance_expense', 'system_update', 'bibliography', 'quest', 'cook', 'gym'],
+  FILTER_LABELS: { all: 'All', proposal: '🌳 Taxonomy', journal: '📓 Journal', insight: '🧠 Insight', content_shipped: '🚀 Shipped', content_idea: '💡 Ideas', track: '🎧 Reference', finance_sale: '💰 Sales', finance_expense: '🧾 Expenses', system_update: '🛠️ System', bibliography: '📚 Bibliography', quest: '⚔️ Quests', cook: '🍳 Cooks', gym: '🏋️ Gym' },
   // 'Personal' added 2026-09-14 - the real category shoppingWishlist._markBought
   // writes here (Alex's own confirmed answer: "under personal expenses"),
   // reusing this exact suggestion list rather than a 2nd hand-typed one.
@@ -45897,6 +45916,295 @@ RPGACE.register('shoppingWishlist', {
 });
 /* ===END:shoppingWishlist=== */
 
+/* ===MODULE:gymTracker=== */
+// Oct 10 2026 — HABITS module 2, Alex's pick for D1's "next HABITS module":
+// "gym tracker". Log a session (exercise x sets x reps x kg), see this week
+// against a 5-session target (the same number as the Quest Board's weekly
+// "5x gym sessions"), personal bests per exercise (heaviest set and an
+// Epley estimated 1-rep max), and recent history. Tables gym_sessions +
+// gym_sets (anon_read_only / authenticated_all); every write goes through
+// RPGACE.sb.secureWrite. Sessions also show in Chronicles and the Morning
+// Brief's own-words section, and Ask My Data can read gym_sets.
+RPGACE.register('gymTracker', {
+
+  WEEKLY_TARGET: 5,
+
+  init: function() {},
+
+  logic: {
+    _iso: function(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); },
+    weekStart: function(now) {
+      var d = now ? new Date(now) : new Date();
+      var day = (d.getDay() + 6) % 7; // Monday = 0
+      d.setDate(d.getDate() - day);
+      return RPGACE.modules.gymTracker.logic._iso(d);
+    },
+    e1rm: function(kg, reps) {
+      kg = Number(kg); reps = Number(reps);
+      if (!kg || !reps || reps < 1) return 0;
+      return reps === 1 ? kg : kg * (1 + reps / 30);
+    },
+    load: function() {
+      return RPGACE.sb.select('gym_sessions', 'select=id,performed_on,duration_min,notes,created_at,gym_sets(id,exercise,set_index,reps,weight_kg)&order=performed_on.desc,created_at.desc&limit=60')
+        .then(function(r) { return Array.isArray(r) ? r : []; });
+    },
+    thisWeek: function(sessions, now) {
+      var ws = RPGACE.modules.gymTracker.logic.weekStart(now);
+      return (sessions || []).filter(function(s) { return s.performed_on >= ws; }).length;
+    },
+    bests: function(sessions) {
+      var L = RPGACE.modules.gymTracker.logic, out = {};
+      (sessions || []).forEach(function(s) {
+        (s.gym_sets || []).forEach(function(x) {
+          var k = String(x.exercise || '').trim().toLowerCase();
+          if (!k) return;
+          var b = out[k] || (out[k] = { exercise: x.exercise, maxKg: 0, maxKgReps: 0, maxKgOn: null, e1rm: 0 });
+          var kg = Number(x.weight_kg) || 0, reps = Number(x.reps) || 0;
+          if (kg > b.maxKg || (kg === b.maxKg && reps > b.maxKgReps)) { b.maxKg = kg; b.maxKgReps = reps; b.maxKgOn = s.performed_on; }
+          b.e1rm = Math.max(b.e1rm, L.e1rm(kg, reps));
+        });
+      });
+      return Object.keys(out).map(function(k) { return out[k]; }).sort(function(a, b) { return b.e1rm - a.e1rm || b.maxKg - a.maxKg; });
+    },
+    exercises: function(sessions) {
+      var seen = {}, out = [];
+      (sessions || []).forEach(function(s) { (s.gym_sets || []).forEach(function(x) { var k = String(x.exercise || '').toLowerCase(); if (k && !seen[k]) { seen[k] = 1; out.push(x.exercise); } }); });
+      return out;
+    },
+    // Group a session's sets back into exercise rows: {exercise, sets, reps, kg}.
+    rowsOf: function(session) {
+      var by = {}, order = [];
+      (session && session.gym_sets || []).slice().sort(function(a, b) { return (a.set_index || 0) - (b.set_index || 0); }).forEach(function(x) {
+        var k = x.exercise + '|' + (x.reps || '') + '|' + (x.weight_kg == null ? '' : x.weight_kg);
+        if (!by[k]) { by[k] = { exercise: x.exercise, sets: 0, reps: x.reps, kg: x.weight_kg }; order.push(k); }
+        by[k].sets++;
+      });
+      return order.map(function(k) { return by[k]; });
+    },
+    // rows: [{exercise, sets, reps, kg}] -> one gym_sets row per set.
+    expand: function(rows, sessionId) {
+      var out = [], idx = 0;
+      (rows || []).forEach(function(r) {
+        var n = Math.max(1, Math.min(20, parseInt(r.sets, 10) || 1));
+        for (var i = 0; i < n; i++) {
+          idx++;
+          out.push({ session_id: sessionId, exercise: String(r.exercise).trim(), set_index: idx, reps: r.reps === '' || r.reps == null ? null : parseInt(r.reps, 10), weight_kg: r.kg === '' || r.kg == null ? null : Number(r.kg) });
+        }
+      });
+      return out;
+    },
+    // Names of exercises where this session beats every earlier best.
+    newBests: function(rows, sessions) {
+      var L = RPGACE.modules.gymTracker.logic, prev = {};
+      L.bests(sessions).forEach(function(b) { prev[b.exercise.toLowerCase()] = b; });
+      var out = [];
+      (rows || []).forEach(function(r) {
+        var k = String(r.exercise).trim().toLowerCase(), kg = Number(r.kg) || 0;
+        var p = prev[k];
+        if (p && kg > p.maxKg && out.indexOf(r.exercise) === -1) out.push(r.exercise.trim() + ' ' + kg + 'kg');
+      });
+      return out;
+    },
+    save: function(session, rows) {
+      var L = RPGACE.modules.gymTracker.logic;
+      return RPGACE.sb.secureWrite('gym_sessions', 'insert', session).then(function(data) {
+        var row = Array.isArray(data) ? data[0] : data;
+        if (!row || !row.id) throw new Error('session saved but no id came back');
+        var sets = L.expand(rows, row.id);
+        if (!sets.length) return row;
+        return RPGACE.sb.secureWrite('gym_sets', 'insert', sets).then(function() { return row; });
+      }).then(function(row) { RPGACE.cache.clear('gym_sessions'); RPGACE.cache.clear('gym_sets'); return row; });
+    },
+    remove: function(id) {
+      return RPGACE.sb.secureWrite('gym_sessions', 'delete', null, 'id=eq.' + id).then(function() { RPGACE.cache.clear('gym_sessions'); });
+    },
+    weekLine: function() {
+      var self = RPGACE.modules.gymTracker;
+      return RPGACE.sb.select('gym_sessions', 'select=performed_on&performed_on=gte.' + self.logic.weekStart()).then(function(r) {
+        var n = Array.isArray(r) ? r.length : 0;
+        return 'Gym this week: ' + n + ' / ' + self.WEEKLY_TARGET + ' sessions';
+      });
+    },
+  },
+
+  ui: {
+    _esc: function(s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; },
+    _btn: function(label, kind) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.textContent = label;
+      b.style.cssText = 'min-height:44px;padding:8px 14px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;' +
+        (kind === 'primary' ? 'background:var(--purple);border:none;color:#fff;' : 'background:none;border:1px solid var(--border);color:var(--text);');
+      return b;
+    },
+
+    open: function() {
+      var self = RPGACE.modules.gymTracker;
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '🏋️ Habits', title: 'Gym', width: '560px' });
+      pop.box.innerHTML = '<div style="color:var(--muted);font-size:13px;">Loading…</div>';
+      var draw = function() {
+        self.logic.load().then(function(sessions) { self.ui.render(pop, sessions, draw); })
+          .catch(function(e) { pop.box.innerHTML = ''; var m = document.createElement('div'); m.style.color = '#CC4A4A'; m.textContent = 'Could not load gym sessions: ' + (e.message || e); pop.box.appendChild(m); });
+      };
+      draw();
+      return pop;
+    },
+
+    render: function(pop, sessions, redraw) {
+      var self = RPGACE.modules.gymTracker, esc = self.ui._esc;
+      var box = pop.box;
+      box.innerHTML = '';
+      var n = self.logic.thisWeek(sessions), T = self.WEEKLY_TARGET;
+      var head = document.createElement('div');
+      head.style.cssText = 'margin-bottom:14px;';
+      var last = sessions[0];
+      var days = last ? Math.round((Date.parse(self.logic._iso(new Date()) + 'T00:00:00') - Date.parse(last.performed_on + 'T00:00:00')) / 86400000) : null;
+      head.innerHTML = '<div style="display:flex;justify-content:space-between;font-size:14px;color:var(--text);font-variant-numeric:tabular-nums;margin-bottom:6px;"><b>This week: ' + n + ' / ' + T + '</b><span style="color:var(--muted);">' +
+        (days == null ? 'No sessions yet' : 'Last session ' + (days === 0 ? 'today' : days === 1 ? 'yesterday' : days + ' days ago')) + '</span></div>' +
+        '<div style="height:8px;border-radius:4px;background:rgba(255,255,255,0.06);overflow:hidden;"><div style="height:100%;width:' + Math.min(100, Math.round(n / T * 100)) + '%;background:var(--purple);"></div></div>';
+      box.appendChild(head);
+
+      var actions = document.createElement('div');
+      actions.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;';
+      var logB = self.ui._btn('+ Log a session', 'primary');
+      logB.onclick = function() { self.ui.openLog(sessions, null, redraw); };
+      var repB = self.ui._btn('↻ Repeat last', '');
+      repB.disabled = !last; repB.style.opacity = last ? '1' : '0.4';
+      repB.onclick = function() { self.ui.openLog(sessions, self.logic.rowsOf(last), redraw); };
+      actions.appendChild(logB); actions.appendChild(repB);
+      box.appendChild(actions);
+
+      var bests = self.logic.bests(sessions).filter(function(b) { return b.maxKg > 0; });
+      if (bests.length) {
+        var bh = document.createElement('div');
+        bh.style.cssText = 'font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.5px;text-transform:uppercase;margin-bottom:6px;';
+        bh.textContent = 'Personal bests';
+        box.appendChild(bh);
+        bests.slice(0, 8).forEach(function(b) {
+          var r = document.createElement('div');
+          r.style.cssText = 'display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:14px;font-variant-numeric:tabular-nums;';
+          r.innerHTML = '<span style="color:var(--text);">' + esc(b.exercise) + '</span><span style="color:var(--muted);">' + b.maxKg + ' kg × ' + b.maxKgReps + ' · est. 1RM ' + Math.round(b.e1rm) + ' kg</span>';
+          box.appendChild(r);
+        });
+      }
+
+      var hh = document.createElement('div');
+      hh.style.cssText = 'font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.5px;text-transform:uppercase;margin:16px 0 6px;';
+      hh.textContent = 'Recent sessions';
+      box.appendChild(hh);
+      if (!sessions.length) {
+        var e = document.createElement('div');
+        e.style.cssText = 'font-size:13px;color:var(--muted);';
+        e.textContent = 'Nothing logged yet. Tap + Log a session after your next workout.';
+        box.appendChild(e);
+      }
+      sessions.slice(0, 12).forEach(function(s) {
+        var rows = self.logic.rowsOf(s);
+        var card = document.createElement('div');
+        card.style.cssText = 'padding:10px 0;border-bottom:1px solid var(--border);';
+        var top = document.createElement('div');
+        top.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:8px;';
+        var t = document.createElement('div');
+        t.style.cssText = 'font-size:14px;color:var(--text);font-weight:700;';
+        t.textContent = new Date(s.performed_on + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }) + (s.duration_min ? ' · ' + s.duration_min + ' min' : '');
+        var del = document.createElement('button');
+        del.type = 'button'; del.textContent = '🗑';
+        del.title = 'Delete session';
+        del.style.cssText = 'min-height:36px;min-width:36px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;';
+        var armed = false, timer = null;
+        del.onclick = function() {
+          if (!armed) { armed = true; del.textContent = 'Delete?'; del.style.color = '#CC4A4A'; timer = setTimeout(function() { armed = false; del.textContent = '🗑'; del.style.color = 'var(--muted)'; }, 3000); return; }
+          clearTimeout(timer); del.disabled = true;
+          self.logic.remove(s.id).then(redraw).catch(function(err) { del.disabled = false; RPGACE.utils.toast('⚠️ Delete failed: ' + (err.message || err), '#CC4A4A', 3500, 'gymTracker'); });
+        };
+        top.appendChild(t); top.appendChild(del);
+        card.appendChild(top);
+        var lines = document.createElement('div');
+        lines.style.cssText = 'font-size:13px;color:var(--muted);margin-top:4px;line-height:1.6;font-variant-numeric:tabular-nums;';
+        lines.innerHTML = rows.map(function(r) { return esc(r.exercise) + ' — ' + r.sets + ' × ' + (r.reps == null ? '?' : r.reps) + (r.kg != null ? ' @ ' + r.kg + ' kg' : ''); }).join('<br>') + (s.notes ? '<br><i>' + esc(s.notes) + '</i>' : '');
+        card.appendChild(lines);
+        box.appendChild(card);
+      });
+    },
+
+    openLog: function(sessions, prefill, onSaved) {
+      var self = RPGACE.modules.gymTracker;
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '🏋️ Gym', title: prefill ? 'Repeat last session' : 'Log a session', width: '520px', noDefaultClose: true });
+      var inp = 'background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;padding:8px;font-family:Rajdhani,sans-serif;min-width:0;width:100%;box-sizing:border-box;';
+      var dl = document.createElement('datalist');
+      dl.id = 'gym-ex-list';
+      self.logic.exercises(sessions).forEach(function(x) { var o = document.createElement('option'); o.value = x; dl.appendChild(o); });
+      pop.box.appendChild(dl);
+      var top = document.createElement('div');
+      top.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;';
+      top.innerHTML = '<label style="font-size:12px;color:var(--muted);">Date<input id="gym-date" type="date" style="' + inp + 'margin-top:4px;"></label>' +
+        '<label style="font-size:12px;color:var(--muted);">Minutes (optional)<input id="gym-min" type="number" min="0" inputmode="numeric" style="' + inp + 'margin-top:4px;"></label>';
+      pop.box.appendChild(top);
+      pop.box.querySelector('#gym-date').value = self.logic._iso(new Date());
+      var hdr = document.createElement('div');
+      hdr.style.cssText = 'display:grid;grid-template-columns:1fr 48px 52px 60px 36px;gap:6px;font-size:12px;color:var(--muted);margin-bottom:4px;';
+      hdr.innerHTML = '<span>Exercise</span><span>Sets</span><span>Reps</span><span>kg</span><span></span>';
+      pop.box.appendChild(hdr);
+      var list = document.createElement('div');
+      pop.box.appendChild(list);
+      var rowsEls = [];
+      var addRow = function(r) {
+        r = r || {};
+        var el = document.createElement('div');
+        el.className = 'gym-row';
+        el.style.cssText = 'display:grid;grid-template-columns:1fr 48px 52px 60px 36px;gap:6px;margin-bottom:6px;align-items:center;';
+        el.innerHTML = '<input class="gym-ex" type="text" list="gym-ex-list" placeholder="e.g. Squat" style="' + inp + '">' +
+          '<input class="gym-sets" type="number" min="1" max="20" inputmode="numeric" style="' + inp + '">' +
+          '<input class="gym-reps" type="number" min="0" inputmode="numeric" style="' + inp + '">' +
+          '<input class="gym-kg" type="number" min="0" step="0.5" inputmode="decimal" style="' + inp + '">' +
+          '<button type="button" title="Remove" style="min-height:36px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);cursor:pointer;">✕</button>';
+        el.querySelector('.gym-ex').value = r.exercise || '';
+        el.querySelector('.gym-sets').value = r.sets || 3;
+        el.querySelector('.gym-reps').value = r.reps == null ? '' : r.reps;
+        el.querySelector('.gym-kg').value = r.kg == null ? '' : r.kg;
+        el.querySelector('button').onclick = function() { el.remove(); rowsEls = rowsEls.filter(function(x) { return x !== el; }); };
+        list.appendChild(el); rowsEls.push(el);
+      };
+      (prefill && prefill.length ? prefill : [null]).forEach(addRow);
+      var add = self.ui._btn('+ Add exercise', '');
+      add.style.width = '100%'; add.style.marginTop = '4px';
+      add.onclick = function() { addRow(); };
+      pop.box.appendChild(add);
+      var notes = document.createElement('textarea');
+      notes.id = 'gym-notes'; notes.rows = 2; notes.placeholder = 'Notes (optional) — how it felt, what to change next time';
+      notes.style.cssText = inp + 'margin-top:10px;resize:vertical;';
+      pop.box.appendChild(notes);
+      var err = document.createElement('div');
+      err.style.cssText = 'color:#CC4A4A;font-size:12px;display:none;margin-top:8px;';
+      pop.box.appendChild(err);
+      var bar = document.createElement('div');
+      bar.style.cssText = 'display:flex;gap:10px;justify-content:flex-end;margin-top:12px;';
+      var cancel = self.ui._btn('Cancel', ''); cancel.onclick = function() { pop.close(); };
+      var save = self.ui._btn('Save session', 'primary'); save.id = 'gym-save';
+      bar.appendChild(cancel); bar.appendChild(save);
+      pop.box.appendChild(bar);
+      save.onclick = function() {
+        var rows = rowsEls.map(function(el) {
+          return { exercise: el.querySelector('.gym-ex').value.trim(), sets: el.querySelector('.gym-sets').value, reps: el.querySelector('.gym-reps').value, kg: el.querySelector('.gym-kg').value };
+        }).filter(function(r) { return r.exercise; });
+        var date = pop.box.querySelector('#gym-date').value;
+        if (!date) { err.textContent = 'Pick the date.'; err.style.display = 'block'; return; }
+        if (!rows.length) { err.textContent = 'Add at least one exercise.'; err.style.display = 'block'; return; }
+        var mins = parseInt(pop.box.querySelector('#gym-min').value, 10);
+        var pbs = self.logic.newBests(rows, sessions);
+        save.disabled = true; save.textContent = 'Saving…';
+        self.logic.save({ performed_on: date, duration_min: isNaN(mins) ? null : mins, notes: notes.value.trim() || null }, rows).then(function() {
+          pop.close();
+          RPGACE.utils.toast(pbs.length ? '🏆 New best: ' + pbs.join(', ') : '🏋️ Session logged', '#4caf82', 3000);
+          if (onSaved) onSaved();
+        }).catch(function(e) { save.disabled = false; save.textContent = 'Save session'; err.textContent = 'Save failed: ' + (e.message || e); err.style.display = 'block'; });
+      };
+    },
+  },
+
+  open: function() { return this.ui.open(); },
+});
+/* ===END:gymTracker=== */
+
 /* ===MODULE:decisionJournal=== */
 // Oct 10 2026 — G1 (money guardrails, half 2) of the ratified /CEO plan
 // "RPGACE Domains, Navigation & Deepstash Encyclopedia". A decision is
@@ -46243,8 +46551,10 @@ RPGACE.register('dailyLife', {
         sel('quest_log', 'select=name,description&status=eq.open&parent_quest_id=is.null&order=created_at.desc&limit=3'),
         sel('journal', 'select=title,content,review_on&entry_type=eq.decision&status=neq.reviewed&review_on=lte.' + L._today(3) + '&order=review_on.asc&limit=2'),
         sel('journal', 'select=title,content,created_at&or=(entry_type.is.null,entry_type.eq.note)&order=created_at.desc&limit=1'),
+        RPGACE.modules.gymTracker ? RPGACE.modules.gymTracker.logic.weekLine().catch(function() { return ''; }) : Promise.resolve(''),
       ]).then(function(r) {
         var lines = [];
+        if (r[3]) lines.push('• ' + r[3]);
         r[0].forEach(function(q) { lines.push('• Open quest: ' + L._clip(q.name, 80) + (q.description ? ' - "' + L._clip(q.description, 120) + '"' : '')); });
         r[1].forEach(function(d) { lines.push('• Decision due for a look-back (' + d.review_on + '): ' + L._clip(String(d.title || '').replace(/^🧭\s*/, ''), 80) + ' - you said: "' + L._clip(d.content, 140) + '"'); });
         r[2].forEach(function(j) { lines.push('• Latest journal note (' + String(j.created_at || '').slice(0, 10) + '): "' + L._clip(j.content || j.title, 160) + '"'); });
