@@ -73,6 +73,18 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-10-recall" style="margin-bottom:30px;">
+    <div class="card-title">🧠 Oct 10 — Never forget: saved ideas come back, books become cards (L1)</div>
+    <div class="card-body">
+      New <code>recall</code> module (ideas 06 and 24 from the 50-projects list):
+      <ul>
+        <li><strong>Forgetting-curve recall</strong>: saving an idea card now schedules it, using new columns <code>encyclopedia_insights.recall_step</code> / <code>recall_due</code>. Due ideas show at the top of Morning Brief under "🧠 Remember these", up to 3 at a time. <em>Got it</em> moves an idea to the next gap: 1, 3, 7, 16, then 35 days, after which it counts as learned. <em>Again</em> brings it back tomorrow.</li>
+        <li><strong>Bookworm flashcards</strong>: any chapter with insights gets a "🃏 Cards" button. It opens the chapter's insights in C1's card reader, reusing <code>encyclopediaPosts._renderCards</code> with a save hook. Saving a card writes an <code>encyclopedia_insights</code> row with <code>source_entry_id='book:&lt;chapter&gt;'</code>. Book and video ideas share one Saved list and one recall queue, and the Saved list opens book ideas back into their chapter's cards.</li>
+      </ul>
+      Also: <code>sw.js</code> no longer serves <code>manifest.json</code> from cache, so a reinstall always reads the current share target.<br>
+      <strong>Verified</strong>: headless Chromium, Supabase mocked, 16 checks, zero page errors. Covered: interval maths, Again/learned rules, the Morning Brief strip and its write, save-schedules-recall, chapter-card insert, restoring saved state, unsave matching, and the Cards button in the chapter list. <strong>Not yet hand-tested by Alex.</strong> Note: 0 ideas are saved so far, so the strip stays empty until you ☆ save some.
+    </div>
+  </div>
 <div class="card" id="card-2026-10-10-share-to-rpgace" style="margin-bottom:30px;">
     <div class="card-title">📥 Oct 10 — Share a reel straight to RPGACE</div>
     <div class="card-body">

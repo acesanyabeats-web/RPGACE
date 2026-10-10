@@ -9,9 +9,11 @@
  * and only cache-first for the icon/manifest files that never change without
  * a filename bump. Bump CACHE_NAME whenever this file's caching list changes.
  */
-const CACHE_NAME = 'rpgace-shell-v20261010a';
+const CACHE_NAME = 'rpgace-shell-v20261010b';
+// Oct 10 2026: manifest.json is no longer cache-first - it now carries the
+// share_target, so it must always come from the network (network-first
+// branch below) or an install can pick up a stale copy without it.
 const PRECACHE = [
-  '/manifest.json',
   '/icons/icon-192.png',
   '/icons/icon-512.png',
   '/icons/icon-maskable-192.png',
