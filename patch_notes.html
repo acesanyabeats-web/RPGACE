@@ -73,6 +73,25 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-10-share-to-rpgace" style="margin-bottom:30px;">
+    <div class="card-title">📥 Oct 10 — Share a reel straight to RPGACE</div>
+    <div class="card-body">
+      Alex: "when i see a short or instagram reel, i want to share it to rpgace as a sender". <code>manifest.json</code> now declares a Web Share Target, so the installed app shows up in the Android share sheet. The new <code>shareInbox</code> module reads the shared link at load, waits for login, then queues it into <code>intel_jobs</code>, the same queue the Analyse box uses. Content Intelligence analyses it, and C1 turns the report into an Encyclopedia post. It pulls the link out of the shared text (Instagram and TikTok put it there) and skips links already queued. Service worker cache bumped so the new manifest is picked up.<br>
+      <strong>Limits</strong>: Android Chrome only. Android may need the app reinstalled before RPGACE appears in the share list. iPhone Safari has no share targets, so the route there is an iOS Shortcut that opens <code>/?share_url=</code>. Analysis still needs the PC analysis server running.<br>
+      <strong>Verified</strong>: headless Chromium, Supabase mocked. The shared URL is captured and the address bar cleaned. Link extraction trims trailing punctuation. Exactly one <code>intel_jobs</code> insert is made and the popup shows. <strong>Not yet hand-tested by Alex.</strong>
+    </div>
+  </div>
+<div class="card" id="card-2026-10-10-money-guardrails" style="margin-bottom:30px;">
+    <div class="card-title">🧭 Oct 10 — Money guardrails: wishlist cool-off + decision journal (G1)</div>
+    <div class="card-body">
+      <ul>
+        <li><strong>Wishlist cool-off</strong> (<code>shoppingWishlist</code>): adding an item asks an optional "why do you want it?", saved in new column <code>wishlist_items.want_reason</code>. Items added under 24h ago show "⏳ cooling Nh". Pressing Bought on one first shows the time left and the reason, with Wait or Buy anyway. It never blocks a purchase. The price confirm also quotes the reason.</li>
+        <li><strong>Decision journal</strong> (new <code>decisionJournal</code> module): a 🧭 Decisions strip on the Journal page. You log a decision with why and a look-back in 2, 4 or 8 weeks; it's stored as <code>journal</code> rows with <code>entry_type='decision'</code> and new <code>review_on</code>. On the date it asks "How did it turn out?" and saves new <code>outcome</code> next to the original reason. No new table.</li>
+      </ul>
+      Additive migration <code>money_guardrails_g1</code>; <code>pg_constraint</code> checked first: journal has no CHECKs. Ask My Data now also returns the reason, review date and outcome.<br>
+      <strong>Verified</strong>: headless Chromium, Supabase mocked. Due/waiting/reviewed split, a 2-week date, the strip text, the decision insert and the look-back update all work. Cool-off shows for new items and is skipped for old ones. Buy anyway leads to the price confirm, which writes to the wishlist and Chronicles. Zero page errors. <strong>Not yet hand-tested by Alex.</strong>
+    </div>
+  </div>
 <div class="card" id="card-2026-10-10-pathways" style="margin-bottom:30px;">
     <div class="card-title">🔗 Oct 10 — Five new connections between existing features (P1)</div>
     <div class="card-body">

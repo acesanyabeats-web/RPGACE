@@ -9,7 +9,7 @@
  * and only cache-first for the icon/manifest files that never change without
  * a filename bump. Bump CACHE_NAME whenever this file's caching list changes.
  */
-const CACHE_NAME = 'rpgace-shell-v20260722b';
+const CACHE_NAME = 'rpgace-shell-v20261010a';
 const PRECACHE = [
   '/manifest.json',
   '/icons/icon-192.png',
