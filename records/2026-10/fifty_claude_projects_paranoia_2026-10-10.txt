@@ -1,0 +1,107 @@
+50 "Claude projects" -> RPGACE Total Systems — /paranoia + /free-for-all-debate + /drift + /commit-archaeologist + Council of 5
+Date: 2026-10-10. Status: ASSESSMENT ONLY, nothing built. Feeds /interrogation, then /CEO (extends ratified plan
+"RPGACE Domains, Navigation & Deepstash Encyclopedia").
+
+== ALEX'S ASK (verbatim, shortened list pasted from a Russian-language "50 projects in Claude" page; the IG reel showed 5) ==
+"here are 50 projects, the instagram reel had 5. these are amazing ... i want you to /paranoia and
+/free-for-all-debate all these to discuss how these concepts can be embedded into RPGACE total systems to make
+it a more productive ai environment with /drift and /commit-archaeologist , then council of 5 outcomes to make me
+understand the options and /interrogation to get my input on them, then we /CEO it"
+Source principle (translated): "Collect the data in one place once, then just ask and get the answer, no manual
+searching." The reel itself could not be fetched (Instagram blocked from this session).
+
+== STEP 1-2: what's possible vs what's real (live evidence, this pass) ==
+RPGACE already IS the "collect once" half: Supabase holds the data, Oracle answers. The missing half is
+"then just ask": Oracle only sees a hand-written digest (SELF_KNOWLEDGE) + keyword-gated live facts. It cannot
+look up "what did I log about X", "which pantry items expire", "which creators on my watchlist posted".
+Most tables are anon_read_only already, so a read-only lookup needs no new server endpoint (api/ is 11/12).
+
+Data that actually exists (row counts, live):
+  shopping_list_items 277, encyclopedia_insights 106, pantry_stock 65, reference_tracks 32, intel_watchlist 26,
+  bookworm_chapters 26, quest_log 24, journal 11, beat_audio_jobs 11, recipes 8, wishlist_items 5.
+  EMPTY: chronicles_finance 0, content_productions 0, bibliography 0.
+=> Ideas that need finance data (subscriptions, receipts, net worth, freelance rate) have nothing to work on yet.
+
+Existing homes found by grep: feynman module (Socratic teaching), Last.fm integration (21 refs), intel_watchlist
+(15 refs), Composio gmail + draft_email oracle action, morningBrief, agendaReminder, HABITS/cookingOracle,
+shoppingWishlist, Bookworm.
+
+== TRIAGE OF ALL 50 ==
+A. ALREADY HALF-BUILT IN RPGACE — extend, cheap (best value):
+  06 Forgetting-curve killer -> resurface saved Encyclopedia idea cards (C1) in Morning Brief before you forget them
+  24 PDF -> flashcards       -> Bookworm chapters become idea cards (same renderer as C1)
+  22 Book club for one       -> feynman + Bookworm: Socratic questions after a chapter
+  23 Skeptic                 -> CI already scores videos; add "fact-check this article" on Encyclopedia posts
+  30 Competitor watcher      -> intel_watchlist (26 creators): weekly "what they posted / what changed" digest
+  33 Fridge recipes          -> Cooking "What can I cook now" exists; add photo-of-fridge -> pantry update
+  36 Shopping optimizer      -> already built (H7 shopping list from planned cooks)
+  38 Habit architect         -> HABITS domain (only cooking so far) — next habit module
+  50 Impulse-buy interceptor -> Wishlist: 24h cool-off + "why did you want this?" before "mark bought"
+  46 Decision journal        -> journal rows tagged 'decision' + auto re-check after N weeks
+  10 Nagging clone / 08 Meeting prep -> agendaReminder + Morning Brief quoting your own journal/quests
+  05 Life timeline           -> Chronicles + journal + quest_log + cooks in one scrolling timeline
+B. MUSIC-BUSINESS VERSIONS (re-aimed at a producer, high fit with the 48-hour rule):
+  26 Cold outreach           -> artist/placement outreach drafts (Composio gmail, phylum 16 beat-selling)
+  29 Contract red flags      -> beat licence / label / sync contract explainer
+  28 Harsh portfolio critic  -> "A&R critic" of a beat or video before posting
+  43 Playlist psychologist   -> Last.fm listening -> moods -> beat ideas
+  48 Negotiation simulator   -> rehearse a beat-price / placement negotiation
+  49 Rate calculator         -> beat pricing — BLOCKED: chronicles_finance has 0 rows
+C. NEEDS NEW DATA FIRST (later):
+  01 Screenshot brain, 03 photo search -> a "drop screenshots here" inbox Oracle reads (vision) — new storage
+  04 Voice-note archive  -> blocked on Fish Audio key (voiceInput retired Aug 30)
+  09 Subscriptions, 11 Receipts, 47 Net worth -> need finance data logged first
+  07 Email triage        -> Composio gmail exists, but Composio key rotation is still open
+  34 Sleep, 35 Exercise form, 37 Symptoms -> no health data source
+D. NOT FOR RPGACE (architecture or goal mismatch):
+  15-19 local/offline AI, password auditor, network monitor — RPGACE is cloud (Vercel/Supabase/Anthropic);
+        security tooling is out of scope and risky. Reject.
+  02 group-chat digest, 12 travel, 13 job apps, 14 meeting scheduler, 21 language tutor, 27/31/32 call->invoice/
+  proposal/sales calls, 39-45 memoir/roast bot/museum/dreams/fanfic/toasts/20 debate partner (dev already has
+  /debate) — fail "beat made or video posted in 48h"; skip unless Alex wants one specifically.
+
+THE ONE FOUNDATION ITEM ("then just ask"):
+  X1 "Ask my data" — Oracle can request a read-only lookup on allowlisted tables via a single-line trailer
+  (e.g. ORACLE_QUERY: table | filter), the client runs RPGACE.sb.select (anon read already allowed), and Oracle
+  answers from the real rows. Many A/B ideas become ordinary questions instead of separate features.
+  Constraints: single-line trailer (the numbered-list landmine), row cap + column cap (token rule 11), allowlist
+  excludes secrets/meta tables, two Oracle calls per lookup (cost named, not hidden).
+
+== STEP 3: /free-for-all-debate (4 competitors, 2 picks each) ==
+1. "Foundation first" — picks X1 + 06. Argues X1 turns a dozen ideas into questions, so build it once instead
+   of 12 features (rule 8). 06 is the payoff of C1's Deepstash cards.
+2. "Money in, not out" — picks B (26 outreach + 28 A&R critic). Argues the governing rule: things that get beats
+   sold/posted beat life-admin. Attacks #1: X1 is invisible plumbing, Alex can't feel it.
+3. "Guardrails" — picks 50 (impulse cool-off) + 46 (decision journal). Cheap (Wishlist + journal already exist),
+   daily-use, zero new tables. Attacks #2: outreach needs Composio key rotation first — blocked.
+4. "Skeptic" — picks D (cut) + C (wait). Argues 50 ideas = scope explosion on top of a 7-item ratified plan and
+   25+ untested features; most of the list is generic life-hacks, not a producer's OS. Attacks #1: X1 can return
+   wrong rows and Oracle will sound confident — needs rows shown in the answer.
+Outcome: X1 survives with #4's condition (show the rows used). 06 + 24 ride on C1 (no new plan item, just scope).
+50 + 46 are cheap enough to keep. Music-business B items survive as Oracle commands (prompts, no new tables)
+except 26 (blocked on Composio). C waits for data. D cut.
+
+== STEP 4 is /interrogation (asked in chat) ==
+
+== /drift vs Alex's ask ==
+- "how these concepts can be embedded into RPGACE": covered, all 50 placed. VERDICT on track.
+- "more productive AI environment": X1 + resurfacing are the productivity core. on track.
+- MATERIAL scope risk: adding many features to an unbuilt ratified plan. Mitigation: new items slot AFTER C1/N1,
+  and A-ideas that ride existing items add scope there, not new items.
+BASIS: provisional until Alex answers.
+
+== /commit-archaeologist ==
+- Since Jul 1: 205 commits; 39 cooking/habit/recipe, 15 encyclopedia/bookworm/intel, 38 river/galaxy.
+  Cooking/HABITS is where Alex actually used the app (277 shopping items, 65 pantry rows) — ideas that extend it
+  (33, 36, 38) have real users; finance ideas don't (0 rows).
+- voiceInput was retired on purpose (Aug 30) pending Fish Audio — don't rebuild voice notes around the browser mic.
+- Oracle grounding history: SELF_KNOWLEDGE went 28 days stale once — X1 reduces reliance on that digest by
+  reading live rows instead.
+
+== STEP 5: Council of 5 ==
+- Technical risk: X1 is the riskiest (prompt-trailer parsing, wrong-table answers). Contained by allowlist,
+  caps, and showing rows used. Everything else extends existing modules.
+- Cost: X1 doubles Oracle calls only when a lookup fires. A-items mostly reuse C1's card renderer.
+- Maintainability: X1 replaces future one-off "Oracle knows about X" wiring with one mechanism.
+- Alex's goals: B items serve the 48-hour rule most directly; A items serve "never lose an insight".
+- Why NOT: the ratified plan isn't built yet; this could stall it. Answer: no new item goes before C1/N1.
