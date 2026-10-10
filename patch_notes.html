@@ -73,7 +73,24 @@
 
 <div class="content">
 
-<div class="card" id="card-2026-10-10-ask-my-data" style="margin-bottom:30px;">
+<div class="card" id="card-2026-10-10-platform-oracle" style="margin-bottom:30px;">
+    <div class="card-title">📣 Oct 10 — Platform Oracle: Instagram, YouTube and TikTok in one panel (O1)</div>
+    <div class="card-body">
+      <strong>Problem</strong>: three near-copy side panels (<code>instaOraclePanel</code> 13 commands, <code>youtubeOracle</code> 8, <code>tiktokOracle</code> 8). Each had its own button, colours and send path, and YouTube skipped the fill-in-the-gaps step. Two showed broken "??" icons, and none had a Back button.<br>
+      <strong>Fix</strong>: a new <code>captionsPanel</code> module is the one panel. A single "📣 Platform Oracle" button on the Oracle page opens it as a shared popup, so it gets the N1 Back header and phone Back. It has an Instagram / YouTube / TikTok switch that remembers your last choice. All three platforms now share one send path. The command text stays in each platform module's own list, nothing re-typed. Their old open/run functions, and the Insta-Oracle button in <code>index.html</code>, now open the shared panel. Broken icons replaced.<br>
+      <strong>Verified</strong>: headless Chromium at 400px:
+      <ul>
+        <li>one button, and the old YouTube/TikTok buttons are gone;</li>
+        <li>the platform switch shows 13/8/8 commands;</li>
+        <li>a command sends the correct prompt and closes the panel;</li>
+        <li>the Insta-Oracle button and <code>youtubeOracle.open()</code> both open the shared panel;</li>
+        <li>phone Back closes it;</li>
+        <li>zero errors.</li>
+      </ul>
+      <strong>Untested by Alex's hand.</strong>
+    </div>
+  </div>
+  <div class="card" id="card-2026-10-10-ask-my-data" style="margin-bottom:30px;">
     <div class="card-title">📊 Oct 10 — Ask my data: Oracle answers from your real saved rows (X1)</div>
     <div class="card-body">
       <strong>What it does</strong>: ask Oracle something about your own data, like "do I have rice in my pantry?", "how many quests have I done", or "what's on my wishlist". Oracle asks for one read-only lookup, and the app fetches up to 30 rows from one of 18 allowed sources. It shows "📊 Looked at N rows from X" (tap to see them), and Oracle answers from those rows only.<br>

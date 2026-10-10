@@ -5695,7 +5695,7 @@ RPGACE.register('youtubeOracle', {
     ['Viral Hook Generator 50', 'Generate 50 viral hooks for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. AUDIENCE: Aspiring producers aged 18-35. Category A: 18 TITLE HOOKS specific to FL Studio and beat-making. Category B: 17 THUMBNAIL TEXT HOOKS of 3-5 words max. Category C: 15 FIRST-10-SECONDS SPOKEN HOOKS that open a loop they must close. After the 50 hooks give your top 5 picks across all categories and explain why they outperform the others for this specific niche.'],
   ],
 
-  ICONS: ['??','??','??','??','??','??','??','??'],
+  ICONS: ['🎯','🪪','📅','📝','🖼️','📊','🧠','🪝'],
 
   // July 24 audit fix: both real boot paths were dead. The rpgace:ready
   // listener below ran too late (registered from inside init(), which
@@ -5729,24 +5729,8 @@ RPGACE.register('youtubeOracle', {
   ui: {
 
     _btn: function() {
-      if (document.getElementById('yt-ob')) return;
-      var self = RPGACE.modules.youtubeOracle;
-      var tries = 0;
-      var go = function() {
-        tries++;
-        if (document.getElementById('yt-ob')) return;
-        var anchor = document.querySelector('[onclick*="toggleProdOraclePanel"]');
-        if (!anchor) { if (tries < 20) setTimeout(go, 500); return; }
-        var b = document.createElement('button');
-        b.id = 'yt-ob';
-        b.className = anchor.className;
-        b.textContent = '\uD83C\uDFAC YouTube Oracle';
-        b.onclick = function() { self.open(); };
-        anchor.parentElement.insertBefore(b, anchor.nextSibling);
-      };
-      setTimeout(go, 600);
-      setTimeout(go, 1500);
-      setTimeout(go, 3000);
+      // Oct 10 2026 (O1): merged into the shared captionsPanel module.
+      // Its single 📣 Platform Oracle button replaces this one.
     },
 
     _close: function() {
@@ -5754,52 +5738,8 @@ RPGACE.register('youtubeOracle', {
     },
 
     open: function() {
-      var self = RPGACE.modules.youtubeOracle;
-      if (document.getElementById('yt-op')) { self._close(); return; }
-      var panel = document.createElement('div');
-      panel.id = 'yt-op';
-      panel.style.cssText = 'position:fixed;top:0;right:0;width:min(380px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(255,80,80,0.15);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;';
-
-      var hdr = document.createElement('div');
-      hdr.style.cssText = 'background:rgba(255,40,40,0.06);border-bottom:1px solid rgba(255,80,80,0.12);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
-      var ht = document.createElement('div');
-      var lb = document.createElement('div');
-      lb.textContent = 'YOUTUBE ORACLE';
-      lb.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(255,100,100,0.6);margin-bottom:3px;';
-      var ch = document.createElement('div');
-      ch.textContent = '@AceSanyaBeats';
-      ch.style.cssText = 'font-size:13px;font-weight:700;color:#D4DAF5;';
-      ht.appendChild(lb); ht.appendChild(ch);
-      var cb = document.createElement('button');
-      cb.textContent = '×';
-      cb.style.cssText = 'background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:20px;line-height:1;padding:4px;';
-      cb.onclick = function() { self._close(); };
-      hdr.appendChild(ht); hdr.appendChild(cb);
-      panel.appendChild(hdr);
-
-      var body = document.createElement('div');
-      body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
-      var note = document.createElement('div');
-      note.textContent = '8 COMMANDS · PRE-FILLED FOR YOUR CHANNEL';
-      note.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
-      body.appendChild(note);
-
-      self.CMDS.forEach(function(cmd, i) {
-        var btn = document.createElement('button');
-        btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;cursor:pointer;text-align:left;color:rgba(226,226,236,0.82);font-family:Rajdhani,sans-serif;font-size:12px;font-weight:600;margin-bottom:5px;';
-        var ic = document.createElement('span');
-        ic.textContent = self.ICONS[i] || '';
-        ic.style.fontSize = '16px';
-        var tx = document.createElement('span');
-        tx.textContent = cmd[0];
-        btn.appendChild(ic); btn.appendChild(tx);
-        btn.onmouseover = function() { this.style.background = 'rgba(255,60,60,0.1)'; };
-        btn.onmouseout  = function() { this.style.background = 'rgba(255,255,255,0.03)'; };
-        btn.onclick = function() { self.run(i); };
-        body.appendChild(btn);
-      });
-      panel.appendChild(body);
-      RPGACE.ui.slideInPanel(panel, {edge:'right'});
+      // Oct 10 2026 (O1): merged into the shared captionsPanel module.
+      return RPGACE.modules.captionsPanel.open('youtube');
     },
 
     // G53 batch 5 review (Sep 2026, real rule-7 fix, flagged during the
@@ -5811,27 +5751,8 @@ RPGACE.register('youtubeOracle', {
     // otherwise — matching the shared error-toast convention (#CC4A4A),
     // which errorLog._capture now also records automatically (G109).
     run: function(i) {
-      var self = RPGACE.modules.youtubeOracle;
-      var cmd = self.CMDS[i];
-      if (!cmd) return;
-      self._close();
-      var input = document.getElementById('chat-input') || document.querySelector('textarea');
-      if (!input) {
-        RPGACE.utils.toast('Could not find the chat input — open Oracle chat first', '#CC4A4A', 3000);
-        return;
-      }
-      input.value = cmd[1];
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-      var sb = document.getElementById('send-btn') || document.querySelector('[onclick*="sendChat"]');
-      if (sb) {
-        setTimeout(function() { sb.click(); }, 80);
-      } else if (typeof sendChat === 'function') {
-        setTimeout(sendChat, 80);
-      } else {
-        RPGACE.utils.toast('Filled the prompt but could not find a way to send it — press send in Oracle chat', '#CC4A4A', 3500);
-        return;
-      }
-      RPGACE.utils.toast('?? ' + cmd[0], 'rgba(255,120,120,0.9)', 2500);
+      // Oct 10 2026 (O1): merged into the shared captionsPanel module.
+      return RPGACE.modules.captionsPanel.run('youtube', i);
     },
 
   },
@@ -5972,14 +5893,8 @@ RPGACE.register('tiktokOracle', {
   logic: {
 
     run: function(i) {
-      var self = RPGACE.modules.tiktokOracle;
-      var cmd = self.CMDS[i];
-      if (!cmd) return;
-      self._close();
-      RPGACE.utils.fillGaps(cmd[1], function(filled) {
-        RPGACE.utils.sendToOracle(filled);
-        RPGACE.utils.toast('🎵 ' + cmd[0], 'rgba(80,220,180,0.9)', 2000);
-      });
+      // Oct 10 2026 (O1): merged into the shared captionsPanel module.
+      return RPGACE.modules.captionsPanel.run('tiktok', i);
     },
 
   },
@@ -5991,24 +5906,8 @@ RPGACE.register('tiktokOracle', {
   ui: {
 
     _btn: function() {
-      if (document.getElementById('tt-ob')) return;
-      var self = RPGACE.modules.tiktokOracle;
-      var tries = 0;
-      var go = function() {
-        tries++;
-        if (document.getElementById('tt-ob')) return;
-        var anchor = document.getElementById('yt-ob') || document.querySelector('[onclick*="toggleProdOraclePanel"]');
-        if (!anchor) { if (tries < 20) setTimeout(go, 500); return; }
-        var b = document.createElement('button');
-        b.id = 'tt-ob';
-        b.className = anchor.className;
-        b.textContent = '🎵 TikTok Oracle';
-        b.onclick = function() { self.open(); };
-        anchor.parentElement.insertBefore(b, anchor.nextSibling);
-      };
-      setTimeout(go, 600);
-      setTimeout(go, 1500);
-      setTimeout(go, 3000);
+      // Oct 10 2026 (O1): merged into the shared captionsPanel module.
+      // Its single 📣 Platform Oracle button replaces this one.
     },
 
     _close: function() {
@@ -6016,49 +5915,8 @@ RPGACE.register('tiktokOracle', {
     },
 
     open: function() {
-      var self = RPGACE.modules.tiktokOracle;
-      if (document.getElementById('tt-op')) { self._close(); return; }
-      var panel = document.createElement('div');
-      panel.id = 'tt-op';
-      panel.style.cssText = 'position:fixed;top:0;right:0;width:min(380px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(80,220,180,0.2);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;';
-
-      var hdr = document.createElement('div');
-      hdr.style.cssText = 'background:rgba(40,220,180,0.06);border-bottom:1px solid rgba(80,220,180,0.15);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
-      var ht = document.createElement('div');
-      var lb = document.createElement('div');
-      lb.textContent = 'TIKTOK ORACLE';
-      lb.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(80,220,180,0.8);margin-bottom:3px;';
-      var ch = document.createElement('div');
-      ch.textContent = '@AceSanyaBeats';
-      ch.style.cssText = 'font-size:13px;font-weight:700;color:#D4DAF5;';
-      ht.appendChild(lb); ht.appendChild(ch);
-      var cb = document.createElement('button');
-      cb.textContent = '×';
-      cb.style.cssText = 'background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:20px;line-height:1;padding:4px;';
-      cb.onclick = function() { self._close(); };
-      hdr.appendChild(ht); hdr.appendChild(cb);
-      panel.appendChild(hdr);
-
-      var body = document.createElement('div');
-      body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
-      var note = document.createElement('div');
-      note.textContent = '8 COMMANDS · PRE-FILLED FOR YOUR ACCOUNT';
-      note.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
-      body.appendChild(note);
-
-      self.CMDS.forEach(function(cmd, i) {
-        var btn = document.createElement('button');
-        btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;cursor:pointer;text-align:left;color:rgba(226,226,236,0.82);font-family:Rajdhani,sans-serif;font-size:12px;font-weight:600;margin-bottom:5px;';
-        var ic = document.createElement('span'); ic.textContent = self.ICONS[i] || '🎵'; ic.style.fontSize = '15px';
-        var tx = document.createElement('span'); tx.textContent = cmd[0];
-        btn.appendChild(ic); btn.appendChild(tx);
-        btn.onmouseover = function() { this.style.background = 'rgba(80,220,180,0.1)'; };
-        btn.onmouseout  = function() { this.style.background = 'rgba(255,255,255,0.03)'; };
-        btn.onclick = function() { self.run(i); };
-        body.appendChild(btn);
-      });
-      panel.appendChild(body);
-      RPGACE.ui.slideInPanel(panel, {edge:'right'});
+      // Oct 10 2026 (O1): merged into the shared captionsPanel module.
+      return RPGACE.modules.captionsPanel.open('tiktok');
     },
 
   },
@@ -6092,6 +5950,162 @@ RPGACE.register('tiktokOracle', {
 
 });
 /* ===END:tiktokOracle=== */
+/* ===MODULE:captionsPanel=== */
+// Oct 10 2026 — O1 of the ratified /CEO plan "RPGACE Domains, Navigation &
+// Deepstash Encyclopedia". Alex: the platform panels belong to Oracle, "but i
+// think the panels are poorly designed". There were 3 near-copies of one
+// side panel (instaOraclePanel 13 commands, youtubeOracle 8, tiktokOracle 8),
+// each with its own button, its own colours, its own send path (YouTube
+// skipped fillGaps), two with broken "??" icons, and no Back.
+// This is the ONE panel now (rule 8): a single "📣 Platform Oracle" button on
+// the Oracle page opens a shared dashDeck._popup (so it gets N1's Back
+// header and phone-Back for free) with an Instagram / YouTube / TikTok
+// switch. The command text itself still lives in each platform module's own
+// CMDS (unchanged, nothing re-typed); those modules' open()/run() now just
+// delegate here, so every old entry point (index.html's toggleInstaPanel
+// button included) lands in the same panel.
+RPGACE.register('captionsPanel', {
+
+  PLATFORMS: [
+    { key: 'instagram', label: 'Instagram', emoji: '📸', mod: 'instaOraclePanel', accent: 'var(--purple)' },
+    { key: 'youtube',   label: 'YouTube',   emoji: '🎬', mod: 'youtubeOracle',    accent: '#E06666' },
+    { key: 'tiktok',    label: 'TikTok',    emoji: '🎵', mod: 'tiktokOracle',     accent: '#50DCB4' },
+  ],
+
+  init: function() {
+    var self = this;
+    RPGACE.registerBootTask(function() { return self.ui._btn(); });
+    RPGACE.hooks.on('page:show', function(name) {
+      if (RPGACE.CONFIG && name === RPGACE.CONFIG.pages.oracle) setTimeout(function() { self.ui._btn(); }, 600);
+    });
+  },
+
+  logic: {
+    platform: function(key) {
+      var P = RPGACE.modules.captionsPanel.PLATFORMS;
+      for (var i = 0; i < P.length; i++) if (P[i].key === key) return P[i];
+      return P[0];
+    },
+
+    commands: function(key) {
+      var p = RPGACE.modules.captionsPanel.logic.platform(key);
+      var m = RPGACE.modules[p.mod];
+      var cmds = (m && m.CMDS) || [];
+      var icons = (m && m.ICONS) || [];
+      return cmds.map(function(c, i) { return { name: c[0], prompt: c[1], icon: icons[i] || p.emoji }; });
+    },
+
+    lastPlatform: function() {
+      try { return localStorage.getItem('rpgace_captions_platform') || 'instagram'; } catch (e) { return 'instagram'; }
+    },
+
+    rememberPlatform: function(key) {
+      try { localStorage.setItem('rpgace_captions_platform', key); } catch (e) {}
+    },
+
+    // One send path for all three platforms: fill any [TYPE ...] gaps, then
+    // send to Oracle chat (switching to the Oracle page first if needed).
+    run: function(key, i) {
+      var self = RPGACE.modules.captionsPanel;
+      var cmd = self.logic.commands(key)[i];
+      if (!cmd) return;
+      var p = self.logic.platform(key);
+      var send = function(filled) {
+        var go = function() {
+          var ok = RPGACE.utils.sendToOracle(filled);
+          if (ok === false) RPGACE.utils.toast('Couldn\'t send to Oracle chat — open Oracle and try again', '#CC4A4A', 3500, 'captionsPanel');
+          else RPGACE.utils.toast(p.emoji + ' ' + cmd.name, 'var(--gold)', 2000);
+        };
+        var pages = RPGACE.CONFIG && RPGACE.CONFIG.pages;
+        if (!document.getElementById('chat-input') || (pages && !document.getElementById('page-' + pages.oracle).classList.contains('active'))) {
+          if (typeof showPage === 'function' && pages) showPage(pages.oracle);
+          setTimeout(go, 300);
+        } else go();
+      };
+      if (RPGACE.utils.fillGaps) RPGACE.utils.fillGaps(cmd.prompt, send);
+      else send(cmd.prompt);
+    },
+  },
+
+  ui: {
+    _btn: function() {
+      if (document.getElementById('captions-ob')) return;
+      var self = RPGACE.modules.captionsPanel;
+      var tries = 0;
+      var go = function() {
+        tries++;
+        if (document.getElementById('captions-ob')) return;
+        var anchor = document.querySelector('[onclick*="toggleProdOraclePanel"]');
+        if (!anchor) { if (tries < 20) setTimeout(go, 500); return; }
+        var b = document.createElement('button');
+        b.id = 'captions-ob';
+        b.type = 'button';
+        b.className = anchor.className;
+        b.textContent = '📣 Platform Oracle';
+        b.onclick = function() { self.open(); };
+        anchor.parentElement.insertBefore(b, anchor.nextSibling);
+      };
+      setTimeout(go, 600);
+      setTimeout(go, 1500);
+      setTimeout(go, 3000);
+    },
+
+    open: function(key) {
+      var self = RPGACE.modules.captionsPanel;
+      key = key || self.logic.lastPlatform();
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: 'Oracle', title: 'Platform Oracle — @AceSanyaBeats', width: '560px' });
+      var tabs = document.createElement('div');
+      tabs.setAttribute('role', 'tablist');
+      tabs.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px;';
+      var list = document.createElement('div');
+      list.style.cssText = 'display:flex;flex-direction:column;gap:8px;';
+      var note = document.createElement('div');
+      note.style.cssText = 'font-size:13px;color:var(--muted);margin-bottom:10px;';
+      var draw = function() {
+        var p = self.logic.platform(key);
+        self.logic.rememberPlatform(key);
+        tabs.innerHTML = '';
+        self.PLATFORMS.forEach(function(q) {
+          var t = document.createElement('button');
+          t.type = 'button';
+          t.setAttribute('role', 'tab');
+          t.setAttribute('aria-selected', q.key === key ? 'true' : 'false');
+          t.textContent = q.emoji + ' ' + q.label;
+          var on = q.key === key;
+          t.style.cssText = 'min-height:44px;padding:8px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;' +
+            (on ? 'background:var(--panel2);color:var(--text);border:2px solid ' + q.accent + ';' : 'background:none;color:var(--muted);border:1px solid var(--border);');
+          t.onclick = function() { key = q.key; draw(); };
+          tabs.appendChild(t);
+        });
+        var cmds = self.logic.commands(key);
+        note.textContent = cmds.length + ' ' + p.label + ' commands, pre-filled for your channel. Tap one to send it to Oracle chat.';
+        list.innerHTML = '';
+        cmds.forEach(function(c, i) {
+          var b = document.createElement('button');
+          b.type = 'button';
+          b.style.cssText = 'display:flex;align-items:center;gap:12px;width:100%;min-height:48px;padding:10px 14px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;cursor:pointer;text-align:left;color:var(--text);font-size:15px;font-family:Rajdhani,sans-serif;';
+          var ic = document.createElement('span'); ic.textContent = c.icon; ic.style.fontSize = '18px';
+          var tx = document.createElement('span'); tx.textContent = c.name;
+          b.appendChild(ic); b.appendChild(tx);
+          b.onclick = function() { pop.close(); self.logic.run(key, i); };
+          list.appendChild(b);
+        });
+      };
+      pop.box.appendChild(tabs);
+      pop.box.appendChild(note);
+      pop.box.appendChild(list);
+      draw();
+      return pop;
+    },
+  },
+
+  // Public pass-throughs (G53 convention).
+  open: function(key) { return this.ui.open(key); },
+  run: function(key, i) { return this.logic.run(key, i); },
+  commands: function(key) { return this.logic.commands(key); },
+});
+/* ===END:captionsPanel=== */
+
 
 /* ===MODULE:prodOraclePanel=== */
 RPGACE.register('prodOraclePanel', {
@@ -6445,7 +6459,7 @@ RPGACE.register('instaOraclePanel', {
     ['Full Profile Audit', 'Run a complete Instagram profile audit for @AceSanyaBeats. NICHE: FL Studio beats and UK hip hop production tutorials. AUDIENCE: Aspiring producers aged 18-35. Audit every element: bio, link in bio strategy, profile picture, highlight covers and content, pinned posts, content grid aesthetic, posting frequency, caption style, hashtag strategy, and engagement rate expectations. Priority list of what to fix first.'],
   ],
 
-  ICONS: ['??','??','??','??','??','??','??','❤','??','♻','??','??','??'],
+  ICONS: ['🎬','💡','🪝','🏗️','📅','🧠','👀','❤️','💬','♻️','🔖','📈','🔍'],
 
   init: function() {
     var self = this;
@@ -6458,14 +6472,8 @@ RPGACE.register('instaOraclePanel', {
   logic: {
 
     run: function(i) {
-      var self = RPGACE.modules.instaOraclePanel;
-      var cmd = self.CMDS[i];
-      if (!cmd) return;
-      self._close();
-      RPGACE.utils.fillGaps(cmd[1], function(filled) {
-        RPGACE.utils.sendToOracle(filled);
-        RPGACE.utils.toast('?? ' + cmd[0], 'rgba(155,89,182,0.9)', 2000);
-      });
+      // Oct 10 2026 (O1): merged into the shared captionsPanel module.
+      return RPGACE.modules.captionsPanel.run('instagram', i);
     },
 
   },
@@ -6490,49 +6498,8 @@ RPGACE.register('instaOraclePanel', {
     },
 
     open: function() {
-      var self = RPGACE.modules.instaOraclePanel;
-      if (document.getElementById('insta-op')) { self._close(); return; }
-      var panel = document.createElement('div');
-      panel.id = 'insta-op';
-      panel.style.cssText = 'position:fixed;top:0;right:0;width:min(400px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(155,89,182,0.2);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;';
-
-      var hdr = document.createElement('div');
-      hdr.style.cssText = 'background:rgba(155,89,182,0.06);border-bottom:1px solid rgba(155,89,182,0.15);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
-      var ht = document.createElement('div');
-      var lb = document.createElement('div');
-      lb.textContent = 'INSTA-ORACLE';
-      lb.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.8);margin-bottom:3px;';
-      var sub = document.createElement('div');
-      sub.textContent = '@AceSanyaBeats · Instagram · 13 Commands';
-      sub.style.cssText = 'font-size:12px;font-weight:700;color:#D4DAF5;';
-      ht.appendChild(lb); ht.appendChild(sub);
-      var cb = document.createElement('button');
-      cb.textContent = '×';
-      cb.style.cssText = 'background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:20px;line-height:1;padding:4px;';
-      cb.onclick = function() { self._close(); };
-      hdr.appendChild(ht); hdr.appendChild(cb);
-      panel.appendChild(hdr);
-
-      var body = document.createElement('div');
-      body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
-      var note = document.createElement('div');
-      note.textContent = '13 COMMANDS · PRE-FILLED FOR YOUR ACCOUNT';
-      note.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
-      body.appendChild(note);
-
-      self.CMDS.forEach(function(cmd, i) {
-        var btn = document.createElement('button');
-        btn.style.cssText = 'display:flex;align-items:center;gap:10px;width:100%;padding:10px 14px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:6px;cursor:pointer;text-align:left;color:rgba(226,226,236,0.82);font-family:Rajdhani,sans-serif;font-size:12px;font-weight:600;margin-bottom:5px;';
-        var ic = document.createElement('span'); ic.textContent = self.ICONS[i] || '??'; ic.style.fontSize = '15px';
-        var tx = document.createElement('span'); tx.textContent = cmd[0];
-        btn.appendChild(ic); btn.appendChild(tx);
-        btn.onmouseover = function() { this.style.background = 'rgba(155,89,182,0.1)'; };
-        btn.onmouseout  = function() { this.style.background = 'rgba(255,255,255,0.03)'; };
-        btn.onclick = function() { self.run(i); };
-        body.appendChild(btn);
-      });
-      panel.appendChild(body);
-      RPGACE.ui.slideInPanel(panel, {edge:'right'});
+      // Oct 10 2026 (O1): merged into the shared captionsPanel module.
+      return RPGACE.modules.captionsPanel.open('instagram');
     },
 
   },
@@ -10328,7 +10295,7 @@ RPGACE.register('oracleAppGrounding', {
   // bugs"/"Biggest confirmed-not-built items" sections should update this
   // string in the same session - same discipline as every other oversight
   // doc, just condensed for token cost (rule 11).
-  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested by Alex; where a bullet doesn\'t explicitly say hand-tested, assume it hasn\'t been). Never assume this string is automatically current just because it exists - check its own newest dated fact before trusting an old memory of it; last reviewed Oct 10 2026 (Encyclopedia posts from analysed videos, see the ENCYCLOPEDIA paragraph below; planned cooks can no longer vanish, see HABITS). ARCHITECTURE: the client is exactly ONE script, rpgace_core.js (index.html loads only rpgace_core.min.js) - main.js was mechanically merged into it Aug 20 2026, living on as a LEGACY SECTION near the top (bootstrap, password gate, page routing, career score, Quest Board). 58 real registered RPGACE.register() modules as of Sep 2026 - re-verify this count before quoting it, it has drifted before (a naive grep can double-count a documentation-template example inside a comment). Every module has a real internal ui/logic split (Sep 2026, G53) - zero public-API change, purely structural. RPGACE is a real installable PWA (Android/desktop Add-to-Home-Screen). Chronicles is a full searchable log page with click-through detail plus a personal-visibility-only finance ledger (not bookkeeping-grade). The profile stat card runs on real Supabase-derived data (Output = shipped content, Growth = learning/tree activity, kept as separate lanes). The Quest Board (addXP/completeQuest, owned by the questEngine module, built Aug 23-24 2026) HAS real persistence - completions write real quest_log rows, boot-time restore re-derives XP/level/done-state. Never repeat the old ("zero persistence") claim - false since Aug 24 2026. SECURITY/DATA: the app password and every /api/*.js endpoint are checked server-side (fixed July 24, independently verified live). renderMarkdown() escapes HTML before rendering (XSS fixed July 28). RLS is enabled on every real Supabase table - most are anon-read-only/authenticated-all; a small, deliberate, named set (oracle_fallback_queue, openmontage_jobs, error_log, smoke_test_items, ceo_plan_items) stays anon-writable because a real external writer (a Routine, the browser app itself, or a separate Claude Code session) genuinely needs that access - never suggest restricting those without checking first. There is NO Supabase backup or point-in-time recovery at all - Alex explicitly chose to stay on the Free plan and accept that risk (confirmed Sep 15 2026); do not re-raise this as an open question. ORACLE MECHANISMS: Oracle Control (a curated oracle_actions Supabase table) drives a real confirm-before-execute mechanism - 5 real wired dispatch branches exist now (log_beat, new_quests, draft_email, yt_stats, log_notion), reached both from the floating overlay button on any page and from the dashboard quick-action/Agents-page buttons (both rewired in Sep 2026 to go through this one shared mechanism instead of their own bespoke per-button calls - a real rule-8 dedup). Oracle can also DRAFT a suggested brand-new action from its own self-awareness, but a suggestion only grows the real vocabulary once Alex approves it, and it still then needs a human-coded execution branch before it can do anything - never claim Oracle can execute an arbitrary task on its own. Fish Audio (real voice input/output) is a dormant, gated scaffold - no real API key exists, Oracle cannot actually speak or listen by voice yet. The browser-mic voiceInput module was retired outright Aug 30 2026 (Alex\'s own direct ask, ahead of Fish Audio) - there is currently NO voice-input path in RPGACE at all. Real Anthropic prompt caching is live on every Oracle call (a pure cost optimization, never changes what Oracle can say). A Kimi/Luna free-tier routing option exists in api/oracle.js but is dormant, no real key configured - never claim RPGACE runs on multiple AI models. errorLog automatically resolves a real thrown error back to the one module that caused it, attaches that module\'s real /perspective baseline, and - if that module has a smoke_test_items row - flips it to broken (cascading a linked plan item to purple only if it was genuinely green before) - this only ever catches errors that actually throw or show an error-colored toast, never a silent wrong-output bug with no visible symptom, and Oracle never proactively monitors the app - it only reacts when a real message is sent to it. OVERSIGHT / GALAXY MAP: 13 real oversight docs exist now (Tier a/b explaining+truth docs, this Oracle self-awareness string, smoke_test.html/error_log.html, future_integrations.html/achiever.html, and perspective_map.html - new Sep 2026, a live-query page cross-referencing every real perspective_reports row - plus graphify/Obsidian/the Galaxy Map). The Galaxy Map (reachable from the in-app Oversight popup) is a real 4-stop CONTAINMENT hierarchy - L0 (9 real units: RPGACE Architecture/Orchestrator CC/OpenMontage CC/Graphify CC/External AI/Skills/Alex/Supabase/Oversight Docs) contains L1 (12 live app-code rivers, plus 5 retired Total-systems categories kept as per-actor Infra/Inter breakdowns, not deleted) contains L2 (modules) contains Current/L3 (functions). Older Level-2.5/4/5/6 "rail stops" from earlier in the build are all retired or folded into Current/the Decision Matrix - never describe the map as having numbered levels past L3; cross-cutting facts (Externals/Decisions/Skills/Load/etc) are Dimension pages layered over the hierarchy, not additional rungs. 23 real Galaxy Map pages exist on disk as of late Sep 2026 - re-verify this count too before quoting it, it changes whenever a new page ships (most recently G117, a Generator Toolchain catalog page, Sep 22 2026). Every one of the 58 real registered modules plus all 12 live rivers has a real, evidence-grounded /perspective self-report as of mid-Sep 2026 (the Perspective Full Coverage plan is complete). A standing project-wide PAUSE on new Galaxy Map/Dimension work has been in effect since Sep 15 2026 (real evidence: product debt was sitting untouched under a wave of Galaxy-Map/meta work) - only explicit, narrowly-scoped, Alex-approved exceptions have shipped since - never assume a new Galaxy Map feature is fair game without checking whether Alex explicitly overrode the pause for it that specific time. KNOWN, STILL-OPEN GAPS: the swipe-gesture freeze bug has recurred for real (69 real occurrences logged Aug 27-Sep 20 2026) but still has no root cause found and no stack trace available (the browser\'s own Long Task API exposes no call stack) - never claim it\'s fixed, and don\'t attempt another blind code-only fix pass. reference_tracks.scale/genre are still 0 of 32 populated - "beat matches are always the same" traces directly to this; a backfill popup exists and has not been run. smoke_test.html\'s real hand-confirmed tally sits well under half of its rows - a large amount of shipped work is real and code-verified but genuinely unconfirmed by Alex\'s own hand; only his own hand-tick counts as "confirmed working," never a code-level test pass alone. HABITS/COOKING (cookingOracle + shoppingWishlist, RPGACE\'s newest domain, built Sep 10-22 2026): reached from a real "Cooking" dashboard card. Generate a recipe via Oracle chat (a real RECIPE_JSON: trailer); a real "Narrow it down" step runs first for a short/ambiguous description. Ingredients render with a live 7-color status system wherever shown - green=plenty, yellow=short (worded as "need N more, have M, T total needed"), red=none, blue=a same-aisle alternative in stock, purple=will run low/restock after this cook, orange=a real curated-or-heuristic substitute exists in stock, brown=a separable/optional component that can be omitted in No-Shop mode. Orange substitutes can be permanently confirmed (a tick, colour never changes) or declared-the-same-item as an existing stock row (a real, standing alias merge reassigning every FK reference) - curated potency ratios exist for a few specific real pairs Alex stated (e.g. tamarind concentrate is about 1/3 the amount of tamarind paste) and a real garlic clove/bulb count-equivalent bridge (8 cloves per bulb, bidirectional) - none of these numbers are invented, only ones Alex explicitly gave. A recipe card supports pantry-aware Oracle-suggested ingredient additions and a real diff-only critique-and-update flow via the floating overlay (Accept/Deny, never the whole recipe re-shown). New Sep 22: clicking Start on a scheduled planned cook opens a real, persistent Live Cook Mode panel inside the Oracle page itself (step timeline, elapsed-time ticker, per-step and recurring reminder timers) - not just a silent flag flip. New Oct 1 2026 (cookingOracle): a scheduled planned cook can also be started (Start cooking now, or Cook now straight from the schedule preview), finished (Cook finished in the Cooking hub or a Finished button in Live Cook Mode - marks planned_cooks cooked, completes its agenda entry and marks the recipes cooked in the journal) and given another recipe (reopens it as a draft) from inside Cooking itself, not only from the Daily Schedule. Planned-cook sessions persist as a real draft from the moment the first recipe joins (never silently lost on close/navigate-away); since Oct 5 2026 (cookingOracle), emptying a session only marks a still-draft planned_cooks row discarded (never a hard delete, never touching a scheduled or cooked cook), and pressing Done on a planned-cook entry in the Daily Schedule now marks that planned_cooks row cooked - before this, two real scheduled cooks were lost with no trace, support a real per-recipe delete, and use a true cross-recipe interleaved scheduler that front-loads prep across every recipe in the session rather than finishing one recipe\'s steps before starting the next. A real Current Stock view (Pantry/Fridge/Freezer/Equipment) and a real have/not-have shopping list (with a real "in basket" state between "need to find" and "bought") both exist, aisle-sorted. shoppingWishlist is a genuinely separate module (general future purchases like batteries/a wok/games, not ingredients) with its own priority-plus-budget-target fit calculator, writing a real Chronicles Finance expense on purchase. Every HABITS feature above is real, shipped, code-verified - but per the standing flag across this whole domain, effectively none of it has been hand-tested by Alex yet. TAXONOMY: real architecture change Sep 25 2026, now in a genuinely empty pre-rebuild state. jargon_encyclopedia is no longer a view over taxonomy_tree - it is a real standalone anchor table (term/phylum_number/explainer/status/taxonomy_node_id), now holding 545 real curated terms across phyla 1-20 (Phylum 1 got a real same-day top-up to 51 terms per Alex\'s own live-review feedback while browsing it; the other 19 phyla still sit at 26 each; none for phylum 21), most status=\'pending\' (a real, growing number are status=\'accepted\' as Alex works through his own review queue) - directly authored by a Claude Code session (source-tagged claude_code_prebuild), never yet generated by the live AI generator that also exists in code but has never actually been run. Jargon Encyclopedia is now a real standalone page (owned by the jargonEncyclopedia module, Sep 26 2026 UI rework) - reached via leftNav\'s Phylum Path subItem or the Taxonomy dashboard card\'s picker popup (dashDeck._openTaxonomy), never a button crammed onto Phylum Path\'s own title anymore. It shows EVERY term regardless of status (pending/accepted/rejected, each with a real status badge and filter chip), with real inline Accept/Edit/Reject actions per pending term (reusing phylumPath._resolvePendingTerm, the one real write path - never a second one). taxonomy_tree itself was first archived in full (671 old branch/leaf rows, a reversible flag) then, same day, actually DELETED to 0 rows at Alex\'s own direct follow-up ask (he judged even the archived structure not worth keeping while jargon gets built out first) - every phylum (1-21) is now a genuinely empty canvas below the phylum level, zero branches, zero leaves, zero fusion links (taxonomy_links is also 0 rows). A full pre-delete snapshot was committed first as the real restore path, since Supabase has no backup/PITR. The old \'Review Archived Terms\'/\'Review Pending Terms\' buttons on the Phylum Path page are gone - the former is genuinely dead (nothing archived left to review) and the latter is superseded by the new Jargon Encyclopedia page above. Never claim any specific phylum currently has real depth, real Orders/Classes, or any structure at all - every earlier claim of that shape (phyla 1-10 depth, Phylum 12\'s real Orders, a structurally-clean tree) describes a state from before this restructure and is not true again until Alex reviews the jargon terms and a real new phylum structure gets built around them. ASK MY DATA (new Oct 10 2026, owned by the askMyData module): when Alex asks about his own saved data (pantry/stock, shopping list, recipes, planned cooks, wishlist, journal, quests, agenda, creator watchlist, analysed videos, encyclopedia, idea cards, jargon, reference tracks, finance log, books, content productions, RPGACE changelog), Oracle can request ONE read-only lookup with a DATA_QUERY trailer; the app fetches up to 30 rows, shows Alex which rows were used, and Oracle answers from those rows only. It cannot write or change data, and it only knows what those rows contain. Not yet hand-tested by Alex. NAVIGATION (new Oct 10 2026, owned by dashDeck + pathRouter): every popup has a sticky header with a Back button, a Domain > Card label and buttons for the other dashboard cards in the same domain; phone/browser Back closes the open popup first instead of leaving the page, and Back from a page that was opened from inside a popup returns to that page and reopens the card it came from. Not yet hand-tested by Alex. ENCYCLOPEDIA (new Oct 10 2026, owned by the encyclopediaPosts module): every Content Intelligence report (intel_reports) is automatically turned into a real encyclopedia article (source=intel, source_url = the video) plus one encyclopedia_insights row per idea card (idea_section/idea_order; saved_at when Alex saves an idea). Articles read Deepstash-style as a post of idea cards (Back/Next, card count, read time, Save idea, Full article); the Encyclopedia page shows a Posts strip with Series (posts sharing a tag) and Saved ideas. This replaced an old auto-save that only looked at the newest 5 reports and had stopped saving after the encyclopedia was cleared - so before Oct 10 none of the 37 analysed videos had an article. Not yet hand-tested by Alex; Knowledge Tree links to articles do not exist yet (the tree is empty). CONTENT PIPELINE: Research Lab is fully retired as a user-facing destination - its former panels live inside Content Pipeline/Bookworm cards now. RPGACE does not generate video itself - OpenMontage (a separate Claude Code session in its own repo) is briefed and handed off via openmontage_jobs, never live infrastructure; RPGACE has ruled out paid video providers on principle (zero spend). Real beat-grid audio sync does not exist - "in sync with the beat" currently means mood/palette-matched only. Features F0 through F18 have shipped except F12 (deliberately deferred); F16/F17/F18 remain real execution debt - shipped code, genuinely never hand-tested through their full flow yet.',
+  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested by Alex; where a bullet doesn\'t explicitly say hand-tested, assume it hasn\'t been). Never assume this string is automatically current just because it exists - check its own newest dated fact before trusting an old memory of it; last reviewed Oct 10 2026 (Encyclopedia posts from analysed videos, see the ENCYCLOPEDIA paragraph below; planned cooks can no longer vanish, see HABITS). ARCHITECTURE: the client is exactly ONE script, rpgace_core.js (index.html loads only rpgace_core.min.js) - main.js was mechanically merged into it Aug 20 2026, living on as a LEGACY SECTION near the top (bootstrap, password gate, page routing, career score, Quest Board). 58 real registered RPGACE.register() modules as of Sep 2026 - re-verify this count before quoting it, it has drifted before (a naive grep can double-count a documentation-template example inside a comment). Every module has a real internal ui/logic split (Sep 2026, G53) - zero public-API change, purely structural. RPGACE is a real installable PWA (Android/desktop Add-to-Home-Screen). Chronicles is a full searchable log page with click-through detail plus a personal-visibility-only finance ledger (not bookkeeping-grade). The profile stat card runs on real Supabase-derived data (Output = shipped content, Growth = learning/tree activity, kept as separate lanes). The Quest Board (addXP/completeQuest, owned by the questEngine module, built Aug 23-24 2026) HAS real persistence - completions write real quest_log rows, boot-time restore re-derives XP/level/done-state. Never repeat the old ("zero persistence") claim - false since Aug 24 2026. SECURITY/DATA: the app password and every /api/*.js endpoint are checked server-side (fixed July 24, independently verified live). renderMarkdown() escapes HTML before rendering (XSS fixed July 28). RLS is enabled on every real Supabase table - most are anon-read-only/authenticated-all; a small, deliberate, named set (oracle_fallback_queue, openmontage_jobs, error_log, smoke_test_items, ceo_plan_items) stays anon-writable because a real external writer (a Routine, the browser app itself, or a separate Claude Code session) genuinely needs that access - never suggest restricting those without checking first. There is NO Supabase backup or point-in-time recovery at all - Alex explicitly chose to stay on the Free plan and accept that risk (confirmed Sep 15 2026); do not re-raise this as an open question. ORACLE MECHANISMS: Oracle Control (a curated oracle_actions Supabase table) drives a real confirm-before-execute mechanism - 5 real wired dispatch branches exist now (log_beat, new_quests, draft_email, yt_stats, log_notion), reached both from the floating overlay button on any page and from the dashboard quick-action/Agents-page buttons (both rewired in Sep 2026 to go through this one shared mechanism instead of their own bespoke per-button calls - a real rule-8 dedup). Oracle can also DRAFT a suggested brand-new action from its own self-awareness, but a suggestion only grows the real vocabulary once Alex approves it, and it still then needs a human-coded execution branch before it can do anything - never claim Oracle can execute an arbitrary task on its own. Fish Audio (real voice input/output) is a dormant, gated scaffold - no real API key exists, Oracle cannot actually speak or listen by voice yet. The browser-mic voiceInput module was retired outright Aug 30 2026 (Alex\'s own direct ask, ahead of Fish Audio) - there is currently NO voice-input path in RPGACE at all. Real Anthropic prompt caching is live on every Oracle call (a pure cost optimization, never changes what Oracle can say). A Kimi/Luna free-tier routing option exists in api/oracle.js but is dormant, no real key configured - never claim RPGACE runs on multiple AI models. errorLog automatically resolves a real thrown error back to the one module that caused it, attaches that module\'s real /perspective baseline, and - if that module has a smoke_test_items row - flips it to broken (cascading a linked plan item to purple only if it was genuinely green before) - this only ever catches errors that actually throw or show an error-colored toast, never a silent wrong-output bug with no visible symptom, and Oracle never proactively monitors the app - it only reacts when a real message is sent to it. OVERSIGHT / GALAXY MAP: 13 real oversight docs exist now (Tier a/b explaining+truth docs, this Oracle self-awareness string, smoke_test.html/error_log.html, future_integrations.html/achiever.html, and perspective_map.html - new Sep 2026, a live-query page cross-referencing every real perspective_reports row - plus graphify/Obsidian/the Galaxy Map). The Galaxy Map (reachable from the in-app Oversight popup) is a real 4-stop CONTAINMENT hierarchy - L0 (9 real units: RPGACE Architecture/Orchestrator CC/OpenMontage CC/Graphify CC/External AI/Skills/Alex/Supabase/Oversight Docs) contains L1 (12 live app-code rivers, plus 5 retired Total-systems categories kept as per-actor Infra/Inter breakdowns, not deleted) contains L2 (modules) contains Current/L3 (functions). Older Level-2.5/4/5/6 "rail stops" from earlier in the build are all retired or folded into Current/the Decision Matrix - never describe the map as having numbered levels past L3; cross-cutting facts (Externals/Decisions/Skills/Load/etc) are Dimension pages layered over the hierarchy, not additional rungs. 23 real Galaxy Map pages exist on disk as of late Sep 2026 - re-verify this count too before quoting it, it changes whenever a new page ships (most recently G117, a Generator Toolchain catalog page, Sep 22 2026). Every one of the 58 real registered modules plus all 12 live rivers has a real, evidence-grounded /perspective self-report as of mid-Sep 2026 (the Perspective Full Coverage plan is complete). A standing project-wide PAUSE on new Galaxy Map/Dimension work has been in effect since Sep 15 2026 (real evidence: product debt was sitting untouched under a wave of Galaxy-Map/meta work) - only explicit, narrowly-scoped, Alex-approved exceptions have shipped since - never assume a new Galaxy Map feature is fair game without checking whether Alex explicitly overrode the pause for it that specific time. KNOWN, STILL-OPEN GAPS: the swipe-gesture freeze bug has recurred for real (69 real occurrences logged Aug 27-Sep 20 2026) but still has no root cause found and no stack trace available (the browser\'s own Long Task API exposes no call stack) - never claim it\'s fixed, and don\'t attempt another blind code-only fix pass. reference_tracks.scale/genre are still 0 of 32 populated - "beat matches are always the same" traces directly to this; a backfill popup exists and has not been run. smoke_test.html\'s real hand-confirmed tally sits well under half of its rows - a large amount of shipped work is real and code-verified but genuinely unconfirmed by Alex\'s own hand; only his own hand-tick counts as "confirmed working," never a code-level test pass alone. HABITS/COOKING (cookingOracle + shoppingWishlist, RPGACE\'s newest domain, built Sep 10-22 2026): reached from a real "Cooking" dashboard card. Generate a recipe via Oracle chat (a real RECIPE_JSON: trailer); a real "Narrow it down" step runs first for a short/ambiguous description. Ingredients render with a live 7-color status system wherever shown - green=plenty, yellow=short (worded as "need N more, have M, T total needed"), red=none, blue=a same-aisle alternative in stock, purple=will run low/restock after this cook, orange=a real curated-or-heuristic substitute exists in stock, brown=a separable/optional component that can be omitted in No-Shop mode. Orange substitutes can be permanently confirmed (a tick, colour never changes) or declared-the-same-item as an existing stock row (a real, standing alias merge reassigning every FK reference) - curated potency ratios exist for a few specific real pairs Alex stated (e.g. tamarind concentrate is about 1/3 the amount of tamarind paste) and a real garlic clove/bulb count-equivalent bridge (8 cloves per bulb, bidirectional) - none of these numbers are invented, only ones Alex explicitly gave. A recipe card supports pantry-aware Oracle-suggested ingredient additions and a real diff-only critique-and-update flow via the floating overlay (Accept/Deny, never the whole recipe re-shown). New Sep 22: clicking Start on a scheduled planned cook opens a real, persistent Live Cook Mode panel inside the Oracle page itself (step timeline, elapsed-time ticker, per-step and recurring reminder timers) - not just a silent flag flip. New Oct 1 2026 (cookingOracle): a scheduled planned cook can also be started (Start cooking now, or Cook now straight from the schedule preview), finished (Cook finished in the Cooking hub or a Finished button in Live Cook Mode - marks planned_cooks cooked, completes its agenda entry and marks the recipes cooked in the journal) and given another recipe (reopens it as a draft) from inside Cooking itself, not only from the Daily Schedule. Planned-cook sessions persist as a real draft from the moment the first recipe joins (never silently lost on close/navigate-away); since Oct 5 2026 (cookingOracle), emptying a session only marks a still-draft planned_cooks row discarded (never a hard delete, never touching a scheduled or cooked cook), and pressing Done on a planned-cook entry in the Daily Schedule now marks that planned_cooks row cooked - before this, two real scheduled cooks were lost with no trace, support a real per-recipe delete, and use a true cross-recipe interleaved scheduler that front-loads prep across every recipe in the session rather than finishing one recipe\'s steps before starting the next. A real Current Stock view (Pantry/Fridge/Freezer/Equipment) and a real have/not-have shopping list (with a real "in basket" state between "need to find" and "bought") both exist, aisle-sorted. shoppingWishlist is a genuinely separate module (general future purchases like batteries/a wok/games, not ingredients) with its own priority-plus-budget-target fit calculator, writing a real Chronicles Finance expense on purchase. Every HABITS feature above is real, shipped, code-verified - but per the standing flag across this whole domain, effectively none of it has been hand-tested by Alex yet. TAXONOMY: real architecture change Sep 25 2026, now in a genuinely empty pre-rebuild state. jargon_encyclopedia is no longer a view over taxonomy_tree - it is a real standalone anchor table (term/phylum_number/explainer/status/taxonomy_node_id), now holding 545 real curated terms across phyla 1-20 (Phylum 1 got a real same-day top-up to 51 terms per Alex\'s own live-review feedback while browsing it; the other 19 phyla still sit at 26 each; none for phylum 21), most status=\'pending\' (a real, growing number are status=\'accepted\' as Alex works through his own review queue) - directly authored by a Claude Code session (source-tagged claude_code_prebuild), never yet generated by the live AI generator that also exists in code but has never actually been run. Jargon Encyclopedia is now a real standalone page (owned by the jargonEncyclopedia module, Sep 26 2026 UI rework) - reached via leftNav\'s Phylum Path subItem or the Taxonomy dashboard card\'s picker popup (dashDeck._openTaxonomy), never a button crammed onto Phylum Path\'s own title anymore. It shows EVERY term regardless of status (pending/accepted/rejected, each with a real status badge and filter chip), with real inline Accept/Edit/Reject actions per pending term (reusing phylumPath._resolvePendingTerm, the one real write path - never a second one). taxonomy_tree itself was first archived in full (671 old branch/leaf rows, a reversible flag) then, same day, actually DELETED to 0 rows at Alex\'s own direct follow-up ask (he judged even the archived structure not worth keeping while jargon gets built out first) - every phylum (1-21) is now a genuinely empty canvas below the phylum level, zero branches, zero leaves, zero fusion links (taxonomy_links is also 0 rows). A full pre-delete snapshot was committed first as the real restore path, since Supabase has no backup/PITR. The old \'Review Archived Terms\'/\'Review Pending Terms\' buttons on the Phylum Path page are gone - the former is genuinely dead (nothing archived left to review) and the latter is superseded by the new Jargon Encyclopedia page above. Never claim any specific phylum currently has real depth, real Orders/Classes, or any structure at all - every earlier claim of that shape (phyla 1-10 depth, Phylum 12\'s real Orders, a structurally-clean tree) describes a state from before this restructure and is not true again until Alex reviews the jargon terms and a real new phylum structure gets built around them. PLATFORM ORACLE (new Oct 10 2026, owned by the captionsPanel module): the Instagram, YouTube and TikTok command panels are now ONE panel - a single Platform Oracle button on the Oracle page opens it, with an Instagram / YouTube / TikTok switch (13 / 8 / 8 pre-filled commands, still stored in instaOraclePanel/youtubeOracle/tiktokOracle). Tapping a command sends it to Oracle chat; the old Insta-Oracle button opens the same panel. Not yet hand-tested by Alex. ASK MY DATA (new Oct 10 2026, owned by the askMyData module): when Alex asks about his own saved data (pantry/stock, shopping list, recipes, planned cooks, wishlist, journal, quests, agenda, creator watchlist, analysed videos, encyclopedia, idea cards, jargon, reference tracks, finance log, books, content productions, RPGACE changelog), Oracle can request ONE read-only lookup with a DATA_QUERY trailer; the app fetches up to 30 rows, shows Alex which rows were used, and Oracle answers from those rows only. It cannot write or change data, and it only knows what those rows contain. Not yet hand-tested by Alex. NAVIGATION (new Oct 10 2026, owned by dashDeck + pathRouter): every popup has a sticky header with a Back button, a Domain > Card label and buttons for the other dashboard cards in the same domain; phone/browser Back closes the open popup first instead of leaving the page, and Back from a page that was opened from inside a popup returns to that page and reopens the card it came from. Not yet hand-tested by Alex. ENCYCLOPEDIA (new Oct 10 2026, owned by the encyclopediaPosts module): every Content Intelligence report (intel_reports) is automatically turned into a real encyclopedia article (source=intel, source_url = the video) plus one encyclopedia_insights row per idea card (idea_section/idea_order; saved_at when Alex saves an idea). Articles read Deepstash-style as a post of idea cards (Back/Next, card count, read time, Save idea, Full article); the Encyclopedia page shows a Posts strip with Series (posts sharing a tag) and Saved ideas. This replaced an old auto-save that only looked at the newest 5 reports and had stopped saving after the encyclopedia was cleared - so before Oct 10 none of the 37 analysed videos had an article. Not yet hand-tested by Alex; Knowledge Tree links to articles do not exist yet (the tree is empty). CONTENT PIPELINE: Research Lab is fully retired as a user-facing destination - its former panels live inside Content Pipeline/Bookworm cards now. RPGACE does not generate video itself - OpenMontage (a separate Claude Code session in its own repo) is briefed and handed off via openmontage_jobs, never live infrastructure; RPGACE has ruled out paid video providers on principle (zero spend). Real beat-grid audio sync does not exist - "in sync with the beat" currently means mood/palette-matched only. Features F0 through F18 have shipped except F12 (deliberately deferred); F16/F17/F18 remain real execution debt - shipped code, genuinely never hand-tested through their full flow yet.',
 
   init: function() {
     var self = this;
