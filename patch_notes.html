@@ -73,6 +73,36 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-10-n2-dashboard-landing" style="margin-bottom:30px;">
+    <div class="card-title">🏠 Oct 10 — N2 slice 5: one grouped menu, dashboard becomes a landing page</div>
+    <div class="card-body">
+      Alex: "dashboard and left nav should be deduplicated and sent into left nav only, and dashboard can be used more effectively as a landing and navigation page to show what i need to do or think about". He picked a menu grouped by domain and four dashboard sections: Today, Due / waiting on me, Continue where I left off, and Morning Brief + Ask Oracle. Before building, a short /paranoia + free-for-all debate checked what data already exists and what was missing (<code>records/2026-10/dashboard_landing_leftnav_paranoia_debate_2026-10-10.txt</code>). The reel he shared for "the dashboard idea in 1" is still queued (<code>intel_jobs</code>) until his PC's analysis server runs, so this build follows his four named sections.
+      <ul>
+        <li><strong>Left menu</strong> (<code>leftNav</code>): it is now the only way to reach everything. Seven headings (Oracle, Content &amp; Video, Knowledge, Habits, Schedule &amp; Journal, Chronicles, Oversight) cover every page plus the seven modules that previously existed only as dashboard cards (Taxonomy &amp; Review, Knowledge Gaps, Cooking, Gym, Shopping Wishlist, Morning Brief, Oversight). Those entries open through <code>dashDeck._navOpenCard</code>, so phone Back and the Domain › Card header behave the same as before. Shopping Wishlist now sits under Habits in <code>NAV_DOMAINS</code> too, so the popup sibling buttons match the menu.</li>
+        <li><strong>Dashboard</strong>: the 14-card grid and the old "Needs you now" block are gone. In their place:
+          <ul>
+            <li><strong>Today</strong>: shifts, scheduled tasks, a planned cook, open daily quests and gym sessions this week against 5.</li>
+            <li><strong>Due</strong>: pending taxonomy reviews, jargon terms (up to 10 at a time, not the 523 total), ideas due for recall, decisions due, wishlist items whose cool-off has ended, and shared links waiting for the PC. A row only appears when it has something in it.</li>
+            <li><strong>Continue</strong>: the last pages and modules opened, plus the book in progress, latest recipe and latest production.</li>
+            <li><strong>Morning Brief</strong> button, and an Ask Oracle box that puts the question in the real chat input and sends it.</li>
+          </ul>
+          The dashboard makes no Oracle call, so it still works when Oracle is down.</li>
+        <li><strong>New data</strong>: nothing recorded "where I left off", so a trail is now kept in this browser (<code>rpgace_trail</code>, last 8): every page shown and module opened. No schema change.</li>
+        <li><strong>Bug caught in testing</strong>: the first render can run before Supabase is ready; the gym and recall loaders threw there and left the sections stuck on "Loading…". The page now waits and retries until Supabase is ready, and refreshes after login.</li>
+        <li><strong>Process note</strong>: the first build of this slice was lost when the session's container was recycled before it was committed. It was rebuilt from the same edits and committed before testing this time.</li>
+      </ul>
+      <strong>Verified</strong>: 19 headless checks at 400px and 1200px with mocked data:
+      <ul>
+        <li>The old grid is gone, and all four sections fill.</li>
+        <li>No sideways scroll, no button under 36px and no text under 12px.</li>
+        <li>The menu has 7 headings, and every dashboard module is reachable from it.</li>
+        <li>Gym opens from the menu with its Habits header.</li>
+        <li>The trail shows Encyclopedia and Gym after visiting them.</li>
+        <li>Ask Oracle sends through the real chat.</li>
+      </ul>
+      Zero page errors. <strong>Not yet hand-tested by Alex.</strong>
+    </div>
+  </div>
 <div class="card" id="card-2026-10-10-n2-cooking" style="margin-bottom:30px;">
     <div class="card-title">🍳 Oct 10 — N2 slice 4: Cooking</div>
     <div class="card-body">
