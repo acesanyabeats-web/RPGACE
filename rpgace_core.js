@@ -43945,8 +43945,11 @@ RPGACE.register('cookingOracle', {
 
     // Same real ask as _startCookNow above - the ONE shared "cook
     // finished" path, so finishing no longer depends on finding the
-    // calendar entry. Marks the planned_cooks row status='cooked' (no
-    // CHECK constraint on status, confirmed via pg_constraint), completes
+    // calendar entry. Marks the planned_cooks row status='cooked' (the
+    // status CHECK constraint only allowed draft/scheduled until Oct 10 2026,
+    // so this write was silently rejected from Oct 1 to Oct 10 - it now
+    // allows draft/scheduled/cooked/discarded; check pg_constraint before
+    // writing any NEW status value here), completes
     // its agenda entry through the real completeScheduledTask when this
     // device has it (actual_mins, daily log, journal note - rule 8) or a
     // direct write-through otherwise, and flips every still-'saved'

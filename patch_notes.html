@@ -104,7 +104,7 @@
         <li>Draft/scheduled loaders already filter by status, so discarded rows simply stop showing.</li>
         <li>Cache-bust <code>20261005a</code>.</li>
       </ul>
-      <strong>Untested by Alex's own hand.</strong> Can't restore the two lost rows (no backup); the Laksa recipe and its journal entries still exist.
+      <strong>Untested by Alex's own hand.</strong> Can't restore the two lost rows (no backup); the Laksa recipe and its journal entries still exist.<br><br><strong>Oct 10 follow-up (real bug in this fix)</strong>: <code>planned_cooks.status</code> had a CHECK allowing only <code>draft</code>/<code>scheduled</code>. So "Cook finished" had failed since Oct 1, and this card's own discard failed too: 6 <code>error_log</code> rows on Oct 8, code 23514, on cook <code>80094914</code>. With Alex's OK, widened the CHECK to <code>draft</code>/<code>scheduled</code>/<code>cooked</code>/<code>discarded</code>. No data was changed.
     </div>
   </div>
 
