@@ -73,7 +73,29 @@
 
 <div class="content">
 
-<div class="card" id="card-2026-10-10-session-closed-2" style="margin-bottom:30px;">
+<div class="card" id="card-2026-10-10-pathways" style="margin-bottom:30px;">
+    <div class="card-title">🔗 Oct 10 — Five new connections between existing features (P1)</div>
+    <div class="card-body">
+      New <code>pathways</code> module. It only connects existing code, and every write goes through the owning module's own path:
+      <ul>
+        <li><strong>Post → quests</strong>: "⚔️ Make N quests" turns the source video's suggested quests into Quest Board quests via <code>questEngine._createQuests</code>, which skips ones already open.</li>
+        <li><strong>Post → watchlist</strong>: "⭐ Watch &lt;creator&gt;" adds the creator to <code>intel_watchlist</code>, or says they're already being watched.</li>
+        <li><strong>Post → jargon</strong>: "📚 Related jargon" lists Jargon Encyclopedia terms that appear in the article, with their explainers.</li>
+        <li><strong>Beat → Platform Oracle</strong>: an "About a beat" picker, filled from <code>beat_audio_jobs</code> and productions, prefixes every command with that beat's name, BPM and key.</li>
+        <li><strong>Shopping list → Wishlist</strong>: "🛒 Add a non-food item to your Wishlist" uses <code>shoppingWishlist</code>'s own add.</li>
+      </ul>
+      Before writing a new <code>quest_kind</code>, I checked <code>pg_constraint</code>: no CHECK on it.<br>
+      <strong>Verified</strong>: headless Chromium, Supabase mocked:
+      <ul>
+        <li>all 5 work;</li>
+        <li>the correct rows are written to <code>quest_log</code>, <code>intel_watchlist</code> and <code>wishlist_items</code>;</li>
+        <li>the beat prefix is sent to Oracle;</li>
+        <li>zero errors.</li>
+      </ul>
+      <strong>Untested by Alex's hand.</strong>
+    </div>
+  </div>
+  <div class="card" id="card-2026-10-10-session-closed-2" style="margin-bottom:30px;">
     <div class="card-title">🌙 Oct 10 (2nd close) — session closed via /Bedtime: plan ratified, 4 items built</div>
     <div class="card-body">
       <strong>Live on <code>main</code></strong>:

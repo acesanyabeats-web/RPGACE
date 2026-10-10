@@ -6022,8 +6022,10 @@ RPGACE.register('captionsPanel', {
           setTimeout(go, 300);
         } else go();
       };
-      if (RPGACE.utils.fillGaps) RPGACE.utils.fillGaps(cmd.prompt, send);
-      else send(cmd.prompt);
+      // Oct 10 2026 (P1): optional "About a beat" context from the picker.
+      var prompt = (RPGACE.modules.pathways && self._beat) ? RPGACE.modules.pathways.beatContext(cmd.prompt, self._beat) : cmd.prompt;
+      if (RPGACE.utils.fillGaps) RPGACE.utils.fillGaps(prompt, send);
+      else send(prompt);
     },
   },
 
@@ -6091,7 +6093,24 @@ RPGACE.register('captionsPanel', {
           list.appendChild(b);
         });
       };
+      // Oct 10 2026 (P1): "About a beat" picker (beat_audio_jobs + productions).
+      self._beat = null;
+      var beatRow = document.createElement('label');
+      beatRow.style.cssText = 'display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--muted);margin-bottom:12px;';
+      beatRow.textContent = 'About a beat (optional)';
+      var beatSel = document.createElement('select');
+      beatSel.id = 'captions-beat';
+      beatSel.style.cssText = 'min-height:40px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--panel2);color:var(--text);font-size:14px;';
+      beatSel.innerHTML = '<option value="">No specific beat</option>';
+      beatRow.appendChild(beatSel);
+      var beats = [];
+      if (RPGACE.modules.pathways) RPGACE.modules.pathways.loadBeats().then(function(bs) {
+        beats = bs;
+        bs.forEach(function(b) { var o = document.createElement('option'); o.value = b.id; o.textContent = b.label; beatSel.appendChild(o); });
+      });
+      beatSel.onchange = function() { self._beat = beats.filter(function(b) { return b.id === beatSel.value; })[0] || null; };
       pop.box.appendChild(tabs);
+      pop.box.appendChild(beatRow);
       pop.box.appendChild(note);
       pop.box.appendChild(list);
       draw();
@@ -8889,6 +8908,251 @@ RPGACE.register('feynman', {
 });
 /* ===END:feynman=== */
 
+/* ===MODULE:pathways=== */
+// Oct 10 2026 — P1 of the ratified /CEO plan "RPGACE Domains, Navigation &
+// Deepstash Encyclopedia". Five new connections between code that already
+// existed but never talked to each other. Every write reuses the owning
+// module's own path (rule 8) — this module only connects them:
+//   1. Encyclopedia post -> "Make these quests": the article's source report
+//      (intel_reports.insights.quests) -> questEngine._createQuests, which
+//      already dedupes on (quest_kind, source_ref).
+//   2. Encyclopedia post -> "Watch this creator": the report's creator ->
+//      intel_watchlist (skipped if that url is already watched).
+//   3. Platform Oracle -> "About a beat": pick a real beat (beat_audio_jobs
+//      filename/BPM/key, or a content_productions title) and every command is
+//      prefixed with it (captionsPanel calls beatContext()).
+//   4. Encyclopedia post -> "Related jargon": jargon_encyclopedia terms that
+//      appear in the article, each with its explainer.
+//   5. Cooking shopping list -> "Add a non-food item to your Wishlist":
+//      shoppingWishlist.logic._addItem, same item shape as its own form.
+RPGACE.register('pathways', {
+
+  _jargon: null,
+
+  init: function() {},
+
+  logic: {
+
+    reportForArticle: function(entry) {
+      if (!entry || !entry.source_url) return Promise.resolve(null);
+      return RPGACE.sb.select('intel_reports', 'select=url,title,creator,platform,score,insights&url=eq.' + encodeURIComponent(entry.source_url) + '&limit=1')
+        .then(function(rows) { return (rows && rows[0]) || null; })
+        .catch(function() { return null; });
+    },
+
+    questsFromReport: function(report) {
+      var qs = (report && report.insights && report.insights.quests) || [];
+      return Array.isArray(qs) ? qs.filter(function(q) { return q && q.name; }) : [];
+    },
+
+    makeQuests: function(entry, report) {
+      var self = RPGACE.modules.pathways;
+      var qe = RPGACE.modules.questEngine;
+      var qs = self.logic.questsFromReport(report);
+      if (!qe || !qe._createQuests) return Promise.reject(new Error('Quest Board is not loaded'));
+      if (!qs.length) return Promise.resolve(0);
+      var cands = qs.map(function(q, i) {
+        return {
+          key: 'article_quest', kind: 'article_quest', name: String(q.name).slice(0, 120),
+          description: q.action || '', category: q.category || 'career',
+          questType: q.type || 'weekly', xp: Number(q.xp) || 50,
+          sourceTable: 'encyclopedia', sourceRef: String(entry.id) + ':' + i, workflow: null,
+        };
+      });
+      return qe._createQuests(cands).then(function(rows) {
+        return (rows || []).filter(Boolean).length;
+      });
+    },
+
+    watchCreator: function(report) {
+      if (!report || !report.url) return Promise.reject(new Error('No source video for this post'));
+      return RPGACE.sb.select('intel_watchlist', 'select=id&url=eq.' + encodeURIComponent(report.url) + '&limit=1').then(function(rows) {
+        if (rows && rows.length) return 'already';
+        var ins = report.insights || {};
+        return RPGACE.sb.secureWrite('intel_watchlist', 'insert', {
+          url: report.url, title: report.title || null, creator: report.creator || null,
+          platform: report.platform || null, score: report.score || null,
+          reason: ins.watchlist_reason || ('Added from Encyclopedia post: ' + (report.title || '')),
+        }).then(function() { return 'added'; });
+      });
+    },
+
+    loadJargon: function() {
+      var self = RPGACE.modules.pathways;
+      if (self._jargon) return Promise.resolve(self._jargon);
+      return RPGACE.sb.select('jargon_encyclopedia', 'select=term,explainer,status,phylum_number&status=neq.rejected&limit=2000')
+        .then(function(rows) { self._jargon = Array.isArray(rows) ? rows : []; return self._jargon; })
+        .catch(function() { return []; });
+    },
+
+    // Terms (3+ chars) that appear as whole words in the text, longest first.
+    matchJargon: function(text, terms) {
+      var lower = ' ' + String(text || '').toLowerCase().replace(/[^a-z0-9#&'+\s-]/g, ' ') + ' ';
+      var seen = {};
+      return (terms || []).filter(function(t) {
+        var term = String(t.term || '').toLowerCase().trim();
+        if (term.length < 3 || seen[term]) return false;
+        var esc = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        var hit = new RegExp('[\\s-]' + esc + '[\\s-]').test(lower);
+        if (hit) seen[term] = true;
+        return hit;
+      }).sort(function(a, b) { return b.term.length - a.term.length; }).slice(0, 12);
+    },
+
+    loadBeats: function() {
+      return Promise.all([
+        RPGACE.sb.select('beat_audio_jobs', 'select=id,filename,bpm,musical_key,created_at&order=created_at.desc&limit=20').catch(function() { return []; }),
+        RPGACE.sb.select('content_productions', 'select=id,con_id,title,created_at&order=created_at.desc&limit=20').catch(function() { return []; }),
+      ]).then(function(res) {
+        var beats = [];
+        (res[0] || []).forEach(function(b) {
+          var name = String(b.filename || 'Beat').replace(/\.[a-z0-9]+$/i, '');
+          var bits = [b.bpm ? Math.round(b.bpm) + ' BPM' : '', b.musical_key || ''].filter(Boolean).join(', ');
+          beats.push({ id: 'audio:' + b.id, label: name + (bits ? ' (' + bits + ')' : ''), context: 'my beat "' + name + '"' + (bits ? ' (' + bits + ')' : '') });
+        });
+        (res[1] || []).forEach(function(c) {
+          if (!c.title) return;
+          beats.push({ id: 'cp:' + c.id, label: (c.con_id ? 'ConID #' + c.con_id + ' — ' : '') + c.title, context: 'my production "' + c.title + '"' });
+        });
+        return beats;
+      });
+    },
+
+    beatContext: function(prompt, beat) {
+      if (!beat) return prompt;
+      return 'This is about ' + beat.context + '. ' + prompt;
+    },
+  },
+
+  ui: {
+
+    _btn: function(label) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.textContent = label;
+      b.style.cssText = 'min-height:40px;padding:8px 12px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;';
+      return b;
+    },
+
+    // Row of actions under an Encyclopedia post (called by encyclopediaPosts).
+    articleActions: function(container, entry) {
+      var self = RPGACE.modules.pathways;
+      if (!container || !entry) return;
+      var row = document.createElement('div');
+      row.className = 'pw-article-actions';
+      row.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border);';
+      container.appendChild(row);
+      var jb = self.ui._btn('📚 Related jargon…');
+      jb.onclick = function() { self.ui.openRelatedJargon(entry); };
+      row.appendChild(jb);
+      self.logic.reportForArticle(entry).then(function(report) {
+        if (!report) return;
+        var qs = self.logic.questsFromReport(report);
+        if (qs.length) {
+          var qb = self.ui._btn('⚔️ Make ' + qs.length + ' quest' + (qs.length === 1 ? '' : 's'));
+          qb.onclick = function() {
+            qb.disabled = true;
+            self.logic.makeQuests(entry, report).then(function(n) {
+              qb.textContent = '✓ Quests added';
+              RPGACE.utils.toast('⚔️ ' + n + ' quest' + (n === 1 ? '' : 's') + ' on your Quest Board (any already open were skipped)', 'var(--gold)', 3500, 'pathways');
+            }).catch(function(e) {
+              qb.disabled = false;
+              RPGACE.utils.toast('Couldn\'t add quests: ' + e.message, '#CC4A4A', 4000, 'pathways');
+            });
+          };
+          row.insertBefore(qb, jb);
+        }
+        if (report.creator) {
+          var wb = self.ui._btn('⭐ Watch ' + report.creator);
+          wb.onclick = function() {
+            wb.disabled = true;
+            self.logic.watchCreator(report).then(function(r) {
+              wb.textContent = r === 'already' ? '✓ Already watching' : '✓ Watching';
+            }).catch(function(e) {
+              wb.disabled = false;
+              RPGACE.utils.toast('Couldn\'t add to watchlist: ' + e.message, '#CC4A4A', 4000, 'pathways');
+            });
+          };
+          row.insertBefore(wb, jb);
+        }
+      });
+    },
+
+    openRelatedJargon: function(entry) {
+      var self = RPGACE.modules.pathways;
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: 'Related jargon', title: entry.title || 'Post' });
+      pop.box.innerHTML = '<p style="color:var(--muted)">Looking for jargon in this article…</p>';
+      self.logic.loadJargon().then(function(terms) {
+        var hits = self.logic.matchJargon(entry.content || '', terms);
+        pop.box.innerHTML = '';
+        if (!hits.length) { pop.box.innerHTML = '<p style="color:var(--muted)">No Jargon Encyclopedia terms appear in this article yet.</p>'; return; }
+        hits.forEach(function(t) {
+          var d = document.createElement('div');
+          d.style.cssText = 'padding:10px 0;border-bottom:1px solid var(--border);';
+          var h = document.createElement('div');
+          h.style.cssText = 'font-size:15px;font-weight:700;color:var(--text);';
+          h.textContent = t.term + (t.status === 'pending' ? ' · pending review' : '');
+          var p = document.createElement('div');
+          p.style.cssText = 'font-size:14px;line-height:1.5;color:var(--muted);margin-top:4px;';
+          p.textContent = t.explainer || '';
+          d.appendChild(h); d.appendChild(p);
+          pop.box.appendChild(d);
+        });
+      });
+    },
+
+    // Shopping list popup -> Wishlist (non-food items).
+    wishlistLink: function(pop) {
+      var self = RPGACE.modules.pathways;
+      var sw = RPGACE.modules.shoppingWishlist;
+      if (!pop || !pop.box || !sw || !sw.logic || !sw.logic._addItem) return;
+      var wrap = document.createElement('div');
+      wrap.style.cssText = 'margin-top:14px;padding-top:12px;border-top:1px solid var(--border);';
+      var open = self.ui._btn('🛒 Add a non-food item to your Wishlist');
+      open.style.width = '100%';
+      wrap.appendChild(open);
+      open.onclick = function() {
+        open.style.display = 'none';
+        var form = document.createElement('div');
+        form.style.cssText = 'display:grid;grid-template-columns:1fr 110px;gap:8px;';
+        var name = document.createElement('input');
+        name.id = 'pw-wish-name'; name.placeholder = 'Item, e.g. kitchen roll'; name.setAttribute('aria-label', 'Item name');
+        var price = document.createElement('input');
+        price.id = 'pw-wish-price'; price.type = 'number'; price.step = '0.01'; price.min = '0'; price.placeholder = '£ price'; price.setAttribute('aria-label', 'Estimated price');
+        [name, price].forEach(function(i) { i.style.cssText = 'min-height:40px;padding:8px;border:1px solid var(--border);border-radius:8px;background:var(--panel2);color:var(--text);font-size:14px;'; });
+        var add = self.ui._btn('Add to Wishlist');
+        add.style.gridColumn = '1 / -1';
+        add.onclick = function() {
+          var n = name.value.trim();
+          if (!n) { name.focus(); return; }
+          add.disabled = true;
+          sw.logic._addItem({ name: n, category: 'household', priority: 'medium', estimated_price: price.value ? Number(price.value) : null }, function(err) {
+            add.disabled = false;
+            if (err) { RPGACE.utils.toast('Couldn\'t add: ' + err, '#CC4A4A', 4000, 'pathways'); return; }
+            RPGACE.utils.toast('🛒 ' + n + ' added to your Wishlist', 'var(--gold)', 2500, 'pathways');
+            name.value = ''; price.value = '';
+          });
+        };
+        form.appendChild(name); form.appendChild(price); form.appendChild(add);
+        wrap.appendChild(form);
+        name.focus();
+      };
+      var popBox = pop.box.parentNode;
+      popBox.insertBefore(wrap, pop.box.nextSibling);
+    },
+  },
+
+  // Public pass-throughs (G53 convention).
+  makeQuests: function(e, r) { return this.logic.makeQuests(e, r); },
+  watchCreator: function(r) { return this.logic.watchCreator(r); },
+  matchJargon: function(t, j) { return this.logic.matchJargon(t, j); },
+  loadBeats: function() { return this.logic.loadBeats(); },
+  beatContext: function(p, b) { return this.logic.beatContext(p, b); },
+  articleActions: function(c, e) { return this.ui.articleActions(c, e); },
+  wishlistLink: function(p) { return this.ui.wishlistLink(p); },
+});
+/* ===END:pathways=== */
+
 /* ===MODULE:askMyData=== */
 // Oct 10 2026 — X1 of the ratified /CEO plan "RPGACE Domains, Navigation &
 // Deepstash Encyclopedia" (records/2026-10/fifty_claude_projects_paranoia_2026-10-10.txt).
@@ -9470,6 +9734,8 @@ RPGACE.register('encyclopediaPosts', {
         close.onclick = pop.close;
         row.appendChild(save); row.appendChild(art); row.appendChild(close);
         pop.box.appendChild(row);
+        // Oct 10 2026 (P1): quests / watch creator / related jargon.
+        if (entry && RPGACE.modules.pathways) RPGACE.modules.pathways.articleActions(pop.box, entry);
       }
       draw();
     },
@@ -10295,7 +10561,7 @@ RPGACE.register('oracleAppGrounding', {
   // bugs"/"Biggest confirmed-not-built items" sections should update this
   // string in the same session - same discipline as every other oversight
   // doc, just condensed for token cost (rule 11).
-  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested by Alex; where a bullet doesn\'t explicitly say hand-tested, assume it hasn\'t been). Never assume this string is automatically current just because it exists - check its own newest dated fact before trusting an old memory of it; last reviewed Oct 10 2026 (Encyclopedia posts from analysed videos, see the ENCYCLOPEDIA paragraph below; planned cooks can no longer vanish, see HABITS). ARCHITECTURE: the client is exactly ONE script, rpgace_core.js (index.html loads only rpgace_core.min.js) - main.js was mechanically merged into it Aug 20 2026, living on as a LEGACY SECTION near the top (bootstrap, password gate, page routing, career score, Quest Board). 58 real registered RPGACE.register() modules as of Sep 2026 - re-verify this count before quoting it, it has drifted before (a naive grep can double-count a documentation-template example inside a comment). Every module has a real internal ui/logic split (Sep 2026, G53) - zero public-API change, purely structural. RPGACE is a real installable PWA (Android/desktop Add-to-Home-Screen). Chronicles is a full searchable log page with click-through detail plus a personal-visibility-only finance ledger (not bookkeeping-grade). The profile stat card runs on real Supabase-derived data (Output = shipped content, Growth = learning/tree activity, kept as separate lanes). The Quest Board (addXP/completeQuest, owned by the questEngine module, built Aug 23-24 2026) HAS real persistence - completions write real quest_log rows, boot-time restore re-derives XP/level/done-state. Never repeat the old ("zero persistence") claim - false since Aug 24 2026. SECURITY/DATA: the app password and every /api/*.js endpoint are checked server-side (fixed July 24, independently verified live). renderMarkdown() escapes HTML before rendering (XSS fixed July 28). RLS is enabled on every real Supabase table - most are anon-read-only/authenticated-all; a small, deliberate, named set (oracle_fallback_queue, openmontage_jobs, error_log, smoke_test_items, ceo_plan_items) stays anon-writable because a real external writer (a Routine, the browser app itself, or a separate Claude Code session) genuinely needs that access - never suggest restricting those without checking first. There is NO Supabase backup or point-in-time recovery at all - Alex explicitly chose to stay on the Free plan and accept that risk (confirmed Sep 15 2026); do not re-raise this as an open question. ORACLE MECHANISMS: Oracle Control (a curated oracle_actions Supabase table) drives a real confirm-before-execute mechanism - 5 real wired dispatch branches exist now (log_beat, new_quests, draft_email, yt_stats, log_notion), reached both from the floating overlay button on any page and from the dashboard quick-action/Agents-page buttons (both rewired in Sep 2026 to go through this one shared mechanism instead of their own bespoke per-button calls - a real rule-8 dedup). Oracle can also DRAFT a suggested brand-new action from its own self-awareness, but a suggestion only grows the real vocabulary once Alex approves it, and it still then needs a human-coded execution branch before it can do anything - never claim Oracle can execute an arbitrary task on its own. Fish Audio (real voice input/output) is a dormant, gated scaffold - no real API key exists, Oracle cannot actually speak or listen by voice yet. The browser-mic voiceInput module was retired outright Aug 30 2026 (Alex\'s own direct ask, ahead of Fish Audio) - there is currently NO voice-input path in RPGACE at all. Real Anthropic prompt caching is live on every Oracle call (a pure cost optimization, never changes what Oracle can say). A Kimi/Luna free-tier routing option exists in api/oracle.js but is dormant, no real key configured - never claim RPGACE runs on multiple AI models. errorLog automatically resolves a real thrown error back to the one module that caused it, attaches that module\'s real /perspective baseline, and - if that module has a smoke_test_items row - flips it to broken (cascading a linked plan item to purple only if it was genuinely green before) - this only ever catches errors that actually throw or show an error-colored toast, never a silent wrong-output bug with no visible symptom, and Oracle never proactively monitors the app - it only reacts when a real message is sent to it. OVERSIGHT / GALAXY MAP: 13 real oversight docs exist now (Tier a/b explaining+truth docs, this Oracle self-awareness string, smoke_test.html/error_log.html, future_integrations.html/achiever.html, and perspective_map.html - new Sep 2026, a live-query page cross-referencing every real perspective_reports row - plus graphify/Obsidian/the Galaxy Map). The Galaxy Map (reachable from the in-app Oversight popup) is a real 4-stop CONTAINMENT hierarchy - L0 (9 real units: RPGACE Architecture/Orchestrator CC/OpenMontage CC/Graphify CC/External AI/Skills/Alex/Supabase/Oversight Docs) contains L1 (12 live app-code rivers, plus 5 retired Total-systems categories kept as per-actor Infra/Inter breakdowns, not deleted) contains L2 (modules) contains Current/L3 (functions). Older Level-2.5/4/5/6 "rail stops" from earlier in the build are all retired or folded into Current/the Decision Matrix - never describe the map as having numbered levels past L3; cross-cutting facts (Externals/Decisions/Skills/Load/etc) are Dimension pages layered over the hierarchy, not additional rungs. 23 real Galaxy Map pages exist on disk as of late Sep 2026 - re-verify this count too before quoting it, it changes whenever a new page ships (most recently G117, a Generator Toolchain catalog page, Sep 22 2026). Every one of the 58 real registered modules plus all 12 live rivers has a real, evidence-grounded /perspective self-report as of mid-Sep 2026 (the Perspective Full Coverage plan is complete). A standing project-wide PAUSE on new Galaxy Map/Dimension work has been in effect since Sep 15 2026 (real evidence: product debt was sitting untouched under a wave of Galaxy-Map/meta work) - only explicit, narrowly-scoped, Alex-approved exceptions have shipped since - never assume a new Galaxy Map feature is fair game without checking whether Alex explicitly overrode the pause for it that specific time. KNOWN, STILL-OPEN GAPS: the swipe-gesture freeze bug has recurred for real (69 real occurrences logged Aug 27-Sep 20 2026) but still has no root cause found and no stack trace available (the browser\'s own Long Task API exposes no call stack) - never claim it\'s fixed, and don\'t attempt another blind code-only fix pass. reference_tracks.scale/genre are still 0 of 32 populated - "beat matches are always the same" traces directly to this; a backfill popup exists and has not been run. smoke_test.html\'s real hand-confirmed tally sits well under half of its rows - a large amount of shipped work is real and code-verified but genuinely unconfirmed by Alex\'s own hand; only his own hand-tick counts as "confirmed working," never a code-level test pass alone. HABITS/COOKING (cookingOracle + shoppingWishlist, RPGACE\'s newest domain, built Sep 10-22 2026): reached from a real "Cooking" dashboard card. Generate a recipe via Oracle chat (a real RECIPE_JSON: trailer); a real "Narrow it down" step runs first for a short/ambiguous description. Ingredients render with a live 7-color status system wherever shown - green=plenty, yellow=short (worded as "need N more, have M, T total needed"), red=none, blue=a same-aisle alternative in stock, purple=will run low/restock after this cook, orange=a real curated-or-heuristic substitute exists in stock, brown=a separable/optional component that can be omitted in No-Shop mode. Orange substitutes can be permanently confirmed (a tick, colour never changes) or declared-the-same-item as an existing stock row (a real, standing alias merge reassigning every FK reference) - curated potency ratios exist for a few specific real pairs Alex stated (e.g. tamarind concentrate is about 1/3 the amount of tamarind paste) and a real garlic clove/bulb count-equivalent bridge (8 cloves per bulb, bidirectional) - none of these numbers are invented, only ones Alex explicitly gave. A recipe card supports pantry-aware Oracle-suggested ingredient additions and a real diff-only critique-and-update flow via the floating overlay (Accept/Deny, never the whole recipe re-shown). New Sep 22: clicking Start on a scheduled planned cook opens a real, persistent Live Cook Mode panel inside the Oracle page itself (step timeline, elapsed-time ticker, per-step and recurring reminder timers) - not just a silent flag flip. New Oct 1 2026 (cookingOracle): a scheduled planned cook can also be started (Start cooking now, or Cook now straight from the schedule preview), finished (Cook finished in the Cooking hub or a Finished button in Live Cook Mode - marks planned_cooks cooked, completes its agenda entry and marks the recipes cooked in the journal) and given another recipe (reopens it as a draft) from inside Cooking itself, not only from the Daily Schedule. Planned-cook sessions persist as a real draft from the moment the first recipe joins (never silently lost on close/navigate-away); since Oct 5 2026 (cookingOracle), emptying a session only marks a still-draft planned_cooks row discarded (never a hard delete, never touching a scheduled or cooked cook), and pressing Done on a planned-cook entry in the Daily Schedule now marks that planned_cooks row cooked - before this, two real scheduled cooks were lost with no trace, support a real per-recipe delete, and use a true cross-recipe interleaved scheduler that front-loads prep across every recipe in the session rather than finishing one recipe\'s steps before starting the next. A real Current Stock view (Pantry/Fridge/Freezer/Equipment) and a real have/not-have shopping list (with a real "in basket" state between "need to find" and "bought") both exist, aisle-sorted. shoppingWishlist is a genuinely separate module (general future purchases like batteries/a wok/games, not ingredients) with its own priority-plus-budget-target fit calculator, writing a real Chronicles Finance expense on purchase. Every HABITS feature above is real, shipped, code-verified - but per the standing flag across this whole domain, effectively none of it has been hand-tested by Alex yet. TAXONOMY: real architecture change Sep 25 2026, now in a genuinely empty pre-rebuild state. jargon_encyclopedia is no longer a view over taxonomy_tree - it is a real standalone anchor table (term/phylum_number/explainer/status/taxonomy_node_id), now holding 545 real curated terms across phyla 1-20 (Phylum 1 got a real same-day top-up to 51 terms per Alex\'s own live-review feedback while browsing it; the other 19 phyla still sit at 26 each; none for phylum 21), most status=\'pending\' (a real, growing number are status=\'accepted\' as Alex works through his own review queue) - directly authored by a Claude Code session (source-tagged claude_code_prebuild), never yet generated by the live AI generator that also exists in code but has never actually been run. Jargon Encyclopedia is now a real standalone page (owned by the jargonEncyclopedia module, Sep 26 2026 UI rework) - reached via leftNav\'s Phylum Path subItem or the Taxonomy dashboard card\'s picker popup (dashDeck._openTaxonomy), never a button crammed onto Phylum Path\'s own title anymore. It shows EVERY term regardless of status (pending/accepted/rejected, each with a real status badge and filter chip), with real inline Accept/Edit/Reject actions per pending term (reusing phylumPath._resolvePendingTerm, the one real write path - never a second one). taxonomy_tree itself was first archived in full (671 old branch/leaf rows, a reversible flag) then, same day, actually DELETED to 0 rows at Alex\'s own direct follow-up ask (he judged even the archived structure not worth keeping while jargon gets built out first) - every phylum (1-21) is now a genuinely empty canvas below the phylum level, zero branches, zero leaves, zero fusion links (taxonomy_links is also 0 rows). A full pre-delete snapshot was committed first as the real restore path, since Supabase has no backup/PITR. The old \'Review Archived Terms\'/\'Review Pending Terms\' buttons on the Phylum Path page are gone - the former is genuinely dead (nothing archived left to review) and the latter is superseded by the new Jargon Encyclopedia page above. Never claim any specific phylum currently has real depth, real Orders/Classes, or any structure at all - every earlier claim of that shape (phyla 1-10 depth, Phylum 12\'s real Orders, a structurally-clean tree) describes a state from before this restructure and is not true again until Alex reviews the jargon terms and a real new phylum structure gets built around them. PLATFORM ORACLE (new Oct 10 2026, owned by the captionsPanel module): the Instagram, YouTube and TikTok command panels are now ONE panel - a single Platform Oracle button on the Oracle page opens it, with an Instagram / YouTube / TikTok switch (13 / 8 / 8 pre-filled commands, still stored in instaOraclePanel/youtubeOracle/tiktokOracle). Tapping a command sends it to Oracle chat; the old Insta-Oracle button opens the same panel. Not yet hand-tested by Alex. ASK MY DATA (new Oct 10 2026, owned by the askMyData module): when Alex asks about his own saved data (pantry/stock, shopping list, recipes, planned cooks, wishlist, journal, quests, agenda, creator watchlist, analysed videos, encyclopedia, idea cards, jargon, reference tracks, finance log, books, content productions, RPGACE changelog), Oracle can request ONE read-only lookup with a DATA_QUERY trailer; the app fetches up to 30 rows, shows Alex which rows were used, and Oracle answers from those rows only. It cannot write or change data, and it only knows what those rows contain. Not yet hand-tested by Alex. NAVIGATION (new Oct 10 2026, owned by dashDeck + pathRouter): every popup has a sticky header with a Back button, a Domain > Card label and buttons for the other dashboard cards in the same domain; phone/browser Back closes the open popup first instead of leaving the page, and Back from a page that was opened from inside a popup returns to that page and reopens the card it came from. Not yet hand-tested by Alex. ENCYCLOPEDIA (new Oct 10 2026, owned by the encyclopediaPosts module): every Content Intelligence report (intel_reports) is automatically turned into a real encyclopedia article (source=intel, source_url = the video) plus one encyclopedia_insights row per idea card (idea_section/idea_order; saved_at when Alex saves an idea). Articles read Deepstash-style as a post of idea cards (Back/Next, card count, read time, Save idea, Full article); the Encyclopedia page shows a Posts strip with Series (posts sharing a tag) and Saved ideas. This replaced an old auto-save that only looked at the newest 5 reports and had stopped saving after the encyclopedia was cleared - so before Oct 10 none of the 37 analysed videos had an article. Not yet hand-tested by Alex; Knowledge Tree links to articles do not exist yet (the tree is empty). CONTENT PIPELINE: Research Lab is fully retired as a user-facing destination - its former panels live inside Content Pipeline/Bookworm cards now. RPGACE does not generate video itself - OpenMontage (a separate Claude Code session in its own repo) is briefed and handed off via openmontage_jobs, never live infrastructure; RPGACE has ruled out paid video providers on principle (zero spend). Real beat-grid audio sync does not exist - "in sync with the beat" currently means mood/palette-matched only. Features F0 through F18 have shipped except F12 (deliberately deferred); F16/F17/F18 remain real execution debt - shipped code, genuinely never hand-tested through their full flow yet.',
+  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested by Alex; where a bullet doesn\'t explicitly say hand-tested, assume it hasn\'t been). Never assume this string is automatically current just because it exists - check its own newest dated fact before trusting an old memory of it; last reviewed Oct 10 2026 (Encyclopedia posts from analysed videos, see the ENCYCLOPEDIA paragraph below; planned cooks can no longer vanish, see HABITS). ARCHITECTURE: the client is exactly ONE script, rpgace_core.js (index.html loads only rpgace_core.min.js) - main.js was mechanically merged into it Aug 20 2026, living on as a LEGACY SECTION near the top (bootstrap, password gate, page routing, career score, Quest Board). 58 real registered RPGACE.register() modules as of Sep 2026 - re-verify this count before quoting it, it has drifted before (a naive grep can double-count a documentation-template example inside a comment). Every module has a real internal ui/logic split (Sep 2026, G53) - zero public-API change, purely structural. RPGACE is a real installable PWA (Android/desktop Add-to-Home-Screen). Chronicles is a full searchable log page with click-through detail plus a personal-visibility-only finance ledger (not bookkeeping-grade). The profile stat card runs on real Supabase-derived data (Output = shipped content, Growth = learning/tree activity, kept as separate lanes). The Quest Board (addXP/completeQuest, owned by the questEngine module, built Aug 23-24 2026) HAS real persistence - completions write real quest_log rows, boot-time restore re-derives XP/level/done-state. Never repeat the old ("zero persistence") claim - false since Aug 24 2026. SECURITY/DATA: the app password and every /api/*.js endpoint are checked server-side (fixed July 24, independently verified live). renderMarkdown() escapes HTML before rendering (XSS fixed July 28). RLS is enabled on every real Supabase table - most are anon-read-only/authenticated-all; a small, deliberate, named set (oracle_fallback_queue, openmontage_jobs, error_log, smoke_test_items, ceo_plan_items) stays anon-writable because a real external writer (a Routine, the browser app itself, or a separate Claude Code session) genuinely needs that access - never suggest restricting those without checking first. There is NO Supabase backup or point-in-time recovery at all - Alex explicitly chose to stay on the Free plan and accept that risk (confirmed Sep 15 2026); do not re-raise this as an open question. ORACLE MECHANISMS: Oracle Control (a curated oracle_actions Supabase table) drives a real confirm-before-execute mechanism - 5 real wired dispatch branches exist now (log_beat, new_quests, draft_email, yt_stats, log_notion), reached both from the floating overlay button on any page and from the dashboard quick-action/Agents-page buttons (both rewired in Sep 2026 to go through this one shared mechanism instead of their own bespoke per-button calls - a real rule-8 dedup). Oracle can also DRAFT a suggested brand-new action from its own self-awareness, but a suggestion only grows the real vocabulary once Alex approves it, and it still then needs a human-coded execution branch before it can do anything - never claim Oracle can execute an arbitrary task on its own. Fish Audio (real voice input/output) is a dormant, gated scaffold - no real API key exists, Oracle cannot actually speak or listen by voice yet. The browser-mic voiceInput module was retired outright Aug 30 2026 (Alex\'s own direct ask, ahead of Fish Audio) - there is currently NO voice-input path in RPGACE at all. Real Anthropic prompt caching is live on every Oracle call (a pure cost optimization, never changes what Oracle can say). A Kimi/Luna free-tier routing option exists in api/oracle.js but is dormant, no real key configured - never claim RPGACE runs on multiple AI models. errorLog automatically resolves a real thrown error back to the one module that caused it, attaches that module\'s real /perspective baseline, and - if that module has a smoke_test_items row - flips it to broken (cascading a linked plan item to purple only if it was genuinely green before) - this only ever catches errors that actually throw or show an error-colored toast, never a silent wrong-output bug with no visible symptom, and Oracle never proactively monitors the app - it only reacts when a real message is sent to it. OVERSIGHT / GALAXY MAP: 13 real oversight docs exist now (Tier a/b explaining+truth docs, this Oracle self-awareness string, smoke_test.html/error_log.html, future_integrations.html/achiever.html, and perspective_map.html - new Sep 2026, a live-query page cross-referencing every real perspective_reports row - plus graphify/Obsidian/the Galaxy Map). The Galaxy Map (reachable from the in-app Oversight popup) is a real 4-stop CONTAINMENT hierarchy - L0 (9 real units: RPGACE Architecture/Orchestrator CC/OpenMontage CC/Graphify CC/External AI/Skills/Alex/Supabase/Oversight Docs) contains L1 (12 live app-code rivers, plus 5 retired Total-systems categories kept as per-actor Infra/Inter breakdowns, not deleted) contains L2 (modules) contains Current/L3 (functions). Older Level-2.5/4/5/6 "rail stops" from earlier in the build are all retired or folded into Current/the Decision Matrix - never describe the map as having numbered levels past L3; cross-cutting facts (Externals/Decisions/Skills/Load/etc) are Dimension pages layered over the hierarchy, not additional rungs. 23 real Galaxy Map pages exist on disk as of late Sep 2026 - re-verify this count too before quoting it, it changes whenever a new page ships (most recently G117, a Generator Toolchain catalog page, Sep 22 2026). Every one of the 58 real registered modules plus all 12 live rivers has a real, evidence-grounded /perspective self-report as of mid-Sep 2026 (the Perspective Full Coverage plan is complete). A standing project-wide PAUSE on new Galaxy Map/Dimension work has been in effect since Sep 15 2026 (real evidence: product debt was sitting untouched under a wave of Galaxy-Map/meta work) - only explicit, narrowly-scoped, Alex-approved exceptions have shipped since - never assume a new Galaxy Map feature is fair game without checking whether Alex explicitly overrode the pause for it that specific time. KNOWN, STILL-OPEN GAPS: the swipe-gesture freeze bug has recurred for real (69 real occurrences logged Aug 27-Sep 20 2026) but still has no root cause found and no stack trace available (the browser\'s own Long Task API exposes no call stack) - never claim it\'s fixed, and don\'t attempt another blind code-only fix pass. reference_tracks.scale/genre are still 0 of 32 populated - "beat matches are always the same" traces directly to this; a backfill popup exists and has not been run. smoke_test.html\'s real hand-confirmed tally sits well under half of its rows - a large amount of shipped work is real and code-verified but genuinely unconfirmed by Alex\'s own hand; only his own hand-tick counts as "confirmed working," never a code-level test pass alone. HABITS/COOKING (cookingOracle + shoppingWishlist, RPGACE\'s newest domain, built Sep 10-22 2026): reached from a real "Cooking" dashboard card. Generate a recipe via Oracle chat (a real RECIPE_JSON: trailer); a real "Narrow it down" step runs first for a short/ambiguous description. Ingredients render with a live 7-color status system wherever shown - green=plenty, yellow=short (worded as "need N more, have M, T total needed"), red=none, blue=a same-aisle alternative in stock, purple=will run low/restock after this cook, orange=a real curated-or-heuristic substitute exists in stock, brown=a separable/optional component that can be omitted in No-Shop mode. Orange substitutes can be permanently confirmed (a tick, colour never changes) or declared-the-same-item as an existing stock row (a real, standing alias merge reassigning every FK reference) - curated potency ratios exist for a few specific real pairs Alex stated (e.g. tamarind concentrate is about 1/3 the amount of tamarind paste) and a real garlic clove/bulb count-equivalent bridge (8 cloves per bulb, bidirectional) - none of these numbers are invented, only ones Alex explicitly gave. A recipe card supports pantry-aware Oracle-suggested ingredient additions and a real diff-only critique-and-update flow via the floating overlay (Accept/Deny, never the whole recipe re-shown). New Sep 22: clicking Start on a scheduled planned cook opens a real, persistent Live Cook Mode panel inside the Oracle page itself (step timeline, elapsed-time ticker, per-step and recurring reminder timers) - not just a silent flag flip. New Oct 1 2026 (cookingOracle): a scheduled planned cook can also be started (Start cooking now, or Cook now straight from the schedule preview), finished (Cook finished in the Cooking hub or a Finished button in Live Cook Mode - marks planned_cooks cooked, completes its agenda entry and marks the recipes cooked in the journal) and given another recipe (reopens it as a draft) from inside Cooking itself, not only from the Daily Schedule. Planned-cook sessions persist as a real draft from the moment the first recipe joins (never silently lost on close/navigate-away); since Oct 5 2026 (cookingOracle), emptying a session only marks a still-draft planned_cooks row discarded (never a hard delete, never touching a scheduled or cooked cook), and pressing Done on a planned-cook entry in the Daily Schedule now marks that planned_cooks row cooked - before this, two real scheduled cooks were lost with no trace, support a real per-recipe delete, and use a true cross-recipe interleaved scheduler that front-loads prep across every recipe in the session rather than finishing one recipe\'s steps before starting the next. A real Current Stock view (Pantry/Fridge/Freezer/Equipment) and a real have/not-have shopping list (with a real "in basket" state between "need to find" and "bought") both exist, aisle-sorted. shoppingWishlist is a genuinely separate module (general future purchases like batteries/a wok/games, not ingredients) with its own priority-plus-budget-target fit calculator, writing a real Chronicles Finance expense on purchase. Every HABITS feature above is real, shipped, code-verified - but per the standing flag across this whole domain, effectively none of it has been hand-tested by Alex yet. TAXONOMY: real architecture change Sep 25 2026, now in a genuinely empty pre-rebuild state. jargon_encyclopedia is no longer a view over taxonomy_tree - it is a real standalone anchor table (term/phylum_number/explainer/status/taxonomy_node_id), now holding 545 real curated terms across phyla 1-20 (Phylum 1 got a real same-day top-up to 51 terms per Alex\'s own live-review feedback while browsing it; the other 19 phyla still sit at 26 each; none for phylum 21), most status=\'pending\' (a real, growing number are status=\'accepted\' as Alex works through his own review queue) - directly authored by a Claude Code session (source-tagged claude_code_prebuild), never yet generated by the live AI generator that also exists in code but has never actually been run. Jargon Encyclopedia is now a real standalone page (owned by the jargonEncyclopedia module, Sep 26 2026 UI rework) - reached via leftNav\'s Phylum Path subItem or the Taxonomy dashboard card\'s picker popup (dashDeck._openTaxonomy), never a button crammed onto Phylum Path\'s own title anymore. It shows EVERY term regardless of status (pending/accepted/rejected, each with a real status badge and filter chip), with real inline Accept/Edit/Reject actions per pending term (reusing phylumPath._resolvePendingTerm, the one real write path - never a second one). taxonomy_tree itself was first archived in full (671 old branch/leaf rows, a reversible flag) then, same day, actually DELETED to 0 rows at Alex\'s own direct follow-up ask (he judged even the archived structure not worth keeping while jargon gets built out first) - every phylum (1-21) is now a genuinely empty canvas below the phylum level, zero branches, zero leaves, zero fusion links (taxonomy_links is also 0 rows). A full pre-delete snapshot was committed first as the real restore path, since Supabase has no backup/PITR. The old \'Review Archived Terms\'/\'Review Pending Terms\' buttons on the Phylum Path page are gone - the former is genuinely dead (nothing archived left to review) and the latter is superseded by the new Jargon Encyclopedia page above. Never claim any specific phylum currently has real depth, real Orders/Classes, or any structure at all - every earlier claim of that shape (phyla 1-10 depth, Phylum 12\'s real Orders, a structurally-clean tree) describes a state from before this restructure and is not true again until Alex reviews the jargon terms and a real new phylum structure gets built around them. PATHWAYS (new Oct 10 2026, owned by the pathways module): an Encyclopedia post that came from an analysed video has buttons to turn that video\'s suggested quests into real Quest Board quests (questEngine, duplicates skipped), add its creator to the watchlist (intel_watchlist), and list Jargon Encyclopedia terms that appear in the article; Platform Oracle has an optional About-a-beat picker (beat_audio_jobs / content_productions) that prefixes every command with that beat; the Cooking shopping list has an Add-a-non-food-item-to-your-Wishlist form (shoppingWishlist). Not yet hand-tested by Alex. PLATFORM ORACLE (new Oct 10 2026, owned by the captionsPanel module): the Instagram, YouTube and TikTok command panels are now ONE panel - a single Platform Oracle button on the Oracle page opens it, with an Instagram / YouTube / TikTok switch (13 / 8 / 8 pre-filled commands, still stored in instaOraclePanel/youtubeOracle/tiktokOracle). Tapping a command sends it to Oracle chat; the old Insta-Oracle button opens the same panel. Not yet hand-tested by Alex. ASK MY DATA (new Oct 10 2026, owned by the askMyData module): when Alex asks about his own saved data (pantry/stock, shopping list, recipes, planned cooks, wishlist, journal, quests, agenda, creator watchlist, analysed videos, encyclopedia, idea cards, jargon, reference tracks, finance log, books, content productions, RPGACE changelog), Oracle can request ONE read-only lookup with a DATA_QUERY trailer; the app fetches up to 30 rows, shows Alex which rows were used, and Oracle answers from those rows only. It cannot write or change data, and it only knows what those rows contain. Not yet hand-tested by Alex. NAVIGATION (new Oct 10 2026, owned by dashDeck + pathRouter): every popup has a sticky header with a Back button, a Domain > Card label and buttons for the other dashboard cards in the same domain; phone/browser Back closes the open popup first instead of leaving the page, and Back from a page that was opened from inside a popup returns to that page and reopens the card it came from. Not yet hand-tested by Alex. ENCYCLOPEDIA (new Oct 10 2026, owned by the encyclopediaPosts module): every Content Intelligence report (intel_reports) is automatically turned into a real encyclopedia article (source=intel, source_url = the video) plus one encyclopedia_insights row per idea card (idea_section/idea_order; saved_at when Alex saves an idea). Articles read Deepstash-style as a post of idea cards (Back/Next, card count, read time, Save idea, Full article); the Encyclopedia page shows a Posts strip with Series (posts sharing a tag) and Saved ideas. This replaced an old auto-save that only looked at the newest 5 reports and had stopped saving after the encyclopedia was cleared - so before Oct 10 none of the 37 analysed videos had an article. Not yet hand-tested by Alex; Knowledge Tree links to articles do not exist yet (the tree is empty). CONTENT PIPELINE: Research Lab is fully retired as a user-facing destination - its former panels live inside Content Pipeline/Bookworm cards now. RPGACE does not generate video itself - OpenMontage (a separate Claude Code session in its own repo) is briefed and handed off via openmontage_jobs, never live infrastructure; RPGACE has ruled out paid video providers on principle (zero spend). Real beat-grid audio sync does not exist - "in sync with the beat" currently means mood/palette-matched only. Features F0 through F18 have shipped except F12 (deliberately deferred); F16/F17/F18 remain real execution debt - shipped code, genuinely never hand-tested through their full flow yet.',
 
   init: function() {
     var self = this;
@@ -41250,6 +41516,8 @@ RPGACE.register('cookingOracle', {
         width: '560px', scroll: true, eyebrow: '🛒 SHOPPING LIST', title: 'Ingredients for this cook',
         borderColor: 'rgba(76,175,130,0.3)',
       });
+      // Oct 10 2026 (P1): non-food items go to the Shopping Wishlist.
+      if (RPGACE.modules.pathways) RPGACE.modules.pathways.wishlistLink(pop);
       var box = pop.box;
       var loadingMsg = document.createElement('div');
       loadingMsg.style.cssText = 'font-size:12px;color:var(--muted);';
