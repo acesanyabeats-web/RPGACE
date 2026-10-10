@@ -73,7 +73,29 @@
 
 <div class="content">
 
-<div class="card" id="card-2026-10-10-encyclopedia-posts" style="margin-bottom:30px;">
+<div class="card" id="card-2026-10-10-back-navigation" style="margin-bottom:30px;">
+    <div class="card-title">← Oct 10 — Back works everywhere: phone Back closes popups, and returns you to where you came from (N1)</div>
+    <div class="card-body">
+      <strong>Problem</strong>: most module screens are popups. They were never in browser history, so phone Back left the whole page, and several modules had no Back button at all.<br>
+      <strong>Fix</strong>: one change in the shared <code>dashDeck._popup</code> reaches every popup.
+      <ul>
+        <li>Each popup pushes a history entry, and <code>pathRouter</code>'s popstate closes the top popup instead of changing page.</li>
+        <li>A popup closed because you navigated keeps its entry under the new page, so Back from that page reopens the card it came from.</li>
+        <li>Every popup gets a sticky header with ← Back, a "Domain › Card" label, and chips for the other cards in the same domain.</li>
+        <li>Switching cards with a chip is undone by Back.</li>
+      </ul>
+      <strong>Verified</strong>: headless Chromium at 400px, 9 steps, zero errors:
+      <ul>
+        <li>open, then Back closes;</li>
+        <li>with a nested popup, Back closes only the nested one;</li>
+        <li>the header Back button closes the popup;</li>
+        <li>popup → page, then Back reopens the card;</li>
+        <li>sibling chip, then Back returns to the first card.</li>
+      </ul>
+      <strong>Untested by Alex's hand.</strong>
+    </div>
+  </div>
+  <div class="card" id="card-2026-10-10-encyclopedia-posts" style="margin-bottom:30px;">
     <div class="card-title">📖 Oct 10 — Encyclopedia posts: every analysed video becomes a Deepstash-style article (C1)</div>
     <div class="card-body">
       <strong>Root cause found</strong>: all 37 <code>intel_reports</code> already contained a finished article (<code>insights.encyclopedia_entry</code>), but the Encyclopedia held 1 row and none came from Content Intelligence. The old auto-save in <code>syncIntelData</code> only looked at the newest 5 reports and was gated by a <code>localStorage</code> "already saved" marker that outlived the encyclopedia wipe, so it never saved them again.<br>
