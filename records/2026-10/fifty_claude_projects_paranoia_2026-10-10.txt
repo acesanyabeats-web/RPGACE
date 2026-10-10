@@ -105,3 +105,16 @@ BASIS: provisional until Alex answers.
 - Maintainability: X1 replaces future one-off "Oracle knows about X" wiring with one mechanism.
 - Alex's goals: B items serve the 48-hour rule most directly; A items serve "never lose an insight".
 - Why NOT: the ratified plan isn't built yet; this could stall it. Answer: no new item goes before C1/N1.
+
+== STEP 4: /interrogation — ALEX'S ANSWERS (verbatim) ==
+Groups: "Never forget / learn,Producer business tools,Money guardrails,Daily life" (all four)
+Ask my data: "Yes, as the foundation (Recommended)"
+Order: "After articles + back fix (Recommended)"
+Screenshots: "Yes, later"
+
+== /CEO: appended to the ratified plan "RPGACE Domains, Navigation & Deepstash Encyclopedia" ==
+New items (all red, ratified): X1 Ask my data, L1 Never forget/learn, G1 Money guardrails, B1 Producer tools,
+D1 Daily life, S1 Screenshot inbox.
+Full build order: C1 -> N1 -> X1 -> O1 -> P1 -> G1 -> L1 -> B1 -> D1 -> N2 -> M1 -> S1 -> T1.
+Blocked inside items (named, not dropped): B1 outreach waits on Composio key rotation; rate calculator (49) waits
+on finance data; voice notes (04) wait on Fish Audio; health ideas (34/35/37) have no data source; D-group cut.
