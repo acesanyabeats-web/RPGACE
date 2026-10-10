@@ -73,6 +73,22 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-10-n2-oracle" style="margin-bottom:30px;">
+    <div class="card-title">🔮 Oct 10 — N2 slice 1: the Oracle page, rebuilt around the chat</div>
+    <div class="card-body">
+      First per-domain pass of N2. It is gated: the next domain (Content &amp; Video) waits for Alex's hand-test of this one. Evidence first, from a 400px headless screenshot. The Oracle page was 2,552px tall at phone width. The chat input sat below 12 small buttons. The same four actions (New quests, Draft email, Log to Notion, YT stats) appeared in three places. Every tool button was 11px text on a 21–25px-tall target. The old Agents page added about 1,500px of cards below the chat.
+      <ul>
+        <li>The input row now sits directly under the messages: 16px text, 48px tall, with a 48px photo button. The placeholder is "Ask Oracle anything…". One <strong>Tools</strong> row sits below it, with 40px buttons and 13px text, scoped to <code>#page-advisor</code> so other pages are unchanged.</li>
+        <li>The "Insta-Oracle" button is removed; since O1 it only opened Platform Oracle. The Agents page's duplicate quick-actions bar (<code>contentRepurpose._injectAgentButtons</code>) is retired, because the chat toolbar's buttons run the same four Oracle Control actions (rule 8).</li>
+        <li><code>agentsIntoOracle</code> now puts the connected apps, the 8 one-click agent cards and the activity log in one collapsed "⚡ Agent actions &amp; connected apps" section.</li>
+        <li>The message area has its own height of min(58vh, 540px) instead of being squeezed by the footer. Message text is 15px.</li>
+        <li><code>addMsg</code>: a user bubble over 400 characters, such as the Morning Brief's whole prompt, shows a 4-line preview with Show all / Show less. Unbroken strings wrap instead of overflowing.</li>
+        <li>The welcome message now lists only things that work today; it used to say "now fully wired to your apps".</li>
+        <li>Design scan: the skipped heading (h1 to h4 "Your Composio Integrations") is fixed to h2. Findings went from 29 to 28; the rest belong to other domains' slices.</li>
+      </ul>
+      <strong>Result at 400px</strong>: the page is 1,099px tall, down from 2,552. <strong>Verified</strong>: headless Chromium. All 10 tool buttons are 40px. Platform Oracle still injects into the Tools row. New quests still reaches Oracle Control. The agent section is collapsed and holds all 8 cards when opened. Long prompts clamp and expand without sideways overflow, and short ones are untouched. No sideways scroll, zero page errors. <strong>Not yet hand-tested by Alex.</strong> Not in this slice: the profile/XP card at the top of every page, which belongs to the dashboard pass. Also caught while shipping: <code>index.html</code>'s <code>style.css?v=</code> cache-bust still read <code>20260811a</code>, though <code>style.css</code> last changed Sep 2. It is now bumped to <code>20261010a</code>. Same rule as the script bust: bump it in the same commit as any <code>style.css</code> change.
+    </div>
+  </div>
 <div class="card" id="card-2026-10-10-gym-tracker" style="margin-bottom:30px;">
     <div class="card-title">🏋️ Oct 10 — Gym tracker, HABITS module 2</div>
     <div class="card-body">
