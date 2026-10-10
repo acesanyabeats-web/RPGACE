@@ -73,6 +73,19 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-10-n2-knowledge" style="margin-bottom:30px;">
+    <div class="card-title">📖 Oct 10 — N2 slice 3: Encyclopedia, Jargon Encyclopedia, Phylum Path</div>
+    <div class="card-body">
+      Alex confirmed slice 2 ("good now"). Evidence for this slice came from 400px headless screenshots using real-shaped sample rows (the 4 newest real articles). On the Encyclopedia, 26 of 31 buttons were under 36px tall and 34 text pieces under 12px, and the articles started below 9 category chips, 5 sort chips and 4 tools, one of them "Clear All". On the Jargon Encyclopedia, 22 of 22 buttons were under 36px tall and 54 text pieces were under 12px. On Phylum Path, 28 text pieces were under 12px.
+      <ul>
+        <li><strong>Encyclopedia</strong>: the category and sort chips now sit in a folded "Filter &amp; sort" section, and Sync, Sync Taxonomy and Clear All in a folded "Maintenance tools" section. Search, refresh and the count line stay visible. The count line now names the active filter, e.g. "1 of 4 articles · Strategy/Growth · Most recent". Article cards lose the gold side-stripe, show the full title at 16px instead of a truncated one, use 12px meta and 36px buttons, and "Read Full Entry" is renamed "Full article".</li>
+        <li><strong>Previews without AI cost</strong>: an article built from an analysed video now previews its first idea cards (stored by C1) instead of making an Oracle call per article. Articles without idea cards still use the old path.</li>
+        <li><strong>Jargon Encyclopedia</strong>: removed "Not yet placed in the tree — anchor only." from under every term. It is true of all 545 terms while the tree is empty, so it carried no information. Placed terms still show their linked insights.</li>
+        <li>Buttons are 40px and text 13px+ across all three pages, through CSS scoped to the three page ids.</li>
+      </ul>
+      <strong>Verified</strong>: headless Chromium. Re-auditing all three pages found 0 buttons under 36px and 0 text under 12px, with no sideways scroll. 7 logic checks pass: idea-card previews, Oracle still used when an article has no cards, folds closed by default, the category filter working and named in the count line, search still visible, Sync Taxonomy inside the tools fold, and no "anchor only" lines. Zero page errors. <strong>Not yet hand-tested by Alex.</strong> Not in this slice: the small uppercase eyebrow labels in popup headers (shared by every popup), and the one small ↻ button in Knowledge Gaps.
+    </div>
+  </div>
 <div class="card" id="card-2026-10-10-page-back" style="margin-bottom:30px;">
     <div class="card-title">↩️ Oct 10 — Sub-page Back goes to its menu, not the dashboard</div>
     <div class="card-body">

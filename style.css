@@ -495,3 +495,20 @@ body{background:var(--dark);color:var(--text);min-height:100vh;overflow-x:hidden
 #page-beat-log label,#page-content-pipeline label{letter-spacing:.04em !important}
 #page-content-pipeline input[type=checkbox],#page-beat-log input[type=checkbox]{width:20px;height:20px}
 #cpl-list{max-height:none !important}
+
+/* Oct 10 2026 — N2, Knowledge slice (Encyclopedia, Jargon Encyclopedia,
+   Phylum Path). Inline-styled controls get a readable floor, scoped here. */
+.enc-fold{margin-bottom:12px;border:1px solid var(--border);border-radius:10px;padding:0 12px}
+.enc-fold > summary{cursor:pointer;list-style:none;min-height:44px;display:flex;align-items:center;font-size:14px;font-weight:700;color:var(--text)}
+.enc-fold > summary::-webkit-details-marker{display:none}
+.enc-fold > summary::after{content:'▸';margin-left:auto;color:var(--muted);transition:transform .2s var(--ease-out,ease-out)}
+.enc-fold[open] > summary::after{transform:rotate(90deg)}
+.enc-fold[open]{padding-bottom:10px}
+@media (prefers-reduced-motion: reduce){.enc-fold > summary::after{transition:none}}
+#page-encyclopedia .enc-cat-btn,#page-encyclopedia .enc-sort-btn{min-height:36px;font-size:13px !important;padding:6px 12px !important}
+#page-encyclopedia .learn-btn{min-height:40px}
+#enc-search-input{min-height:40px;font-size:15px !important}
+#page-jargon-encyclopedia button,#page-phylumpath button{min-height:40px !important;font-size:13px !important}
+#page-jargon-encyclopedia [style*="font-size: 11px"],#page-jargon-encyclopedia [style*="font-size:11px"],#page-jargon-encyclopedia [style*="font-size: 10px"],#page-jargon-encyclopedia [style*="font-size:10px"],#page-jargon-encyclopedia [style*="font-size: 10.5px"],
+#page-phylumpath [style*="font-size: 11px"],#page-phylumpath [style*="font-size:11px"],#page-phylumpath [style*="font-size: 10px"],#page-phylumpath [style*="font-size:10px"],
+#page-encyclopedia [style*="font-size: 11px"],#page-encyclopedia [style*="font-size:11px"],#page-encyclopedia [style*="font-size: 10px"],#page-encyclopedia [style*="font-size:10px"]{font-size:13px !important}
