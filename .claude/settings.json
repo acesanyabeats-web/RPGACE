@@ -4,6 +4,12 @@
     "CLAUDE.md"
   ],
   "auto_approve": false,
+  "permissions": {
+  "allow": [
+    "mcp__Supabase__execute_sql",
+    "mcp__Supabase__apply_migration"
+  ]
+},
   "check_commands": [
     "node --check rpgace_core.js"
   ],
