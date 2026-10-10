@@ -10823,7 +10823,7 @@ RPGACE.register('oracleAppGrounding', {
   // bugs"/"Biggest confirmed-not-built items" sections should update this
   // string in the same session - same discipline as every other oversight
   // doc, just condensed for token cost (rule 11).
-  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested by Alex; where a bullet doesn\'t explicitly say hand-tested, assume it hasn\'t been). Never assume this string is automatically current just because it exists - check its own newest dated fact before trusting an old memory of it; last reviewed Oct 10 2026 (Knowledge layout, Content & Video layout, Oracle page layout, gym tracker, stay signed in, share-and-return; daily life: fridge photo, watchlist digest; Business producer tools, recall + Bookworm cards, money guardrails, share-to-RPGACE; Encyclopedia posts from analysed videos, see the ENCYCLOPEDIA paragraph below; planned cooks can no longer vanish, see HABITS). ARCHITECTURE: the client is exactly ONE script, rpgace_core.js (index.html loads only rpgace_core.min.js) - main.js was mechanically merged into it Aug 20 2026, living on as a LEGACY SECTION near the top (bootstrap, password gate, page routing, career score, Quest Board). 58 real registered RPGACE.register() modules as of Sep 2026 - re-verify this count before quoting it, it has drifted before (a naive grep can double-count a documentation-template example inside a comment). Every module has a real internal ui/logic split (Sep 2026, G53) - zero public-API change, purely structural. RPGACE is a real installable PWA (Android/desktop Add-to-Home-Screen). Chronicles is a full searchable log page with click-through detail plus a personal-visibility-only finance ledger (not bookkeeping-grade). The profile stat card runs on real Supabase-derived data (Output = shipped content, Growth = learning/tree activity, kept as separate lanes). The Quest Board (addXP/completeQuest, owned by the questEngine module, built Aug 23-24 2026) HAS real persistence - completions write real quest_log rows, boot-time restore re-derives XP/level/done-state. Never repeat the old ("zero persistence") claim - false since Aug 24 2026. SECURITY/DATA: the app password and every /api/*.js endpoint are checked server-side (fixed July 24, independently verified live). Since Oct 10 2026 (authGate) a device that logs in with the password stays signed in: it keeps the server-issued secret in local storage, re-checks it with /api/auth on each launch (a rotated secret sends it back to the password screen), and the left-nav drawer has a Sign out on this device button. renderMarkdown() escapes HTML before rendering (XSS fixed July 28). RLS is enabled on every real Supabase table - most are anon-read-only/authenticated-all; a small, deliberate, named set (oracle_fallback_queue, openmontage_jobs, error_log, smoke_test_items, ceo_plan_items) stays anon-writable because a real external writer (a Routine, the browser app itself, or a separate Claude Code session) genuinely needs that access - never suggest restricting those without checking first. There is NO Supabase backup or point-in-time recovery at all - Alex explicitly chose to stay on the Free plan and accept that risk (confirmed Sep 15 2026); do not re-raise this as an open question. ORACLE MECHANISMS: Oracle Control (a curated oracle_actions Supabase table) drives a real confirm-before-execute mechanism - 5 real wired dispatch branches exist now (log_beat, new_quests, draft_email, yt_stats, log_notion), reached both from the floating overlay button on any page and from the dashboard quick-action/Agents-page buttons (both rewired in Sep 2026 to go through this one shared mechanism instead of their own bespoke per-button calls - a real rule-8 dedup). Oracle can also DRAFT a suggested brand-new action from its own self-awareness, but a suggestion only grows the real vocabulary once Alex approves it, and it still then needs a human-coded execution branch before it can do anything - never claim Oracle can execute an arbitrary task on its own. Fish Audio (real voice input/output) is a dormant, gated scaffold - no real API key exists, Oracle cannot actually speak or listen by voice yet. The browser-mic voiceInput module was retired outright Aug 30 2026 (Alex\'s own direct ask, ahead of Fish Audio) - there is currently NO voice-input path in RPGACE at all. Real Anthropic prompt caching is live on every Oracle call (a pure cost optimization, never changes what Oracle can say). A Kimi/Luna free-tier routing option exists in api/oracle.js but is dormant, no real key configured - never claim RPGACE runs on multiple AI models. errorLog automatically resolves a real thrown error back to the one module that caused it, attaches that module\'s real /perspective baseline, and - if that module has a smoke_test_items row - flips it to broken (cascading a linked plan item to purple only if it was genuinely green before) - this only ever catches errors that actually throw or show an error-colored toast, never a silent wrong-output bug with no visible symptom, and Oracle never proactively monitors the app - it only reacts when a real message is sent to it. OVERSIGHT / GALAXY MAP: 13 real oversight docs exist now (Tier a/b explaining+truth docs, this Oracle self-awareness string, smoke_test.html/error_log.html, future_integrations.html/achiever.html, and perspective_map.html - new Sep 2026, a live-query page cross-referencing every real perspective_reports row - plus graphify/Obsidian/the Galaxy Map). The Galaxy Map (reachable from the in-app Oversight popup) is a real 4-stop CONTAINMENT hierarchy - L0 (9 real units: RPGACE Architecture/Orchestrator CC/OpenMontage CC/Graphify CC/External AI/Skills/Alex/Supabase/Oversight Docs) contains L1 (12 live app-code rivers, plus 5 retired Total-systems categories kept as per-actor Infra/Inter breakdowns, not deleted) contains L2 (modules) contains Current/L3 (functions). Older Level-2.5/4/5/6 "rail stops" from earlier in the build are all retired or folded into Current/the Decision Matrix - never describe the map as having numbered levels past L3; cross-cutting facts (Externals/Decisions/Skills/Load/etc) are Dimension pages layered over the hierarchy, not additional rungs. 23 real Galaxy Map pages exist on disk as of late Sep 2026 - re-verify this count too before quoting it, it changes whenever a new page ships (most recently G117, a Generator Toolchain catalog page, Sep 22 2026). Every one of the 58 real registered modules plus all 12 live rivers has a real, evidence-grounded /perspective self-report as of mid-Sep 2026 (the Perspective Full Coverage plan is complete). A standing project-wide PAUSE on new Galaxy Map/Dimension work has been in effect since Sep 15 2026 (real evidence: product debt was sitting untouched under a wave of Galaxy-Map/meta work) - only explicit, narrowly-scoped, Alex-approved exceptions have shipped since - never assume a new Galaxy Map feature is fair game without checking whether Alex explicitly overrode the pause for it that specific time. KNOWN, STILL-OPEN GAPS: the swipe-gesture freeze bug has recurred for real (69 real occurrences logged Aug 27-Sep 20 2026) but still has no root cause found and no stack trace available (the browser\'s own Long Task API exposes no call stack) - never claim it\'s fixed, and don\'t attempt another blind code-only fix pass. reference_tracks.scale/genre are still 0 of 32 populated - "beat matches are always the same" traces directly to this; a backfill popup exists and has not been run. smoke_test.html\'s real hand-confirmed tally sits well under half of its rows - a large amount of shipped work is real and code-verified but genuinely unconfirmed by Alex\'s own hand; only his own hand-tick counts as "confirmed working," never a code-level test pass alone. HABITS/COOKING (cookingOracle + shoppingWishlist, RPGACE\'s newest domain, built Sep 10-22 2026): reached from a real "Cooking" dashboard card. Generate a recipe via Oracle chat (a real RECIPE_JSON: trailer); a real "Narrow it down" step runs first for a short/ambiguous description. Ingredients render with a live 7-color status system wherever shown - green=plenty, yellow=short (worded as "need N more, have M, T total needed"), red=none, blue=a same-aisle alternative in stock, purple=will run low/restock after this cook, orange=a real curated-or-heuristic substitute exists in stock, brown=a separable/optional component that can be omitted in No-Shop mode. Orange substitutes can be permanently confirmed (a tick, colour never changes) or declared-the-same-item as an existing stock row (a real, standing alias merge reassigning every FK reference) - curated potency ratios exist for a few specific real pairs Alex stated (e.g. tamarind concentrate is about 1/3 the amount of tamarind paste) and a real garlic clove/bulb count-equivalent bridge (8 cloves per bulb, bidirectional) - none of these numbers are invented, only ones Alex explicitly gave. A recipe card supports pantry-aware Oracle-suggested ingredient additions and a real diff-only critique-and-update flow via the floating overlay (Accept/Deny, never the whole recipe re-shown). New Sep 22: clicking Start on a scheduled planned cook opens a real, persistent Live Cook Mode panel inside the Oracle page itself (step timeline, elapsed-time ticker, per-step and recurring reminder timers) - not just a silent flag flip. New Oct 1 2026 (cookingOracle): a scheduled planned cook can also be started (Start cooking now, or Cook now straight from the schedule preview), finished (Cook finished in the Cooking hub or a Finished button in Live Cook Mode - marks planned_cooks cooked, completes its agenda entry and marks the recipes cooked in the journal) and given another recipe (reopens it as a draft) from inside Cooking itself, not only from the Daily Schedule. Planned-cook sessions persist as a real draft from the moment the first recipe joins (never silently lost on close/navigate-away); since Oct 5 2026 (cookingOracle), emptying a session only marks a still-draft planned_cooks row discarded (never a hard delete, never touching a scheduled or cooked cook), and pressing Done on a planned-cook entry in the Daily Schedule now marks that planned_cooks row cooked - before this, two real scheduled cooks were lost with no trace, support a real per-recipe delete, and use a true cross-recipe interleaved scheduler that front-loads prep across every recipe in the session rather than finishing one recipe\'s steps before starting the next. A real Current Stock view (Pantry/Fridge/Freezer/Equipment) and a real have/not-have shopping list (with a real "in basket" state between "need to find" and "bought") both exist, aisle-sorted. shoppingWishlist is a genuinely separate module (general future purchases like batteries/a wok/games, not ingredients) with its own priority-plus-budget-target fit calculator, writing a real Chronicles Finance expense on purchase. Every HABITS feature above is real, shipped, code-verified - but per the standing flag across this whole domain, effectively none of it has been hand-tested by Alex yet. TAXONOMY: real architecture change Sep 25 2026, now in a genuinely empty pre-rebuild state. jargon_encyclopedia is no longer a view over taxonomy_tree - it is a real standalone anchor table (term/phylum_number/explainer/status/taxonomy_node_id), now holding 545 real curated terms across phyla 1-20 (Phylum 1 got a real same-day top-up to 51 terms per Alex\'s own live-review feedback while browsing it; the other 19 phyla still sit at 26 each; none for phylum 21), most status=\'pending\' (a real, growing number are status=\'accepted\' as Alex works through his own review queue) - directly authored by a Claude Code session (source-tagged claude_code_prebuild), never yet generated by the live AI generator that also exists in code but has never actually been run. Jargon Encyclopedia is now a real standalone page (owned by the jargonEncyclopedia module, Sep 26 2026 UI rework) - reached via leftNav\'s Phylum Path subItem or the Taxonomy dashboard card\'s picker popup (dashDeck._openTaxonomy), never a button crammed onto Phylum Path\'s own title anymore. It shows EVERY term regardless of status (pending/accepted/rejected, each with a real status badge and filter chip), with real inline Accept/Edit/Reject actions per pending term (reusing phylumPath._resolvePendingTerm, the one real write path - never a second one). taxonomy_tree itself was first archived in full (671 old branch/leaf rows, a reversible flag) then, same day, actually DELETED to 0 rows at Alex\'s own direct follow-up ask (he judged even the archived structure not worth keeping while jargon gets built out first) - every phylum (1-21) is now a genuinely empty canvas below the phylum level, zero branches, zero leaves, zero fusion links (taxonomy_links is also 0 rows). A full pre-delete snapshot was committed first as the real restore path, since Supabase has no backup/PITR. The old \'Review Archived Terms\'/\'Review Pending Terms\' buttons on the Phylum Path page are gone - the former is genuinely dead (nothing archived left to review) and the latter is superseded by the new Jargon Encyclopedia page above. Never claim any specific phylum currently has real depth, real Orders/Classes, or any structure at all - every earlier claim of that shape (phyla 1-10 depth, Phylum 12\'s real Orders, a structurally-clean tree) describes a state from before this restructure and is not true again until Alex reviews the jargon terms and a real new phylum structure gets built around them. GYM (new Oct 10 2026, owned by the gymTracker module, HABITS module 2 after Cooking - both under a Habits domain on the dashboard): a Gym card logs sessions (exercise, sets, reps, kg; gym_sessions + gym_sets tables), shows this week against a 5-session target, personal bests per exercise (heaviest set plus an estimated 1-rep max) and recent sessions with a two-tap delete; Repeat last prefills the previous session, and beating a previous heaviest weight shows a New best toast. Gym sessions appear in Chronicles and the Morning Brief own-words section, and Ask My Data can read gym sets. No sessions exist until Alex logs one. Not yet hand-tested by Alex. DAILY LIFE (new Oct 10 2026, owned by the dailyLife module): every Current Stock tab (Pantry/Fridge/Freezer) has an Add-from-a-photo button - Oracle lists the food it sees in the photo, Alex reviews and edits the list, and each ticked row sets that item\'s amount through cookingOracle\'s own stock write (the same one the manual form uses); Oracle never adds stock without that review. Morning Brief has a New-from-your-watchlist button that checks the YouTube creators in intel_watchlist for uploads from the last 7 days (YouTube only - Instagram/TikTok creators cannot be checked) with an Analyse button that queues a video for Content Intelligence, and the brief prompt now includes Alex\'s own open quests, decisions due for a look-back and latest journal note so it can quote them back. Chronicles also shows completed quests and finished planned cooks. Not yet hand-tested by Alex. RECALL (new Oct 10 2026, owned by the recall module): saving an Encyclopedia idea card puts it on a forgetting-curve schedule (encyclopedia_insights.recall_step/recall_due: back after 1, 3, 7, 16 and 35 days); due ideas appear at the top of Morning Brief with Again (back tomorrow) or Got it (next interval; after the last one it counts as learned). A Bookworm chapter with insights has a Cards button that opens its insights as the same Deepstash-style idea cards; saving one writes it to encyclopedia_insights (source_entry_id book:<chapter id>) so book and video ideas share one Saved list and one recall queue. Not yet hand-tested by Alex. MONEY GUARDRAILS (new Oct 10 2026): the shoppingWishlist module asks an optional why-do-you-want-it reason when an item is added (wishlist_items.want_reason) and, for an item added under 24 hours ago, shows a cool-off step (time left plus that reason, Wait or Buy anyway) before the normal what-did-you-pay confirm - it never blocks a purchase. The decisionJournal module adds a Decisions strip on the Journal page: log a decision with the reason at the time and a look-back in 2, 4 or 8 weeks (journal rows, entry_type=decision, review_on); when the date arrives it asks how it turned out and saves the answer (journal.outcome). Not yet hand-tested by Alex. SHARE TO RPGACE (new Oct 10 2026, owned by the shareInbox module): the installed app appears in the Android share sheet (manifest share_target); sharing an Instagram reel, YouTube Short, TikTok or any link queues it into intel_jobs for Content Intelligence analysis, which needs Alex\'s PC analysis server running; after queuing it shows Sent to RPGACE and closes itself so Alex lands back in the app he shared from (if Android refuses the close, it says press Back). iPhone has no share-target support - an iOS Shortcut that opens the app with ?share_url= does the same. Not yet hand-tested by Alex. PATHWAYS (new Oct 10 2026, owned by the pathways module): an Encyclopedia post that came from an analysed video has buttons to turn that video\'s suggested quests into real Quest Board quests (questEngine, duplicates skipped), add its creator to the watchlist (intel_watchlist), and list Jargon Encyclopedia terms that appear in the article; Platform Oracle has an optional About-a-beat picker (beat_audio_jobs / content_productions) that prefixes every command with that beat; the Cooking shopping list has an Add-a-non-food-item-to-your-Wishlist form (shoppingWishlist). Not yet hand-tested by Alex. KNOWLEDGE LAYOUT (Oct 10 2026, N2 slice 3): the Encyclopedia page starts with the articles - category/sort chips sit in a folded Filter & sort section and Sync/Clear All in a folded Maintenance tools section, with search and a count line (naming the active category and sort) always visible; article titles wrap in full; an article made from an analysed video previews its first idea cards instead of making an Oracle call. Jargon Encyclopedia no longer repeats a not-placed line under every term. Encyclopedia, Jargon Encyclopedia and Phylum Path use 40px buttons and 13px+ text. Not yet hand-tested by Alex. CONTENT & VIDEO LAYOUT (Oct 10 2026, N2 slice 2): the ConID list, Idea Bank, Beat Log and Upload Workshop pages now use 40px buttons and 13px+ text, drop their doubled titles (the ConID list header reads Your productions), let ConID titles wrap instead of truncating, and show the stage badge as e.g. Visual Treatment ✓ - before this fix the badge text was the same colour as its background and could not be read. Beat Log extra fields reflow to two columns on a phone. Not yet hand-tested by Alex. ORACLE PAGE LAYOUT (Oct 10 2026, N2 slice 1): the chat input sits directly under the messages with one Tools row below it (New quests, Draft email, Log to Notion, YT stats, Prod. Oracle, Platform Oracle, Visual Oracle, Repurpose, Schedule Oracle, Phylum Path); the old Insta-Oracle button and a duplicate Quick Actions bar are gone; the former Agents page content (connected apps, one-click agent cards, activity log) is in a collapsed Agent actions & connected apps section at the bottom (agentsIntoOracle); long app-generated prompts in the chat show a 4-line preview with Show all. Not yet hand-tested by Alex. PLATFORM ORACLE (new Oct 10 2026, owned by the captionsPanel module): the Instagram, YouTube and TikTok command panels are now ONE panel - a single Platform Oracle button on the Oracle page opens it, with an Instagram / YouTube / TikTok / Business switch (13 / 8 / 8 / 5 pre-filled commands, stored in instaOraclePanel/youtubeOracle/tiktokOracle/producerTools). The Business tab (producerTools, Oct 10 2026) holds producer tools: A&R Critic, Artist Outreach, Contract Red Flags (plain-English explainer, not legal advice), Negotiation Rehearsal (role-play, then a debrief) and Playlist Psychologist (listening to beat ideas) - prompts only, nothing is sent to anyone automatically; a beat-pricing calculator does not exist because no finance data is logged yet. Tapping a command sends it to Oracle chat; the old Insta-Oracle button opens the same panel. Not yet hand-tested by Alex. ASK MY DATA (new Oct 10 2026, owned by the askMyData module): when Alex asks about his own saved data (pantry/stock, shopping list, recipes, planned cooks, wishlist, journal, quests, agenda, creator watchlist, analysed videos, encyclopedia, idea cards, jargon, reference tracks, finance log, books, content productions, RPGACE changelog), Oracle can request ONE read-only lookup with a DATA_QUERY trailer; the app fetches up to 30 rows, shows Alex which rows were used, and Oracle answers from those rows only. It cannot write or change data, and it only knows what those rows contain. Not yet hand-tested by Alex. NAVIGATION (new Oct 10 2026, owned by dashDeck + pathRouter): every popup has a sticky header with a Back button, a Domain > Card label and buttons for the other dashboard cards in the same domain; phone/browser Back closes the open popup first instead of leaving the page, and Back from a page that was opened from inside a popup returns to that page and reopens the card it came from. The sub-pages of Content Pipeline (ConID list, Idea Bank, Beat Log, Upload Workshop) and Bookworm (Bookworm, Videoworm, MusicWorm, Bibliography) have their own Back button (\u2190 Content Pipeline / \u2190 Bookworm, dashDeck._pageBack, Oct 10 2026) that does the same as phone Back; opened directly by link it shows the dashboard with that menu open. Not yet hand-tested by Alex. ENCYCLOPEDIA (new Oct 10 2026, owned by the encyclopediaPosts module): every Content Intelligence report (intel_reports) is automatically turned into a real encyclopedia article (source=intel, source_url = the video) plus one encyclopedia_insights row per idea card (idea_section/idea_order; saved_at when Alex saves an idea). Articles read Deepstash-style as a post of idea cards (Back/Next, card count, read time, Save idea, Full article); the Encyclopedia page shows a Posts strip with Series (posts sharing a tag) and Saved ideas. This replaced an old auto-save that only looked at the newest 5 reports and had stopped saving after the encyclopedia was cleared - so before Oct 10 none of the 37 analysed videos had an article. Not yet hand-tested by Alex; Knowledge Tree links to articles do not exist yet (the tree is empty). CONTENT PIPELINE: Research Lab is fully retired as a user-facing destination - its former panels live inside Content Pipeline/Bookworm cards now. RPGACE does not generate video itself - OpenMontage (a separate Claude Code session in its own repo) is briefed and handed off via openmontage_jobs, never live infrastructure; RPGACE has ruled out paid video providers on principle (zero spend). Real beat-grid audio sync does not exist - "in sync with the beat" currently means mood/palette-matched only. Features F0 through F18 have shipped except F12 (deliberately deferred); F16/F17/F18 remain real execution debt - shipped code, genuinely never hand-tested through their full flow yet.',
+  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested by Alex; where a bullet doesn\'t explicitly say hand-tested, assume it hasn\'t been). Never assume this string is automatically current just because it exists - check its own newest dated fact before trusting an old memory of it; last reviewed Oct 10 2026 (Cooking layout, Knowledge layout, Content & Video layout, Oracle page layout, gym tracker, stay signed in, share-and-return; daily life: fridge photo, watchlist digest; Business producer tools, recall + Bookworm cards, money guardrails, share-to-RPGACE; Encyclopedia posts from analysed videos, see the ENCYCLOPEDIA paragraph below; planned cooks can no longer vanish, see HABITS). ARCHITECTURE: the client is exactly ONE script, rpgace_core.js (index.html loads only rpgace_core.min.js) - main.js was mechanically merged into it Aug 20 2026, living on as a LEGACY SECTION near the top (bootstrap, password gate, page routing, career score, Quest Board). 58 real registered RPGACE.register() modules as of Sep 2026 - re-verify this count before quoting it, it has drifted before (a naive grep can double-count a documentation-template example inside a comment). Every module has a real internal ui/logic split (Sep 2026, G53) - zero public-API change, purely structural. RPGACE is a real installable PWA (Android/desktop Add-to-Home-Screen). Chronicles is a full searchable log page with click-through detail plus a personal-visibility-only finance ledger (not bookkeeping-grade). The profile stat card runs on real Supabase-derived data (Output = shipped content, Growth = learning/tree activity, kept as separate lanes). The Quest Board (addXP/completeQuest, owned by the questEngine module, built Aug 23-24 2026) HAS real persistence - completions write real quest_log rows, boot-time restore re-derives XP/level/done-state. Never repeat the old ("zero persistence") claim - false since Aug 24 2026. SECURITY/DATA: the app password and every /api/*.js endpoint are checked server-side (fixed July 24, independently verified live). Since Oct 10 2026 (authGate) a device that logs in with the password stays signed in: it keeps the server-issued secret in local storage, re-checks it with /api/auth on each launch (a rotated secret sends it back to the password screen), and the left-nav drawer has a Sign out on this device button. renderMarkdown() escapes HTML before rendering (XSS fixed July 28). RLS is enabled on every real Supabase table - most are anon-read-only/authenticated-all; a small, deliberate, named set (oracle_fallback_queue, openmontage_jobs, error_log, smoke_test_items, ceo_plan_items) stays anon-writable because a real external writer (a Routine, the browser app itself, or a separate Claude Code session) genuinely needs that access - never suggest restricting those without checking first. There is NO Supabase backup or point-in-time recovery at all - Alex explicitly chose to stay on the Free plan and accept that risk (confirmed Sep 15 2026); do not re-raise this as an open question. ORACLE MECHANISMS: Oracle Control (a curated oracle_actions Supabase table) drives a real confirm-before-execute mechanism - 5 real wired dispatch branches exist now (log_beat, new_quests, draft_email, yt_stats, log_notion), reached both from the floating overlay button on any page and from the dashboard quick-action/Agents-page buttons (both rewired in Sep 2026 to go through this one shared mechanism instead of their own bespoke per-button calls - a real rule-8 dedup). Oracle can also DRAFT a suggested brand-new action from its own self-awareness, but a suggestion only grows the real vocabulary once Alex approves it, and it still then needs a human-coded execution branch before it can do anything - never claim Oracle can execute an arbitrary task on its own. Fish Audio (real voice input/output) is a dormant, gated scaffold - no real API key exists, Oracle cannot actually speak or listen by voice yet. The browser-mic voiceInput module was retired outright Aug 30 2026 (Alex\'s own direct ask, ahead of Fish Audio) - there is currently NO voice-input path in RPGACE at all. Real Anthropic prompt caching is live on every Oracle call (a pure cost optimization, never changes what Oracle can say). A Kimi/Luna free-tier routing option exists in api/oracle.js but is dormant, no real key configured - never claim RPGACE runs on multiple AI models. errorLog automatically resolves a real thrown error back to the one module that caused it, attaches that module\'s real /perspective baseline, and - if that module has a smoke_test_items row - flips it to broken (cascading a linked plan item to purple only if it was genuinely green before) - this only ever catches errors that actually throw or show an error-colored toast, never a silent wrong-output bug with no visible symptom, and Oracle never proactively monitors the app - it only reacts when a real message is sent to it. OVERSIGHT / GALAXY MAP: 13 real oversight docs exist now (Tier a/b explaining+truth docs, this Oracle self-awareness string, smoke_test.html/error_log.html, future_integrations.html/achiever.html, and perspective_map.html - new Sep 2026, a live-query page cross-referencing every real perspective_reports row - plus graphify/Obsidian/the Galaxy Map). The Galaxy Map (reachable from the in-app Oversight popup) is a real 4-stop CONTAINMENT hierarchy - L0 (9 real units: RPGACE Architecture/Orchestrator CC/OpenMontage CC/Graphify CC/External AI/Skills/Alex/Supabase/Oversight Docs) contains L1 (12 live app-code rivers, plus 5 retired Total-systems categories kept as per-actor Infra/Inter breakdowns, not deleted) contains L2 (modules) contains Current/L3 (functions). Older Level-2.5/4/5/6 "rail stops" from earlier in the build are all retired or folded into Current/the Decision Matrix - never describe the map as having numbered levels past L3; cross-cutting facts (Externals/Decisions/Skills/Load/etc) are Dimension pages layered over the hierarchy, not additional rungs. 23 real Galaxy Map pages exist on disk as of late Sep 2026 - re-verify this count too before quoting it, it changes whenever a new page ships (most recently G117, a Generator Toolchain catalog page, Sep 22 2026). Every one of the 58 real registered modules plus all 12 live rivers has a real, evidence-grounded /perspective self-report as of mid-Sep 2026 (the Perspective Full Coverage plan is complete). A standing project-wide PAUSE on new Galaxy Map/Dimension work has been in effect since Sep 15 2026 (real evidence: product debt was sitting untouched under a wave of Galaxy-Map/meta work) - only explicit, narrowly-scoped, Alex-approved exceptions have shipped since - never assume a new Galaxy Map feature is fair game without checking whether Alex explicitly overrode the pause for it that specific time. KNOWN, STILL-OPEN GAPS: the swipe-gesture freeze bug has recurred for real (69 real occurrences logged Aug 27-Sep 20 2026) but still has no root cause found and no stack trace available (the browser\'s own Long Task API exposes no call stack) - never claim it\'s fixed, and don\'t attempt another blind code-only fix pass. reference_tracks.scale/genre are still 0 of 32 populated - "beat matches are always the same" traces directly to this; a backfill popup exists and has not been run. smoke_test.html\'s real hand-confirmed tally sits well under half of its rows - a large amount of shipped work is real and code-verified but genuinely unconfirmed by Alex\'s own hand; only his own hand-tick counts as "confirmed working," never a code-level test pass alone. HABITS/COOKING (cookingOracle + shoppingWishlist, RPGACE\'s newest domain, built Sep 10-22 2026): reached from a real "Cooking" dashboard card. Generate a recipe via Oracle chat (a real RECIPE_JSON: trailer); a real "Narrow it down" step runs first for a short/ambiguous description. Ingredients render with a live 7-color status system wherever shown - green=plenty, yellow=short (worded as "need N more, have M, T total needed"), red=none, blue=a same-aisle alternative in stock, purple=will run low/restock after this cook, orange=a real curated-or-heuristic substitute exists in stock, brown=a separable/optional component that can be omitted in No-Shop mode. Orange substitutes can be permanently confirmed (a tick, colour never changes) or declared-the-same-item as an existing stock row (a real, standing alias merge reassigning every FK reference) - curated potency ratios exist for a few specific real pairs Alex stated (e.g. tamarind concentrate is about 1/3 the amount of tamarind paste) and a real garlic clove/bulb count-equivalent bridge (8 cloves per bulb, bidirectional) - none of these numbers are invented, only ones Alex explicitly gave. A recipe card supports pantry-aware Oracle-suggested ingredient additions and a real diff-only critique-and-update flow via the floating overlay (Accept/Deny, never the whole recipe re-shown). New Sep 22: clicking Start on a scheduled planned cook opens a real, persistent Live Cook Mode panel inside the Oracle page itself (step timeline, elapsed-time ticker, per-step and recurring reminder timers) - not just a silent flag flip. New Oct 1 2026 (cookingOracle): a scheduled planned cook can also be started (Start cooking now, or Cook now straight from the schedule preview), finished (Cook finished in the Cooking hub or a Finished button in Live Cook Mode - marks planned_cooks cooked, completes its agenda entry and marks the recipes cooked in the journal) and given another recipe (reopens it as a draft) from inside Cooking itself, not only from the Daily Schedule. Planned-cook sessions persist as a real draft from the moment the first recipe joins (never silently lost on close/navigate-away); since Oct 5 2026 (cookingOracle), emptying a session only marks a still-draft planned_cooks row discarded (never a hard delete, never touching a scheduled or cooked cook), and pressing Done on a planned-cook entry in the Daily Schedule now marks that planned_cooks row cooked - before this, two real scheduled cooks were lost with no trace, support a real per-recipe delete, and use a true cross-recipe interleaved scheduler that front-loads prep across every recipe in the session rather than finishing one recipe\'s steps before starting the next. A real Current Stock view (Pantry/Fridge/Freezer/Equipment) and a real have/not-have shopping list (with a real "in basket" state between "need to find" and "bought") both exist, aisle-sorted. shoppingWishlist is a genuinely separate module (general future purchases like batteries/a wok/games, not ingredients) with its own priority-plus-budget-target fit calculator, writing a real Chronicles Finance expense on purchase. Every HABITS feature above is real, shipped, code-verified - but per the standing flag across this whole domain, effectively none of it has been hand-tested by Alex yet. TAXONOMY: real architecture change Sep 25 2026, now in a genuinely empty pre-rebuild state. jargon_encyclopedia is no longer a view over taxonomy_tree - it is a real standalone anchor table (term/phylum_number/explainer/status/taxonomy_node_id), now holding 545 real curated terms across phyla 1-20 (Phylum 1 got a real same-day top-up to 51 terms per Alex\'s own live-review feedback while browsing it; the other 19 phyla still sit at 26 each; none for phylum 21), most status=\'pending\' (a real, growing number are status=\'accepted\' as Alex works through his own review queue) - directly authored by a Claude Code session (source-tagged claude_code_prebuild), never yet generated by the live AI generator that also exists in code but has never actually been run. Jargon Encyclopedia is now a real standalone page (owned by the jargonEncyclopedia module, Sep 26 2026 UI rework) - reached via leftNav\'s Phylum Path subItem or the Taxonomy dashboard card\'s picker popup (dashDeck._openTaxonomy), never a button crammed onto Phylum Path\'s own title anymore. It shows EVERY term regardless of status (pending/accepted/rejected, each with a real status badge and filter chip), with real inline Accept/Edit/Reject actions per pending term (reusing phylumPath._resolvePendingTerm, the one real write path - never a second one). taxonomy_tree itself was first archived in full (671 old branch/leaf rows, a reversible flag) then, same day, actually DELETED to 0 rows at Alex\'s own direct follow-up ask (he judged even the archived structure not worth keeping while jargon gets built out first) - every phylum (1-21) is now a genuinely empty canvas below the phylum level, zero branches, zero leaves, zero fusion links (taxonomy_links is also 0 rows). A full pre-delete snapshot was committed first as the real restore path, since Supabase has no backup/PITR. The old \'Review Archived Terms\'/\'Review Pending Terms\' buttons on the Phylum Path page are gone - the former is genuinely dead (nothing archived left to review) and the latter is superseded by the new Jargon Encyclopedia page above. Never claim any specific phylum currently has real depth, real Orders/Classes, or any structure at all - every earlier claim of that shape (phyla 1-10 depth, Phylum 12\'s real Orders, a structurally-clean tree) describes a state from before this restructure and is not true again until Alex reviews the jargon terms and a real new phylum structure gets built around them. GYM (new Oct 10 2026, owned by the gymTracker module, HABITS module 2 after Cooking - both under a Habits domain on the dashboard): a Gym card logs sessions (exercise, sets, reps, kg; gym_sessions + gym_sets tables), shows this week against a 5-session target, personal bests per exercise (heaviest set plus an estimated 1-rep max) and recent sessions with a two-tap delete; Repeat last prefills the previous session, and beating a previous heaviest weight shows a New best toast. Gym sessions appear in Chronicles and the Morning Brief own-words section, and Ask My Data can read gym sets. No sessions exist until Alex logs one. Not yet hand-tested by Alex. DAILY LIFE (new Oct 10 2026, owned by the dailyLife module): every Current Stock tab (Pantry/Fridge/Freezer) has an Add-from-a-photo button - Oracle lists the food it sees in the photo, Alex reviews and edits the list, and each ticked row sets that item\'s amount through cookingOracle\'s own stock write (the same one the manual form uses); Oracle never adds stock without that review. Morning Brief has a New-from-your-watchlist button that checks the YouTube creators in intel_watchlist for uploads from the last 7 days (YouTube only - Instagram/TikTok creators cannot be checked) with an Analyse button that queues a video for Content Intelligence, and the brief prompt now includes Alex\'s own open quests, decisions due for a look-back and latest journal note so it can quote them back. Chronicles also shows completed quests and finished planned cooks. Not yet hand-tested by Alex. RECALL (new Oct 10 2026, owned by the recall module): saving an Encyclopedia idea card puts it on a forgetting-curve schedule (encyclopedia_insights.recall_step/recall_due: back after 1, 3, 7, 16 and 35 days); due ideas appear at the top of Morning Brief with Again (back tomorrow) or Got it (next interval; after the last one it counts as learned). A Bookworm chapter with insights has a Cards button that opens its insights as the same Deepstash-style idea cards; saving one writes it to encyclopedia_insights (source_entry_id book:<chapter id>) so book and video ideas share one Saved list and one recall queue. Not yet hand-tested by Alex. MONEY GUARDRAILS (new Oct 10 2026): the shoppingWishlist module asks an optional why-do-you-want-it reason when an item is added (wishlist_items.want_reason) and, for an item added under 24 hours ago, shows a cool-off step (time left plus that reason, Wait or Buy anyway) before the normal what-did-you-pay confirm - it never blocks a purchase. The decisionJournal module adds a Decisions strip on the Journal page: log a decision with the reason at the time and a look-back in 2, 4 or 8 weeks (journal rows, entry_type=decision, review_on); when the date arrives it asks how it turned out and saves the answer (journal.outcome). Not yet hand-tested by Alex. SHARE TO RPGACE (new Oct 10 2026, owned by the shareInbox module): the installed app appears in the Android share sheet (manifest share_target); sharing an Instagram reel, YouTube Short, TikTok or any link queues it into intel_jobs for Content Intelligence analysis, which needs Alex\'s PC analysis server running; after queuing it shows Sent to RPGACE and closes itself so Alex lands back in the app he shared from (if Android refuses the close, it says press Back). iPhone has no share-target support - an iOS Shortcut that opens the app with ?share_url= does the same. Not yet hand-tested by Alex. PATHWAYS (new Oct 10 2026, owned by the pathways module): an Encyclopedia post that came from an analysed video has buttons to turn that video\'s suggested quests into real Quest Board quests (questEngine, duplicates skipped), add its creator to the watchlist (intel_watchlist), and list Jargon Encyclopedia terms that appear in the article; Platform Oracle has an optional About-a-beat picker (beat_audio_jobs / content_productions) that prefixes every command with that beat; the Cooking shopping list has an Add-a-non-food-item-to-your-Wishlist form (shoppingWishlist). Not yet hand-tested by Alex. COOKING LAYOUT (Oct 10 2026, N2 slice 4): every Cooking button comes from one shared token set (cookingOracle BTN_VARIANTS) and now has a 36-44px tap target with 13px+ text; ingredient rows, step headers and hub descriptions are 12-13px; the Current Stock unit box no longer runs off the screen; and liquid amounts read in quarter cups with the original ml kept, e.g. 200 ml = 3/4 cup + 1 tbsp + 1 tsp (200 ml) instead of 13 tbsp 1 tsp. Not yet hand-tested by Alex. KNOWLEDGE LAYOUT (Oct 10 2026, N2 slice 3): the Encyclopedia page starts with the articles - category/sort chips sit in a folded Filter & sort section and Sync/Clear All in a folded Maintenance tools section, with search and a count line (naming the active category and sort) always visible; article titles wrap in full; an article made from an analysed video previews its first idea cards instead of making an Oracle call. Jargon Encyclopedia no longer repeats a not-placed line under every term. Encyclopedia, Jargon Encyclopedia and Phylum Path use 40px buttons and 13px+ text. Not yet hand-tested by Alex. CONTENT & VIDEO LAYOUT (Oct 10 2026, N2 slice 2): the ConID list, Idea Bank, Beat Log and Upload Workshop pages now use 40px buttons and 13px+ text, drop their doubled titles (the ConID list header reads Your productions), let ConID titles wrap instead of truncating, and show the stage badge as e.g. Visual Treatment ✓ - before this fix the badge text was the same colour as its background and could not be read. Beat Log extra fields reflow to two columns on a phone. Not yet hand-tested by Alex. ORACLE PAGE LAYOUT (Oct 10 2026, N2 slice 1): the chat input sits directly under the messages with one Tools row below it (New quests, Draft email, Log to Notion, YT stats, Prod. Oracle, Platform Oracle, Visual Oracle, Repurpose, Schedule Oracle, Phylum Path); the old Insta-Oracle button and a duplicate Quick Actions bar are gone; the former Agents page content (connected apps, one-click agent cards, activity log) is in a collapsed Agent actions & connected apps section at the bottom (agentsIntoOracle); long app-generated prompts in the chat show a 4-line preview with Show all. Not yet hand-tested by Alex. PLATFORM ORACLE (new Oct 10 2026, owned by the captionsPanel module): the Instagram, YouTube and TikTok command panels are now ONE panel - a single Platform Oracle button on the Oracle page opens it, with an Instagram / YouTube / TikTok / Business switch (13 / 8 / 8 / 5 pre-filled commands, stored in instaOraclePanel/youtubeOracle/tiktokOracle/producerTools). The Business tab (producerTools, Oct 10 2026) holds producer tools: A&R Critic, Artist Outreach, Contract Red Flags (plain-English explainer, not legal advice), Negotiation Rehearsal (role-play, then a debrief) and Playlist Psychologist (listening to beat ideas) - prompts only, nothing is sent to anyone automatically; a beat-pricing calculator does not exist because no finance data is logged yet. Tapping a command sends it to Oracle chat; the old Insta-Oracle button opens the same panel. Not yet hand-tested by Alex. ASK MY DATA (new Oct 10 2026, owned by the askMyData module): when Alex asks about his own saved data (pantry/stock, shopping list, recipes, planned cooks, wishlist, journal, quests, agenda, creator watchlist, analysed videos, encyclopedia, idea cards, jargon, reference tracks, finance log, books, content productions, RPGACE changelog), Oracle can request ONE read-only lookup with a DATA_QUERY trailer; the app fetches up to 30 rows, shows Alex which rows were used, and Oracle answers from those rows only. It cannot write or change data, and it only knows what those rows contain. Not yet hand-tested by Alex. NAVIGATION (new Oct 10 2026, owned by dashDeck + pathRouter): every popup has a sticky header with a Back button, a Domain > Card label and buttons for the other dashboard cards in the same domain; phone/browser Back closes the open popup first instead of leaving the page, and Back from a page that was opened from inside a popup returns to that page and reopens the card it came from. The sub-pages of Content Pipeline (ConID list, Idea Bank, Beat Log, Upload Workshop) and Bookworm (Bookworm, Videoworm, MusicWorm, Bibliography) have their own Back button (\u2190 Content Pipeline / \u2190 Bookworm, dashDeck._pageBack, Oct 10 2026) that does the same as phone Back; opened directly by link it shows the dashboard with that menu open. Not yet hand-tested by Alex. ENCYCLOPEDIA (new Oct 10 2026, owned by the encyclopediaPosts module): every Content Intelligence report (intel_reports) is automatically turned into a real encyclopedia article (source=intel, source_url = the video) plus one encyclopedia_insights row per idea card (idea_section/idea_order; saved_at when Alex saves an idea). Articles read Deepstash-style as a post of idea cards (Back/Next, card count, read time, Save idea, Full article); the Encyclopedia page shows a Posts strip with Series (posts sharing a tag) and Saved ideas. This replaced an old auto-save that only looked at the newest 5 reports and had stopped saving after the encyclopedia was cleared - so before Oct 10 none of the 37 analysed videos had an article. Not yet hand-tested by Alex; Knowledge Tree links to articles do not exist yet (the tree is empty). CONTENT PIPELINE: Research Lab is fully retired as a user-facing destination - its former panels live inside Content Pipeline/Bookworm cards now. RPGACE does not generate video itself - OpenMontage (a separate Claude Code session in its own repo) is briefed and handed off via openmontage_jobs, never live infrastructure; RPGACE has ruled out paid video providers on principle (zero spend). Real beat-grid audio sync does not exist - "in sync with the beat" currently means mood/palette-matched only. Features F0 through F18 have shipped except F12 (deliberately deferred); F16/F17/F18 remain real execution debt - shipped code, genuinely never hand-tested through their full flow yet.',
 
   init: function() {
     var self = this;
@@ -38958,42 +38958,42 @@ RPGACE.register('cookingOracle', {
       // Strong, full-width call-to-action — green = commits real DATA
       // or STOCK (Generate/Confirm/Bought/Save Settings/Set stock/Add
       // equipment).
-      primary: 'width:100%;padding:11px;background:rgba(76,175,130,0.12);border:1px solid rgba(76,175,130,0.35);border-radius:8px;color:var(--green);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;',
+      primary: 'width:100%;padding:11px;min-height:44px;background:rgba(76,175,130,0.12);border:1px solid rgba(76,175,130,0.35);border-radius:8px;color:var(--green);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;',
       // Same strength/shape as primary — gold = commits to the real
       // JOURNAL or CALENDAR (Save to Journal/Schedule cook time/Accept
       // schedule/Revert to draft).
-      primaryGold: 'width:100%;padding:11px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);border-radius:8px;color:var(--gold);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;',
+      primaryGold: 'width:100%;padding:11px;min-height:44px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.35);border-radius:8px;color:var(--gold);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;',
       // Full-width, bordered, real-text-color — a genuine, notable
       // optional action (e.g. "+ Add another saved recipe").
-      secondary: 'width:100%;padding:9px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;',
+      secondary: 'width:100%;padding:9px;min-height:40px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;cursor:pointer;font-family:Rajdhani,sans-serif;',
       // Same shape as secondary, muted text — a lower-emphasis optional
       // action (e.g. "⚙ Habits Settings", "📦 Pantry").
-      ghost: 'width:100%;padding:9px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;',
+      ghost: 'width:100%;padding:9px;min-height:40px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--muted);font-size:13px;cursor:pointer;font-family:Rajdhani,sans-serif;',
       // No border/background at all — a plain text-link action (e.g.
       // "Done for now", "← Back to edit", "Close").
-      plainLink: 'width:100%;padding:8px;background:none;border:none;border-radius:8px;color:var(--muted);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;',
+      plainLink: 'width:100%;padding:8px;min-height:40px;background:none;border:none;border-radius:8px;color:var(--muted);font-size:13px;cursor:pointer;font-family:Rajdhani,sans-serif;',
       // Row-context (inline, not full-width) bordered small action —
       // Bought/Add to basket/Redo/Confirm/timer-start/+Add ingredient.
       // opts.color/opts.bg on _mkBtn override the neutral default for a
       // colored inline action.
-      inline: 'padding:5px 10px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;',
+      inline: 'padding:6px 12px;min-height:36px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;cursor:pointer;font-family:Rajdhani,sans-serif;',
       // Row-context icon-only, muted — a real, deliberately LIGHTER
       // reversible action than delete (e.g. the basket "↩" undo, a
       // cheap non-destructive boolean flip — Alex's own confirmed call:
       // single-click, no arm/confirm, since nothing real is lost).
-      iconGhost: 'padding:5px 8px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;',
+      iconGhost: 'padding:5px 8px;min-height:36px;min-width:36px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--muted);font-size:13px;cursor:pointer;font-family:Rajdhani,sans-serif;',
       // Row-context icon-only, real 2-click arm/confirm delete (see
       // _mkDeleteArmBtn below — this string alone doesn't wire the
       // interaction). font-family was silently missing on 2 of the 3
       // original hand-rolled copies this consolidates — a real bug,
       // now impossible to reintroduce since there's only one real copy.
-      deleteArm: 'background:none;border:none;color:rgba(226,84,84,.4);font-size:13px;cursor:pointer;padding:2px 4px;flex-shrink:0;font-family:Rajdhani,sans-serif;',
+      deleteArm: 'background:none;border:none;color:rgba(226,84,84,.55);font-size:15px;cursor:pointer;padding:4px 8px;min-width:36px;min-height:36px;flex-shrink:0;font-family:Rajdhani,sans-serif;',
       // Rounded selector chip — dish-type/narrow-down picks only.
-      pillChip: 'padding:6px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:16px;color:var(--text);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;',
+      pillChip: 'padding:6px 12px;min-height:36px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:16px;color:var(--text);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;',
       // Segmented tab-switcher (Current Stock's Pantry/Fridge/Freezer/
       // Equipment tabs) — font-size corrected from a real stray 11.5px
       // one-off to the module's real 11px scale.
-      tab: 'flex:1;min-width:88px;padding:8px 6px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:var(--muted);font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;',
+      tab: 'flex:1;min-width:88px;padding:8px 6px;min-height:40px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,0.03);color:var(--muted);font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;',
       // The module-hub's own 3-option chooser card (label + sub-line) —
       // a real, deliberately distinct navigational-card role, not a
       // normal action button; kept as its own named variant rather than
@@ -39152,7 +39152,7 @@ RPGACE.register('cookingOracle', {
         btn.appendChild(top);
         if (sub) {
           var subEl = document.createElement('div');
-          subEl.style.cssText = 'font-size:11px;color:var(--muted);font-weight:400;margin-top:2px;';
+          subEl.style.cssText = 'font-size:13px;color:var(--muted);font-weight:400;margin-top:2px;';
           subEl.textContent = sub;
           btn.appendChild(subEl);
         }
@@ -39482,7 +39482,7 @@ RPGACE.register('cookingOracle', {
       box.appendChild(ctx);
 
       var typeHeading = document.createElement('div');
-      typeHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;';
+      typeHeading.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;';
       typeHeading.textContent = 'What type of dish?';
       box.appendChild(typeHeading);
 
@@ -39514,7 +39514,7 @@ RPGACE.register('cookingOracle', {
       });
 
       var ingHeading = document.createElement('div');
-      ingHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;';
+      ingHeading.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;';
       ingHeading.textContent = 'Any particular ingredients? (optional)';
       box.appendChild(ingHeading);
 
@@ -39610,7 +39610,7 @@ RPGACE.register('cookingOracle', {
       row.style.cssText = 'display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;';
       list.forEach(function(u) {
         var chip = document.createElement('span');
-        chip.style.cssText = 'font-size:11px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);color:var(--gold);border-radius:10px;padding:2px 8px;';
+        chip.style.cssText = 'font-size:13px;background:rgba(201,168,76,0.12);border:1px solid rgba(201,168,76,0.3);color:var(--gold);border-radius:10px;padding:2px 8px;';
         var amt = (u.amount != null) ? self.logic._fmtMeasurement(u.amount, u.unit) + ' ' : '';
         chip.textContent = amt + (u.name || '');
         row.appendChild(chip);
@@ -39765,7 +39765,7 @@ RPGACE.register('cookingOracle', {
       header.style.cssText = 'display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:8px;';
       var titleBox = document.createElement('div');
       var eyebrow = document.createElement('div');
-      eyebrow.style.cssText = 'font-family:\'Cinzel\',serif;font-size:11px;color:var(--green);letter-spacing:1px;';
+      eyebrow.style.cssText = 'font-family:\'Cinzel\',serif;font-size:13px;color:var(--green);letter-spacing:1px;';
       eyebrow.textContent = '🍳 LIVE COOK SESSION';
       titleBox.appendChild(eyebrow);
       var elapsedLine = document.createElement('div');
@@ -39824,7 +39824,7 @@ RPGACE.register('cookingOracle', {
         var row = document.createElement('div');
         row.style.cssText = 'border-left:3px solid ' + meta.color + ';background:rgba(255,255,255,0.03);border-radius:0 6px 6px 0;padding:7px 12px;margin-bottom:6px;font-size:12px;';
         var top = document.createElement('div');
-        top.style.cssText = 'display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;color:' + meta.color + ';font-weight:700;font-size:11px;text-transform:uppercase;';
+        top.style.cssText = 'display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;color:' + meta.color + ';font-weight:700;font-size:13px;text-transform:uppercase;';
         var left = document.createElement('span');
         left.textContent = self.logic._fmtMin(b.start) + '–' + self.logic._fmtMin(b.end) + ' · ' + meta.label;
         var right = document.createElement('span');
@@ -39941,13 +39941,13 @@ RPGACE.register('cookingOracle', {
       if (pinkOthers && pinkOthers.length) {
         pinkOthers.forEach(function(line) {
           var otherNote = document.createElement('div');
-          otherNote.style.cssText = 'font-size:10px;color:#D46FA3;margin-top:3px;';
+          otherNote.style.cssText = 'font-size:12px;color:#D46FA3;margin-top:3px;';
           otherNote.textContent = '🩷 ' + line;
           row.appendChild(otherNote);
         });
       }
       var noteEl = document.createElement('div');
-      noteEl.style.cssText = 'font-size:10px;color:var(--muted);margin-top:3px;';
+      noteEl.style.cssText = 'font-size:12px;color:var(--muted);margin-top:3px;';
       if (status === 'orange' && ingredientId && subName) {
         // H24 (8th pass) — a real, curated potency ratio (never a guess)
         // turns "use X instead" into "use ~N unit of X instead," plus the
@@ -39964,12 +39964,12 @@ RPGACE.register('cookingOracle', {
           row.appendChild(noteEl);
           if (subRatioNote) {
             var ratioNoteEl = document.createElement('div');
-            ratioNoteEl.style.cssText = 'font-size:10px;color:var(--muted);margin-top:2px;font-style:italic;';
+            ratioNoteEl.style.cssText = 'font-size:12px;color:var(--muted);margin-top:2px;font-style:italic;';
             ratioNoteEl.textContent = subRatioNote;
             row.appendChild(ratioNoteEl);
           }
         } else {
-          var btn = self.ui._mkBtn('✓ Use ' + subLabel + ' instead', 'inline', { extra: 'margin-top:5px;font-size:10px;padding:3px 8px;', color: 'var(--green)', borderColor: 'rgba(76,175,130,.35)' });
+          var btn = self.ui._mkBtn('✓ Use ' + subLabel + ' instead', 'inline', { extra: 'margin-top:5px;font-size:12px;padding:3px 8px;', color: 'var(--green)', borderColor: 'rgba(76,175,130,.35)' });
           btn.onclick = function() {
             btn.disabled = true;
             btn.textContent = '⏳ Saving...';
@@ -39986,7 +39986,7 @@ RPGACE.register('cookingOracle', {
               btn.remove();
               if (subRatioNote) {
                 var ratioNoteEl2 = document.createElement('div');
-                ratioNoteEl2.style.cssText = 'font-size:10px;color:var(--muted);margin-top:2px;font-style:italic;';
+                ratioNoteEl2.style.cssText = 'font-size:12px;color:var(--muted);margin-top:2px;font-style:italic;';
                 ratioNoteEl2.textContent = subRatioNote;
                 row.appendChild(ratioNoteEl2);
               }
@@ -39995,7 +39995,7 @@ RPGACE.register('cookingOracle', {
           };
           if (subRatioNote) {
             var ratioHintEl = document.createElement('div');
-            ratioHintEl.style.cssText = 'font-size:10px;color:var(--muted);margin-top:3px;font-style:italic;';
+            ratioHintEl.style.cssText = 'font-size:12px;color:var(--muted);margin-top:3px;font-style:italic;';
             ratioHintEl.textContent = subRatioNote;
             row.appendChild(ratioHintEl);
           }
@@ -40026,7 +40026,7 @@ RPGACE.register('cookingOracle', {
               if (onMerged) onMerged();
             });
           },
-          { extra: 'margin-top:5px;font-size:10px;padding:3px 8px;', color: 'var(--gold)', borderColor: 'rgba(201,168,76,.35)' }
+          { extra: 'margin-top:5px;font-size:12px;padding:3px 8px;', color: 'var(--gold)', borderColor: 'rgba(201,168,76,.35)' }
         );
         row.appendChild(sameBtn);
       }
@@ -40044,7 +40044,7 @@ RPGACE.register('cookingOracle', {
       if ((status === 'orange' || status === 'blue') && ingredientId && stockNames && stockNames.length) {
         var pickWrap = document.createElement('div');
         pickWrap.style.cssText = 'margin-top:5px;';
-        var pickToggle = self.ui._mkBtn('🔍 Pick from stock instead', 'inline', { extra: 'font-size:10px;padding:3px 8px;', color: 'var(--muted)', borderColor: 'rgba(255,255,255,.15)' });
+        var pickToggle = self.ui._mkBtn('🔍 Pick from stock instead', 'inline', { extra: 'font-size:12px;padding:3px 8px;', color: 'var(--muted)', borderColor: 'rgba(255,255,255,.15)' });
         var pickBody = document.createElement('div');
         pickBody.style.cssText = 'display:none;margin-top:5px;gap:5px;flex-wrap:wrap;align-items:center;';
         var dlId = 'stockpick-' + ingredientId + '-' + Math.random().toString(36).slice(2, 8);
@@ -40052,7 +40052,7 @@ RPGACE.register('cookingOracle', {
         pickInput.type = 'text';
         pickInput.placeholder = 'Type or pick a real stock item...';
         pickInput.setAttribute('list', dlId);
-        pickInput.style.cssText = 'font-size:11px;padding:3px 6px;border-radius:4px;border:1px solid rgba(255,255,255,.2);background:var(--panel2,#1a1a24);color:var(--text);width:170px;';
+        pickInput.style.cssText = 'font-size:13px;padding:3px 6px;border-radius:4px;border:1px solid rgba(255,255,255,.2);background:var(--panel2,#1a1a24);color:var(--text);width:170px;';
         var dl = document.createElement('datalist');
         dl.id = dlId;
         stockNames.forEach(function(n) {
@@ -40080,7 +40080,7 @@ RPGACE.register('cookingOracle', {
               if (onMerged) onMerged();
             });
           },
-          { extra: 'font-size:10px;padding:3px 8px;', color: 'var(--gold)', borderColor: 'rgba(201,168,76,.35)' }
+          { extra: 'font-size:12px;padding:3px 8px;', color: 'var(--gold)', borderColor: 'rgba(201,168,76,.35)' }
         );
         pickToggle.onclick = function() {
           var showing = pickBody.style.display !== 'none';
@@ -40104,11 +40104,11 @@ RPGACE.register('cookingOracle', {
         var deriv = derivableFrom.deriv;
         var srcNeeded = (typeof neededAmount === 'number' && neededAmount > 0) ? (neededAmount / (deriv.yieldRatio || 1)) : null;
         var infoEl = document.createElement('div');
-        infoEl.style.cssText = 'font-size:10px;color:var(--muted);margin-top:3px;';
+        infoEl.style.cssText = 'font-size:12px;color:var(--muted);margin-top:3px;';
         infoEl.textContent = 'Have ' + derivableFrom.srcHave + ' ' + deriv.sourceName + ' in stock. ' + deriv.instructions;
         row.appendChild(infoEl);
         if (srcNeeded && srcNeeded <= derivableFrom.srcHave) {
-          var deriveBtn = self.ui._mkBtn('⚗️ Derive & use ' + srcNeeded + ' ' + deriv.sourceName, 'inline', { extra: 'margin-top:5px;font-size:10px;padding:3px 8px;', color: meta.color, borderColor: 'rgba(166,49,75,.35)' });
+          var deriveBtn = self.ui._mkBtn('⚗️ Derive & use ' + srcNeeded + ' ' + deriv.sourceName, 'inline', { extra: 'margin-top:5px;font-size:12px;padding:3px 8px;', color: meta.color, borderColor: 'rgba(166,49,75,.35)' });
           deriveBtn.onclick = function() {
             deriveBtn.disabled = true;
             deriveBtn.textContent = '⏳ Deriving...';
@@ -40120,7 +40120,7 @@ RPGACE.register('cookingOracle', {
                 return;
               }
               var derivedNote = document.createElement('div');
-              derivedNote.style.cssText = 'font-size:10px;color:var(--muted);margin-top:3px;';
+              derivedNote.style.cssText = 'font-size:12px;color:var(--muted);margin-top:3px;';
               derivedNote.textContent = '✓ Derived — used ' + result.consumed + ' ' + deriv.sourceName + (result.shortfall > 0 ? ' (real shortfall: ' + result.shortfall + ' short of what was needed)' : '');
               row.appendChild(derivedNote);
               deriveBtn.remove();
@@ -40162,7 +40162,7 @@ RPGACE.register('cookingOracle', {
       (u.pinkInfo.perRecipe || []).forEach(function(pr) {
         var recipe = (sess.recipes || []).filter(function(r) { return r.id === pr.recipeId; })[0];
         var title = recipe ? recipe.title : 'this recipe';
-        var btn = self.ui._mkBtn('Give real stock to "' + title + '" (needs ' + pr.amount + ' ' + (u.unit || '') + ')', 'inline', { extra: 'font-size:10px;padding:4px 8px;text-align:left;', color: meta.color, borderColor: 'rgba(212,111,163,.35)' });
+        var btn = self.ui._mkBtn('Give real stock to "' + title + '" (needs ' + pr.amount + ' ' + (u.unit || '') + ')', 'inline', { extra: 'font-size:12px;padding:4px 8px;text-align:left;', color: meta.color, borderColor: 'rgba(212,111,163,.35)' });
         btn.onclick = function() {
           btn.disabled = true;
           btn.textContent = '⏳ Saving...';
@@ -40363,7 +40363,7 @@ RPGACE.register('cookingOracle', {
       box.appendChild(scaleRow);
 
       var ingHeading = document.createElement('div');
-      ingHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;';
+      ingHeading.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;';
       ingHeading.textContent = 'Ingredients';
       box.appendChild(ingHeading);
 
@@ -40454,12 +40454,12 @@ RPGACE.register('cookingOracle', {
                 // function's own H24 6th-pass extension).
                 if (ing.ingredient_id) {
                   var rateRow = document.createElement('div');
-                  rateRow.style.cssText = 'font-size:10px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:6px;';
+                  rateRow.style.cssText = 'font-size:12px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:6px;';
                   var rateLabel = document.createElement('span');
                   rateLabel.textContent = 'Rate this substitution:';
                   rateRow.appendChild(rateLabel);
                   var mkRateBtn = function(label, ratingValue) {
-                    var rb = self.ui._mkBtn(label, 'inline', { extra: 'font-size:10px;padding:2px 6px;' });
+                    var rb = self.ui._mkBtn(label, 'inline', { extra: 'font-size:12px;padding:2px 6px;' });
                     rb.onclick = function() {
                       rb.disabled = true;
                       self.logic._rateSubstitution(ing.ingredient_id, sub.name, ratingValue, function(err) {
@@ -40648,7 +40648,7 @@ RPGACE.register('cookingOracle', {
             left.appendChild(nameLine);
             if (s.reason) {
               var reasonLine = document.createElement('div');
-              reasonLine.style.cssText = 'color:var(--muted);font-size:11px;margin-top:2px;';
+              reasonLine.style.cssText = 'color:var(--muted);font-size:13px;margin-top:2px;';
               reasonLine.textContent = s.reason;
               left.appendChild(reasonLine);
             }
@@ -40679,7 +40679,7 @@ RPGACE.register('cookingOracle', {
       // (never re-queried once cached, Alex's own explicit ask), then
       // computes a best-effort total from whatever's actually known.
       var nutHeading = document.createElement('div');
-      nutHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;';
+      nutHeading.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;';
       nutHeading.textContent = 'Nutrition (estimate)';
       box.appendChild(nutHeading);
 
@@ -40704,7 +40704,7 @@ RPGACE.register('cookingOracle', {
           var line2 = document.createElement('div');
           line2.textContent = 'Protein ' + Math.round(totals.protein) + 'g · Carbs ' + Math.round(totals.carbs) + 'g · Fat ' + Math.round(totals.fat) + 'g (total)';
           var line3 = document.createElement('div');
-          line3.style.cssText = 'margin-top:4px;font-size:11px;';
+          line3.style.cssText = 'margin-top:4px;font-size:13px;';
           line3.textContent = 'Based on ' + totals.resolvedCount + ' of ' + totals.totalCount + ' ingredients with known nutrition'
             + (totals.resolvedCount < totals.totalCount ? ' — the rest weren\'t matched in CoFID or Open Food Facts' + (totals.lookupFailed ? ' (a lookup also failed for at least one — try again)' : '') + '.' : '.');
           nutBox.appendChild(line1);
@@ -40715,7 +40715,7 @@ RPGACE.register('cookingOracle', {
       box.appendChild(nutBtn);
 
       var stepHeading = document.createElement('div');
-      stepHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;';
+      stepHeading.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;';
       stepHeading.textContent = 'Method & Timeline';
       box.appendChild(stepHeading);
       box.appendChild(methodUpdateBanner);
@@ -40785,13 +40785,13 @@ RPGACE.register('cookingOracle', {
         var top = document.createElement('div');
         top.style.cssText = 'display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;';
         var badge = document.createElement('span');
-        badge.style.cssText = 'font-size:10px;font-weight:700;color:' + meta.color + ';text-transform:uppercase;letter-spacing:0.5px;';
+        badge.style.cssText = 'font-size:12px;font-weight:700;color:' + meta.color + ';text-transform:uppercase;letter-spacing:0.5px;';
         badge.textContent = meta.label;
         var durText = [];
         if (step.active_duration_min) durText.push(step.active_duration_min + 'm active');
         if (step.passive_duration_min) durText.push(step.passive_duration_min + 'm passive — free to do other things');
         var dur = document.createElement('span');
-        dur.style.cssText = 'font-size:11px;color:var(--muted);';
+        dur.style.cssText = 'font-size:13px;color:var(--muted);';
         dur.textContent = durText.join(' + ');
         top.appendChild(badge);
         top.appendChild(dur);
@@ -41096,7 +41096,7 @@ RPGACE.register('cookingOracle', {
       var box = pop.box;
 
       var savedNote = document.createElement('div');
-      savedNote.style.cssText = 'font-size:11px;color:var(--green);margin-bottom:12px;';
+      savedNote.style.cssText = 'font-size:13px;color:var(--green);margin-bottom:12px;';
       savedNote.textContent = '✅ Saved — safe to close this and come back later.';
       box.appendChild(savedNote);
 
@@ -41132,7 +41132,7 @@ RPGACE.register('cookingOracle', {
       }
 
       var listHeading = document.createElement('div');
-      listHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;';
+      listHeading.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;';
       listHeading.textContent = 'Recipes in this session';
       box.appendChild(listHeading);
 
@@ -41335,7 +41335,7 @@ RPGACE.register('cookingOracle', {
               var row = document.createElement('div');
               row.style.cssText = 'border-left:3px solid ' + meta.color + ';background:rgba(255,255,255,0.03);border-radius:0 6px 6px 0;padding:7px 12px;margin-bottom:6px;font-size:12px;';
               var top = document.createElement('div');
-              top.style.cssText = 'display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;color:' + meta.color + ';font-weight:700;font-size:11px;text-transform:uppercase;';
+              top.style.cssText = 'display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;color:' + meta.color + ';font-weight:700;font-size:13px;text-transform:uppercase;';
               var left = document.createElement('span');
               left.textContent = self.logic._fmtMin(b.start) + '–' + self.logic._fmtMin(b.end) + ' · ' + meta.label;
               var right = document.createElement('span');
@@ -41366,7 +41366,7 @@ RPGACE.register('cookingOracle', {
             var usageBox = document.createElement('div');
             usageBox.style.cssText = 'margin-top:4px;';
             var usageLoading = document.createElement('div');
-            usageLoading.style.cssText = 'font-size:11px;color:var(--muted);margin:10px 0;';
+            usageLoading.style.cssText = 'font-size:13px;color:var(--muted);margin:10px 0;';
             usageLoading.textContent = 'Checking pantry stock...';
             usageBox.appendChild(usageLoading);
             box.appendChild(usageBox);
@@ -41425,7 +41425,7 @@ RPGACE.register('cookingOracle', {
 
               if (buyBefore.length) {
                 var buyHeading = document.createElement('div');
-                buyHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin:14px 0 6px;';
+                buyHeading.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin:14px 0 6px;';
                 buyHeading.textContent = '🛒 Need to buy before this cook';
                 usageBox.appendChild(buyHeading);
                 var currentAisle = null;
@@ -41433,7 +41433,7 @@ RPGACE.register('cookingOracle', {
                   if (u._aisle.name !== currentAisle) {
                     currentAisle = u._aisle.name;
                     var aisleHeading = document.createElement('div');
-                    aisleHeading.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin:8px 0 3px;';
+                    aisleHeading.style.cssText = 'font-size:12px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin:8px 0 3px;';
                     aisleHeading.textContent = '📍 ' + currentAisle;
                     usageBox.appendChild(aisleHeading);
                   }
@@ -41504,7 +41504,7 @@ RPGACE.register('cookingOracle', {
 
               if (plenty.length) {
                 var useHeading = document.createElement('div');
-                useHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--green);margin:14px 0 6px;';
+                useHeading.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--green);margin:14px 0 6px;';
                 useHeading.textContent = '📦 Have plenty — nothing to buy';
                 usageBox.appendChild(useHeading);
                 plenty.forEach(function(u) {
@@ -41515,7 +41515,7 @@ RPGACE.register('cookingOracle', {
 
               if (buyAfter.length) {
                 var afterHeading = document.createElement('div');
-                afterHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9B59B6;margin:14px 0 6px;';
+                afterHeading.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9B59B6;margin:14px 0 6px;';
                 afterHeading.textContent = '🟣 Will run low — restock on your NEXT shop, after this cook';
                 usageBox.appendChild(afterHeading);
                 buyAfter.forEach(function(u) {
@@ -41530,7 +41530,7 @@ RPGACE.register('cookingOracle', {
               // overrode that idea: "No, just say 'can be omitted'."
               if (omittable.length) {
                 var omitHeading = document.createElement('div');
-                omitHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8B5E3C;margin:14px 0 6px;';
+                omitHeading.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#8B5E3C;margin:14px 0 6px;';
                 omitHeading.textContent = '🟤 Skipping shop this time — can be omitted';
                 usageBox.appendChild(omitHeading);
                 omittable.forEach(function(u) {
@@ -41548,7 +41548,7 @@ RPGACE.register('cookingOracle', {
             });
 
             var whenHeading = document.createElement('div');
-            whenHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin:16px 0 8px;';
+            whenHeading.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin:16px 0 8px;';
             whenHeading.textContent = 'Start this session';
             box.appendChild(whenHeading);
 
@@ -41723,7 +41723,7 @@ RPGACE.register('cookingOracle', {
       container.appendChild(loadingMsg);
 
       var addHeading = document.createElement('div');
-      addHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin:16px 0 8px;';
+      addHeading.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin:16px 0 8px;';
       addHeading.textContent = 'Add / adjust ' + location + ' stock';
 
       var nameInput = document.createElement('input');
@@ -41736,11 +41736,13 @@ RPGACE.register('cookingOracle', {
       var qtyInput = document.createElement('input');
       qtyInput.type = 'number';
       qtyInput.placeholder = 'Quantity';
-      qtyInput.style.cssText = 'flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;padding:7px 10px;';
+      // Oct 10 2026 (N2): min-width:0 - without it the two inputs' default
+      // width pushed the unit box off the right edge at phone width.
+      qtyInput.style.cssText = 'flex:1;min-width:0;box-sizing:border-box;min-height:40px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:15px;padding:7px 10px;';
       var unitInput = document.createElement('input');
       unitInput.type = 'text';
-      unitInput.placeholder = 'unit (g, ml, count...)';
-      unitInput.style.cssText = 'flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;padding:7px 10px;';
+      unitInput.placeholder = 'unit (g, ml…)';
+      unitInput.style.cssText = 'flex:1;min-width:0;box-sizing:border-box;min-height:40px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:15px;padding:7px 10px;';
       qtyRow.appendChild(qtyInput);
       qtyRow.appendChild(unitInput);
 
@@ -41846,7 +41848,7 @@ RPGACE.register('cookingOracle', {
       container.appendChild(loadingMsg);
 
       var addHeading = document.createElement('div');
-      addHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin:16px 0 8px;';
+      addHeading.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin:16px 0 8px;';
       addHeading.textContent = 'Add equipment';
 
       var nameInput = document.createElement('input');
@@ -41992,13 +41994,13 @@ RPGACE.register('cookingOracle', {
             // list at all (see logic._generateShoppingList's own filter).
             if (listRow && listRow.shop_mode === 'no_shop') {
               var noShopNote = document.createElement('div');
-              noShopNote.style.cssText = 'font-size:11px;color:#8B5E3C;background:rgba(139,94,60,0.08);border:1px solid rgba(139,94,60,0.3);border-radius:6px;padding:6px 10px;margin-bottom:12px;';
+              noShopNote.style.cssText = 'font-size:13px;color:#8B5E3C;background:rgba(139,94,60,0.08);border:1px solid rgba(139,94,60,0.3);border-radius:6px;padding:6px 10px;margin-bottom:12px;';
               noShopNote.textContent = '🟤 No-shop mode — omittable ingredients were left off this list.';
               box.appendChild(noShopNote);
             }
 
             var needHeading = document.createElement('div');
-            needHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;';
+            needHeading.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;';
             needHeading.textContent = '🛒 Need to buy before this cook';
             box.appendChild(needHeading);
 
@@ -42043,7 +42045,7 @@ RPGACE.register('cookingOracle', {
               if (r._aisle.name !== currentAisle) {
                 currentAisle = r._aisle.name;
                 var aisleHeading = document.createElement('div');
-                aisleHeading.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin:10px 0 4px;';
+                aisleHeading.style.cssText = 'font-size:12px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;color:var(--muted);margin:10px 0 4px;';
                 aisleHeading.textContent = '📍 ' + currentAisle;
                 box.appendChild(aisleHeading);
               }
@@ -42123,7 +42125,7 @@ RPGACE.register('cookingOracle', {
               // status color itself never changes (Alex's own direct
               // 3rd-pass correction).
               if (r._status === 'orange' && subName && !subConfirmed) {
-                var confirmBtn = self.ui._mkBtn('✓ Use ' + subName + ' instead', 'inline', { extra: 'margin-top:4px;font-size:10px;padding:3px 8px;', color: 'var(--green)', borderColor: 'rgba(76,175,130,.35)' });
+                var confirmBtn = self.ui._mkBtn('✓ Use ' + subName + ' instead', 'inline', { extra: 'margin-top:4px;font-size:12px;padding:3px 8px;', color: 'var(--green)', borderColor: 'rgba(76,175,130,.35)' });
                 confirmBtn.onclick = function() {
                   confirmBtn.disabled = true;
                   confirmBtn.textContent = '⏳ Saving...';
@@ -42141,7 +42143,7 @@ RPGACE.register('cookingOracle', {
                 wrap.appendChild(confirmBtn);
               } else if (r._status === 'orange' && subName && subConfirmed) {
                 var subNote = document.createElement('div');
-                subNote.style.cssText = 'font-size:10px;color:var(--muted);margin-top:3px;';
+                subNote.style.cssText = 'font-size:12px;color:var(--muted);margin-top:3px;';
                 subNote.textContent = '✓ Agreed substitution — using ' + subName;
                 wrap.appendChild(subNote);
               }
@@ -42157,7 +42159,7 @@ RPGACE.register('cookingOracle', {
               .sort(function(a, b) { return ((a.ingredients && a.ingredients.name) || '').localeCompare((b.ingredients && b.ingredients.name) || ''); });
             if (basketRows.length) {
               var basketHeading = document.createElement('div');
-              basketHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#4A9FCC;margin:16px 0 8px;';
+              basketHeading.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#4A9FCC;margin:16px 0 8px;';
               basketHeading.textContent = '🧺 In basket — ready to check out';
               box.appendChild(basketHeading);
               basketRows.forEach(function(r) {
@@ -42211,7 +42213,7 @@ RPGACE.register('cookingOracle', {
 
             if (plentyRows.length) {
               var haveHeading = document.createElement('div');
-              haveHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--green);margin:16px 0 8px;';
+              haveHeading.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--green);margin:16px 0 8px;';
               haveHeading.textContent = '📦 Already have enough';
               box.appendChild(haveHeading);
               plentyRows.forEach(function(r) {
@@ -42222,7 +42224,7 @@ RPGACE.register('cookingOracle', {
 
             if (lowRows.length) {
               var lowHeading = document.createElement('div');
-              lowHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9B59B6;margin:16px 0 8px;';
+              lowHeading.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#9B59B6;margin:16px 0 8px;';
               lowHeading.textContent = '🟣 Will run low — restock on your NEXT shop, after this cook';
               box.appendChild(lowHeading);
               lowRows.forEach(function(r) {
@@ -42234,7 +42236,7 @@ RPGACE.register('cookingOracle', {
             var boughtRows = (rows || []).filter(function(r) { return r.bought; });
             if (boughtRows.length) {
               var boughtHeading = document.createElement('div');
-              boughtHeading.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;';
+              boughtHeading.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:16px 0 8px;';
               boughtHeading.textContent = 'Already bought';
               box.appendChild(boughtHeading);
               boughtRows.forEach(function(r) {
@@ -42308,7 +42310,7 @@ RPGACE.register('cookingOracle', {
           top.textContent = (rec.makeable ? '✅ ' : '') + rec.title;
           row.appendChild(top);
           var summary = document.createElement('div');
-          summary.style.cssText = 'font-size:11px;font-weight:400;color:var(--muted);margin-top:3px;';
+          summary.style.cssText = 'font-size:13px;font-weight:400;color:var(--muted);margin-top:3px;';
           var parts = [];
           ['green', 'purple', 'blue', 'yellow', 'red'].forEach(function(status) {
             if (rec.counts[status]) parts.push(self.INGREDIENT_STATUS_META[status].icon + ' ' + rec.counts[status]);
@@ -44094,20 +44096,31 @@ RPGACE.register('cookingOracle', {
       var ml = self.logic._convertVolumeUnits(amount, normUnit, 'ml');
       if (ml == null || ml <= 0) return raw;
 
+      // Oct 10 2026 (N2, Cooking slice): whole cups only meant 200 ml read
+      // "13 tbsp 1 tsp". Now quarter cups (4 tbsp each) come first, then
+      // tbsp and tsp, with the original ml kept in brackets:
+      // 200 ml -> "¾ cup + 1 tbsp + 1 tsp (200 ml)".
       var CUP = self.logic.VOLUME_TO_ML.cup, TBSP = self.logic.VOLUME_TO_ML.tbsp, TSP = self.logic.VOLUME_TO_ML.tsp;
-      var cups = Math.floor(ml / CUP);
-      var remAfterCups = ml - cups * CUP;
-      var tbsp = Math.floor(remAfterCups / TBSP);
-      var remAfterTbsp = remAfterCups - tbsp * TBSP;
-      var tsp = Math.round((remAfterTbsp / TSP) * 4) / 4; // nearest real quarter-tsp
-      if (tsp >= 3) { tbsp += 1; tsp = 0; } // 3 tsp = 1 real tbsp — never show an ugly "3 tsp" remainder
-      if (tbsp >= 16) { cups += Math.floor(tbsp / 16); tbsp = tbsp % 16; } // 16 tbsp = 1 real cup
+      var totalTsp = Math.round((ml / TSP) * 4) / 4; // nearest real quarter-tsp
+      var tspPerTbsp = TBSP / TSP, tbspPerCup = CUP / TBSP;
+      var tbsp = Math.floor(totalTsp / tspPerTbsp + 1e-9);
+      var tsp = Math.round((totalTsp - tbsp * tspPerTbsp) * 4) / 4;
+      var cups = Math.floor(tbsp / tbspPerCup);
+      tbsp = tbsp - cups * tbspPerCup;
+      var quarters = Math.floor(tbsp / (tbspPerCup / 4));
+      tbsp = tbsp - quarters * (tbspPerCup / 4);
+      var FRAC = { 1: '¼', 2: '½', 3: '¾' };
 
       var parts = [];
-      if (cups > 0) parts.push(cups + ' ' + (cups === 1 ? 'cup' : 'cups'));
+      if (cups > 0 || quarters > 0) {
+        var c = (cups > 0 ? String(cups) : '') + (quarters ? FRAC[quarters] : '');
+        parts.push(c + ' ' + ((cups > 1 || (cups === 1 && quarters)) ? 'cups' : 'cup'));
+      }
       if (tbsp > 0) parts.push(tbsp + ' tbsp');
       if (tsp > 0) parts.push(tsp + ' tsp');
-      return parts.length ? parts.join(' ') : raw; // genuinely under 1/4 tsp — not worth converting
+      if (!parts.length) return raw; // genuinely under 1/4 tsp — not worth converting
+      var mlTxt = normUnit === 'l' ? raw : (Math.round(ml * 10) / 10) + ' ml';
+      return parts.join(' + ') + ' (' + mlTxt + ')';
     },
 
     // Real, shared "how much do I actually have of this, expressed in the

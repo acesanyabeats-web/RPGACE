@@ -73,6 +73,19 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-10-n2-cooking" style="margin-bottom:30px;">
+    <div class="card-title">🍳 Oct 10 — N2 slice 4: Cooking</div>
+    <div class="card-body">
+      Alex accepted slice 3: "not perfect but i will give critique when im using it, continue". Evidence for this slice came from 400px headless screenshots using real recipe and stock data (Chocolate Orange Mousse, real pantry rows). Cooking was in better shape than the earlier slices thanks to its September H23 button system, but the content itself was small. Ingredient rows ("4 whole egg") and step labels were 10–11px, "+ Add" was a 24px target, the step timers were 25px, the Current Stock tabs 31px, and each stock row's ✕ delete was 19px.
+      <ul>
+        <li><strong>One source fixed</strong>: every Cooking button comes from <code>cookingOracle</code>'s <code>BTN_VARIANTS</code> token set (rule 8). <code>inline</code>, <code>iconGhost</code>, <code>pillChip</code> and <code>deleteArm</code> are now at least 36px; <code>tab</code>, <code>secondary</code>, <code>ghost</code> and <code>plainLink</code> at least 40px; <code>primary</code> and <code>primaryGold</code> at least 44px. Text is 13px.</li>
+        <li>Inside the cookingOracle module, the 35 inline 11px sizes are now 13px and the 20 at 10–10.5px are now 12px. The two input boxes on the stock add form are 15px.</li>
+        <li><strong>Bug</strong>: on the Current Stock add form, the "unit" box ran off the right edge of the popup at phone width. The two flex inputs had no <code>min-width:0</code>. Fixed.</li>
+        <li><strong>Measurements</strong>: <code>_fmtMeasurement</code> only produced whole cups, so 200 ml of cream showed as "13 tbsp 1 tsp". It now uses quarter cups first and keeps the original ml, e.g. "¾ cup + 1 tbsp + 1 tsp (200 ml)", "1¼ cups (300 ml)", "1 tsp (5 ml)". This keeps Alex's Sep 17 ask (cups + tbsp, with tbsp as 1/16 cup) and the same exact conversion factors. Grams and counts are unchanged.</li>
+      </ul>
+      <strong>Verified</strong>: headless Chromium checked the hub, Current Stock, a recipe card and What Can I Cook. All four have 0 buttons under 36px and no sideways scroll. The only small text left is the shared popup eyebrow label. 11 formatter cases checked, from 5 ml to 0.5 l, plus grams and counts left alone. Zero page errors. <strong>Not yet hand-tested by Alex.</strong>
+    </div>
+  </div>
 <div class="card" id="card-2026-10-10-n2-knowledge" style="margin-bottom:30px;">
     <div class="card-title">📖 Oct 10 — N2 slice 3: Encyclopedia, Jargon Encyclopedia, Phylum Path</div>
     <div class="card-body">
