@@ -31,6 +31,14 @@ export default async function handler(req, res) {
     if (!correctPw || !secret) {
       return res.status(500).json({ error: 'Server not configured — set CORRECT_PW and RPGACE_API_SECRET in Vercel env vars.' });
     }
+    // Oct 10 2026 — "stay logged in": a device that already signed in with
+    // the password keeps the secret and sends it back here as `token` on
+    // launch. Answers ok / not ok only; never echoes the secret. If the
+    // secret is rotated in Vercel, every remembered device gets 401 and
+    // falls back to the password screen.
+    if (body && typeof body.token === 'string') {
+      return body.token === secret ? res.status(200).json({ ok: true }) : res.status(401).json({ ok: false });
+    }
     if (password !== correctPw) {
       return res.status(401).json({ ok: false });
     }

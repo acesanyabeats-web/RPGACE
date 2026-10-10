@@ -73,6 +73,17 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-10-stay-signed-in" style="margin-bottom:30px;">
+    <div class="card-title">🔓 Oct 10 — Stay signed in; sharing sends you straight back</div>
+    <div class="card-body">
+      Alex, after the first real share worked: "i hate that im always logged out of the app. id also want to stay in the app im viewing when im sending".
+      <ul>
+        <li><strong>Stay signed in</strong> (<code>authGate</code>): a successful password login now stores the server-issued secret on the device. On each launch it is checked against <code>/api/auth</code> through a new <code>token</code> branch, which only answers yes or no and never re-sends the secret. If it checks out, the normal login sequence runs without the password screen. A rejected token is deleted and the password screen shows. If the network is down, the token is kept for the next launch. Rotating <code>RPGACE_API_SECRET</code> in Vercel signs every device out. There's a "🔒 Sign out on this device" button at the bottom of the left-nav drawer. Trade-off, named: anyone holding the unlocked phone can open RPGACE.</li>
+        <li><strong>Share and return</strong> (<code>shareInbox</code>): a share launch now shows a full-screen "✓ Sent to RPGACE", then calls <code>window.close()</code>. On Android that should drop you back into Instagram or YouTube. If the browser blocks the close, the screen says "Press Back" and offers "Stay in RPGACE". A web app can't receive a share invisibly in the background; this is the closest it can get.</li>
+      </ul>
+      <strong>Verified</strong>: headless Chromium with <code>/api/auth</code> mocked, 10 checks, zero page errors. Covered: a remembered device skips the gate and fires the login; a bad token is cleared and the gate shows; password login stores the token and a wrong password stores nothing; a share launch queues through the proxy, shows the sent screen and attempts the close, with the fallback text and Stay button; sign-out clears the token. <strong>Not yet hand-tested by Alex</strong>, and whether Android allows the close is only knowable on the phone.
+    </div>
+  </div>
 <div class="card" id="card-2026-10-10-daily-life" style="margin-bottom:30px;">
     <div class="card-title">🏠 Oct 10 — Daily life: fridge photo, watchlist digest, your own words, one timeline (D1)</div>
     <div class="card-body">
