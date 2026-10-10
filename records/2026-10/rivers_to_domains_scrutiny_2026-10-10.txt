@@ -1,0 +1,62 @@
+RIVERS → DOMAINS restructure — scrutiny record (10 Oct 2026)
+Alex, verbatim: "the whole system is an utter mess, i think we should get rid of concepts of rivers and make it domains modules and functions only to make the system less confusing. /paranoia and /free-for-all-debate to get rid of all river references and think of how to organise all modules and functions within the domain to make galaxy map more representative of rpgace, whilst also making rpgace more optimal and powerful. after the scrutiny, /drift and godmode and…" (cut off). Clarified via question: "Show me the plan first", so nothing is built until ratified.
+Scale note: a proportionate /paranoia-shaped pass, done inline (no Fable). Real evidence, real counter-cases, a /drift check and a GODMODE verify. Not the full 6-step ceremony.
+
+== GODMODE EVIDENCE (live, this pass) ==
+- 58 registered modules (re-verified). 12 live rivers + 5 retired. 10 modules are "cross-cutting exclusions" with no river.
+- River sizes: 7 of the 12 live rivers hold exactly ONE module (authGate, pathRouter, bookworm, phylumPath, knowledgeGap, …). River III ("Oracle") holds 15, including cookingOracle and the platform caption panels. River X mixes careerStatCard + chroniclesLog + shoppingWishlist.
+  → Rivers do not describe what RPGACE does. They describe how the Galaxy Map tooling happened to group things.
+- "river" appears ~2,300 times across ~30 generator scripts (graphify_river_group.py alone: 726), in 23 generated pages, in Supabase (12 perspective_reports at scope_level='river', 12 ceo_plan_items RIVER-*), in system_map_spec.md, CLAUDE.md (31) and minotaur_map.html (34).
+- Inside the app (rpgace_core.js): 13 mentions, all comments or doc-link text. Rivers have NO runtime role. The whole concept lives in tooling + docs.
+- The consumer map (minotaur_map.html) ALREADY uses the 9 user-facing domains (Oracle, Knowledge Tree, Bookworm, Content, Cooking, Wishlist, Schedule, Chronicles, Quests). Today, two parallel taxonomies exist for the same app.
+- Recurring bug class: RIVER_MODULES is a hand-maintained Python table. A new module silently vanishes from the Galaxy Map until someone remembers to add it (errorLog 10 days; cookingOracle, shoppingWishlist, oracleControl — caught Sep 15).
+
+== DRAFT DOMAIN MAP (58/58 modules, 0 dupes, 0 unmapped — verified by script) ==
+- Oracle (9): agentsIntoOracle, oracleAppGrounding, oracleControl, oracleDevBridge, oracleFetchGuard, oracleProviderMode, oracleTreeGrounding, prodOraclePanel, mockOracle
+- Knowledge Tree (15): phylumPath, taxonomyReviewQueue, taxonomySync, taxonomyTree, knowledgeGap, jargonEncyclopedia, encSync, encTaxonomyLink, encyclopediaQoL, feynman, ciAutoPropose, intelBatchList, intelDedup, intelDelete, researchTabs
+- Bookworm (1): bookworm
+- Content & Video (11): beatLog, conidPot, contentProductionLive, contentRepurpose, videoPipeline, videoSummary, visualOracle, refCorpus, instaOraclePanel, youtubeOracle, tiktokOracle
+- Cooking (1): cookingOracle
+- Shopping Wishlist (1): shoppingWishlist
+- Schedule & Journal (6): agendaReminder, journalQoL, morningBrief, scheduleFixes, shiftSync, scheduleOracle
+- Chronicles (2): chroniclesLog, careerStatCard
+- Quest Board (2): questEngine, suppressQuestPopup
+- Platform (10): authGate, pathRouter, config, dashDeck, leftNav, pwaInstall, perfWatch, quickActions, docsLinks, errorLog
+New hierarchy: L0 (Total-systems units, unchanged) → Domain → Module → Function. Same 4 stops; "River" simply becomes "Domain". Dimensions stay as cross-cutting lenses.
+
+== /free-for-all-debate (4 competitors, each takes 2 problems) ==
+A — "Simplicity"
+  P1 Single-module domains (Bookworm, Cooking, Wishlist): keep them. A domain is a thing Alex uses, not a size bucket. They match the consumer map 1:1, and they'll grow (HABITS already plans more).
+  P2 "Platform" as a real domain, not a hidden exclusion list. Honest, and it ends the "cross-cutting exclusions" special case that hides 10 modules.
+B — "Power / optimal"
+  P3 Put the domain INSIDE the app: each RPGACE.register('x', { domain: 'cooking', … }). The Galaxy scripts read it by regex, so there is ONE source of truth and RIVER_MODULES (and its drift bug class) is deleted.
+  P4 Use domains at runtime:
+    • Oracle grounding loads only the SELF_KNOWLEDGE section for the domain being asked about (fewer tokens per call).
+    • errorLog/smoke tally per domain ("Cooking: 3 errors, 2/9 hand-ticked").
+    • Oracle can list a domain's real modules live from the registry instead of a hand-written string that goes stale.
+  This is the "more powerful/optimal" half; the relabel alone wouldn't deliver it.
+C — "Sceptic"
+  P5 Cost/risk: ~2,300 script mentions + 23 pages. A blind sed rename WILL break generators (anchors, page names, idempotency checks). Counter-proposal: build DOMAIN data alongside, switch each generator, regenerate and verify, THEN remove river code. Never one big rename.
+  P6 Don't lose real evidence: RIVER_FLOWS holds ~40 evidence-commented cross-river edges (11 added Sep 16 from real cross_refs). These must be RE-DERIVED at domain level from the module-level evidence, not deleted with the river table.
+D — "Placement disputes"
+  P7 Content Intelligence (intel*, ciAutoPropose, researchTabs): put it in Knowledge Tree, not Content. It turns videos INTO encyclopedia/taxonomy insights; its output lands in the tree. (Counter: it lives under the Content Pipeline UI today.) → open fork for Alex.
+  P8 Platform caption panels (insta/youtube/tiktok Oracle panels): put them in Content, not Oracle. They exist to make posts. (Counter: they are Oracle command panels.) → open fork for Alex.
+Council of 5 cleanup:
+- A, B and C are complementary, not competing: domains in the registry (B) + staged migration (C) + Platform domain (A).
+- D's two placements are real judgment calls → Alex.
+- Rejected: rewriting history docs (patch_notes, CLAUDE_archive, records/). They keep "river" as historical record. Only current-state docs and tooling change.
+
+== /drift ==
+BASIS: provisional (this plan, pending ratification) + standing CLAUDE.md rules.
+VERDICT vs Alex's ask: on track. One MATERIAL item:
+- The standing Galaxy-Map pause (Sep 15). Alex's ask is an explicit override, and it MUST be logged as one (same as GMR, Sep 16), not silently bypassed.
+- MINOR: rule 15 ("Galaxy Map as baseline evidence source") survives unchanged; only the vocabulary changes.
+- CAPTURED: "Bedtime/Routine" skill files and CLAUDE.md session-start check (3) reference RIVER_MODULES. Each needs updating in the same pass that deletes it (rule 13: grep display text AND the raw RIVER_MODULES/RIVER_FLOWS literals).
+
+== PROPOSED PLAN (needs ratification; multi-session, /CEO-tracked) ==
+D1 Registry: add `domain:` to all 58 RPGACE.register() defs (comments-free property, zero behaviour change). Add a check script: every registered module has a valid domain.
+D2 Tooling: a DOMAINS table derived from the registry; switch graphify_river_group.py consumers one generator at a time; re-derive domain-level flows from module evidence; delete RIVER_MODULES/RIVER_FLOWS/RIVER_RETIRED last. Rename galaxy_map_river.html → galaxy_map_domain.html with a redirect stub.
+D3 Supabase: 10 new domain perspective_reports (synthesised from the module reports); the 12 river reports marked superseded, not deleted; the 12 RIVER-* ceo_plan_items closed as superseded.
+D4 Docs: CLAUDE.md, system_map_spec.md, interconnection_map.md, system_flow_map.md, SELF_KNOWLEDGE, minotaur_map.html (already domain-shaped) and skills referencing rivers. History docs untouched.
+D5 Power (optional, after D1–D4): Oracle grounding by domain (token saving) + per-domain error/smoke tallies in the Oversight popup.
+Each step: full pipeline regen, idempotency, anchors, headless check, merged to main before "done".
