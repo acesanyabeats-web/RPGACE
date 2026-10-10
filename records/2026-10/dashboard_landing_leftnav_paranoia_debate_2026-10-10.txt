@@ -1,0 +1,59 @@
+N2 slice 5: Dashboard as a landing page, left nav as the only navigation
+Oct 10 2026. Proportionate /paranoia + /free-for-all-debate pass, done before building.
+
+ALEX'S ASK (verbatim)
+"i think dashboard and left nav should be deduplicated and sent into left nav only, and dashboard can be used
+more effectively as a landing and navigation page to show what i need to do or think about etc. like the
+dashboard idea in the video ill send to rpgace now" / "ive sent it, its the dashboard idea in 1"
+Interrogation answers: left nav "Grouped by domain (Recommended)". Dashboard: "and /paranoia and
+/debate-free-for-all to come up with more useful ideas using data we have, or coming up with how to conjure
+data needed to make it more efficient, Today, Due / waiting on me, Continue where I left off, Morning Brief +
+Ask Oracle".
+
+EVIDENCE (live, this pass)
+- Dashboard has 14 cards; left nav has 10 entries (+6 sub-pages). 7 destinations appear in both (Oracle, Agenda,
+  Content Pipeline, Encyclopedia, Journal, Chronicles, Bookworm). 7 cards have no left-nav route at all
+  (Taxonomy & Review, Morning Brief, Knowledge Gaps, Oversight, Cooking, Gym, Wishlist), so the grid cannot just
+  be deleted. Every card must move into the nav first.
+- The video (intel_jobs f9c3146a, Instagram reel DdHKAvMMlmx) is still status=queued. It is only analysed by
+  local_server.py on Alex's PC, and Instagram is blocked from this session. Idea #1 is not readable yet, so this
+  build follows his four named sections. When the article lands, compare it with this design.
+- Live counts: taxonomy_proposals pending 51; jargon pending 523; intel_jobs queued 2; recall due 0;
+  decisions due 0; wishlist cooling 0; gym this week 0; bookworm in progress 1; quest_log rows not completed 24.
+- Data that already exists: shifts (localStorage rpgace_shifts, getShiftsForDate), scheduled tasks
+  (rpgace_sched_agendas), planned_cooks.scheduled_at, gym_sessions, quest_log, encyclopedia_insights.recall_due,
+  journal decisions review_on, wishlist_items cool-off, intel_jobs, bookworm_books, recipes, content_productions.
+- Missing data: "where I left off". Nothing records the last place Alex was. Conjured below.
+
+FREE-FOR-ALL DEBATE (each competitor picks 2 problems)
+A (data-first): (1) Show only rows with something in them. An empty "0 decisions due" row is noise. (2) 523
+  pending jargon is a wall; show it as "Review 10 jargon terms", a bite-size daily dose, not the raw total.
+B (navigation): (1) Left nav needs to open popup modules (cards) as well as pages: entries carry either page or
+  card, card routes through dashDeck._navOpenCard so N1 history and the domain crumbs keep working. (2) NAV_DOMAINS
+  is the single domain source: the nav groups and the popup sibling chips read the same map (rule 8), and
+  wishlist moves to Habits there so both agree.
+C (conjure data): (1) Record a "trail": every page shown and every card opened writes {kind,key,label,at} to
+  localStorage (last 8, dashboard excluded). Cheap, zero schema, powers "Continue". (2) Add real deep links
+  where they already exist: in-progress book via bookworm._openBook(id), latest recipe via
+  cookingOracle._loadSavedRecipe + _showRecipeCard.
+D (skeptic, why NOT): (1) Losing the card grid loses the glance numbers. Answer: each useful number moves into
+  a Due row with its action. Nothing that was actionable disappears. (2) On a phone, the nav is behind the
+  hamburger. Answer: the landing sections themselves link to the work, and the hamburger is one tap. Alex asked
+  for left nav only, so no second chip grid (that would recreate the duplicate).
+E (Oracle): (1) Ask Oracle from the dashboard should reuse the real chat input: open the Oracle page, put the
+  text in #chat-input, call sendChat(), with no second chat mechanism. (2) Morning Brief opens the existing
+  _openMorningBrief popup, which already carries recall + daily-life sections.
+
+RISKS (/paranoia)
+- _refreshGlance is called from 3 other places; keep the name, rewrite the body for the landing page.
+- #dd-deck guard: _inject returns early if #dd-deck exists. Keep the same id for the landing wrapper.
+- Shared-link queue needs Alex's PC. Say that in the row, never imply it is being analysed.
+- No new tables, no new api files, no Oracle calls on the dashboard (works when Oracle is down, per the
+  Aug 6 Morning Brief insight).
+- Boot can run before config.init() sets RPGACE.sb: guard every loader, retry, and refresh on login
+  (caught in testing: unguarded gym/recall loaders threw and left the page on "Loading...").
+
+DECISION
+Build: grouped left nav (all 14 cards + all pages, 7 domains), landing dashboard with Today / Due / Continue /
+Morning Brief + Ask Oracle, the trail recorder. Remove the card grid and the old "Needs you now" block (folded
+into Due).
