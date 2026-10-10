@@ -73,6 +73,20 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-10-daily-life" style="margin-bottom:30px;">
+    <div class="card-title">🏠 Oct 10 — Daily life: fridge photo, watchlist digest, your own words, one timeline (D1)</div>
+    <div class="card-body">
+      New <code>dailyLife</code> module, built on what already exists:
+      <ul>
+        <li><strong>📷 Add from a photo</strong>, on every Current Stock tab. The photo is resized in the browser to 1280px JPEG and sent to <code>api/oracle.js</code>, which already accepts images. Oracle returns a one-line JSON item list. You see an editable review list where you can untick rows and fix names or amounts. Each ticked row saves through the new shared <code>cookingOracle.logic._upsertStock</code>, which the manual "+ Set stock" form now uses too (rule 8). Saving sets the amount held.</li>
+        <li><strong>📺 New from your watchlist</strong>, in Morning Brief. It checks the 15 YouTube creators in <code>intel_watchlist</code> for uploads from the last 7 days. <code>/api/search</code> gained an optional <code>sort:'date'</code> and a <code>published</code> field; existing callers are unchanged. "⚡ Analyse" queues a video through the share target's own queue. It shows "weekly check due" after 7 days. Instagram and TikTok creators can't be checked.</li>
+        <li><strong>Your own words</strong>: the Morning Brief prompt now includes your open quests, decisions due for a look-back, and your latest journal note, so the brief can quote them back.</li>
+        <li><strong>One timeline</strong>: Chronicles now also lists completed quests (<code>quest_log</code>) and finished planned cooks, with ⚔️ Quests and 🍳 Cooks filters.</li>
+      </ul>
+      Caught during the build: completed quests are stored as <code>status='completed'</code>, not <code>'done'</code>, so the query was fixed before shipping. <strong>Still open</strong>: "the next HABITS module" needs Alex to pick which habit.<br>
+      <strong>Verified</strong>: headless Chromium, with Supabase, Oracle and search mocked. 26 checks covered: JSON parsing with code fences, dedupe and a garbage reply; the review list and its upserts; the manual form on the shared write; resizing 4000×3000 down to 1280×960; recency rules; the digest, its Analyse queue and the last-checked label; the brief prompt; and the timeline items, details and filters. Zero page errors. <strong>Not yet hand-tested by Alex.</strong>
+    </div>
+  </div>
 <div class="card" id="card-2026-10-10-producer-tools" style="margin-bottom:30px;">
     <div class="card-title">💼 Oct 10 — Producer business tools in Platform Oracle (B1)</div>
     <div class="card-body">

@@ -11,14 +11,17 @@ export default async function handler(req, res){
   if (!requireAuth(req, res)) return;
   if(req.method !== 'POST') return res.status(405).end();
 
-  const { query, type } = req.body || {};
+  const { query, type, sort } = req.body || {};
   if(!query) return res.status(400).json({ error: 'No query' });
 
   if (type === 'recipe-image') return handleRecipeImage(query, res);
 
   try {
     // Fetch YouTube search page via server-side (avoids CORS)
-    const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}&sp=EgIQAQ%3D%3D`; // filter: videos only
+    // Oct 10 2026 (D1 watchlist digest): optional sort:'date' = videos only,
+    // newest first. Every existing caller sends no sort, so its URL is unchanged.
+    const sp = sort === 'date' ? 'CAISAhAB' : 'EgIQAQ%3D%3D';
+    const searchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}&sp=${sp}`; // filter: videos only
     const r = await fetch(searchUrl, {
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -47,7 +50,8 @@ export default async function handler(req, res){
       const views   = vr.viewCountText?.simpleText || vr.viewCountText?.runs?.[0]?.text || '';
       const duration= vr.lengthText?.simpleText || '';
       const thumb   = vr.thumbnail?.thumbnails?.slice(-1)?.[0]?.url || `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
-      if(id && title) videos.push({ id, title, channel, views, duration, thumb });
+      const published = vr.publishedTimeText?.simpleText || '';
+      if(id && title) videos.push({ id, title, channel, views, duration, thumb, published });
       if(videos.length >= 8) break;
     }
 
