@@ -304,18 +304,15 @@ def build_module_note(mod: str, module_ranges) -> str:
 def build_index_note() -> str:
     lines = ['---', 'title: "RPGACE System Map"', '---', '',
              '# RPGACE System Map', '',
-             'Real, generated index over RPGACE\'s own river structure — the '
+             'Real, generated index over RPGACE\'s 8 app domains — the '
              'human-facing knowledge layer graphify\'s own code-analysis output '
              'feeds into (Aintergration verdict, Aug 11 2026: Obsidian is not a '
              'graphify replacement, but a real fit for this layer specifically).',
              '',
-             'Aug 11, real Alex ask: 16 unified rivers now, not "11 rivers + 5 '
-             'zones" — rivers XII-XVI carry real Total-systems traffic (external '
-             'AI/tool connectors, or the dev-process/knowledge layer the Total '
-             'system\'s own Claude Code members coordinate through), a different '
-             'KIND of real traffic than I-XI\'s in-app narrative information flow, '
-             'not a lesser one.',
-             '', '## Rivers I-XI (in-app narrative information flow)', '']
+             'Oct 11 2026 (M1): the old rivers were replaced by the same domains '
+             'the app\'s left menu uses. Each module declares its own `domain:` '
+             'key in rpgace_core.js, so this index can\'t drift from the code.',
+             '', '## Domains', '']
     for n in range(1, TOTAL_ZONES + 1):
         lines.append(f'- [[{note_filename(n)}|{RIVER_NAME[n]}]]')
     lines.append('')
@@ -323,7 +320,7 @@ def build_index_note() -> str:
     lines.append('')
     lines.append('---')
     lines.append('*Source of truth for the underlying data: `scripts/graphify_river_group.py` '
-                  '(river/zone membership) and `minotaur_map.html` (flow connectors). '
+                  '(domain membership, read from each module\'s `domain:` key) and `minotaur_map.html`. '
                   'If this vault and either of those ever disagree, they win — '
                   're-run `graphify_to_obsidian.py`.*')
     return '\n'.join(lines)
