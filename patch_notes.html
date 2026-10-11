@@ -73,6 +73,20 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-11-cook-mode" style="margin-bottom:30px;">
+    <div class="card-title">🍳 Oct 11 — Cook Mode: one step per screen, Ube Express style</div>
+    <div class="card-body">
+      Alex asked for the Ube Express overview + step-by-step build screen inside RPGACE Cooking, and said step generation "needs to be thought through". His answers: one action per step, split all 8 saved recipes now, no photos.
+      <ul>
+        <li><strong>Recipe card</strong>: a spec line at the top (steps · minutes hands-on · serves) and a big ▶ Start Cooking button. If an ingredient isn't used in any step, the card says so, because Cook Mode would never show it.</li>
+        <li><strong>Cook Mode</strong>: a full-screen view with progress dots, "Step X of Y", what to have in hand, that step's ingredients at the scaled amounts, the instruction in large text, a "✓ Done when" cue and the step's timer. Back/Next/Done buttons, the phone's Back button steps back, the screen stays awake where the browser allows it, and reopening resumes where you stopped (with "Start from step 1"). A timer started on one step keeps running when you move on, and a strip at the top shows it.</li>
+        <li><strong>Planned cooks</strong>: Live Cook gets a ▶ Cook Mode button that walks the whole session's interleaved schedule the same way.</li>
+        <li><strong>Better steps for new recipes</strong>: the generation and update prompts now ask for one action per step (25 words max), a done cue, the equipment, and every ingredient placed in the step that uses it. The card's coverage check catches anything the AI still misses.</li>
+        <li><strong>The 8 saved recipes</strong>: this session couldn't call the live Oracle, so Claude Code split each one by hand from its real steps and ingredients (7–10 steps became 13–21). They're saved as <em>proposed</em> steps (<code>recipes.steps_proposed</code>), not applied. Each recipe card shows "New Cook Mode steps ready → Review"; ✅ Use these steps swaps them in and keeps the old ones in <code>steps_previous</code>, and Keep current steps drops the proposal. Every ingredient appears in a step for all 8.</li>
+      </ul>
+      Checked: 25 of 26 headless checks pass (spec line, coverage warning, review + accept write, serving scaling into Cook Mode, Next/Back/phone Back, resume, timer strip, Done clearing the saved position, planned-cook blocks, 44px+ buttons, no sideways scroll at 400px); the one failure is the same pre-existing test-harness network error as S1. Galaxy Map regenerated, 26/26 anchors fresh. <strong>Untested by Alex's own hand.</strong>
+    </div>
+</div>
 <div class="card" id="card-2026-10-11-s1-screenshot-inbox" style="margin-bottom:30px;">
     <div class="card-title">📸 Oct 11 — S1: Screenshot Inbox</div>
     <div class="card-body">

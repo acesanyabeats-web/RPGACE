@@ -404,6 +404,7 @@ Real design choice, not an oversight: `chronicles_finance` feeds Chronicles' dis
 ### Built but NEVER verified — treat as unconfirmed, test before building on
 **This section predates HABITS, the Galaxy Map's G13-G117 build-out, and everything shipped after this doc's own last full re-verification — treat it as a real historical record of what was known-unverified at each build's own time, not a live status feed.** For CURRENT hand-test status on any given feature, `smoke_test.html`'s own Supabase-backed, Alex-hand-confirmed tally is the authoritative source (see CLAUDE.md's "Hand-testing" open fork — 27 of 99 rows confirmed as of Aug 30, 70 still unverified). Full build narrative for everything below lives in `patch_notes.html`'s own dated cards — every one of these items already cites it there, this section never re-tells the story.
 
+- **Cook Mode (Oct 11 2026)**: one-step-per-screen cooking, step rules, and the 8 proposed step splits — headless-tested only, see §15d.
 - **Bookworm**: no book has ever completed the full pipeline start to finish (structure detection is solid on both entry points; a clean chapter run through the post-retune engine is the real remaining open test). `_looksLikeTableOfContents()`'s warning heuristic has never been observed catching a real mistake. Bibliography section render has nothing to show until a book completes.
 - **F16 Beatstars listing / F17 video pipeline stages / F18 auto visual treatment / highlight-to-Phylum-Path button** — real, shipped, hand-test status tracked in `smoke_test.html` (also named in CLAUDE.md's own "F16/F17/F18 hand-test sweep" open fork).
 - **The real July 20-25 build cluster** — left slide-out nav drawer, the Research Lab tab-content fix (superseded: Research Lab is now fully retired, not just fixed), the dashboard command deck rebuild, `book_knowledge`/`jargon_encyclopedia` views, the `/debate` skill, n8n rota sync (F10), Oracle self-awareness + the Claude Code bridge (`oracleAppGrounding`/`oracleFetchGuard`/`oracleDevBridge`/`taxonomy_decision_log`), a real nav-lag root-cause fix, PWA installability, the Career stat card + Chronicles rebuild, the `/scope` skill + `system_updates` table, `/5thDimension`, server-side API auth (now live and independently verified, see CLAUDE.md's Security note), a real Composio account-id dedup fix, Chronicles card-only + real pushState URLs + swipeable nav + `perfWatch`, every boot-time UI injector moving onto `RPGACE.registerBootTask`, and Approach B's write-proxy (now independently confirmed live via 8 real authenticated writes) — all real, all shipped.
@@ -626,6 +627,22 @@ flowchart TD
 **Honest limit, restated because it is the single most misreadable claim in this pipeline:** RPGACE does not generate video. It tracks, briefs, and hands off. OpenMontage stays an externally-operated tool, per CLAUDE.md's own standing verdict; Phase F's "Generate Video" builds and can send a real job payload, but the freeze flag defaults OFF pending Alex's own Tier-3 paid-provider decision, and the handoff view surfaces real data — it never simulates a real render as if it were genuine (the Simulate Response tool exists specifically so a fake result is always labeled `[SIMULATED]`, never silently indistinguishable from a real one).
 
 ---
+
+## 15d. Cook Mode (Oct 11 2026) — built, untested by Alex
+
+```mermaid
+flowchart LR
+  G[Oracle reply RECIPE_JSON with STEP_RULES_TEXT] --> SAN[_sanitizeStepIngredientsUsed clamps done_cue/equipment] --> CARD[Recipe card spec line + coverage check]
+  DB[(recipes.steps)] --> CARD
+  PROP[(recipes.steps_proposed)] --> RV{Review: Use these steps?}
+  RV -- yes --> W[secureWrite: steps=proposed, steps_previous=old, steps_proposed=null] --> DB
+  RV -- no --> X[secureWrite: steps_proposed=null]
+  CARD --> CMS[_cookModeSteps scale] --> CM[_openCookMode one step per screen]
+  PC[(planned_cooks.schedule.blocks)] --> LIVE[Live Cook panel ▶ Cook Mode] --> CMS
+  CM --> LS[(localStorage resume position)]
+```
+
+The 8 recipes saved before Oct 11 have `steps_proposed` rows written directly by a Claude Code session (source data: their own steps + `recipe_ingredients`; full set in `records/2026-10/cook_mode_step_splits_2026-10-11.json`). Nothing changes for a recipe until Alex accepts its proposal.
 
 ## 15c. Screenshot Inbox (S1, Oct 11 2026) — built, untested by Alex
 

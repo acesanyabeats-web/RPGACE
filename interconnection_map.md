@@ -498,6 +498,7 @@ This is a real, still-live tool — not the only way to edit `rpgace_core.js` (d
 | 🛒 Generate shopping list / 🧺 Add to basket / ✅ Bought / ↩ undo | A real 3rd shopping-list state, "in basket," between "need to find it" and "bought." |
 | 🥫 What Can I Cook Right Now? | A saved-recipe finder over every recipe classified live against real current stock. |
 | 🍳 LIVE COOK SESSION panel (inside Oracle) | H24 10th pass (Sep 22 2026) — a real, persistent panel inside Oracle: step timeline, per-step timers, a stir-reminder toggle, and a real elapsed-since-start ticker read from `rpgace_agendas.started_at`. |
+| ▶ Start Cooking (recipe card) / ▶ Cook Mode (Live Cook panel) / Review proposed steps | Oct 11 2026 — `ui._openCookMode` is one full-screen one-step-per-screen view fed by `logic._cookModeSteps`, which normalizes either a recipe's `steps` (scaled by the card's serving input) or a planned cook's `schedule.blocks` (both now carry `done_cue`/`equipment`). Per-step panels reuse `ui._mkStepTimerControls`; phone Back goes through `dashDeck._navPush`/`_navClosed`; position is kept in localStorage per recipe/planned cook. `logic._stepCoverageGaps` drives the card's "not used in any step" warning. `ui._reviewProposedSteps` shows `recipes.steps_proposed` and on Accept writes `steps`/`steps_previous`/`steps_proposed:null` through `secureWrite` (the `recipes` table is already in data-write's allowlist). Generation/update prompts share `STEP_RULES_TEXT`. |
 
 ### SHOPPING WISHLIST (standalone domain, Sep 14 2026)
 
