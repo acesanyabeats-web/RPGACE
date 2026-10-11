@@ -108,13 +108,13 @@ def build_skill_section(name, callees, callers):
     # (galaxy_map_skills.py `_river_chip`): these named a real river and
     # linked nowhere. Both views now reach the same real Level-2 anchor.
     def _rlink(rnum):
-        label = RIVER_NAME.get(rnum, f'River {rnum}').split('—')[0].strip()
+        label = RIVER_NAME.get(rnum, f'Domain {rnum}').split('—')[0].strip()
         return f'<a href="galaxy_map_module.html#river-{rnum}">{esc(label)}</a>'
     river_bits = [_rlink(13)]
     sec = SKILL_SECONDARY_RIVER.get(name)
     if sec:
         river_bits.append(_rlink(sec[0]))
-    river_line = f'<p class="modline">Real River usage: {" + ".join(river_bits)} · Level: N/A (dev-process, not app-runtime)</p>'
+    river_line = f'<p class="modline">Real Domain usage: {" + ".join(river_bits)} · Level: N/A (dev-process, not app-runtime)</p>'
     # Real Aug 21 2026 fold (/misunderstanding correction) — this used to
     # be its own tab-switched <section> (the page's real TABLE view,
     # before the merge). Now it's a hidden detail panel INSIDE the Map
@@ -199,7 +199,7 @@ TEMPLATE = """<!DOCTYPE html>
   .netlink:hover{{opacity:1}}
   .sknote{{color:#c8c8d8;line-height:1.5}}
   .skriver{{white-space:nowrap}}
-  /* G82 — the river chips are real links now (galaxy_map_module.html#river-N);
+  /* G82 — the domain chips are real links now (galaxy_map_module.html#river-N);
      text-decoration:none keeps the chip reading as a chip, not a hyperlink. */
   .river-chip{{display:inline-block;font-size:9px;padding:2px 7px;border-radius:8px;background:rgba(42,191,176,0.12);color:#2ABFB0;margin:0 4px 4px 0;text-decoration:none}}
   .river-chip:hover{{background:rgba(42,191,176,0.28)}}
@@ -339,8 +339,8 @@ def main():
           f"{len(GROUPS)} real axis groups (table), one real merged page.")
     # G82 — real, measured river-link coverage across BOTH views, so a
     # regression back to dead chips shows up in the build output.
-    print(f"  G82 river links — every skill links River XIV at Level 2 in both views; "
-          f"{n_sec} of {len(names)} also link a real secondary river.")
+    print(f"  G82 domain links — skills sit outside the app domains; "
+          f"{n_sec} of {len(names)} also link a real secondary domain.")
 
 
 if __name__ == '__main__':

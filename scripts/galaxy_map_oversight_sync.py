@@ -47,7 +47,7 @@ from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # no
 # function drill-down mechanism G83 built for Supabase, reused here
 # (rule 8) fed with the real subset of tables THIS unit (Oversight
 # Docs) genuinely touches — see build_shared_infra_section() below.
-from graphify_river_group import (  # noqa: E402
+from graphify_river_group import (domain_label,   # noqa: E402
     build_infra_drilldown, render_infra_drilldown, infra_drilldown_counts,
     INFRA_DRILLDOWN_CSS, compute_all_supabase_table_touches,
     compute_oversight_doc_supabase_reads, LEVEL3_MODULES, LINKABLE_MODULES,
@@ -124,7 +124,7 @@ PUSH_BUILD_TRIGGERS = [
     (8, 'Tooling/rules catalog change (new skill, new global tool, new rule file)', 'ai_tooling_and_rules_map.md'),
     (9, 'A skill produces a new real precedent/guardrail/finding through use', "that skill's own .md file, same session, not deferred"),
     (10, 'rpgace_core.js/main.js/api/*.js structural change', 'graphify --update --code-only, then export html → recolor → river-group → obsidian-vault-html (graph.html + obsidian_vault.html), in that order'),
-    (11, 'interconnection_map.md/taxonomy_placement_rules.txt/a skill .md changes in a way that could affect an EXISTING minotaur_map.html river', "cross-check that river's own text in minotaur_map.html — flag if stale, never silently auto-rewrite"),
+    (11, 'interconnection_map.md/taxonomy_placement_rules.txt/a skill .md changes in a way that could affect an EXISTING minotaur_map.html domain', "cross-check that domain's own text in minotaur_map.html — flag if stale, never silently auto-rewrite"),
     (12, 'A Current State entry is confirmed fully resolved, no longer re-litigated', 'move the full narrative to the paired archive (CLAUDE_archive.md / patch_notes_archive.html / records/YYYY-MM/), rewrite the live entry to one present-tense bullet'),
     (13, "This session's own evidence-gathering touches a fact a doc asserts as current", 'compare live value vs. the doc’s claim right there, in the same pass — mandatory on every real report/push, not just at Bedtime'),
     (14, 'A Supabase table this session touched gains rows/schema/a new write path', 'scripts/supabase_dedup_scan.py against that table, findings-only, appended to a dated record'),
@@ -240,8 +240,8 @@ for _r, _mods in RIVER_MODULES.items():
 
 def _ovs_river_chip(rnum):
     if rnum is None:
-        return '<span class="seqnum">cross-cutting, no river</span>'
-    label = RIVER_NAME.get(rnum, f'River {rnum}').split('—')[0].strip()
+        return '<span class="seqnum">cross-cutting, no domain</span>'
+    label = RIVER_NAME.get(rnum, f'Domain {rnum}').split('—')[0].strip()
     return f'<a href="galaxy_map_module.html#river-{rnum}"><code>🌊 {esc(label)}</code></a>'
 
 
@@ -320,7 +320,7 @@ def build_shared_infra_section():
         )
         return f'''<div class="table-section" id="tbl-{tbl}">
   <div class="thead"><h2>🗄️ {tbl}</h2><span class="tcount">{len(touches)} real function touch(es)</span></div>
-  <div class="rivers">{''.join(river_chips)}</div>
+  <div class="domains">{''.join(river_chips)}</div>
   <div class="mods">{mod_links}</div>
   {f'<details><summary class="catnote" style="cursor:pointer">Every real touch (module.function → detail)</summary>{detail_rows}</details>' if touches else ''}
 </div>'''
@@ -346,9 +346,9 @@ def build_shared_infra_section():
     table_view = f'<div class="tables">{"".join(table_rows)}</div>'
 
     return (f'<section class="gsection" id="cat-sharedinfra" style="display:none">'
-            f'<div class="ghead"><h2>🗄️ Shared Infrastructure — Rivers/Modules Touching the Same Tables</h2></div>'
+            f'<div class="ghead"><h2>🗄️ Shared Infrastructure — Domains/Modules Touching the Same Tables</h2></div>'
             f'<p class="catnote">Every real table an oversight doc genuinely fetches live (same source as the L0 map\'s '
-            f'own Infra tab for this unit), cross-referenced against every rpgace_core.js river/module/function that '
+            f'own Infra tab for this unit), cross-referenced against every rpgace_core.js domain/module/function that '
             f'touches that SAME table — real, live-code infrastructure sharing, not the doc-to-doc sequencing the '
             f'other tabs on this page cover.</p>'
             f'<p class="catnote"><b>Which doc touches which table</b> (the real per-{{doc,table}} facts the L0 map\'s '
@@ -515,7 +515,7 @@ def main():
     _ov_tables = sorted({rec['table'] for rec in compute_oversight_doc_supabase_reads()})
     _c = infra_drilldown_counts(DRILL, ORPHANS)
     print(f"  G91 continuation — Shared Infrastructure: {len(_ov_tables)} real oversight-doc table(s), "
-          f"{_c['rivers']} river(s) qualify, {_c['modules']} module(s) + {_c['orphan_modules']} river-less, "
+          f"{_c['rivers']} domain(s) qualify, {_c['modules']} module(s) + {_c['orphan_modules']} river-less, "
           f"{_c['functions'] + _c['orphan_functions']} real (module,function) pair(s).")
 
 

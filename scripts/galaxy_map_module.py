@@ -80,13 +80,14 @@ genuinely cross-cutting Claude-Code dev-process protocols that stay
 honestly scoped to River XIV alone.
 """
 import math
+import re
 import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from galaxy_map import polar, _curved_edge, _build_markers, _connector_icon, barycenter_order, count_crossings  # noqa: E402
 from galaxy_map import compute_unit_river_touches, UNIT_META, UNIT_BUBBLE_SYSTEM  # noqa: E402
-from graphify_river_group import (  # noqa: E402
+from graphify_river_group import (domain_label, DOMAIN_NUM, MODULE_DOMAIN, TOTAL_ZONES,   # noqa: E402
     RIVER_NAME, RIVER_COLOR, RIVER_MODULES, RIVER_ROLE_NOTE,
     DASHBOARD_CARDS, CARDS_BY_RIVER, RIVER_FLOWS, FLOWS_IN, _river_num_from_label,
     EXTERNAL_RIVER_LINKS, LINKS_BY_RIVER, compute_intra_river_flow, compute_river_terminals,
@@ -133,64 +134,72 @@ DECISIONS_BY_RIVER = _dm_by_river(_dm_build_unified())
 # on).
 
 MODULE_PERSPECTIVE_EXCERPT = {
-    'agendaReminder': 'I am agendaReminder, in River V — Two Independent Streams. My own real source block runs 3 function(s) (parse_module_functions(), rpgace_core.js).',
-    'agentsIntoOracle': 'I am agentsIntoOracle, in River III — The Oracle Current. My own real source block runs 2 function(s) (parse_module_functions(), rpgace_core.js).',
+    'agendaReminder': 'I am agendaReminder, in Domain V — Two Independent Streams. My own real source block runs 3 function(s) (parse_module_functions(), rpgace_core.js).',
+    'agentsIntoOracle': 'I am agentsIntoOracle, in Oracle — The Oracle Current. My own real source block runs 2 function(s) (parse_module_functions(), rpgace_core.js).',
     'authGate': 'I am authGate. My real job is the one gate every real /api/* call in RPGACE has to pass through, both directions.',
-    'beatLog': 'I am beatLog, in River XI — Content Production Live. My own real source block runs 19 function(s) (parse_module_functions(), rpgace_core.js).',
-    'bookworm': 'I am bookworm, in River IV — The Bookworm River. My own real source block runs 37 function(s) (parse_module_functions(), rpgace_core.js).',
-    'careerStatCard': 'I am careerStatCard, in River X — The Confluence of Chronicles. My own real source block runs 13 function(s) (parse_module_functions(), rpgace_core.js).',
-    'chroniclesLog': 'I am chroniclesLog, in River X — The Confluence of Chronicles. My own real source block runs 10 function(s) (parse_module_functions(), rpgace_core.js).',
-    'ciAutoPropose': 'I am ciAutoPropose, in River V — Two Independent Streams. My own real source block runs 2 function(s) (parse_module_functions(), rpgace_core.js).',
+    'beatLog': 'I am beatLog, in Content & Video — Content Production Live. My own real source block runs 19 function(s) (parse_module_functions(), rpgace_core.js).',
+    'bookworm': 'I am bookworm, in Domain IV — The Bookworm Domain. My own real source block runs 37 function(s) (parse_module_functions(), rpgace_core.js).',
+    'careerStatCard': 'I am careerStatCard, in Domain X — The Confluence of Chronicles. My own real source block runs 13 function(s) (parse_module_functions(), rpgace_core.js).',
+    'chroniclesLog': 'I am chroniclesLog, in Domain X — The Confluence of Chronicles. My own real source block runs 10 function(s) (parse_module_functions(), rpgace_core.js).',
+    'ciAutoPropose': 'I am ciAutoPropose, in Domain V — Two Independent Streams. My own real source block runs 2 function(s) (parse_module_functions(), rpgace_core.js).',
     'config': 'I am the config module. I am not a feature — I am the very first thing that must run after RPGACE\'s core script parses, because I am the one place that sets RPGACE.CONFIG (page-slug map, Supabase URL/publishable key, main.js function-name aliases) and RPGACE.sb (the anon-key REST helper — url()/headers()/select()/insert()/update()/del(), plus secureWrite() which some other module layered on top of me to route through the server-side proxy for protected tables).',
-    'conidPot': 'I am conidPot, in River XI — Content Production Live. My own real source block runs 15 function(s) (parse_module_functions(), rpgace_core.js).',
-    'contentProductionLive': 'I am contentProductionLive, in River XI — Content Production Live. My own real source block runs 33 function(s) (parse_module_functions(), rpgace_core.js).',
-    'contentRepurpose': 'I am contentRepurpose, in River XI — Content Production Live. My own real source block runs 8 function(s) (parse_module_functions(), rpgace_core.js).',
+    'conidPot': 'I am conidPot, in Content & Video — Content Production Live. My own real source block runs 15 function(s) (parse_module_functions(), rpgace_core.js).',
+    'contentProductionLive': 'I am contentProductionLive, in Content & Video — Content Production Live. My own real source block runs 33 function(s) (parse_module_functions(), rpgace_core.js).',
+    'contentRepurpose': 'I am contentRepurpose, in Content & Video — Content Production Live. My own real source block runs 8 function(s) (parse_module_functions(), rpgace_core.js).',
     'cookingOracle': 'I am the cookingOracle module — HABITS\' first and only shipped domain (H1-H9, Sep 10-14 2026). I generate recipes via Oracle chat (a RECIPE_JSON: trailer on the response), with a real disambiguation step for vague descriptions, a serving scaler, a tagged step timeline with per-step timers, and Save writes to my own recipes/recipe_ingredients tables plus a journal row.',
     'dashDeck': 'I am dashDeck, the dashboard itself. I own #dd-grid, the MODULES array that renders every real dashboard card (each with its own go() navigation/popup callback), _popup() (the one shared overlay helper 26 of the app\'s real popup sites route through), _openOversight (the live Oversight-doc index), and the glance-count refresh that powers the Taxonomy & Review card\'s pending-review badge.',
     'docsLinks': 'I am docsLinks. I am confirmed, honest, deliberate dead code — my own _inject function\'s first real statement is a bare `return;` before any of my real DOM-building body ever runs.',
-    'encSync': 'I am encSync, in River VII — The Library Current. My own real source block runs 4 function(s) (parse_module_functions(), rpgace_core.js).',
-    'encTaxonomyLink': 'I am encTaxonomyLink, in River VII — The Library Current. My own real source block runs 4 function(s) (parse_module_functions(), rpgace_core.js).',
-    'encyclopediaQoL': 'I am encyclopediaQoL, in River VII — The Library Current. My own real source block runs 4 function(s) (parse_module_functions(), rpgace_core.js).',
+    'encSync': 'I am encSync, in Domain VII — The Library Current. My own real source block runs 4 function(s) (parse_module_functions(), rpgace_core.js).',
+    'encTaxonomyLink': 'I am encTaxonomyLink, in Domain VII — The Library Current. My own real source block runs 4 function(s) (parse_module_functions(), rpgace_core.js).',
+    'encyclopediaQoL': 'I am encyclopediaQoL, in Domain VII — The Library Current. My own real source block runs 4 function(s) (parse_module_functions(), rpgace_core.js).',
     'errorLog': 'I am errorLog. I am RPGACE\'s real, live client-side error-capture cascade (G109, Aug 26 2026) — every error-coloured (#CC4A4A) toast anywhere in the app reaches my _capture via a guarded local-alias call inside RPGACE.utils.toast() itself.',
-    'feynman': 'I am feynman, in River III — The Oracle Current. My own real source block runs 25 function(s) (parse_module_functions(), rpgace_core.js).',
-    'instaOraclePanel': 'I am instaOraclePanel, in River III — The Oracle Current. My own real source block runs 5 function(s) (parse_module_functions(), rpgace_core.js).',
-    'intelBatchList': 'I am intelBatchList, in River V — Two Independent Streams. My own real source block runs 1 function(s) (parse_module_functions(), rpgace_core.js).',
-    'intelDedup': 'I am intelDedup, in River V — Two Independent Streams. My own real source block runs 8 function(s) (parse_module_functions(), rpgace_core.js).',
-    'intelDelete': 'I am intelDelete, in River V — Two Independent Streams. My own real source block runs 22 function(s) (parse_module_functions(), rpgace_core.js).',
-    'jargonEncyclopedia': 'I am jargonEncyclopedia, in River VII — The Library Current. My own real source block runs 4 function(s) (parse_module_functions(), rpgace_core.js).',
-    'journalQoL': 'I am journalQoL, in River V — Two Independent Streams. My own real source block runs 5 function(s) (parse_module_functions(), rpgace_core.js).',
-    'knowledgeGap': 'I am knowledgeGap, in River IX — The Mirror and the Far Shore. My own real source block runs 4 function(s) (parse_module_functions(), rpgace_core.js).',
+    'feynman': 'I am feynman, in Oracle — The Oracle Current. My own real source block runs 25 function(s) (parse_module_functions(), rpgace_core.js).',
+    'instaOraclePanel': 'I am instaOraclePanel, in Oracle — The Oracle Current. My own real source block runs 5 function(s) (parse_module_functions(), rpgace_core.js).',
+    'intelBatchList': 'I am intelBatchList, in Domain V — Two Independent Streams. My own real source block runs 1 function(s) (parse_module_functions(), rpgace_core.js).',
+    'intelDedup': 'I am intelDedup, in Domain V — Two Independent Streams. My own real source block runs 8 function(s) (parse_module_functions(), rpgace_core.js).',
+    'intelDelete': 'I am intelDelete, in Domain V — Two Independent Streams. My own real source block runs 22 function(s) (parse_module_functions(), rpgace_core.js).',
+    'jargonEncyclopedia': 'I am jargonEncyclopedia, in Domain VII — The Library Current. My own real source block runs 4 function(s) (parse_module_functions(), rpgace_core.js).',
+    'journalQoL': 'I am journalQoL, in Domain V — Two Independent Streams. My own real source block runs 5 function(s) (parse_module_functions(), rpgace_core.js).',
+    'knowledgeGap': 'I am knowledgeGap, in Domain IX — The Mirror and the Far Shore. My own real source block runs 4 function(s) (parse_module_functions(), rpgace_core.js).',
     'leftNav': 'I am leftNav, the hamburger-triggered slide-out drawer that is the real site-wide navigation surface (the sidebar-nav pattern the Galaxy Map\'s own left-nav borrows its visual language from is a separate, unrelated system — I am RPGACE-the-app\'s own nav, not the Galaxy Map\'s). I inject my own <style> block and hamburger button at script-parse time (deliberately, so the toggle is clickable before the rest of the app finishes booting), build my drawer\'s card list from a real nav manifest (_items, my one logic function, a plain data array — Bookworm, Content Pipeline, and others each with real subItems), and support a real left-edge swipe gesture to open/close.',
-    'mockOracle': 'I am mockOracle, in River III — The Oracle Current. My own real source block runs 12 function(s) (parse_module_functions(), rpgace_core.js).',
-    'morningBrief': 'I am morningBrief, in River V — Two Independent Streams. My own real source block runs 8 function(s) (parse_module_functions(), rpgace_core.js).',
-    'oracleAppGrounding': 'I am oracleAppGrounding, in River III — The Oracle Current. My own real source block runs 8 function(s) (parse_module_functions(), rpgace_core.js).',
+    'mockOracle': 'I am mockOracle, in Oracle — The Oracle Current. My own real source block runs 12 function(s) (parse_module_functions(), rpgace_core.js).',
+    'morningBrief': 'I am morningBrief, in Domain V — Two Independent Streams. My own real source block runs 8 function(s) (parse_module_functions(), rpgace_core.js).',
+    'oracleAppGrounding': 'I am oracleAppGrounding, in Oracle — The Oracle Current. My own real source block runs 8 function(s) (parse_module_functions(), rpgace_core.js).',
     'oracleControl': 'I am oracleControl — the human-consent gate in front of Oracle actually DOING anything to RPGACE (G41). A curated oracle_actions table defines my real vocabulary; I fetch and cache it (10-minute TTL), match incoming Oracle replies against it via a trailer scan on the shared oracle:response-scanned hook, and show one of two distinct confirm popups — \'should this RUN now\' or \'should this be ADDED to the recognized list\' — before anything executes.',
-    'oracleDevBridge': 'I am oracleDevBridge, in River III — The Oracle Current. My own real source block runs 3 function(s) (parse_module_functions(), rpgace_core.js).',
-    'oracleFetchGuard': 'I am oracleFetchGuard, in River III — The Oracle Current. My own real source block runs 1 function(s) (parse_module_functions(), rpgace_core.js).',
+    'oracleDevBridge': 'I am oracleDevBridge, in Oracle — The Oracle Current. My own real source block runs 3 function(s) (parse_module_functions(), rpgace_core.js).',
+    'oracleFetchGuard': 'I am oracleFetchGuard, in Oracle — The Oracle Current. My own real source block runs 1 function(s) (parse_module_functions(), rpgace_core.js).',
     'oracleProviderMode': 'I am oracleProviderMode. I am the Local/External Oracle toggle — a pinned dev-status-cluster row (click toggles Local Claude vs. an External dormant provider, right-click cycles which dormant provider kimi/luna is targeted).',
-    'oracleTreeGrounding': 'I am oracleTreeGrounding, in River III — The Oracle Current. My own real source block runs 3 function(s) (parse_module_functions(), rpgace_core.js).',
+    'oracleTreeGrounding': 'I am oracleTreeGrounding, in Oracle — The Oracle Current. My own real source block runs 3 function(s) (parse_module_functions(), rpgace_core.js).',
     'pathRouter': 'I am pathRouter. I give RPGACE real, bookmarkable URLs per page, built July 23 on top of vercel.json\'s existing catch-all rewrite (zero server change needed).',
     'perfWatch': 'I am perfWatch. I am the smallest real module in the app — one function, init, and nothing else; the G53 split review found genuinely nothing to separate into ui/logic.',
-    'phylumPath': 'I am phylumPath, in River VI — The Judgment Chamber. My own real source block runs 40 function(s) (parse_module_functions(), rpgace_core.js).',
-    'prodOraclePanel': 'I am prodOraclePanel, in River III — The Oracle Current. My own real source block runs 5 function(s) (parse_module_functions(), rpgace_core.js).',
+    'phylumPath': 'I am phylumPath, in Domain VI — The Judgment Chamber. My own real source block runs 40 function(s) (parse_module_functions(), rpgace_core.js).',
+    'prodOraclePanel': 'I am prodOraclePanel, in Oracle — The Oracle Current. My own real source block runs 5 function(s) (parse_module_functions(), rpgace_core.js).',
     'pwaInstall': 'I am pwaInstall. I have exactly one real function, _register (in logic — ui is genuinely empty, stated outright), which feature-detects \'serviceWorker in navigator\' and registers /sw.js. init is a deliberate no-op — my real registration call happens at module-scope, immediately after RPGACE.register() returns, not gated behind init() — I exist mainly so a registration failure shows up in RPGACE\'s normal module-init console conventions rather than as an unattributed silent failure.',
     'questEngine': 'I am questEngine. I give the Quest Board real Supabase persistence (A9 Phase 1, Aug 23-24 2026) — before me, addXP()/completeQuest() had zero persistence at all, the single most-repeated finding across Oracle\'s own self-audits.',
     'quickActions': 'I am quickActions. I am a chat-box driver and a one-time button-rewiring pass — genuinely nothing more, my own G53 review found my logic namespace comes up empty and said so outright rather than padding it.',
-    'refCorpus': 'I am refCorpus, in River VII — The Library Current. My own real source block runs 7 function(s) (parse_module_functions(), rpgace_core.js).',
-    'researchTabs': 'I am researchTabs, in River V — Two Independent Streams. My own real source block runs 6 function(s) (parse_module_functions(), rpgace_core.js).',
-    'scheduleFixes': 'I am scheduleFixes, in River V — Two Independent Streams. My own real source block runs 2 function(s) (parse_module_functions(), rpgace_core.js).',
-    'scheduleOracle': 'I am scheduleOracle, in River III — The Oracle Current. My own real source block runs 6 function(s) (parse_module_functions(), rpgace_core.js).',
-    'shiftSync': 'I am shiftSync, in River V — Two Independent Streams. My own real source block runs 3 function(s) (parse_module_functions(), rpgace_core.js).',
+    'refCorpus': 'I am refCorpus, in Domain VII — The Library Current. My own real source block runs 7 function(s) (parse_module_functions(), rpgace_core.js).',
+    'researchTabs': 'I am researchTabs, in Domain V — Two Independent Streams. My own real source block runs 6 function(s) (parse_module_functions(), rpgace_core.js).',
+    'scheduleFixes': 'I am scheduleFixes, in Domain V — Two Independent Streams. My own real source block runs 2 function(s) (parse_module_functions(), rpgace_core.js).',
+    'scheduleOracle': 'I am scheduleOracle, in Oracle — The Oracle Current. My own real source block runs 6 function(s) (parse_module_functions(), rpgace_core.js).',
+    'shiftSync': 'I am shiftSync, in Domain V — Two Independent Streams. My own real source block runs 3 function(s) (parse_module_functions(), rpgace_core.js).',
     'shoppingWishlist': 'I am shoppingWishlist, a real standalone module shipped Sep 14 2026 — deliberately NOT part of HABITS/Cooking, per Alex\'s own direct ask for a general future-purchases list (batteries, a wok, FIFA 27 — general goods, not ingredients; cookingOracle\'s own shopping_lists/shopping_list_items is a genuinely different, ingredient-specific mechanism I do not touch). My real budget logic (_computeBudgetFit) is a greedy fill, priority-first then cheapest-first as a tiebreak — an item that doesn\'t fit the remaining budget is SKIPPED, not a hard stop, so a cheap low-priority item after an unaffordable expensive one can still show as fitting.',
     'suppressQuestPopup': 'I am suppressQuestPopup. I am the smallest real module with a genuine job — on boot, I disable two legacy global functions (checkForQuestSuggestions, showSuggestionPopup) by replacing them with no-ops, and remove any #suggestion-popup element already in the DOM. I run exactly once per page load (guarded by window._questSuppressed) and my whole purpose is retiring an old quest-suggestion popup mechanism that questEngine\'s own real Quest Board superseded.',
-    'taxonomyReviewQueue': 'I am taxonomyReviewQueue, in River VIII — The Confluence Pool. My own real source block runs 9 function(s) (parse_module_functions(), rpgace_core.js).',
-    'taxonomySync': 'I am taxonomySync, in River VIII — The Confluence Pool. My own real source block runs 8 function(s) (parse_module_functions(), rpgace_core.js).',
-    'taxonomyTree': 'I am taxonomyTree, in River VIII — The Confluence Pool. My own real source block runs 18 function(s) (parse_module_functions(), rpgace_core.js).',
-    'tiktokOracle': 'I am tiktokOracle, in River III — The Oracle Current. My own real source block runs 5 function(s) (parse_module_functions(), rpgace_core.js).',
-    'videoPipeline': 'I am videoPipeline, in River XI — Content Production Live. My own real source block runs 3 function(s) (parse_module_functions(), rpgace_core.js).',
-    'videoSummary': 'I am videoSummary, in River XI — Content Production Live. My own real source block runs 29 function(s) (parse_module_functions(), rpgace_core.js).',
-    'visualOracle': 'I am visualOracle, in River XI — Content Production Live. My own real source block runs 9 function(s) (parse_module_functions(), rpgace_core.js).',
-    'youtubeOracle': 'I am youtubeOracle, in River III — The Oracle Current. My own real source block runs 5 function(s) (parse_module_functions(), rpgace_core.js).',
+    'taxonomyReviewQueue': 'I am taxonomyReviewQueue, in Domain VIII — The Confluence Pool. My own real source block runs 9 function(s) (parse_module_functions(), rpgace_core.js).',
+    'taxonomySync': 'I am taxonomySync, in Domain VIII — The Confluence Pool. My own real source block runs 8 function(s) (parse_module_functions(), rpgace_core.js).',
+    'taxonomyTree': 'I am taxonomyTree, in Domain VIII — The Confluence Pool. My own real source block runs 18 function(s) (parse_module_functions(), rpgace_core.js).',
+    'tiktokOracle': 'I am tiktokOracle, in Oracle — The Oracle Current. My own real source block runs 5 function(s) (parse_module_functions(), rpgace_core.js).',
+    'videoPipeline': 'I am videoPipeline, in Content & Video — Content Production Live. My own real source block runs 3 function(s) (parse_module_functions(), rpgace_core.js).',
+    'videoSummary': 'I am videoSummary, in Content & Video — Content Production Live. My own real source block runs 29 function(s) (parse_module_functions(), rpgace_core.js).',
+    'visualOracle': 'I am visualOracle, in Content & Video — Content Production Live. My own real source block runs 9 function(s) (parse_module_functions(), rpgace_core.js).',
+    'youtubeOracle': 'I am youtubeOracle, in Oracle — The Oracle Current. My own real source block runs 5 function(s) (parse_module_functions(), rpgace_core.js).',
+}
+# Oct 11 2026 (M1): the domain named in each excerpt is derived live from
+# the module's own `domain:` key, so a stale hand-written river name can't
+# survive a re-grouping.
+MODULE_PERSPECTIVE_EXCERPT = {
+    _m: re.sub(r'^(I am \w+, in )[^.]+\.', lambda _mm: f'{_mm.group(1)}the {domain_label(DOMAIN_NUM[MODULE_DOMAIN[_m]])} domain.', _s)
+    if _m in MODULE_DOMAIN else _s
+    for _m, _s in MODULE_PERSPECTIVE_EXCERPT.items()
 }
 
 # Real, shared "Alex" actor color — same as Level 3/Level 0's own
@@ -679,7 +688,7 @@ def build_river_section(rnum):
                 # scoped to intra-river connectivity only, which is what
                 # this diagram actually draws.
                 nodes_svg.append(
-                    f'<text x="{mx}" y="{my-30}" text-anchor="middle" font-size="9.5" fill="#E0A040">⚠️ no link within River {rnum}</text>'
+                    f'<text x="{mx}" y="{my-30}" text-anchor="middle" font-size="9.5" fill="#E0A040">⚠️ no link within {domain_label(rnum)}</text>'
                 )
 
         # real "flow anchor" for anything without a per-module citation
@@ -751,7 +760,7 @@ def build_river_section(rnum):
             skx, sky = ax - 55 - i * 14, ay - 130 - i * 68
             edges_svg.append(_curved_edge(ax, ay, skx, sky, skill_color, real=True, dashed=True, r1=22, r2=17,
                                            from_label=river_label.split(chr(8212))[0].strip(), to_label=skill, kind='skill_stream',
-                                           evidence_text=note or f'{skill} is a real skill cited for this river.',
+                                           evidence_text=note or f'{skill} is a real skill cited for this domain.',
                                            evidence_source='SKILL_SECONDARY_RIVER', zoom_href='galaxy_map_skill_network.html'))
             edge_colors_used.add(skill_color)
             pts5 = ' '.join(f'{skx + 17*math.cos(math.radians(a-90))},{sky + 17*math.sin(math.radians(a-90))}' for a in range(0, 360, 72))
@@ -819,7 +828,7 @@ def build_river_section(rnum):
             skx, sky = polar(cx, cy, skill_radius, ang)
             edges_svg.append(_curved_edge(cx, cy, skx, sky, skill_color, real=True, dashed=True, r1=40, r2=17,
                                            from_label=river_label.split(chr(8212))[0].strip(), to_label=skill, kind='skill_stream',
-                                           evidence_text=note or f'{skill} is a real skill cited for this river.',
+                                           evidence_text=note or f'{skill} is a real skill cited for this domain.',
                                            evidence_source='SKILL_SECONDARY_RIVER', zoom_href='galaxy_map_skill_network.html'))
             edge_colors_used.add(skill_color)
             pts5 = ' '.join(f'{skx + 17*math.cos(math.radians(a-90))},{sky + 17*math.sin(math.radians(a-90))}' for a in range(0, 360, 72))
@@ -839,21 +848,21 @@ def build_river_section(rnum):
     # Skills, Oversight Docs, Session Records, Dev Tooling — none of
     # them ARE app modules).
     if not mods:
-        legend += ('<p class="rlegend-role">ℹ️ This river genuinely has 0 real rpgace_core.js modules, by design — '
+        legend += ('<p class="rlegend-role">ℹ️ This domain genuinely has 0 real rpgace_core.js modules, by design — '
                     'it\'s a Total-systems category (dev-process/infrastructure), not an app module domain. '
-                    'What it shows below (dashboard cards, external connectors, skills, river-to-river connections) '
+                    'What it shows below (dashboard cards, external connectors, skills, domain-to-domain connections) '
                     'is the real complete picture, not a partial one.</p>')
     if rnum == OVERSIGHT_RIVER:
-        legend += '<p class="rlegend-role">📚 The real Oversight hub — fed directly by Rivers XII/XIII/XVI.</p>'
+        legend += '<p class="rlegend-role">📚 The real Oversight hub — fed by the domains below.</p>'
     elif rnum in OVERSIGHT_FEEDERS:
-        legend += '<p class="rlegend-role">📚 Has a real, direct RIVER_FLOWS connection into River XV (Oversight Docs).</p>'
+        legend += '<p class="rlegend-role">📚 Has a real, direct RIVER_FLOWS connection into the Oversight domain.</p>'
     if terminal_mods:
         reason_map = {'ui': 'a real, visible output you\'d actually see in the app',
                       'ai': 'a real, direct connection to an external AI provider',
                       'both': 'both a real visible output AND a real external-AI connection'}
         if len(terminal_mods) > 1:
             terms_str = ', '.join(f'<code>{m}</code> ({reason_map[terminal_kind[m]]})' for m in terminal_mods)
-            legend += f'<p class="rlegend-role">🎯 Real co-terminals (this river genuinely converges on more than one): {terms_str}.</p>'
+            legend += f'<p class="rlegend-role">🎯 Real co-terminals (this domain genuinely converges on more than one): {terms_str}.</p>'
         else:
             m = terminal_mods[0]
             legend += f'<p class="rlegend-role">🎯 Real terminal: <code>{m}</code> — {reason_map[terminal_kind[m]]}.</p>'
@@ -881,7 +890,7 @@ def build_river_section(rnum):
                 f'<b>{c["label"]}</b>{partial_badge} '
                 f'<span class="meta">{c["via"]}</span></div>')
     card_list = ''.join(_card_row(c) for c in cards) or \
-        '<div class="legend-row small"><span class="meta">No dashboard card routes directly into this river.</span></div>'
+        '<div class="legend-row small"><span class="meta">No dashboard card routes directly into this domain.</span></div>'
 
     def _conn_row(direction, other, note, itype):
         arrow = '→' if direction == 'out' else '←'
@@ -891,21 +900,21 @@ def build_river_section(rnum):
         return (f'<div class="legend-row small"><span class="dot" style="background:{RIVER_COLOR[other]}"></span>'
                 f'<b>{left} {arrow} {right}</b> <span class="meta">{note}</span></div>')
     conn_list = ''.join(_conn_row(d, o, n, i) for d, o, n, i in conns) or \
-        '<div class="legend-row small"><span class="meta">No real river-to-river RIVER_FLOWS connection.</span></div>'
+        '<div class="legend-row small"><span class="meta">No real domain-to-domain connection.</span></div>'
 
     def _link_row(link):
         return (f'<div class="legend-row small"><span class="dot" style="background:{EXTERNAL_COLOR}"></span>'
                 f'<b>{link["name"]}</b> <span class="meta">{link["via"]}</span></div>')
     link_list = ''.join(_link_row(link) for link in links) or \
-        '<div class="legend-row small"><span class="meta">No real G0 external connector cites this river directly.</span></div>'
+        '<div class="legend-row small"><span class="meta">No real G0 external connector cites this domain directly.</span></div>'
 
     def _skill_row(skill, note):
         label = f'/{skill}'
-        meta = note or ("River XIV's own real skill catalog — no per-river citation needed, this IS its structural content." )
+        meta = note or ("A dev-process skill — skills sit outside the app domains." )
         return (f'<div class="legend-row small"><span class="dot" style="background:{skill_color}"></span>'
                 f'<b>{label}</b> <span class="meta">{meta}</span></div>')
     skill_list = ''.join(_skill_row(s, n) for s, n in skills_here) or \
-        '<div class="legend-row small"><span class="meta">No real skill has a direct, cited relationship with this river.</span></div>'
+        '<div class="legend-row small"><span class="meta">No real skill has a direct, cited relationship with this domain.</span></div>'
 
     # G93 (Aug 25 2026) — real Infra-only bubbles: one per real L0 unit
     # whose own Infra genuinely touches this river, linking straight to
@@ -919,10 +928,10 @@ def build_river_section(rnum):
         return (f'<a class="legend-row small infra-bubble" href="{href}">'
                 f'<span class="dot" style="background:{meta["color"]}"></span>'
                 f'<b>{meta["icon"]} {meta["label"]}</b> '
-                f'<span class="meta">real Infra touches this river — open its own drilldown ↗</span></a>')
+                f'<span class="meta">real Infra touches this domain — open its own drilldown ↗</span></a>')
     infra_units = sorted(RIVER_UNIT_TOUCHES.get(rnum, ()))
     infra_list = ''.join(_infra_bubble(u) for u in infra_units) or \
-        '<div class="legend-row small"><span class="meta">No real L0 unit\'s Infra system (of the 7 with a clean river-grain mapping) touches this river.</span></div>'
+        '<div class="legend-row small"><span class="meta">No real L0 unit\'s Infra system (of the 7 with a clean river-grain mapping) touches this domain.</span></div>'
 
     # G20 (Aug 14, Alex's own direct ask, real evidence: this river's own
     # crowded fan-out of mostly-isolated modules crossed by Alex/Oracle
@@ -962,7 +971,7 @@ def build_river_section(rnum):
         mod_anchors = ''.join(f'<span id="mod-{m}" style="position:absolute"></span>' for m in mods if m in mod_pos)
         canvas_html = (
             f'<div class="meander-notice">{mod_anchors}'
-            f'<p>This river has {len(mods)} real modules across {len(cards)} real dashboard cards — genuinely too many to '
+            f'<p>This domain has {len(mods)} real modules across {len(cards)} real dashboard cards — genuinely too many to '
             f'usefully fan out on one canvas without the crossing Alex/Oracle bubble mess this used to show. '
             f'It has been split by real dashboard card instead — switch to the Table view above.</p>'
             f'</div>'
@@ -1000,10 +1009,10 @@ def build_river_section(rnum):
         f'{canvas_html}'
         f'<div class="legend"><h3>Real modules</h3>{mod_list}'
         f'<h3>Real dashboard-card entry points</h3>{card_list}</div>'
-        f'<div class="legend"><h3>Connects to other rivers <span style="font-size:10px;color:var(--dim);font-weight:400">(click a bubble to jump)</span></h3>{conn_list}</div>'
+        f'<div class="legend"><h3>Connects to other domains <span style="font-size:10px;color:var(--dim);font-weight:400">(click a bubble to jump)</span></h3>{conn_list}</div>'
         f'<div class="legend"><h3>External connectors (G0) that contribute here</h3>{link_list}</div>'
-        f'<div class="legend"><h3>Skill streams that join this river</h3>{skill_list}</div>'
-        f'<div class="legend"><h3>Infra — L0 units whose own bubble system touches this river</h3>{infra_list}</div>'
+        f'<div class="legend"><h3>Skill streams that join this domain</h3>{skill_list}</div>'
+        f'<div class="legend"><h3>Infra — L0 units whose own bubble system touches this domain</h3>{infra_list}</div>'
     )
     # Real Aug 21 2026 fold — table view reuses galaxy_map_level2_5.py's
     # own build_river_section() directly (rule 8), not re-derived. Only
@@ -1013,7 +1022,7 @@ def build_river_section(rnum):
     if rnum in L25_RIVER_NUMS:
         table_inner = l25_build_river_section(rnum)
     else:
-        table_inner = '<div class="legend"><p class="modlist">No real dashboard card routes into this river — Level 2.5\'s own scope (river → card → module) genuinely does not apply here.</p></div>'
+        table_inner = '<div class="legend"><p class="modlist">No real dashboard card routes into this domain — Level 2.5\'s own scope (domain → card → module) genuinely does not apply here.</p></div>'
     body = (
         f'<section class="river-section" id="river-{rnum}" style="display:none">'
         f'<div class="rhead"><span class="rdot" style="background:{color}"></span><h2>{river_label}</h2></div>'
@@ -1124,8 +1133,8 @@ TABS_TEMPLATE = """<!DOCTYPE html>
 
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 2 — Modules &amp; Dashboard Cards</div>
-  <h1>🌊 River detail — real modules + real dashboard-card entry points</h1>
-  <p>Drilled down from <a href="galaxy_map_river.html">the 17 rivers (Level 1)</a>, drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a>. Pick a river below — the diamond nodes are real dashboard cards (dashDeck.MODULES) that actually route a user into that river; the round inner-ring nodes are the river's own real registered modules, real code-derived arrows show which modules actually call each other, and a 👁️/🤖 badge marks the real terminal each river's own module flow converges on (a visible app output, an external-AI connection, or both); the mid-ring bubbles are the real OTHER rivers this one connects to (real <code>RIVER_FLOWS</code> data, → out / ← in, click to jump); the outer hexagons are real G0 external connectors that have a real, cited relationship to this specific river; the outermost pentagons are real Claude Code skills — River XIV's own full catalog, or a real cited tie into another river. A dashed diamond/"(partial)" label means the card's real target only partially covers the river. A 📚 note marks a river with a real, direct connection into River XV (Oversight Docs). <b>🧑 Alex</b> (top, permanent on every river-with-modules section) is the real human actor — same identity as Level 3's own Alex bubble, rolled up to module granularity: a dashed line INTO Alex means at least one real function has DOM/popup-rendering evidence AND the module is a real dashboard card's own PRIMARY destination (Alex-confirmed precision fix — a module named only as one of several siblings sharing a card, or a card's own via text explicitly demoting it, correctly does NOT connect); a dashed line OUT of Alex means at least one real function has button/input-wiring evidence (input stays gated on the raw signal alone — real click evidence is unambiguous without needing a card tie). A small dashed "🔽 module.function" tag next to a river connection bubble is a real preview of the specific Level-3 function that connection actually lands on (real evidence-gated — only shown when a traced function call or a real message-wrap installer was actually found; most connections honestly show none).</p>
+  <h1>🌊 Domain detail — real modules + real dashboard-card entry points</h1>
+  <p>Drilled down from <a href="galaxy_map_river.html">the {TOTAL_ZONES} domains (Level 1)</a>, drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a>. Pick a domain below — the diamond nodes are real dashboard cards (dashDeck.MODULES) that actually route a user into that domain; the round inner-ring nodes are the domain's own real registered modules, real code-derived arrows show which modules actually call each other, and a 👁️/🤖 badge marks the real terminal each domain's own module flow converges on (a visible app output, an external-AI connection, or both); the mid-ring bubbles are the real OTHER domains this one connects to (real <code>RIVER_FLOWS</code> data, → out / ← in, click to jump); the outer hexagons are real G0 external connectors that have a real, cited relationship to this specific domain; the outermost pentagons are real Claude Code skills that cite a tie into this domain. A dashed diamond/"(partial)" label means the card's real target only partially covers the domain. A 📚 note marks a domain with a real, direct connection into the Oversight domain. <b>🧑 Alex</b> (top, permanent on every domain section) is the real human actor — same identity as Level 3's own Alex bubble, rolled up to module granularity: a dashed line INTO Alex means at least one real function has DOM/popup-rendering evidence AND the module is a real dashboard card's own PRIMARY destination (Alex-confirmed precision fix — a module named only as one of several siblings sharing a card, or a card's own via text explicitly demoting it, correctly does NOT connect); a dashed line OUT of Alex means at least one real function has button/input-wiring evidence (input stays gated on the raw signal alone — real click evidence is unambiguous without needing a card tie). A small dashed "🔽 module.function" tag next to a domain connection bubble is a real preview of the specific Level-3 function that connection actually lands on (real evidence-gated — only shown when a traced function call or a real message-wrap installer was actually found; most connections honestly show none).</p>
 </div>
 
 <div class="tabs">{tabs}</div>
@@ -1194,11 +1203,11 @@ def main():
         )
         sections.append(build_river_section(rnum))
     html = TABS_TEMPLATE.format(tabs='\n'.join(tabs), sections='\n'.join(sections),
-                                dd_css=DISPERSED_DECISIONS_CSS)
+                                dd_css=DISPERSED_DECISIONS_CSS, TOTAL_ZONES=TOTAL_ZONES)
     OUT.parent.mkdir(exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
-    print(f"Wrote {OUT} — {len(RIVER_NAME)} river sections, "
+    print(f"Wrote {OUT} — {len(RIVER_NAME)} domain sections, "
           f"{sum(len(m) for m in RIVER_MODULES.values())} real modules, "
           f"{len(DASHBOARD_CARDS)} real dashboard cards mapped.")
 

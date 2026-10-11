@@ -42,7 +42,7 @@ from pathlib import Path as _Path_rail
 _sys_rail.path.insert(0, str(_Path_rail(__file__).parent))
 from graphify_river_group import inject_level_rail  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
-from graphify_river_group import (  # noqa: E402
+from graphify_river_group import (domain_label,   # noqa: E402
     SUPABASE_L0_UNIT_TOUCHES,
     compute_l0_unit_supabase_infra, compute_l0_unit_supabase_inter,
     _L0_ROLE_LABEL as _ROLE_LABEL, L0_UNIT_LABEL,
@@ -226,8 +226,8 @@ for _r, _mods in RIVER_MODULES.items():
 
 def _river_chip(rnum):
     if rnum is None:
-        return '<span class="tbl-none">cross-cutting, no river</span>'
-    label = RIVER_NAME.get(rnum, f'River {rnum}').split('—')[0].strip()
+        return '<span class="tbl-none">cross-cutting, no domain</span>'
+    label = RIVER_NAME.get(rnum, f'Domain {rnum}').split('—')[0].strip()
     return f'<a class="tbl-link" href="galaxy_map_module.html#river-{rnum}"><code>🌊 {esc(label)}</code></a>'
 
 
@@ -313,7 +313,7 @@ def build_shared_infra_section(unit_id='orchestrator_cc'):
         return f'''<section class="table-section" id="tbl-{unit_id}-{tbl}">
   <div class="thead"><span class="tdot"></span><h2>🗄️ {tbl}</h2>
     <span class="tcount">{len(touches)} real function touch(es)</span></div>
-  <div class="rivers">{''.join(river_chips_dedup)}</div>
+  <div class="domains">{''.join(river_chips_dedup)}</div>
   <div class="mods">{mod_links}</div>
   {f'<details class="touches"><summary>Every real touch (module.function → detail)</summary>{detail_rows}</details>' if touches else ''}
 </section>'''
@@ -339,9 +339,9 @@ def build_shared_infra_section(unit_id='orchestrator_cc'):
     )
 
     return (f'<div class="l0block" id="cat-sharedinfra-{unit_id}">'
-            f'<h2>🗄️ Shared Infrastructure — Rivers/Modules Touching the Same Tables</h2>'
+            f'<h2>🗄️ Shared Infrastructure — Domains/Modules Touching the Same Tables</h2>'
             f'<p class="l0intro">Every real table {esc(label)} genuinely touches (same source as its own L0 Infra '
-            f'facets), cross-referenced against every rpgace_core.js river/module/function that touches that '
+            f'facets), cross-referenced against every rpgace_core.js domain/module/function that touches that '
             f'SAME table — real, live-code infrastructure sharing, not the dispatch-history narrative below.</p>'
             f'{no_code_note}'
             f'<div class="toggle-row" data-scope="{unit_id}">'
@@ -382,10 +382,10 @@ def build_actor_section(unit_id):
         _facet('📥', 'Input received', p['input']),
         _facet('⚙️', 'How it processes the input', p['processing']),
         _facet('📤', 'Where output goes further', p['output']),
-        _facet('🌊', 'River / module / function contribution',
+        _facet('🌊', 'Domain / module / function contribution',
                f'{len(infra)} real 💉 Infra facet(s) · {len(inter)} real 🔗 Inter facet(s) on the '
                f'<a href="galaxy_map.html">L0 map</a>. Real tables touched:<ul class="l0list">{table_list}</ul>'
-               f'Full river/module/function drilldown is the Shared Infrastructure block below.'),
+               f'Full domain/module/function drilldown is the Shared Infrastructure block below.'),
         _facet('🤝', 'External / inter stakeholders', p['stakeholders']),
     ])
 
@@ -520,7 +520,7 @@ _PAGE_COPY = {
         'eyebrow_suffix': 'Orchestrator CC',
         'h1': '🧭 Orchestrator CC',
         'intro': ("This unit's own real full profile — role, input received, how it processes the input, "
-                   "where output goes further, river/module/function contribution, external/inter "
+                   "where output goes further, domain/module/function contribution, external/inter "
                    "stakeholders — plus its own Shared Infrastructure drilldown. Its real dispatch history "
                    "with OpenMontage CC (the only other unit it exchanges real data with) sits further down, "
                    "on its own — see the link above for OpenMontage CC's own separate page."),
@@ -529,7 +529,7 @@ _PAGE_COPY = {
         'eyebrow_suffix': 'OpenMontage CC',
         'h1': '🎬 OpenMontage CC',
         'intro': ("This unit's own real full profile — role, input received, how it processes the input, "
-                   "where output goes further, river/module/function contribution, external/inter "
+                   "where output goes further, domain/module/function contribution, external/inter "
                    "stakeholders — plus its own Shared Infrastructure drilldown. Its real dispatch history "
                    "with Orchestrator CC (the only other unit it exchanges real data with) sits further down, "
                    "on its own — see the link above for Orchestrator CC's own separate page."),
@@ -573,7 +573,7 @@ def main():
         _drill, _orph = _DRILL_ORPHANS_BY_UNIT[_uid]
         _c = infra_drilldown_counts(_drill, _orph)
         print(f"  {L0_UNIT_LABEL.get(_uid, _uid)} — Shared Infrastructure: {len(_tables)} real table(s), "
-              f"{_c['rivers']} river(s) qualify, {_c['modules']} module(s) + {_c['orphan_modules']} river-less, "
+              f"{_c['rivers']} domain(s) qualify, {_c['modules']} module(s) + {_c['orphan_modules']} river-less, "
               f"{_c['functions'] + _c['orphan_functions']} real (module,function) pair(s).")
 
 

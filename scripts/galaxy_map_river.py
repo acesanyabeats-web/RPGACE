@@ -35,7 +35,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from galaxy_map import polar, _curved_edge, _connector_icon, _build_markers, count_crossings  # noqa: E402
-from graphify_river_group import (  # noqa: E402
+from graphify_river_group import (domain_label,   # noqa: E402
     RIVER_NAME, RIVER_COLOR, RIVER_MODULES, RIVER_ROLE_NOTE, RIVER_FLOWS, RIVER_RETIRED,
     river_retirement_note_html,
     INTERACTION_TYPE_COLOR, INTERACTION_TYPE_LABEL, _river_num_from_label,
@@ -130,11 +130,11 @@ REVERSE_LINKS = compute_river_reverse_links()
 def build_river_web_section():
     rivers = sorted(REVERSE_LINKS)
     if not rivers:
-        return '<p class="cycle-intro">No real Dimension-page evidence touches any river yet.</p>'
+        return '<p class="cycle-intro">No real Dimension-page evidence touches any domain yet.</p>'
     rows = []
     for i, rnum in enumerate(rivers):
         color = RIVER_COLOR.get(rnum, '#C9A84C')
-        short = RIVER_NAME.get(rnum, f'River {rnum}').split('—')[0].strip()
+        short = RIVER_NAME.get(rnum, f'Domain {rnum}').split('—')[0].strip()
         hub = dict(icon='🌊', label=short, color=color)
         leaves = [
             dict(id=f'{rnum}-{href}', icon=icon, label=label, sub='real evidence', color=color,
@@ -329,11 +329,11 @@ def build_svg():
         if not is_archived:
             n_mods = len(RIVER_MODULES.get(rnum, []))
             role_note = RIVER_ROLE_NOTE.get(rnum, '')
-            evidence = f'{short_label} is one of {n_live} live rivers, holding {n_mods} real module(s).'
+            evidence = f'{short_label} is one of {n_live} live domains, holding {n_mods} real module(s).'
             if role_note:
                 evidence += f' {role_note}'
             edges_svg.append(_curved_edge(cx, cy, rx, ry, color, real=True, dashed=False, r1=hub_r1, r2=30,
-                                           from_label='Rivers', to_label=short_label, kind='river_link',
+                                           from_label='Domains', to_label=short_label, kind='river_link',
                                            evidence_text=evidence, evidence_source='RIVER_MODULES/RIVER_ROLE_NOTE',
                                            zoom_href=f'galaxy_map_module.html#river-{rnum}'))
             edge_colors_used.add(color)
@@ -354,7 +354,7 @@ def build_svg():
             nodes_svg.append(f'<text x="{bx}" y="{by}" text-anchor="middle" font-size="16" title="Oversight hub">📚</text>')
         elif not is_archived and rnum in oversight_feeders:
             bx, by = polar(rx, ry, 34, -45)
-            nodes_svg.append(f'<text x="{bx}" y="{by}" text-anchor="middle" font-size="13" opacity="0.85" title="Feeds Oversight (River XV)">📚</text>')
+            nodes_svg.append(f'<text x="{bx}" y="{by}" text-anchor="middle" font-size="13" opacity="0.85" title="Feeds the Oversight domain">📚</text>')
         # G20 (Aug 14) — a real "🌾" badge + direct link on any river that
         # genuinely qualifies for a Level-1.5 meanders split
         # (rivers_needing_meanders(), rule 8, same rule galaxy_map_
@@ -401,18 +401,18 @@ def build_svg():
         river_oracle_n = sum(compute_module_oracle_call_count(m) for m in mods)
         if not is_archived and river_oracle_n > 0:
             ox_, oy_ = polar(rx, ry, 34, -135)
-            nodes_svg.append(f'<text x="{ox_}" y="{oy_}" text-anchor="middle" font-size="13" opacity="0.85" title="{river_oracle_n} real Oracle call(s) across this river — see Level 2/3">🔮</text>')
+            nodes_svg.append(f'<text x="{ox_}" y="{oy_}" text-anchor="middle" font-size="13" opacity="0.85" title="{river_oracle_n} real Oracle call(s) across this domain — see Level 2/3">🔮</text>')
         mods_txt = ', '.join(f'<code>{m}</code>' for m in mods) if mods else '(no single-module home — see zone role note)'
         role = RIVER_ROLE_NOTE.get(rnum, '')
         oversight_note = ''
         if rnum == OVERSIGHT_RIVER:
-            oversight_note = '<br><span class="meta">📚 The real Oversight hub — fed directly by Rivers XII/XIII/XVI (see below).</span>'
+            oversight_note = '<br><span class="meta">📚 The real Oversight hub — fed by the domains marked 📚.</span>'
         elif rnum in oversight_feeders:
-            oversight_note = '<br><span class="meta">📚 Has a real, direct RIVER_FLOWS connection into River XV (Oversight Docs).</span>'
+            oversight_note = '<br><span class="meta">📚 Has a real, direct RIVER_FLOWS connection into the Oversight domain.</span>'
         if river_has_alex:
             oversight_note += '<br><span class="meta">🧑 Has at least one real module with DOM/input-facing evidence — see its own real Alex bubble at Level 2/3.</span>'
         if river_oracle_n > 0:
-            oversight_note += f'<br><span class="meta">🔮 {river_oracle_n} real Oracle call(s) across this river — see its own real Oracle bubble at Level 2/3.</span>'
+            oversight_note += f'<br><span class="meta">🔮 {river_oracle_n} real Oracle call(s) across this domain — see its own real Oracle bubble at Level 2/3.</span>'
         perspective_note = ''
         excerpt = RIVER_PERSPECTIVE_EXCERPT.get(rnum)
         if excerpt:
@@ -537,7 +537,7 @@ def build_svg():
         if rnum in river_pos:
             rx, ry = river_pos[rnum]
             cb_x, cb_y = polar(rx, ry, 34, 180)
-            nodes_svg.append(f'<text x="{cb_x}" y="{cb_y}" text-anchor="middle" font-size="12" opacity="0.85" title="Real cycle member — see \'Why some rivers loop back\' below">🔄</text>')
+            nodes_svg.append(f'<text x="{cb_x}" y="{cb_y}" text-anchor="middle" font-size="12" opacity="0.85" title="Real cycle member — see \'Why some domains loop back\' below">🔄</text>')
     cycle_rows = []
     for grp in cycle_groups:
         d = describe_river_cycle(grp)
@@ -558,7 +558,7 @@ TEMPLATE = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RPGACE — Galaxy Map (Level 1 — Rivers)</title>
+<title>RPGACE — Galaxy Map (Level 1 — Domains)</title>
 <style>
   :root {{ --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; }}
   *{{box-sizing:border-box;margin:0;padding:0}}
@@ -601,9 +601,9 @@ TEMPLATE = """<!DOCTYPE html>
 
 
 <div class="hero">
-  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 1 — Rivers</div>
-  <h1>🏛️ RPGACE Architecture — {n_live} Live Rivers</h1>
-  <p>Drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a> — RPGACE Architecture's own internal structure, the same {n_rivers} rivers <code>minotaur_map.html</code> and the Obsidian vault already describe ({n_live} live, {n_archived} archived — see the 🗄️ section below), here laid out radially and cross-linked by real <code>RIVER_FLOWS</code> data (never a river acting on its own — every edge is a real, grounded aggregate of actual caller-level relationships, per <code>system_map_spec.md</code> §1a). Every edge carries a real ✕ mark at its start and a real arrowhead at its end. A 📚 badge marks River XV (the real Oversight hub) and any river with a real, direct connection into it (§6, G5). A 🧑 badge marks a river with at least one real module carrying real DOM/input evidence — a lightweight aggregate (real UI density is too fine-grained for 17 nodes; see Level 2/3 for the real "Alex" bubble + edges). A real 🌐 "Referenced by" line (below, per river) is the reverse half of the Dimension pages' own migration bubbles — which Dimension page(s) have real, checked evidence touching this river, so the web reads both directions. <b>Click any river node to drill into its real modules + dashboard-card entry points (Level 2).</b></p>
+  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 1 — Domains</div>
+  <h1>🏛️ RPGACE Architecture — {n_live} Live Domains</h1>
+  <p>Drilled down from <a href="galaxy_map.html">the Galaxy Map (Level 0)</a> — RPGACE Architecture's own internal structure, the same {n_rivers} domains <code>minotaur_map.html</code> and the Obsidian vault already describe ({n_live} live, {n_archived} archived — see the 🗄️ section below), here laid out radially and cross-linked by real <code>RIVER_FLOWS</code> data (never a domain acting on its own — every edge is a real, grounded aggregate of actual caller-level relationships, per <code>system_map_spec.md</code> §1a). Every edge carries a real ✕ mark at its start and a real arrowhead at its end. A 📚 badge marks the Oversight domain and any domain with a real, direct connection into it (§6, G5). A 🧑 badge marks a domain with at least one real module carrying real DOM/input evidence — a lightweight aggregate (real UI density is too fine-grained for 17 nodes; see Level 2/3 for the real "Alex" bubble + edges). A real 🌐 "Referenced by" line (below, per domain) is the reverse half of the Dimension pages' own migration bubbles — which Dimension page(s) have real, checked evidence touching this domain, so the web reads both directions. <b>Click any domain node to drill into its real modules + dashboard-card entry points (Level 2).</b></p>
 </div>
 
 <div class="canvas-wrap">
@@ -626,29 +626,29 @@ TEMPLATE = """<!DOCTYPE html>
 </div>
 
 <details class="doc-methodology" open>
-  <summary>🌐 River Web — reverse migration bubbles ({n_web_rivers} of {n_live} live rivers)</summary>
+  <summary>🌐 Domain Web — reverse migration bubbles ({n_web_rivers} of {n_live} live domains)</summary>
   <div class="legend">
-  <p class="cycle-intro">Sep 24 2026, real upgrade of the text-only "🌐 Referenced by" line into a real SVG bubble panel per river — same hub-and-spoke visual language as every other page's own web section (rule 8, reusing <code>render_bubble_row()</code> directly). Each river below is a real hub; each leaf is a real Dimension page whose own evidence touches it (<code>compute_river_reverse_links()</code>, aggregating the already-computed <code>DRILL</code> dict from Oracle/Supabase/Decisions) — click a leaf to jump to that page's own Map view. A river with no panel here genuinely has no Dimension-page evidence touching it yet, not a gap in this rendering.</p>
+  <p class="cycle-intro">Sep 24 2026, real upgrade of the text-only "🌐 Referenced by" line into a real SVG bubble panel per domain — same hub-and-spoke visual language as every other page's own web section (rule 8, reusing <code>render_bubble_row()</code> directly). Each domain below is a real hub; each leaf is a real Dimension page whose own evidence touches it (<code>compute_river_reverse_links()</code>, aggregating the already-computed <code>DRILL</code> dict from Oracle/Supabase/Decisions) — click a leaf to jump to that page's own Map view. A domain with no panel here genuinely has no Dimension-page evidence touching it yet, not a gap in this rendering.</p>
   {river_web}
   </div>
 </details>
 
 <div class="legend">
-  <h2>🔄 Why some rivers loop back — real cycles, explained</h2>
-  <p class="cycle-intro">Real cycle-detection (Tarjan's algorithm) run on the live RIVER_FLOWS data below, not assumed. A river marked 🔄 above is a real member of one of these groups — the reason it's not a runtime bug is stated per group, grounded in the real interaction types actually involved.</p>
+  <h2>🔄 Why some domains loop back — real cycles, explained</h2>
+  <p class="cycle-intro">Real cycle-detection (Tarjan's algorithm) run on the live RIVER_FLOWS data below, not assumed. A domain marked 🔄 above is a real member of one of these groups — the reason it's not a runtime bug is stated per group, grounded in the real interaction types actually involved.</p>
   {cycles_html}
 </div>
 
 <div class="legend">
-  <h2>The {n_live} live rivers</h2>
-  <p class="cycle-intro">A <b>River</b> is a strict one-module-one-home grouping of the codebase — every real module belongs to exactly one, which is what makes a river a genuine containment step (L1) with Level 2 nested inside it.</p>
+  <h2>The {n_live} live domains</h2>
+  <p class="cycle-intro">A <b>Domain</b> is a strict one-module-one-home grouping of the codebase — every real module belongs to exactly one, which is what makes a domain a genuine containment step (L1) with Level 2 nested inside it.</p>
   {live_legend}
 </div>
 
 <details class="doc-methodology">
-  <summary>🗄️ Archived rivers ({n_archived}) — real history, kept but no longer on the live ring</summary>
+  <summary>🗄️ Archived domains ({n_archived}) — real history, kept but no longer on the live ring</summary>
   <div class="legend">
-  <p class="cycle-intro">Sep 16 2026, real 3rd correction (Alex's own direct ask: "this superseded thing needs to go... i want full absorption to declutter") — these {n_archived} rivers carried zero real <code>rpgace_core.js</code> modules and were real Total-systems categories, not app module domains, fully superseded by the real L0 Infra/Inter system (see <a href="galaxy_map.html">Level 0</a>, and the real, working <a href="galaxy_map_dimensions.html">L0↔L1 cross-links on the Dimensions Matrix</a>). No longer shown as ring/row nodes — kept here, collapsed, rather than deleted, per this project's own archive-never-delete convention; their real <code>RIVER_RETIRED</code> reason + <code>superseded_by</code> link is shown per row below.</p>
+  <p class="cycle-intro">Sep 16 2026, real 3rd correction (Alex's own direct ask: "this superseded thing needs to go... i want full absorption to declutter") — these {n_archived} domains carried zero real <code>rpgace_core.js</code> modules and were real Total-systems categories, not app module domains, fully superseded by the real L0 Infra/Inter system (see <a href="galaxy_map.html">Level 0</a>, and the real, working <a href="galaxy_map_dimensions.html">L0↔L1 cross-links on the Dimensions Matrix</a>). No longer shown as ring/row nodes — kept here, collapsed, rather than deleted, per this project's own archive-never-delete convention; their real <code>RIVER_RETIRED</code> reason + <code>superseded_by</code> link is shown per row below.</p>
   {archived_legend}
   </div>
 </details>
@@ -662,7 +662,7 @@ TEMPLATE = """<!DOCTYPE html>
   <code>galaxy_map.py</code>'s own <code>polar()</code>/<code>_curved_edge()</code> layout helpers.
   Mapping rules: <code>system_map_spec.md</code>. G3 of the ratified "RPGACE Total Systems
   Galaxy Map" /CEO plan — G4 (<a href="galaxy_map_module.html">module + dashboard-card
-  drill-down, click any river above</a>) is now real and live.
+  drill-down, click any domain above</a>) is now real and live.
 </div>
 
 </body>
@@ -681,7 +681,7 @@ def main():
                            n_archived=n_archived,
                            river_web=build_river_web_section(), n_web_rivers=len(REVERSE_LINKS),
                            dim_index=dimension_index_html(OUT.name,
-                               heading='🌌 Dimensions — equal standing with the Rivers above'),
+                               heading='🌌 Dimensions — equal standing with the Domains above'),
                            dim_css="", infra_dd_css="")
     OUT.parent.mkdir(exist_ok=True)
     html = inject_level_rail(html, OUT.name)
@@ -690,10 +690,10 @@ def main():
     # regeneration can never wipe it. See inject_plan_overlay().
     html = inject_plan_overlay(html, 'river')
     OUT.write_text(html, encoding='utf-8')
-    print(f"Wrote {OUT} — {len(RIVER_NAME)} rivers, real RIVER_FLOWS edges drawn. "
+    print(f"Wrote {OUT} — {len(RIVER_NAME)} domains, real RIVER_FLOWS edges drawn. "
           f"Real crossing-reduced ring order (greedy 2-opt local search): {crossings_before} crossings "
           f"(old numeric order) -> {crossings_after} crossings.")
-    print(f"  River Web — {len(REVERSE_LINKS)} of {len(RIVER_NAME) - n_archived} live rivers have a real "
+    print(f"  Domain Web — {len(REVERSE_LINKS)} of {len(RIVER_NAME) - n_archived} live domains have a real "
           f"reverse-link bubble panel.")
 
 

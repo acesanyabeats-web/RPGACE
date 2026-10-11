@@ -37,7 +37,7 @@ from graphify_river_group import EXTERNAL_CONNECTORS  # noqa: E402
 from graphify_river_group import EXTERNAL_RIVER_LINKS, RIVER_MODULES, RIVER_NAME  # noqa: E402
 from graphify_river_group import inject_level_rail  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
-from graphify_river_group import (  # noqa: E402
+from graphify_river_group import (domain_label,   # noqa: E402
     render_bubble_row, _curved_edge, _build_markers, INFRA_DRILLDOWN_CSS,
 )
 # G99 (Aug 25 2026) — the G91-continuation Oracle river/module/function
@@ -115,7 +115,7 @@ def _norm(s):
 
 def _river_short(r):
     """'River XI — Content Production Live' -> 'River XI'."""
-    return RIVER_NAME.get(r, f'River {r}').split('—')[0].strip()
+    return RIVER_NAME.get(r, f'Domain {r}').split('—')[0].strip()
 
 
 def resolve_destinations(conn):
@@ -147,7 +147,7 @@ def resolve_destinations(conn):
     if not link_row:
         reason = (f"No EXTERNAL_RIVER_LINKS row exists for this connector. Its own real trigger path is "
                   f"<code>{esc(conn['via'])}</code> and its own status is <code>{esc(conn['status'])}</code> — "
-                  f"no river number is claimed here rather than one being guessed in.")
+                  f"no domain number is claimed here rather than one being guessed in.")
         return [], galaxy_page, reason
 
     prose = _norm(' '.join([link_row.get('via', ''), conn.get('note', ''), conn.get('via', '')]))
@@ -263,11 +263,11 @@ def build_destination_block(conn):
     out = []
     if parts:
         if all(g == 'module' for g in grains):
-            grain_note = 'module grain — its own prose names a real module in that river'
+            grain_note = 'module grain — its own prose names a real module in that domain'
         elif all(g == 'river' for g in grains):
-            grain_note = 'river grain — its own prose names no module in that river'
+            grain_note = 'domain grain — its own prose names no module in that domain'
         else:
-            grain_note = 'mixed grain — module where its own prose names one, river where it does not'
+            grain_note = 'mixed grain — module where its own prose names one, domain where it does not'
         out.append('<div class="dblock"><div class="dlabel">Real destination</div>'
                    f'<p>🔽 Lands on {" + ".join(parts)} '
                    f'<span class="ev">Resolved at {grain_note}, from '
@@ -349,7 +349,7 @@ def build_web_section():
         rows.append(f'<div class="ext-web-row"><h3>{esc(grp["label"])} — {len(conns)} real connector(s)</h3>{bubble}</div>')
     return (
         '<p class="webnote">Every connector below is a real migration bubble — click one to jump to its own '
-        'real destination (a module\'s Current Series section, a river\'s own Level-2 section, or its own '
+        'real destination (a module\'s Current Series section, a domain\'s own Level-2 section, or its own '
         'galaxy page where one exists). A dimmed, non-clickable connector genuinely has no known in-app '
         'destination yet, stated honestly rather than linked to a guess.</p>'
         + ''.join(rows))

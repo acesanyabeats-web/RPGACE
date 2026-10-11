@@ -141,10 +141,10 @@
   <div class="fam-head"><h2>🔍 Consistency Checkers</h2><span class="fam-count">3 real script(s)</span></div>
   <div class="fam-cards"><div class="gen-card">
   <div class="gen-head"><span class="gen-name">gmp_b_consistency_check.py</span><span class="gen-date">Sep 16 2026 (GMP-B)</span></div>
-  <p class="gen-purpose">A real consistency CHECK, never a regeneration — compares RIVER_FLOWS' claimed river-to-river edges against perspective_reports' own evidence.cross_refs, flagging a real mismatch for a human decision. Never auto-adds an edge.</p>
+  <p class="gen-purpose">A real consistency CHECK, never a regeneration — compares RIVER_FLOWS' claimed domain-to-domain edges against perspective_reports' own evidence.cross_refs, flagging a real mismatch for a human decision. Never auto-adds an edge.</p>
   <div class="gen-meta"><b>Writes to:</b> system_map_flags (flags only, human decides)</div>
   <div class="gen-meta"><b>Depends on:</b> <code>RIVER_MODULES()</code>, <code>RIVER_FLOWS()</code>, <code>_roman_to_int()</code></div>
-  <div class="gen-evidence">📊 Found 1 real mismatch (River III&lt;-&gt;XI) at 14/58 coverage; re-run at full 58/58 coverage found 11 real mismatches, all resolved with dated per-edge evidence.</div>
+  <div class="gen-evidence">📊 Found 1 real mismatch (Oracle&lt;-&gt;XI) at 14/58 coverage; re-run at full 58/58 coverage found 11 real mismatches, all resolved with dated per-edge evidence.</div>
 </div><div class="gen-card">
   <div class="gen-head"><span class="gen-name">gmr2_generate_cross_refs.py</span><span class="gen-date">Sep 16 2026 (GMR-2)</span></div>
   <p class="gen-purpose">Audits module perspective_reports rows still missing a real evidence.cross_refs field, naming which real modules/tables their already-computed evidence counts refer to — reuses the same detection GMR-3/gmp_b_consistency_check.py needs, never re-grepped fresh.</p>

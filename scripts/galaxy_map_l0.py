@@ -44,10 +44,10 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 UNITS = [
     {'id': 'oracle', 'label': 'Oracle', 'icon': '🔮', 'color': '#9B59B6',
-     'role': "Anthropic (live) + Kimi/Luna (dormant scaffolds) — RPGACE Architecture's own real AI harness, promoted to its own real L0 unit (Aug 25 2026, real Alex ask: retiring 'External AI' as a grouping so Oracle and its own real river/module/function evidence stand on their own). Its own dedicated page shows a real river->module->function drill-down over every real Oracle-call site.",
+     'role': "Anthropic (live) + Kimi/Luna (dormant scaffolds) — RPGACE Architecture's own real AI harness, promoted to its own real L0 unit (Aug 25 2026, real Alex ask: retiring 'External AI' as a grouping so Oracle and its own real domain/module/function evidence stand on their own). Its own dedicated page shows a real river->module->function drill-down over every real Oracle-call site.",
      'sublevel': 'oracle'},
     {'id': 'rpgace_architecture', 'label': 'RPGACE Architecture', 'icon': '🏛️', 'color': '#C9A84C',
-     'role': 'UI + Backend, one unit. Drilling in is the door into the EXISTING Dimension→River→Module→Current chain — NOT a privileged gateway for the other 6 units, just this unit\'s own real content.',
+     'role': 'UI + Backend, one unit. Drilling in is the door into the EXISTING Dimension→Domain→Module→Current chain — NOT a privileged gateway for the other 6 units, just this unit\'s own real content.',
      'sublevel': 'galaxy'},
     {'id': 'skills', 'label': 'Skills', 'icon': '🧩', 'color': '#3DAA6E',
      'role': "RPGACE's own Claude Code skills (.claude/skills/) — real, already-catalogued at its own 0.5-level page.",
@@ -113,8 +113,8 @@ EDGES = [
      'desc': 'RPGACE Architecture\'s own functions pull/push real data as part of forming their output — "data pulling based on prompts," Alex\'s own words.',
      'link': 'galaxy_map_supabase.html'},
     {'id': 'rpgace-skills', 'a': 'rpgace_architecture', 'b': 'skills', 'kind': INJECTION,
-     'evidence': 'SKILL_SECONDARY_RIVER (already built, 7 of 25 skills cite a real secondary river beyond River XIV\'s own full catalog).',
-     'desc': 'A skill is a real "built in framework" — reused, defined procedure a river/module\'s own development draws on, injected as dev-process citation, not a runtime call.',
+     'evidence': 'SKILL_SECONDARY_RIVER (already built, 7 of 25 skills cite a real secondary domain beyond the skill catalog itself).',
+     'desc': 'A skill is a real "built in framework" — reused, defined procedure a domain/module\'s own development draws on, injected as dev-process citation, not a runtime call.',
      'link': 'galaxy_map_skill_network.html'},
     {'id': 'rpgace-oversight', 'a': 'rpgace_architecture', 'b': 'oversight_docs', 'kind': ACTOR,
      'evidence': 'The whole Tier (a)-(f) oversight system, all 11 real artifacts.',

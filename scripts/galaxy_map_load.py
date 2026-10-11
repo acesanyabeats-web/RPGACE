@@ -44,7 +44,7 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).parent))
-from graphify_river_group import (
+from graphify_river_group import (domain_label, 
     LEVEL3_MODULES, RIVER_MODULES,
     compute_boot_task_registrations, compute_page_nav_triggers,
     compute_click_load_triggers, compute_hook_signal_edges,
@@ -87,7 +87,7 @@ def _mod_links(module):
     pattern applied where an identical fact was rendered dead, not a new
     mechanic invented)."""
     r = _river_of(module)
-    l2 = f'<a href="galaxy_map_module.html#river-{r}">River {r} · Level 2</a>' if r else '<span class="dim">no river</span>'
+    l2 = f'<a href="galaxy_map_module.html#river-{r}">{domain_label(r)} · Level 2</a>' if r else '<span class="dim">no domain</span>'
     if module in LEVEL3_MODULES:
         l3 = f'<a href="galaxy_map_current.html#mod-{esc(module)}">Current Series</a>'
     else:

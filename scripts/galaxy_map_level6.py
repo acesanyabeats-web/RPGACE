@@ -25,7 +25,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from graphify_river_group import (  # noqa: E402
+from graphify_river_group import (domain_label,   # noqa: E402
     LEVEL3_MODULES, RIVER_NAME, RIVER_MODULES, compute_function_branches,
     render_bubble_row, render_fc_bar, _curved_edge, _build_markers,
 )
@@ -59,10 +59,10 @@ def _river_chip(rnum):
     with branch points have a real river, so no module falls back —
     the `else` branch is kept honest rather than assumed unreachable."""
     if not rnum:
-        return '<span class="river-chip river-chip-none">no river</span>'
-    label = RIVER_NAME.get(rnum, f'River {rnum}').split('—')[0].strip()
+        return '<span class="river-chip river-chip-none">no domain</span>'
+    label = RIVER_NAME.get(rnum, f'Domain {rnum}').split('—')[0].strip()
     return (f'<a class="river-chip" href="galaxy_map_module.html#river-{rnum}" '
-            f'title="This module\'s own river at Level 2">🌊 {esc(label)}</a>')
+            f'title="This module\'s own domain at Level 2">🌊 {esc(label)}</a>')
 
 
 def build_module_section(mod, branches):
@@ -258,7 +258,7 @@ def main():
     # Aug 25 2026 — real, measured destination coverage, printed so a
     # future build can never silently regress it.
     n_riv = sum(1 for m in mods_with_branches if _river_of.get(m))
-    print(f"  Link coverage — {n_riv}/{len(mods_with_branches)} module(s) link a real river at Level 2; "
+    print(f"  Link coverage — {n_riv}/{len(mods_with_branches)} module(s) link a real domain at Level 2; "
           f"all {len(mods_with_branches)} link their own Current Series section.")
 
 

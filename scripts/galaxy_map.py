@@ -59,7 +59,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from graphify_river_group import (  # noqa: E402
+from graphify_river_group import (domain_label,   # noqa: E402
     EXTERNAL_CONNECTORS, SUPABASE_CORE,
     INTERACTION_TYPE_COLOR, INTERACTION_TYPE_LABEL,
     RIVER_NAME, RIVER_COLOR, RIVER_FLOWS, RIVER_RETIRED, compute_river_flow_cycles, _river_num_from_label,
@@ -116,7 +116,7 @@ GALAXIES = [
     {
         'id': 'rpgace_architecture', 'label': 'RPGACE Architecture',
         'icon': '🏛️', 'color': '#C9A84C',
-        'role': 'The app/codebase itself — 16 real rivers inside (G3, not yet built). Every external connector below routes through here, or through Oracle specifically for AI providers.',
+        'role': 'The app/codebase itself — 16 real domains inside (G3, not yet built). Every external connector below routes through here, or through Oracle specifically for AI providers.',
         'kind': 'central',
     },
     {
@@ -625,12 +625,12 @@ def build_alex_decision_facets():
                 f'<div class="flows-toward">→ flows toward <b>{esc(RIVER_NAME.get(tgt, "River " + str(tgt)))}</b> '
                 f'<span class="ft-cond">({esc(condition)} · <code>{esc(itype)}</code>)</span>, '
                 f'whose own real decisions are: {titles}.'
-                f'<span class="ev">Real evidence grain: this is a RIVER_FLOWS edge between the two rivers, '
+                f'<span class="ev">Real evidence grain: this is a RIVER_FLOWS edge between the two domains, '
                 f'not a per-decision dependency — no such per-decision graph exists in this project, and one '
                 f'was deliberately not invented for this note.</span></div>'
             )
         if r is None:
-            label = f'⚪ No river (cross-cutting module) ({len(pts)})'
+            label = f'⚪ No domain (cross-cutting module) ({len(pts)})'
         else:
             layer, intra = rank.get(r, (99, 99))
             label = (f'{esc(RIVER_NAME.get(r, "River " + str(r)))} ({len(pts)}) '
@@ -762,7 +762,7 @@ MIGRATION_NO_DESTINATION = {
     'orchestrator_cc': (
         'It dispatches across the whole of RPGACE Total Systems — planning, evidence-gathering, '
         'schema/UI/doc work, and every outbound dispatch to the other Total members — so it has no '
-        'single river to migrate into, and no EXTERNAL_RIVER_LINKS row was invented to give it one.'
+        'single domain to migrate into, and no EXTERNAL_RIVER_LINKS row was invented to give it one.'
     ),
     'n8n': None,  # built at render time from its own connector row
 }
@@ -791,7 +791,7 @@ def _resolve_migration_targets(link_row):
 
 def _river_short(r):
     """'River XI — Content Production Live' -> 'River XI'."""
-    full = RIVER_NAME.get(r, f'River {r}')
+    full = RIVER_NAME.get(r, f'Domain {r}')
     return full.split('—')[0].strip()
 
 
@@ -840,16 +840,16 @@ def build_external_ai_migration_facets():
             if key == 'n8n':
                 conn = _CONNECTOR_BY_NAME['n8n']
                 reason = (f"It has no EXTERNAL_RIVER_LINKS row: its real trigger path is "
-                          f"<code>{esc(conn['via'])}</code> — a dev-tooling script, not a river module — and its own "
+                          f"<code>{esc(conn['via'])}</code> — a dev-tooling script, not a domain module — and its own "
                           f"status is <code>{esc(conn['status'])}</code> ({esc(conn['note'])})")
             else:
                 reason = esc(MIGRATION_NO_DESTINATION.get(key) or 'No EXTERNAL_RIVER_LINKS row exists for this actor.')
             rows.append({
                 'kind': 'inter', 'dim': 'Migration (where this actor lands)', 'icon': icon,
-                'label': f'{icon} {esc(label)} — ⚪ no known river destination',
+                'label': f'{icon} {esc(label)} — ⚪ no known domain destination',
                 'detail': (f'{reason} <span class="ev">Real evidence grain: EXTERNAL_RIVER_LINKS is the one real '
-                           f'source for an external actor\'s river destination, and it holds no row for this actor — '
-                           f'so no river number is claimed here rather than one being guessed in.</span>'),
+                           f'source for an external actor\'s domain destination, and it holds no row for this actor — '
+                           f'so no domain number is claimed here rather than one being guessed in.</span>'),
                 'share_key': share, 'link': fallback_link,
             })
             continue
@@ -866,11 +866,11 @@ def build_external_ai_migration_facets():
                 parts.append(f'<a href="{href}" target="_blank">{esc(_river_short(r))}</a>')
                 grains.append('river')
             links.append(href)
-        grain_note = ('module grain — its own via text names a real module in that river'
+        grain_note = ('module grain — its own via text names a real module in that domain'
                       if all(g == 'module' for g in grains) else
-                      'river grain — its own via text names no module in that river'
+                      'domain grain — its own via text names no module in that domain'
                       if all(g == 'river' for g in grains) else
-                      'mixed grain — module where its via text names one, river where it does not')
+                      'mixed grain — module where its via text names one, domain where it does not')
         rows.append({
             'kind': 'inter', 'dim': 'Migration (where this actor lands)', 'icon': icon,
             'label': f'{icon} {esc(label)} — 🚀 migrates to {" + ".join(parts)}',
@@ -1058,8 +1058,8 @@ def build_facets():
         'share_key': 'alex_ui_path', 'link': 'galaxy_map_alex_path.html',
     })
     facets['rpgace_architecture'].append({
-        'kind': 'inter', 'dim': 'UI / Dashboard Path', 'label': 'Real river → dashboard card → primary module chain',
-        'detail': 'G38 — all 10 rivers with a real dashboard card, each resolved to its real primary module. Real Aug 21 2026 fold: this content is now Level 2\'s own table view, not a separate page.',
+        'kind': 'inter', 'dim': 'UI / Dashboard Path', 'label': 'Real domain → dashboard card → primary module chain',
+        'detail': 'G38 — all 10 domains with a real dashboard card, each resolved to its real primary module. Real Aug 21 2026 fold: this content is now Level 2\'s own table view, not a separate page.',
         'share_key': 'alex_ui_path', 'link': 'galaxy_map_module.html',
     })
 
@@ -1289,7 +1289,7 @@ def build_svg():
         f'<g class="node central"><circle cx="{cx}" cy="{cy}" r="46" fill="#0f0f1a" stroke="{rpgace["color"]}" stroke-width="3" filter="url(#glow)"/>'
         f'<text x="{cx}" y="{cy-6}" text-anchor="middle" font-size="26">{rpgace["icon"]}</text>'
         f'<text x="{cx}" y="{cy+18}" text-anchor="middle" font-size="11" fill="#E2E2EC" font-weight="700">{rpgace["label"]}</text>'
-        f'<text x="{cx}" y="{cy+32}" text-anchor="middle" font-size="8" fill="{rpgace["color"]}">▸ click: 16 rivers</text></g></a>'
+        f'<text x="{cx}" y="{cy+32}" text-anchor="middle" font-size="8" fill="{rpgace["color"]}">▸ click: 16 domains</text></g></a>'
     )
 
     galaxy_pos = {}
@@ -1391,7 +1391,7 @@ def build_svg():
         if ffmpeg:
             local_cluster.append((ffmpeg, -60, 'dispatch_trigger',
                 'Real topology fix, Aug 13 (2nd interview pass): attached to OpenMontage CC directly, '
-                'never RPGACE Architecture — matches its own real "never called directly by any RPGACE river" note.'))
+                'never RPGACE Architecture — matches its own real "never called directly by any RPGACE domain" note.'))
         for conn, local_ang, itype, note in local_cluster:
             px, py = polar(omx, omy, 78, local_ang)
             connector_pos[conn['name']] = (px, py)
@@ -1655,7 +1655,7 @@ TEMPLATE = """<!DOCTYPE html>
   .facet-row{{padding:10px 12px;margin-top:8px;background:rgba(255,255,255,0.03);border-radius:8px;font-size:11.5px;line-height:1.6;cursor:pointer;border:1px solid transparent}}
   .facet-row:hover{{border-color:rgba(201,168,76,0.4)}}
   .facet-row .flabel{{font-weight:700;margin-bottom:4px}}
-  /* G81 — a facet's own inline links (a migration row's real river/
+  /* G81 — a facet's own inline links (a migration row's real domain/
      module destinations, and the Decisions rows' existing per-decision
      links) had no rule of their own, so they fell through to the
      browser default #0000EE, which is genuinely unreadable on this
@@ -1667,7 +1667,7 @@ TEMPLATE = """<!DOCTYPE html>
   .ev{{color:var(--dim);display:block;margin-top:4px;font-size:10.5px}}
   .dec-list{{margin:8px 0 0 18px}}
   .dec-list li{{margin-bottom:6px}}
-  /* G77 (Aug 25 2026) — Alex's Decisions bubble system, grouped by real river */
+  /* G77 (Aug 25 2026) — Alex's Decisions bubble system, grouped by real domain */
   .dec-list .dkind{{font-size:9.5px;font-weight:700;color:var(--dim);white-space:nowrap}}
   .dec-list a{{color:#E2E2EC;text-decoration:none;border-bottom:1px dotted rgba(201,168,76,0.5)}}
   .dec-list a:hover{{color:var(--gold)}}
@@ -1724,8 +1724,8 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Level 0</div>
   <h1>🌌 RPGACE Total Systems — The Galaxy Map</h1>
-  <p>The real top-level view of RPGACE Total Systems — 3 genuinely different KINDS of unit at Level 0, labeled explicitly below (GMP-C, Sep 16 2026): 4 galaxies rendered in the diagram, 3 harness nodes (Oracle/self-awareness/Human Gate) alongside them, and 15 real merged L0 units each with their own Infra/Inter facet bubble (Oracle's own 6 formerly-"External AI" constituents — Composio/Jina AI/Last.fm/librosa/n8n/Whisper — are each a real standalone unit since G99, not one aggregate). Oracle mediates all 3 AI providers (never a direct RPGACE→provider edge), every real external connector is shown — each edge colored by its own real interaction TYPE. <b>Click any unit — in the diagram, the tiers list below, or the bubble row — for a real CHOICE (not a toggle switch) between 💉 Infra (a real attached resource) and 🔗 Inter (a real dimension it participates in)</b>, expanding real detail inline and cross-highlighting every other unit sharing that same resource/dimension. <b>Click the RPGACE Architecture node's own center to drill into its 17 rivers (Level 1).</b></p>
-  <p style="margin-top:10px"><b>New Aug 25 2026:</b> 🧑 <b>Alex</b>'s Infra tab is now purely the Decisions bubble system — all 21 real decisions (10 human-confirm gates, 7 curated logic choices, 4 curated text-input points), grouped by the real river each one lives in and ordered by real river flow, from the logging end toward the last untouched action. 🔮 <b>External AI</b>'s Infra tab names all 12 real external AI actors individually — Orchestrator CC, OpenMontage CC, Graphify CC, Composio, librosa, Jina AI, Last.fm, Whisper, n8n, Luna, Moonshot, Anthropic — each with its own real live/dormant/unconfirmed status read straight from source, instead of the vague aggregate it used to show. The <b>Table view</b> now carries the 5 bubble-row units' own facet content too, not just the 7×7 edge matrix.</p>
+  <p>The real top-level view of RPGACE Total Systems — 3 genuinely different KINDS of unit at Level 0, labeled explicitly below (GMP-C, Sep 16 2026): 4 galaxies rendered in the diagram, 3 harness nodes (Oracle/self-awareness/Human Gate) alongside them, and 15 real merged L0 units each with their own Infra/Inter facet bubble (Oracle's own 6 formerly-"External AI" constituents — Composio/Jina AI/Last.fm/librosa/n8n/Whisper — are each a real standalone unit since G99, not one aggregate). Oracle mediates all 3 AI providers (never a direct RPGACE→provider edge), every real external connector is shown — each edge colored by its own real interaction TYPE. <b>Click any unit — in the diagram, the tiers list below, or the bubble row — for a real CHOICE (not a toggle switch) between 💉 Infra (a real attached resource) and 🔗 Inter (a real dimension it participates in)</b>, expanding real detail inline and cross-highlighting every other unit sharing that same resource/dimension. <b>Click the RPGACE Architecture node's own center to drill into its 17 domains (Level 1).</b></p>
+  <p style="margin-top:10px"><b>New Aug 25 2026:</b> 🧑 <b>Alex</b>'s Infra tab is now purely the Decisions bubble system — all 21 real decisions (10 human-confirm gates, 7 curated logic choices, 4 curated text-input points), grouped by the real domain each one lives in and ordered by real domain flow, from the logging end toward the last untouched action. 🔮 <b>External AI</b>'s Infra tab names all 12 real external AI actors individually — Orchestrator CC, OpenMontage CC, Graphify CC, Composio, librosa, Jina AI, Last.fm, Whisper, n8n, Luna, Moonshot, Anthropic — each with its own real live/dormant/unconfirmed status read straight from source, instead of the vague aggregate it used to show. The <b>Table view</b> now carries the 5 bubble-row units' own facet content too, not just the 7×7 edge matrix.</p>
 </div>
 
 {river_preview}
@@ -1789,7 +1789,7 @@ TEMPLATE = """<!DOCTYPE html>
   </div>
   <div class="uf-wrap"><table id="unit-facets">{unit_facet_table}</table></div>
   <div style="text-align:center;font-size:10.5px;color:#6a6a78;max-width:820px;margin:20px auto 0;padding:0 24px 20px">
-    G68 (the recursive L0↔river/module/function interaction-matrix idea): this IS the L0 layer's own real matrix. The next matrix layer down is <a href="galaxy_map_dimensions.html">the Dimensions Matrix</a> (now two real grains on one page: every river × every dimension it participates in, and the finer 45 real L2 modules × 5 real dimensions) — genuinely the same recurring shape at a finer grain, not a new page built for this. No new data was invented to answer G68; the matrices already existed, this just names and links the real chain.
+    G68 (the recursive L0↔domain/module/function interaction-matrix idea): this IS the L0 layer's own real matrix. The next matrix layer down is <a href="galaxy_map_dimensions.html">the Dimensions Matrix</a> (now two real grains on one page: every domain × every dimension it participates in, and the finer 45 real L2 modules × 5 real dimensions) — genuinely the same recurring shape at a finer grain, not a new page built for this. No new data was invented to answer G68; the matrices already existed, this just names and links the real chain.
   </div>
 </div>
 
@@ -1806,7 +1806,7 @@ TEMPLATE = """<!DOCTYPE html>
   <code>scripts/graphify_river_group.py</code>'s own <code>EXTERNAL_CONNECTORS</code>/<code>SUPABASE_CORE</code>/
   <code>INTERACTION_TYPE_COLOR</code> (never re-derived). Mapping rules: <code>system_map_spec.md</code>.
   G2 of the ratified "RPGACE Total Systems Galaxy Map" /CEO plan — G3
-  (<a href="galaxy_map_river.html">river drill-down, click the central node above</a>)
+  (<a href="galaxy_map_river.html">domain drill-down, click the central node above</a>)
   and G4 (<a href="galaxy_map_module.html">module drill-down</a>) are both real and live.
   Real Aug 21 2026 fusion (Alex's own direct ask — "the l0 7 units should exist
   in the bubbles in on rpgace total systems own architecture map"): the 7-unit
@@ -1859,7 +1859,7 @@ TEMPLATE = """<!DOCTYPE html>
   // CC_UNIT_LINK's own real mapping; the 6 new connector units go to
   // their own tab on galaxy_map_connectors.html; skills/alex go to
   // their own already-built dedicated pages (SKILL_SECONDARY_RIVER's
-  // real river data / the unified Decision Matrix's real 21 decisions —
+  // real domain data / the unified Decision Matrix's real 21 decisions —
   // both were ALREADY wired as real facet data before this pass, this
   // just gives each a real destination page instead of an inline
   // expand-in-place choice).
@@ -1925,7 +1925,7 @@ TEMPLATE = """<!DOCTYPE html>
       // Supabase was the first unit whose lower-level page got a real
       // bubble system of its own (galaxy_map_supabase.html's G83 map
       // view). G91 continuation (same day) generalizes this to 3 more
-      // units Alex confirmed/asked have real river/module-shaped
+      // units Alex confirmed/asked have real domain/module-shaped
       // evidence to build the same shape for: External AI (Oracle-call
       // evidence), Oversight Docs (table-touch evidence, scoped to what
       // oversight docs themselves touch), and Orchestrator CC (its own
@@ -2114,7 +2114,7 @@ def build_river_preview():
         )
     return (
         '<div class="river-preview">'
-        '<h3>🌊 Rivers (Level 1) — click any to jump straight to its own Level 2 modules</h3>'
+        '<h3>🌊 Domains (Level 1) — click any to jump straight to its own Level 2 modules</h3>'
         f'<div class="rp-grid">{"".join(chips)}</div>'
         '</div>'
     )
@@ -2211,7 +2211,7 @@ def main():
           f"{len(ORACLE_PROVIDERS)} AI providers under Oracle, "
           f"{len(EXTERNAL_CONNECTORS) - skipped} flat connectors + OpenMontage+FFmpeg (under OpenMontage CC) + Supabase, "
           f"{len(UNIT_ORDER)} real merged L0 units ({n_facets} real facets, infra+inter).")
-    print(f"  G77 — Alex Infra: {n_alex_infra} river groups holding all {n_decisions} real unified decisions "
+    print(f"  G77 — Alex Infra: {n_alex_infra} domain groups holding all {n_decisions} real unified decisions "
           f"(decisions-only, every other real facet re-kinded to Inter, none dropped).")
     # G99 (Aug 25 2026) — 'External AI' is retired as an L0 grouping;
     # its own G78/G81 print stats (facets['external_ai']) no longer

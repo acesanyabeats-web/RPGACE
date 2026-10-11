@@ -153,13 +153,13 @@ def build_group_section(grp):
     # source is `.claude/skills/<name>/SKILL.md`, a dot-directory that
     # is not served, so a link there would be dead by construction.
     def _river_chip(rnum, extra_cls='', title=''):
-        rlabel = RIVER_NAME.get(rnum, f'River {rnum}').split('—')[0].strip()
+        rlabel = RIVER_NAME.get(rnum, f'Domain {rnum}').split('—')[0].strip()
         t = f' title="{esc(title)}"' if title else ''
         return (f'<a class="river-chip{extra_cls}" href="galaxy_map_module.html#river-{rnum}"{t}>'
                 f'🌊 {esc(rlabel)}</a>')
 
     def _river_usage(name):
-        chips = [_river_chip(14, title='Every skill lives in River XIV by default')]
+        chips = ['<span class="river-chip" title="Skills are dev process, not part of an app domain">🛠️ Dev skill</span>']
         sec = SKILL_SECONDARY_RIVER.get(name)
         if sec:
             rnum, note = sec
@@ -175,6 +175,6 @@ def build_group_section(grp):
     )
     return f'''<section class="gsection" id="grp-{grp['id']}" style="display:none">
   <div class="ghead"><h2>{grp['label']}</h2><span class="gcount">{len(members)} real skill(s)</span></div>
-  <table class="sktable"><thead><tr><th>Skill (axis bubbles + map link)</th><th>Real justification</th><th>Real Level/River usage</th></tr></thead>
+  <table class="sktable"><thead><tr><th>Skill (axis bubbles + map link)</th><th>Real justification</th><th>Real Level/Domain usage</th></tr></thead>
   <tbody>{rows}</tbody></table>
 </section>'''

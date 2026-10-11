@@ -103,7 +103,7 @@ def build_river_passages(rnum):
             continue
         attr_html = _attr_html(attribute_river_connection_function(rnum, other, note, cross_calls=CROSS_CALLS, itype=itype))
         deep = (f'<div class="passage-deep">🔽 {attr_html}</div>' if attr_html
-                else '<div class="passage-deep passage-nofn">❓ no known function — this connection is real at river grain, but no real code evidence names the specific function it lands on.</div>')
+                else '<div class="passage-deep passage-nofn">❓ no known function — this connection is real at domain grain, but no real code evidence names the specific function it lands on.</div>')
         passages.append({
             'line': f'{river_label.split("—")[0].strip()} → {RIVER_NAME[other].split("—")[0].strip()}',
             'kind': 'river-out',
@@ -112,7 +112,7 @@ def build_river_passages(rnum):
     for other, note, itype in FLOWS_IN.get(rnum, []):
         attr_html = _attr_html(attribute_river_connection_function(other, rnum, note, cross_calls=CROSS_CALLS, itype=itype))
         deep = (f'<div class="passage-deep">🔽 {attr_html}</div>' if attr_html
-                else '<div class="passage-deep passage-nofn">❓ no known function — this connection is real at river grain, but no real code evidence names the specific function it lands on.</div>')
+                else '<div class="passage-deep passage-nofn">❓ no known function — this connection is real at domain grain, but no real code evidence names the specific function it lands on.</div>')
         passages.append({
             'line': f'{RIVER_NAME[other].split("—")[0].strip()} → {river_label.split("—")[0].strip()}',
             'kind': 'river-in',
@@ -130,7 +130,7 @@ def build_river_passages(rnum):
     # Skill streams.
     if rnum == SKILL_RIVER:
         for s in ALL_SKILLS:
-            passages.append({'line': f'/{s}', 'kind': 'skill', 'body': '<p>Part of River XIV\'s own real skill catalog — no per-river citation needed, this IS its structural content.</p>'})
+            passages.append({'line': f'/{s}', 'kind': 'skill', 'body': '<p>Part of the real skill catalog — skills are dev process, not an app domain, this IS its structural content.</p>'})
     else:
         for s, (r, note) in SKILL_SECONDARY_RIVER.items():
             if r == rnum:
@@ -145,7 +145,7 @@ def build_river_section(rnum):
     mods = RIVER_MODULES.get(rnum, [])
     passages = build_river_passages(rnum)
     if not passages:
-        body = '<p class="empty-note">No real edges (river connections, external connectors, or skill streams) cited for this river.</p>'
+        body = '<p class="empty-note">No real edges (domain connections, external connectors, or skill streams) cited for this domain.</p>'
     else:
         body = ''.join(
             f'<details class="passage passage-{p["kind"]}"><summary>{esc(p["line"])}</summary>{p["body"]}</details>'
@@ -220,15 +220,15 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Logic Dimension (RETIRED — kept for reference)</div>
   <h1>📖 Logic Dimension — Retired As A Destination (G111)</h1>
-  <p>A real, additive companion to the curated core-logic decision points — every real river-to-river connection, external connector, and skill stream, grouped the same way modules already are, each one a clickable passage. Where a connection has real function-level attribution, that deeper detail merges into the same passage rather than a separate line.</p>
+  <p>A real, additive companion to the curated core-logic decision points — every real domain-to-domain connection, external connector, and skill stream, grouped the same way modules already are, each one a clickable passage. Where a connection has real function-level attribution, that deeper detail merges into the same passage rather than a separate line.</p>
 </div>
 <div class="page-retired">
   <b>⚠️ Retired as a standalone destination (Sep 1 2026, G111) — deprecated, not deleted.</b><br>
   Alex's own ratified scope: the <b>21 curated decision/logic entries</b> now live on their real home objects instead of on a separate page — each module's own section on
-  <a href="galaxy_map_current.html">Current (L3)</a> and each river's own section on <a href="galaxy_map_module.html">Level 2</a>, sourced from the
+  <a href="galaxy_map_current.html">Current (L3)</a> and each domain's own section on <a href="galaxy_map_module.html">Level 2</a>, sourced from the
   <a href="galaxy_map_decision_matrix.html">Decision Matrix</a>'s single source-of-truth table (R22). The exhaustive, mechanical branch list stays exactly where it was —
   <a href="galaxy_map_level6.html">the Branch Ledger (L6)</a>, link-out only, never dispersed or inlined.<br>
-  Everything still rendered below is a <i>second presentation</i> of data <a href="galaxy_map_module.html">Level 2</a>'s own per-river legend already draws from the same
+  Everything still rendered below is a <i>second presentation</i> of data <a href="galaxy_map_module.html">Level 2</a>'s own per-domain legend already draws from the same
   <code>RIVER_FLOWS</code>/<code>FLOWS_IN</code>/<code>LINKS_BY_RIVER</code>/<code>ALL_SKILLS</code>/<code>SKILL_SECONDARY_RIVER</code> tables — kept live here so no existing link breaks, but
   this page is no longer listed in the left-nav Dimension index.
 </div>
@@ -239,7 +239,7 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="note">
   Generated by <code>scripts/galaxy_map_logic_dimension.py</code>, reusing <code>RIVER_FLOWS</code>/<code>FLOWS_IN</code>/
   <code>LINKS_BY_RIVER</code>/<code>ALL_SKILLS</code>/<code>SKILL_SECONDARY_RIVER</code>/<code>attribute_river_connection_function()</code>
-  as-is (rule 8) — the exact same real data <code>galaxy_map_module.py</code>'s own Level-2 river legend already renders,
+  as-is (rule 8) — the exact same real data <code>galaxy_map_module.py</code>'s own Level-2 domain legend already renders,
   re-presented as clickable passages. Mapping rules: <code>system_map_spec.md</code>.
 </div>
 <script>
@@ -295,7 +295,7 @@ STUB_TEMPLATE = """<!DOCTYPE html>
 <div class="page-retired">
   <b>⚠️ Retired as a standalone destination (Sep 1 2026, G111) — deprecated, not deleted.</b><br>
   Alex's own ratified scope: the <b>21 curated decision/logic entries</b> now live on their real home objects instead of on a separate page — each module's own section on
-  <a href="galaxy_map_current.html">Current (L3)</a> and each river's own section on <a href="galaxy_map_module.html">Level 2</a>, sourced from the
+  <a href="galaxy_map_current.html">Current (L3)</a> and each domain's own section on <a href="galaxy_map_module.html">Level 2</a>, sourced from the
   <a href="galaxy_map_decision_matrix.html">Decision Matrix</a>'s single source-of-truth table (R22). The exhaustive, mechanical branch list stays exactly where it was —
   <a href="galaxy_map_level6.html">the Branch Ledger (L6)</a>, link-out only, never dispersed or inlined.<br><br>
   <b>P0 CSS/output-size consolidation (Sep 24 2026, real /fableomnitrix finding):</b> this page used to still regenerate its full 17-river passage dump below this banner

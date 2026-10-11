@@ -51,7 +51,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from graphify_river_group import (  # noqa: E402
+from graphify_river_group import (domain_label,   # noqa: E402
     RIVER_NAME, RIVER_COLOR, RIVER_MODULES, LEVEL3_MODULES, inject_level_rail,
     core_js_lines, verify_core_js_anchor, dimension_index_html,
     DIMENSION_INDEX_CSS, build_bubble_ring,
@@ -454,7 +454,7 @@ def build_river_decisions_html(rnum, by_river=None):
         return ''
     return (
         '<div class="dd-disperse">'
-        f'<h4>🚦 Curated decisions &amp; core logic in this river — {len(items)} real point(s)</h4>'
+        f'<h4>🚦 Curated decisions &amp; core logic in this domain — {len(items)} real point(s)</h4>'
         '<div class="dd-sub">Dispersed here from the retired Logic Dimension page (G111). Each one\'s full '
         'detail lives on its own module\'s Current(L3) section; its exhaustive branch list stays on the '
         'Branch Ledger (L6). Source of truth for all of it: the Decision Matrix table.</div>'
@@ -512,13 +512,13 @@ def build_matrix_table(decisions):
                 for d in pts
             )
             cells.append(f'<td class="hit" data-river="{r}" data-kind="{kind}"><b>{len(pts)}</b><ul class="cellist">{items}</ul></td>')
-        name = RIVER_NAME.get(r, f'River {r}').split('—', 1)[1].strip() if '—' in RIVER_NAME.get(r, '') else RIVER_NAME.get(r, f'River {r}')
+        name = RIVER_NAME.get(r, f'Domain {r}').split('—', 1)[1].strip() if '—' in RIVER_NAME.get(r, '') else RIVER_NAME.get(r, f'Domain {r}')
         # G74 (Aug 25 2026) — the row HEADER is clickable too, not just
         # the cells. Same real destination the bubble view's own click
         # already goes to for this river (rdetail-{r}), reused rather
         # than a new link target invented for the table.
         rows.append(
-            f'<tr><th class="rowhead rowjump" data-river="{r}" title="Jump to this river\'s own bubble detail" '
+            f'<tr><th class="rowhead rowjump" data-river="{r}" title="Jump to this domain\'s own bubble detail" '
             f'style="border-left:3px solid {RIVER_COLOR.get(r, "#888")}">{esc(name)} <span class="rowjump-cue">🫧</span></th>{"".join(cells)}</tr>'
         )
     header = '<tr><th></th>' + ''.join(f'<th>{KIND_LABEL[k]}</th>' for k in KIND_ORDER) + '</tr>'
@@ -545,7 +545,7 @@ def build_bubble_map(decisions):
     for r in rivers:
         river_pts = [d for d in decisions if d['river'] == r]
         color = RIVER_COLOR.get(r, '#888')
-        name = RIVER_NAME.get(r, f'River {r}')
+        name = RIVER_NAME.get(r, f'Domain {r}')
         short = name.split('—', 1)[1].strip() if '—' in name else name
         rows = ''.join(
             f'<li><b>{d["kind_label"]}</b> — <a href="{esc(d["link"])}">{esc(d["title"])}</a> '
@@ -626,9 +626,9 @@ TEMPLATE = """<!DOCTYPE html>
 
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Decision Matrix</div>
-  <h1>🚦🧭 The Decision Matrix — Every Real Decision, By River</h1>
-  <p>Real unification of all 3 real decision kinds this project tracks: 🗑️ Gates (<a href="galaxy_map_decisions.html">10 human-confirm points</a>), 🧠 Logic Choices ({n_logic} curated core-logic points, <a href="#d-oracle-mode">written up in full further down this page</a>), and ⌨️ Text Inputs ({n_text} real, curated free-text entry points that drive an actual decision) — {n_total} real decisions total, grouped by which of the 17 real rivers they belong to. "Depth" shows how far down the existing Galaxy Map hierarchy each one is documented: every real decision reaches Current (L3) + the Branch Ledger (exhaustive branch detail); a real 🟣 purple depth tag means it's ALSO one of Level 5's own curated "core logic" points. <b>This table is the real source of truth — the bubble view below is a rendering layer over the exact same data, never a second, independently-imagined picture (Alex's own standing rule).</b></p>
-  <p style="margin-top:8px"><b>This is the full, exhaustive, dev-facing catalog</b> — every real decision in the codebase, organized by river. For the narrower UX view of just the decisions Alex personally hits clicking through his own dashboard, see <a href="galaxy_map_alex_path.html">🧑 Alex's Decision Path</a> instead.</p>
+  <h1>🚦🧭 The Decision Matrix — Every Real Decision, By Domain</h1>
+  <p>Real unification of all 3 real decision kinds this project tracks: 🗑️ Gates (<a href="galaxy_map_decisions.html">10 human-confirm points</a>), 🧠 Logic Choices ({n_logic} curated core-logic points, <a href="#d-oracle-mode">written up in full further down this page</a>), and ⌨️ Text Inputs ({n_text} real, curated free-text entry points that drive an actual decision) — {n_total} real decisions total, grouped by which of the 17 real domains they belong to. "Depth" shows how far down the existing Galaxy Map hierarchy each one is documented: every real decision reaches Current (L3) + the Branch Ledger (exhaustive branch detail); a real 🟣 purple depth tag means it's ALSO one of Level 5's own curated "core logic" points. <b>This table is the real source of truth — the bubble view below is a rendering layer over the exact same data, never a second, independently-imagined picture (Alex's own standing rule).</b></p>
+  <p style="margin-top:8px"><b>This is the full, exhaustive, dev-facing catalog</b> — every real decision in the codebase, organized by domain. For the narrower UX view of just the decisions Alex personally hits clicking through his own dashboard, see <a href="galaxy_map_alex_path.html">🧑 Alex's Decision Path</a> instead.</p>
 </div>
 
 <div class="toggle-row">
@@ -645,7 +645,7 @@ TEMPLATE = """<!DOCTYPE html>
 </div>
 
 <div class="legend">
-  🗑️ Gate = human-confirm before a real write · 🧠 Logic Choice = a curated core-logic point, written up in full below · ⌨️ Text Input = free-text that drives a real decision. Click a river row header or cell (table) or a bubble (map) to see its own real decisions.
+  🗑️ Gate = human-confirm before a real write · 🧠 Logic Choice = a curated core-logic point, written up in full below · ⌨️ Text Input = free-text that drives a real decision. Click a domain row header or cell (table) or a bubble (map) to see its own real decisions.
 </div>
 
 <h2 class="lw-section-head">🧠 Core Logic — the full curated write-ups</h2>
@@ -665,7 +665,7 @@ TEMPLATE = """<!DOCTYPE html>
   // /fableomnitrix full-redesign plan) -- removed here, not
   // reimplemented (Fable report D2).
   // G74 — row HEADER click goes to the same real destination the
-  // bubble view's own click already goes to for that river.
+  // bubble view's own click already goes to for that domain.
   // Sep 24 2026 — detail-div ids are now 'dtl-' + key (not 'rdetail-'),
   // matching the shared build_bubble_ring() renderer's own convention
   // (P2 ring-bubble dedup); the .rdetail CLASS is unchanged, only the
@@ -723,7 +723,7 @@ def main():
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     n_rivers = len({d['river'] for d in decisions if d['river']})
-    print(f"Wrote {OUT} — {n_total} real decisions unified (10 gates + 7 logic + {n_text} text-input) across {n_rivers} rivers.")
+    print(f"Wrote {OUT} — {n_total} real decisions unified (10 gates + 7 logic + {n_text} text-input) across {n_rivers} domains.")
 
 
 if __name__ == '__main__':

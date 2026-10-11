@@ -212,7 +212,7 @@ def _river_chip_label(m):
 def build_web_section(call_cycles, data_cycles):
     rows = ['<p class="webnote">Every real loop below is its own real bubble — each member module a real '
             'migration bubble jumping out to its own Current Series section. A dimmed, non-clickable member '
-            'genuinely has no Current Series page (cross-cutting, not tracked by any river).</p>']
+            'genuinely has no Current Series page (cross-cutting, not tracked by any domain).</p>']
     idx = 0
     if call_cycles:
         rows.append('<h3 class="webgrouphead">Mechanism 1 — Direct calls + event signals</h3>')
@@ -234,7 +234,7 @@ def build_loop_card(idx, members, mechanism_label, mechanism_note, edge_lines, d
     edges_html = ''.join(f'<li>{e}</li>' for e in edge_lines)
     touch_html = _alex_touch_html(members, decisions_by_module)
     return f'''<div class="loopcard">
-  <div class="loophead"><h3>Loop {idx} — {mechanism_label}</h3><span class="loopcount">{len(members)} modules · {len(rivers)} river(s): {esc(river_txt)}</span></div>
+  <div class="loophead"><h3>Loop {idx} — {mechanism_label}</h3><span class="loopcount">{len(members)} modules · {len(rivers)} domain(s): {esc(river_txt)}</span></div>
   <p class="loopnote">{mechanism_note}</p>
   <div class="mchips">{chips}</div>
   <details class="edgedetail"><summary>Real edges forming this loop ({len(edge_lines)})</summary><ul class="edgelist">{edges_html}</ul></details>
@@ -295,7 +295,7 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Loops (G104)</div>
   <h1>🔄 Loops — Real Cycles Across Calls, Hooks, and Shared Tables</h1>
-  <p>Alex's own real ask, after a chat-only pass badly undercounted: "identify loop between all levels and objects of levels, infra and inter, river and modules." Two genuinely different real mechanisms create a real cycle here — a module's own code reaching another's (directly or via a fired/listened event), or two modules never calling each other at all but sharing a Supabase table's write and read — kept as two separate groups below, never merged into one blob.</p>
+  <p>Alex's own real ask, after a chat-only pass badly undercounted: "identify loop between all levels and objects of levels, infra and inter, domain and modules." Two genuinely different real mechanisms create a real cycle here — a module's own code reaching another's (directly or via a fired/listened event), or two modules never calling each other at all but sharing a Supabase table's write and read — kept as two separate groups below, never merged into one blob.</p>
 </div>
 <div class="toggle-row">
   <div class="toggle-btn active" data-view="web">🌐 Web</div>

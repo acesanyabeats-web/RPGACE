@@ -75,7 +75,7 @@ def _river_links(card):
     every other page in this pipeline uses (`#river-N`)."""
     return ' · '.join(
         f'<a href="galaxy_map_module.html#river-{r}">'
-        f'{esc(RIVER_NAME.get(r, f"River {r}").split("—")[0].strip())} · Level 2</a>'
+        f'{esc(RIVER_NAME.get(r, f"Domain {r}").split("—")[0].strip())} · Level 2</a>'
         for r in card.get('rivers', [])
     )
 
@@ -136,7 +136,7 @@ def build_card_block(card, flow):
         opens = ('<span class="nogate">No real target resolved for this card by the dashboard-card '
                  'flow detector — neither a popup module nor a page navigation.</span>')
     river_line = _river_links(card)
-    river_html = (f'<div class="pathriver">🌊 Its own river: {river_line}</div>' if river_line else '')
+    river_html = (f'<div class="pathriver">🌊 Its own domain: {river_line}</div>' if river_line else '')
     return f'''<div class="pathcard" id="card-{esc(card["key"])}">
   <div class="pathhead"><span class="cardicon">{esc(card["label"])}</span>{badge}</div>
   <div class="pathstep">🧑 Alex clicks the dashboard card</div>
@@ -223,7 +223,7 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Alex's Decision Path (G37)</div>
   <h1>🧑 Alex's Real UI Navigation Path — Y/N At Every Real Fork</h1>
-  <p>A real synthesis (rule 8, no new detection) of already-shipped Galaxy Map data: for each of the {n_cards} real dashboard cards, the real dashboard-card frontend flow to its real target module(s), then whether that module owns one of the 10 real Decisions-page (G26) gates — the real Y/N fork Alex actually hits walking that path. A card with no gate is a straight click-through, shown honestly as such. Every named module links to its own Current Series section; a card that navigates to a page instead of opening a module says so, and links its own river at <a href="galaxy_map_module.html">Level 2</a>, where the dashboard-card-flow role itself retired (G48).</p>
+  <p>A real synthesis (rule 8, no new detection) of already-shipped Galaxy Map data: for each of the {n_cards} real dashboard cards, the real dashboard-card frontend flow to its real target module(s), then whether that module owns one of the 10 real Decisions-page (G26) gates — the real Y/N fork Alex actually hits walking that path. A card with no gate is a straight click-through, shown honestly as such. Every named module links to its own Current Series section; a card that navigates to a page instead of opening a module says so, and links its own domain at <a href="galaxy_map_module.html">Level 2</a>, where the dashboard-card-flow role itself retired (G48).</p>
   <p style="margin-top:8px"><b>This is Alex's own narrower click-path view</b> — only the decisions he personally hits, grouped by dashboard card. For the full, exhaustive catalog of every real decision in the codebase, see <a href="galaxy_map_decision_matrix.html">🚦 the Decision Matrix</a> instead.</p>
 </div>
 {bubble}
@@ -272,7 +272,7 @@ def main():
     print(f"Wrote {OUT} — {len(DASHBOARD_CARDS)} cards, {n_with_gates} with a real decision gate on their path.")
     print(f"  G82 destinations — {linked} card(s) link a real tracked module, {pageonly} name a real page target, "
           f"{untracked} name only an untracked module (honestly unlinked), {none_n} resolve to nothing at all; "
-          f"all {len(DASHBOARD_CARDS)} link their own river at Level 2.")
+          f"all {len(DASHBOARD_CARDS)} link their own domain at Level 2.")
 
 
 if __name__ == '__main__':

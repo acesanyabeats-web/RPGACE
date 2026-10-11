@@ -31,7 +31,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from graphify_river_group import (  # noqa: E402
+from graphify_river_group import (domain_label,   # noqa: E402
     compute_all_connector_call_counts, EXTERNAL_CONNECTORS, RIVER_MODULES,
     RIVER_NAME, LEVEL3_MODULES, LINKABLE_MODULES, TOTAL_ZONES,
     build_infra_drilldown, infra_drilldown_counts, render_infra_drilldown,
@@ -81,7 +81,7 @@ def _leaf_link(mod):
 
 
 def _river_link(rnum):
-    label = RIVER_NAME.get(rnum, f'River {rnum}').split('—')[0].strip()
+    label = RIVER_NAME.get(rnum, f'Domain {rnum}').split('—')[0].strip()
     return f'<a class="river-chip" href="galaxy_map_module.html#river-{rnum}">🌊 {esc(label)}</a>'
 
 
@@ -96,19 +96,19 @@ def build_drilldown_section(conn):
     for m in sorted({m for m, _f, _d in pairs}):
         fns = sorted({f for mm, f, _d in pairs if mm == m})
         rnum = _river_of.get(m)
-        chip = _river_link(rnum) if rnum else '<span class="mod-chip-none">cross-cutting, no river</span>'
+        chip = _river_link(rnum) if rnum else '<span class="mod-chip-none">cross-cutting, no domain</span>'
         mod_link = f'<a class="mod-chip" href="galaxy_map_current.html#mod-{m}">🔽 {m}</a>' if m in LINKABLE_MODULES else f'<span class="mod-chip-none">{m}</span>'
         fn_rows = ''.join(f'<div class="touch-row">{CONN_ICON[conn]} <code>{f}()</code></div>' for f in fns)
         table_rows.append(f'''<div class="table-section">
   <div class="thead"><span class="tdot" style="background:{"#3DAA6E" if conn == "Composio" else ("#4A90E2" if conn == "Jina AI" else "#E25454")}"></span><h2>{mod_link}</h2>
     <span class="tcount">{len(fns)} real function(s)</span></div>
-  <div class="rivers">{chip}</div>
+  <div class="domains">{chip}</div>
   <details class="touches"><summary>real functions calling {esc(conn)}</summary>{fn_rows}</details>
 </div>''')
     map_view = render_infra_drilldown(
         drill, orphans, unit_icon=CONN_ICON[conn], unit_label=conn,
         leaf_link_fn=_leaf_link, resource_emoji=CONN_ICON[conn],
-        orphan_label='Cross-cutting (no river)',
+        orphan_label='Cross-cutting (no domain)',
         orphan_note="RIVER_MODULES' own documented exclusions", esc=esc)
     row = CONN_ROW.get(conn, {})
     cid = CONN_ID[conn]
@@ -116,7 +116,7 @@ def build_drilldown_section(conn):
   <div class="conn-head"><h2>{CONN_ICON[conn]} {esc(conn)}</h2>
     <span class="conn-status">{esc(row.get('status', ''))}</span></div>
   <p class="conn-note">{esc(row.get('note', ''))} Real trigger: <code>{esc(row.get('via', ''))}</code>.</p>
-  <p class="conn-summary">{len(pairs)} real (module,function) call pair(s) across {n_mods} module(s), {len(rivers_touched)} river(s) — a genuine client-side rpgace_core.js call site, detected the same way Oracle/Supabase's own Infra systems are.</p>
+  <p class="conn-summary">{len(pairs)} real (module,function) call pair(s) across {n_mods} module(s), {len(rivers_touched)} domain(s) — a genuine client-side rpgace_core.js call site, detected the same way Oracle/Supabase's own Infra systems are.</p>
   <div class="toggle-row">
     <div class="toggle-btn" data-conn="{cid}" data-view="table">📊 Table</div>
     <div class="toggle-btn active" data-conn="{cid}" data-view="map">🌌 Map</div>
@@ -139,7 +139,7 @@ def build_disclosure_section(conn):
     detector that found Composio/Jina AI/Last.fm's own client-side call sites
     (<code>compute_all_connector_call_counts()</code>) found <b>zero</b> for
     {esc(conn)}. Its real trigger genuinely lives outside <code>rpgace_core.js</code>
-    entirely: <code>{esc(row.get('via', ''))}</code>. Building a river/module/
+    entirely: <code>{esc(row.get('via', ''))}</code>. Building a domain/module/
     function drilldown here would claim evidence that does not exist — this
     connector's real "Infra" is the fact stated above, not a fabricated map.
   </div>

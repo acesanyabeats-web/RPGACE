@@ -54,7 +54,7 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).parent))
-from graphify_river_group import (  # noqa: E402
+from graphify_river_group import (domain_label,   # noqa: E402
     RIVER_NAME, RIVER_COLOR, CARDS_BY_RIVER, DASHBOARD_CARDS, DIMENSION_PAGES,
     dashboard_card_primary_module, compute_module_ui_signal,
     LEVEL3_MODULES, EXTERNAL_RIVER_LINKS,
@@ -109,7 +109,7 @@ def build_externals_block(rnum):
     already shows. Honest empty state, never guessed."""
     hits = [c for c in EXTERNAL_RIVER_LINKS if rnum in c.get('rivers', [])]
     if not hits:
-        return '<div class="extnone">No real external connector cited for this river.</div>'
+        return '<div class="extnone">No real external connector cited for this domain.</div>'
     chips = ''.join(
         f'<div class="extchip"><b>{esc(c["name"])}</b><span>{esc(c.get("via", ""))}</span></div>'
         for c in hits
@@ -125,7 +125,7 @@ def build_river_section(rnum):
     the real inner content only. The old "zoom out: Level 2" link is
     dropped too — it's a same-page no-op now that this content lives
     directly inside Level 2's own table view, not a separate page."""
-    _full_name = RIVER_NAME.get(rnum, f'River {rnum} — Untitled')
+    _full_name = RIVER_NAME.get(rnum, f'Domain {rnum}')
     name = _full_name.split('—', 1)[1].strip() if '—' in _full_name else _full_name
     color = RIVER_COLOR.get(rnum, '#888')
     cards = CARDS_BY_RIVER.get(rnum, [])
@@ -143,10 +143,10 @@ def build_river_section(rnum):
     # this river now, sourced from the shared DIMENSION_PAGES list so
     # they cannot drift from the canonical index.
     dim_links = (
-        f'<a class="modlink" href="galaxy_map_dimensions.html">🧭 River {_roman(rnum)} × every dimension</a> '
+        f'<a class="modlink" href="galaxy_map_dimensions.html">🧭 {domain_label(rnum)} × every dimension</a> '
         + ' '.join(f'<a class="modlink" href="{f}">{i} {lbl}</a>'
                    for f, i, lbl, _k, _d in DIMENSION_PAGES[:4]))
-    return f'''<div class="l25-rhead" style="border-color:{color}"><h2 style="color:{color}">River {_roman(rnum)} — {esc(name)}</h2><span class="rcount">{len(unique_cards)} real dashboard card(s)</span></div>
+    return f'''<div class="l25-rhead" style="border-color:{color}"><h2 style="color:{color}">{domain_label(rnum)} — {esc(name)}</h2><span class="rcount">{len(unique_cards)} real dashboard card(s)</span></div>
   <div class="cgrid">{cards_html}</div>
   <div class="convrow">
     <div class="convblock"><div class="convlabel">🔀 Externals attaching here</div>{externals_html}</div>

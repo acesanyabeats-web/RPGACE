@@ -47,7 +47,7 @@
 <div class="page-retired">
   <b>⚠️ Retired as a standalone destination (Sep 1 2026, G111) — deprecated, not deleted.</b><br>
   Alex's own ratified scope: the <b>21 curated decision/logic entries</b> now live on their real home objects instead of on a separate page — each module's own section on
-  <a href="galaxy_map_current.html">Current (L3)</a> and each river's own section on <a href="galaxy_map_module.html">Level 2</a>, sourced from the
+  <a href="galaxy_map_current.html">Current (L3)</a> and each domain's own section on <a href="galaxy_map_module.html">Level 2</a>, sourced from the
   <a href="galaxy_map_decision_matrix.html">Decision Matrix</a>'s single source-of-truth table (R22). The exhaustive, mechanical branch list stays exactly where it was —
   <a href="galaxy_map_level6.html">the Branch Ledger (L6)</a>, link-out only, never dispersed or inlined.<br><br>
   <b>P0 CSS/output-size consolidation (Sep 24 2026, real /fableomnitrix finding):</b> this page used to still regenerate its full 17-river passage dump below this banner
@@ -161,8 +161,8 @@
   }
 
   function relevant(items){
-    /* river/logic pages have no per-node handle, so the panel covers
-       every item that names a real river - honestly stated in the panel. */
+    /* domain/logic pages have no per-node handle, so the panel covers
+       every item that names a real domain - honestly stated in the panel. */
     if(SCOPE==='river'||SCOPE==='logic')
       return items.filter(function(i){return /^River /.test(i.galaxy_river||'');});
     if(SCOPE==='dimensions')
@@ -173,8 +173,8 @@
   var SCOPE_NOTE={
     l0:'Badges sit on each L0 unit whose real dimension a plan item touches.',
     dimensions:'Badges sit on each module named in a plan item’s galaxy_modules.',
-    river:'This view has no per-river node to badge (its rivers are SVG text), so this panel lists every in-flight item that names a real river.',
-    logic:'This view has no per-river node to badge (its rivers are prose headings), so this panel lists every in-flight item that names a real river.'
+    domain:'This view has no per-river node to badge (its domains are SVG text), so this panel lists every in-flight item that names a real domain.',
+    logic:'This view has no per-river node to badge (its domains are prose headings), so this panel lists every in-flight item that names a real domain.'
   };
 
   function render(plans,items){

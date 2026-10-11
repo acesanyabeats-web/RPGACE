@@ -2,7 +2,7 @@
 """
 galaxy_map_supabase.py — G45 of the ratified L0/Dimension/River/Module/
 Current redefinition. F3's answer: "one page, all tables" — every real
-table, which Level/River/Module reads or writes it, framed like a real
+table, which Level/Domain/Module reads or writes it, framed like a real
 /perspective report.
 
 Real data reused, never re-derived (rule 8): compute_all_supabase_
@@ -58,7 +58,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from graphify_river_group import (  # noqa: E402
+from graphify_river_group import (domain_label,   # noqa: E402
     compute_all_supabase_table_touches, RIVER_MODULES, RIVER_NAME,
     LEVEL3_MODULES, LINKABLE_MODULES, compute_oversight_doc_supabase_reads, TOTAL_ZONES,
     build_infra_drilldown, infra_drilldown_counts, render_infra_drilldown,
@@ -118,7 +118,7 @@ _ROOT = Path('.')
 
 
 def _river_link(rnum):
-    label = RIVER_NAME.get(rnum, f'River {rnum}').split('—')[0].strip()
+    label = RIVER_NAME.get(rnum, f'Domain {rnum}').split('—')[0].strip()
     return f'<a class="river-chip" href="galaxy_map_module.html#river-{rnum}">🌊 {esc(label)}</a>'
 
 
@@ -160,7 +160,7 @@ def build_oversight_only_row(tbl):
     return f'''<section class="table-section ovs-only" id="tbl-{tbl}">
   <div class="thead"><span class="tdot tdot-ovs"></span><h2>🗄️ {tbl}</h2>{op_badges}
     <span class="tcount">{n} real live oversight-doc call(s)</span></div>
-  <div class="rivers"><span class="meta">No rpgace_core.js module touches this table at all — it is
+  <div class="domains"><span class="meta">No rpgace_core.js module touches this table at all — it is
     read (and, where a method above says so, written) directly by the oversight docs' own inline
     scripts. Real, and invisible to the client-side module scanner by construction.</span></div>
   {build_oversight_block(tbl)}
@@ -182,7 +182,7 @@ def build_table_row(tbl, touches):
     return f'''<section class="table-section" id="tbl-{tbl}">
   <div class="thead"><span class="tdot"></span><h2>🗄️ {tbl}</h2>{op_badges}
     <span class="tcount">{len(touches)} real function touch(es)</span></div>
-  <div class="rivers">{river_chips}</div>
+  <div class="domains">{river_chips}</div>
   <div class="mods">{mod_chips}</div>
   <details class="touches"><summary>Every real touch (module.function → operation)</summary>{detail_rows}</details>
   {build_oversight_block(tbl)}
@@ -244,12 +244,12 @@ def build_oversight_note():
         mark = ' <span class="ovs-tag" style="display:inline;margin:0">module-untouched</span>' if tbl in OVERSIGHT_ONLY else ''
         rows.append(f'<div class="touch-row">🗄️ <a href="#tbl-{tbl}">{esc(tbl)}</a>{mark} — '
                     f'{n} real live call(s) from {docs}</div>')
-    return ('<div class="idd"><div class="idd-lvl"><div class="idd-lbl">Outside the river chain, '
+    return ('<div class="idd"><div class="idd-lvl"><div class="idd-lbl">Outside the domain chain, '
             'by construction</div><div class="ovs">'
             '<span class="ovs-tag">📚 real oversight-doc live fetches</span>'
             '<div class="touch-row" style="padding-left:0">These are real Supabase calls with no module '
             'behind them at all — they come from the oversight HTML docs\' own inline scripts, so they '
-            'have no river, no module and no Current, and cannot appear anywhere in the drill-down above '
+            'have no domain, no module and no Current, and cannot appear anywhere in the drill-down above '
             'without inventing a module that does not exist. Listed here so the evidence is not silently '
             'dropped.</div>'
             + ''.join(rows) + '</div></div></div>')
@@ -262,7 +262,7 @@ def build_map_view():
     return render_infra_drilldown(
         DRILL, ORPHANS, unit_icon='🗄️', unit_label='Supabase',
         leaf_link_fn=_leaf_link, resource_emoji='🗄️',
-        orphan_label='Cross-cutting (no river)',
+        orphan_label='Cross-cutting (no domain)',
         orphan_note="RIVER_MODULES' own documented exclusions",
         esc=esc) + build_oversight_note()
 
@@ -292,7 +292,7 @@ TEMPLATE = """<!DOCTYPE html>
   .tcount{{font-size:9.5px;color:var(--dim);margin-left:auto}}
   .op-badge{{font-size:8.5px;font-weight:700;padding:2px 7px;border-radius:7px;background:rgba(255,255,255,0.06);color:var(--dim);text-transform:uppercase}}
   .rivers,.mods{{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}}
-  /* G82 — the river chips are real Level-2 links now, styled to still
+  /* G82 — the domain chips are real Level-2 links now, styled to still
      read as chips rather than as underlined hyperlinks. */
   .river-chip{{font-size:9.5px;padding:2px 8px;border-radius:8px;background:rgba(42,191,176,0.1);color:var(--teal);text-decoration:none}}
   .river-chip:hover{{background:rgba(42,191,176,0.26)}}
@@ -330,9 +330,9 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Supabase</div>
   <h1>🗄️ Every Real Table, Where It's Used</h1>
-  <p>{n_tables} real Supabase tables with a genuine, checkable client-side touch in rpgace_core.js (113 of 502 real functions, 22%) — which Level/River/Module reads or writes each. Server-side (api/*.js) touches aren't reachable by this client-side detector — a real, honest scope limit, same class every other Galaxy Map page states.</p>
+  <p>{n_tables} real Supabase tables with a genuine, checkable client-side touch in rpgace_core.js (113 of 502 real functions, 22%) — which Level/Domain/Module reads or writes each. Server-side (api/*.js) touches aren't reachable by this client-side detector — a real, honest scope limit, same class every other Galaxy Map page states.</p>
   <p style="margin-top:8px">Plus {n_ovs_only} more real table(s) below that <b>no</b> module touches at all, reached only by the oversight docs' own live <code>fetch('/rest/v1/…')</code> calls — a second, genuinely different evidence type, kept visibly separate rather than merged in.</p>
-  <p style="margin-top:8px"><b>Map view</b> renders the same data as one real bubble system, drilled progressively: <b>Level 1</b> the rivers that genuinely touch Supabase → <b>Level 2</b> the modules in that river that genuinely touch a table → <b>Level 3</b> the real Currents (functions) that touch, each a migration bubble jumping out to that module's own Current Series section. Per R22 the table is the source and the bubbles follow it — same <code>TABLES</code> data, never a second source.</p>
+  <p style="margin-top:8px"><b>Map view</b> renders the same data as one real bubble system, drilled progressively: <b>Level 1</b> the domains that genuinely touch Supabase → <b>Level 2</b> the modules in that domain that genuinely touch a table → <b>Level 3</b> the real Currents (functions) that touch, each a migration bubble jumping out to that module's own Current Series section. Per R22 the table is the source and the bubbles follow it — same <code>TABLES</code> data, never a second source.</p>
 </div>
 <div class="toggle-row">
   <div class="toggle-btn active" data-view="map">🌌 Map view</div>
@@ -377,7 +377,7 @@ TEMPLATE = """<!DOCTYPE html>
   }}
   applyHash();
   window.addEventListener('hashchange', applyHash);
-  // R22 in the other direction — the drill-down's own "outside the river
+  // R22 in the other direction — the drill-down's own "outside the domain
   // chain" block links back into the table view by real `#tbl-` anchor,
   // so those links switch views the same way the toggle does rather than
   // jumping to a section that is currently hidden.
@@ -438,7 +438,7 @@ def main():
     n_river_tables = sum(
         1 for t, touches in TABLES.items()
         if any(_river_of.get(m) for m, _f, _op in touches))
-    print(f"  G82 destinations — {n_river_tables}/{len(TABLES)} table(s) now link at least one real river at "
+    print(f"  G82 destinations — {n_river_tables}/{len(TABLES)} table(s) now link at least one real domain at "
           f"Level 2; {len(linked_docs)}/{len(docs)} named oversight doc(s) resolve to a real file and are linked.")
     # G83 — real, build-time self-consistency gate. The drill-down is
     # built by filtering the SAME `TABLES` detector output the table view
@@ -458,13 +458,13 @@ def main():
     unlinked = sorted([m for mods in DRILL.values() for m in mods if not _leaf_link(m)]
                       + list(ORPHANS))
     c = DRILL_COUNTS
-    print(f"  G83 map view — L1 {c['rivers']} of {TOTAL_ZONES} real river(s) qualify · "
+    print(f"  G83 map view — L1 {c['rivers']} of {TOTAL_ZONES} real domain(s) qualify · "
           f"L2 {c['modules']} module(s) + {c['orphan_modules']} river-less · "
           f"L3 {c['functions'] + c['orphan_functions']} real migration bubble(s) "
           f"({drawn} leaves == {len(real_pairs)} real detector pair(s)).")
     print(f"  G83 destinations — {len(linked)} module(s) link to a real "
           f"galaxy_map_current.html#mod-<name> anchor; {len(unlinked)} honestly unlinked "
-          f"(no river, so Current Series has no section): {', '.join(unlinked) or 'none'}.")
+          f"(no domain, so Current Series has no section): {', '.join(unlinked) or 'none'}.")
 
 
 if __name__ == '__main__':

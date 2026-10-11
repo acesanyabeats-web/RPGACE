@@ -44,7 +44,7 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).parent))
-from graphify_river_group import (
+from graphify_river_group import (domain_label, 
     LEVEL3_MODULES, RIVER_MODULES, DASHBOARD_CARDS,
     compute_module_oracle_call_count, compute_external_call_sites,
     compute_lastfm_call_sites, compute_boot_task_registrations,
@@ -183,9 +183,9 @@ def _river_cell(r):
     """The real Level-2 link for a module's own river."""
     if not r:
         return '<td class="rivercell">—</td>'
-    label = RIVER_NAME.get(r, f'River {r}').split('—')[0].strip()
+    label = RIVER_NAME.get(r, f'Domain {r}').split('—')[0].strip()
     return (f'<td class="rivercell"><a href="galaxy_map_module.html#river-{r}" '
-            f'title="This module\'s own river at Level 2">{esc(label)}</a></td>')
+            f'title="This module\'s own domain at Level 2">{esc(label)}</a></td>')
 
 
 def _river_of(module):
@@ -312,17 +312,17 @@ def build_river_matrix(tags):
             cells.append(
                 f'<td class="dcell on rcell" data-river="{r}" data-dim="{d["id"]}" '
                 f'title="{esc(", ".join(sorted(hits)))}">{d["icon"]} <b>{len(hits)}</b></td>')
-        full = RIVER_NAME.get(r, f'River {r}')
+        full = RIVER_NAME.get(r, f'Domain {r}')
         name = full.split('—', 1)[1].strip() if '—' in full else full
         n_dims = sum(1 for d in DIMENSIONS if any(tags[m][d['id']] for m in mods))
         rows.append(
             f'<tr><th class="rowhead rowjump" data-river="{r}" '
-            f'title="Jump to this river\'s own bubble detail" '
+            f'title="Jump to this domain\'s own bubble detail" '
             f'style="border-left:3px solid {RIVER_COLOR.get(r, "#888")}">{esc(name)} '
             f'<span class="rowjump-cue">🫧</span></th>'
             f'<td class="rivercell">{len(mods)}</td>{"".join(cells)}'
             f'<td class="tagcount">{n_dims}</td></tr>')
-    header = ('<tr><th>River</th><th>Modules</th>' + _dim_headers_row() + '<th>Dims</th></tr>')
+    header = ('<tr><th>Domain</th><th>Modules</th>' + _dim_headers_row() + '<th>Dims</th></tr>')
     return '<table class="dtable">' + header + ''.join(rows) + '</table>'
 
 
@@ -376,8 +376,8 @@ def build_l0_bubbles(l0_tags):
         rivers = sorted(unit_rivers.get(uid, ()))
         if rivers:
             river_links = ', '.join(
-                f'<a href="galaxy_map_river.html">{esc(RIVER_NAME.get(r, f"River {r}"))}</a>' for r in rivers)
-            items += f'<li>🏛️ <b>Real rivers this unit\'s Infra/Inter touches</b> — {river_links}</li>'
+                f'<a href="galaxy_map_river.html">{esc(RIVER_NAME.get(r, f"Domain {r}"))}</a>' for r in rivers)
+            items += f'<li>🏛️ <b>Real domains this unit\'s Infra/Inter touches</b> — {river_links}</li>'
         nodes_data.append(dict(
             key=uid, color=meta['color'], short_label=meta['label'],
             full_label=f"{meta['icon']} {meta['label']}", n_dims=len(hit_dims),
@@ -403,23 +403,23 @@ def build_river_bubbles(tags):
         mods = [m for m in tags if _river_of(m) == r]
         hit_dims = [d for d in DIMENSIONS if any(tags[m][d['id']] for m in mods)]
         color = RIVER_COLOR.get(r, '#888')
-        full = RIVER_NAME.get(r, f'River {r}')
+        full = RIVER_NAME.get(r, f'Domain {r}')
         short = full.split('—', 1)[1].strip() if '—' in full else full
         items = ''.join(
             f'<li>{d["icon"]} <b>{_dim_label(d)}</b> — '
             f'{", ".join(_mod_link(m) for m in sorted(m for m in mods if tags[m][d["id"]]))}</li>'
-            for d in hit_dims) or '<li class="meta">No real dimension membership detected for this river.</li>'
+            for d in hit_dims) or '<li class="meta">No real dimension membership detected for this domain.</li>'
         units = sorted(river_touches.get(r, ()))
         if units:
             unit_links = ', '.join(
                 f'<a href="{UNIT_BUBBLE_SYSTEM.get(u, "galaxy_map.html")}">{UNIT_META[u]["icon"]} {esc(UNIT_META[u]["label"])}</a>'
                 for u in units if u in UNIT_META)
             if unit_links:
-                items += f'<li>🌐 <b>Real L0 units whose Infra/Inter touches this river</b> — {unit_links}</li>'
+                items += f'<li>🌐 <b>Real L0 units whose Infra/Inter touches this domain</b> — {unit_links}</li>'
         nodes_data.append(dict(
             key=f'r{r}', color=color, short_label=short, full_label=full,
             n_dims=len(hit_dims), detail_html=f'<ul>{items}</ul>'))
-    svg, details = build_bubble_ring(nodes_data, hub_icon='🏛️', hub_label='Rivers', hub_href='galaxy_map_river.html')
+    svg, details = build_bubble_ring(nodes_data, hub_icon='🏛️', hub_label='Domains', hub_href='galaxy_map_river.html')
     return svg + '<div id="bubble-details">' + details + '</div>'
 
 
@@ -522,12 +522,12 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Dimensions Matrix (G30)</div>
   <h1>🧭 Dimensions Matrix — Real Multi-Home Overlap</h1>
-  <p>Alex's own real ask, resolved via /interrogation: a real river/module can belong to MORE THAN ONE dimension at once (multi-home, not a strict partition) — this is the real cross-dimension ANALYSIS view, not a Level-0 replacement (the 4 galaxies stay exactly as they are). Real, structural rework (Aug 26 2026): L0/River/Module are 3 real LEVELS of the same recurring question ("which dimensions does this real object touch"), not 3 flat, unrelated categories — pick a level below, each with its own real Table (default) + Map. {n_hubs} of {n_mods} real modules are genuine "hubs" (3+ real dimension tags) — the modules doing the most real, load-bearing cross-dimension work in RPGACE Total Systems, regardless of which river they're nominally grouped under.</p>
+  <p>Alex's own real ask, resolved via /interrogation: a real domain/module can belong to MORE THAN ONE dimension at once (multi-home, not a strict partition) — this is the real cross-dimension ANALYSIS view, not a Level-0 replacement (the 4 galaxies stay exactly as they are). Real, structural rework (Aug 26 2026): L0/River/Module are 3 real LEVELS of the same recurring question ("which dimensions does this real object touch"), not 3 flat, unrelated categories — pick a level below, each with its own real Table (default) + Map. {n_hubs} of {n_mods} real modules are genuine "hubs" (3+ real dimension tags) — the modules doing the most real, load-bearing cross-dimension work in RPGACE Total Systems, regardless of which domain they're nominally grouped under.</p>
 </div>
 
 <div class="lvl-tabs">
   <div class="lvl-tab active" data-lvl="l0">🌌 L0 (units)</div>
-  <div class="lvl-tab" data-lvl="l1">🏛️ L1 (rivers)</div>
+  <div class="lvl-tab" data-lvl="l1">🏛️ L1 (domains)</div>
   <div class="lvl-tab" data-lvl="l2">🌊 L2 (modules)</div>
 </div>
 
@@ -542,7 +542,7 @@ TEMPLATE = """<!DOCTYPE html>
 </div>
 
 <div class="lvl-block" id="lvl-l1">
-  <div class="vhint">Every real river cross-referenced against every dimension it genuinely participates in — a roll-up of the module-grain data at L2, never re-derived. A cell shows how many of that river's own modules carry that dimension; hover it for their names, click it (or the river name) for the full breakdown.</div>
+  <div class="vhint">Every real domain cross-referenced against every dimension it genuinely participates in — a roll-up of the module-grain data at L2, never re-derived. A cell shows how many of that domain's own modules carry that dimension; hover it for their names, click it (or the domain name) for the full breakdown.</div>
   <div class="toggle-row">
     <div class="toggle-btn" data-view="l1table">📊 Table</div>
     <div class="toggle-btn active" data-view="l1map">🌌 Map</div>
@@ -552,7 +552,7 @@ TEMPLATE = """<!DOCTYPE html>
 </div>
 
 <div class="lvl-block" id="lvl-l2">
-  <div class="vhint">The finer grain the L1 roll-up deliberately loses: which individual module is a real cross-dimension hub, regardless of which river it is grouped under.</div>
+  <div class="vhint">The finer grain the L1 roll-up deliberately loses: which individual module is a real cross-dimension hub, regardless of which domain it is grouped under.</div>
   <div class="toggle-row">
     <div class="toggle-btn" data-view="l2table">📊 Table</div>
     <div class="toggle-btn active" data-view="l2map">🌌 Map</div>
@@ -560,7 +560,7 @@ TEMPLATE = """<!DOCTYPE html>
   <div class="view" id="view-l2table">
     <div class="wrap">
       <table class="dtable">
-        <thead><tr><th>Module</th><th>River</th>{dim_headers}<th>Tags</th></tr></thead>
+        <thead><tr><th>Module</th><th>Domain</th>{dim_headers}<th>Tags</th></tr></thead>
         <tbody>{rows}</tbody>
       </table>
     </div>
@@ -654,7 +654,7 @@ def main():
     unlinked = [d['id'] for d in DIMENSIONS if not _dim_page(d)]
     print(f"  Link coverage — {len(linked_dims)}/{len(DIMENSIONS)} dimension header(s) link a registered "
           f"Dimension page (honestly unlinked: {', '.join(unlinked) or 'none'}); "
-          f"{n_riv}/{len(tags)} module row(s) link a real river at Level 2; "
+          f"{n_riv}/{len(tags)} module row(s) link a real domain at Level 2; "
           f"all {len(tags)} module names link a real Current Series section in both views.")
 
 

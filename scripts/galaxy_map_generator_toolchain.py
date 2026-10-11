@@ -99,10 +99,10 @@ GENERATORS = [
     {
         'file': 'gmp_b_consistency_check.py', 'family': 'Consistency Checkers',
         'date': 'Sep 16 2026 (GMP-B)',
-        'purpose': "A real consistency CHECK, never a regeneration — compares RIVER_FLOWS' claimed river-to-river edges against perspective_reports' own evidence.cross_refs, flagging a real mismatch for a human decision. Never auto-adds an edge.",
+        'purpose': "A real consistency CHECK, never a regeneration — compares RIVER_FLOWS' claimed domain-to-domain edges against perspective_reports' own evidence.cross_refs, flagging a real mismatch for a human decision. Never auto-adds an edge.",
         'writes_to': 'system_map_flags (flags only, human decides)',
         'depends_on': ['RIVER_MODULES', 'RIVER_FLOWS', '_roman_to_int'],
-        'evidence': 'Found 1 real mismatch (River III<->XI) at 14/58 coverage; re-run at full 58/58 coverage found 11 real mismatches, all resolved with dated per-edge evidence.',
+        'evidence': 'Found 1 real mismatch (Oracle<->XI) at 14/58 coverage; re-run at full 58/58 coverage found 11 real mismatches, all resolved with dated per-edge evidence.',
     },
     {
         'file': 'gmr2_generate_cross_refs.py', 'family': 'Consistency Checkers',

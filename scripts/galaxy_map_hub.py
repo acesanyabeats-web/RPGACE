@@ -103,29 +103,29 @@ PAGES = [
     {'file': 'galaxy_map.html', 'label': 'Level 0 — RPGACE Total Systems (current, start here)',
      'level': 'L0', 'kind': 'core', 'scope': 'All 9 real merged units: RPGACE Architecture / Orchestrator CC / OpenMontage CC / Graphify CC / External AI / Skills / Alex / Supabase / Oversight Docs',
      'desc': 'Real Aug 21 2026 fusion, second correction same day — Alex\'s own direct ask: "the l0 7 units should exist in the bubbles in on rpgace total systems own architecture map." The 7-unit model is now merged directly into THIS page (not a separate file) — 4 units render in the real SVG diagram, 5 more as a real bubble row beside it, all 9 sharing one Infra/Inter facet picker. THE current real Level 0, and RPGACE Total Systems\' own canonical architecture map. G67 fold (same day, later): this page also gained a real map/table toggle — table view is galaxy_map_l0.py\'s own leftover 17-edge matrix, imported directly, not rebuilt. galaxy_map_l0.html no longer exists as its own page.'},
-    {'file': 'galaxy_map_river.html', 'label': 'Level 1 — Rivers', 'level': 'L1', 'kind': 'core',
-     'scope': 'All 17 rivers', 'desc': 'G3 — RPGACE Architecture\'s own 17 rivers, radial, cross-linked by real RIVER_FLOWS data.'},
+    {'file': 'galaxy_map_river.html', 'label': 'Level 1 — Domains', 'level': 'L1', 'kind': 'core',
+     'scope': 'All 17 domains', 'desc': 'G3 — RPGACE Architecture\'s own 17 domains, radial, cross-linked by real RIVER_FLOWS data.'},
     {'file': 'galaxy_map_module.html', 'label': 'Level 2 — Modules, Flow, Externals & Skills (+ Level 2.5 table view)', 'level': 'L2', 'kind': 'core',
-     'scope': 'All 17 rivers\' real modules', 'desc': 'G4+G5 — real left-to-right module flow per river, terminal badges, dashboard/external/skill tributaries. G-fold (Aug 21 2026, Alex: "2.5 is a table view of 2"): each river section gained a real map/table toggle — table view is galaxy_map_level2_5.py\'s own river→card→module content, imported directly. galaxy_map_level2_5.html no longer exists as its own page.'},
+     'scope': 'All 17 domains\' real modules', 'desc': 'G4+G5 — real left-to-right module flow per domain, terminal badges, dashboard/external/skill tributaries. G-fold (Aug 21 2026, Alex: "2.5 is a table view of 2"): each domain section gained a real map/table toggle — table view is galaxy_map_level2_5.py\'s own domain→card→module content, imported directly. galaxy_map_level2_5.html no longer exists as its own page.'},
     {'file': 'galaxy_map_current.html', 'label': 'Current Series (map+table, function-level)', 'level': 'Current (L3)', 'kind': 'core',
      'scope': 'All 50 modules, 532 Currents', 'desc': 'G47, folded with the old Level 3 Aug 21 2026 (G65) — real per-function input/handling/output/next detail (table view) AND the real per-module call-chain diagram (map view), same real data, one page. galaxy_map_level3.html is gone, not superseded — its content lives here now. (Real count corrected Sep 1 2026, G110-G113 pass — verified directly against the live generated page: 50 real distinct module sections, matching the count galaxy_map_dimensions.py/G30 already used.)'},
     {'file': 'galaxy_map_level6.html', 'label': 'Branch Ledger', 'level': 'L6', 'kind': 'infra',
      'scope': '1173 branch points, 44 modules', 'desc': 'G18 — exhaustive, mechanical if/else-if/else/switch branch extraction, listed not narrated. (Real count corrected Sep 1 2026, G110-G113 pass — 1173 branch-row entries verified directly against the live generated page. 44 vs Current\'s 50 modules is a genuine grain difference, not yet root-caused — some modules apparently contribute zero real branch points and are absent from this ledger; flagged for a future pass, not investigated here.)'},
     {'file': 'galaxy_map_logic_dimension.html', 'label': 'Logic Dimension (RETIRED — reference only)', 'level': 'Dimension', 'kind': 'inter',
-     'scope': '98 edges across 17 rivers', 'desc': 'G111 (Sep 1 2026) — retired as a standalone destination and de-registered from DIMENSION_PAGES, kept on disk so no link 404s. Its 21 curated decision/logic entries now render on their real home objects (each module\'s Current(L3) section, each river\'s Level 2 section), sourced from the Decision Matrix\'s own table. Its river-to-river/connector/skill passages were always a second presentation of what Level 2\'s per-river legend already draws from the same RIVER_FLOWS/FLOWS_IN/LINKS_BY_RIVER data. Level 6 (Branch Ledger) is untouched and stays link-out only.'},
+     'scope': '98 edges across 17 domains', 'desc': 'G111 (Sep 1 2026) — retired as a standalone destination and de-registered from DIMENSION_PAGES, kept on disk so no link 404s. Its 21 curated decision/logic entries now render on their real home objects (each module\'s Current(L3) section, each domain\'s Level 2 section), sourced from the Decision Matrix\'s own table. Its river-to-river/connector/skill passages were always a second presentation of what Level 2\'s per-river legend already draws from the same RIVER_FLOWS/FLOWS_IN/LINKS_BY_RIVER data. Level 6 (Branch Ledger) is untouched and stays link-out only.'},
     {'file': 'galaxy_map_decisions.html', 'label': 'Decisions — Website Perspective', 'level': 'Dimension', 'kind': 'infra',
      'scope': '10 human-confirm gates, RPGACE app code only', 'desc': 'G26 Phase 1 — destructive-delete/taxonomy/pipeline confirm gates, grouped by decision type.'},
     {'file': 'galaxy_map_decision_matrix.html', 'label': 'Decision Matrix — Unified Table + Bubble System', 'level': 'Dimension', 'kind': 'meta',
-     'scope': '21 real decisions (10 gates + 7 logic + 4 text-input), 6 rivers', 'desc': 'Real Aug 21 2026 unification (Alex\'s own direct ask) of Decisions (G26) + Level 5\'s logic points + a new curated text-input set, split by river and documentation depth. The real source-of-truth table; its bubble view is a pure rendering layer over the same data (CEO SKILL.md R22\'s own new standing rule).'},
+     'scope': '21 real decisions (10 gates + 7 logic + 4 text-input), 6 domains', 'desc': 'Real Aug 21 2026 unification (Alex\'s own direct ask) of Decisions (G26) + Level 5\'s logic points + a new curated text-input set, split by domain and documentation depth. The real source-of-truth table; its bubble view is a pure rendering layer over the same data (CEO SKILL.md R22\'s own new standing rule).'},
     {'file': 'galaxy_map_supabase.html', 'label': 'Supabase', 'level': 'Dimension', 'kind': 'infra',
      # Table count corrected Sep 24 2026 (real code-verification pass, direct
      # grep of the live page): 51, not 25 -- real growth since this catalog
      # entry was written (HABITS/shoppingWishlist/oracle_actions/etc tables
      # all post-date it). The function-touch figure is left as its own
      # last-verified number, not re-derived this pass.
-     'scope': '51 tables, 113+ of 502 functions', 'desc': 'G45 — every real client-side Supabase table touch, by Level/River/Module.'},
+     'scope': '51 tables, 113+ of 502 functions', 'desc': 'G45 — every real client-side Supabase table touch, by Level/Domain/Module.'},
     {'file': 'galaxy_map_oracle.html', 'label': 'Oracle', 'level': 'Dimension', 'kind': 'infra',
-     'scope': '13 modules, 28 real (module,function) call pairs', 'desc': 'G99 — Oracle\'s own real Infra bubble system (promoted from the retired "External AI" L0 grouping): every real function anywhere that calls Oracle, by river/module.'},
+     'scope': '13 modules, 28 real (module,function) call pairs', 'desc': 'G99 — Oracle\'s own real Infra bubble system (promoted from the retired "External AI" L0 grouping): every real function anywhere that calls Oracle, by domain/module.'},
     {'file': 'galaxy_map_connectors.html', 'label': 'Connectors (6 real L0 units)', 'level': 'Dimension', 'kind': 'infra',
      'scope': '9 real (module,function) pairs across 3 connectors, 3 honest disclosure-only', 'desc': 'G99 completion — the other 6 real "External AI" constituents (Composio/Jina AI/Last.fm/librosa/n8n/Whisper), each its own real L0 unit; 3 get a genuine Infra drilldown, 3 honestly disclose they have no client-side call site.'},
     {'file': 'galaxy_map_externals.html', 'label': 'Externals — UI + Backend Dimension', 'level': 'Dimension', 'kind': 'infra',
@@ -147,7 +147,7 @@ PAGES = [
     {'file': 'galaxy_map_loops.html', 'label': 'Loops', 'level': 'Dimension', 'kind': 'meta',
      'scope': '1 call/event loop (15 modules), 2 data loops (6 modules each)', 'desc': 'G104 (Aug 26 2026) — Alex\'s own direct pushback on a chat-only loop finding ("surely there are more") plus a real rule-8 catch ("wouldn\'t these hooks calls and shared tables be present in galaxy map too?"). Real Tarjan-SCC synthesis over already-computed call/hook/table data — never a new detector, only recombined and cross-referenced with Alex-touch evidence.'},
     {'file': 'galaxy_map_local_pipeline.html', 'label': 'Local Analysis Pipeline', 'level': 'Dimension', 'kind': 'inter',
-     'scope': '3 cluster members, 7 pipeline stages, 3 real client call sites, host River XII',
+     'scope': '3 cluster members, 7 pipeline stages, 3 real client call sites, host domain Knowledge',
      'desc': 'G110 (Sep 1 2026) — local_server.py\'s first real Galaxy Map identity, built as ONE Inter dimension joining local_server.py + Whisper + a DIRECT Anthropic call (Alex\'s own ratified direction, not 3 peer connector bubbles), with the governing job-lifecycle logic attached inline. Every citation read directly from local_server/local_server.py, local_server/rpgace_intel.py and rpgace_core.js. librosa deliberately excluded — its existence is still genuinely unconfirmed (G114).'},
     {'file': 'galaxy_map_generator_toolchain.html', 'label': 'Generator Toolchain', 'level': 'Dimension', 'kind': 'meta',
      'scope': '11 real generator/detector scripts, 4 families, 15 shared dependency functions',
@@ -329,15 +329,15 @@ def build_primer():
   <div class="primer-grid">
     <div class="primer-card" style="border-left-color:#C9A84C">
       <div class="pc-title">📐 Level — a containment step</div>
-      <div class="pc-body">One thing physically <b>inside</b> the next. There are exactly <b>{n_levels}</b>:<br><span class="pc-ladder">{ladder}</span><br>A galaxy contains rivers; a river contains modules; a module contains its own functions. That nesting is the whole test — if X does not literally sit inside the level above it, it is not a Level.</div>
+      <div class="pc-body">One thing physically <b>inside</b> the next. There are exactly <b>{n_levels}</b>:<br><span class="pc-ladder">{ladder}</span><br>A galaxy contains domains; a domain contains modules; a module contains its own functions. That nesting is the whole test — if X does not literally sit inside the level above it, it is not a Level.</div>
     </div>
     <div class="primer-card" style="border-left-color:#4A90E2">
-      <div class="pc-title">🌊 River — a one-home grouping</div>
-      <div class="pc-body">A real grouping of the codebase where <b>every module belongs to exactly one</b>. There are <b>{n_rivers}</b>. That strict one-module-one-home property is what lets a River be a real containment step (L1) — and it is exactly why a Dimension can never be renumbered into one.</div>
+      <div class="pc-title">🌊 Domain — a one-home grouping</div>
+      <div class="pc-body">A real grouping of the codebase where <b>every module belongs to exactly one</b>. There are <b>{n_rivers}</b>. That strict one-module-one-home property is what lets a Domain be a real containment step (L1) — and it is exactly why a Dimension can never be renumbered into one.</div>
     </div>
     <div class="primer-card" style="border-left-color:#9B59B6">
       <div class="pc-title">🌌 Dimension — a cross-cutting lens</div>
-      <div class="pc-body">The same modules and functions, viewed through one facet. Deliberately <b>multi-membership</b>: one module can appear in several at once. There are <b>{n_dims}</b>: {dim_names}. Equal standing with Rivers, different shape — a Dimension answers "what does this touch", a River answers "where does this live".</div>
+      <div class="pc-body">The same modules and functions, viewed through one facet. Deliberately <b>multi-membership</b>: one module can appear in several at once. There are <b>{n_dims}</b>: {dim_names}. Equal standing with Domains, different shape — a Dimension answers "what does this touch", a Domain answers "where does this live".</div>
     </div>
   </div>
   <p class="primer-foot">Real Aug 25 2026 correction (G75): the map used to show eight ladder stops. Four of them — L2.5, Zoom/L4, L5, L6 — failed the containment test above; they were lenses wearing a level's name. L2.5 is Level 2\'s own table view, Zoom is now an inline toggle on each Current, L5\'s write-ups are on the Decision Matrix, and L6 keeps its page as link-out-only branch detail. Nothing was deleted without its content landing somewhere real first.</p>
@@ -430,7 +430,7 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Page Index (G59)</div>
   <h1>🌌 The Page Index — {n_pages} Real Pages, {n_edges} Real Cross-References</h1>
-  <p>Every real Galaxy Map page, catalogued and reachable from one index — grouped by real Level and real river/dimension, annotated with the real "→ flows into" links each page already carries. The pages themselves are untouched on disk; clicking a row or node loads that page's real content below, so this stays light on first paint (real evidence: the ~12,000ms boot-lag already logged this session made a single monolithic file a real regression risk, not a hypothetical one — see the spec).</p>
+  <p>Every real Galaxy Map page, catalogued and reachable from one index — grouped by real Level and real domain/dimension, annotated with the real "→ flows into" links each page already carries. The pages themselves are untouched on disk; clicking a row or node loads that page's real content below, so this stays light on first paint (real evidence: the ~12,000ms boot-lag already logged this session made a single monolithic file a real regression risk, not a hypothetical one — see the spec).</p>
 </div>
 <div class="legend-row">
   <span><span class="dot" style="background:{c_core}"></span>🌌 core (spatial ladder)</span>

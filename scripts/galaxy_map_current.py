@@ -47,7 +47,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from graphify_river_group import (  # noqa: E402
+from graphify_river_group import (domain_label,   # noqa: E402
     parse_module_ranges, _function_bodies, compute_function_branches,
     compute_function_ui_signals, compute_oracle_call_counts,
     compute_supabase_table_touches, compute_cross_module_function_calls,
@@ -178,7 +178,7 @@ PLAIN_ENGLISH = {
         'input': 'One activity item — a plain object with a `type` string ("proposal", "journal", "beat", and so on) and `row`, the untouched database record it came from.',
         'does': 'It is one long sorting exercise. For each kind of activity it knows where that kind keeps its real information, and it digs the same four answers out of a differently-shaped record every time: what was done, what the outcome was, where it ended up, and why it mattered. Most of the dense-looking conditions are it trying several likely fields in order and settling for the first one that is actually filled in — an accepted taxonomy proposal, for instance, might carry its description as an insight text, a new branch name, or the first line of its explainers, depending on which part of the app created it.',
         'contributes': 'Without this, the career card could only show raw table rows. It is the single translation layer between six unrelated activity tables and one consistent human-readable card.',
-        'level': 'Current (L3) — a leaf function inside careerStatCard, itself a module of River II (App Shell & Navigation).',
+        'level': 'Current (L3) — a leaf function inside careerStatCard, itself a module of the Chronicles domain.',
         'touches': 'No Supabase call and no Oracle call of its own — it is pure formatting over data another function already fetched. Its only real output is text rendered to Alex.',
     },
     ('contentProductionLive', '_openProductionPanel'): {
@@ -188,7 +188,7 @@ PLAIN_ENGLISH = {
         'input': 'Nothing passed in. It reads the currently-active ConID off the module itself, then fetches that production\'s real `content_type` from Supabase.',
         'does': 'First it refuses to open twice (if the panel is already on screen it stops immediately). Then it builds the panel shell by hand in code — header, close button, scrolling body — and only after the database answers does it decide which set of phases to draw: a tutorial gets the original 3-phase recording flow, a music video gets the 4-phase reference/direction/script/video flow, and OBS raw footage gets its own 4-stage flow. Almost all the branching this function is scored on is that fork, plus the many small "does this ConID already have a script / a treatment / a video job" checks that decide which buttons are live.',
         'contributes': 'This is the real front door to Content Pipeline work. Every stage a beat passes through after Beat Log is reached from this one panel.',
-        'level': 'Current (L3) — inside contentProductionLive, a module of River XI (Content Pipeline).',
+        'level': 'Current (L3) — inside contentProductionLive, a module of Content & Video (Content Pipeline).',
         'touches': 'Reads `content_productions` from Supabase on every open, and renders directly to Alex. It does not call Oracle itself — the buttons it draws do.',
     },
     ('refCorpus', 'findMatches'): {
@@ -198,7 +198,7 @@ PLAIN_ENGLISH = {
         'input': 'Five values off the beat: BPM, mood, scale, energy and genre. Missing BPM defaults to 130 and missing energy to 3, so it never fails on a half-filled form.',
         'does': 'Pulls the most recent 200 reference tracks and gives each one a score. Tempo is worth the most: within 5 BPM scores 4, within 10 scores 3, within 15 scores 1, and anything further away actively loses 2 points. A matching mood or genre adds 3 each, a matching scale adds 2, and an energy rating within one step adds 2. Anything that ends up at zero or below is dropped, and what is left comes back sorted best-first.',
         'contributes': 'It is how Beat Log suggests comparable tracks. Worth knowing honestly: the `scale` and `genre` columns are still empty for all 32 corpus rows, so two of the five signals contribute nothing in practice today — which is the real reason matches feel repetitive.',
-        'level': 'Current (L3) — inside refCorpus, a module of River VII (the Library/Corpus current).',
+        'level': 'Current (L3) — inside refCorpus, a module of the Content & Video domain.',
         'touches': 'One real Supabase read of `reference_tracks`. No Oracle call. Its results feed the UI Alex sees in Beat Log.',
     },
     ('visualOracle', '_saveDocToProduction'): {
@@ -208,7 +208,7 @@ PLAIN_ENGLISH = {
         'input': 'A slug naming which document this is (`visual_treatment`, `obs_script`, `captions`), the document text itself, and the ids of the production and video job it belongs to.',
         'does': 'If there is no production to attach to it stops loudly with a visible warning rather than silently dropping the document. Otherwise it reads the production\'s existing documents, adds this one under its slug, and then checks whether arriving should also advance the ConID\'s stage: a visual treatment or an OBS script moves it from Idea to Scripted, and captions move it all the way to Posted. Every one of those checks is deliberately forward-only — it will never drag a ConID backwards past a stage it has genuinely already reached.',
         'contributes': 'This is the join between Oracle producing text and the Content Pipeline knowing progress happened. Before it existed, Alex had to click a separate "mark this stage done" button by hand.',
-        'level': 'Current (L3) — inside visualOracle, a module of River III (the Oracle current), writing into River XI\'s data.',
+        'level': 'Current (L3) — inside visualOracle, a module of Oracle (the Oracle current), writing into Content & Video\'s data.',
         'touches': 'Reads and then writes `content_productions` (through the server-side write proxy, not the anon key). Renders a toast to Alex on failure.',
     },
     ('conidPot', '_quickDetectPhyla'): {
@@ -218,7 +218,7 @@ PLAIN_ENGLISH = {
         'input': 'One string: the text of a content idea.',
         'does': 'Lowercases it and checks for a handful of giveaway words. Drums, 808 or kick suggests phylum 2; mix, EQ or compress suggests 4; FL Studio, plugin or VST suggests 6; tutorial, teach or learn suggests 12; YouTube, Instagram or content suggests 13. It returns whichever numbers matched, and an empty list is a perfectly normal answer.',
         'contributes': 'It exists precisely so an Oracle call is not spent on a guess. It is the cheap prefilter the token-cost rule asks for — a real answer when the keywords are obvious, and silence rather than a fabricated one when they are not.',
-        'level': 'Current (L3) — inside conidPot, a module of River XI (Content Pipeline).',
+        'level': 'Current (L3) — inside conidPot, a module of Content & Video (Content Pipeline).',
         'touches': 'Nothing at all: no Supabase, no Oracle, no network. Pure local string matching, which is the whole point of it.',
     },
 }
@@ -472,7 +472,7 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
         incoming_badge = ''
         if is_entry and incoming_attr and f == incoming_attr[1]:
             from_river_name = RIVER_NAME.get(incoming_attr[0], '').split('—')[0].strip()
-            incoming_badge = f'<text x="{x}" y="{y-32}" text-anchor="middle" font-size="8" fill="{color}" opacity="0.9">⬅ from River {incoming_attr[0]} ({from_river_name})</text>'
+            incoming_badge = f'<text x="{x}" y="{y-32}" text-anchor="middle" font-size="8" fill="{color}" opacity="0.9">⬅ from {domain_label(incoming_attr[0])} ({from_river_name})</text>'
         nav_badge = ''
         if is_entry and module_name in LEVEL3_MODULES:
             nav_badge = (f'<a href="galaxy_map_module.html#mod-{module_name}">'
@@ -487,7 +487,7 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
             # exact case — say so plainly, never link to a page that
             # structurally cannot represent this module.
             nav_badge = (f'<text x="{x}" y="{y+52}" text-anchor="middle" font-size="7.5" fill="#5a5a68">'
-                         f'⚙️ cross-cutting — no Level 2 (no river)</text>')
+                         f'⚙️ cross-cutting — no Level 2 (no domain)</text>')
         elif is_leaf and (module_name, f) in NOTABLE:
             # NOTABLE (module-scope above) is the exact same real
             # {(module,func): decision_point} shape galaxy_map_level3.py
@@ -671,11 +671,11 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
                 f'<rect x="{bx_col-24}" y="{by-24}" width="48" height="48" rx="10" fill="#0f0f1a" stroke="{tcolor}" stroke-width="2.5" filter="url(#glow)"/>'
                 f'<text x="{bx_col}" y="{by+7}" text-anchor="middle" font-size="18">🚪</text></g>'
                 f'<text x="{bx_col}" y="{by+42}" text-anchor="middle" font-size="9.5" fill="{tcolor}">{target_mod}</text>'
-                f'<text x="{bx_col}" y="{by+54}" text-anchor="middle" font-size="8" fill="{tcolor}" opacity="0.8">River {t_rnum} backdoor</text></a>'
+                f'<text x="{bx_col}" y="{by+54}" text-anchor="middle" font-size="8" fill="{tcolor}" opacity="0.8">{domain_label(t_rnum)} backdoor</text></a>'
             )
             backdoor_legend.append(
                 f'<div class="legend-row small"><span class="dot" style="background:{tcolor}"></span>'
-                f'<b>{", ".join(f for f, _t in calls)}</b> → <code>{target_mod}</code> (River {t_rnum}) '
+                f'<b>{", ".join(f for f, _t in calls)}</b> → <code>{target_mod}</code> ({domain_label(t_rnum)}) '
                 f'<span class="meta">Real cross-module backdoor — jumps directly to that module\'s own Level-3 chain.</span></div>'
             )
 
@@ -716,7 +716,7 @@ def _render_band(module_name, color, band_funcs, all_module_funcs, depth, edges,
         (logic_targets_mod, LOGIC_COLOR, '🧠', 'Logic',
          (f'galaxy_map_module.html#river-{_river_of[module_name]}'
           if module_name in _river_of else 'galaxy_map_module.html'), 'logic',
-         'see these river connections at Level 2'),
+         'see these domain connections at Level 2'),
     ):
         t_targets = t_targets or {}
         leaves = [
@@ -854,8 +854,8 @@ def build_module_map_inner(module_name):
         )
 
     rnum = _river_of.get(module_name)
-    river_link = f'<a href="galaxy_map_module.html#river-{rnum}">River {rnum}</a>' if rnum else 'an unrouted module'
-    back_btn = (f'<a href="galaxy_map_module.html#river-{rnum}" class="back-btn">← Back to River {rnum} (Level 2)</a>'
+    river_link = f'<a href="galaxy_map_module.html#river-{rnum}">{domain_label(rnum)}</a>' if rnum else 'an unrouted module'
+    back_btn = (f'<a href="galaxy_map_module.html#river-{rnum}" class="back-btn">← Back to {domain_label(rnum)} (Level 2)</a>'
                 if rnum else '')
 
     init_note = ''
@@ -868,8 +868,8 @@ def build_module_map_inner(module_name):
                      'shown as \U0001F6AA entries.')
     pairing_note = ''
     if incoming_attr:
-        pairing_note = (f' The entry marked "⬅ from River {incoming_attr[0]}" is a real, '
-                         'evidence-backed pairing — this is the actual function an incoming river '
+        pairing_note = (f' The entry marked "⬅ from {domain_label(incoming_attr[0])}" is a real, '
+                         'evidence-backed pairing — this is the actual function an incoming domain '
                          'connection lands on (same evidence Level 2’s own connection stub shows), '
                          'a far more honest stand-in for the removed init than a generic bootstrap '
                          'node ever was.')
@@ -1300,7 +1300,7 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Current Series</div>
   <h1>🧬 Every Module, as a Series of Currents</h1>
-  <p>{n_funcs} real Currents (functions) across {n_mods} modules. This is the deepest real <b>containment</b> step of the map: L0 galaxies contain L1 rivers, which contain L2 modules, which contain these. ⭐ = a curated "core logic" write-up (full text on the <a href="galaxy_map_decision_matrix.html">Decision Matrix</a>). 🧑 = real Alex/UI input-output evidence. 🔮 = real Oracle call count. 💉 = a real Supabase injection-tool touch. Pick a module below, then choose 🔽 Map (the real function-call-chain diagram — every node links into its own Table row) or 📊 Table (per-function input/handling/output rows, each with a real <b>🔎 Expand walkthrough detail</b> toggle, folded in from the retired Zoom/L4 page) — same real data, three depths.</p>
+  <p>{n_funcs} real Currents (functions) across {n_mods} modules. This is the deepest real <b>containment</b> step of the map: L0 galaxies contain L1 domains, which contain L2 modules, which contain these. ⭐ = a curated "core logic" write-up (full text on the <a href="galaxy_map_decision_matrix.html">Decision Matrix</a>). 🧑 = real Alex/UI input-output evidence. 🔮 = real Oracle call count. 💉 = a real Supabase injection-tool touch. Pick a module below, then choose 🔽 Map (the real function-call-chain diagram — every node links into its own Table row) or 📊 Table (per-function input/handling/output rows, each with a real <b>🔎 Expand walkthrough detail</b> toggle, folded in from the retired Zoom/L4 page) — same real data, three depths.</p>
 </div>
 <div class="modpicker">{mod_tabs}</div>
 {mod_sections}
@@ -1386,7 +1386,7 @@ def main():
     all_mods = MODULES + CROSS_CUTTING_MODULES
     mod_tabs = (
         ''.join(f'<div class="mod-tab" data-target="mod-{m}">{m}</div>' for m in MODULES)
-        + '<div class="mod-tab-sep">⚙️ Cross-cutting (no river)</div>'
+        + '<div class="mod-tab-sep">⚙️ Cross-cutting (no domain)</div>'
         + ''.join(f'<div class="mod-tab" data-target="mod-{m}">{m}</div>' for m in CROSS_CUTTING_MODULES)
     )
     mod_sections = ''.join(build_module_section(m) for m in all_mods)
@@ -1399,8 +1399,8 @@ def main():
     OUT.parent.mkdir(parents=True, exist_ok=True)
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
-    print(f"Wrote {OUT} — {len(MODULES)} river modules + {len(CROSS_CUTTING_MODULES)} "
-          f"cross-cutting (no river) = {len(all_mods)} total, {total_funcs} real Currents, "
+    print(f"Wrote {OUT} — {len(MODULES)} domain modules + {len(CROSS_CUTTING_MODULES)} "
+          f"cross-cutting (no domain) = {len(all_mods)} total, {total_funcs} real Currents, "
           f"{len(NOTABLE)} with a curated core-logic write-up.")
 
 

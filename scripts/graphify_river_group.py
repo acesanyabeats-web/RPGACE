@@ -170,6 +170,11 @@ RIVER_COLOR = {
 RIVER_NAME = {DOMAIN_NUM[d]: _DOMAIN_LABELS[d] for d in DOMAIN_ORDER}
 DOMAIN_KEY = {v: k for k, v in DOMAIN_NUM.items()}
 
+
+def domain_label(n):
+    """Visible name for a domain number (M1: rivers became the 8 app domains)."""
+    return RIVER_NAME.get(n, f'Domain {n}')
+
 # Aug 11, real Alex ask: 12-16 stop being a separate "Zone" species and
 # join the unified river system, because they DO carry real Total-
 # systems traffic — Alex's own correction: "they do have connectors,
@@ -225,25 +230,25 @@ TOTAL_ZONES = len(RIVER_NAME)  # Oct 11 2026 (M1): 8 domains. Historical note: R
 EXTERNAL_CONNECTORS = [
     {'name': 'Anthropic (Claude API)', 'status': 'live', 'tested': True, 'via': 'api/oracle.js callClaude()',
      'bridges_to': 'Anthropic\'s own hosted API — no separate repo/galaxy to bridge to, the real default provider',
-     'note': 'the real default Oracle provider — every ungrounded Oracle call routes here unless a dormant provider (Kimi/Luna) is live. River III\'s Oracle Current is the harness; this IS the real external call, not RPGACE code.'},
+     'note': 'the real default Oracle provider — every ungrounded Oracle call routes here unless a dormant provider (Kimi/Luna) is live. Oracle\'s Oracle Current is the harness; this IS the real external call, not RPGACE code.'},
     {'name': 'OpenMontage', 'status': 'live', 'tested': True, 'via': 'openmontage_jobs Supabase queue',
      'bridges_to': 'calesthio/OpenMontage repo, operated by a separate Claude Code session ("OpenMontage CC")',
-     'note': 'agent-operated video pipeline, driven by a separate Claude Code session ("OpenMontage CC") in its own repo — never RPGACE-embedded. Real spring AND mouth both sit in River XI: opens at Content Production Live\'s "Generate Video," closes at "Mark ConID as Filmed" (the reservoir is polled, not pushed).'},
+     'note': 'agent-operated video pipeline, driven by a separate Claude Code session ("OpenMontage CC") in its own repo — never RPGACE-embedded. Real spring AND mouth both sit in Content & Video: opens at Content Production Live\'s "Generate Video," closes at "Mark ConID as Filmed" (the reservoir is polled, not pushed).'},
     {'name': 'Composio', 'status': 'live', 'tested': True, 'via': 'api/composio.js / api/executor.js / api/orchestrate.js',
      'bridges_to': 'Gmail / Instagram / YouTube / Notion / GitHub connected accounts',
-     'note': 'Gmail/Instagram/YouTube/Notion/GitHub connected-account automation — real triggering call sites confirmed by grep: River V\'s morningBrief (Gmail fetch) and River XI\'s contentRepurpose (Notion page + YouTube channel data via Supadata).'},
+     'note': 'Gmail/Instagram/YouTube/Notion/GitHub connected-account automation — real triggering call sites confirmed by grep: Schedule & Journal\'s morningBrief (Gmail fetch) and Content & Video\'s contentRepurpose (Notion page + YouTube channel data via Supadata).'},
     {'name': 'Moonshot AI (Kimi)', 'status': 'dormant', 'tested': False, 'via': 'api/oracle.js provider:\'kimi\'',
      'bridges_to': 'Moonshot AI\'s own hosted API (api.moonshot.ai/v1)',
-     'note': 'real OpenAI-compatible scaffold, dormant until MOONSHOT_API_KEY is set — would be called from River III\'s Oracle Current in place of the default Anthropic call once live.'},
+     'note': 'real OpenAI-compatible scaffold, dormant until MOONSHOT_API_KEY is set — would be called from Oracle\'s Oracle Current in place of the default Anthropic call once live.'},
     {'name': 'OpenAI (Luna)', 'status': 'dormant', 'tested': False, 'via': 'api/oracle.js provider:\'luna\'',
      'bridges_to': 'OpenAI\'s own hosted API',
-     'note': 'same scaffold shape as Kimi, dormant until OPENAI_API_KEY is set — same River III relationship once live.'},
+     'note': 'same scaffold shape as Kimi, dormant until OPENAI_API_KEY is set — same Oracle relationship once live.'},
     {'name': 'librosa', 'status': 'optional/local', 'tested': False, 'via': 'beat_audio_jobs + beat-audio bucket, a local Python script (real script identity UNCONFIRMED as of Aug 27)',
      'bridges_to': 'Alex\'s own local machine (not a hosted service) — real evidence found local_server.py itself (real source now in this repo) has zero librosa/BPM code, so this connector\'s "via local_server.py" claim is likely stale; whether a genuinely separate script exists is honestly open (Alex: "i think so but forgot it" — see ceo_plan_items G114)',
-     'note': 'BPM + Major/Minor key analysis only, needs Alex running a local Python snippet — not a hosted service. Triggered by River XI\'s Beat Log, nowhere else.'},
+     'note': 'BPM + Major/Minor key analysis only, needs Alex running a local Python snippet — not a hosted service. Triggered by Content & Video\'s Beat Log, nowhere else.'},
     {'name': 'FFmpeg', 'status': 'live (external repo)', 'tested': True, 'via': "OpenMontage's own pipeline, confirmed working July 31",
      'bridges_to': 'runs inside the OpenMontage galaxy itself, not a separate bridge',
-     'note': "runs inside OpenMontage CC's OpenMontage environment, not RPGACE's own runtime — reached only via River XI's OpenMontage handoff (through this river), never called directly by any RPGACE river."},
+     'note': "runs inside OpenMontage CC's OpenMontage environment, not RPGACE's own runtime — reached only via Content & Video's OpenMontage handoff (through this domain), never called directly by any RPGACE domain."},
     {'name': 'OpenArt', 'status': 'deferred', 'tested': False, 'via': 'none yet',
      'bridges_to': 'not wired — a named future companion galaxy to OpenMontage',
      'note': 'Alex has a real, active subscription (confirmed Aug 30 2026), but zero real integration exists in OpenMontage\'s own tooling — no tool file, no registered provider (confirmed Sep 16 2026, GMR-1). fal.ai was set up as the real working alternative instead.'},
@@ -252,7 +257,7 @@ EXTERNAL_CONNECTORS = [
      'note': 'the real working provider OpenMontage CC actually uses (unlike OpenArt). RPGACE\'s own openmontage_jobs.brief provider note (rpgace_core.js contentProductionLive._buildVideoPipelinePayload) now names fal.ai as preferred, updated same day.'},
     {'name': 'Graphify CC', 'status': 'live', 'tested': True, 'via': 'graphify_jobs Supabase queue',
      'bridges_to': 'graphifyy (PyPI), operated by a separate Claude Code session ("Graphify CC")',
-     'note': 'the real 4th Total-system member — generates graphify-out/GRAPH_TREE.html + the cross-repo global graph. Dispatched from River IX\'s own session-start check, deposits real findings back into River XIV via graphify_jobs.'},
+     'note': 'the real 4th Total-system member — generates graphify-out/GRAPH_TREE.html + the cross-repo global graph. Dispatched from Oversight\'s own session-start check, deposits real findings back into the Oversight domain via graphify_jobs.'},
     {'name': 'Jina AI', 'status': 'live', 'tested': True, 'via': 'r.jina.ai, 4 real call sites (scout.js/bookworm-fetch.js/main.js/_context.js)',
      'bridges_to': 'Jina AI\'s own hosted read/fetch API',
      'note': 'real, live URL-to-text fetch — load-bearing for Bookworm URL ingestion, Schedule Oracle, and chat-pasted-URL handling. Confirmed by direct grep, not assumed.'},
@@ -267,7 +272,7 @@ EXTERNAL_CONNECTORS = [
      'note': 'local speech-to-text — historically confirmed working July 7 (Content Intelligence: metadata->download->Whisper->frame extraction->Claude Vision->Oracle report). Current live status genuinely unconfirmed this session, same visibility gap as local_server.py\'s other integrations — do not claim active without asking Alex.'},
     {'name': 'Unsplash', 'status': 'built, not configured', 'tested': False, 'via': 'api/search.js handleRecipeImage(), UNSPLASH_ACCESS_KEY',
      'bridges_to': 'Unsplash\'s own hosted free-tier image-search API',
-     'note': 'H11 (Sep 16 2026) real recipe-photo primary source — code checks for UNSPLASH_ACCESS_KEY and fails open to the Wikipedia fallback below when unset (not yet set as of this build). River III\'s Oracle Current is unrelated; this is triggered from River XI\'s cookingOracle recipe card.'},
+     'note': 'H11 (Sep 16 2026) real recipe-photo primary source — code checks for UNSPLASH_ACCESS_KEY and fails open to the Wikipedia fallback below when unset (not yet set as of this build). Oracle\'s Oracle Current is unrelated; this is triggered from Content & Video\'s cookingOracle recipe card.'},
     {'name': 'Wikipedia REST API', 'status': 'live', 'tested': False, 'via': 'api/search.js handleRecipeImage() fallback, en.wikipedia.org/api/rest_v1',
      'bridges_to': 'Wikimedia\'s own hosted, free, keyless REST API',
      'note': 'H11 (Sep 16 2026) real recipe-photo fallback — no key needed, live today, but only finds a photo for well-known named dishes with a matching Wikipedia article.'},
@@ -287,7 +292,7 @@ SUPABASE_CORE = {
     'name': 'Supabase', 'status': 'live', 'tested': True,
     'via': 'RPGACE.sb.* (anon key, RLS-gated) + /api/data-write.js (service-role proxy for 19 restricted tables)',
     'bridges_to': 'Supabase\'s own hosted Postgres project (gripopghczmrbrhqtqbm) — RPGACE\'s real persistence layer, not a separate operated galaxy',
-    'note': 'the real hub every river writes into/reads from — not a "connector" in the OpenMontage/Composio sense (RPGACE owns this data, it does not hand off to an external agent), but a real, load-bearing Total-system member in its own right, used by nearly every real river.',
+    'note': 'the real hub every domain writes into/reads from — not a "connector" in the OpenMontage/Composio sense (RPGACE owns this data, it does not hand off to an external agent), but a real, load-bearing Total-system member in its own right, used by nearly every real domain.',
 }
 
 # Real, honest per-river role text for XIII-XVI — replaces the old
@@ -2653,7 +2658,7 @@ def compute_logic_attribution_targets(cross_calls=None, core_js_path: Path = COR
             if to_mod == 'main.js' or not to_func:
                 continue  # no real Current(L3) page for main.js
             out.setdefault(to_mod, {}).setdefault(to_func, []).append(
-                f'River {src}→{tgt}: {reason}')
+                f'{domain_label(src)}→{tgt}: {reason}')
     return out
 
 
@@ -3140,7 +3145,7 @@ def attribute_river_connection_function(from_river, to_river, note='', core_js_p
         if len(named) == 1:
             m, fn, eps = named[0]
             return (None, m, fn,
-                    f'a real outbound call site ({", ".join(eps)}) in this river, named in the connection\'s own note')
+                    f'a real outbound call site ({", ".join(eps)}) in this domain, named in the connection\'s own note')
 
     # Signal 5 — the real RESERVOIR READER, the mirror image of signal
     # 4: a connection FROM a module-less infrastructure river INTO a
@@ -4086,7 +4091,7 @@ LEVEL_RAIL = [
 #   meta  = a cross-dimension synthesis page (neither, by itself)
 DIMENSION_PAGES = [
     ('galaxy_map_decision_matrix.html', '🚦', 'Decision Matrix (full catalog)', 'meta',
-     'The exhaustive dev-facing catalog — all 21 real decisions, gates/logic/text-inputs, by river. See Alex’s Decision Path for the narrower, click-by-click UX view of the same gates.'),
+     'The exhaustive dev-facing catalog — all 21 real decisions, gates/logic/text-inputs, by domain. See Alex’s Decision Path for the narrower, click-by-click UX view of the same gates.'),
     ('galaxy_map_dimensions.html', '🧭', 'Dimensions Matrix', 'meta',
      'Which modules are multi-home across every other dimension.'),
     # G111 (Sep 1 2026) — 'galaxy_map_logic_dimension.html' REMOVED from
@@ -4158,7 +4163,7 @@ DIMENSION_PAGES = [
     # correctly listing them. Added here to close that gap at the
     # source, rather than patch the symptom in the sidebar.
     ('galaxy_map_oracle.html', '🔮', 'Oracle', 'infra',
-     'Every real function anywhere that calls Oracle, by river/module.'),
+     'Every real function anywhere that calls Oracle, by domain/module.'),
     ('galaxy_map_connectors.html', '🔌', 'Connectors', 'infra',
      'The 6 real non-Oracle "External AI" constituents, each its own real L0 unit.'),
 ]
@@ -4829,7 +4834,7 @@ INFRA_DRILLDOWN_JS = '''
   // lookups that ALWAYS resolve to the FIRST instance on the page
   // (duplicate ids besides). Only the first connector's own click
   // handlers ever attached to real elements; the other two connectors'
-  // river/module bubbles were silently unwired the whole time — a real
+  // domain/module bubbles were silently unwired the whole time — a real
   // bug that predates this session's own bubble-panel rewrite, just
   // never surfaced under headless verification until a 3-instance page
   // was actually click-tested. Fixed by scoping every lookup to
@@ -4978,7 +4983,7 @@ def render_fc_bar(picker_items=None):
 
 def render_infra_drilldown(drill, orphans, unit_icon, unit_label,
                            leaf_link_fn, resource_emoji='🗄️',
-                           orphan_label='Cross-cutting (no river)',
+                           orphan_label='Cross-cutting (no domain)',
                            orphan_note='', esc=None,
                            edge_fn=_curved_edge, markers_fn=_build_markers,
                            unit_color='#C9A84C'):
@@ -5043,7 +5048,7 @@ def render_infra_drilldown(drill, orphans, unit_icon, unit_label,
     for r in sorted(drill):
         mods = drill[r]
         colour = RIVER_COLOR.get(r, '#8a8a9a')
-        name = RIVER_NAME.get(r, f'River {r}')
+        name = RIVER_NAME.get(r, f'Domain {r}')
         short = name.split('—')[-1].strip() if '—' in name else name
         head = name.split('—')[0].strip() if '—' in name else name
         n_fn = sum(len(f) for f in mods.values())
@@ -5091,13 +5096,13 @@ def render_infra_drilldown(drill, orphans, unit_icon, unit_label,
         f'<div class="idd fc-scope mode-full">'
         + fc_bar_html
         + f'<div class="idd-crumb"><span class="on">{unit_icon} {e(unit_label)}</span>'
-        f'<span class="idd-sep">→</span><span class="idd-c1">pick a river</span>'
+        f'<span class="idd-sep">→</span><span class="idd-c1">pick a domain</span>'
         f'<span class="idd-sep">→</span><span class="idd-c2"></span></div>'
-        f'<div class="idd-lvl"><div class="idd-lbl">Level 1 · rivers that really touch {e(unit_label)} — '
-        f'{c["rivers"]} of {TOTAL_ZONES} real rivers qualify</div>'
+        f'<div class="idd-lvl"><div class="idd-lbl">Level 1 · domains that really touch {e(unit_label)} — '
+        f'{c["rivers"]} of {TOTAL_ZONES} real domains qualify</div>'
         + render_bubble_row(unit_hub, l1_leaves, edge_fn, markers_fn) + '</div>'
-        f'<div class="idd-lvl idd-l2"><div class="idd-lbl">Level 2 · modules in that river with a real touch</div>'
-        f'<div class="idd-hint">Pick a river above.</div>{"".join(l2)}</div>'
+        f'<div class="idd-lvl idd-l2"><div class="idd-lbl">Level 2 · modules in that domain with a real touch</div>'
+        f'<div class="idd-hint">Pick a domain above.</div>{"".join(l2)}</div>'
         f'<div class="idd-lvl idd-l3"><div class="idd-lbl">Level 3 · the real Currents (functions) that touch — '
         f'each is a migration bubble out to that module\'s own Current Series section</div>'
         f'<div class="idd-hint">Pick a module above.</div>{"".join(l3)}</div>'
@@ -5297,8 +5302,8 @@ LEFT_NAV_LEVEL_ANNOTATION = {
 # records/2026-09/galaxy_map_web_zoom_interrogation_2026-09-24.txt
 LEFT_NAV_ZOOM_CAPTION = {
     'galaxy_map.html': '🌐 The whole web — zoom in from here',
-    'galaxy_map_river.html': '🔎 Zoomed to: Rivers (the web’s real code partitions)',
-    'galaxy_map_module.html': '🔎 Zoomed to: a River’s own Modules',
+    'galaxy_map_river.html': '🔎 Zoomed to: Domains (the web’s real code partitions)',
+    'galaxy_map_module.html': '🔎 Zoomed to: a Domain’s own Modules',
     'galaxy_map_current.html': '🔎 Zoomed to: a Module’s own functions',
 }
 LEFT_NAV_LEVEL_KINDS = {
@@ -5590,7 +5595,7 @@ def left_nav_html(current_file):
             color = RIVER_COLOR.get(r, '#8a8a9a')
             rows.append(
                 f'<a class="gside-river" href="galaxy_map_module.html#river-{r}" '
-                f'style="border-left-color:{color}"><b>🌊 River {r}: {name}</b></a>'
+                f'style="border-left-color:{color}"><b>🌊 {domain_label(r)}: {name}</b></a>'
             )
             mods = RIVER_MODULES.get(r, [])
             if mods:
@@ -5620,9 +5625,9 @@ def left_nav_html(current_file):
             # real, separate subheading (see _river_module_nested_rows'
             # own comment) rather than one undifferentiated 17-river run.
             nested += (
-                '<div class="gside-subhead">🌊 Live Rivers &amp; Modules</div>'
+                '<div class="gside-subhead">🌊 Live Domains &amp; Modules</div>'
                 f'<div class="gside-nested gside-rivers">{_river_module_nested_rows(archived=False)}</div>'
-                '<div class="gside-subhead">🗄️ Archived Rivers</div>'
+                '<div class="gside-subhead">🗄️ Archived Domains</div>'
                 f'<div class="gside-nested gside-rivers">{_river_module_nested_rows(archived=True)}</div>'
             )
         elif LEFT_NAV_LEVEL_RIVERS.get(fname):
@@ -5630,9 +5635,9 @@ def left_nav_html(current_file):
             # its own to jump to — plain river list only. Sep 15 2026:
             # same live/archived split as above.
             nested += (
-                '<div class="gside-subhead">🌊 Live Rivers</div>'
+                '<div class="gside-subhead">🌊 Live Domains</div>'
                 f'<div class="gside-nested gside-rivers">{_river_rows(archived=False)}</div>'
-                '<div class="gside-subhead">🗄️ Archived Rivers</div>'
+                '<div class="gside-subhead">🗄️ Archived Domains</div>'
                 f'<div class="gside-nested gside-rivers">{_river_rows(archived=True)}</div>'
             )
         dim_nested = ''.join(
@@ -5653,12 +5658,12 @@ def left_nav_html(current_file):
         '<nav class="gside-nav">'
         '<h3>🌌 Zoom Levels</h3>'
         '<div class="gside-def">RPGACE Total Systems is one connected web. Each level below is a real zoom '
-        'step into it — River zooms into a group of Modules, Module zooms into one River’s real members, '
+        'step into it — Domain zooms into a group of Modules, Module zooms into one Domain’s real members, '
         'Current zooms into one Module’s own functions — never a separate map, the same web at a tighter '
         'grain each step in.</div>'
         '<div class="gside-def">A Dimension is a real cross-cutting facet — the same modules and functions, '
         'seen through one lens. Deliberately <b>multi-membership</b>: a module can sit in several at once, '
-        'which is exactly why a Dimension is never a numbered River (a River is a strict one-module-one-home '
+        'which is exactly why a Dimension is never a numbered Domain (a Domain is a strict one-module-one-home '
         'partition). Nested under whichever Level(s) it\'s genuinely relevant to, not a separate category.</div>'
         + ''.join(level_blocks) +
         '</nav>'
@@ -5900,8 +5905,8 @@ PLAN_OVERLAY_TEMPLATE = r"""
   }
 
   function relevant(items){
-    /* river/logic pages have no per-node handle, so the panel covers
-       every item that names a real river - honestly stated in the panel. */
+    /* domain/logic pages have no per-node handle, so the panel covers
+       every item that names a real domain - honestly stated in the panel. */
     if(SCOPE==='river'||SCOPE==='logic')
       return items.filter(function(i){return /^River /.test(i.galaxy_river||'');});
     if(SCOPE==='dimensions')
@@ -5912,8 +5917,8 @@ PLAN_OVERLAY_TEMPLATE = r"""
   var SCOPE_NOTE={
     l0:'Badges sit on each L0 unit whose real dimension a plan item touches.',
     dimensions:'Badges sit on each module named in a plan item’s galaxy_modules.',
-    river:'This view has no per-river node to badge (its rivers are SVG text), so this panel lists every in-flight item that names a real river.',
-    logic:'This view has no per-river node to badge (its rivers are prose headings), so this panel lists every in-flight item that names a real river.'
+    domain:'This view has no per-river node to badge (its domains are SVG text), so this panel lists every in-flight item that names a real domain.',
+    logic:'This view has no per-river node to badge (its domains are prose headings), so this panel lists every in-flight item that names a real domain.'
   };
 
   function render(plans,items){
@@ -5997,7 +6002,7 @@ if __name__ == '__main__':
     counts, n_modules, patched = river_group(target, graph_json)
     print(f'Parsed {n_modules} real module marker ranges from {CORE_JS}.')
     total = sum(counts.values())
-    print(f'River-tagged {total} nodes across {len(counts)} rivers, each given a real fixed x/y inside its river zone:')
+    print(f'River-tagged {total} nodes across {len(counts)} domains, each given a real fixed x/y inside its domain zone:')
     for r in sorted(counts):
         print(f'  {RIVER_NAME[r]}: {counts[r]} nodes')
     print(f'nodesDS mapping patch: {"applied" if patched else "already present (no-op)"}')

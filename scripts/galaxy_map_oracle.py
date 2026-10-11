@@ -32,7 +32,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
-from graphify_river_group import (  # noqa: E402
+from graphify_river_group import (domain_label,   # noqa: E402
     compute_all_oracle_call_counts, RIVER_MODULES, RIVER_NAME,
     LEVEL3_MODULES, LINKABLE_MODULES, TOTAL_ZONES,
     build_infra_drilldown, infra_drilldown_counts, render_infra_drilldown,
@@ -68,7 +68,7 @@ def _mod_link(mod):
 
 
 def _river_link(rnum):
-    label = RIVER_NAME.get(rnum, f'River {rnum}').split('—')[0].strip()
+    label = RIVER_NAME.get(rnum, f'Domain {rnum}').split('—')[0].strip()
     return f'<a class="river-chip" href="galaxy_map_module.html#river-{rnum}">🌊 {esc(label)}</a>'
 
 
@@ -78,7 +78,7 @@ def _leaf_link(mod):
 
 def build_module_row(mod, counts):
     rnum = _river_of.get(mod)
-    river_chip = _river_link(rnum) if rnum else '<span class="mod-chip-none">cross-cutting, no river</span>'
+    river_chip = _river_link(rnum) if rnum else '<span class="mod-chip-none">cross-cutting, no domain</span>'
     total = sum(counts.values())
     fn_rows = ''.join(
         f'<div class="touch-row">🔮 <code>{esc(f)}()</code> — {n} real call(s)</div>'
@@ -86,7 +86,7 @@ def build_module_row(mod, counts):
     return f'''<div class="table-section" id="tbl-{esc(mod)}">
   <div class="thead"><span class="tdot"></span><h2>{_mod_link(mod)}</h2>
     <span class="tcount">{total} real call(s) across {len(counts)} function(s)</span></div>
-  <div class="rivers">{river_chip}</div>
+  <div class="domains">{river_chip}</div>
   <details class="touches"><summary>{len(counts)} real function(s) that call Oracle</summary>{fn_rows}</details>
 </div>'''
 
@@ -95,7 +95,7 @@ def build_map_view():
     return render_infra_drilldown(
         DRILL, ORPHANS, unit_icon='🔮', unit_label='Oracle',
         leaf_link_fn=_leaf_link, resource_emoji='🔮',
-        orphan_label='Cross-cutting (no river)',
+        orphan_label='Cross-cutting (no domain)',
         orphan_note="RIVER_MODULES' own documented exclusions",
         esc=esc)
 
@@ -144,8 +144,8 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Oracle</div>
   <h1>🔮 Every Real Function That Calls Oracle</h1>
-  <p>{n_mods} real modules with a genuine, checkable Oracle-call site in rpgace_core.js (real, project-wide function-body regex match against ORACLE_CALL_PATTERNS) — {n_calls} real (module, function) pairs across {n_rivers} rivers. Real, honest scope limit: this covers the client-side call SITE, not which real provider (Anthropic/Kimi/Luna) answers it — that split lives on <a href="galaxy_map_externals.html">the Externals consolidation page</a>, kept live per Alex's own explicit ask.</p>
-  <p style="margin-top:8px"><b>Map view</b> renders the same data as one real bubble system, drilled progressively: <b>Level 1</b> the rivers that genuinely call Oracle → <b>Level 2</b> the modules in that river that genuinely call Oracle → <b>Level 3</b> the real Currents (functions) that call, each a migration bubble jumping out to that module's own Current Series section.</p>
+  <p>{n_mods} real modules with a genuine, checkable Oracle-call site in rpgace_core.js (real, project-wide function-body regex match against ORACLE_CALL_PATTERNS) — {n_calls} real (module, function) pairs across {n_rivers} domains. Real, honest scope limit: this covers the client-side call SITE, not which real provider (Anthropic/Kimi/Luna) answers it — that split lives on <a href="galaxy_map_externals.html">the Externals consolidation page</a>, kept live per Alex's own explicit ask.</p>
+  <p style="margin-top:8px"><b>Map view</b> renders the same data as one real bubble system, drilled progressively: <b>Level 1</b> the domains that genuinely call Oracle → <b>Level 2</b> the modules in that domain that genuinely call Oracle → <b>Level 3</b> the real Currents (functions) that call, each a migration bubble jumping out to that module's own Current Series section.</p>
 </div>
 <div class="toggle-row">
   <div class="toggle-btn active" data-view="map">🌌 Map view</div>
@@ -205,9 +205,9 @@ def main():
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(CALLS)} real modules call Oracle, {n_calls} real (module,function) pairs, "
-          f"{n_rivers} real rivers.")
+          f"{n_rivers} real domains.")
     c = DRILL_COUNTS
-    print(f"  Map view — L1 {c['rivers']} of {TOTAL_ZONES} real river(s) qualify · "
+    print(f"  Map view — L1 {c['rivers']} of {TOTAL_ZONES} real domain(s) qualify · "
           f"L2 {c['modules']} module(s) + {c['orphan_modules']} river-less · "
           f"L3 {c['functions'] + c['orphan_functions']} real migration bubble(s).")
     # Real, build-time self-consistency gate (same discipline as

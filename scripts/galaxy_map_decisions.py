@@ -159,7 +159,7 @@ DECISION_POINTS = [
         'title': 'Review Queue: accept a proposed fusion-link bridge',
         'module': 'taxonomyReviewQueue', 'func': '_acceptConceptFusion', 'lines': (12853, 12853),  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep), drifted -2 lines from 11656-11656; re-confirmed against the real pass-through wrapper (a 2nd match at 12100) -- 11654 is the real logic:{} implementation
         'anchor': '_acceptConceptFusion: function(p)',
-        'trigger': 'The real "✅ Accept" button on a pending `taxonomy_links` row — the exact real gate River VI/VIII\'s own `human_confirm_gate`-tagged RIVER_FLOWS edges describe at the river level.',
+        'trigger': 'The real "✅ Accept" button on a pending `taxonomy_links` row — the exact real gate Knowledge\'s own `human_confirm_gate`-tagged RIVER_FLOWS edges describe at the domain level.',
         'logic': 'Same real accept/reject review-queue mechanism as the proposal row above, scoped to fusion-link bridges instead of new-leaf placements.',
     },
     {
@@ -215,7 +215,7 @@ def build_map_view():
     return render_infra_drilldown(
         DRILL, ORPHANS, unit_icon='🚦', unit_label='Decisions',
         leaf_link_fn=_leaf_link, resource_emoji='🚦',
-        orphan_label='Cross-cutting (no river)',
+        orphan_label='Cross-cutting (no domain)',
         orphan_note="RIVER_MODULES' own documented exclusions",
         esc=esc, unit_color='#E25454')
 
@@ -309,8 +309,8 @@ TEMPLATE = """<!DOCTYPE html>
 <div class="hero">
   <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Decision Grouping (G26 Phase 1)</div>
   <h1>🚦 Real Decisions &amp; Human Gates — Website Perspective</h1>
-  <p>{n_points} real decision/human-confirmation points across {n_cats} categories, grouped by what kind of decision each one asks Alex to make — not by code structure. Every point cross-links to its own real Current Series (L3) function, to <a href="galaxy_map_level6.html">the exhaustive branch detail</a> for that module, and — where the same decision also has a curated core-logic write-up — straight to it on <a href="galaxy_map_decision_matrix.html">the Decision Matrix</a>. Phase 1 scope: RPGACE app code only — Total-systems process-level decisions (a /CEO approval, a migration confirm) are real, deliberately deferred future scope. Real Aug 21 2026 companion: <a href="galaxy_map_decision_matrix.html">🚦🧭 the Decision Matrix</a> — this page's own real gates unified with Level 5's logic points and a new curated text-input set, split by river and documentation depth.</p>
-  <p style="margin-top:8px"><b>Map view</b> renders the same {n_points} decision points as one real bubble system, drilled progressively: <b>Level 1</b> the rivers whose modules own a real human-confirm gate → <b>Level 2</b> the modules in that river → <b>Level 3</b> the real decision points themselves, each a migration bubble jumping out to that module's own Current Series section.</p>
+  <p>{n_points} real decision/human-confirmation points across {n_cats} categories, grouped by what kind of decision each one asks Alex to make — not by code structure. Every point cross-links to its own real Current Series (L3) function, to <a href="galaxy_map_level6.html">the exhaustive branch detail</a> for that module, and — where the same decision also has a curated core-logic write-up — straight to it on <a href="galaxy_map_decision_matrix.html">the Decision Matrix</a>. Phase 1 scope: RPGACE app code only — Total-systems process-level decisions (a /CEO approval, a migration confirm) are real, deliberately deferred future scope. Real Aug 21 2026 companion: <a href="galaxy_map_decision_matrix.html">🚦🧭 the Decision Matrix</a> — this page's own real gates unified with Level 5's logic points and a new curated text-input set, split by domain and documentation depth.</p>
+  <p style="margin-top:8px"><b>Map view</b> renders the same {n_points} decision points as one real bubble system, drilled progressively: <b>Level 1</b> the domains whose modules own a real human-confirm gate → <b>Level 2</b> the modules in that domain → <b>Level 3</b> the real decision points themselves, each a migration bubble jumping out to that module's own Current Series section.</p>
 </div>
 <div class="toggle-row">
   <div class="toggle-btn active" data-view="map">🌌 Map view</div>
@@ -378,7 +378,7 @@ def main():
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(DECISION_POINTS)} real decision points across {len(CATEGORIES)} categories, all anchors verified live.")
     c = DRILL_COUNTS
-    print(f"  Map view — L1 {c['rivers']} real river(s) qualify · "
+    print(f"  Map view — L1 {c['rivers']} real domain(s) qualify · "
           f"L2 {c['modules']} module(s) + {c['orphan_modules']} river-less · "
           f"L3 {c['functions'] + c['orphan_functions']} real migration bubble(s).")
     # Real, build-time self-consistency gate, same discipline as

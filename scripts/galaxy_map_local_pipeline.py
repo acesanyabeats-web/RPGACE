@@ -48,7 +48,7 @@ from pathlib import Path
 import sys
 
 sys.path.insert(0, str(Path(__file__).parent))
-from graphify_river_group import (  # noqa: E402
+from graphify_river_group import (domain_label,   # noqa: E402
     RIVER_NAME, RIVER_COLOR, RIVER_MODULES, EXTERNAL_CONNECTORS,
     render_bubble_row, render_fc_bar, _curved_edge, _build_markers,
     inject_level_rail, dimension_index_html, DIMENSION_INDEX_CSS,
@@ -98,7 +98,7 @@ MEMBERS = [
         'role': 'Vision + insight generation, called straight from the local script',
         'kind': 'Hosted API, reached from Alex\'s machine with his own key',
         'evidence': 'local_server/rpgace_intel.py call_claude() — POSTs directly to https://api.anthropic.com/v1/messages, model claude-sonnet-4-6, key read from ~/.anthropic_key by local_server.process_job(). This bypasses RPGACE\'s own api/oracle.js proxy entirely.',
-        'status': 'real second Anthropic call path — structurally separate from River III\'s Oracle harness',
+        'status': 'real second Anthropic call path — structurally separate from Oracle\'s Oracle harness',
         'color': '#C9A84C',
     },
 ]
@@ -126,7 +126,7 @@ STAGES = [
      'Real writes: <code>intel_reports</code> and <code>encyclopedia</code> (via <code>sb_post</code>), <code>intel_watchlist</code> (via a real PATCH/POST), plus a real JSON file on Alex\'s own machine — which is why <code>/reports</code> still works when Supabase does not.',
      'rpgace_intel.py save_insight() / add_to_watchlist()'),
     ('7', 'The browser reads it back',
-     '3 real client fetch sites, all in rpgace_core.js\'s <code>/* ===LEGACY:mainjs=== */</code> section: <code>fetchFromLocal()</code> → <code>/reports</code>, <code>fetchWatchlistFromLocal()</code> → <code>/watchlist</code>, <code>pushLocalToSupabase()</code> → <code>/push-to-supabase</code>. Reached from <code>syncIntelData()</code> (River XII\'s own 30s sync) and <code>syncAndPush()</code>.',
+     '3 real client fetch sites, all in rpgace_core.js\'s <code>/* ===LEGACY:mainjs=== */</code> section: <code>fetchFromLocal()</code> → <code>/reports</code>, <code>fetchWatchlistFromLocal()</code> → <code>/watchlist</code>, <code>pushLocalToSupabase()</code> → <code>/push-to-supabase</code>. Reached from <code>syncIntelData()</code> (Knowledge\'s own 30s sync) and <code>syncAndPush()</code>.',
      'rpgace_core.js syncIntelData() / syncAndPush()'),
 ]
 
@@ -221,7 +221,7 @@ def build_bubble_view():
     river_hub = dict(icon='🌊', label=RIVER_NAME[HOST_RIVER].split('—')[0].strip(),
                      color=RIVER_COLOR[HOST_RIVER])
     river_leaves = [
-        dict(id=mod, icon='⚙️', label=mod, sub='River XII module',
+        dict(id=mod, icon='⚙️', label=mod, sub='Platform module',
              color=RIVER_COLOR[HOST_RIVER],
              href=f'galaxy_map_current.html#mod-{mod}')
         for mod in sorted(RIVER_MODULES.get(HOST_RIVER, []))
@@ -237,9 +237,9 @@ def build_bubble_view():
         'genuinely only ever run together: Whisper and the direct Anthropic call are both reached '
         '<i>through</i> local_server.py, never independently.</p>'
         f'{cluster}</div>'
-        '<div class="lp-bubble-block"><h3>🌊 Where it attaches — River XII, the Research &amp; Intel Stream</h3>'
-        '<p class="lp-bnote">The real host river. Every browser-side call site listed above is reached from '
-        '<code>syncIntelData()</code>, this river\'s own Content-Intelligence sync — no other river touches '
+        '<div class="lp-bubble-block"><h3>🌊 Where it attaches — the Knowledge domain</h3>'
+        '<p class="lp-bnote">The real host domain. Every browser-side call site listed above is reached from '
+        '<code>syncIntelData()</code>, this domain\'s own Content-Intelligence sync — no other domain touches '
         'this pipeline at all.</p>'
         f'{river}</div>'
         '</div>')
@@ -324,7 +324,7 @@ TEMPLATE = """<!DOCTYPE html>
   {stages}
 
   <h2>Where RPGACE's own code touches it</h2>
-  <p class="sub">3 real <code>fetch()</code> call sites, all inside <code>rpgace_core.js</code>'s <code>/* ===LEGACY:mainjs=== */</code> section, all reached from River XII's own sync.</p>
+  <p class="sub">3 real <code>fetch()</code> call sites, all inside <code>rpgace_core.js</code>'s <code>/* ===LEGACY:mainjs=== */</code> section, all reached from Knowledge's own sync.</p>
   <table><thead><tr><th>Client function</th><th>Endpoint</th><th>What it really does</th></tr></thead>
   <tbody>{client}</tbody></table>
 
@@ -376,7 +376,7 @@ def main():
     html = inject_level_rail(html, OUT.name)
     OUT.write_text(html, encoding='utf-8')
     print(f"Wrote {OUT} — {len(MEMBERS)} real cluster members, {len(STAGES)} real pipeline stages, "
-          f"{len(CLIENT_SITES)} real client call sites, {len(GAPS)} honest gaps, host River {HOST_RIVER}.")
+          f"{len(CLIENT_SITES)} real client call sites, {len(GAPS)} honest gaps, host {domain_label(HOST_RIVER)}.")
 
 
 if __name__ == '__main__':
