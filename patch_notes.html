@@ -73,6 +73,19 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-11-m1-rivers-to-domains" style="margin-bottom:30px;">
+    <div class="card-title">🗂️ Oct 11 — M1: the Galaxy Map's rivers become the app's 8 domains</div>
+    <div class="card-body">
+      Plan item M1 of the Domains, Navigation &amp; Deepstash Encyclopedia plan (Galaxy-Map pause overridden for this item only). The developer map used to group modules into hand-numbered "rivers" kept in a Python table; that table went stale three times when new modules shipped. It now groups by the same 8 domains as the app's left menu.
+      <ul>
+        <li><strong>Source of truth in code</strong>: every one of the 68 modules declares <code>domain:</code> next to its name, and <code>RPGACE.DOMAINS</code> lists the 8 (Oracle 15, Content &amp; Video 8, Knowledge 20, Habits 4, Schedule &amp; Journal 9, Chronicles 2, Oversight 3, Platform 7). <code>scripts/check_module_domains.py</code> fails if any module is missing one.</li>
+        <li><strong>Galaxy Map</strong>: <code>graphify_river_group.py</code> reads those keys instead of its own river table. Connections between domains are re-derived from real <code>RPGACE.modules.X.fn()</code> calls, each labelled with its count and an example. Pages say "Domain" (one shared label helper; display text rewritten by a tokenizer pass that leaves identifiers, anchors and docstrings alone). Level 1 moved to <code>galaxy_map_domain.html</code>; the old <code>galaxy_map_river.html</code> redirects there. The Obsidian vault now has 8 domain hub notes.</li>
+        <li><strong>Supabase</strong>: 8 new <code>perspective_reports</code> rows (<code>scope_level='domain'</code>, third-person, built from the same code data). The 12 river reports are <code>superseded</code> and point at the domain that now holds most of their modules. The 12 <code>RIVER-*</code> plan items stay green (that work was done) with a supersession note. <code>perspective_map.html</code> shows Domains above Modules and labels Rivers retired.</li>
+        <li><strong>Docs</strong>: CLAUDE.md (68 modules; session-start check 3 now runs <code>check_module_domains.py</code>; 24 Galaxy Map files), <code>system_map_spec.md</code> §1-current, <code>interconnection_map.md</code>, <code>system_flow_map.md</code> §15b, Oracle's <code>SELF_KNOWLEDGE</code>, and the perspective/cartographer/update-logging-system skills.</li>
+      </ul>
+      Checked: the full Galaxy Map pipeline runs clean and gives byte-identical output twice; 26/26 decision anchors fresh; every page's div/a/svg tags balance; headless Chromium on 5 pages shows no page errors, the redirect lands on the new page, and the right sidebar link is highlighted. Not changed: <code>minotaur_map.html</code> (its visible text was already domain-based). <strong>Untested by Alex's own hand.</strong>
+    </div>
+</div>
 <div class="card" id="card-2026-10-10-n2-dashboard-landing" style="margin-bottom:30px;">
     <div class="card-title">🏠 Oct 10 — N2 slice 5: one grouped menu, dashboard becomes a landing page</div>
     <div class="card-body">

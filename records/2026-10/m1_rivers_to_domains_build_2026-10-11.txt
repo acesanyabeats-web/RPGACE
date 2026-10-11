@@ -1,0 +1,26 @@
+M1 — Galaxy Map rivers -> app domains: build record (Oct 11 2026)
+Plan: ceo_plans b77ac6ff-733a-4ff2-a6ca-9f075f9fad52, item M1. Scrutiny/plan: records/2026-10/rivers_to_domains_scrutiny_2026-10-10.txt
+Ask (Alex): "continue with M1"
+
+D1  RPGACE.DOMAINS + domain: key on all 68 modules; scripts/check_module_domains.py (commit 8c778c5).
+D2  A: graphify_river_group.py derives RIVER_MODULES/NAME/COLOR from domain keys; RIVER_FLOWS = _derive_domain_flows()
+       (cross-domain RPGACE.modules.X.fn() calls, itype module_call). Fixed None flow_anchor in galaxy_map_module.py. (4dbae19)
+    B: visible vocabulary — domain_label() helper; tokenizer rewrite of display literals only (outside f-string braces,
+       not docstrings, not identifier-like keys). First attempt also renamed names inside f-string braces and a JS filter
+       (/^River /.test(galaxy_river)); reset to stage A and redone f-string-aware; JS filter restored by hand.
+       Roman-numeral legacy prose mapped to the real domain; per-module excerpts derive domain live. (5d398b9)
+    C: Level 1 -> galaxy_map_domain.html, galaxy_map_river.html = redirect stub (catalogued in hub as retired);
+       Obsidian vault regenerated, 8 domain hub notes. (864b421, 527627d)
+D3  perspective_reports: 8 scope_level='domain' rows (third-person; first draft was first person, corrected per the
+    perspective skill's non-actor rule). 12 river rows -> status superseded, superseded_by = majority-module domain:
+    1,2 platform; 3 oracle; 4,6,7,8,9,12 knowledge; 5 schedule; 10 chronicles; 11 content.
+    ceo_plan_items RIVER-1..12 (plan 5a9dd7bf) kept green, evidence gained superseded_2026_10_11 note.
+D4  CLAUDE.md, system_map_spec.md §1-current, interconnection_map.md, system_flow_map.md §15b, SELF_KNOWLEDGE,
+    perspective_map.html (domain scope), 3 skills, patch_notes card card-2026-10-11-m1-rivers-to-domains.
+    minotaur_map.html untouched (visible text already domain-based).
+D5  optional power features — not started.
+
+Verification: pipeline rc 0, idempotent (2 runs identical); verify_anchors 26/26; tag balance all pages;
+headless: domain/river(redirect)/module/L0/dimensions pages, 0 page errors, correct active nav link.
+Known residue, deliberately left: identifiers still named river (RIVER_MODULES, #river-N anchors, galaxy_map_river.py
+script name) — renaming them would churn every anchor and script for no visible gain; docs say "river = domain".

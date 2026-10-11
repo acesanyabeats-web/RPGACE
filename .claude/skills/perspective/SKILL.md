@@ -5,6 +5,8 @@ description: RPGACE's evidence-grounded self-report method — writes a real, fi
 
 # /perspective — real self-reports as a shared behavioral baseline
 
+> **Oct 11 2026 (M1): "river" now means one of the 8 app domains.** Each module declares `domain:` in `rpgace_core.js` (`RPGACE.DOMAINS`); `graphify_river_group.py` derives `RIVER_MODULES`/`RIVER_FLOWS` from those keys and real cross-module calls; `scripts/check_module_domains.py` is the check; Level 1 is `galaxy_map_domain.html`. See `system_map_spec.md` §1-current. Domain-level reports are `scope_level='domain'`, third-person syntheses exactly like river ones were (domains are not actors).
+
 Named and defined by Alex Aug 13 2026, after two real pilots (galaxy-level,
 then node-level — see `records/2026-08/galaxy_interviews_pilot_2026-08-13.txt`)
 both found genuine relationship/topology gaps the top-down Galaxy Map build

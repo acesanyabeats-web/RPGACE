@@ -5,6 +5,8 @@ description: A shared change-type → required-artifact checklist (CLAUDE.md Cur
 
 # /update-logging-system — one shared map, so nothing goes stale by accident
 
+> **Oct 11 2026 (M1): "river" now means one of the 8 app domains.** Each module declares `domain:` in `rpgace_core.js` (`RPGACE.DOMAINS`); `graphify_river_group.py` derives `RIVER_MODULES`/`RIVER_FLOWS` from those keys and real cross-module calls; `scripts/check_module_domains.py` is the check; Level 1 is `galaxy_map_domain.html`. See `system_map_spec.md` §1-current. A new module needs a `domain:` key — that alone places it on the Galaxy Map after the next pipeline run.
+
 Alex named this Aug 6, directly after `oracleAppGrounding.SELF_KNOWLEDGE`
 went stale mid-session despite CLAUDE.md's rule 6 already requiring it
 to update in the same session as any Current State change — proof that

@@ -151,6 +151,22 @@ tier-4 Connector edges specifically for the Alex↔dashboard-card case) —
 the two numbering schemes are not meant to match 1:1, and a future
 reader should not "fix" one to equal the other.
 
+### 1-current. Rivers are now the 8 app domains (Oct 11 2026, M1 — supersedes the river numbering below)
+
+Every `RPGACE.register()` module declares `domain:` in `rpgace_core.js`
+(one of `RPGACE.DOMAINS`: Oracle, Content & Video, Knowledge, Habits,
+Schedule & Journal, Chronicles, Oversight, Platform — the same groups as
+the app's left menu). `scripts/graphify_river_group.py` derives
+`RIVER_MODULES`, names and colours from those keys (domain numbers 1-8 in
+that order) and re-derives `RIVER_FLOWS` from real cross-domain
+`RPGACE.modules.X.fn()` calls (interaction type `module_call`).
+`scripts/check_module_domains.py` fails loud on a missing/unknown key.
+Level 1 is `graphify-out/galaxy_map_domain.html`; `galaxy_map_river.html`
+is a redirect stub. Everything below that says "river" now means
+"domain"; roman-numeral river numbers (I-XVII) are historical. The
+"rivers are a grouping label, not an actor" rule in §1a holds unchanged
+for domains.
+
 ### 1a. Rivers are a grouping label, not an actor — real Aug 13 correction
 
 **A river never acts, calls, communicates, or gets called — only the

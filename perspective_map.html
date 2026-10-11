@@ -225,12 +225,13 @@
     galaxy:         { icon: '🌌', label: 'Galaxies',              desc: 'The 4 real top-level Total-systems actors — RPGACE Architecture and the 3 external Claude Code sessions it coordinates with.' },
     node:           { icon: '🔮', label: 'Harness Nodes',         desc: 'Oracle, Self-Awareness, the Human Gate, the 3 real AI providers under Oracle, the 10 real external connectors, and Supabase itself.' },
     l0_unit:        { icon: '💉', label: 'L0 Units — Infra/Inter Profiles', desc: 'A newer, deeper 6-facet profile (role / input / processing / output / river-module-function contribution / external stakeholders) for the L0 actors that earned their own dedicated page.' },
-    river:          { icon: '🌊', label: 'Rivers — Synthesis',    desc: 'A river is not an actor and never gets a first-person report — each entry here is a real, compiled third-person synthesis of the modules grouped inside that river.' },
+    domain:         { icon: '🗂️', label: 'Domains — Synthesis',   desc: 'The 8 app domains (the same groups as the left menu). Each module declares its own domain in code; each entry here is a third-person synthesis built from those modules and the real calls between domains.' },
+    river:          { icon: '🌊', label: 'Rivers — Retired (superseded by Domains, Oct 11 2026)',    desc: 'A river is not an actor and never gets a first-person report — each entry here is a real, compiled third-person synthesis of the modules grouped inside that river.' },
     module:         { icon: '🧩', label: 'Modules',               desc: 'Every real RPGACE.register() module in rpgace_core.js — who it is, who it actually talks to, and what correct behavior looks like.' },
     level:          { icon: '🧬', label: 'Levels — L0 to L3',     desc: 'A real synthesis of what actually populates each Galaxy Map level, and how it connects to the level above and below — the same non-actor treatment rivers get.' },
     dimension_kind: { icon: '🔗', label: 'Dimension Kinds',       desc: 'Infra (an attached-resource bubble) and Inter (a connection/flow) — the two real cross-cutting Dimension kinds, each synthesized from its own real member pages.' },
   };
-  var SCOPE_ORDER = ['galaxy', 'node', 'l0_unit', 'river', 'module', 'level', 'dimension_kind'];
+  var SCOPE_ORDER = ['galaxy', 'node', 'l0_unit', 'domain', 'module', 'river', 'level', 'dimension_kind'];
   var SCAFFOLD_SCOPES = { mainjs_function: 1, onclick_feature: 1, decision: 1 };
 
   function esc(s) {

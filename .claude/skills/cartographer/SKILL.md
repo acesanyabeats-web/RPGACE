@@ -5,6 +5,8 @@ description: RPGACE's Total-systems mapping-and-cross-talk discipline — ground
 
 # /cartographer — the real mapping-and-cross-talk discipline
 
+> **Oct 11 2026 (M1): "river" now means one of the 8 app domains.** Each module declares `domain:` in `rpgace_core.js` (`RPGACE.DOMAINS`); `graphify_river_group.py` derives `RIVER_MODULES`/`RIVER_FLOWS` from those keys and real cross-module calls; `scripts/check_module_domains.py` is the check; Level 1 is `galaxy_map_domain.html`. See `system_map_spec.md` §1-current.
+
 Named and built Aug 13 2026, real Alex ask, folded into the already-
 ratified "RPGACE Total Systems Galaxy Map" `/CEO` plan (extends G6/G7/G8,
 adds a new item for Consumer/Developer tiering — see
