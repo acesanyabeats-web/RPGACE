@@ -376,7 +376,7 @@ def build_l0_bubbles(l0_tags):
         rivers = sorted(unit_rivers.get(uid, ()))
         if rivers:
             river_links = ', '.join(
-                f'<a href="galaxy_map_river.html">{esc(RIVER_NAME.get(r, f"Domain {r}"))}</a>' for r in rivers)
+                f'<a href="galaxy_map_domain.html">{esc(RIVER_NAME.get(r, f"Domain {r}"))}</a>' for r in rivers)
             items += f'<li>🏛️ <b>Real domains this unit\'s Infra/Inter touches</b> — {river_links}</li>'
         nodes_data.append(dict(
             key=uid, color=meta['color'], short_label=meta['label'],
@@ -419,7 +419,7 @@ def build_river_bubbles(tags):
         nodes_data.append(dict(
             key=f'r{r}', color=color, short_label=short, full_label=full,
             n_dims=len(hit_dims), detail_html=f'<ul>{items}</ul>'))
-    svg, details = build_bubble_ring(nodes_data, hub_icon='🏛️', hub_label='Domains', hub_href='galaxy_map_river.html')
+    svg, details = build_bubble_ring(nodes_data, hub_icon='🏛️', hub_label='Domains', hub_href='galaxy_map_domain.html')
     return svg + '<div id="bubble-details">' + details + '</div>'
 
 

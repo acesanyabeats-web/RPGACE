@@ -1,17 +1,17 @@
 ---
 module_name: "chroniclesLog"
 kind: module
-river_number: 10
-river_name: "River X — The Confluence of Chronicles"
-source_lines: "32756-33128"
+river_number: 6
+river_name: "Chronicles"
+source_lines: "35412-35785"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # chroniclesLog
 
-`rpgace_core.js:32756-33128`
+`rpgace_core.js:35412-35785`
 
-Member of [[10 — River X — The Confluence of Chronicles.md|River X — The Confluence of Chronicles]].
+Member of [[06 — Chronicles.md|Chronicles]].
 
 ## Real touch evidence
 
@@ -21,6 +21,10 @@ Member of [[10 — River X — The Confluence of Chronicles.md|River X — The C
 ## Calls into
 
 - → [[careerStatCard.md|careerStatCard]]
+
+## Called by
+
+- ← [[dashDeck.md|dashDeck]]
 
 ## Hook signals received
 

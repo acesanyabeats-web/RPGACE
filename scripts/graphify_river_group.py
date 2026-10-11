@@ -4068,7 +4068,7 @@ def river_group(html_path: Path, graph_json_path: Path):
 # now called a Dimension — see DIMENSION_PAGES below.
 LEVEL_RAIL = [
     ('galaxy_map.html', '🌌', 'L0'),
-    ('galaxy_map_river.html', '🏛️', 'L1'),
+    ('galaxy_map_domain.html', '🏛️', 'L1'),
     ('galaxy_map_module.html', '🌊', 'L2'),
     ('galaxy_map_current.html', '🔽', 'Current (L3)'),
 ]
@@ -5276,7 +5276,7 @@ def collapse_methodology(html):
 # meta at L0 (whole-system synthesis, no river/module grain of its own).
 LEFT_NAV_LEVEL_ANNOTATION = {
     'galaxy_map.html': None,
-    'galaxy_map_river.html': 'Infra',
+    'galaxy_map_domain.html': 'Infra',
     'galaxy_map_module.html': 'Modules + Inter',
     'galaxy_map_current.html': 'Currents',
 }
@@ -5302,13 +5302,13 @@ LEFT_NAV_LEVEL_ANNOTATION = {
 # records/2026-09/galaxy_map_web_zoom_interrogation_2026-09-24.txt
 LEFT_NAV_ZOOM_CAPTION = {
     'galaxy_map.html': '🌐 The whole web — zoom in from here',
-    'galaxy_map_river.html': '🔎 Zoomed to: Domains (the web’s real code partitions)',
+    'galaxy_map_domain.html': '🔎 Zoomed to: Domains (the web’s real code partitions)',
     'galaxy_map_module.html': '🔎 Zoomed to: a Domain’s own Modules',
     'galaxy_map_current.html': '🔎 Zoomed to: a Module’s own functions',
 }
 LEFT_NAV_LEVEL_KINDS = {
     'galaxy_map.html': ('meta',),
-    'galaxy_map_river.html': ('infra',),
+    'galaxy_map_domain.html': ('infra',),
     'galaxy_map_module.html': ('inter',),
     'galaxy_map_current.html': (),
 }
@@ -5319,7 +5319,7 @@ LEFT_NAV_LEVEL_KINDS = {
 # module-one-home partition, per Dimensions' own definition text
 # contrasting itself against exactly this), so they get their own
 # nested list too, not just Dimension pages. Real anchor evidence
-# checked before wiring, not assumed: galaxy_map_river.html (L1) itself
+# checked before wiring, not assumed: galaxy_map_domain.html (L1) itself
 # has NO per-river id="river-N" anchors — it is one whole-system ring
 # diagram with no deep-linkable sub-parts — while galaxy_map_module.html
 # (L2) genuinely has all 17 real id="river-N" sections. So every river
@@ -5327,7 +5327,7 @@ LEFT_NAV_LEVEL_KINDS = {
 # it's nested under; L1 gets the list because L1 itself has nothing to
 # jump to internally, L2 gets it for same-page river-to-river jumping.
 LEFT_NAV_LEVEL_RIVERS = {
-    'galaxy_map_river.html': True,
+    'galaxy_map_domain.html': True,
     'galaxy_map_module.html': True,
 }
 
@@ -5631,7 +5631,7 @@ def left_nav_html(current_file):
                 f'<div class="gside-nested gside-rivers">{_river_module_nested_rows(archived=True)}</div>'
             )
         elif LEFT_NAV_LEVEL_RIVERS.get(fname):
-            # L1 (galaxy_map_river.html) has no per-module content of
+            # L1 (galaxy_map_domain.html) has no per-module content of
             # its own to jump to — plain river list only. Sep 15 2026:
             # same live/archived split as above.
             nested += (
@@ -5806,7 +5806,7 @@ def inject_left_nav(html, current_file):
 # HONEST SCOPE, stated rather than smoothed over: per-node badges are
 # only drawn where a page has a real, stable handle to hang one on —
 # galaxy_map.html's [data-unit] nodes and galaxy_map_dimensions.html's
-# .modname cells. galaxy_map_river.html and galaxy_map_logic_dimension.html
+# .modname cells. galaxy_map_domain.html and galaxy_map_logic_dimension.html
 # have no per-river DOM handle (their rivers are SVG text / prose
 # headings), so those get the scoped panel only, and the panel says so.
 # Inventing markup on those two pages purely to hang a badge from would

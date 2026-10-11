@@ -1,30 +1,33 @@
 ---
 module_name: "taxonomyTree"
 kind: module
-river_number: 8
-river_name: "River VIII — The Confluence Pool"
-source_lines: "16850-17683"
+river_number: 3
+river_name: "Knowledge"
+source_lines: "18501-19211"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # taxonomyTree
 
-`rpgace_core.js:16850-17683`
+`rpgace_core.js:18501-19211`
 
-Member of [[08 — River VIII — The Confluence Pool.md|River VIII — The Confluence Pool]].
+Member of [[03 — Knowledge.md|Knowledge]].
 
 ## Real touch evidence
 
 - **UI**: renders real output, takes real input.
-- **Supabase**: 9 real touch(es) across encyclopedia, oracle_fallback_queue, taxonomy_proposals, taxonomy_tree.
+- **Supabase**: 5 real touch(es) across encyclopedia, oracle_fallback_queue, taxonomy_proposals, taxonomy_tree.
 
 ## Calls into
 
+- → [[dashDeck.md|dashDeck]]
 - → [[phylumPath.md|phylumPath]]
 
 ## Called by
 
+- ← [[bookworm.md|bookworm]]
 - ← [[ciAutoPropose.md|ciAutoPropose]]
+- ← [[config.md|config]]
 - ← [[encSync.md|encSync]]
 - ← [[encTaxonomyLink.md|encTaxonomyLink]]
 - ← [[phylumPath.md|phylumPath]]

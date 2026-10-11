@@ -1,17 +1,17 @@
 ---
 module_name: "knowledgeGap"
 kind: module
-river_number: 9
-river_name: "River IX — The Mirror and the Far Shore"
-source_lines: "16460-16848"
+river_number: 3
+river_name: "Knowledge"
+source_lines: "18110-18499"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # knowledgeGap
 
-`rpgace_core.js:16460-16848`
+`rpgace_core.js:18110-18499`
 
-Member of [[09 — River IX — The Mirror and the Far Shore.md|River IX — The Mirror and the Far Shore]].
+Member of [[03 — Knowledge.md|Knowledge]].
 
 ## Real touch evidence
 
@@ -20,6 +20,7 @@ Member of [[09 — River IX — The Mirror and the Far Shore.md|River IX — The
 
 ## Calls into
 
+- → [[dashDeck.md|dashDeck]]
 - → [[feynman.md|feynman]]
 - → [[taxonomySync.md|taxonomySync]]
 

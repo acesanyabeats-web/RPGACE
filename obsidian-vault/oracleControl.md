@@ -1,17 +1,17 @@
 ---
 module_name: "oracleControl"
 kind: module
-river_number: 3
-river_name: "River III — The Oracle Current"
-source_lines: "33606-34331"
+river_number: 1
+river_name: "Oracle"
+source_lines: "36389-37115"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # oracleControl
 
-`rpgace_core.js:33606-34331`
+`rpgace_core.js:36389-37115`
 
-Member of [[03 — River III — The Oracle Current.md|River III — The Oracle Current]].
+Member of [[01 — Oracle.md|Oracle]].
 
 ## Real touch evidence
 
@@ -19,14 +19,15 @@ Member of [[03 — River III — The Oracle Current.md|River III — The Oracle 
 - **Supabase**: 2 real touch(es) across oracle_actions.
 - **External connectors**: GMAIL_CREATE_EMAIL_DRAFT, NOTION_CREATE_NOTION_PAGE, SUPADATA_GET_YOUTUBE_CHANNEL.
 
+## Calls into
+
+- → [[quickActions.md|quickActions]]
+
 ## Called by
 
 - ← [[cookingOracle.md|cookingOracle]]
-- ← [[feynman.md|feynman]]
-- ← [[instaOraclePanel.md|instaOraclePanel]]
 - ← [[oracleAppGrounding.md|oracleAppGrounding]]
-- ← [[tiktokOracle.md|tiktokOracle]]
-- ← [[youtubeOracle.md|youtubeOracle]]
+- ← [[quickActions.md|quickActions]]
 
 ## Hook signals received
 

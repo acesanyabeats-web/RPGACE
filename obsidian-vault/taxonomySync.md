@@ -1,17 +1,17 @@
 ---
 module_name: "taxonomySync"
 kind: module
-river_number: 8
-river_name: "River VIII — The Confluence Pool"
-source_lines: "16178-16458"
+river_number: 3
+river_name: "Knowledge"
+source_lines: "17827-18108"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # taxonomySync
 
-`rpgace_core.js:16178-16458`
+`rpgace_core.js:17827-18108`
 
-Member of [[08 — River VIII — The Confluence Pool.md|River VIII — The Confluence Pool]].
+Member of [[03 — Knowledge.md|Knowledge]].
 
 ## Real touch evidence
 

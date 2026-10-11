@@ -1,17 +1,17 @@
 ---
 module_name: "bookworm"
 kind: module
-river_number: 4
-river_name: "River IV — The Bookworm River"
-source_lines: "19883-22174"
+river_number: 3
+river_name: "Knowledge"
+source_lines: "22355-24657"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # bookworm
 
-`rpgace_core.js:19883-22174`
+`rpgace_core.js:22355-24657`
 
-Member of [[04 — River IV — The Bookworm River.md|River IV — The Bookworm River]].
+Member of [[03 — Knowledge.md|Knowledge]].
 
 ## Real touch evidence
 
@@ -20,11 +20,16 @@ Member of [[04 — River IV — The Bookworm River.md|River IV — The Bookworm 
 
 ## Calls into
 
+- → [[dashDeck.md|dashDeck]]
 - → [[phylumPath.md|phylumPath]]
+- → [[recall.md|recall]]
+- → [[researchTabs.md|researchTabs]]
+- → [[taxonomyTree.md|taxonomyTree]]
 
 ## Called by
 
 - ← [[phylumPath.md|phylumPath]]
+- ← [[researchTabs.md|researchTabs]]
 
 ## Hook signals received
 

@@ -1,17 +1,17 @@
 ---
 module_name: "conidPot"
 kind: module
-river_number: 11
-river_name: "River XI — Content Production Live"
-source_lines: "28461-29316"
+river_number: 2
+river_name: "Content & Video"
+source_lines: "30972-31830"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # conidPot
 
-`rpgace_core.js:28461-29316`
+`rpgace_core.js:30972-31830`
 
-Member of [[11 — River XI — Content Production Live.md|River XI — Content Production Live]].
+Member of [[02 — Content & Video.md|Content & Video]].
 
 ## Real touch evidence
 
@@ -23,6 +23,7 @@ Member of [[11 — River XI — Content Production Live.md|River XI — Content 
 
 - → [[contentProductionLive.md|contentProductionLive]]
 - → [[contentRepurpose.md|contentRepurpose]]
+- → [[dashDeck.md|dashDeck]]
 - → [[videoPipeline.md|videoPipeline]]
 
 ## Called by

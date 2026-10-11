@@ -1,22 +1,26 @@
 ---
 module_name: "jargonEncyclopedia"
 kind: module
-river_number: 7
-river_name: "River VII — The Library Current"
-source_lines: "33130-33314"
+river_number: 3
+river_name: "Knowledge"
+source_lines: "35787-36090"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # jargonEncyclopedia
 
-`rpgace_core.js:33130-33314`
+`rpgace_core.js:35787-36090`
 
-Member of [[07 — River VII — The Library Current.md|River VII — The Library Current]].
+Member of [[03 — Knowledge.md|Knowledge]].
 
 ## Real touch evidence
 
 - **UI**: renders real output, takes real input.
-- **Supabase**: 1 real touch(es) across jargon_encyclopedia.
+- **Supabase**: 2 real touch(es) across encyclopedia, jargon_encyclopedia.
+
+## Calls into
+
+- → [[phylumPath.md|phylumPath]]
 
 ## Hook signals received
 

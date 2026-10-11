@@ -1,17 +1,17 @@
 ---
 module_name: "encTaxonomyLink"
 kind: module
-river_number: 7
-river_name: "River VII — The Library Current"
-source_lines: "12021-12310"
+river_number: 3
+river_name: "Knowledge"
+source_lines: "13304-13594"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # encTaxonomyLink
 
-`rpgace_core.js:12021-12310`
+`rpgace_core.js:13304-13594`
 
-Member of [[07 — River VII — The Library Current.md|River VII — The Library Current]].
+Member of [[03 — Knowledge.md|Knowledge]].
 
 ## Real touch evidence
 

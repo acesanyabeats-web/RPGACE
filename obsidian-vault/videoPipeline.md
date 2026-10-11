@@ -1,22 +1,26 @@
 ---
 module_name: "videoPipeline"
 kind: module
-river_number: 11
-river_name: "River XI — Content Production Live"
-source_lines: "28172-28459"
+river_number: 2
+river_name: "Content & Video"
+source_lines: "30682-30970"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # videoPipeline
 
-`rpgace_core.js:28172-28459`
+`rpgace_core.js:30682-30970`
 
-Member of [[11 — River XI — Content Production Live.md|River XI — Content Production Live]].
+Member of [[02 — Content & Video.md|Content & Video]].
 
 ## Real touch evidence
 
 - **UI**: renders real output, takes real input.
 - **Supabase**: 2 real touch(es) across content_productions, video_jobs.
+
+## Calls into
+
+- → [[dashDeck.md|dashDeck]]
 
 ## Called by
 

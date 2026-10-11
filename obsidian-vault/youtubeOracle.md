@@ -1,25 +1,25 @@
 ---
 module_name: "youtubeOracle"
 kind: module
-river_number: 3
-river_name: "River III — The Oracle Current"
-source_lines: "5552-5811"
+river_number: 1
+river_name: "Oracle"
+source_lines: "5649-5830"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # youtubeOracle
 
-`rpgace_core.js:5552-5811`
+`rpgace_core.js:5649-5830`
 
-Member of [[03 — River III — The Oracle Current.md|River III — The Oracle Current]].
+Member of [[01 — Oracle.md|Oracle]].
 
 ## Real touch evidence
 
-- **UI**: renders real output, takes real input.
+- **UI**: no direct output, no direct input.
 
 ## Calls into
 
-- → [[oracleControl.md|oracleControl]]
+- → [[captionsPanel.md|captionsPanel]]
 
 ## Hook signals received
 

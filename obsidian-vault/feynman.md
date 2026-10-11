@@ -2,16 +2,16 @@
 module_name: "feynman"
 kind: module
 river_number: 3
-river_name: "River III — The Oracle Current"
-source_lines: "7965-8846"
+river_name: "Knowledge"
+source_lines: "8127-9009"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # feynman
 
-`rpgace_core.js:7965-8846`
+`rpgace_core.js:8127-9009`
 
-Member of [[03 — River III — The Oracle Current.md|River III — The Oracle Current]].
+Member of [[03 — Knowledge.md|Knowledge]].
 
 ## Real touch evidence
 
@@ -19,7 +19,6 @@ Member of [[03 — River III — The Oracle Current.md|River III — The Oracle 
 
 ## Calls into
 
-- → [[oracleControl.md|oracleControl]]
 - → [[taxonomySync.md|taxonomySync]]
 
 ## Called by

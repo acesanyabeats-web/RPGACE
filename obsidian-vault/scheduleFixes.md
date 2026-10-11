@@ -2,16 +2,16 @@
 module_name: "scheduleFixes"
 kind: module
 river_number: 5
-river_name: "River V — Daily Ops: Agenda, Schedule & Journal"
-source_lines: "31274-31345"
+river_name: "Schedule & Journal"
+source_lines: "33798-33870"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # scheduleFixes
 
-`rpgace_core.js:31274-31345`
+`rpgace_core.js:33798-33870`
 
-Member of [[05 — River V — Daily Ops Agenda, Schedule & Journal.md|River V — Daily Ops: Agenda, Schedule & Journal]].
+Member of [[05 — Schedule & Journal.md|Schedule & Journal]].
 
 ## Real touch evidence
 

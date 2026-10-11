@@ -1,17 +1,17 @@
 ---
 module_name: "videoSummary"
 kind: module
-river_number: 11
-river_name: "River XI — Content Production Live"
-source_lines: "15596-16176"
+river_number: 2
+river_name: "Content & Video"
+source_lines: "17244-17825"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # videoSummary
 
-`rpgace_core.js:15596-16176`
+`rpgace_core.js:17244-17825`
 
-Member of [[11 — River XI — Content Production Live.md|River XI — Content Production Live]].
+Member of [[02 — Content & Video.md|Content & Video]].
 
 ## Real touch evidence
 

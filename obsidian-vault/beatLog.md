@@ -1,17 +1,17 @@
 ---
 module_name: "beatLog"
 kind: module
-river_number: 11
-river_name: "River XI — Content Production Live"
-source_lines: "23474-24826"
+river_number: 2
+river_name: "Content & Video"
+source_lines: "25963-27319"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # beatLog
 
-`rpgace_core.js:23474-24826`
+`rpgace_core.js:25963-27319`
 
-Member of [[11 — River XI — Content Production Live.md|River XI — Content Production Live]].
+Member of [[02 — Content & Video.md|Content & Video]].
 
 ## Real touch evidence
 

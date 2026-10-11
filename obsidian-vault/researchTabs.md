@@ -1,21 +1,30 @@
 ---
 module_name: "researchTabs"
 kind: module
-river_number: 12
-river_name: "River XII — The Research & Intel Stream"
-source_lines: "10293-10549"
+river_number: 3
+river_name: "Knowledge"
+source_lines: "11538-11795"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # researchTabs
 
-`rpgace_core.js:10293-10549`
+`rpgace_core.js:11538-11795`
 
-Member of [[12 — River XII — The Research & Intel Stream.md|River XII — The Research & Intel Stream]].
+Member of [[03 — Knowledge.md|Knowledge]].
 
 ## Real touch evidence
 
 - **UI**: renders real output, takes real input.
+
+## Calls into
+
+- → [[bookworm.md|bookworm]]
+
+## Called by
+
+- ← [[bookworm.md|bookworm]]
+- ← [[leftNav.md|leftNav]]
 
 ## Hook signals received
 

@@ -2,16 +2,16 @@
 module_name: "morningBrief"
 kind: module
 river_number: 5
-river_name: "River V — Daily Ops: Agenda, Schedule & Journal"
-source_lines: "29321-29796"
+river_name: "Schedule & Journal"
+source_lines: "31835-32316"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # morningBrief
 
-`rpgace_core.js:29321-29796`
+`rpgace_core.js:31835-32316`
 
-Member of [[05 — River V — Daily Ops Agenda, Schedule & Journal.md|River V — Daily Ops: Agenda, Schedule & Journal]].
+Member of [[05 — Schedule & Journal.md|Schedule & Journal]].
 
 ## Real touch evidence
 
@@ -22,6 +22,8 @@ Member of [[05 — River V — Daily Ops Agenda, Schedule & Journal.md|River V �
 ## Calls into
 
 - → [[conidPot.md|conidPot]]
+- → [[dailyLife.md|dailyLife]]
+- → [[dashDeck.md|dashDeck]]
 - → [[taxonomySync.md|taxonomySync]]
 
 ## Hook signals received

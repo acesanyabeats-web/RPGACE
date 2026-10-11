@@ -1,17 +1,17 @@
 ---
 module_name: "encyclopediaQoL"
 kind: module
-river_number: 7
-river_name: "River VII — The Library Current"
-source_lines: "31409-31616"
+river_number: 3
+river_name: "Knowledge"
+source_lines: "33940-34148"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # encyclopediaQoL
 
-`rpgace_core.js:31409-31616`
+`rpgace_core.js:33940-34148`
 
-Member of [[07 — River VII — The Library Current.md|River VII — The Library Current]].
+Member of [[03 — Knowledge.md|Knowledge]].
 
 ## Real touch evidence
 

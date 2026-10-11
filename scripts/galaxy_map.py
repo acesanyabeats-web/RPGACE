@@ -43,7 +43,7 @@ script in this repo already follows.
 
 **Aug 13, 3rd pass — G3 shipped, this file's own central node is now a
 real drill-down link, not a dead end.** `scripts/galaxy_map_river.py`
-generates `graphify-out/galaxy_map_river.html` (Level 1: RPGACE
+generates `graphify-out/galaxy_map_domain.html` (Level 1: RPGACE
 Architecture's own 16 rivers, real `RIVER_FLOWS` edges) — the central
 RPGACE Architecture node here now wraps in a real `<a href=...>` to it.
 
@@ -734,7 +734,7 @@ def build_external_ai_actor_facets():
 #                   from resolving to another river's module.
 #   river grain  -> galaxy_map_module.html#river-<n> when no module is
 #                   named. Real, checked reason this is Level 2 and not
-#                   galaxy_map_river.html: Level 1 is a single SVG ring
+#                   galaxy_map_domain.html: Level 1 is a single SVG ring
 #                   with NO per-river anchor of any kind (verified by
 #                   direct id scan of the rendered page), and
 #                   galaxy_map_river.py's own river drill-down link is
@@ -1280,12 +1280,12 @@ def build_svg():
                              zoom_href=zoom_href)
 
     # --- central RPGACE Architecture node — a real, clickable drill-down
-    # into G3 (galaxy_map_river.html), not just a decorative label. The
+    # into G3 (galaxy_map_domain.html), not just a decorative label. The
     # G2 docstring's own "River-level (G3)... not-yet-built" note is now
     # stale the moment G3 ships — this link is the real proof it's live.
     rpgace = GALAXIES[0]
     nodes_svg.append(
-        f'<a href="galaxy_map_river.html" class="drill-link">'
+        f'<a href="galaxy_map_domain.html" class="drill-link">'
         f'<g class="node central"><circle cx="{cx}" cy="{cy}" r="46" fill="#0f0f1a" stroke="{rpgace["color"]}" stroke-width="3" filter="url(#glow)"/>'
         f'<text x="{cx}" y="{cy-6}" text-anchor="middle" font-size="26">{rpgace["icon"]}</text>'
         f'<text x="{cx}" y="{cy+18}" text-anchor="middle" font-size="11" fill="#E2E2EC" font-weight="700">{rpgace["label"]}</text>'
@@ -1806,7 +1806,7 @@ TEMPLATE = """<!DOCTYPE html>
   <code>scripts/graphify_river_group.py</code>'s own <code>EXTERNAL_CONNECTORS</code>/<code>SUPABASE_CORE</code>/
   <code>INTERACTION_TYPE_COLOR</code> (never re-derived). Mapping rules: <code>system_map_spec.md</code>.
   G2 of the ratified "RPGACE Total Systems Galaxy Map" /CEO plan — G3
-  (<a href="galaxy_map_river.html">domain drill-down, click the central node above</a>)
+  (<a href="galaxy_map_domain.html">domain drill-down, click the central node above</a>)
   and G4 (<a href="galaxy_map_module.html">module drill-down</a>) are both real and live.
   Real Aug 21 2026 fusion (Alex's own direct ask — "the l0 7 units should exist
   in the bubbles in on rpgace total systems own architecture map"): the 7-unit
@@ -2097,7 +2097,7 @@ def build_river_preview():
     each with a real evidence-derived module count (RIVER_MODULES, never
     invented prose) and a real link to that river's own L2 section
     (galaxy_map_module.html#river-{n}, matching galaxy_map_river.py's
-    own already-established link convention — galaxy_map_river.html
+    own already-established link convention — galaxy_map_domain.html
     itself has no per-river anchor id to target directly)."""
     chips = []
     for rnum in sorted(RIVER_NAME):
@@ -2148,7 +2148,7 @@ def build_tiers_block():
 
     galaxy_rows = ''.join(
         row(g['id'], g['icon'], g['color'], g['label'], g['role'],
-            href='galaxy_map_river.html' if g['id'] == 'rpgace_architecture' else None)
+            href='galaxy_map_domain.html' if g['id'] == 'rpgace_architecture' else None)
         for g in GALAXIES
     )
     harness_rows = ''.join(

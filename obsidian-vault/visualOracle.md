@@ -1,23 +1,27 @@
 ---
 module_name: "visualOracle"
 kind: module
-river_number: 11
-river_name: "River XI — Content Production Live"
-source_lines: "6725-7421"
+river_number: 2
+river_name: "Content & Video"
+source_lines: "6858-7578"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # visualOracle
 
-`rpgace_core.js:6725-7421`
+`rpgace_core.js:6858-7578`
 
-Member of [[11 — River XI — Content Production Live.md|River XI — Content Production Live]].
+Member of [[02 — Content & Video.md|Content & Video]].
 
 ## Real touch evidence
 
 - **UI**: renders real output, takes real input.
 - **Oracle**: 1 real call site(s) (sendToOracle/callOracle/fillGaps).
 - **Supabase**: 10 real touch(es) across content_productions, style_profiles, taxonomy_nodes, video_jobs.
+
+## Calls into
+
+- → [[dashDeck.md|dashDeck]]
 
 ## Called by
 

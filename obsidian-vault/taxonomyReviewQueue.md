@@ -1,17 +1,17 @@
 ---
 module_name: "taxonomyReviewQueue"
 kind: module
-river_number: 8
-river_name: "River VIII — The Confluence Pool"
-source_lines: "11312-12019"
+river_number: 3
+river_name: "Knowledge"
+source_lines: "12596-13302"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # taxonomyReviewQueue
 
-`rpgace_core.js:11312-12019`
+`rpgace_core.js:12596-13302`
 
-Member of [[08 — River VIII — The Confluence Pool.md|River VIII — The Confluence Pool]].
+Member of [[03 — Knowledge.md|Knowledge]].
 
 ## Real touch evidence
 
@@ -20,6 +20,8 @@ Member of [[08 — River VIII — The Confluence Pool.md|River VIII — The Conf
 
 ## Calls into
 
+- → [[dashDeck.md|dashDeck]]
+- → [[phylumPath.md|phylumPath]]
 - → [[taxonomyTree.md|taxonomyTree]]
 
 ---

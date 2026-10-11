@@ -1,17 +1,17 @@
 ---
 module_name: "oracleAppGrounding"
 kind: module
-river_number: 3
-river_name: "River III — The Oracle Current"
-source_lines: "9526-10017"
+river_number: 1
+river_name: "Oracle"
+source_lines: "10751-11260"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # oracleAppGrounding
 
-`rpgace_core.js:9526-10017`
+`rpgace_core.js:10751-11260`
 
-Member of [[03 — River III — The Oracle Current.md|River III — The Oracle Current]].
+Member of [[01 — Oracle.md|Oracle]].
 
 ## Real touch evidence
 
@@ -20,6 +20,7 @@ Member of [[03 — River III — The Oracle Current.md|River III — The Oracle 
 
 ## Calls into
 
+- → [[askMyData.md|askMyData]]
 - → [[oracleControl.md|oracleControl]]
 - → [[oracleFetchGuard.md|oracleFetchGuard]]
 

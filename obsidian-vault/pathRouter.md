@@ -1,21 +1,25 @@
 ---
 module_name: "pathRouter"
 kind: module
-river_number: 2
-river_name: "River II — The Great Confluence"
-source_lines: "33316-33548"
+river_number: 8
+river_name: "Platform"
+source_lines: "36092-36330"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # pathRouter
 
-`rpgace_core.js:33316-33548`
+`rpgace_core.js:36092-36330`
 
-Member of [[02 — River II — The Great Confluence.md|River II — The Great Confluence]].
+Member of [[08 — Platform.md|Platform]].
 
 ## Real touch evidence
 
 - **UI**: renders real output, takes real input.
+
+## Calls into
+
+- → [[dashDeck.md|dashDeck]]
 
 ## Hook signals received
 

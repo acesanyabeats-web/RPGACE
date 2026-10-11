@@ -1,17 +1,17 @@
 ---
 module_name: "oracleDevBridge"
 kind: module
-river_number: 3
-river_name: "River III — The Oracle Current"
-source_lines: "10019-10227"
+river_number: 7
+river_name: "Oversight"
+source_lines: "11262-11471"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # oracleDevBridge
 
-`rpgace_core.js:10019-10227`
+`rpgace_core.js:11262-11471`
 
-Member of [[03 — River III — The Oracle Current.md|River III — The Oracle Current]].
+Member of [[07 — Oversight.md|Oversight]].
 
 ## Real touch evidence
 

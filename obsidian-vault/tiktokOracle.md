@@ -1,26 +1,25 @@
 ---
 module_name: "tiktokOracle"
 kind: module
-river_number: 3
-river_name: "River III — The Oracle Current"
-source_lines: "5813-6038"
+river_number: 1
+river_name: "Oracle"
+source_lines: "5832-5995"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # tiktokOracle
 
-`rpgace_core.js:5813-6038`
+`rpgace_core.js:5832-5995`
 
-Member of [[03 — River III — The Oracle Current.md|River III — The Oracle Current]].
+Member of [[01 — Oracle.md|Oracle]].
 
 ## Real touch evidence
 
-- **UI**: renders real output, takes real input.
-- **Oracle**: 2 real call site(s) (sendToOracle/callOracle/fillGaps).
+- **UI**: no direct output, no direct input.
 
 ## Calls into
 
-- → [[oracleControl.md|oracleControl]]
+- → [[captionsPanel.md|captionsPanel]]
 
 ## Hook signals received
 

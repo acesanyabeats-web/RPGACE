@@ -208,7 +208,8 @@ def _crossing_reduced_ring_order(river_nums, cx, cy, radius):
                     improved = True
     return order, best_count
 
-OUT = Path('graphify-out/galaxy_map_river.html')
+OUT = Path('graphify-out/galaxy_map_domain.html')
+OLD_OUT = Path('graphify-out/galaxy_map_river.html')
 
 # Real, honest module-count-derived "tested" signal: a river with zero
 # entries in RIVER_MODULES (12-16, the Total-systems/dev-process rivers)
@@ -690,6 +691,19 @@ def main():
     # regeneration can never wipe it. See inject_plan_overlay().
     html = inject_plan_overlay(html, 'river')
     OUT.write_text(html, encoding='utf-8')
+    # M1 (Oct 11 2026): rivers became domains and this page was renamed.
+    # The old filename stays as a tiny redirect so Supabase rows and
+    # older docs that cite it still land somewhere real.
+    OLD_OUT.write_text(
+        '<!doctype html>\n<html lang="en"><head><meta charset="utf-8">\n'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">\n'
+        '<title>Galaxy Map Domains</title>\n'
+        '<meta http-equiv="refresh" content="0; url=galaxy_map_domain.html">\n'
+        '<script>location.replace("galaxy_map_domain.html"+location.hash);</script>\n'
+        '<style>body{font-family:system-ui,sans-serif;background:#0d1117;color:#e6edf3;padding:24px}a{color:#7cc4ff}</style>\n'
+        '</head><body><p>Rivers are now domains. This page moved to '
+        '<a href="galaxy_map_domain.html">galaxy_map_domain.html</a>.</p></body></html>\n',
+        encoding='utf-8')
     print(f"Wrote {OUT} — {len(RIVER_NAME)} domains, real RIVER_FLOWS edges drawn. "
           f"Real crossing-reduced ring order (greedy 2-opt local search): {crossings_before} crossings "
           f"(old numeric order) -> {crossings_after} crossings.")

@@ -1,23 +1,27 @@
 ---
 module_name: "mockOracle"
 kind: module
-river_number: 3
-river_name: "River III — The Oracle Current"
-source_lines: "34333-35056"
+river_number: 1
+river_name: "Oracle"
+source_lines: "37117-37841"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # mockOracle
 
-`rpgace_core.js:34333-35056`
+`rpgace_core.js:37117-37841`
 
-Member of [[03 — River III — The Oracle Current.md|River III — The Oracle Current]].
+Member of [[01 — Oracle.md|Oracle]].
 
 ## Real touch evidence
 
 - **UI**: renders real output, takes real input.
 - **Oracle**: 4 real call site(s) (sendToOracle/callOracle/fillGaps).
 - **Supabase**: 4 real touch(es) across oracle_fallback_queue.
+
+## Calls into
+
+- → [[dashDeck.md|dashDeck]]
 
 ## Hook signals received
 

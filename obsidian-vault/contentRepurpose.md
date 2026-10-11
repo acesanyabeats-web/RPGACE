@@ -1,28 +1,28 @@
 ---
 module_name: "contentRepurpose"
 kind: module
-river_number: 11
-river_name: "River XI — Content Production Live"
-source_lines: "7423-7958"
+river_number: 2
+river_name: "Content & Video"
+source_lines: "7580-8120"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # contentRepurpose
 
-`rpgace_core.js:7423-7958`
+`rpgace_core.js:7580-8120`
 
-Member of [[11 — River XI — Content Production Live.md|River XI — Content Production Live]].
+Member of [[02 — Content & Video.md|Content & Video]].
 
 ## Real touch evidence
 
 - **UI**: renders real output, takes real input.
-- **Oracle**: 5 real call site(s) (sendToOracle/callOracle/fillGaps).
+- **Oracle**: 1 real call site(s) (sendToOracle/callOracle/fillGaps).
 - **Supabase**: 2 real touch(es) across encyclopedia, taxonomy_nodes.
-- **External connectors**: NOTION_CREATE_NOTION_PAGE, SUPADATA_GET_YOUTUBE_CHANNEL.
 
 ## Calls into
 
 - → [[contentProductionLive.md|contentProductionLive]]
+- → [[dashDeck.md|dashDeck]]
 - → [[taxonomySync.md|taxonomySync]]
 
 ## Called by

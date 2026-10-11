@@ -168,7 +168,7 @@ ITEMS = [
         'code': 'G49',
         'category': 'Galaxy Development Framework — Yellow Confirm Queue',
         'item_name': 'G49 — River redefinition v2 (River V split into 2 real rivers)',
-        'description': ('HOW TO TEST: open graphify-out/galaxy_map_river.html. Confirm River V now '
+        'description': ('HOW TO TEST: open graphify-out/galaxy_map_domain.html. Confirm River V now '
             'reads "Daily Ops: Agenda, Schedule & Journal" (not the old combined name) and a new '
             'River XVII "The Research & Intel Stream" exists with its own 5 real modules '
             '(researchTabs/intelBatchList/intelDelete/intelDedup/ciAutoPropose).'),

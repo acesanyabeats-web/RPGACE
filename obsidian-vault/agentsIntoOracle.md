@@ -1,17 +1,17 @@
 ---
 module_name: "agentsIntoOracle"
 kind: module
-river_number: 3
-river_name: "River III — The Oracle Current"
-source_lines: "31347-31407"
+river_number: 1
+river_name: "Oracle"
+source_lines: "33872-33938"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # agentsIntoOracle
 
-`rpgace_core.js:31347-31407`
+`rpgace_core.js:33872-33938`
 
-Member of [[03 — River III — The Oracle Current.md|River III — The Oracle Current]].
+Member of [[01 — Oracle.md|Oracle]].
 
 ## Real touch evidence
 

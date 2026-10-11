@@ -1,21 +1,25 @@
 ---
 module_name: "careerStatCard"
 kind: module
-river_number: 10
-river_name: "River X — The Confluence of Chronicles"
-source_lines: "32113-32754"
+river_number: 6
+river_name: "Chronicles"
+source_lines: "34724-35410"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # careerStatCard
 
-`rpgace_core.js:32113-32754`
+`rpgace_core.js:34724-35410`
 
-Member of [[10 — River X — The Confluence of Chronicles.md|River X — The Confluence of Chronicles]].
+Member of [[06 — Chronicles.md|Chronicles]].
 
 ## Real touch evidence
 
 - **UI**: renders real output, no direct input.
+
+## Calls into
+
+- → [[dashDeck.md|dashDeck]]
 
 ## Called by
 

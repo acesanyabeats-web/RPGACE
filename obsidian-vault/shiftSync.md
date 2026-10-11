@@ -2,16 +2,16 @@
 module_name: "shiftSync"
 kind: module
 river_number: 5
-river_name: "River V — Daily Ops: Agenda, Schedule & Journal"
-source_lines: "31070-31272"
+river_name: "Schedule & Journal"
+source_lines: "33593-33796"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # shiftSync
 
-`rpgace_core.js:31070-31272`
+`rpgace_core.js:33593-33796`
 
-Member of [[05 — River V — Daily Ops Agenda, Schedule & Journal.md|River V — Daily Ops: Agenda, Schedule & Journal]].
+Member of [[05 — Schedule & Journal.md|Schedule & Journal]].
 
 ## Real touch evidence
 

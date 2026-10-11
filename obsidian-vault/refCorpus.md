@@ -1,22 +1,26 @@
 ---
 module_name: "refCorpus"
 kind: module
-river_number: 7
-river_name: "River VII — The Library Current"
-source_lines: "24829-25434"
+river_number: 2
+river_name: "Content & Video"
+source_lines: "27322-27928"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # refCorpus
 
-`rpgace_core.js:24829-25434`
+`rpgace_core.js:27322-27928`
 
-Member of [[07 — River VII — The Library Current.md|River VII — The Library Current]].
+Member of [[02 — Content & Video.md|Content & Video]].
 
 ## Real touch evidence
 
 - **UI**: renders real output, takes real input.
 - **Supabase**: 7 real touch(es) across reference_tracks.
+
+## Calls into
+
+- → [[dashDeck.md|dashDeck]]
 
 ## Called by
 

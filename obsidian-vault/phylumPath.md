@@ -1,31 +1,34 @@
 ---
 module_name: "phylumPath"
 kind: module
-river_number: 6
-river_name: "River VI — The Judgment Chamber"
-source_lines: "17685-19881"
+river_number: 3
+river_name: "Knowledge"
+source_lines: "19213-22353"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # phylumPath
 
-`rpgace_core.js:17685-19881`
+`rpgace_core.js:19213-22353`
 
-Member of [[06 — River VI — The Judgment Chamber.md|River VI — The Judgment Chamber]].
+Member of [[03 — Knowledge.md|Knowledge]].
 
 ## Real touch evidence
 
 - **UI**: renders real output, takes real input.
-- **Supabase**: 23 real touch(es) across bibliography, encyclopedia, oracle_fallback_queue, taxonomy_decision_log, taxonomy_links, taxonomy_proposals, taxonomy_tree.
+- **Supabase**: 36 real touch(es) across bibliography, encyclopedia, jargon_encyclopedia, oracle_fallback_queue, taxonomy_decision_log, taxonomy_links, taxonomy_proposals, taxonomy_tree.
 
 ## Calls into
 
 - → [[bookworm.md|bookworm]]
+- → [[dashDeck.md|dashDeck]]
 - → [[taxonomyTree.md|taxonomyTree]]
 
 ## Called by
 
 - ← [[bookworm.md|bookworm]]
+- ← [[jargonEncyclopedia.md|jargonEncyclopedia]]
+- ← [[taxonomyReviewQueue.md|taxonomyReviewQueue]]
 - ← [[taxonomyTree.md|taxonomyTree]]
 
 ## Hook signals received

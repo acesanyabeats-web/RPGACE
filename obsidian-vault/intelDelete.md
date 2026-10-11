@@ -1,17 +1,17 @@
 ---
 module_name: "intelDelete"
 kind: module
-river_number: 12
-river_name: "River XII — The Research & Intel Stream"
-source_lines: "12989-14038"
+river_number: 3
+river_name: "Knowledge"
+source_lines: "14275-15325"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # intelDelete
 
-`rpgace_core.js:12989-14038`
+`rpgace_core.js:14275-15325`
 
-Member of [[12 — River XII — The Research & Intel Stream.md|River XII — The Research & Intel Stream]].
+Member of [[03 — Knowledge.md|Knowledge]].
 
 ## Real touch evidence
 

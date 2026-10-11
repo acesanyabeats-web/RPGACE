@@ -1,17 +1,17 @@
 ---
 module_name: "contentProductionLive"
 kind: module
-river_number: 11
-river_name: "River XI — Content Production Live"
-source_lines: "25436-28170"
+river_number: 2
+river_name: "Content & Video"
+source_lines: "27930-30680"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # contentProductionLive
 
-`rpgace_core.js:25436-28170`
+`rpgace_core.js:27930-30680`
 
-Member of [[11 — River XI — Content Production Live.md|River XI — Content Production Live]].
+Member of [[02 — Content & Video.md|Content & Video]].
 
 ## Real touch evidence
 
@@ -23,6 +23,7 @@ Member of [[11 — River XI — Content Production Live.md|River XI — Content 
 
 - → [[beatLog.md|beatLog]]
 - → [[contentRepurpose.md|contentRepurpose]]
+- → [[dashDeck.md|dashDeck]]
 - → [[videoPipeline.md|videoPipeline]]
 - → [[visualOracle.md|visualOracle]]
 
