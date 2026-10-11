@@ -359,6 +359,17 @@ def main():
         key = input("  Anthropic API key: ").strip()
         if key: key_file.write_text(key)
 
+    # Oct 11 2026: YouTube/Instagram change often and an old yt-dlp fails
+    # every job (all 4 Oct 10-11 jobs failed: "yt-dlp ... older than 90 days",
+    # "HTTP Error 403"). Update it on every start; carry on if it can't.
+    log("Updating yt-dlp...")
+    try:
+        subprocess.run([sys.executable, "-m", "pip", "install", "-U", "yt-dlp", "--quiet"], timeout=120)
+        v = subprocess.run([sys.executable, "-m", "yt_dlp", "--version"], capture_output=True, text=True, timeout=30)
+        log(f"yt-dlp {v.stdout.strip() or '?'} ready")
+    except Exception as e:
+        log(f"yt-dlp update skipped: {e}")
+
     threading.Thread(target=poll_loop, daemon=True).start()
     server = HTTPServer(("localhost", PORT), Handler)
     log(f"HTTP server on port {PORT}")
