@@ -60,8 +60,9 @@ def finish(job_id, ok, reason=""):
 
 def main():
     if not os.environ.get("ANTHROPIC_API_KEY"):
-        print("No ANTHROPIC_API_KEY secret set - leaving the queue for the laptop.")
-        return 1
+        # Exit clean (a red run every 10 min would email Alex each time).
+        print("::warning::No INTEL_ANTHROPIC_KEY secret set - leaving the queue for the laptop.")
+        return 0
     max_jobs = int(os.environ.get("INTEL_MAX_JOBS", "3"))
     jobs = sb("GET", "intel_jobs?status=eq.queued&order=created_at.asc&select=id,url&limit=%d" % max_jobs)
     if not jobs:
