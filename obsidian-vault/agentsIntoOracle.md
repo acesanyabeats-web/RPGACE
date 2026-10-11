@@ -3,13 +3,13 @@ module_name: "agentsIntoOracle"
 kind: module
 river_number: 1
 river_name: "Oracle"
-source_lines: "33872-33938"
+source_lines: "33928-33994"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # agentsIntoOracle
 
-`rpgace_core.js:33872-33938`
+`rpgace_core.js:33928-33994`
 
 Member of [[01 — Oracle.md|Oracle]].
 

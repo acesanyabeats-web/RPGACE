@@ -95,7 +95,7 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>Which of 3 real paths every single Oracle call in the app takes, app-wide, until toggled again.</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>Real: every window.callOracle() call in main.js checks getMode() first. 'dummy' short-circuits to a synthetic labeled reply, zero API cost. 'fallback' queues the real prompt into oracle_fallback_queue instead of calling the live API. 'real' calls the live Anthropic API as normal.</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>A visible top-right toggle switch (red/green/gold) whose state persists in localStorage and is checked on literally every real Oracle send in the app.</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 37275-37287)</div><pre>  setMode: function(mode) {
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 37331-37343)</div><pre>  setMode: function(mode) {
     var self = RPGACE.modules.mockOracle;
     if (self.MODES.indexOf(mode) === -1) return;
     try { localStorage.setItem(self.MODE_KEY, mode); } catch (e) {}
@@ -126,7 +126,7 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>Whether Alex goes to the pending-placement review queue, the Phylum Path tree, or the Jargon Encyclopedia.</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>Nothing is decided by code any more: the picker shows the live pending-placement count (dashDeck._pendingReviewCount, set by _refreshGlance) under the Review button so Alex can see if review is worth it.</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>Review -&gt; taxonomyReviewQueue._openCard(); Browse -&gt; the Phylum Path page; Jargon -&gt; the Jargon Encyclopedia page.</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 16264-16304)</div><pre>  _openTaxonomy: function() {
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 16320-16360)</div><pre>  _openTaxonomy: function() {
     var self = RPGACE.modules.dashDeck;
     var pop = self._popup({
       eyebrow: '🌳 Taxonomy',
@@ -185,7 +185,7 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>Where a new insight/leaf attaches in the taxonomy tree — an existing node (by number) or a brand-new path from the phylum root — and whether it belongs in this phylum at all.</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>The full numbered, indented tree for that phylum (real Supabase read), plus 5 named checks (pedagogical clarity, non-redundancy, practical applicability, structural fit, expansion headroom) folded into one prompt.</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>A real, structured JSON verdict — fits (bool), attachTo (node number or null), newSteps, explainers, a one-sentence justification citing which check(s) drove it, and a self-scored 1-10 confidence — fed into _resolvePlacementDecision() and, past a human checkpoint, an actual taxonomy_tree write.</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 19724-19763)</div><pre>    decidePlacementScored: function(insightText, phylumNumber, priorLeaves, fallbackContext) {
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 19780-19819)</div><pre>    decidePlacementScored: function(insightText, phylumNumber, priorLeaves, fallbackContext) {
       var self = RPGACE.modules.phylumPath;
       return RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&amp;order=path.asc').then(function(existing) {
         existing = existing || [];
@@ -243,7 +243,7 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>What happens when Oracle judges an insight to be a near-duplicate of something already in the tree (returns zero newSteps).</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>attachNode's own node_type — a real 'leaf' means there's a real existing article to extend; anything else means there's nowhere real to attach the insight without a new step.</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>Existing leaf: regenerate that leaf's own article via _generateInsightContent() (the real 'extend' behavior, logged to taxonomy_decision_log) — a real dedup-extend, not a silent drop. No attach point: Promise.reject('Oracle returned no new steps to place this insight').</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 20017-20191)</div><pre>    _insertNewSteps: function(phylumNumber, attachNode, newSteps, explainers, insightText, sourceMeta) {
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 20073-20247)</div><pre>    _insertNewSteps: function(phylumNumber, attachNode, newSteps, explainers, insightText, sourceMeta) {
       var self = RPGACE.modules.phylumPath;
       if (!newSteps.length) {
         if (attachNode &amp;&amp; attachNode.node_type === 'leaf') {
@@ -436,7 +436,7 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>Whether a real window.callOracle() send gets RPGACE's own SELF_KNOWLEDGE/anatomy grounding block injected into the system prompt before it goes out.</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>The user's own last message text, scanned against 2 real keyword lists (TRIGGER_KEYWORDS for general app-knowledge grounding, ANATOMY_KEYWORDS for module-architecture grounding) — or a forced override via forceGroundNext() for a command that always needs it (Prod Oracle's "5thDimension").</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>Neither list matches -&gt; the original call goes out unmodified (falls through to orig.apply, zero cost added). Either matches -&gt; a real grounding block is built and appended to the system prompt, forwarding all 4 real arguments (including the streaming onChunk callback) so a grounded call never silently downgrades from streaming to blocking.</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 10886-10909)</div><pre>        // silently downgrades a streaming call to blocking - a 4th wrap would
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 10935-10958)</div><pre>        // silently downgrades a streaming call to blocking - a 4th wrap would
         // be a 4th chance to get that wrong for zero benefit.
         var anatomyHit = self.ANATOMY_KEYWORDS.some(function(k) { return lower.indexOf(k) !== -1; });
         // Aug 26 2026 (G41 Phase 1, Oracle Control) - a real THIRD gate,
@@ -478,7 +478,7 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>Which ONE real action button shows on a music_video ConID card — the real fix for the Aug 6 "duplicate stage" complaint, where every ConID used to render a FIXED set of buttons regardless of real progress.</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>The ConID row's own real content_productions.status column value ('Idea'/'Scripted'/'Filmed'/'Edited'/'Posted'/'Analysed').</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>A single real MUSIC_VIDEO_PRIMARY_ACTION[row.status] lookup returns exactly one {label, fn} pair to render — 'Posted'/'Analysed' correctly render nothing further (real last-stage), never a guessed extra button.</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 29433-29808)</div><pre>    _refreshWidget: function() {
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 29489-29864)</div><pre>    _refreshWidget: function() {
       var self = RPGACE.modules.contentProductionLive;
       var list = document.getElementById('cpl-list');
       if (!list) return;
@@ -872,7 +872,7 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>Which taxonomy phylum a newly-discovered Last.fm artist (via _addNewArtistsToTaxonomy) gets written into.</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>Nothing dynamic — this is a fixed literal, the real near-miss CLAUDE.md rule 13 was written about: the Aug 11 phylum renumber (11&lt;-&gt;12) needed a SECOND, separate grep for this raw literal because no adjacent "Phylum 12" text existed nearby to catch it in the first display-text-only pass.</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>Every new artist row from this path lands in Phylum 11 (Fons Educationis, post-renumber) — a real, silent-miss risk if this literal is ever forgotten in a future renumber.</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 26179-26186)</div><pre>            RPGACE.sb.secureWrite('taxonomy_nodes', 'insert', {
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 26235-26242)</div><pre>            RPGACE.sb.secureWrite('taxonomy_nodes', 'insert', {
               concept:       a.name,
               phylum_number: 11,
               phylum_name:   'Fons Educationis',

@@ -3,13 +3,13 @@ module_name: "encyclopediaQoL"
 kind: module
 river_number: 3
 river_name: "Knowledge"
-source_lines: "33940-34148"
+source_lines: "33996-34204"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # encyclopediaQoL
 
-`rpgace_core.js:33940-34148`
+`rpgace_core.js:33996-34204`
 
 Member of [[03 — Knowledge.md|Knowledge]].
 

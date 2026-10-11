@@ -3,13 +3,13 @@ module_name: "producerTools"
 kind: module
 river_number: 1
 river_name: "Oracle"
-source_lines: "6175-6214"
+source_lines: "6216-6255"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # producerTools
 
-`rpgace_core.js:6175-6214`
+`rpgace_core.js:6216-6255`
 
 Member of [[01 — Oracle.md|Oracle]].
 

@@ -3,13 +3,13 @@ module_name: "captionsPanel"
 kind: module
 river_number: 1
 river_name: "Oracle"
-source_lines: "5996-6173"
+source_lines: "6037-6214"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # captionsPanel
 
-`rpgace_core.js:5996-6173`
+`rpgace_core.js:6037-6214`
 
 Member of [[01 — Oracle.md|Oracle]].
 

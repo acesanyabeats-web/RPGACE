@@ -3,13 +3,13 @@ module_name: "pwaInstall"
 kind: module
 river_number: 8
 river_name: "Platform"
-source_lines: "34455-34501"
+source_lines: "34511-34557"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # pwaInstall
 
-`rpgace_core.js:34455-34501`
+`rpgace_core.js:34511-34557`
 
 Member of [[08 — Platform.md|Platform]].
 

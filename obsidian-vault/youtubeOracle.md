@@ -3,13 +3,13 @@ module_name: "youtubeOracle"
 kind: module
 river_number: 1
 river_name: "Oracle"
-source_lines: "5649-5830"
+source_lines: "5690-5871"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # youtubeOracle
 
-`rpgace_core.js:5649-5830`
+`rpgace_core.js:5690-5871`
 
 Member of [[01 — Oracle.md|Oracle]].
 

@@ -3,13 +3,13 @@ module_name: "errorLog"
 kind: module
 river_number: 7
 river_name: "Oversight"
-source_lines: "38040-38849"
+source_lines: "38096-38905"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # errorLog
 
-`rpgace_core.js:38040-38849`
+`rpgace_core.js:38096-38905`
 
 Member of [[07 — Oversight.md|Oversight]].
 

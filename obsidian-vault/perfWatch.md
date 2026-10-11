@@ -3,13 +3,13 @@ module_name: "perfWatch"
 kind: module
 river_number: 8
 river_name: "Platform"
-source_lines: "36332-36380"
+source_lines: "36388-36436"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # perfWatch
 
-`rpgace_core.js:36332-36380`
+`rpgace_core.js:36388-36436`
 
 Member of [[08 — Platform.md|Platform]].
 

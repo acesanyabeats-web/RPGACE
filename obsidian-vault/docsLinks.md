@@ -3,13 +3,13 @@ module_name: "docsLinks"
 kind: module
 river_number: 7
 river_name: "Oversight"
-source_lines: "32360-32450"
+source_lines: "32416-32506"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # docsLinks
 
-`rpgace_core.js:32360-32450`
+`rpgace_core.js:32416-32506`
 
 Member of [[07 — Oversight.md|Oversight]].
 

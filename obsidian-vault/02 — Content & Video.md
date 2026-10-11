@@ -12,14 +12,14 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[visualOracle]] — `rpgace_core.js:6858-7578`
-- [[contentRepurpose]] — `rpgace_core.js:7580-8120`
-- [[videoSummary]] — `rpgace_core.js:17244-17825`
-- [[beatLog]] — `rpgace_core.js:25963-27319`
-- [[refCorpus]] — `rpgace_core.js:27322-27928`
-- [[contentProductionLive]] — `rpgace_core.js:27930-30680`
-- [[videoPipeline]] — `rpgace_core.js:30682-30970`
-- [[conidPot]] — `rpgace_core.js:30972-31830`
+- [[visualOracle]] — `rpgace_core.js:6899-7619`
+- [[contentRepurpose]] — `rpgace_core.js:7621-8161`
+- [[videoSummary]] — `rpgace_core.js:17300-17881`
+- [[beatLog]] — `rpgace_core.js:26019-27375`
+- [[refCorpus]] — `rpgace_core.js:27378-27984`
+- [[contentProductionLive]] — `rpgace_core.js:27986-30736`
+- [[videoPipeline]] — `rpgace_core.js:30738-31026`
+- [[conidPot]] — `rpgace_core.js:31028-31886`
 
 ## Flows into
 

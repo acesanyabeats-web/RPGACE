@@ -3,13 +3,13 @@ module_name: "askMyData"
 kind: module
 river_number: 1
 river_name: "Oracle"
-source_lines: "9257-9480"
+source_lines: "9298-9528"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # askMyData
 
-`rpgace_core.js:9257-9480`
+`rpgace_core.js:9298-9528`
 
 Member of [[01 — Oracle.md|Oracle]].
 

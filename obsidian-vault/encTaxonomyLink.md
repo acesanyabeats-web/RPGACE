@@ -3,13 +3,13 @@ module_name: "encTaxonomyLink"
 kind: module
 river_number: 3
 river_name: "Knowledge"
-source_lines: "13304-13594"
+source_lines: "13354-13644"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # encTaxonomyLink
 
-`rpgace_core.js:13304-13594`
+`rpgace_core.js:13354-13644`
 
 Member of [[03 — Knowledge.md|Knowledge]].
 

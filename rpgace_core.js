@@ -15949,7 +15949,8 @@ RPGACE.register('dashDeck', {
       safe(sb.select('journal', 'select=id&entry_type=eq.decision&outcome=is.null&review_on=lte.' + today)),
       safe(sb.select('wishlist_items', 'select=id,name,created_at,status&status=neq.bought&created_at=gte.' + since)),
       safe(sb.select('intel_jobs', 'select=id&status=eq.queued')),
-      RPGACE.modules.screenshotInbox ? safe(RPGACE.modules.screenshotInbox.logic.count()) : Promise.resolve(null)
+      // count is a number, not rows, so not through safe() (which maps non-arrays to []).
+      RPGACE.modules.screenshotInbox ? RPGACE.modules.screenshotInbox.logic.count().catch(function() { return 0; }) : Promise.resolve(0)
     ]).then(function(r) {
       var due = [];
       var tax = (r[0] ? r[0].length : 0) + (r[1] ? r[1].length : 0);
@@ -46851,7 +46852,7 @@ RPGACE.register('shareInbox', {
         setTimeout(function() {
           if (!document.getElementById('share-sent')) return;
           var sub = document.getElementById('share-sent-sub');
-          if (sub) sub.textContent = 'Press Back to return to the app you shared from.';
+          if (sub) sub.textContent = (custom && custom.sub ? custom.sub + ' ' : '') + 'Press Back to return to the app you shared from.';
           var stay = document.createElement('button');
           stay.type = 'button'; stay.textContent = 'Stay in RPGACE';
           stay.style.cssText = 'margin-top:8px;min-height:44px;padding:8px 18px;border-radius:8px;background:none;border:1px solid var(--border,#2a2f3d);color:var(--text,#e2e2ec);font-size:15px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';

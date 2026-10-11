@@ -3,13 +3,13 @@ module_name: "phylumPath"
 kind: module
 river_number: 3
 river_name: "Knowledge"
-source_lines: "19213-22353"
+source_lines: "19269-22409"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # phylumPath
 
-`rpgace_core.js:19213-22353`
+`rpgace_core.js:19269-22409`
 
 Member of [[03 — Knowledge.md|Knowledge]].
 

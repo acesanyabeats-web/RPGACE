@@ -3,13 +3,13 @@ module_name: "oracleDevBridge"
 kind: module
 river_number: 7
 river_name: "Oversight"
-source_lines: "11262-11471"
+source_lines: "11311-11520"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # oracleDevBridge
 
-`rpgace_core.js:11262-11471`
+`rpgace_core.js:11311-11520`
 
 Member of [[07 — Oversight.md|Oversight]].
 

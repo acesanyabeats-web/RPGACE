@@ -3,13 +3,13 @@ module_name: "jargonEncyclopedia"
 kind: module
 river_number: 3
 river_name: "Knowledge"
-source_lines: "35787-36090"
+source_lines: "35843-36146"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # jargonEncyclopedia
 
-`rpgace_core.js:35787-36090`
+`rpgace_core.js:35843-36146`
 
 Member of [[03 — Knowledge.md|Knowledge]].
 

@@ -3,13 +3,13 @@ module_name: "contentProductionLive"
 kind: module
 river_number: 2
 river_name: "Content & Video"
-source_lines: "27930-30680"
+source_lines: "27986-30736"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # contentProductionLive
 
-`rpgace_core.js:27930-30680`
+`rpgace_core.js:27986-30736`
 
 Member of [[02 — Content & Video.md|Content & Video]].
 

@@ -12,10 +12,10 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[cookingOracle]] — `rpgace_core.js:38851-45704`
-- [[shoppingWishlist]] — `rpgace_core.js:45706-46207`
-- [[gymTracker]] — `rpgace_core.js:46209-46497`
-- [[dailyLife]] — `rpgace_core.js:46811-47168`
+- [[cookingOracle]] — `rpgace_core.js:38907-45760`
+- [[shoppingWishlist]] — `rpgace_core.js:45762-46263`
+- [[gymTracker]] — `rpgace_core.js:46265-46553`
+- [[dailyLife]] — `rpgace_core.js:47320-47648`
 
 ## Flows into
 

@@ -3,13 +3,13 @@ module_name: "pathRouter"
 kind: module
 river_number: 8
 river_name: "Platform"
-source_lines: "36092-36330"
+source_lines: "36148-36386"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # pathRouter
 
-`rpgace_core.js:36092-36330`
+`rpgace_core.js:36148-36386`
 
 Member of [[08 — Platform.md|Platform]].
 

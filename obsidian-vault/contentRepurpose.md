@@ -3,13 +3,13 @@ module_name: "contentRepurpose"
 kind: module
 river_number: 2
 river_name: "Content & Video"
-source_lines: "7580-8120"
+source_lines: "7621-8161"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # contentRepurpose
 
-`rpgace_core.js:7580-8120`
+`rpgace_core.js:7621-8161`
 
 Member of [[02 — Content & Video.md|Content & Video]].
 

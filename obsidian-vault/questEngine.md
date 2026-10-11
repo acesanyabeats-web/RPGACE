@@ -3,13 +3,13 @@ module_name: "questEngine"
 kind: module
 river_number: 5
 river_name: "Schedule & Journal"
-source_lines: "32452-33587"
+source_lines: "32508-33643"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # questEngine
 
-`rpgace_core.js:32452-33587`
+`rpgace_core.js:32508-33643`
 
 Member of [[05 — Schedule & Journal.md|Schedule & Journal]].
 

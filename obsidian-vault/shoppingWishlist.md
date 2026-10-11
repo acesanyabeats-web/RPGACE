@@ -3,13 +3,13 @@ module_name: "shoppingWishlist"
 kind: module
 river_number: 4
 river_name: "Habits"
-source_lines: "45706-46207"
+source_lines: "45762-46263"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # shoppingWishlist
 
-`rpgace_core.js:45706-46207`
+`rpgace_core.js:45762-46263`
 
 Member of [[04 — Habits.md|Habits]].
 

@@ -3,13 +3,13 @@ module_name: "ciAutoPropose"
 kind: module
 river_number: 3
 river_name: "Knowledge"
-source_lines: "10190-10463"
+source_lines: "10239-10512"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # ciAutoPropose
 
-`rpgace_core.js:10190-10463`
+`rpgace_core.js:10239-10512`
 
 Member of [[03 — Knowledge.md|Knowledge]].
 

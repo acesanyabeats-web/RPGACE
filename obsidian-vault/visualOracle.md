@@ -3,13 +3,13 @@ module_name: "visualOracle"
 kind: module
 river_number: 2
 river_name: "Content & Video"
-source_lines: "6858-7578"
+source_lines: "6899-7619"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # visualOracle
 
-`rpgace_core.js:6858-7578`
+`rpgace_core.js:6899-7619`
 
 Member of [[02 — Content & Video.md|Content & Video]].
 

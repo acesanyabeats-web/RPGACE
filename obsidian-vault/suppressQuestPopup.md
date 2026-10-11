@@ -3,13 +3,13 @@ module_name: "suppressQuestPopup"
 kind: module
 river_number: 5
 river_name: "Schedule & Journal"
-source_lines: "32322-32357"
+source_lines: "32378-32413"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # suppressQuestPopup
 
-`rpgace_core.js:32322-32357`
+`rpgace_core.js:32378-32413`
 
 Member of [[05 — Schedule & Journal.md|Schedule & Journal]].
 

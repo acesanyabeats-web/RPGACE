@@ -3,13 +3,13 @@ module_name: "quickActions"
 kind: module
 river_number: 1
 river_name: "Oracle"
-source_lines: "6652-6856"
+source_lines: "6693-6897"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # quickActions
 
-`rpgace_core.js:6652-6856`
+`rpgace_core.js:6693-6897`
 
 Member of [[01 — Oracle.md|Oracle]].
 

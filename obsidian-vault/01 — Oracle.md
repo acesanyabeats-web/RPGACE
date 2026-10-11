@@ -12,25 +12,25 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[youtubeOracle]] — `rpgace_core.js:5649-5830`
-- [[tiktokOracle]] — `rpgace_core.js:5832-5995`
-- [[captionsPanel]] — `rpgace_core.js:5996-6173`
-- [[producerTools]] — `rpgace_core.js:6175-6214`
-- [[prodOraclePanel]] — `rpgace_core.js:6217-6485`
-- [[instaOraclePanel]] — `rpgace_core.js:6487-6650`
-- [[quickActions]] — `rpgace_core.js:6652-6856`
-- [[askMyData]] — `rpgace_core.js:9257-9480`
-- [[oracleTreeGrounding]] — `rpgace_core.js:10465-10749`
-- [[oracleAppGrounding]] — `rpgace_core.js:10751-11260`
-- [[oracleFetchGuard]] — `rpgace_core.js:11473-11536`
-- [[agentsIntoOracle]] — `rpgace_core.js:33872-33938`
-- [[oracleControl]] — `rpgace_core.js:36389-37115`
-- [[mockOracle]] — `rpgace_core.js:37117-37841`
-- [[oracleProviderMode]] — `rpgace_core.js:37843-38038`
+- [[youtubeOracle]] — `rpgace_core.js:5690-5871`
+- [[tiktokOracle]] — `rpgace_core.js:5873-6036`
+- [[captionsPanel]] — `rpgace_core.js:6037-6214`
+- [[producerTools]] — `rpgace_core.js:6216-6255`
+- [[prodOraclePanel]] — `rpgace_core.js:6258-6526`
+- [[instaOraclePanel]] — `rpgace_core.js:6528-6691`
+- [[quickActions]] — `rpgace_core.js:6693-6897`
+- [[askMyData]] — `rpgace_core.js:9298-9528`
+- [[oracleTreeGrounding]] — `rpgace_core.js:10514-10798`
+- [[oracleAppGrounding]] — `rpgace_core.js:10800-11309`
+- [[oracleFetchGuard]] — `rpgace_core.js:11522-11585`
+- [[agentsIntoOracle]] — `rpgace_core.js:33928-33994`
+- [[oracleControl]] — `rpgace_core.js:36445-37171`
+- [[mockOracle]] — `rpgace_core.js:37173-37897`
+- [[oracleProviderMode]] — `rpgace_core.js:37899-38094`
 
 ## Flows into
 
-- → Knowledge — **A module calls code in another domain** (2 real call(s), e.g. captionsPanel -> pathways.beatContext; captionsPanel -> pathways.loadBeats)
+- → Knowledge — **A module calls code in another domain** (3 real call(s), e.g. captionsPanel -> pathways.beatContext; captionsPanel -> pathways.loadBeats; askMyData -> screenshotInbox.searchRows)
 - → Platform — **A module calls code in another domain** (2 real call(s), e.g. captionsPanel -> dashDeck._popup; mockOracle -> dashDeck._popup)
 
 ## Fed by

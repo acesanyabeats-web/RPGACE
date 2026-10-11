@@ -12,13 +12,13 @@ source: "graphify_river_group.py — real, not guessed"
 
 ## Real member modules (rpgace_core.js)
 
-- [[leftNav]] — `rpgace_core.js:11797-12493`
-- [[dashDeck]] — `rpgace_core.js:15327-17041`
-- [[config]] — `rpgace_core.js:24662-25957`
-- [[pwaInstall]] — `rpgace_core.js:34455-34501`
-- [[authGate]] — `rpgace_core.js:34503-34722`
-- [[pathRouter]] — `rpgace_core.js:36092-36330`
-- [[perfWatch]] — `rpgace_core.js:36332-36380`
+- [[leftNav]] — `rpgace_core.js:11846-12543`
+- [[dashDeck]] — `rpgace_core.js:15377-17097`
+- [[config]] — `rpgace_core.js:24718-26013`
+- [[pwaInstall]] — `rpgace_core.js:34511-34557`
+- [[authGate]] — `rpgace_core.js:34559-34778`
+- [[pathRouter]] — `rpgace_core.js:36148-36386`
+- [[perfWatch]] — `rpgace_core.js:36388-36436`
 
 ## Core infrastructure
 
@@ -47,7 +47,7 @@ Canonical source: `ai_tooling_and_rules_map.md`'s own "External AI/tool provider
 
 ## Flows into
 
-- → Knowledge — **A module calls code in another domain** (4 real call(s), e.g. leftNav -> researchTabs.show; dashDeck -> recall.renderInto; config -> taxonomyTree.isPlausiblePhylum)
+- → Knowledge — **A module calls code in another domain** (5 real call(s), e.g. leftNav -> researchTabs.show; dashDeck -> screenshotInbox.count; dashDeck -> recall.renderInto)
 - → Habits — **A module calls code in another domain** (1 real call(s), e.g. dashDeck -> dailyLife.renderInto)
 - → Chronicles — **A module calls code in another domain** (1 real call(s), e.g. dashDeck -> chroniclesLog._openCard)
 
@@ -55,7 +55,7 @@ Canonical source: `ai_tooling_and_rules_map.md`'s own "External AI/tool provider
 
 - ← [[01 — Oracle.md|Oracle]] — **A module calls code in another domain** (2 real call(s), e.g. captionsPanel -> dashDeck._popup; mockOracle -> dashDeck._popup)
 - ← [[02 — Content & Video.md|Content & Video]] — **A module calls code in another domain** (8 real call(s), e.g. visualOracle -> dashDeck._popup; contentRepurpose -> dashDeck._popup; refCorpus -> dashDeck._popup)
-- ← [[03 — Knowledge.md|Knowledge]] — **A module calls code in another domain** (10 real call(s), e.g. pathways -> dashDeck._popup; encyclopediaPosts -> dashDeck._popup; recall -> dashDeck._popup)
+- ← [[03 — Knowledge.md|Knowledge]] — **A module calls code in another domain** (11 real call(s), e.g. pathways -> dashDeck._popup; encyclopediaPosts -> dashDeck._popup; recall -> dashDeck._popup)
 - ← [[04 — Habits.md|Habits]] — **A module calls code in another domain** (4 real call(s), e.g. cookingOracle -> dashDeck._popup; shoppingWishlist -> dashDeck._popup; gymTracker -> dashDeck._popup)
 - ← [[05 — Schedule & Journal.md|Schedule & Journal]] — **A module calls code in another domain** (4 real call(s), e.g. agendaReminder -> dashDeck._popup; scheduleOracle -> dashDeck._popup; morningBrief -> dashDeck._ensureStash)
 - ← [[06 — Chronicles.md|Chronicles]] — **A module calls code in another domain** (1 real call(s), e.g. careerStatCard -> dashDeck._popup)

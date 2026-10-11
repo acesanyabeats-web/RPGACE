@@ -3,13 +3,13 @@ module_name: "oracleTreeGrounding"
 kind: module
 river_number: 1
 river_name: "Oracle"
-source_lines: "10465-10749"
+source_lines: "10514-10798"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # oracleTreeGrounding
 
-`rpgace_core.js:10465-10749`
+`rpgace_core.js:10514-10798`
 
 Member of [[01 — Oracle.md|Oracle]].
 

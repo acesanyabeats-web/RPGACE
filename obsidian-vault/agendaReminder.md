@@ -3,13 +3,13 @@ module_name: "agendaReminder"
 kind: module
 river_number: 5
 river_name: "Schedule & Journal"
-source_lines: "13596-13794"
+source_lines: "13646-13844"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # agendaReminder
 
-`rpgace_core.js:13596-13794`
+`rpgace_core.js:13646-13844`
 
 Member of [[05 — Schedule & Journal.md|Schedule & Journal]].
 

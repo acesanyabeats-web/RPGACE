@@ -3,13 +3,13 @@ module_name: "intelDelete"
 kind: module
 river_number: 3
 river_name: "Knowledge"
-source_lines: "14275-15325"
+source_lines: "14325-15375"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # intelDelete
 
-`rpgace_core.js:14275-15325`
+`rpgace_core.js:14325-15375`
 
 Member of [[03 — Knowledge.md|Knowledge]].
 

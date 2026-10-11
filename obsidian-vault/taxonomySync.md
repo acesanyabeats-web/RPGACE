@@ -3,13 +3,13 @@ module_name: "taxonomySync"
 kind: module
 river_number: 3
 river_name: "Knowledge"
-source_lines: "17827-18108"
+source_lines: "17883-18164"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # taxonomySync
 
-`rpgace_core.js:17827-18108`
+`rpgace_core.js:17883-18164`
 
 Member of [[03 — Knowledge.md|Knowledge]].
 

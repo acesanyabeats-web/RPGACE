@@ -3,13 +3,13 @@ module_name: "pathways"
 kind: module
 river_number: 3
 river_name: "Knowledge"
-source_lines: "9011-9255"
+source_lines: "9052-9296"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # pathways
 
-`rpgace_core.js:9011-9255`
+`rpgace_core.js:9052-9296`
 
 Member of [[03 — Knowledge.md|Knowledge]].
 

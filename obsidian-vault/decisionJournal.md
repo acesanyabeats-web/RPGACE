@@ -3,13 +3,13 @@ module_name: "decisionJournal"
 kind: module
 river_number: 5
 river_name: "Schedule & Journal"
-source_lines: "46499-46685"
+source_lines: "46555-46741"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # decisionJournal
 
-`rpgace_core.js:46499-46685`
+`rpgace_core.js:46555-46741`
 
 Member of [[05 — Schedule & Journal.md|Schedule & Journal]].
 

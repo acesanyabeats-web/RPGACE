@@ -3,13 +3,13 @@ module_name: "intelBatchList"
 kind: module
 river_number: 3
 river_name: "Knowledge"
-source_lines: "12528-12564"
+source_lines: "12578-12614"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # intelBatchList
 
-`rpgace_core.js:12528-12564`
+`rpgace_core.js:12578-12614`
 
 Member of [[03 — Knowledge.md|Knowledge]].
 

@@ -3,13 +3,13 @@ module_name: "oracleProviderMode"
 kind: module
 river_number: 1
 river_name: "Oracle"
-source_lines: "37843-38038"
+source_lines: "37899-38094"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # oracleProviderMode
 
-`rpgace_core.js:37843-38038`
+`rpgace_core.js:37899-38094`
 
 Member of [[01 — Oracle.md|Oracle]].
 

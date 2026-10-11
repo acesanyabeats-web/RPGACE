@@ -3,13 +3,13 @@ module_name: "refCorpus"
 kind: module
 river_number: 2
 river_name: "Content & Video"
-source_lines: "27322-27928"
+source_lines: "27378-27984"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # refCorpus
 
-`rpgace_core.js:27322-27928`
+`rpgace_core.js:27378-27984`
 
 Member of [[02 — Content & Video.md|Content & Video]].
 

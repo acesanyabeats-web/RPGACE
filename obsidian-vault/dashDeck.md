@@ -3,13 +3,13 @@ module_name: "dashDeck"
 kind: module
 river_number: 8
 river_name: "Platform"
-source_lines: "15327-17041"
+source_lines: "15377-17097"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # dashDeck
 
-`rpgace_core.js:15327-17041`
+`rpgace_core.js:15377-17097`
 
 Member of [[08 — Platform.md|Platform]].
 
@@ -49,6 +49,7 @@ Member of [[08 — Platform.md|Platform]].
 - ← [[recall.md|recall]]
 - ← [[refCorpus.md|refCorpus]]
 - ← [[scheduleOracle.md|scheduleOracle]]
+- ← [[screenshotInbox.md|screenshotInbox]]
 - ← [[shareInbox.md|shareInbox]]
 - ← [[shoppingWishlist.md|shoppingWishlist]]
 - ← [[taxonomyReviewQueue.md|taxonomyReviewQueue]]

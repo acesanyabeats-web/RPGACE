@@ -3,13 +3,13 @@ module_name: "leftNav"
 kind: module
 river_number: 8
 river_name: "Platform"
-source_lines: "11797-12493"
+source_lines: "11846-12543"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # leftNav
 
-`rpgace_core.js:11797-12493`
+`rpgace_core.js:11846-12543`
 
 Member of [[08 — Platform.md|Platform]].
 

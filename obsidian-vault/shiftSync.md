@@ -3,13 +3,13 @@ module_name: "shiftSync"
 kind: module
 river_number: 5
 river_name: "Schedule & Journal"
-source_lines: "33593-33796"
+source_lines: "33649-33852"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # shiftSync
 
-`rpgace_core.js:33593-33796`
+`rpgace_core.js:33649-33852`
 
 Member of [[05 — Schedule & Journal.md|Schedule & Journal]].
 

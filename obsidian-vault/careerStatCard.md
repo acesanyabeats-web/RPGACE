@@ -3,13 +3,13 @@ module_name: "careerStatCard"
 kind: module
 river_number: 6
 river_name: "Chronicles"
-source_lines: "34724-35410"
+source_lines: "34780-35466"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # careerStatCard
 
-`rpgace_core.js:34724-35410`
+`rpgace_core.js:34780-35466`
 
 Member of [[06 — Chronicles.md|Chronicles]].
 

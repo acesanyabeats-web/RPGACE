@@ -3,13 +3,13 @@ module_name: "cookingOracle"
 kind: module
 river_number: 4
 river_name: "Habits"
-source_lines: "38851-45704"
+source_lines: "38907-45760"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # cookingOracle
 
-`rpgace_core.js:38851-45704`
+`rpgace_core.js:38907-45760`
 
 Member of [[04 — Habits.md|Habits]].
 

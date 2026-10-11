@@ -3,13 +3,13 @@ module_name: "shareInbox"
 kind: module
 river_number: 3
 river_name: "Knowledge"
-source_lines: "46687-46809"
+source_lines: "46743-46870"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # shareInbox
 
-`rpgace_core.js:46687-46809`
+`rpgace_core.js:46743-46870`
 
 Member of [[03 — Knowledge.md|Knowledge]].
 
@@ -21,6 +21,10 @@ Member of [[03 — Knowledge.md|Knowledge]].
 ## Calls into
 
 - → [[dashDeck.md|dashDeck]]
+
+## Called by
+
+- ← [[screenshotInbox.md|screenshotInbox]]
 
 ## Hook signals received
 

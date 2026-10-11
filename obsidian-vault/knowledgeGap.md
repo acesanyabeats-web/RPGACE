@@ -3,13 +3,13 @@ module_name: "knowledgeGap"
 kind: module
 river_number: 3
 river_name: "Knowledge"
-source_lines: "18110-18499"
+source_lines: "18166-18555"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # knowledgeGap
 
-`rpgace_core.js:18110-18499`
+`rpgace_core.js:18166-18555`
 
 Member of [[03 — Knowledge.md|Knowledge]].
 

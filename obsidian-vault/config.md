@@ -3,13 +3,13 @@ module_name: "config"
 kind: module
 river_number: 8
 river_name: "Platform"
-source_lines: "24662-25957"
+source_lines: "24718-26013"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # config
 
-`rpgace_core.js:24662-25957`
+`rpgace_core.js:24718-26013`
 
 Member of [[08 — Platform.md|Platform]].
 

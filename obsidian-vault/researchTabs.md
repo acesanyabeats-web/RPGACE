@@ -3,13 +3,13 @@ module_name: "researchTabs"
 kind: module
 river_number: 3
 river_name: "Knowledge"
-source_lines: "11538-11795"
+source_lines: "11587-11844"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # researchTabs
 
-`rpgace_core.js:11538-11795`
+`rpgace_core.js:11587-11844`
 
 Member of [[03 — Knowledge.md|Knowledge]].
 

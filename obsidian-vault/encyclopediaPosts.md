@@ -3,13 +3,13 @@ module_name: "encyclopediaPosts"
 kind: module
 river_number: 3
 river_name: "Knowledge"
-source_lines: "9482-9892"
+source_lines: "9530-9941"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # encyclopediaPosts
 
-`rpgace_core.js:9482-9892`
+`rpgace_core.js:9530-9941`
 
 Member of [[03 — Knowledge.md|Knowledge]].
 
@@ -23,6 +23,7 @@ Member of [[03 — Knowledge.md|Knowledge]].
 - → [[dashDeck.md|dashDeck]]
 - → [[pathways.md|pathways]]
 - → [[recall.md|recall]]
+- → [[screenshotInbox.md|screenshotInbox]]
 
 ## Called by
 

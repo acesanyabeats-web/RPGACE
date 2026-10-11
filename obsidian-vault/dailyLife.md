@@ -3,13 +3,13 @@ module_name: "dailyLife"
 kind: module
 river_number: 4
 river_name: "Habits"
-source_lines: "46811-47168"
+source_lines: "47320-47648"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # dailyLife
 
-`rpgace_core.js:46811-47168`
+`rpgace_core.js:47320-47648`
 
 Member of [[04 — Habits.md|Habits]].
 

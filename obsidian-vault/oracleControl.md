@@ -3,13 +3,13 @@ module_name: "oracleControl"
 kind: module
 river_number: 1
 river_name: "Oracle"
-source_lines: "36389-37115"
+source_lines: "36445-37171"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # oracleControl
 
-`rpgace_core.js:36389-37115`
+`rpgace_core.js:36445-37171`
 
 Member of [[01 — Oracle.md|Oracle]].
 

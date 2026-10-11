@@ -3,13 +3,13 @@ module_name: "authGate"
 kind: module
 river_number: 8
 river_name: "Platform"
-source_lines: "34503-34722"
+source_lines: "34559-34778"
 source: "graphify_river_group.py — real, not guessed"
 ---
 
 # authGate
 
-`rpgace_core.js:34503-34722`
+`rpgace_core.js:34559-34778`
 
 Member of [[08 — Platform.md|Platform]].
 
