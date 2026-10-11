@@ -289,7 +289,9 @@ def process_job(job):
         if key_file.exists(): intel.ANTHROPIC_KEY = key_file.read_text().strip()
 
         orig_log = intel.log
+        last = {"msg": ""}
         def pl(msg, *a, **k):
+            last["msg"] = str(msg).strip()
             try:
                 req = urllib.request.Request(
                     f"{SB_URL}/rest/v1/intel_jobs?id=eq.{jid}",
@@ -305,9 +307,14 @@ def process_job(job):
         intel.log = orig_log
 
         status = "complete" if result else "error"
+        # Oct 11 2026: on failure keep the pipeline's last message (the real
+        # reason, e.g. "Metadata failed: ...") in `error` instead of losing it
+        # under "Done" - all 4 Oct 10-11 jobs failed with no reason recorded.
+        done = {"status": status, "progress": "Done"}
+        if not result: done["error"] = (last["msg"] or "Failed with no message - see the server window")[:300]
         req = urllib.request.Request(
             f"{SB_URL}/rest/v1/intel_jobs?id=eq.{jid}",
-            data=json.dumps({"status": status, "progress": "Done"}).encode(),
+            data=json.dumps(done).encode(),
             headers={**SB_HEADERS,"Prefer":"return=minimal"}, method="PATCH"
         )
         urllib.request.urlopen(req, timeout=10, context=SSL_CTX)
@@ -316,7 +323,7 @@ def process_job(job):
         try:
             req = urllib.request.Request(
                 f"{SB_URL}/rest/v1/intel_jobs?id=eq.{jid}",
-                data=json.dumps({"status":"error","progress":str(e)[:100]}).encode(),
+                data=json.dumps({"status":"error","progress":"Done","error":str(e)[:300]}).encode(),
                 headers={**SB_HEADERS,"Prefer":"return=minimal"}, method="PATCH"
             )
             urllib.request.urlopen(req, timeout=10, context=SSL_CTX)

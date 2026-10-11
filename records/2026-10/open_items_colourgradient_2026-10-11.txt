@@ -1,0 +1,33 @@
+/colourgradient — open RPGACE items, end of Oct 11 2026 session
+Ask (Alex, verbatim): "Start bat open, log rest in /colourgradient schematic"
+
+Evidence gathered live (Supabase project gripopghczmrbrhqtqbm, git, Vercel):
+
+🟡 CM1 Cook Mode (NEW row, Domains plan)
+   Live: commit c9f471a READY on production. recipes.steps_proposed = 8, steps_previous = 0 -> none accepted.
+   Headless 25/26 (1 = pre-existing harness network error). Missing: Alex hand-test + Accept/Deny per recipe.
+
+🟡 C1 N1 X1 O1 P1 G1 L1 B1 D1 N2 M1 S1 (existing rows, unchanged)
+   All built + headless-verified, none hand-tested by Alex. S1: screenshots table = 0 rows (never used live).
+
+🔵 CP1 Cooking as a separate sellable app (NEW row, Domains plan)
+   Idea only, records/2026-10/cooking_product_idea_2026-10-11.txt. Planning pass parked; brief first (rule 18).
+
+🔴 F12 boot freeze + setTimeout violations (Fable plan, unchanged)
+   error_log freeze row: 122 occurrences, last seen Oct 11 (latest 669ms). No code change.
+
+🟡 F2 info-toast capture tuning (Fable plan, unchanged)
+   The "Oracle is still answering" info toast row is still active in error_log; tuning not built.
+
+🔴 T1 Knowledge Tree -> Encyclopedia links (Domains plan, unchanged, blocked)
+   taxonomy_tree 0 rows; jargon_encyclopedia 523 pending.
+
+🟣-shaped finding -> error_log LOCAL-INTEL-001 (new active row)
+   Content Intelligence: all 4 shared videos (3 Instagram reels + 1 YouTube Short) ended status=error with
+   no reason saved. Last success Aug 1. Cause: local_server.py overwrote the pipeline's last log line with
+   "Done". Fix in repo (local_server/local_server.py keeps it in intel_jobs.error); it only takes effect
+   once copied to C:\Users\acesa\RPGACE on Alex's PC. Not graded purple on ceo_plan_items: no plan row
+   tracks this pipeline as green.
+
+Not written: evidence-append UPDATEs on F12/F2/T1/S1 came back "cancelled" twice (approval prompt);
+their colours are unchanged and already correct.
