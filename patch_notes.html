@@ -73,6 +73,19 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-11-video-analysis-cloud" style="margin-bottom:30px;">
+    <div class="card-title">🎥 Oct 11 — Video analysis works again, and runs without the laptop</div>
+    <div class="card-body">
+      Alex shared 4 videos (3 Instagram reels, 1 YouTube Short) on Oct 10–11; none had been analysed, and the last success was Aug 1. When he started the laptop server, all 4 failed with no reason saved. Alex then asked: "Can we make the server constantly online without needing my laptop?" and picked GitHub Actions first.
+      <ul>
+        <li><strong>Why they failed</strong> (three causes, found one at a time): yt-dlp on the PC was over 90 days old; newer yt-dlp needs Deno (a JavaScript runtime) to read YouTube; and the download asked YouTube for a single combined audio+video file, which YouTube mostly no longer serves. Fixed: the download now takes separate video and audio and ffmpeg merges them; <code>local_server.py</code> updates yt-dlp and Deno every time it starts.</li>
+        <li><strong>Failures keep their reason</strong>: <code>local_server.py</code> used to overwrite the real error with "Done". It now saves it on <code>intel_jobs.error</code>.</li>
+        <li><strong>Always-on</strong>: <code>.github/workflows/intel-queue.yml</code> checks the queue every 10 minutes and, if anything is waiting, runs <code>scripts/intel_cloud_runner.py</code>, which calls the same <code>local_server/rpgace_intel.py</code> pipeline unchanged. It works through the whole queue (35-minute budget), takes a job only if it's still queued (so the laptop can run alongside), and keeps titles/transcripts out of the public logs. It needs the repo secret <code>INTEL_ANTHROPIC_KEY</code> (added by Alex).</li>
+        <li><strong>YouTube blocks cloud servers</strong> ("Sign in to confirm you're not a bot"), so YouTube links wait for the laptop, marked "Waiting for the laptop". An optional <code>YT_COOKIES</code> secret lets the cloud try them.</li>
+      </ul>
+      Result: all 4 analysed. The 3 Instagram reels went through the cloud runner (mcdenil 7/10, Opus Jake 8/10, Baptiste O’Donovan 8/10); the YouTube Short ("Why 'ALL GIRLS ARE THE SAME' is PERFECT", Red Bow Music, 8/10) went through the laptop after the fixes. Alex replaced the PC's scripts with the repo versions (<code>curl</code> from GitHub; old copies kept as <code>*.old.py</code>).
+    </div>
+</div>
 <div class="card" id="card-2026-10-11-cook-mode" style="margin-bottom:30px;">
     <div class="card-title">🍳 Oct 11 — Cook Mode: one step per screen, Ube Express style</div>
     <div class="card-body">
