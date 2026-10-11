@@ -39020,6 +39020,16 @@ RPGACE.register('cookingOracle', {
   // — one real canonical copy (rule 8), referenced everywhere rather than
   // hand-copied a 3rd time, which would be exactly the kind of drift
   // rule 8's own composio.js/CORS precedent warns about.
+  // Oct 11 2026 — Cook Mode (Ube Express-style one step per screen). Alex:
+  // "One action per step" (records/2026-10/cook_mode_ube_style_2026-10-11.txt).
+  // Saved recipes had paragraph steps bundling 3-4 actions and step
+  // ingredient lists that missed ingredients, so a one-screen-per-step view
+  // needs these rules at generation time, not just a new screen. Shared by
+  // every prompt that asks for RECIPE_JSON (rule 8).
+  STEP_RULES_TEXT: 'COOK MODE STEPS: every step is ONE action a cook does with their hands, at most 25 words - never chain "then ... then" actions into one step (chopping several items in a row with one knife counts as one action). '
+    + 'For every step give done_cue: how the cook knows it is finished (e.g. "until golden, about 5 min", "stiff peaks - whites stand straight up"; "" if obvious), and equipment: what to have in hand plus heat level where it matters (e.g. "large frying pan, medium heat"; "" if none). '
+    + 'Every ingredient in the ingredients list must appear in the ingredients_used of at least one step, including salt, oil and garnishes. Keep wording short so the reply stays under its length limit. ',
+
   RECIPE_JSON_SHAPE: function(servingsBase) {
     // H21 (Sep 17 2026) — real, superseding shape change: each ingredient
     // now also carries "is_separable" (see SEPARABLE_TAG_TEXT below for
@@ -39027,7 +39037,7 @@ RPGACE.register('cookingOracle', {
     // for the defensive boolean coercion on the way back — rule 5, never
     // trust model JSON blindly).
     return '{"title":"...","servings_base":' + servingsBase + ',"ingredients":[{"name":"...","amount":<number>,"unit":"...","grams_estimate":<number>,"is_separable":<boolean>}],'
-      + '"steps":[{"order":1,"type":"prep_before_cooking","description":"...","active_duration_min":<number>,"passive_duration_min":<number>,"ingredients_used":[{"name":"...","amount":<number>,"unit":"..."}]}]}';
+      + '"steps":[{"order":1,"type":"prep_before_cooking","description":"...","active_duration_min":<number>,"passive_duration_min":<number>,"done_cue":"...","equipment":"...","ingredients_used":[{"name":"...","amount":<number>,"unit":"..."}]}]}';
   },
 
   // H18 (Sep 16 2026) — real, shared rendering metadata for the 5-color
@@ -39173,7 +39183,7 @@ RPGACE.register('cookingOracle', {
         // JSON blindly).
         return 'I have a recipe card open right now: "' + (r.title || 'Recipe') + '". Ingredients: ' + ingList + '. Method: ' + stepList + '. '
           + 'If I ask you to change this recipe (add/remove/edit an ingredient, or change/add/remove/reorder a step), do not just describe the change in prose - end your reply with a trailer on its own final line: RECIPE_UPDATE_JSON: followed by a compact JSON object with the COMPLETE UPDATED recipe (every ingredient and every step, not just the changed ones) in this exact shape: '
-          + self.RECIPE_JSON_SHAPE(r.servings_base || 4) + '. '
+          + self.STEP_RULES_TEXT + 'Shape: ' + self.RECIPE_JSON_SHAPE(r.servings_base || 4) + '. '
           + self.UNIT_PREFERENCE_TEXT
           + self.SEPARABLE_TAG_TEXT
           + 'Only include this trailer when you are actually proposing a concrete change to apply - never when just answering a question or giving an opinion with nothing specific to change.';
@@ -39974,6 +39984,279 @@ RPGACE.register('cookingOracle', {
       (self._liveCookIntervals || []).forEach(function(id) { clearInterval(id); });
       self._liveCookIntervals = [];
     },
+    // Oct 11 2026 — Cook Mode, Ube Express-style (Alex's own bar app:
+    // overview -> Start Build -> one step per screen). Full screen, one
+    // action per step: progress, "Step X of Y", what to have in hand, that
+    // step's ingredients with amounts, the instruction, a "done when" cue
+    // and the step's timer. Every step's screen is built once and only the
+    // current one shown, so a timer started on step 3 keeps counting when
+    // you move on; a strip at the top shows timers running on other steps
+    // (toasts sit under popups and would be hidden). Phone Back steps back
+    // (dashDeck nav stack, rule 8), position is remembered per key, and the
+    // screen is kept awake while cooking where the browser allows it.
+    // steps: logic._cookModeSteps() output. opts: { title, key, onDone }.
+    // Oct 11 2026 — Cook Mode: review proposed one-action steps for a saved
+    // recipe (recipes.steps_proposed). Accept moves the current steps to
+    // steps_previous (undo safety, no DB backup) and the proposal into steps;
+    // Keep current just clears the proposal. Nothing changes without a tap.
+    _reviewProposedSteps: function(recipeId, recipe, onChanged) {
+      var self = RPGACE.modules.cookingOracle;
+      var prop = recipe.steps_proposed || [];
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '🍳 Cook Mode steps', title: recipe.title || 'Recipe', width: '600px', scroll: true, noDefaultClose: true });
+      var intro = document.createElement('div');
+      intro.style.cssText = 'font-size:13px;color:var(--muted);margin-bottom:10px;';
+      intro.textContent = 'Your ' + (recipe.steps || []).length + ' current steps split into ' + prop.length + ' one-action steps for Cook Mode. Same ingredients and amounts; your current steps are kept so this can be undone.';
+      pop.box.appendChild(intro);
+      var gaps = self.logic._stepCoverageGaps({ ingredients: recipe.ingredients, steps: prop });
+      if (gaps.length) {
+        var w = document.createElement('div');
+        w.style.cssText = 'font-size:13px;color:#E2A83D;margin-bottom:10px;';
+        w.textContent = '⚠️ Not used in any proposed step: ' + gaps.join(', ');
+        pop.box.appendChild(w);
+      }
+      var ol = document.createElement('ol');
+      ol.style.cssText = 'margin:0 0 12px;padding-left:22px;display:grid;gap:10px;';
+      prop.forEach(function(st) {
+        var li = document.createElement('li');
+        li.style.cssText = 'font-size:14px;line-height:1.45;';
+        var t = document.createElement('div'); t.textContent = st.description || '';
+        li.appendChild(t);
+        var extra = [st.equipment ? '🍳 ' + st.equipment : '', st.done_cue ? '✓ ' + st.done_cue : ''].filter(Boolean).join('   ');
+        if (extra) { var e = document.createElement('div'); e.style.cssText = 'font-size:13px;color:var(--muted);margin-top:2px;'; e.textContent = extra; li.appendChild(e); }
+        var chips = self.ui._renderStepIngredients(st);
+        if (chips) li.appendChild(chips);
+        ol.appendChild(li);
+      });
+      pop.box.appendChild(ol);
+      var bar = document.createElement('div');
+      bar.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:10px;';
+      var keep = self.ui._mkBtn('Keep current steps', 'secondary', { extra: 'min-height:44px;' });
+      var acc = self.ui._mkBtn('✅ Use these steps', 'primary', { extra: 'min-height:44px;' });
+      bar.appendChild(keep); bar.appendChild(acc);
+      pop.box.appendChild(bar);
+      var busy = function(on) { keep.disabled = on; acc.disabled = on; };
+      acc.onclick = function() {
+        busy(true); acc.textContent = 'Saving…';
+        RPGACE.sb.secureWrite('recipes', 'update', { steps: prop, steps_previous: recipe.steps || [], steps_proposed: null }, 'id=eq.' + recipeId)
+          .then(function() {
+            RPGACE.cache.clear('recipes');
+            recipe.steps = prop; recipe.steps_proposed = null;
+            pop.close();
+            RPGACE.utils.toast('✅ Cook Mode steps saved', '#4caf82', 2500);
+            if (onChanged) onChanged();
+          })
+          .catch(function(e) { busy(false); acc.textContent = '✅ Use these steps'; RPGACE.utils.toast('⚠️ Could not save: ' + (e.message || e), '#CC4A4A', 4000, 'cookingOracle'); });
+      };
+      keep.onclick = function() {
+        busy(true);
+        RPGACE.sb.secureWrite('recipes', 'update', { steps_proposed: null }, 'id=eq.' + recipeId)
+          .then(function() { RPGACE.cache.clear('recipes'); recipe.steps_proposed = null; pop.close(); if (onChanged) onChanged(); })
+          .catch(function(e) { busy(false); RPGACE.utils.toast('⚠️ Could not update: ' + (e.message || e), '#CC4A4A', 4000, 'cookingOracle'); });
+      };
+    },
+
+    _cookModeIntervals: [],
+    _openCookMode: function(steps, opts) {
+      var self = RPGACE.modules.cookingOracle;
+      var dd = RPGACE.modules.dashDeck;
+      opts = opts || {};
+      if (!steps || !steps.length) { RPGACE.utils.toast('⚠️ This recipe has no steps to cook from', '#E2A83D', 2500); return; }
+      var old = document.getElementById('cook-mode');
+      if (old && old._cmClose) old._cmClose(false);
+      var storeKey = opts.key ? 'rpgace_cookmode_' + opts.key : null;
+      var idx = 0;
+      try { var saved = storeKey ? parseInt(localStorage.getItem(storeKey), 10) : NaN; if (saved > 0 && saved < steps.length) idx = saved; } catch (e) {}
+      var resumed = idx > 0;
+      self._cookModeIntervals = [];
+      var multi = steps.some(function(st) { return st.recipeTitle && st.recipeTitle !== steps[0].recipeTitle; });
+
+      var ov = document.createElement('div');
+      ov.id = 'cook-mode';
+      ov.setAttribute('role', 'dialog');
+      ov.setAttribute('aria-label', 'Cook Mode');
+      ov.style.cssText = 'position:fixed;inset:0;z-index:100000;background:var(--bg,#0d0f14);color:var(--text,#e2e2ec);display:flex;flex-direction:column;font-family:Rajdhani,sans-serif;padding:max(12px, env(safe-area-inset-top)) 16px max(12px, env(safe-area-inset-bottom));box-sizing:border-box;';
+
+      var head = document.createElement('div');
+      head.style.cssText = 'display:flex;align-items:center;gap:10px;';
+      var x = document.createElement('button');
+      x.type = 'button'; x.textContent = '✕'; x.setAttribute('aria-label', 'Close Cook Mode');
+      x.style.cssText = 'min-width:44px;min-height:44px;background:none;border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:18px;cursor:pointer;';
+      var ttl = document.createElement('div');
+      ttl.style.cssText = 'flex:1;min-width:0;font-size:15px;font-weight:700;letter-spacing:1px;color:var(--green);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+      ttl.textContent = '🍳 ' + (opts.title || 'Cook Mode');
+      head.appendChild(x); head.appendChild(ttl);
+      ov.appendChild(head);
+
+      var dots = document.createElement('div');
+      dots.style.cssText = 'display:flex;gap:3px;margin:12px 0 6px;';
+      steps.forEach(function() { var d = document.createElement('div'); d.style.cssText = 'flex:1;height:5px;border-radius:3px;background:var(--border);'; dots.appendChild(d); });
+      ov.appendChild(dots);
+      var label = document.createElement('div');
+      label.setAttribute('aria-live', 'polite');
+      label.style.cssText = 'display:flex;justify-content:space-between;gap:8px;font-size:14px;color:var(--muted);font-weight:700;';
+      ov.appendChild(label);
+      var strip = document.createElement('div');
+      strip.style.cssText = 'font-size:14px;font-weight:700;color:var(--gold);min-height:20px;margin-top:4px;';
+      ov.appendChild(strip);
+
+      var stack = document.createElement('div');
+      stack.style.cssText = 'flex:1;min-height:0;overflow-y:auto;margin:10px 0;display:grid;';
+      var panels = steps.map(function(st, i) {
+        var meta = self.ui.STEP_META[st.type] || { label: st.type || 'Step', color: 'var(--muted)' };
+        var pnl = document.createElement('div');
+        pnl.className = 'cm-step';
+        pnl.style.cssText = 'grid-area:1/1;display:flex;flex-direction:column;gap:14px;';
+        var card = document.createElement('div');
+        card.style.cssText = 'border:1px solid var(--border);border-left:4px solid ' + meta.color + ';border-radius:10px;padding:14px;background:rgba(255,255,255,0.03);';
+        var tag = document.createElement('div');
+        tag.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:' + meta.color + ';';
+        tag.textContent = meta.label + (multi && st.recipeTitle ? ' · ' + st.recipeTitle : '');
+        card.appendChild(tag);
+        if (st.equipment) {
+          var eq = document.createElement('div');
+          eq.style.cssText = 'font-size:16px;margin-top:8px;color:var(--text);';
+          eq.textContent = '🍳 ' + st.equipment;
+          card.appendChild(eq);
+        }
+        var ings = st.ingredients_used || [];
+        if (ings.length) {
+          var ul = document.createElement('ul');
+          ul.style.cssText = 'list-style:none;margin:10px 0 0;padding:0;display:grid;gap:6px;';
+          ings.forEach(function(u) {
+            var li = document.createElement('li');
+            li.style.cssText = 'display:flex;justify-content:space-between;gap:12px;font-size:18px;padding:6px 0;border-bottom:1px solid var(--border);';
+            var n = document.createElement('span'); n.textContent = u.name || '';
+            var a = document.createElement('span');
+            a.style.cssText = 'color:var(--gold);font-weight:700;white-space:nowrap;';
+            a.textContent = (u.amount != null && u.amount !== '') ? self.logic._fmtMeasurement(u.amount, u.unit) : '';
+            li.appendChild(n); li.appendChild(a); ul.appendChild(li);
+          });
+          card.appendChild(ul);
+        } else if (!st.equipment) {
+          var none = document.createElement('div');
+          none.style.cssText = 'font-size:15px;color:var(--muted);margin-top:8px;';
+          none.textContent = 'Nothing new to add on this step.';
+          card.appendChild(none);
+        }
+        pnl.appendChild(card);
+        var ins = document.createElement('div');
+        ins.style.cssText = 'font-size:21px;line-height:1.4;font-weight:600;';
+        ins.textContent = st.instruction;
+        pnl.appendChild(ins);
+        if (st.done_cue) {
+          var cue = document.createElement('div');
+          cue.style.cssText = 'font-size:16px;color:var(--green);';
+          cue.textContent = '✓ Done when: ' + st.done_cue;
+          pnl.appendChild(cue);
+        }
+        var tm = document.createElement('div');
+        tm.className = 'cm-timer';
+        tm.appendChild(self.ui._mkStepTimerControls({ description: st.instruction, active_duration_min: st.active_duration_min, passive_duration_min: st.passive_duration_min }, self._cookModeIntervals));
+        Array.prototype.forEach.call(tm.querySelectorAll('button'), function(b) { b.style.minHeight = '44px'; b.style.fontSize = '15px'; });
+        pnl.appendChild(tm);
+        stack.appendChild(pnl);
+        return pnl;
+      });
+      ov.appendChild(stack);
+
+      var nav = document.createElement('div');
+      nav.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:10px;';
+      var mk = function(primary) {
+        var b = document.createElement('button'); b.type = 'button';
+        b.style.cssText = 'min-height:52px;border-radius:10px;font-size:17px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;' +
+          (primary ? 'background:var(--green);border:none;color:#06140d;' : 'background:none;border:1px solid var(--border);color:var(--text);');
+        return b;
+      };
+      var back = mk(false), next = mk(true);
+      nav.appendChild(back); nav.appendChild(next);
+      ov.appendChild(nav);
+
+      var wake = null;
+      try { if (navigator.wakeLock) navigator.wakeLock.request('screen').then(function(w) { wake = w; }).catch(function() {}); } catch (e) {}
+
+      var save = function() { try { if (storeKey) localStorage.setItem(storeKey, String(idx)); } catch (e) {} };
+      var show = function() {
+        panels.forEach(function(p, i) { p.style.visibility = i === idx ? 'visible' : 'hidden'; p.setAttribute('aria-hidden', i === idx ? 'false' : 'true'); });
+        Array.prototype.forEach.call(dots.children, function(d, i) { d.style.background = i <= idx ? 'var(--green)' : 'var(--border)'; });
+        var st = steps[idx];
+        var mins = Math.max(st.active_duration_min || 0, st.passive_duration_min || 0);
+        label.innerHTML = '';
+        var l1 = document.createElement('span'); l1.textContent = 'Step ' + (idx + 1) + ' of ' + steps.length;
+        var l2 = document.createElement('span'); l2.textContent = mins ? ('~' + mins + ' min') : '';
+        label.appendChild(l1); label.appendChild(l2);
+        back.textContent = idx > 0 ? '← Back' : '✕ Close';
+        next.textContent = idx < steps.length - 1 ? 'Next →' : '✅ Done';
+        stack.scrollTop = 0;
+        save();
+      };
+      // Timers running on steps you're not looking at.
+      var lastDone = {};
+      var poll = setInterval(function() {
+        var bits = [];
+        panels.forEach(function(p, i) {
+          var t = p.querySelector('.cm-timer span');
+          if (!t || t.style.display === 'none' || !t.textContent) return;
+          var txt = t.textContent;
+          if (/Time's up/.test(txt) && !lastDone[i]) { lastDone[i] = 1; try { navigator.vibrate && navigator.vibrate([300, 150, 300]); } catch (e) {} }
+          if (i !== idx) bits.push('Step ' + (i + 1) + ' ' + txt);
+        });
+        strip.textContent = bits.join('  ·  ');
+      }, 1000);
+      self._cookModeIntervals.push(poll);
+
+      var entry = { overlay: ov, card: null };
+      var teardown = function(fromPop) {
+        (self._cookModeIntervals || []).forEach(function(id) { clearInterval(id); });
+        self._cookModeIntervals = [];
+        try { if (wake) wake.release(); } catch (e) {}
+        document.removeEventListener('keydown', onKey);
+        ov.remove();
+        if (dd && dd._navClosed) dd._navClosed(entry, fromPop === true);
+      };
+      entry.close = function(fromPop) {
+        // Phone Back on a later step goes to the previous step, like Ube's Build Mode.
+        if (fromPop === true && idx > 0) {
+          if (dd && dd._navClosed) dd._navClosed(entry, true);
+          idx--; show();
+          if (dd && dd._navPush) dd._navPush(entry);
+          return;
+        }
+        teardown(fromPop);
+      };
+      ov._cmClose = entry.close;
+      var finish = function() {
+        try { if (storeKey) localStorage.removeItem(storeKey); } catch (e) {}
+        teardown(false);
+        if (opts.onDone) { try { opts.onDone(); } catch (e) {} }
+        else RPGACE.utils.toast('🍽 Done — enjoy it', '#4caf82', 2500);
+      };
+      back.onclick = function() { if (idx > 0) { idx--; show(); } else teardown(false); };
+      next.onclick = function() { if (idx < steps.length - 1) { idx++; show(); } else finish(); };
+      x.onclick = function() { teardown(false); };
+      var onKey = function(e) {
+        if (e.key === 'ArrowRight') next.onclick();
+        else if (e.key === 'ArrowLeft' && idx > 0) back.onclick();
+        else if (e.key === 'Escape') teardown(false);
+      };
+      document.addEventListener('keydown', onKey);
+
+      document.body.appendChild(ov);
+      if (dd && dd._navPush) dd._navPush(entry);
+      show();
+      if (resumed) {
+        var note = document.createElement('div');
+        note.style.cssText = 'font-size:13px;color:var(--muted);';
+        note.textContent = 'Picked up where you left off. ';
+        var restart = document.createElement('button');
+        restart.type = 'button'; restart.textContent = 'Start from step 1';
+        restart.style.cssText = 'background:none;border:none;color:var(--gold);font-weight:700;text-decoration:underline;cursor:pointer;min-height:32px;font-family:inherit;font-size:13px;';
+        restart.onclick = function() { idx = 0; show(); note.remove(); };
+        note.appendChild(restart);
+        strip.parentNode.insertBefore(note, strip);
+      }
+      return { close: function() { teardown(false); }, go: function(i) { idx = Math.max(0, Math.min(steps.length - 1, i)); show(); } };
+    },
+
     _openLiveCookMode: function(plannedCookId) {
       var self = RPGACE.modules.cookingOracle;
       if (!plannedCookId) { RPGACE.utils.toast('⚠️ No cook session to open', '#E2A83D', 2200); return; }
@@ -40056,8 +40339,18 @@ RPGACE.register('cookingOracle', {
           RPGACE.utils.toast('✅ Cook finished — rate it in your Journal', '#4caf82', 3200);
         });
       };
+      // Oct 11 2026 — the same full-screen Cook Mode, stepping through the
+      // session's merged schedule (both recipes interleaved).
+      var cookModeBtn = self.ui._mkBtn('▶ Cook Mode', 'inline', { color: 'var(--green)' });
+      cookModeBtn.onclick = function() {
+        self.ui._openCookMode(self.logic._cookModeSteps(pc.schedule.blocks, 1), {
+          title: 'Cook session', key: 'planned_' + pc.id,
+          onDone: function() { RPGACE.utils.toast('🍽 All steps done — tap ✅ Finished when you\'ve eaten', '#4caf82', 3500); },
+        });
+      };
       var headerBtns = document.createElement('div');
-      headerBtns.style.cssText = 'display:flex;gap:6px;align-items:center;';
+      headerBtns.style.cssText = 'display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end;';
+      headerBtns.appendChild(cookModeBtn);
       headerBtns.appendChild(finishBtn);
       headerBtns.appendChild(closeBtn);
       header.appendChild(headerBtns);
@@ -40602,6 +40895,50 @@ RPGACE.register('cookingOracle', {
         });
       }
 
+      // Oct 11 2026 — Cook Mode overview header, Ube Express-style: a spec
+      // line, one big Start Cooking button, a warning for any ingredient no
+      // step uses, and (for a saved recipe) proposed one-action steps
+      // waiting for Alex's Accept/Deny. renderSpec() re-runs whenever the
+      // steps change (renderSteps calls it).
+      var specBox = document.createElement('div');
+      specBox.style.cssText = 'margin-bottom:14px;';
+      box.appendChild(specBox);
+      var renderSpec = function() {
+        specBox.innerHTML = '';
+        var st = recipe.steps || [];
+        var hands = st.reduce(function(m, x) { return m + (x.active_duration_min || 0); }, 0);
+        var line = document.createElement('div');
+        line.style.cssText = 'font-size:14px;color:var(--muted);margin-bottom:10px;';
+        line.textContent = st.length + ' step' + (st.length === 1 ? '' : 's') + (hands ? ' · ~' + hands + ' min hands-on' : '') + ' · serves ' + (scaleInput ? (scaleInput.value || recipe.servings_base || 4) : (recipe.servings_base || 4));
+        specBox.appendChild(line);
+        var go = self.ui._mkBtn('▶ Start Cooking', 'primary', { extra: 'width:100%;min-height:48px;font-size:16px;' });
+        go.disabled = !st.length;
+        go.onclick = function() {
+          var base = recipe.servings_base || 4;
+          var want = parseFloat(scaleInput && scaleInput.value) || base;
+          self.ui._openCookMode(self.logic._cookModeSteps(st, want / base, recipe.title), {
+            title: recipe.title, key: savedRecipeId ? 'recipe_' + savedRecipeId : null,
+          });
+        };
+        specBox.appendChild(go);
+        var gaps = self.logic._stepCoverageGaps(recipe);
+        if (gaps.length) {
+          var warn = document.createElement('div');
+          warn.style.cssText = 'font-size:13px;color:#E2A83D;margin-top:8px;';
+          warn.textContent = '⚠️ Not used in any step, so Cook Mode never shows it: ' + gaps.join(', ');
+          specBox.appendChild(warn);
+        }
+        if (savedRecipeId && Array.isArray(recipe.steps_proposed) && recipe.steps_proposed.length) {
+          var ban = document.createElement('div');
+          ban.style.cssText = 'margin-top:10px;padding:10px 12px;border:1px solid rgba(76,175,130,0.4);border-radius:8px;background:rgba(76,175,130,0.08);font-size:13px;';
+          ban.textContent = '📋 New Cook Mode steps ready: ' + recipe.steps_proposed.length + ' one-action steps (now ' + st.length + '). ';
+          var rv = self.ui._mkBtn('Review', 'inline', { color: 'var(--green)' });
+          rv.onclick = function() { self.ui._reviewProposedSteps(savedRecipeId, recipe, function() { renderSteps(); }); };
+          ban.appendChild(rv);
+          specBox.appendChild(ban);
+        }
+      };
+
       // Real serving scaler - recomputes every displayed ingredient amount
       // live against recipe.servings_base, never mutates the stored recipe
       // object (Save always writes the ORIGINAL base-serving amounts;
@@ -40740,7 +41077,7 @@ RPGACE.register('cookingOracle', {
         });
       };
       renderIngredients();
-      scaleInput.oninput = renderIngredients;
+      scaleInput.oninput = function() { renderIngredients(); renderSpec(); };
 
       // H10 (Sep 13 2026, real Alex ask - "no option to add or suggest
       // ingredients (like meat, love meat, or fish)") - real /interrogation
@@ -41071,6 +41408,7 @@ RPGACE.register('cookingOracle', {
 
         stepList.appendChild(row);
         }); // end (recipe.steps || []).forEach
+        renderSpec();
       }; // end renderSteps
       renderSteps();
       box.appendChild(stepList);
@@ -42774,7 +43112,7 @@ RPGACE.register('cookingOracle', {
         + 'For each step, also list exactly which ingredients it uses and how much of each, in the shape ingredients_used:[{"name":"...","amount":<number>,"unit":"..."}] - if an ingredient is used across more than one step, split its amount across those steps rather than repeating the full amount each time. '
         + self.SEPARABLE_TAG_TEXT
         + 'Then, on its own final line, output exactly: RECIPE_JSON: followed by a compact single-line JSON object (no code fences, no backticks) in the shape '
-        + self.RECIPE_JSON_SHAPE(servings || 4) + '. '
+        + self.STEP_RULES_TEXT + 'Shape: ' + self.RECIPE_JSON_SHAPE(servings || 4) + '. '
         + 'Ingredient names must be simple, generic, singular/lowercase (e.g. "garlic clove" not "3 cloves of fresh garlic") so they can be tracked consistently across recipes.';
 
       // H18 (Sep 16 2026, real Alex correction: "not pantry only, stock
@@ -42920,6 +43258,48 @@ RPGACE.register('cookingOracle', {
         }).map(function(u) {
           return { name: u.name.trim(), amount: (typeof u.amount === 'number') ? u.amount : null, unit: (typeof u.unit === 'string') ? u.unit : '' };
         });
+        // Oct 11 2026 (Cook Mode) — optional short strings, never trusted raw.
+        ['done_cue', 'equipment'].forEach(function(k) {
+          step[k] = (typeof step[k] === 'string') ? step[k].trim().slice(0, 90) : '';
+        });
+      });
+    },
+
+    // Oct 11 2026 (Cook Mode) — ingredients that no step ever uses. A
+    // one-step-per-screen cook only ever sees each step's own list, so a
+    // missing one would silently never be added; flag it on the card.
+    _stepCoverageGaps: function(recipe) {
+      var used = {};
+      (recipe && recipe.steps || []).forEach(function(st) {
+        (st.ingredients_used || []).forEach(function(u) { if (u && u.name) used[String(u.name).trim().toLowerCase()] = 1; });
+      });
+      return (recipe && recipe.ingredients || []).map(function(i) { return i && i.name; })
+        .filter(function(n) { return n && !used[String(n).trim().toLowerCase()]; });
+    },
+
+    // Oct 11 2026 (Cook Mode) — one shape for both a single recipe's steps
+    // and a planned cook's merged schedule blocks. scale multiplies amounts
+    // (the card's serving scaler); blocks already carry their recipe title.
+    _cookModeSteps: function(stepsOrBlocks, scale, recipeTitle) {
+      scale = scale || 1;
+      var isBlocks = (stepsOrBlocks || []).some(function(x) { return x && x.ingredientsUsed !== undefined; });
+      var list = (stepsOrBlocks || []).slice().sort(function(a, b) {
+        return isBlocks ? (a.start - b.start) : ((a.order || 0) - (b.order || 0));
+      });
+      return list.map(function(x) {
+        var ings = (isBlocks ? x.ingredientsUsed : x.ingredients_used) || [];
+        return {
+          recipeTitle: isBlocks ? (x.recipeTitle || '') : (recipeTitle || ''),
+          type: x.type || '',
+          instruction: x.description || '',
+          done_cue: isBlocks ? (x.doneCue || '') : (x.done_cue || ''),
+          equipment: isBlocks ? (x.equipment || '') : (x.equipment || ''),
+          active_duration_min: isBlocks ? Math.max(0, (x.end || 0) - (x.start || 0)) : (x.active_duration_min || 0),
+          passive_duration_min: isBlocks ? 0 : (x.passive_duration_min || 0),
+          ingredients_used: ings.map(function(u) {
+            return { name: u.name, unit: u.unit || '', amount: (typeof u.amount === 'number') ? Math.round(u.amount * scale * 100) / 100 : u.amount };
+          }),
+        };
       });
     },
 
@@ -42996,7 +43376,7 @@ RPGACE.register('cookingOracle', {
         + self.UNIT_PREFERENCE_TEXT
         + self.SEPARABLE_TAG_TEXT
         + 'Then end your reply on its own final line with: RECIPE_JSON: followed by a compact single-line JSON object (no code fences, no backticks) in the shape '
-        + self.RECIPE_JSON_SHAPE(4) + '. '
+        + self.STEP_RULES_TEXT + 'Shape: ' + self.RECIPE_JSON_SHAPE(4) + '. '
         + 'Only include this trailer when a specific dish is genuinely decided and you are finalizing it for real - if his request is still vague or you are only brainstorming/discussing options, answer normally with no trailer.';
     },
 
@@ -45116,7 +45496,7 @@ RPGACE.register('cookingOracle', {
     // real caller that needs to REOPEN an already-saved recipe rather than
     // showing a fresh generation.
     _loadSavedRecipe: function(recipeId, cb) {
-      RPGACE.sb.select('recipes', 'select=id,title,servings_base,steps&id=eq.' + recipeId + '&limit=1')
+      RPGACE.sb.select('recipes', 'select=id,title,servings_base,steps,steps_proposed&id=eq.' + recipeId + '&limit=1')
         .then(function(rows) {
           var row = rows && rows[0];
           if (!row) { cb('recipe not found'); return; }
@@ -45131,7 +45511,7 @@ RPGACE.register('cookingOracle', {
           RPGACE.sb.select('recipe_ingredients', 'select=ingredient_id,amount,unit,grams_estimate,is_separable,ingredients(name)&recipe_id=eq.' + recipeId)
             .then(function(riRows) {
               var recipe = {
-                title: row.title, servings_base: row.servings_base, steps: row.steps || [],
+                title: row.title, servings_base: row.servings_base, steps: row.steps || [], steps_proposed: Array.isArray(row.steps_proposed) ? row.steps_proposed : null,
                 ingredients: (riRows || []).map(function(r) {
                   // H21 (Sep 17 2026) — a pre-existing recipe saved before
                   // this shipped has a real NULL here (column default is
@@ -45600,6 +45980,7 @@ RPGACE.register('cookingOracle', {
           recipeId: bestChain.id, recipeTitle: bestChain.title, type: winStep.type,
           description: winStep.description || '', start: start, end: equipEnd,
           ingredientsUsed: winStep.ingredients_used || [], // H14 - carried through for the schedule preview's own real measurement chips
+          doneCue: winStep.done_cue || '', equipment: winStep.equipment || '', // Oct 11 2026 - Cook Mode
         });
         bestChain.prevEnd = equipEnd;
         bestChain.nextIndex++;

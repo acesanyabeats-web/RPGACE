@@ -1,0 +1,15 @@
+Ube-style Overview + Cook Mode in RPGACE Cooking — decisions (Oct 11 2026), verbatim.
+Origin: Alex wants Ube Express's "cocktail spec system with overview and step by step" (his own app,
+acesanyabeats-web/UbeExpress: overview page -> Start Build -> one step per screen) in RPGACE and in the future cooking app.
+Alex: "yes, do a first in RPGACE, also the step generation needs to be thought through"
+
+Evidence before brief: 8 saved recipes, avg 8 steps; steps are paragraphs bundling 3-4 actions
+(e.g. Chocolate Orange Mousse: "zest both oranges... juice one... whip the double cream... refrigerate");
+step ingredients_used incomplete (a "fold in the whipped cream" step lists 0 ingredients).
+
+Q: How small should each Cook Mode step be?          -> "One action per step (Recommended)"
+Q: The 8 saved recipes with paragraph steps?          -> "Split all 8 now"
+Q: Photos in Cook Mode for the first version?         -> "We won't do photos"
+
+Note given to Alex: this session can't call the live Oracle, so the 8 splits are authored by Claude Code from each
+recipe's real data and land as PROPOSED steps he Accepts/Denies per recipe; nothing overwrites current steps unasked.
