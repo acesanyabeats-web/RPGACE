@@ -1,0 +1,42 @@
+S1 — Screenshot Inbox: decisions + build record (Oct 11 2026)
+Plan: ceo_plans b77ac6ff-733a-4ff2-a6ca-9f075f9fad52, item S1 ("Screenshot inbox: drop screenshots, Oracle reads + indexes them").
+Origin: 50-ideas pass Oct 10 (#01 Screenshot brain, #03 photo search), Alex: "Yes, later".
+
+== ALEX'S ANSWERS (verbatim) ==
+Q (first ask, before a brief): keep the image?        -> "what screenshot, what are you talking about?"
+   (Session had skipped explaining what S1 was. Led to rule 18: brief before any plan step.)
+Q: After Oracle reads a screenshot, what should happen? -> "Index + suggest a home (Recommended)"
+Q: How should screenshots get in?                      -> "1 and 2"  (upload in the app AND the Android share sheet)
+Q: D5 when?                                            -> "Skip D5"
+Alex after the brief: "yes build S1, whats d5?"
+Q (re-asked with plain explanation): keep the picture or text only? -> "Keep it, locked (Recommended)"
+Standing ask: "before commiting a plan step, give me a breif on whats planned so im always included" -> CLAUDE.md rule 18 + CEO Step 0.
+
+== WHAT WAS BUILT ==
+Supabase (additive, plan-approved): table screenshots (RLS on, ZERO policies -> anon/authenticated see nothing),
+  search tsvector kept by trigger screenshots_search_update; private bucket 'screenshots' (no storage policies, 8MB, jpeg/png/webp).
+api/data-write.js: action=screenshots, ops upload|update|list|count|delete, requireAuth + service role. Still 11 of 12 functions.
+rpgace_core.js: module screenshotInbox (domain knowledge, 69 modules); RPGACE.utils.resizeImage + oracleVision lifted from
+  dailyLife (fridge photo now calls them; rule 8). Menu: Knowledge > Screenshot Inbox; dashDeck card 'screenshots';
+  dashboard Due row "N screenshots to sort"; askMyData source 'screenshots' (secure: reads via the endpoint, no image URLs);
+  encyclopedia Saved list opens 'shot:' ideas in the inbox; shareInbox.sentScreen takes optional {title, sub}.
+Routing (one tap + inline confirm, nothing automatic): Wishlist (shoppingWishlist.logic._addItem), idea card
+  (encyclopedia_insights, source_entry_id shot:<id>, recall schedule), Journal (journal row, source screenshot_inbox),
+  Recipe (opens cookingOracle's own Generate form prefilled). Also Keep in inbox, two-tap Delete (image + row).
+Share sheet: manifest share_target -> POST multipart /share-target with files[shared_image]. sw.js parks an image in cache
+  'rpgace-share' -> /?share_image=<key>; a link/text share is redirected to the old ?share_url=&share_text=&share_title= GET,
+  so shareInbox is unchanged. CACHE_NAME bumped.
+
+== VERIFIED ==
+Headless Chromium, API mocked (sandbox can't reach Supabase/Vercel), real module code unmocked: 28/29 checks pass; the 1
+failure is a pre-existing "Failed to fetch" from conidPot.getIdeasForBrief at login that also occurs on the pre-S1 code
+(harness network block), not S1. Includes a real service worker test: image share parked + redirected, link share redirected
+to the old GET. Two real bugs found by the tests and fixed: Due count went through safe() (number -> []), and the sent
+screen's fallback text dropped Oracle's description.
+Galaxy Map regenerated (idempotent), 25 anchor line numbers remapped by exact diff vs 69c8c79, 26/26 fresh.
+
+== HONEST LIMITS ==
+- Untested by Alex. Needs: Add screenshots on phone + PC, share an image from the gallery, each routing button.
+- Android must re-read the manifest before images appear in the share sheet (can take a while; reinstalling the app forces it).
+- If the service worker isn't active (very first launch), a share POST would hit Vercel and fail; installed apps have it.
+- Each screenshot costs one Oracle vision call (about a fridge photo).

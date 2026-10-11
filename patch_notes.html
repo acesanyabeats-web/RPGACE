@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-11-s1-screenshot-inbox" style="margin-bottom:30px;">
+    <div class="card-title">📸 Oct 11 — S1: Screenshot Inbox</div>
+    <div class="card-body">
+      Plan item S1 (ideas #01 "Screenshot brain" and #03 "photo search" from the Oct 10 50-ideas pass). Alex's answers: keep the picture, locked; index it and suggest a home; get screenshots in by uploading in the app and by sharing from the Android gallery. D5 skipped.
+      <ul>
+        <li><strong>Where</strong>: Knowledge &gt; 📸 Screenshot Inbox. Add several at once; each is shrunk, saved and read by Oracle, which saves the visible text, a one-line description, tags and a kind, and suggests up to two homes (marked ★).</li>
+        <li><strong>Homes, all one tap plus a confirm</strong>: Add to Wishlist (with an optional price and why), Save as idea card (joins the recall schedule in the Morning Brief), Start a recipe (opens Cooking's Generate form already filled in), Journal it. Also Keep in inbox, and a two-tap Delete that removes the image too.</li>
+        <li><strong>Locked</strong>: the new <code>screenshots</code> table and private bucket have no access rules for the public key at all; everything goes through <code>/api/data-write</code> after login (a new <code>screenshots</code> action, so still 11 of 12 server functions).</li>
+        <li><strong>Find it again</strong>: search box in the inbox, Ask Oracle ("what did I screenshot about…" via Ask My Data, text only), and a "N screenshots to sort" row in the dashboard's Due section.</li>
+        <li><strong>Phone share sheet</strong>: the app's share target is now a form that also takes images. The service worker parks a shared image for a few seconds, the app saves and reads it, then shows "Saved to Screenshot Inbox" and returns you to where you shared from. Link sharing still goes through the exact same path as before.</li>
+        <li><strong>Shared code</strong>: the fridge photo's image-shrink and Oracle-vision call moved into <code>RPGACE.utils</code>, so both features use one copy.</li>
+      </ul>
+      Checked: 28 of 29 headless checks pass, including a real service-worker share test; the one failure is a pre-existing test-harness network error from an older module that also happens without S1. The tests caught two bugs that were fixed: the Due count was being turned into an empty list, and the share screen dropped Oracle's description. Galaxy Map regenerated (identical twice, 26/26 anchors fresh). <strong>Untested by Alex's own hand.</strong> Android has to re-read the app's manifest before images show in the share sheet; reinstalling the app forces it. Each screenshot costs one Oracle vision call.
+    </div>
+</div>
 <div class="card" id="card-2026-10-11-m1-rivers-to-domains" style="margin-bottom:30px;">
     <div class="card-title">🗂️ Oct 11 — M1: the Galaxy Map's rivers become the app's 8 domains</div>
     <div class="card-body">

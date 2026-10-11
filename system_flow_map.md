@@ -627,6 +627,10 @@ flowchart TD
 
 ---
 
+## 15c. Screenshot Inbox (S1, Oct 11 2026) — built, untested by Alex
+
+Image (in-app picker, or Android share → `sw.js` → cache `rpgace-share`) → `RPGACE.utils.resizeImage` → `/api/data-write` `screenshots/upload` (private bucket + locked `screenshots` row, status `unread`) → `RPGACE.utils.oracleVision` (one call) → `screenshots/update` (text, description, tags, kind, suggestions, status `new`; unreadable reply → `read_failed`, "Read it" retries from the stored image) → Alex taps a home: Wishlist (`wishlist_items`) / idea card (`encyclopedia_insights`, recall) / Journal (`journal`) / Recipe (Cooking Generate form) → status `routed` (or `kept`, or deleted with its image). Read paths: inbox search (`list` + Postgres full-text on a trigger-kept `search` column), Ask My Data (text only), dashboard Due count.
+
 ## 15b. Galaxy Map rivers replaced by app domains (Oct 11 2026, M1) — current
 
 All rivers (live I-XII and retired XIII-XVII) are replaced by the 8 app domains each module declares in code (`domain:` key, `RPGACE.DOMAINS`). Flow: `rpgace_core.js` domain keys → `scripts/check_module_domains.py` (validates) → `graphify_river_group.py` (`RIVER_MODULES`, `_derive_domain_flows()` from real cross-module calls) → every Galaxy Map page + the Obsidian vault. Level 1 = `galaxy_map_domain.html` (old `galaxy_map_river.html` redirects). Supabase: 8 `perspective_reports` rows `scope_level='domain'`; the 12 river rows are `status='superseded'` with `superseded_by` set. §15 and §16 below are historical.
