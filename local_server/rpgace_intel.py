@@ -124,7 +124,12 @@ def download_video(url: str, out_dir: Path) -> Path:
     out_template = str(out_dir / "%(id)s.%(ext)s")
     r = subprocess.run([
         "yt-dlp",
-        "-f", "best[height<=720][ext=mp4]/best[height<=720]/best",
+        # Oct 11 2026: YouTube mostly no longer serves one file with both
+        # audio and video, so plain "best" failed ("Requested format is not
+        # available"). Take separate video+audio streams and let ffmpeg merge
+        # them; fall back to a single combined file where one exists (Instagram).
+        "-f", "bv*[height<=720]+ba/b[height<=720]/bv*+ba/b",
+        "--merge-output-format", "mp4",
         "--no-playlist",
         "-o", out_template,
         "--quiet",
