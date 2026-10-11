@@ -362,9 +362,11 @@ def main():
     # Oct 11 2026: YouTube/Instagram change often and an old yt-dlp fails
     # every job (all 4 Oct 10-11 jobs failed: "yt-dlp ... older than 90 days",
     # "HTTP Error 403"). Update it on every start; carry on if it can't.
-    log("Updating yt-dlp...")
+    # yt-dlp also needs Deno (a JavaScript runtime) to read YouTube; the pip
+    # package puts deno.exe next to yt-dlp, so no PATH setup is needed.
+    log("Updating yt-dlp + Deno...")
     try:
-        subprocess.run([sys.executable, "-m", "pip", "install", "-U", "yt-dlp", "--quiet"], timeout=120)
+        subprocess.run([sys.executable, "-m", "pip", "install", "-U", "yt-dlp", "deno", "--quiet"], timeout=180)
         v = subprocess.run([sys.executable, "-m", "yt_dlp", "--version"], capture_output=True, text=True, timeout=30)
         log(f"yt-dlp {v.stdout.strip() or '?'} ready")
     except Exception as e:
