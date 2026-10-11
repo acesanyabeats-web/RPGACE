@@ -50,6 +50,14 @@ jobs:
             ~/.cache/whisper
           key: intel-${{ runner.os }}-whisper-small-v1
 
+      # yt-dlp needs a JavaScript runtime (Deno) to read YouTube - without it
+      # the Oct 11 first run failed the YouTube Short ("No supported
+      # JavaScript runtime could be found").
+      - if: steps.q.outputs.n != '0'
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
       - if: steps.q.outputs.n != '0'
         name: Install ffmpeg, yt-dlp, Whisper
         run: |

@@ -104,7 +104,11 @@ def main():
             failures += 1
         finish(jid, ok, last["msg"])
         print(f"{jid[:8]}: {'complete' if ok else 'error - ' + last['msg'][:160]}")
-    return 0 if not failures else 2
+        if not ok:
+            print(f"::warning::{jid[:8]} failed - reason saved on its intel_jobs row")
+    # A failed video is recorded on its own row; the run itself still exits 0
+    # so GitHub saves the pip/Whisper cache (a failed run skips saving it).
+    return 0
 
 
 if __name__ == "__main__":
