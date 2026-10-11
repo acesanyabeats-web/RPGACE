@@ -15,8 +15,9 @@ pipeline, rule 8). This repo is public, so its Actions logs are public: the
 pipeline's own output (titles, transcripts, the full report) is kept off the
 log; only a short job id + outcome + failure reason is printed.
 
-Env: ANTHROPIC_API_KEY (GitHub secret INTEL_ANTHROPIC_KEY). Max jobs per run:
-INTEL_MAX_JOBS (default 3).
+Env: ANTHROPIC_API_KEY (GitHub secret INTEL_ANTHROPIC_KEY); optional YT_COOKIES
+(secret YT_COOKIES, a cookies.txt export) to let the cloud try YouTube;
+INTEL_BUDGET_MIN time budget per run (default 35).
 """
 import contextlib
 import io
@@ -24,6 +25,7 @@ import json
 import os
 import sys
 import tempfile
+import time
 import urllib.request
 from pathlib import Path
 
@@ -58,30 +60,69 @@ def finish(job_id, ok, reason=""):
     sb("PATCH", f"intel_jobs?id=eq.{job_id}", body, prefer="return=minimal")
 
 
+YT_PATTERN = "*youtu*"
+YT_WAIT_NOTE = "Waiting for the laptop: YouTube blocks cloud servers"
+
+
 def main():
     if not os.environ.get("ANTHROPIC_API_KEY"):
         # Exit clean (a red run every 10 min would email Alex each time).
         print("::warning::No INTEL_ANTHROPIC_KEY secret set - leaving the queue for the laptop.")
         return 0
-    max_jobs = int(os.environ.get("INTEL_MAX_JOBS", "3"))
-    jobs = sb("GET", "intel_jobs?status=eq.queued&order=created_at.asc&select=id,url&limit=%d" % max_jobs)
-    if not jobs:
-        print("Queue empty.")
+    # YouTube answers data-centre addresses with "Sign in to confirm you're not
+    # a bot" (Oct 11 run #2). Without cookies the cloud leaves YouTube links
+    # queued for the laptop instead of failing them; with a YT_COOKIES secret
+    # (a cookies.txt export) it tries them.
+    yt_cookies = os.environ.get("YT_COOKIES", "").strip()
+    yt_filter = "" if yt_cookies else "&url=not.ilike." + YT_PATTERN
+    # Work through the whole queue (not a fixed 3) until it's empty or the
+    # time budget runs out; the workflow's own timeout is 45 min.
+    budget_s = int(os.environ.get("INTEL_BUDGET_MIN", "35")) * 60
+    started = time.time()
+
+    def next_job(skip):
+        q = "intel_jobs?status=eq.queued&order=created_at.asc&select=id,url&limit=5" + yt_filter
+        for j in sb("GET", q):
+            if j["id"] not in skip:
+                return j
+        return None
+
+    if not yt_cookies:
+        try:
+            sb("PATCH", "intel_jobs?status=eq.queued&progress=is.null&url=ilike." + YT_PATTERN,
+               {"progress": YT_WAIT_NOTE}, prefer="return=minimal")
+        except Exception:
+            pass
+
+    first = next_job(set())
+    if not first:
+        print("Nothing the cloud can take right now.")
         return 0
 
     # The pipeline keeps its working files under ~/RPGACE; give it a scratch
     # home so nothing lands in the checkout. Set before import (HOME is read
     # at import time).
-    os.environ["HOME"] = tempfile.mkdtemp(prefix="rpgace_home_")
+    scratch = tempfile.mkdtemp(prefix="rpgace_home_")
+    os.environ["HOME"] = scratch
+    if yt_cookies:
+        cfg = Path(scratch) / ".config" / "yt-dlp"
+        cfg.mkdir(parents=True, exist_ok=True)
+        (Path(scratch) / "yt_cookies.txt").write_text(yt_cookies + "\n")
+        (cfg / "config").write_text("--cookies " + str(Path(scratch) / "yt_cookies.txt") + "\n")
+        os.environ["XDG_CONFIG_HOME"] = str(Path(scratch) / ".config")
     sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "local_server"))
     import rpgace_intel as intel
     intel.ensure_dirs()
 
-    failures = 0
-    for job in jobs:
+    tried = set()
+    done = 0
+    job = first
+    while job and time.time() - started < budget_s:
         jid = job["id"]
+        tried.add(jid)
         if not claim(jid):
             print(f"{jid[:8]}: already taken")
+            job = next_job(tried)
             continue
         last = {"msg": ""}
 
@@ -100,12 +141,15 @@ def main():
         except Exception as e:  # process_url catches its own errors; belt and braces
             result, last["msg"] = None, f"Runner error: {e}"
         ok = bool(result)
-        if not ok:
-            failures += 1
         finish(jid, ok, last["msg"])
+        done += 1
         print(f"{jid[:8]}: {'complete' if ok else 'error - ' + last['msg'][:160]}")
         if not ok:
             print(f"::warning::{jid[:8]} failed - reason saved on its intel_jobs row")
+        job = next_job(tried)
+    if job:
+        print("Time budget used; the rest waits for the next run.")
+    print(f"{done} video(s) handled.")
     # A failed video is recorded on its own row; the run itself still exits 0
     # so GitHub saves the pip/Whisper cache (a failed run skips saving it).
     return 0
