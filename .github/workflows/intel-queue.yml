@@ -1,0 +1,71 @@
+name: Video analysis queue
+
+# Oct 11 2026 - always-on Content Intelligence without Alex's laptop.
+# Every 10 minutes: if anything is queued in intel_jobs, install the pipeline
+# and run scripts/intel_cloud_runner.py (which runs local_server/rpgace_intel.py
+# unchanged). The cheap first step skips everything when the queue is empty.
+# Needs repo secret INTEL_ANTHROPIC_KEY. Logs are public (public repo): the
+# runner keeps titles/transcripts/reports off them.
+on:
+  schedule:
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: intel-queue
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  drain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Anything queued?
+        id: q
+        run: |
+          n=$(curl -s "https://gripopghczmrbrhqtqbm.supabase.co/rest/v1/intel_jobs?status=eq.queued&select=id" \
+            -H "apikey: sb_publishable_0Z8C5X-FOLrw95VYKxZVCw_4golMyXf" \
+            -H "Authorization: Bearer sb_publishable_0Z8C5X-FOLrw95VYKxZVCw_4golMyXf" \
+            | python3 -c 'import sys,json; d=json.load(sys.stdin); print(len(d) if isinstance(d,list) else 0)')
+          echo "queued=$n"
+          echo "n=$n" >> "$GITHUB_OUTPUT"
+
+      - if: steps.q.outputs.n != '0'
+        uses: actions/checkout@v4
+
+      - if: steps.q.outputs.n != '0'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - if: steps.q.outputs.n != '0'
+        name: Cache pip + Whisper model
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.cache/whisper
+          key: intel-${{ runner.os }}-whisper-small-v1
+
+      - if: steps.q.outputs.n != '0'
+        name: Install ffmpeg, yt-dlp, Whisper
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg > /dev/null
+          python -m pip install -q -U yt-dlp certifi
+          python -m pip install -q torch --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -q openai-whisper
+          echo "yt-dlp $(yt-dlp --version)"
+
+      - if: steps.q.outputs.n != '0'
+        name: Analyse queued videos
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.INTEL_ANTHROPIC_KEY }}
+          INTEL_MAX_JOBS: '3'
+        run: |
+          # The runner sets its own scratch HOME for the pipeline; point
+          # Whisper's model cache back at the cached folder.
+          export XDG_CACHE_HOME="$HOME/.cache"
+          python scripts/intel_cloud_runner.py
