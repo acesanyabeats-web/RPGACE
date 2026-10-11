@@ -226,7 +226,7 @@ CROSS_CALLS = compute_cross_module_function_calls()
 # per §1a) — this carries the real river-level fact down into the
 # section's own legend text honestly, rather than fabricating a
 # module-level edge no evidence supports.
-OVERSIGHT_RIVER = 15  # G103 (Aug 26 2026): 14->15, see graphify_river_group.py RIVER_COLOR header
+OVERSIGHT_RIVER = 7  # Oct 11 2026 (M1): the Oversight domain (DOMAIN_NUM['oversight'])
 OVERSIGHT_FEEDERS = {
     src for src, flows in RIVER_FLOWS.items()
     for target_label, _note, _itype in flows
@@ -241,7 +241,7 @@ CARD_ICON_FALLBACK = '🎯'
 
 
 EXTERNAL_COLOR = '#5FB3D9'  # same family as Supabase's Level-0 accent — "external infra," not a river's own color
-SKILL_RIVER = 14  # River XIV — Skills' own real home; every real skill is a stream feeding it (G103, Aug 26 2026: was River XIII)
+SKILL_RIVER = None  # Oct 11 2026 (M1): skills are not an app domain (their old river XIV was retired); skills keep their own Skill Network page
 
 # G93 (Aug 25 2026) — real, project-wide "which L0 unit's Infra touches
 # which river" aggregate (galaxy_map.py), computed once here rather than
@@ -311,7 +311,7 @@ def build_river_section(rnum):
     for other, note, itype in FLOWS_IN.get(rnum, []):
         conns.append(('in', other, note, itype))
     links = LINKS_BY_RIVER.get(rnum, [])
-    skill_color = RIVER_COLOR[SKILL_RIVER]
+    skill_color = '#E2A83D'  # Oct 11 2026 (M1): the old Skills river colour (--amber); skills have no domain
 
     if mods:
         # =========================================================
@@ -688,8 +688,8 @@ def build_river_section(rnum):
         # single/first module (matches the real River I case: authGate
         # has no computed terminal but is still the one real module
         # producing this river's real output).
-        flow_anchor = mod_pos.get(terminal_mods[0]) if terminal_mods else \
-            ((mod_pos.get(mods[0]) if mods else None) or (X_TERM, cy))
+        flow_anchor = (mod_pos.get(terminal_mods[0]) if terminal_mods else None) \
+            or (mod_pos.get(mods[0]) if mods else None) or (X_TERM, cy)
 
         # real dashboard cards — anchored to the exact module their own
         # `via` text cites when unambiguous, else to the flow anchor.

@@ -155,20 +155,7 @@ def build_river_web_section():
 # labor: this is that river's own local context, perspective_map.html
 # is the one full cross-referenced picture (its own #report-river-{n}
 # anchor, same id scheme both pages agree on).
-RIVER_PERSPECTIVE_EXCERPT = {
-    1: "River I is the smallest real river in RPGACE: exactly one module, authGate.",
-    2: "River II is also a single-module river: pathRouter, the real page-navigation dispatcher every showPage()-driven route passes through.",
-    3: "River III is by far the largest real river — 15 real modules, the whole Oracle surface.",
-    4: "River IV is a single-module river: bookworm, RPGACE's whole-book ingestion pipeline — chapter-by-chapter analysis into the taxonomy tree, with real review checkpoints.",
-    5: "River V groups 5 real modules around RPGACE's daily-operations surface: scheduleFixes, shiftSync, agendaReminder, morningBrief, and journalQoL.",
-    6: "River VI is a single-module river carrying an outsized real responsibility: phylumPath, RPGACE's whole taxonomy placement engine.",
-    7: "River VII groups 5 real modules around RPGACE's encyclopedia/reference-corpus surface: jargonEncyclopedia, encyclopediaQoL, encSync, encTaxonomyLink, and refCorpus.",
-    8: "River VIII groups 3 real modules that together form the real review-queue/commit layer for the whole taxonomy system: taxonomyReviewQueue, taxonomySync, and taxonomyTree.",
-    9: "River IX is a single-module river: knowledgeGap, the real gap-detection engine that surfaces what RPGACE's own knowledge tree is honestly missing.",
-    10: "River X groups 3 real modules around RPGACE's real record-keeping surface: chroniclesLog, careerStatCard, and shoppingWishlist.",
-    11: "River XI is the second-largest real river — 7 modules covering RPGACE's whole beat-to-video Content Pipeline.",
-    12: "River XII groups 5 real modules around RPGACE's Content Intelligence pipeline: researchTabs, intelBatchList, intelDelete, intelDedup, and ciAutoPropose.",
-}
+RIVER_PERSPECTIVE_EXCERPT = {}  # Oct 11 2026 (M1): the 12 river perspective reports describe rivers that no longer exist; domain reports come in a later M1 slice
 
 
 def _crossing_reduced_ring_order(river_nums, cx, cy, radius):
@@ -276,7 +263,7 @@ def build_svg():
     # and River XVI (Session Records) are real, adjacent record-keeping
     # rivers but have no literal RIVER_FLOWS edge into River XV, so they
     # stay unbadged rather than guessed in.
-    OVERSIGHT_RIVER = 15  # G103 (Aug 26 2026): 14->15, see graphify_river_group.py RIVER_COLOR header
+    OVERSIGHT_RIVER = 7  # Oct 11 2026 (M1): the Oversight domain
     oversight_feeders = {
         src for src, flows in RIVER_FLOWS.items()
         for target_label, _note, _itype in flows

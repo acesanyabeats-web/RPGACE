@@ -124,7 +124,7 @@ def build_hub_note(num: int, module_ranges) -> str:
         lines.append(RIVER_ROLE_NOTE.get(num, ''))
         lines.append('')
 
-    if num == 12:
+    if num == 8:  # Oct 11 2026 (M1): Platform domain carries the API/auth layer
         lines.append('## Core infrastructure')
         lines.append('')
         lines.append(f"- **{SUPABASE_CORE['name']}** ({SUPABASE_CORE['status']}) via "
@@ -316,13 +316,10 @@ def build_index_note() -> str:
              'KIND of real traffic than I-XI\'s in-app narrative information flow, '
              'not a lesser one.',
              '', '## Rivers I-XI (in-app narrative information flow)', '']
-    for n in range(1, 12):
+    for n in range(1, TOTAL_ZONES + 1):
         lines.append(f'- [[{note_filename(n)}|{RIVER_NAME[n]}]]')
     lines.append('')
-    lines.append('## Rivers XII-XVI (Total-systems / dev-process, file-path-evidenced)')
-    lines.append('')
-    for n in range(12, TOTAL_ZONES + 1):
-        lines.append(f'- [[{note_filename(n)}|{RIVER_NAME[n]}]]')
+
     lines.append('')
     lines.append('---')
     lines.append('*Source of truth for the underlying data: `scripts/graphify_river_group.py` '

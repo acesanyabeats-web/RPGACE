@@ -44,7 +44,7 @@ from graphify_river_group import inject_level_rail, inject_plan_overlay  # noqa:
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
 
 OUT = Path('graphify-out/galaxy_map_logic_dimension.html')
-SKILL_RIVER = 14  # River XIV — same real constant galaxy_map_module.py defines (rule 8, not re-derived, just mirrored — a plain int, no import cost worth a cross-file dependency). G103 (Aug 26 2026): was River XIII
+SKILL_RIVER = None  # Oct 11 2026 (M1): no skills domain. Was River XIV — same real constant galaxy_map_module.py defines (rule 8, not re-derived, just mirrored — a plain int, no import cost worth a cross-file dependency). G103 (Aug 26 2026): was River XIII
 # Real, shared precompute (rule 8) — same real function galaxy_map_module.py/
 # galaxy_map_level3.py already call once at module scope; attribute_river_
 # connection_function() needs it passed in as cross_calls, never recomputed

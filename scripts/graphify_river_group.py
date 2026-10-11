@@ -133,71 +133,43 @@ INDEX_HTML = Path('index.html')
 # DIFFERENT hexes from graphify_recolor.py's community palette so a
 # river-tagged node is visually distinct from an untagged one even
 # when they'd otherwise land on a similar color.
+# ══════════════════════════════════════════════════════════════════
+# Oct 11 2026 — M1 of the "RPGACE Domains, Navigation & Deepstash
+# Encyclopedia" plan: RIVERS ARE RETIRED, replaced by the app's own
+# DOMAINS (records/2026-10/rivers_to_domains_scrutiny_2026-10-10.txt).
+# The domain of every module now lives on the module itself in
+# rpgace_core.js (`domain:` key, RPGACE.DOMAINS labels), read here by
+# scripts/check_module_domains.py — ONE source of truth, so a new module
+# can no longer silently vanish from the map (the recurring
+# RIVER_MODULES drift bug class: errorLog, cookingOracle,
+# shoppingWishlist, oracleControl, and the 10 Oct 10 modules).
+# The integer keys (1..8, in DOMAIN_ORDER) are kept as plumbing so every
+# generator keeps working unchanged; the RIVER_* names are legacy
+# identifiers for the same domain tables and get renamed in a later
+# M1 slice. Every hand-numbered river note (RIVER_ROLE_NOTE,
+# RIVER_RETIRED, the old hand-written RIVER_FLOWS) is gone; flows are
+# re-derived from real module-to-module calls below.
+# ══════════════════════════════════════════════════════════════════
+from check_module_domains import module_domains as _module_domains, domain_labels as _domain_labels
+
+DOMAIN_ORDER = ['oracle', 'content', 'knowledge', 'habits', 'schedule', 'chronicles', 'oversight', 'platform']
+DOMAIN_NUM = {d: i + 1 for i, d in enumerate(DOMAIN_ORDER)}
+_DOMAIN_LABELS = _domain_labels()
+MODULE_DOMAIN = _module_domains()
+
 RIVER_COLOR = {
-    1: '#cc4a4a',   # --red     River I   Gatekeeper's Checkpoint
-    2: '#4a8ccc',   # --blue    River II  The Great Confluence
-    3: '#c9a84c',   # --gold    River III The Oracle Current
-    4: '#9b6ec8',   # --purple  River IV  The Bookworm River
-    5: '#4caf82',   # --green   River V   Daily Ops: Agenda, Schedule & Journal (renamed G49, Aug 18 — see RIVER_NAME)
-    6: '#e8c96a',   # --gold2   River VI  The Judgment Chamber
-    7: '#cc7a3a',   # --orange  River VII The Library Current
-    8: '#5588ee',   # --mp-col  River VIII The Confluence Pool
-    9: '#e05555',   # --hp-col  River IX  The Mirror and the Far Shore
-    10: '#868db8',  # --muted   River X   The Confluence of Chronicles
-    11: '#3a4570',  # --border2 River XI  Content Production Live
-    # G103 (Aug 26 2026) — real rechronologize, Alex's own direct ask
-    # ("why didn't you rename river 17 - come on that an obvious fix,
-    # rechronologise the rivers please"), same session as the G102
-    # retirement above. Once Rivers XII-XVI (old numbering) were marked
-    # deprecated/merged, River XVII (a real, live, module-bearing river)
-    # was left stranded right after River XI with an awkward gap — the
-    # "obvious fix" is closing that gap so the LIVE river sequence stays
-    # contiguous and chronological (I-XII), with the 5 retired
-    # Total-systems categories shifted one slot each to sit AFTER every
-    # real river (XIII-XVII), in their own original relative order.
-    # Real permutation applied everywhere a river number appears
-    # (RIVER_COLOR/RIVER_NAME/RIVER_MODULES/RIVER_ROLE_NOTE/
-    # RIVER_RETIRED/RIVER_FLOWS/FLOWS_IN/DASHBOARD_CARDS/
-    # EXTERNAL_RIVER_LINKS/SKILL_SECONDARY_RIVER/SKILL_RIVER/
-    # OVERSIGHT_RIVER, plus every hand-authored doc and the Obsidian
-    # vault filenames): old 17 -> new 12 (Research & Intel Stream,
-    # now the live sequence's own real next river); old 12 -> new 13
-    # (API/Auth Layer); old 13 -> new 14 (Skills); old 14 -> new 15
-    # (Oversight Docs); old 15 -> new 16 (Session Records/Backlog);
-    # old 16 -> new 17 (Dev Tooling). Rivers 1-11 are untouched.
-    # PURELY HISTORICAL/narrative comments elsewhere in this file that
-    # still cite an OLD river number (e.g. "River XII" meaning the old
-    # API/Auth Layer, in a dated Aug 13/14 note) are left as-said per
-    # this project's own doc-discipline precedent (same as the Aug 11
-    # phylum renumber) — this note is the one place to look for the
-    # current, correct mapping; read any older in-code comment
-    # mentioning a specific river number with this permutation in mind.
-    12: '#4A90E2',  # --blue (minotaur/manual/patch_notes palette) River XII  Research & Intel Stream (was River XVII)
-    13: '#2ABFB0',  # --teal    River XIII  The API / Auth Layer (shared infra) (was River XII)
-    14: '#E2A83D',  # --amber (minotaur/manual/patch_notes palette) River XIV  Skills (was River XIII)
-    15: '#d4daf5',  # --text (style.css)   River XV  Oversight Docs (was River XIV)
-    16: '#20263a',  # --panel3 (style.css) River XVI  Session Records / Backlog (was River XV)
-    17: '#2a3050',  # --border (style.css) River XVII  Dev Tooling (was River XVI)
+    1: '#c9a84c',   # --gold    Oracle
+    2: '#9b6ec8',   # --purple  Content & Video
+    3: '#4caf82',   # --green   Knowledge
+    4: '#cc7a3a',   # --orange  Habits
+    5: '#4a8ccc',   # --blue    Schedule & Journal
+    6: '#e8c96a',   # --gold2   Chronicles
+    7: '#868db8',   # --muted   Oversight
+    8: '#cc4a4a',   # --red     Platform
 }
-RIVER_NAME = {
-    1: "River I — Gatekeeper's Checkpoint",
-    2: 'River II — The Great Confluence',
-    3: 'River III — The Oracle Current',
-    4: 'River IV — The Bookworm River',
-    5: 'River V — Daily Ops: Agenda, Schedule & Journal',  # G49 (Aug 18): renamed after the real split — "Two Independent Streams" no longer applies, this river now holds one coherent real theme
-    6: 'River VI — The Judgment Chamber',
-    7: 'River VII — The Library Current',
-    8: 'River VIII — The Confluence Pool',
-    9: 'River IX — The Mirror and the Far Shore',
-    10: 'River X — The Confluence of Chronicles',
-    11: 'River XI — Content Production Live',
-    12: 'River XII — The Research & Intel Stream',  # G103 (Aug 26): was River XVII, moved to close the gap left by retiring the old 12-16
-    13: 'River XIII — The API / Auth Layer',  # G103: was River XII
-    14: 'River XIV — Skills',  # G103: was River XIII
-    15: 'River XV — Oversight Docs',  # G103: was River XIV
-    16: 'River XVI — Session Records / Backlog',  # G103: was River XV
-    17: 'River XVII — Dev Tooling',  # G103: was River XVI
-}
+RIVER_NAME = {DOMAIN_NUM[d]: _DOMAIN_LABELS[d] for d in DOMAIN_ORDER}
+DOMAIN_KEY = {v: k for k, v in DOMAIN_NUM.items()}
+
 # Aug 11, real Alex ask: 12-16 stop being a separate "Zone" species and
 # join the unified river system, because they DO carry real Total-
 # systems traffic — Alex's own correction: "they do have connectors,
@@ -218,7 +190,7 @@ RIVER_NAME = {
 # providers" table (1d); this mirrors those same facts for graphify/
 # Obsidian display, never invents new ones (rule 8: same underlying
 # facts, not restated from scratch).
-TOTAL_ZONES = 17  # Real, stale-fact bug fixed Aug 20 2026 (found via this session's own
+TOTAL_ZONES = len(RIVER_NAME)  # Oct 11 2026 (M1): 8 domains. Historical note: Real, stale-fact bug fixed Aug 20 2026 (found via this session's own
 # Obsidian-vault v2-scope build, not a hypothetical): RIVER_NAME already had 17 real
 # entries since the Aug 18 G49 River-v2 split (River XVII — The Research & Intel
 # Stream), but this constant was never updated to match, silently dropping River
@@ -322,68 +294,9 @@ SUPABASE_CORE = {
 # negative "no single-module river tag" framing (which read as
 # second-class) with an affirmative statement of their actual real role
 # in the Total system, since that's what they are now presented as.
-RIVER_ROLE_NOTE = {
-    13: 'The one river that carries literal runtime API traffic to external Total-system members — every OpenMontage/Kimi/Luna/librosa/OpenArt/Composio call routes through here (api/oracle.js, api/_context.js, api/data-write.js). File-path membership: `api/*.js`. See "Total-systems connectors" below for the real, per-connector detail.',
-    14: 'The dispatch discipline every Total-system Claude Code session (RPGACE CC, Graphify CC, OpenMontage CC) runs against — file-path membership: `.claude/skills/`.',
-    15: 'The shared truth layer Total-system members read from and write into (Graphify CC deposits real findings here via graphify_jobs when a row is flagged "please log to Chronicles"). File-path membership: the live-maintained doc set.',
-    16: 'Real dispatch/session history — dated backlog `.txt`/`.md` at repo root, the same real record `openmontage_jobs`/`graphify_jobs` rows themselves become once resolved.',
-    17: 'The actual scripts/config that build, ship, and graph the Total system — including the very scripts (graphify_recolor.py/graphify_river_group.py/graphify_to_obsidian.py/obsidian_vault_to_html.py) that generate this graph and the Obsidian vault themselves.',
-}
+RIVER_ROLE_NOTE = {}  # Oct 11 2026 (M1): only retired rivers 13-17 had notes; retired with them
 
-# G102 (Aug 26 2026) — 5 rivers retired (marked deprecated/merged,
-# NEVER deleted outright — Alex's own confirmed answer, "all 5 and yes
-# too"). Real evidence for retiring these 5 specifically: all 5 have
-# ZERO real rpgace_core.js modules (confirmed by direct query) — they
-# were always a role-DESCRIPTION of a Total-systems category, never a
-# river of real app code the way 1-12 are. The L0-unit Infra/Inter
-# system (G77-G100, Aug 25 2026) now gives every one of those same real
-# categories its OWN evidence-grounded bubble system, at finer grain
-# than a single river-wide role note ever was — so the retirement isn't
-# a deletion of real coverage, it's a real upgrade already built, just
-# never pointed back at from here. Deliberately NOT retiring 1-12 —
-# those all have real modules (RIVER_MODULES[n] non-empty) and are the
-# real app-code rivers the whole Galaxy Map hierarchy exists to
-# describe; only the 5 zero-module "Total-systems category" rivers are
-# in scope, per Alex's own explicit confirmation of exactly this list
-# (not "retire everything the L0 unit system also covers" — Oracle/
-# Supabase, River III/River V's own hub modules etc. stay live rivers
-# with real modules, their own L0-unit facet is an ADDITIONAL lens, not
-# a replacement). Renumbered 12->17 (from the original 12-16), G103
-# (Aug 26 2026, same session) — see RIVER_COLOR's own header note for
-# the full rechronologize: River XII was freed for the real, live
-# Research & Intel Stream river (old River XVII), so these 5 retired
-# categories shifted one slot each to sit AFTER every real river.
-RIVER_RETIRED = {
-    13: {
-        'reason': 'Zero real modules — this river was always a role description of the API/auth call surface, not a river of actual app code. That real role is now represented per-actor at L0, at finer grain than one river-wide note ever gave.',
-        'superseded_by': [
-            ('Supabase (Infra/Inter)', 'galaxy_map_supabase.html#view-map'),
-            ('Oracle (Infra/Inter)', 'galaxy_map_oracle.html#view-map'),
-            ('Composio', 'galaxy_map_connectors.html#conn-composio'),
-            ('Jina AI', 'galaxy_map_connectors.html#conn-jina'),
-            ('Last.fm', 'galaxy_map_connectors.html#conn-lastfm'),
-            ('librosa', 'galaxy_map_connectors.html#conn-librosa'),
-            ('n8n', 'galaxy_map_connectors.html#conn-n8n'),
-            ('Whisper', 'galaxy_map_connectors.html#conn-whisper'),
-        ],
-    },
-    14: {
-        'reason': 'Zero real modules — this river was always the Claude Code skills dev-process layer, not app code. The Skills L0 unit\'s own real Infra/Inter bubble system covers every skill individually now (per-skill axes), a real upgrade over one river-wide role note.',
-        'superseded_by': [('Skills (Infra/Inter, per-skill)', 'galaxy_map_skill_network.html#view-table')],
-    },
-    15: {
-        'reason': 'Zero real modules — the shared oversight-doc truth layer. The Oversight Docs L0 unit\'s own real Infra/Inter system covers this now.',
-        'superseded_by': [('Oversight Docs (Infra/Inter)', 'galaxy_map_oversight_sync.html#cat-sharedinfra')],
-    },
-    16: {
-        'reason': 'Zero real modules — real dispatch/session history (dated backlog .txt/.md at repo root). Honest gap, not force-mapped: no single L0 unit is a clean 1:1 successor for "every dated file at repo root." Orchestrator CC\'s own unit is the closest real relationship (real Total-systems dispatch history with OpenMontage CC/Graphify CC lives there), but it does not cover the river\'s full original file-path membership.',
-        'superseded_by': [('Orchestrator CC (partial — Total-systems dispatch history only)', 'galaxy_map_orchestrator_cc.html')],
-    },
-    17: {
-        'reason': 'Zero real modules — the actual scripts/config that build/ship/graph the Total system (including the very scripts that generate this graph and the Obsidian vault). Honest gap, not force-mapped: no L0 unit represents "dev tooling" as its own real actor. Orchestrator CC is the closest real relationship (it is the session that runs this tooling), but tooling itself was never promoted to a unit.',
-        'superseded_by': [('Orchestrator CC (partial — runs this tooling)', 'galaxy_map_orchestrator_cc.html')],
-    },
-}
+RIVER_RETIRED = {}  # Oct 11 2026 (M1): rivers 13-17 were superseded by L0 units; domains have no retired entries
 
 
 def river_retirement_note_html(rnum, compact=False):
@@ -436,72 +349,7 @@ def river_retirement_note_html(rnum, compact=False):
 # Real record: records/2026-09/galaxy_river_restructure_ceo_report_2026-09-15.txt])
 # are deliberately left OUT - they don't belong to one river, and
 # force-fitting them would be dishonest, not "making mapping easier."
-RIVER_MODULES = {
-    1: ['authGate'],
-    2: ['pathRouter'],
-    # G-post-109 (Sep 15 2026) — real wiring-sweep gap fix, Alex-confirmed
-    # ("assign rivers for the 3 modules"). cookingOracle/oracleControl
-    # added here with real, checked evidence (direct grep of
-    # rpgace_core.js, not guessed): both are genuinely Oracle-pipeline
-    # members, not filed by subject matter. cookingOracle calls
-    # RPGACE.modules.oracleControl.* directly and listens on the same
-    # shared oracle:response-scanned hook every other River III Oracle
-    # panel uses — same real precedent as scheduleOracle already sitting
-    # here (an Oracle-CHAT-DRIVEN feature belongs in River III regardless
-    # of its subject domain; scheduleOracle is schedule-domain content
-    # for the same reason). oracleControl (G41) is the Oracle action
-    # confirm/dispatch mechanism itself — core Oracle-pipeline machinery
-    # by definition, listens on oracle:response-scanned + the G109
-    # rpgace:error-toast hook. Full evidence trail:
-    # records/2026-09/wiring_sweep_river_assignment_2026-09-15.txt.
-    3: ['oracleAppGrounding', 'oracleTreeGrounding', 'oracleFetchGuard',
-        'oracleDevBridge', 'mockOracle', 'oracleProviderMode', 'agentsIntoOracle', 'prodOraclePanel',
-        'instaOraclePanel', 'youtubeOracle', 'tiktokOracle', 'scheduleOracle',
-        'feynman', 'cookingOracle', 'oracleControl'],
-    4: ['bookworm'],
-    # G49 (Aug 18 2026) — real River-v2 closer look, per the already-
-    # locked Part 6 reconciled approach (interaction evidence + shared-
-    # goal coherence, never interaction alone). Real evidence gathered:
-    # a fresh global module-interaction-graph run (same 4-signal method
-    # as compute_intra_river_flow(), computed river-internally this
-    # time) found River V splits into 9 real components along an exact
-    # line the river's OWN NAME already predicted — "Two Independent
-    # Streams." The 5 Content-Intelligence/research modules share ZERO
-    # real interaction with the 5 agenda/schedule/journal modules, and
-    # no real shared GOAL beyond "dashboard content that isn't Oracle/
-    # taxonomy/beat-pipeline" — genuinely two different real features,
-    # not one goal split into steps. This is the real, evidenced case
-    # for a split (unlike River III/VII below, where goal-coherence
-    # held even without full interaction evidence). Moved to River 17.
-    5: ['scheduleFixes', 'shiftSync', 'agendaReminder',
-        'morningBrief', 'journalQoL'],
-    6: ['phylumPath'],
-    7: ['jargonEncyclopedia', 'encyclopediaQoL', 'encSync', 'encTaxonomyLink',
-        'refCorpus'],
-    8: ['taxonomyReviewQueue', 'taxonomySync', 'taxonomyTree'],
-    9: ['knowledgeGap'],
-    # G-post-109 (Sep 15 2026) — shoppingWishlist added here with real
-    # evidence: it makes zero direct RPGACE.modules.X calls and listens
-    # on zero hooks (genuinely isolated at the direct-call/hook grain,
-    # same class as agentsIntoOracle/authGate/intelBatchList's G22
-    # finding) — but its ONE real external touchpoint is a shared
-    # chronicles_finance table WRITE, reusing chroniclesLog's own
-    # already-proven write shape (marking an item bought writes a real
-    # chronicles_finance row, category:'Personal', per CLAUDE.md's own
-    # Shopping Wishlist section). River X is the real, evidenced home on
-    # that shared-table-convergence signal, not a subject-matter guess.
-    10: ['chroniclesLog', 'careerStatCard', 'shoppingWishlist'],
-    11: ['contentProductionLive', 'beatLog', 'videoPipeline', 'videoSummary',
-         'conidPot', 'contentRepurpose', 'visualOracle'],
-    # G49 (Aug 18 2026) — the real Research/Intel half split off River V
-    # (see River 5's own comment for the full real evidence). Real
-    # shared goal: Content Intelligence ingestion, dedup, and review —
-    # a genuinely different real feature from River 5's remaining
-    # agenda/schedule/journal content. Renumbered 17->12, G103 (Aug 26
-    # 2026) — see RIVER_COLOR's own header note for the full rechronologize.
-    12: ['researchTabs', 'intelBatchList', 'intelDelete', 'intelDedup',
-         'ciAutoPropose'],
-}
+RIVER_MODULES = {DOMAIN_NUM[d]: [m for m, md in MODULE_DOMAIN.items() if md == d] for d in DOMAIN_ORDER}  # Oct 11 2026 (M1): derived from each module's own `domain:` key
 MODULE_RIVER = {m: r for r, mods in RIVER_MODULES.items() for m in mods}
 
 # Real, sourced mirror of dashDeck.MODULES (rpgace_core.js) — Alex's
@@ -529,49 +377,22 @@ MODULE_RIVER = {m: r for r, mods in RIVER_MODULES.items() for m in mods}
 # river is real (agendaReminder, a genuine QoL layer on the same page)
 # but is honestly flagged as partial, not the page's whole story.
 DASHBOARD_CARDS = [
-    # G102 (Aug 25 2026) — the real "🧠 Research Lab" card is GONE, not
-    # just stale data: Alex flagged its own galaxy_map_alex_path.html
-    # entry directly ("this shouldn't be there too"), and direct code
-    # read confirms dashDeck._openResearch() is real but genuinely
-    # unreferenced (rpgace_core.js's own comment: "kept defined but
-    # unreferenced... in case a future pass wants it back") — the Aug 23
-    # 2026 UI Consistency batch retired the card outright, per CLAUDE.md's
-    # own "Research Lab" entries. Removed here rather than left as stale
-    # DASHBOARD_CARDS data (rule 16 cross-doc drift) — River XII's (was
-    # XVII, renumbered G103 Aug 26) real modules did NOT lose their
-    # dashboard-reachable status, they moved under Bookworm's own card
-    # instead (see its real 'rivers' update below, evidenced by the real
-    # file-analyzer-panel/video-finder-panel jump buttons Bookworm's
-    # popup now carries — both are researchTabs/intelBatchList content,
-    # River XII). Content Pipeline's own "Upload Workshop" jump button
-    # was checked too and found NOT to map to any real River-XII-tracked
-    # module (video-workshop-panel is static markup with no owning
-    # module inject — confirmed by direct grep), so 'pipeline' below is
-    # correctly left unchanged.
-    {'key': 'bookworm', 'label': '📖 Bookworm', 'rivers': [4, 12],  # G103 (Aug 26): 17->12, see RIVER_COLOR's header note
-     'via': "dashDeck._openBookworm() -> bookworm module, + real jump buttons into researchTabs/intelBatchList (Videoworm/Video Finder, River XII)"},
-    {'key': 'taxonomy', 'label': '🌳 Taxonomy & Review', 'rivers': [8, 6],
-     'via': "taxonomyReviewQueue._openCard() when items pending, else phylumPath page browse",
-     'partial': False},
-    {'key': 'oracle', 'label': '⚡ Oracle', 'rivers': [3],
-     'via': "showPage(pages.oracle) -> oracleAppGrounding/oracleTreeGrounding etc"},
-    {'key': 'agenda', 'label': '📋 Agenda', 'rivers': [5],
-     'via': "showPage(pages.agenda) -> agendaReminder (QoL layer only; the page's own Quest Board core lives in main.js, not river-tagged)",
-     'partial': True},
-    {'key': 'morningBrief', 'label': '🌅 Morning Brief', 'rivers': [5],
-     'via': "dashDeck._openMorningBrief() -> morningBrief module"},
-    {'key': 'gaps', 'label': '🕳️ Knowledge Gaps', 'rivers': [9],
-     'via': "dashDeck._openGaps() -> knowledgeGap module"},
-    {'key': 'pipeline', 'label': '🎬 Content Pipeline', 'rivers': [11],
-     'via': "dashDeck._openPipeline() -> contentProductionLive module"},
-    {'key': 'encyclopedia', 'label': '📖 Encyclopedia', 'rivers': [7],
-     'via': "showPage(pages.encyclopedia) -> jargonEncyclopedia module"},
-    {'key': 'journal', 'label': '📓 Journal', 'rivers': [5],
-     'via': "showPage(pages.journal) -> journalQoL module"},
-    {'key': 'oversight', 'label': '📚 Oversight', 'rivers': [15],  # G103 (Aug 26): 14->15
-     'via': "dashDeck._openOversight() -> Zone/River XV, the shared oversight-doc truth layer"},
-    {'key': 'chronicles', 'label': '📜 The Chronicles', 'rivers': [10],
-     'via': "chroniclesLog._openCard() -> chroniclesLog module"},
+    # Oct 11 2026 (M1/N2): the dashboard card grid is gone; these are the
+    # left menu's module entries (dashDeck.MODULES), now grouped by domain.
+    {'key': 'oracle', 'label': '⚡ Oracle', 'rivers': [1], 'via': 'showPage(pages.oracle) -> the Oracle page'},
+    {'key': 'pipeline', 'label': '🎬 Content Pipeline', 'rivers': [2], 'via': 'Content Pipeline page and its sub-pages (Idea Bank, Beat Log, Upload Workshop)'},
+    {'key': 'encyclopedia', 'label': '📖 Encyclopedia', 'rivers': [3], 'via': 'showPage(pages.encyclopedia) -> encyclopediaPosts / encyclopediaQoL'},
+    {'key': 'bookworm', 'label': '📗 Bookworm', 'rivers': [3], 'via': 'Bookworm page (+ Videoworm, Bibliography)'},
+    {'key': 'taxonomy', 'label': '🌳 Taxonomy & Review', 'rivers': [3], 'via': 'dashDeck._openTaxonomy() picker -> taxonomyReviewQueue / phylumPath / jargonEncyclopedia'},
+    {'key': 'gaps', 'label': '🕳️ Knowledge Gaps', 'rivers': [3], 'via': 'dashDeck._openGaps() -> knowledgeGap'},
+    {'key': 'cooking', 'label': '🍳 Cooking', 'rivers': [4], 'via': 'cookingOracle hub popup'},
+    {'key': 'gym', 'label': '🏋️ Gym', 'rivers': [4], 'via': 'gymTracker popup'},
+    {'key': 'wishlist', 'label': '🛒 Shopping Wishlist', 'rivers': [4], 'via': 'shoppingWishlist popup'},
+    {'key': 'agenda', 'label': '📋 Agenda', 'rivers': [5], 'via': 'showPage(pages.agenda) -> agenda + Quest Board (questEngine)'},
+    {'key': 'journal', 'label': '📓 Journal', 'rivers': [5], 'via': 'showPage(pages.journal) -> journalQoL / decisionJournal'},
+    {'key': 'morningBrief', 'label': '🌅 Morning Brief', 'rivers': [5], 'via': 'dashDeck._openMorningBrief() -> morningBrief'},
+    {'key': 'chronicles', 'label': '📜 The Chronicles', 'rivers': [6], 'via': 'Chronicles page -> chroniclesLog / careerStatCard'},
+    {'key': 'oversight', 'label': '📚 Oversight', 'rivers': [7], 'via': 'dashDeck._openOversight() -> the oversight docs, Smoke Test and Galaxy Map'},
 ]
 CARDS_BY_RIVER = {}
 for _c in DASHBOARD_CARDS:
@@ -595,30 +416,19 @@ for _c in DASHBOARD_CARDS:
 # information; forcing it onto all 16 rings would be noise, not signal,
 # and it's already well-represented at Level 0.
 EXTERNAL_RIVER_LINKS = [
-    {'name': 'Anthropic (Claude API)', 'rivers': [3],
-     'via': "River III's Oracle Current is the harness — the real default provider for every ungrounded Oracle call"},
-    {'name': 'OpenMontage', 'rivers': [11],
-     'via': 'Real spring AND mouth both sit in River XI: opens at "Generate Video," closes at "Mark ConID as Filmed"'},
-    {'name': 'Composio', 'rivers': [5, 11],
-     'via': "River V's morningBrief (Gmail fetch) and River XI's contentRepurpose (Notion + YouTube via Supadata)"},
-    {'name': 'Moonshot AI (Kimi)', 'rivers': [3],
-     'via': "Would be called from River III's Oracle Current in place of the default Anthropic call, once live"},
-    {'name': 'OpenAI (Luna)', 'rivers': [3],
-     'via': 'Same River III relationship as Kimi, once live'},
-    {'name': 'librosa', 'rivers': [11],
-     'via': "Triggered by River XI's Beat Log, nowhere else"},
-    {'name': 'FFmpeg', 'rivers': [11],
-     'via': "Reached only via River XI's OpenMontage handoff, never called directly by any RPGACE river"},
-    {'name': 'fal.ai', 'rivers': [11],
-     'via': "Same relationship as FFmpeg — runs inside OpenMontage's own repo, reached only via River XI's OpenMontage handoff. Real working provider as of Sep 16 2026 (GMR-1), unlike OpenArt (deferred, no real tool integration)."},
-    {'name': 'Graphify CC', 'rivers': [9, 15],  # G103 (Aug 26): 14->15
-     'via': "Dispatched from River IX's own session-start check, deposits real findings into River XV via graphify_jobs"},
-    {'name': 'Jina AI', 'rivers': [3, 4],
-     'via': 'Load-bearing for Bookworm URL ingestion (River IV), Schedule Oracle + chat-pasted-URL handling (River III)'},
-    {'name': 'Last.fm', 'rivers': [7],
-     'via': "refCorpus.findMatches()'s real fallback (River VII), grows the corpus from its own results"},
-    {'name': 'Whisper (OpenAI, local)', 'rivers': [12],  # G49 (Aug 18): moved 5->17; G103 (Aug 26): 17->12, see RIVER_COLOR's header note
-     'via': 'The Content Intelligence pipeline (River XII) — current live status genuinely unconfirmed'},
+    # Oct 11 2026 (M1): re-pointed from rivers to domains; same real relationships.
+    {'name': 'Anthropic (Claude API)', 'rivers': [1], 'via': 'The default provider for every Oracle call'},
+    {'name': 'OpenMontage', 'rivers': [2], 'via': 'Opens at "Generate Video", closes at "Mark ConID as Filmed" (Content & Video)'},
+    {'name': 'Composio', 'rivers': [5, 2], 'via': "morningBrief's Gmail fetch (Schedule & Journal) and contentRepurpose's Notion/YouTube calls (Content & Video)"},
+    {'name': 'Moonshot AI (Kimi)', 'rivers': [1], 'via': 'Would replace the default Anthropic call for Oracle, once live (dormant)'},
+    {'name': 'OpenAI (Luna)', 'rivers': [1], 'via': 'Same as Kimi, once live (dormant)'},
+    {'name': 'librosa', 'rivers': [2], 'via': "Triggered by Beat Log's audio analysis only"},
+    {'name': 'FFmpeg', 'rivers': [2], 'via': 'Reached only through the OpenMontage handoff'},
+    {'name': 'fal.ai', 'rivers': [2], 'via': "Runs inside OpenMontage's repo, reached only through the OpenMontage handoff"},
+    {'name': 'Graphify CC', 'rivers': [7], 'via': 'Deposits findings into the oversight docs via graphify_jobs'},
+    {'name': 'Jina AI', 'rivers': [3, 1], 'via': 'Bookworm URL ingestion (Knowledge) and pasted-URL handling in Oracle chat'},
+    {'name': 'Last.fm', 'rivers': [2], 'via': "refCorpus.findMatches()'s fallback for beat matching"},
+    {'name': 'Whisper (OpenAI, local)', 'rivers': [3], 'via': 'Content Intelligence transcription on the PC server; live status unconfirmed'},
 ]
 LINKS_BY_RIVER = {}
 for _l in EXTERNAL_RIVER_LINKS:
@@ -1262,13 +1072,14 @@ ALL_SKILLS = [
 # G103 (Aug 26 2026): Oversight Docs 14->15, Dev Tooling 16->17 (see
 # RIVER_COLOR's own header note for the full rechronologize).
 SKILL_SECONDARY_RIVER = {
-    'Regeneration': (6, "Sweeps the whole taxonomy tree and the Phylum Path pipeline"),
-    'loggingregen': (15, "Regenerates ONE oversight doc at a time against its own stated role"),
-    'update-logging-system': (15, "Names SELF_KNOWLEDGE and skill .md files as required-artifact targets"),
-    'colourgradient': (15, "Only green routes to the real oversight docs; everything else routes to future_integrations.html"),
-    'cartographer': (15, "Baseline Reconciliation cross-references Tier (b) docs, feeding smoke_test.html real suggestions"),
-    'impeccable': (17, "Runs a real design-pattern scan against index.html/style.css, the dev-tooling scan layer"),
-    'graphify': (17, "The actual scripts (graphify_river_group.py etc.) that generate this graph and the Obsidian vault themselves"),
+    'Regeneration': (3, "Sweeps the whole taxonomy tree and the Phylum Path pipeline"),
+    'loggingregen': (7, "Regenerates ONE oversight doc at a time against its own stated role"),
+    'update-logging-system': (7, "Names SELF_KNOWLEDGE and skill .md files as required-artifact targets"),
+    'colourgradient': (7, "Only green routes to the real oversight docs; everything else routes to future_integrations.html"),
+    'cartographer': (7, "Baseline Reconciliation cross-references Tier (b) docs, feeding smoke_test.html real suggestions"),
+    'impeccable': (7, "Runs a design-pattern scan against index.html/style.css"),
+    'graphify': (7, "The scripts that generate this graph, the Galaxy Map and the Obsidian vault"),
+
 }
 
 # Real, verbatim-extracted from minotaur_map.html's own `.river-flow-next`
@@ -1336,6 +1147,7 @@ INTERACTION_TYPE_LABEL = {
     'doc_staleness_flag': 'Advisory: may need a human doc update',
     'terminal_sink': 'No further real downstream flow',
     'read_query': 'Real-time data read (communication, not a change)',
+    'module_call': 'A module calls code in another domain',
 }
 INTERACTION_TYPE_COLOR = {
     'nav_route': '#6b7280',
@@ -1349,6 +1161,7 @@ INTERACTION_TYPE_COLOR = {
     'doc_staleness_flag': '#E0A040',
     'terminal_sink': '#4a4a55',
     'read_query': '#5FB3D9',
+    'module_call': '#8fa3c9',
 }
 
 # Real Aug 13 correction (Alex's own words): a river never acts, calls,
@@ -1366,85 +1179,36 @@ INTERACTION_TYPE_COLOR = {
 # keyed 12; old River XII/XIII/XIV/XV/XVI entries are now keyed
 # 13/14/15/16/17 respectively — content/meaning unchanged, only the
 # number each real category sits at.
-RIVER_FLOWS = {
-    1: [('River II — The Great Confluence', 'always', 'nav_route')],
-    2: [
-        ('River III — The Oracle Current', 'Oracle page selected', 'nav_route'),
-        ('River IV — The Bookworm River', 'Bookworm page selected', 'nav_route'),
-        # G49 (Aug 18): split into 2 real edges, one per real post-split
-        # river — the old single "Schedule/Content Intel" entry
-        # genuinely named both halves of what's now 2 separate rivers.
-        ('River V — Daily Ops: Agenda, Schedule & Journal', 'Schedule page selected', 'nav_route'),
-        ('River XII — The Research & Intel Stream', 'Content Intel page selected', 'nav_route'),
-    ],
-    3: [
-        ('River VI — The Judgment Chamber', 'a tapped insight badge', 'nav_route'),
-        ('River IV — The Bookworm River', 'special prefix diverts the message', 'nav_route'),
-        ('River V — Daily Ops: Agenda, Schedule & Journal', 'special prefix diverts the message (scheduleOracle)', 'nav_route'),
-        ('River XIII — The API / Auth Layer', 'dormant: a Kimi/Luna provider call would route out through here instead of the default Anthropic call', 'ai_judgment_call'),
-        # GMR-3 (Sep 16 2026) — real edges found by the full 58/58-module
-        # cross_refs consistency check (scripts/gmp_b_consistency_check.py),
-        # evidenced by each named module's own real perspective_reports row.
-        ('River IX — The Mirror and the Far Shore', "feynman's real cross_refs names knowledgeGap directly", 'ai_judgment_call'),
-        ('River VIII — The Confluence Pool', "feynman's real cross_refs names taxonomySync directly", 'ai_judgment_call'),
-        ('River XI — Content Production Live', "cookingOracle's real cross_refs names RPGACE.modules.visualOracle directly", 'ai_judgment_call'),
-    ],
-    4: [
-        ('River VI — The Judgment Chamber', 'every insight found here', 'ai_judgment_call'),
-        # GMR-3 (Sep 16 2026) — see River 3's own note above.
-        ('River XII — The Research & Intel Stream', "bookworm's real cross_refs names researchTabs directly", 'nav_route'),
-    ],
-    5: [
-        # G49 (Aug 18): the Content Intelligence -> River VIII flow moved
-        # to River 12's own entry below — its real source modules
-        # (ciAutoPropose etc.) moved there. River 5 is now terminal on
-        # this axis, ending at the Schedule Calendar (a real main.js UI
-        # destination, no further river hop).
-        ('River XIII — The API / Auth Layer', "morningBrief's real Composio Gmail-fetch call routes out through here", 'external_extract_call'),
-        # GMR-3 (Sep 16 2026) — see River 3's own note above.
-        ('River VIII — The Confluence Pool', "morningBrief's real cross_refs names taxonomySync directly", 'ai_judgment_call'),
-    ],
-    12: [
-        ('River VIII — The Confluence Pool', 'Content Intelligence real write path — the pending-proposal/review-queue flow', 'write_commit'),
-    ],
-    6: [
-        ('River VII — The Library Current', "a fresh leaf's teaching page", 'ai_judgment_call'),
-        ('River VIII — The Confluence Pool', 'any confirmable fusion-link bridge', 'human_confirm_gate'),
-    ],
-    7: [
-        ('River VIII — The Confluence Pool', 'a proposed merge', 'human_confirm_gate'),
-        # GMR-3 (Sep 16 2026) — see River 3's own note above.
-        ('River XII — The Research & Intel Stream', "refCorpus's real cross_refs names researchTabs directly", 'ai_judgment_call'),
-    ],
-    8: [('River II — The Great Confluence', "into The Great Tree, River II's own estuary — readable by every other river from there", 'write_commit')],
-    9: [
-        ('River X — The Confluence of Chronicles', "the Far Shore's own real changes, via system_updates", 'oversight_deposit'),
-        ('River XIII — The API / Auth Layer', 'the Claude Code fallback lane\'s drain and Graphify CC\'s own session-start dispatch both route out through here', 'dispatch_trigger'),
-        # GMR-3 (Sep 16 2026) — see River 3's own note above.
-        ('River VIII — The Confluence Pool', "knowledgeGap's real cross_refs names taxonomySync directly", 'ai_judgment_call'),
-    ],
-    10: [('— terminal sink for every river above —', 'River XI is the one exception, see below', 'terminal_sink')],
-    11: [
-        ('River X — The Confluence of Chronicles', 'both branches loop back into the same shared estuary, not a new one', 'oversight_deposit'),
-        ('River XIII — The API / Auth Layer', "the OpenMontage handoff, librosa's beat_audio_jobs analysis (via Beat Log), and contentRepurpose's real Composio calls (Notion/YouTube) all route out through here", 'dispatch_trigger'),
-        # GMR-3 (Sep 16 2026) — see River 3's own note above.
-        ('River VII — The Library Current', "beatLog's real cross_refs names refCorpus directly", 'ai_judgment_call'),
-        ('River XII — The Research & Intel Stream', "beatLog's real cross_refs names researchTabs directly", 'ai_judgment_call'),
-        ('River VIII — The Confluence Pool', "beatLog's real cross_refs names taxonomySync directly", 'ai_judgment_call'),
-        ('River V — Daily Ops: Agenda, Schedule & Journal', "conidPot's real cross_refs names morningBrief directly", 'ai_judgment_call'),
-    ],
-    13: [
-        ('River XI — Content Production Live', 'the OpenMontage job result — the one external connector whose real spring AND mouth both sit back in River XI', 'dispatch_trigger'),
-        ('River XV — Oversight Docs', 'Graphify CC deposits real findings here via graphify_jobs, flagged for logging', 'oversight_deposit'),
-    ],
-    14: [('River XV — Oversight Docs', "a skill's behavior change that could make an existing river's own written description go stale", 'doc_staleness_flag')],
-    15: [('— feeds every river\'s own next real session —', "CLAUDE.md's own rule: read the relevant section before any nontrivial work", 'session_start_pull')],
-    16: [('River XIV — Skills', "feeds Routine's own session-start check via session_memory, read at the start of every future session", 'session_start_pull')],
-    17: [
-        ('River XIII — The API / Auth Layer', "generates graph.html/GRAPH_TREE.html, this river's own visual form", 'write_commit'),
-        ('River XV — Oversight Docs', 'generates obsidian_vault.html, the human-browsable presentation layer', 'write_commit'),
-    ],
-}
+def _derive_domain_flows():
+    """Oct 11 2026 (M1): domain-to-domain flows, re-derived from real code
+    instead of hand-written river notes. An edge A -> B exists when a module
+    in domain A literally calls `RPGACE.modules.<module in B>.<fn>(`. The note
+    names up to 3 real caller -> callee pairs. Honest limit (same as
+    compute_cross_module_function_calls): calls through hooks, stored
+    references or callbacks are not seen."""
+    text = CORE_JS.read_text(encoding='utf-8')
+    starts = [(m.start(), m.group(1)) for m in re.finditer(r"^RPGACE\.register\('([^']+)'", text, re.M)]
+    pairs = {}
+    for k, (pos, mod) in enumerate(starts):
+        end = starts[k + 1][0] if k + 1 < len(starts) else len(text)
+        src_d = MODULE_DOMAIN.get(mod)
+        for callee, fn in re.findall(r'RPGACE\.modules\.(\w+)\s*\.\s*(?:(?:ui|logic)\s*\.\s*)?(\w+)\s*\(', text[pos:end]):
+            dst_d = MODULE_DOMAIN.get(callee)
+            if not src_d or not dst_d or dst_d == src_d:
+                continue
+            key = (DOMAIN_NUM[src_d], DOMAIN_NUM[dst_d])
+            lst = pairs.setdefault(key, [])
+            ex = f'{mod} -> {callee}.{fn}'
+            if ex not in lst:
+                lst.append(ex)
+    flows = {}
+    for (a, b), exs in sorted(pairs.items()):
+        note = f'{len(exs)} real call(s), e.g. ' + '; '.join(exs[:3])
+        flows.setdefault(a, []).append((RIVER_NAME[b], note, 'module_call'))
+    return flows
+
+
+RIVER_FLOWS = _derive_domain_flows()
 
 
 def _roman_to_int(s: str) -> int:
@@ -1458,11 +1222,12 @@ def _roman_to_int(s: str) -> int:
     return total
 
 
+_NAME_TO_NUM = {v: k for k, v in RIVER_NAME.items()}
+
+
 def _river_num_from_label(label: str) -> int | None:
-    if not label.startswith('River'):
-        return None
-    token = label.split('—')[0].split()[1]
-    return _roman_to_int(token)
+    """Oct 11 2026 (M1): flow targets are domain labels now."""
+    return _NAME_TO_NUM.get(label)
 
 
 # Build the reverse map (who flows INTO river N) now that the helper exists.
@@ -1768,7 +1533,7 @@ LEVEL3_MODULES = set(m for mods in RIVER_MODULES.values() for m in mods)
 # deliberately left untouched — it still means "river-owned module,"
 # a real, different, still-correct fact used by river-grouping logic
 # elsewhere.
-CROSS_CUTTING_MODULES = frozenset({'config', 'dashDeck', 'errorLog', 'questEngine', 'leftNav'})
+CROSS_CUTTING_MODULES = frozenset()  # Oct 11 2026 (M1): every module now has a domain, so none is cross-cutting any more
 LINKABLE_MODULES = LEVEL3_MODULES | CROSS_CUTTING_MODULES
 
 
@@ -3713,8 +3478,8 @@ def build_river_notes(module_ranges, id_module):
             'zone_note': RIVER_ROLE_NOTE.get(river),
             'flows_into': flows_into,
             'fed_by': fed_by,
-            'external_connectors': EXTERNAL_CONNECTORS if river == 12 else None,
-            'core_infrastructure': [SUPABASE_CORE] if river == 12 else None,
+            'external_connectors': EXTERNAL_CONNECTORS if river == DOMAIN_NUM['platform'] else None,
+            'core_infrastructure': [SUPABASE_CORE] if river == DOMAIN_NUM['platform'] else None,
         }
     return notes
 
@@ -3897,15 +3662,15 @@ def build_component_zone_map(graph_json_path: Path, id_river):
 # 'enc', since the function is an Oracle-side action whose destination
 # happens to be the encyclopedia, not an encyclopedia action in its own
 # right).
-MAINJS_RIVER_RULES = [
-    (1, ['password', 'pwvis']),
-    (2, ['showpage', 'showsched']),
-    (3, ['oracle', 'sendchat', 'addmsg', 'rendermarkdown', 'escchathtml',
+MAINJS_RIVER_RULES = [  # Oct 11 2026 (M1): remapped to domain numbers (DOMAIN_NUM)
+    (8, ['password', 'pwvis']),
+    (8, ['showpage', 'showsched']),
+    (1, ['oracle', 'sendchat', 'addmsg', 'rendermarkdown', 'escchathtml',
          'callcomposio', 'insta_commands', 'renderinstamsg', 'addinstaquest',
          'toggleinstapanel', 'fireinstacommand', 'prod_commands',
          'fireprodcommand', 'firebeatanalysis', 'clearpendingimage',
          'sendchatwithimage']),
-    (7, ['enc', 'insight', 'vst', 'learn', 'video', 'notion', 'workshop',
+    (3, ['enc', 'insight', 'vst', 'learn', 'video', 'notion', 'workshop',
          'renderdb', 'loadnote', 'deletenote', 'extracttopic', 'ytkey',
          'extractall', 'jumpto', 'detectcategory', 'sortentries',
          'filterentries', 'renderbullets', 'syncandpush', 'generatenotes',
@@ -3921,7 +3686,7 @@ MAINJS_RIVER_RULES = [
          'checkserverstatus', 'submitintelurl', 'default_shifts',
          'importerr', 'stopreason', 'freewindow', 'rota', 'cal', 'duration',
          'slot', 'fracclock', 'switchtoci']),
-    (10, ['quest', 'xp', 'levelup', 'skilltree', 'skills', 'agent',
+    (5, ['quest', 'xp', 'levelup', 'skilltree', 'skills', 'agent',
           'makecard', 'buildqs', 'suggestion']),
 ]
 

@@ -61,7 +61,7 @@ OUT = Path('graphify-out/galaxy_map_local_pipeline.html')
 # intelDelete/intelDedup/ciAutoPropose). Confirmed by direct read, not
 # assumed: every browser-side call site below is reached from
 # syncIntelData(), which is that river's own Content-Intelligence sync.
-HOST_RIVER = 12
+HOST_RIVER = 3  # Oct 11 2026 (M1): Content Intelligence lives in the Knowledge domain
 
 CLUSTER_COLOR = '#E8967A'   # reused from LOAD_COLOR's own family — a
                             # local, machine-side pipeline, deliberately
