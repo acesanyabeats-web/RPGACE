@@ -5540,6 +5540,18 @@ document.addEventListener('keydown', e=>{
   R._ready   = false;
   R._queue   = [];
 
+  // Oct 11 2026 (M1, rivers -> domains) — every registered module carries a
+  // `domain:` key naming one of these. The keys match the left menu's
+  // groups (plus Platform for the shell itself). The Galaxy Map tooling
+  // reads `domain:` straight from this file, so there is ONE source of
+  // truth for where a module belongs (scripts/check_module_domains.py
+  // fails if a module has none). Record:
+  // records/2026-10/rivers_to_domains_scrutiny_2026-10-10.txt
+  R.DOMAINS = {
+    oracle: 'Oracle', content: 'Content & Video', knowledge: 'Knowledge', habits: 'Habits',
+    schedule: 'Schedule & Journal', chronicles: 'Chronicles', oversight: 'Oversight', platform: 'Platform'
+  };
+
   R.register = function (name, module) {
     if (R.modules[name]) {
       console.warn('[RPGACE.register] Already registered:', name);
@@ -5636,6 +5648,7 @@ document.addEventListener('keydown', e=>{
 
 /* ===MODULE:youtubeOracle=== */
 RPGACE.register('youtubeOracle', {
+  domain: 'oracle',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026) — real, ratified /CEO plan item, and the TWELFTH
@@ -5838,6 +5851,7 @@ RPGACE.register('youtubeOracle', {
 // footprint - not a scope judgment on TikTok's importance, just the
 // closer real precedent for a newly-added platform panel.
 RPGACE.register('tiktokOracle', {
+  domain: 'oracle',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026) — real, ratified /CEO plan item, and the THIRTEENTH
@@ -5994,6 +6008,7 @@ RPGACE.register('tiktokOracle', {
 // delegate here, so every old entry point (index.html's toggleInstaPanel
 // button included) lands in the same panel.
 RPGACE.register('captionsPanel', {
+  domain: 'oracle',
 
   PLATFORMS: [
     { key: 'instagram', label: 'Instagram', emoji: '📸', mod: 'instaOraclePanel', accent: 'var(--purple)' },
@@ -6167,6 +6182,7 @@ RPGACE.register('captionsPanel', {
 // About-a-beat picker prefixes them with a real beat. 49 (rate
 // calculator) stays out: chronicles_finance has no rows to price from.
 RPGACE.register('producerTools', {
+  domain: 'oracle',
 
   CMDS: [
     ['A&R Critic', 'Act as a harsh but fair A&R at a UK label hearing this for the first time. WHAT IT IS: [DESCRIBE THE BEAT OR VIDEO, OR PICK A BEAT ABOVE]. WHO IT IS FOR: [TYPE THE ARTIST OR AUDIENCE]. Score 1-10 on: the first 10 seconds, drums, melody or sample, mix, arrangement, and how it stands out from what is out in UK hip hop and drill right now. For every score under 7 give one specific fix I can do in FL Studio. End with one verdict - post it now, fix first, or scrap it - and one sentence why. No praise padding.'],
@@ -6200,6 +6216,7 @@ RPGACE.register('producerTools', {
 
 /* ===MODULE:prodOraclePanel=== */
 RPGACE.register('prodOraclePanel', {
+  domain: 'oracle',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026), module 27 of 60 — real, ratified /CEO plan item:
@@ -6469,6 +6486,7 @@ RPGACE.register('prodOraclePanel', {
 
 /* ===MODULE:instaOraclePanel=== */
 RPGACE.register('instaOraclePanel', {
+  domain: 'oracle',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026) — real, ratified /CEO plan item, and the FOURTEENTH
@@ -6633,6 +6651,7 @@ RPGACE.register('instaOraclePanel', {
 
 /* ===MODULE:quickActions=== */
 RPGACE.register('quickActions', {
+  domain: 'oracle',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026) — real, ratified /CEO plan item, and the NINETEENTH
@@ -6838,6 +6857,7 @@ RPGACE.register('quickActions', {
 
 /* ===MODULE:visualOracle=== */
 RPGACE.register('visualOracle', {
+  domain: 'content',
 
   // Engineer pass 2026-07-30 — Neural Frames replaced with OpenMontage
   // throughout (Alex's own call: Neural Frames is the old idea, RPGACE's
@@ -7559,6 +7579,7 @@ RPGACE.register('visualOracle', {
 
 /* ===MODULE:contentRepurpose=== */
 RPGACE.register('contentRepurpose', {
+  domain: 'content',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026), module 43 of 60 — real, ratified /CEO plan item:
@@ -8105,6 +8126,7 @@ RPGACE.register('contentRepurpose', {
 
 /* ===MODULE:feynman=== */
 RPGACE.register('feynman', {
+  domain: 'knowledge',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Aug/Sep 2026) — real, ratified /CEO plan item, and the TENTH
@@ -9004,6 +9026,7 @@ RPGACE.register('feynman', {
 //   5. Cooking shopping list -> "Add a non-food item to your Wishlist":
 //      shoppingWishlist.logic._addItem, same item shape as its own form.
 RPGACE.register('pathways', {
+  domain: 'knowledge',
 
   _jargon: null,
 
@@ -9255,6 +9278,7 @@ RPGACE.register('pathways', {
 // Every source is anon-readable already (checked via pg_policies), so no new
 // api/*.js endpoint is needed (11 of 12 used).
 RPGACE.register('askMyData', {
+  domain: 'oracle',
 
   MAX_ROWS: 30,
   MAX_FIELD: 160,
@@ -9475,6 +9499,7 @@ RPGACE.register('askMyData', {
 // time, Save idea, Full article); the Encyclopedia home gets a Posts strip
 // with Series (articles grouped by shared tag) and Saved ideas.
 RPGACE.register('encyclopediaPosts', {
+  domain: 'knowledge',
 
   // Section order = card order inside a post. `src` is the key inside the
   // report's insights object; 'summary'/'key_learnings' live one level
@@ -9877,6 +9902,7 @@ RPGACE.register('encyclopediaPosts', {
 // an encyclopedia_insights row (source_entry_id 'book:<chapterId>') so book
 // ideas and video ideas share one Saved list and one recall queue.
 RPGACE.register('recall', {
+  domain: 'knowledge',
 
   INTERVALS: [1, 3, 7, 16, 35],
   PER_BRIEF: 3,
@@ -10043,6 +10069,7 @@ RPGACE.register('recall', {
 
 /* ===MODULE:encSync=== */
 RPGACE.register('encSync', {
+  domain: 'knowledge',
 
   // G53 (Sep 2026), module 26 of 60. init stays literal top-level.
   // All 3 movable functions are zero-DOM (localStorage/global-function
@@ -10167,6 +10194,7 @@ RPGACE.register('encSync', {
 // above it — mirrors that loop's dedup-by-url/title + 5-item cap so this
 // doesn't fan out into a burst of Oracle calls on a big backlog sync.
 RPGACE.register('ciAutoPropose', {
+  domain: 'knowledge',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026), module 29 of 60 — real, ratified /CEO plan item:
@@ -10451,6 +10479,7 @@ RPGACE.register('ciAutoPropose', {
 // Same _xPatched guard + fall-through convention as scheduleOracle's
 // and bookworm's sendChat wraps.
 RPGACE.register('oracleTreeGrounding', {
+  domain: 'oracle',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026), module 32 of 60 — real, ratified /CEO plan item:
@@ -10738,6 +10767,7 @@ RPGACE.register('oracleTreeGrounding', {
 // with that module's wrap regardless of init order, same as every other
 // chained sendChat/callOracle wrap already in this file.
 RPGACE.register('oracleAppGrounding', {
+  domain: 'oracle',
 
   PERSONA_MARKERS: ['You are the Oracle —', "You are Alex's personal 300IQ music production teacher"],
 
@@ -11253,6 +11283,7 @@ RPGACE.register('oracleAppGrounding', {
 // an append-only text log, not a destructive or structural change) -
 // nothing gets written to Supabase without Alex choosing to flag it.
 RPGACE.register('oracleDevBridge', {
+  domain: 'oversight',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026) — real, ratified /CEO plan item, and the EIGHTEENTH
@@ -11459,6 +11490,7 @@ RPGACE.register('oracleDevBridge', {
 // plain Oracle all go through the same main.js URL-fetch code path
 // before the persona check happens), so this checks every call.
 RPGACE.register('oracleFetchGuard', {
+  domain: 'oracle',
 
   // G53 (Sep 2026) housekeeping note: reviewed for the ui/logic split —
   // genuinely not applicable. This module has exactly one real function
@@ -11529,6 +11561,7 @@ RPGACE.register('oracleFetchGuard', {
 // (his other explicit answer), it doesn't force a round-trip through the
 // dashboard card's popup every time.
 RPGACE.register('researchTabs', {
+  domain: 'knowledge',
 
   // `desc` added July 23 — single source of truth for the new Research Lab
   // dashboard-card popup's sub-nav cards (dashDeck._openResearch), so the
@@ -11782,6 +11815,7 @@ RPGACE.register('researchTabs', {
 // onclick="..." HTML attribute — main.js's frozen legacy [onclick*="..."]
 // selectors must never match the drawer's buttons.
 RPGACE.register('leftNav', {
+  domain: 'platform',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026), module 45 of 60 — real, ratified /CEO plan item:
@@ -12506,6 +12540,7 @@ RPGACE.ui.batchList = function(container, batchSize) {
 // polling rebuilds innerHTML, which would otherwise un-hide everything).
 // Chainable wrap, same guard convention as every other wrap in this file.
 RPGACE.register('intelBatchList', {
+  domain: 'knowledge',
   // G53 (Sep 2026) housekeeping note: reviewed for the ui/logic split —
   // genuinely not applicable. This module has exactly one real function
   // (`init`, which must stay a literal top-level function regardless,
@@ -12580,6 +12615,7 @@ RPGACE.ui.slideOutPanel = function(panel, edge) {
 // live data, a working click-through to _openQueue() below, and a real
 // home labeled "Needs you now" — no second injection path to break again.
 RPGACE.register('taxonomyReviewQueue', {
+  domain: 'knowledge',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026) — real, ratified /CEO plan item, and the ELEVENTH
@@ -13274,6 +13310,7 @@ RPGACE.register('taxonomyReviewQueue', {
 // so buttons are injected by wrapping that function rather than a one-time
 // pass - a MutationObserver would fight the innerHTML replace on every call.
 RPGACE.register('encTaxonomyLink', {
+  domain: 'knowledge',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026) — real, ratified /CEO plan item, and the TWENTIETH
@@ -13564,6 +13601,7 @@ RPGACE.register('encTaxonomyLink', {
 // wraps that function the same way encTaxonomyLink wraps renderEncEntries
 // rather than doing a one-time DOM pass.
 RPGACE.register('agendaReminder', {
+  domain: 'schedule',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026), module 31 of 60 — real, ratified /CEO plan item:
@@ -13772,6 +13810,7 @@ RPGACE.register('agendaReminder', {
 // auto-routing confidence gate) is NOT built here, it depends on this
 // phase and is its own separate pass.
 RPGACE.register('scheduleOracle', {
+  domain: 'schedule',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026), module 35 of 60 — real, ratified /CEO plan item:
@@ -14235,6 +14274,7 @@ RPGACE.register('scheduleOracle', {
 
 /* ===MODULE:intelDelete=== */
 RPGACE.register('intelDelete', {
+  domain: 'knowledge',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Aug/Sep 2026) — real, ratified /CEO plan item, and the NINTH
@@ -15296,6 +15336,7 @@ RPGACE.register('intelDelete', {
 // widgets below are untouched in pass 1 - widget-by-widget
 // consolidation is pass 2, after hand-test.
 RPGACE.register('dashDeck', {
+  domain: 'platform',
 
   // July 24: the [1400, 3000] dual-timer retry is gone - #page-dashboard
   // is static HTML already present at parse time (not dynamically
@@ -17010,6 +17051,7 @@ RPGACE.register('dashDeck', {
 // caches, once on init and after every sync (chainable wrap). main.js
 // untouched (frozen).
 RPGACE.register('intelDedup', {
+  domain: 'knowledge',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026), module 37 of 60 — real, ratified /CEO plan item:
@@ -17219,6 +17261,7 @@ RPGACE.register('intelDedup', {
 // watchlist delete, bibliography section, and _deleteUnified stay in
 // active use - our 🗑 calls _deleteUnified directly).
 RPGACE.register('videoSummary', {
+  domain: 'content',
   // ══════════════════════════════════════════════════════════════════
   // G53 (Aug 2026) — real, ratified /CEO plan item, and the SEVENTH
   // module to take this shape (after the videoPipeline/beatLog/bookworm/
@@ -17783,6 +17826,7 @@ RPGACE.register('videoSummary', {
 
 /* ===MODULE:taxonomySync=== */
 RPGACE.register('taxonomySync', {
+  domain: 'knowledge',
 
   // DOMAIN A — CRAFT (I–VIII): the making
   // DOMAIN B — KNOWLEDGE (IX–XII): what you learn
@@ -18065,6 +18109,7 @@ RPGACE.register('taxonomySync', {
 
 /* ===MODULE:knowledgeGap=== */
 RPGACE.register('knowledgeGap', {
+  domain: 'knowledge',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026), module 33 of 60 — real, ratified /CEO plan item:
@@ -18455,6 +18500,7 @@ RPGACE.register('knowledgeGap', {
 
 /* ===MODULE:taxonomyTree=== */
 RPGACE.register('taxonomyTree', {
+  domain: 'knowledge',
 
   // Renumbered Aug 11 to match the chronological/thematic display order
   // (Craft & Production / Knowledge & Mind / Visual & Creative Identity /
@@ -19207,6 +19253,7 @@ RPGACE.register('taxonomyTree', {
 // article regeneration (no auto-regen); every rank gets its own article,
 // including the phylum root itself.
 RPGACE.register('phylumPath', {
+  domain: 'knowledge',
 
   // G53 (Aug 2026) — real, ratified /CEO plan item, module 4 of 4 and the
   // LAST of the pilot (after videoPipeline, beatLog and bookworm): this
@@ -22332,6 +22379,7 @@ RPGACE.register('phylumPath', {
 // _callGroundWorkerJSON, _callGroundWorkerText) and its chained-insert
 // pattern (_insertNewSteps) rather than duplicating that plumbing.
 RPGACE.register('bookworm', {
+  domain: 'knowledge',
   // G53 (Aug 2026) — real, ratified /CEO plan item, module 3 of 4 in the
   // pilot (after videoPipeline and beatLog): this module is split into two
   // internal namespaces, `ui` (rendering/DOM) and `logic` (business
@@ -24613,6 +24661,7 @@ RPGACE.register('bookworm', {
 
 /* ===MODULE:config=== */
 RPGACE.register('config', {
+  domain: 'platform',
 
   // G53 (Sep 2026) housekeeping note: reviewed for the ui/logic split —
   // genuinely not applicable. This module has exactly one real function
@@ -25913,6 +25962,7 @@ RPGACE.register('config', {
 
 /* ===MODULE:beatLog=== */
 RPGACE.register('beatLog', {
+  domain: 'content',
 
   // G53 (Aug 2026) — real, ratified /CEO plan item: this module is split into
   // two internal namespaces, `ui` (rendering/DOM) and `logic` (business
@@ -27271,6 +27321,7 @@ RPGACE.register('beatLog', {
 
 /* ===MODULE:refCorpus=== */
 RPGACE.register('refCorpus', {
+  domain: 'content',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026), module 46 of 60 — real, ratified /CEO plan item:
@@ -27878,6 +27929,7 @@ RPGACE.register('refCorpus', {
 
 /* ===MODULE:contentProductionLive=== */
 RPGACE.register('contentProductionLive', {
+  domain: 'content',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Aug 2026) — real, ratified /CEO plan item, and the FIFTH module
@@ -30639,6 +30691,7 @@ RPGACE.register('contentProductionLive', {
 // in Supabase until this session — every beatLog save has been silently
 // failing; table created alongside this module).
 RPGACE.register('videoPipeline', {
+  domain: 'content',
 
   // Engineer pass 2026-07-30 (real "2 workflows" resolution) — every
   // real video_jobs row is created by beatLog._submit and ONLY by
@@ -30918,6 +30971,7 @@ RPGACE.register('videoPipeline', {
 
 /* ===MODULE:conidPot=== */
 RPGACE.register('conidPot', {
+  domain: 'content',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Aug 2026) — real, ratified /CEO plan item, and the SIXTH module
@@ -31780,6 +31834,7 @@ RPGACE.register('conidPot', {
 
 /* ===MODULE:morningBrief=== */
 RPGACE.register('morningBrief', {
+  domain: 'schedule',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026), module 34 of 60 — real, ratified /CEO plan item:
@@ -32266,6 +32321,7 @@ RPGACE.register('morningBrief', {
 
 /* ===MODULE:suppressQuestPopup=== */
 RPGACE.register('suppressQuestPopup', {
+  domain: 'schedule',
 
   // G53 (Sep 2026), module 22 of 60. init stays literal top-level.
   // _suppress discovers/mutates real DOM (getElementById + .remove())
@@ -32303,6 +32359,7 @@ RPGACE.register('suppressQuestPopup', {
 
 /* ===MODULE:docsLinks=== */
 RPGACE.register('docsLinks', {
+  domain: 'oversight',
 
   // G53 (Sep 2026), module 25 of 60. init stays literal top-level.
   // _inject is confirmed dead (a bare `return;` as its first real
@@ -32446,6 +32503,7 @@ RPGACE.register('docsLinks', {
 // generated steps once Phase 1's real duration data exists to ground
 // them. Nothing in this module calls Oracle at all.
 RPGACE.register('questEngine', {
+  domain: 'schedule',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Aug 2026) — real, ratified /CEO plan item, and the EIGHTH
@@ -33534,6 +33592,7 @@ RPGACE.register('questEngine', {
 
 /* ===MODULE:shiftSync=== */
 RPGACE.register('shiftSync', {
+  domain: 'schedule',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026), module 30 of 60 — real, ratified /CEO plan item:
@@ -33766,6 +33825,7 @@ RPGACE.register('shiftSync', {
 //    never through this wrapper) are completely unaffected and still earn
 //    their XP normally.
 RPGACE.register('scheduleFixes', {
+  domain: 'schedule',
 
   // G53 (Sep 2026), module 23 of 60. init stays literal top-level
   // (its page:show closure calls a bare global `window.showSched`,
@@ -33825,6 +33885,7 @@ RPGACE.register('scheduleFixes', {
 // for Bookworm/Knowledge Gaps/Content Pipeline (_stashWidget/_ensureStash) -
 // just a one-way permanent move here, not a toggle in/out of a popup.
 RPGACE.register('agentsIntoOracle', {
+  domain: 'oracle',
 
   // G53 (Sep 2026), module 24 of 60. init stays literal top-level.
   // _relocate is heavy real DOM (getElementById x2, createElement,
@@ -33898,6 +33959,7 @@ RPGACE.register('agentsIntoOracle', {
 // re-render (wraps window.renderEncEntries, same established pattern as
 // encTaxonomyLink just above) so it survives category/sort clicks.
 RPGACE.register('encyclopediaQoL', {
+  domain: 'knowledge',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026) — real, ratified /CEO plan item, and the SIXTEENTH
@@ -34098,6 +34160,7 @@ RPGACE.register('encyclopediaQoL', {
 // children rather than an id-based lookup; simpler, and doesn't require
 // touching or duplicating the frozen render function.
 RPGACE.register('journalQoL', {
+  domain: 'schedule',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026), module 28 of 60 — real, ratified /CEO plan item:
@@ -34399,6 +34462,7 @@ RPGACE.register('journalQoL', {
 // "never add a static script tag" landmine) since it's plain JS logic,
 // not an external library needing its own file.
 RPGACE.register('pwaInstall', {
+  domain: 'platform',
 
   // G53 (Sep 2026), module 21 of 60: split into ui/logic. init is a
   // real, deliberate no-op (see its own comment) and stays literal
@@ -34459,6 +34523,7 @@ RPGACE.modules.pwaInstall._register();
 // gated behind rpgace:ready - it needs to exist before any human could
 // plausibly type a password and hit Enter.
 RPGACE.register('authGate', {
+  domain: 'platform',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026), module 38 of 60 — real, ratified /CEO plan item:
@@ -34702,6 +34767,7 @@ RPGACE.hooks.on('rpgace:login', function() {
 //   duplicated array is more robust and easier for a future session to
 //   follow than relying on classic-script global-scope leakage.
 RPGACE.register('careerStatCard', {
+  domain: 'chronicles',
   WEIGHTS: {
     contentShipped: 100,
     contentIdea: 5,
@@ -35361,6 +35427,7 @@ RPGACE.register('careerStatCard', {
 // id and class="page" to exist by click time, it doesn't care when or how
 // it was created). No main.js edit.
 RPGACE.register('chroniclesLog', {
+  domain: 'chronicles',
   FILTERS: ['all', 'proposal', 'journal', 'insight', 'content_shipped', 'content_idea', 'track', 'finance_sale', 'finance_expense', 'system_update', 'bibliography', 'quest', 'cook', 'gym'],
   FILTER_LABELS: { all: 'All', proposal: '🌳 Taxonomy', journal: '📓 Journal', insight: '🧠 Insight', content_shipped: '🚀 Shipped', content_idea: '💡 Ideas', track: '🎧 Reference', finance_sale: '💰 Sales', finance_expense: '🧾 Expenses', system_update: '🛠️ System', bibliography: '📚 Bibliography', quest: '⚔️ Quests', cook: '🍳 Cooks', gym: '🏋️ Gym' },
   // 'Personal' added 2026-09-14 - the real category shoppingWishlist._markBought
@@ -35744,6 +35811,7 @@ RPGACE.register('chroniclesLog', {
 // call, never re-implemented here (rule 8) — this module owns browsing/
 // display, phylumPath still owns the one real write path.
 RPGACE.register('jargonEncyclopedia', {
+  domain: 'knowledge',
 
   // Real, honest status->badge lookup, module-scope data (G53-family
   // convention: data fields grouped at module top-level, not interleaved
@@ -36032,6 +36100,7 @@ RPGACE.register('jargonEncyclopedia', {
 // interdependent modules, a fragile already-documented rpgace:ready timing
 // pattern) held back for its own dedicated pass, not bundled in here.
 RPGACE.register('pathRouter', {
+  domain: 'platform',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026) — real, ratified /CEO plan item, and the SEVENTEENTH
@@ -36280,6 +36349,7 @@ RPGACE.register('pathRouter', {
 // a phone, not with devtools open). Next time the freeze recurs, it should
 // self-report its own real duration instead of needing another guess.
 RPGACE.register('perfWatch', {
+  domain: 'platform',
   // G53 (Sep 2026) housekeeping note: reviewed for the ui/logic split —
   // genuinely not applicable. This module has exactly one real function
   // (`init`, which must stay a literal top-level function regardless,
@@ -36346,6 +36416,7 @@ RPGACE.register('perfWatch', {
 // Fish Audio ASR, itself dormant until Alex activates a real key) — text
 // only. No auto-execute. No open-ended action vocabulary.
 RPGACE.register('oracleControl', {
+  domain: 'oracle',
 
   _actions: [],
   _actionsFetchedAt: 0,
@@ -37057,6 +37128,7 @@ RPGACE.register('oracleControl', {
 // zero DOM footprint when off (matches the no-post-login-pop-in
 // convention every other module here follows).
 RPGACE.register('mockOracle', {
+  domain: 'oracle',
 
   // Aug 6, same day, 2nd pass: extended from a binary Dummy/Real switch to
   // a real 3-state Oracle Mode, per Alex's own direct spec ("in the toggle
@@ -37790,6 +37862,7 @@ RPGACE.register('mockOracle', {
 // animation (an honest, deliberate UX difference for this mode, not a
 // silent bug).
 RPGACE.register('oracleProviderMode', {
+  domain: 'oracle',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026), module 39 of 60 — real, ratified /CEO plan item:
@@ -37978,6 +38051,7 @@ RPGACE.register('oracleProviderMode', {
 // server-side error capture (api/*.js) is real, scoped future work, not
 // built blind in this pass - see CLAUDE.md's Open forks.
 RPGACE.register('errorLog', {
+  domain: 'oversight',
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026), module 47 of 60 — real, ratified /CEO plan item:
@@ -38776,6 +38850,7 @@ RPGACE.register('errorLog', {
 
 /* ===MODULE:cookingOracle=== */
 RPGACE.register('cookingOracle', {
+  domain: 'habits',
 
   // 2026-09-10 - HABITS domain, first real module (Cooking: H2/H3/H4 of
   // the ratified /CEO Loop 1 spec). Full record, every real fork resolved
@@ -45655,6 +45730,7 @@ RPGACE.register('cookingOracle', {
 // series has shipped since G53; no reason for a brand-new module to start
 // life in the pre-split shape).
 RPGACE.register('shoppingWishlist', {
+  domain: 'habits',
 
   CATEGORY_SUGGESTIONS: ['Kitchen', 'Household', 'Electronics', 'Gaming', 'Clothing', 'Other'],
   PRIORITY_META: {
@@ -46140,6 +46216,7 @@ RPGACE.register('shoppingWishlist', {
 // RPGACE.sb.secureWrite. Sessions also show in Chronicles and the Morning
 // Brief's own-words section, and Ask My Data can read gym_sets.
 RPGACE.register('gymTracker', {
+  domain: 'habits',
 
   WEEKLY_TARGET: 5,
 
@@ -46428,6 +46505,7 @@ RPGACE.register('gymTracker', {
 // table (entry_type='decision', review_on, outcome) — no new table (rule 8),
 // so they also show in the normal journal list and in Ask My Data.
 RPGACE.register('decisionJournal', {
+  domain: 'schedule',
 
   WEEKS: [2, 4, 8],
 
@@ -46627,6 +46705,7 @@ var _rpgaceShareAtLoad = (function() {
 })();
 
 RPGACE.register('shareInbox', {
+  domain: 'knowledge',
 
   init: function() {
     var self = this;
@@ -46744,6 +46823,7 @@ RPGACE.register('shareInbox', {
 //     note go into the Morning Brief prompt so it can quote them back.
 //  05 one timeline: done in careerStatCard (quest_log + planned_cooks).
 RPGACE.register('dailyLife', {
+  domain: 'habits',
 
   LAST_DIGEST_KEY: 'rpgace_watchlist_digest_at',
   MAX_ITEMS: 40,
