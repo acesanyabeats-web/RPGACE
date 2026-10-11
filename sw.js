@@ -9,7 +9,10 @@
  * and only cache-first for the icon/manifest files that never change without
  * a filename bump. Bump CACHE_NAME whenever this file's caching list changes.
  */
-const CACHE_NAME = 'rpgace-shell-v20261010b';
+const CACHE_NAME = 'rpgace-shell-v20261011a';
+// Oct 11 2026 (S1): holds a shared image for a few seconds until the app
+// (screenshotInbox.handleShare) uploads it and deletes it. Not a page cache.
+const SHARE_CACHE = 'rpgace-share';
 // Oct 10 2026: manifest.json is no longer cache-first - it now carries the
 // share_target, so it must always come from the network (network-first
 // branch below) or an install can pick up a stale copy without it.
@@ -32,7 +35,7 @@ self.addEventListener('activate', function (event) {
   event.waitUntil(
     caches.keys().then(function (names) {
       return Promise.all(
-        names.filter(function (n) { return n !== CACHE_NAME; }).map(function (n) { return caches.delete(n); })
+        names.filter(function (n) { return n !== CACHE_NAME && n !== SHARE_CACHE; }).map(function (n) { return caches.delete(n); })
       );
     }).then(function () { return self.clients.claim(); })
   );
@@ -40,6 +43,29 @@ self.addEventListener('activate', function (event) {
 
 self.addEventListener('fetch', function (event) {
   var url = new URL(event.request.url);
+
+  // Oct 11 2026 (S1) — the manifest's share_target is now a POST form so
+  // Android can share images too. An image is parked in SHARE_CACHE and the
+  // app opens with ?share_image=<key> (screenshotInbox). A link/text share
+  // is turned back into the same ?share_url=&share_text=&share_title= GET
+  // the shareInbox module has read since Oct 10, so link sharing is unchanged.
+  if (event.request.method === 'POST' && url.pathname === '/share-target') {
+    event.respondWith((async function () {
+      var form;
+      try { form = await event.request.formData(); } catch (e) { return Response.redirect('/', 303); }
+      var file = form.get('shared_image');
+      if (file && typeof file !== 'string' && file.size) {
+        var key = Date.now() + '-' + Math.random().toString(16).slice(2, 8);
+        var cache = await caches.open(SHARE_CACHE);
+        await cache.put('/shared-image/' + key, new Response(file, { headers: { 'Content-Type': file.type || 'image/jpeg' } }));
+        return Response.redirect('/?share_image=' + encodeURIComponent(key), 303);
+      }
+      var q = new URLSearchParams();
+      ['share_url', 'share_text', 'share_title'].forEach(function (k) { var v = form.get(k); if (v) q.set(k, v); });
+      return Response.redirect('/?' + q.toString(), 303);
+    })());
+    return;
+  }
 
   // Never touch API calls (Oracle, Supabase-proxying endpoints, etc.) -
   // these must always hit the network live, never be cached.

@@ -307,6 +307,105 @@ async function handleBundleDeliverables(req, res, serviceKey) {
   });
 }
 
+// Oct 11 2026 — S1 Screenshot Inbox. Alex chose "keep the picture, locked":
+// the `screenshots` table and the private `screenshots` bucket have RLS on
+// with NO policies, so the public anon key can't read, write or list either.
+// Every access is this action, behind requireAuth() with the service-role
+// key - the same posture as bundle-deliverables above (rule 8: no 13th
+// api file). Ops: upload | update | list | count | delete.
+const SHOTS_BUCKET = 'screenshots';
+const SHOT_PATCH_FIELDS = ['extracted_text', 'description', 'tags', 'kind', 'suggestions', 'status', 'routed_to', 'read_at'];
+const SHOT_COLS = 'id,storage_path,source,extracted_text,description,tags,kind,suggestions,status,routed_to,created_at,read_at';
+
+async function signShotPaths(paths, serviceKey) {
+  if (!paths.length) return {};
+  const r = await sbFetch('/storage/v1/object/sign/' + SHOTS_BUCKET, serviceKey, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ expiresIn: 3600, paths }),
+  });
+  const data = await r.json().catch(() => []);
+  const out = {};
+  (Array.isArray(data) ? data : []).forEach(function (d) {
+    if (d && d.path && d.signedURL) out[d.path] = SUPABASE_URL + '/storage/v1' + d.signedURL;
+  });
+  return out;
+}
+
+async function handleScreenshots(body, res, serviceKey) {
+  const op = body.op;
+  if (op === 'upload') {
+    const mediaType = body.mediaType || 'image/jpeg';
+    if (!/^image\/(jpeg|png|webp)$/.test(mediaType)) return res.status(400).json({ error: 'Only JPEG, PNG or WebP images' });
+    if (!body.base64 || typeof body.base64 !== 'string') return res.status(400).json({ error: 'base64 image required' });
+    const buf = Buffer.from(body.base64, 'base64');
+    if (!buf.length || buf.length > 8 * 1024 * 1024) return res.status(400).json({ error: 'Image empty or over 8MB' });
+    const d = new Date();
+    const ext = mediaType === 'image/png' ? 'png' : mediaType === 'image/webp' ? 'webp' : 'jpg';
+    const path = d.toISOString().slice(0, 7) + '/' + d.getTime() + '-' + Math.random().toString(16).slice(2, 10) + '.' + ext;
+    const up = await sbFetch('/storage/v1/object/' + SHOTS_BUCKET + '/' + path, serviceKey, {
+      method: 'POST', headers: { 'Content-Type': mediaType }, body: buf,
+    });
+    if (!up.ok) return res.status(502).json({ error: 'Image upload failed', detail: await up.text() });
+    const ins = await sbFetch('/rest/v1/screenshots?select=' + SHOT_COLS, serviceKey, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Prefer: 'return=representation' },
+      body: JSON.stringify({ storage_path: path, mime: mediaType, source: body.source === 'share' ? 'share' : 'upload' }),
+    });
+    const rows = await ins.json().catch(() => null);
+    if (!ins.ok || !Array.isArray(rows) || !rows[0]) {
+      await sbFetch('/storage/v1/object/' + SHOTS_BUCKET + '/' + path, serviceKey, { method: 'DELETE' });
+      return res.status(502).json({ error: 'Saving the screenshot row failed', detail: rows });
+    }
+    return res.status(200).json({ data: rows[0] });
+  }
+  if (op === 'update') {
+    if (!body.id || !body.patch) return res.status(400).json({ error: 'id and patch required' });
+    const patch = {};
+    SHOT_PATCH_FIELDS.forEach(function (k) { if (k in body.patch) patch[k] = body.patch[k]; });
+    const r = await sbFetch('/rest/v1/screenshots?id=eq.' + encodeURIComponent(body.id) + '&select=' + SHOT_COLS, serviceKey, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json', Prefer: 'return=representation' }, body: JSON.stringify(patch),
+    });
+    const rows = await r.json().catch(() => null);
+    if (!r.ok) return res.status(r.status).json({ error: 'Update failed', detail: rows });
+    return res.status(200).json({ data: Array.isArray(rows) ? rows[0] : null });
+  }
+  if (op === 'list') {
+    const limit = Math.min(Math.max(parseInt(body.limit, 10) || 40, 1), 100);
+    let q = '/rest/v1/screenshots?select=' + SHOT_COLS + '&order=created_at.desc&limit=' + limit;
+    if (body.q && String(body.q).trim()) q += '&search=wfts(english).' + encodeURIComponent(String(body.q).trim().slice(0, 120));
+    if (body.status) q += '&status=in.(' + String(body.status).split(',').map(encodeURIComponent).join(',') + ')';
+    if (body.id) q += '&id=eq.' + encodeURIComponent(body.id);
+    const r = await sbFetch(q, serviceKey);
+    const rows = await r.json().catch(() => null);
+    if (!r.ok || !Array.isArray(rows)) return res.status(502).json({ error: 'List failed', detail: rows });
+    if (body.withUrls !== false) {
+      const urls = await signShotPaths(rows.map(function (x) { return x.storage_path; }), serviceKey);
+      rows.forEach(function (x) { x.url = urls[x.storage_path] || null; });
+    }
+    return res.status(200).json({ data: rows });
+  }
+  if (op === 'count') {
+    const r = await sbFetch('/rest/v1/screenshots?select=id&status=in.(new,unread,read_failed)', serviceKey, { headers: { Prefer: 'count=exact', Range: '0-0' } });
+    const range = r.headers.get('content-range') || '';
+    const n = parseInt(range.split('/')[1], 10);
+    return res.status(200).json({ data: { count: isNaN(n) ? 0 : n } });
+  }
+  if (op === 'delete') {
+    if (!body.id) return res.status(400).json({ error: 'id required' });
+    const g = await sbFetch('/rest/v1/screenshots?select=storage_path&id=eq.' + encodeURIComponent(body.id), serviceKey);
+    const rows = await g.json().catch(() => []);
+    const row = Array.isArray(rows) && rows[0];
+    if (!row) return res.status(404).json({ error: 'Screenshot not found' });
+    const rm = await sbFetch('/storage/v1/object/' + SHOTS_BUCKET + '/' + row.storage_path, serviceKey, { method: 'DELETE' });
+    if (!rm.ok && rm.status !== 404) return res.status(502).json({ error: 'Deleting the image failed', detail: await rm.text() });
+    const d = await sbFetch('/rest/v1/screenshots?id=eq.' + encodeURIComponent(body.id), serviceKey, { method: 'DELETE' });
+    if (!d.ok) return res.status(502).json({ error: 'Deleting the row failed', detail: await d.text() });
+    return res.status(200).json({ data: { deleted: body.id } });
+  }
+  return res.status(400).json({ error: 'Unknown screenshots op: ' + op });
+}
+
 export default async function handler(req, res) {
   setCORS(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -323,6 +422,9 @@ export default async function handler(req, res) {
 
     if (body && body.action === 'bundle-deliverables') {
       return await handleBundleDeliverables(req, res, serviceKey);
+    }
+    if (body && body.action === 'screenshots') {
+      return await handleScreenshots(body, res, serviceKey);
     }
 
     const { table, operation, payload, match, onConflict } = body || {};
