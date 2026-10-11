@@ -1,0 +1,30 @@
+Cooking as a separate product — Alex's idea + answers (Oct 11 2026), verbatim. Nothing built yet.
+
+Context: came out of a conversation about leaving minimum-wage work and getting the apps to pay a salary
+(immediate goal: CBT + 125cc so he can commute to a better job; one-year goal: move e.g. to Bristol;
+ultimate goal: apps paying, own place, abroad, dog, pet crow).
+
+== The idea (verbatim) ==
+"the cooking module, we can create that as a separate app for batch cooking and making it a more accessible service
+where people can take into account what they actually have and make recipes out of it ... Give them a few spices that
+they just invest in if they like a particular cuisine and then they can reuse them and then just slowly build out the
+pantry ... especially if it like counts macros and all that and it could really help with like gym and stuff so
+scheduling as well ... you do prep like one day when you buy the groceries you hook one recipe and then if they plan
+another recipe for the week They've already got that prep done so we can do different prep phases cook phases if you
+want to cook two meals at the same time ... so many different modes and we can genuinely sell this ... I think we
+should do this as a separate project"
+
+== Answers ==
+Who for:   "All people that want affordable recipes or traditional with step by step plan process"
+Format:    "(I like the Uber express cocktail spec system with overview and step by step, Id like that in RPGACE too)"
+           -> NOT yet understood by Claude; asked Alex to explain/screenshot before designing around it.
+Charging:  "monthly"
+Platform:  "both" (phone app and website)
+
+== Already built in RPGACE that the product can reuse (cookingOracle) ==
+stock-aware 7-colour ingredient status, curated substitutions, cross-recipe interleaved prep/cook scheduler,
+Live Cook Mode step timers, CoFID nutrition (7,743 foods), aisle-sorted shopping list, fridge-photo stock import.
+
+== Honest risks named to Alex ==
+competitors (Mealime, SuperCook); a product needs accounts/privacy/payments RPGACE doesn't have; per-recipe AI cost
+must be covered by pricing; stock entry must be low-friction.
