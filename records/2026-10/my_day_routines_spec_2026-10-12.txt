@@ -1,0 +1,23 @@
+My Day / Routines — replaces the generic Quest Board (Oct 12 2026)
+
+Alex, verbatim: "this is useless tbh, i need real goals i need to tick off, like weekly cleaning broken up per day,
+morning routines etc, small steps that are needed to be done a day or a week, or next time im shopping etc.
+reading, coding, music production, education, i need all in one system where i can very effectively plan my day,
+and have all tools for it in rpgace, this is in pure essence what rpgace is for me"
+
+Evidence: the Quest Board list is the hardcoded `const QUESTS` template (rpgace_core.js ~line 60), never Alex's.
+Kept underneath: questEngine (quest_log completions, XP/level restore, real-duration averaging) and the Daily
+Schedule (rpgace_agendas time blocks).
+
+Brief given (rule 18): routines Alex defines (daily / weekly split per day / N times a week, grouped by area);
+"next time I'm…" context lists (shopping shows with the Cooking shopping list); Today = one tickable list of
+routines + what RPGACE already knows; Plan my day = suggest time slots; streaks + done-vs-planned.
+Left out: Oracle-written routines, phone notifications.
+
+Answers (verbatim):
+- Starting list: "you draft an idea, but i choose slots and goals needed based on what is there. i want all
+  functions to be scheduled based on my needs" -> a menu of routine ideas built from RPGACE's real functions
+  (each can open its tool); Alex picks, sets days/time/goal. Nothing goes live until he picks it.
+- XP: "Keep XP, smaller (Recommended)".
+- Old quests: "Remove them (Recommended)" — template removed; past quest_log history kept.
+- Plan my day: "Suggest slots, I accept (Recommended)".

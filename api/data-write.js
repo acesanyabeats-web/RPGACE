@@ -113,6 +113,7 @@ const ALLOWED_TABLES = new Set([
   // direct-anon write call site to either of them, and there never will
   // be - questEngine routes every write through this endpoint.
   'quest_log',
+  'routines', // Oct 12 2026 My Day routines (anon_read_only from creation)
   'quest_duration_stats',
   // 2026-08-26 - G41 Phase 2 (self-aware vocabulary growth). Created
   // anon_read_only/authenticated_all FROM THE START (same as
