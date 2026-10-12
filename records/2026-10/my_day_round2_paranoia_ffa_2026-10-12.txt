@@ -1,0 +1,251 @@
+MY DAY ROUND 2 — /paranoia + /free-for-all-debate record (Oct 12 2026)
+=====================================================================
+
+ALEX'S ASK (verbatim)
+"lets think through the routines, starting with shifts, i want the auto import to work again. i also want to be
+able to choose a routine on when to schedule for this week, next week, week after etc to plan out weeklies,
+monthly should be counted by days done since, with green, yellow and red zones to alert when scheduling needs to
+be done. /paranoia and /free-for-all-debate all this and make new ideas and connections and questions for me for
+next round of /interrogation . all healthy habits should be considered. then we /CEO . make sure i get a lot of
+questions on what habits i want (i started reading psychology for instance only recently)"
+
+Right-sizing (paranoia guardrail, rule 11): this is a planning pass. No code was written. Evidence was gathered
+live; the debate is condensed to the points that survived.
+
+---------------------------------------------------------------------
+1. EVIDENCE (checked live, Oct 12)
+---------------------------------------------------------------------
+Shifts
+- rpgace_shifts (Supabase): 15 rows, dates 2026-07-07..07-26, last written 2026-07-06. RLS anon_all.
+- NO code anywhere writes to rpgace_shifts (grep: no insert/secureWrite/upsert; not in api/data-write.js).
+  The 15 rows were inserted by hand.
+- shiftSync._syncFromSupabase runs ~1.2s after every load and on every Schedule page view, and REPLACES the
+  browser's shift list (RPGACE.DB.set('shifts', rows)) with the Supabase rows.
+  => Any shift imported in the app (rota screenshot in Oracle chat, "paste rota" box, or the PC script's console
+     paste) lives only in that browser's localStorage and is wiped on the next load / Schedule view.
+  => This is the real reason "auto import doesn't work": imports succeed, then get overwritten by July data.
+- parseAndSaveRota (paste box): builds new Date(y,m,d) at local midnight then .toISOString() -> during BST every
+  pasted shift is saved ONE DAY EARLY. Role is hardcoded 'Bar Tender'.
+- DEFAULT_SHIFTS: a hardcoded June/July 2026 rota still ships in the code.
+- scripts/fourth_rota.py (PC): headed Playwright login to secure.fourth.com, tries to auto-find the schedule page,
+  falls back to "press Enter" gates, sends page text to Claude, writes a localStorage console command for Alex to
+  paste into DevTools. Never writes to Supabase. n8n/rota_sync_workflow.json runs it Mondays 8am on the PC only.
+- getShiftsForDate/getTodayShifts (used by My Day + Plan my day) read localStorage only.
+
+My Day state
+- routines: 0 picked yet. gym_sessions: 0. bookworm_books: 1 ("Music Theory for Computer Musicians", in progress).
+  Psychology reading is not in Bookworm yet. journal: 8 entries in the last 30 days (last Oct 1).
+  rpgace_agendas: 0 future rows. planned_cooks: 1 draft.
+- My Day cadences today: daily / certain days (weekly) / N per week / one date / next time. No "monthly",
+  no "every N days", no week-ahead planning, no days-since view.
+
+---------------------------------------------------------------------
+2. FREE-FOR-ALL DEBATE (4 problems, competitors each took 2)
+---------------------------------------------------------------------
+P1 Shift auto-import   P2 Multi-week planning of weeklies   P3 Monthly days-since zones   P4 Healthy-habit coverage
+
+Competitor A "Fix the pipe first" (P1, P2)
+- P1: before any new source, every import path must write rpgace_shifts (through /api/data-write) and shiftSync
+  must MERGE not overwrite. Otherwise any new automation repeats the same silent wipe. Fix the BST date bug and
+  stop hardcoding the role. Retire DEFAULT_SHIFTS.
+- P2: Plan my day already exists for "today"; extend the same slot engine to a week view rather than inventing a
+  second planner (rule 8).
+
+Competitor B "Zero-touch import" (P1, P3)
+- P1: the PC script can never be "auto" (headed browser, manual paste, laptop on). Options, best first:
+  (a) If the Fourth/HotSchedules phone app syncs shifts into his phone calendar (Google/Apple), RPGACE reads that
+      calendar's private iCal link on the cloud runner (GitHub Actions, same pattern as the video queue) -> fully
+      automatic, no Fourth password stored anywhere. Needs: does his Fourth app sync to a calendar?
+  (b) Screenshot route: share the rota screenshot to RPGACE (S1 share target already exists) -> Screenshot inbox
+      gains a "Shifts" home -> Oracle vision extracts shifts -> confirm -> rpgace_shifts. Semi-automatic, works
+      from the phone, no credentials.
+  (c) Cloud Playwright login to Fourth with his username/password as GitHub secrets. Most automatic but: storing
+      a work password (Tier 3 credential), possible MFA/captcha, Fourth's terms, breaks when Fourth changes its
+      page. Last resort.
+  (d) Keep the PC script but make it POST to Supabase instead of the console-paste step.
+- A vs B on P1: A says "no new source until the pipe holds"; B says "the pipe fix alone doesn't make it automatic".
+  MERGED: both — pipe fix is step 1 (cheap, unblocks everything), then one automatic source chosen by Alex.
+- P3: "monthly" is really "every N days with a tolerance". Store a target interval per routine (e.g. 30 days) and
+  colour by days since last done: green < ~70% of interval, yellow until due, red overdue. One mechanism covers
+  monthly, fortnightly, quarterly (deep clean oven, haircut, change toothbrush, back up beats, defrost freezer).
+
+Competitor C "Plan the week, not the day" (P2, P4)
+- P2: a "This week / Next week / Week after" planner: each weekly or N-per-week routine shows a row of 7 day-chips
+  per week; Alex taps the days it happens that week (pre-filled from its usual days), shifts shown on each day so
+  he can avoid them. Planned days write to the schedule (rpgace_agendas) with the routine id, so Today, streaks
+  and Plan my day read one source.
+  Disagreement with A: A wants to reuse the today-slot engine for times; C says weekly planning is about DAYS,
+  times can stay optional per day. MERGED: day-picking first, optional "suggest times" uses A's engine.
+- P4: health coverage should be a checklist of domains (sleep, movement, food, water, mind, social, learning,
+  money, home, creative) with the ideas menu showing gaps ("nothing for sleep yet") — not a giant fixed list.
+
+Competitor D "Habits that stick" (P3, P4)
+- P3: red zone must DO something, not just colour: a red routine appears on Today and in Plan my day suggestions
+  automatically; yellow shows on the week planner as "schedule soon".
+- P4: research-backed habit design: tiny start version ("2 pages" vs "20 pages"), habit stacking ("after coffee,
+  read"), cue + reward, minimum vs target ("floor/goal"), never miss twice, weekly review. Psychology reading
+  connects here: a "Psychology" area with reading + "apply one idea this week" + journal reflection.
+  Disagreement with C: C's domain checklist could become nagging; D wants Alex to choose which domains matter.
+  Left as a question for Alex.
+
+Survived as weak / dropped
+- Auto-generating a full routine set from AI: dropped (Alex explicitly wants to pick).
+- Streak punishment / XP loss for missing: dropped unless Alex asks (shame mechanics hurt adherence).
+- Wearable/sleep tracker integration: parked — needs to know what devices he has.
+
+---------------------------------------------------------------------
+3. COUNCIL OF 5 — proposed plan shape (for /CEO after interrogation)
+---------------------------------------------------------------------
+S0 Shift pipe fix (no question needed, a bug): imports write rpgace_shifts via /api/data-write (add to allowlist;
+   flip RLS to anon_read_only/authenticated_all), shiftSync merges by date, BST date bug fixed, role kept from the
+   source, DEFAULT_SHIFTS removed. Existing localStorage shifts on his devices get pushed up once.
+S1 Automatic shift source (choice depends on answers): calendar feed / screenshot-to-shifts / cloud login / PC
+   script POST.
+S2 Interval routines: "every N days" cadence (monthly = 30) + days-since + green/yellow/red; red joins Today.
+S3 Week planner: this week / next week / week after, day chips per routine, shifts visible, writes agendas.
+S4 Habit design features Alex picks (floor/goal, stacking, never-miss-twice, weekly review, reflection).
+S5 Habit menu expansion by the domains Alex picks, including Psychology.
+Risks: no Supabase backup; shift data is personal work schedule (keep anon read? see Q); scraping Fourth
+password is Tier 3. Token cost: S0/S2/S3 need no AI calls; screenshot import uses one vision call per rota.
+
+---------------------------------------------------------------------
+4. QUESTIONS FOR ALEX (interrogation round)
+---------------------------------------------------------------------
+SHIFTS
+ Q1  Where do you see your rota now: Fourth app, Fourth website, HotSchedules app, printed sheet, group chat?
+ Q2  Does your Fourth app have "sync to calendar"/add shifts to your phone calendar? Which calendar (Google/Apple)?
+ Q3  Which automatic route do you want (calendar feed / share screenshot / cloud login with your password /
+     keep PC script but auto-upload)?
+ Q4  How far ahead is your rota published, and how often does it change after publishing?
+ Q5  Do you still work at the same place (the June-July rota says Bar Tender); are you also at Ube Express now?
+     Should each shift keep its role/venue?
+ Q6  Travel time to work, before and after a shift? (Plan my day uses 30 min each side today.)
+ Q7  After a shift (e.g. finishing 00:00), what's realistic the next morning? Should My Day lighten the next day?
+ Q8  Should shifts be visible to anyone with the app link (they're readable without login today), or private?
+WEEK PLANNING
+ Q9  How far ahead do you want to plan: this week + next 2 weeks, or a full month view?
+ Q10 When you plan a weekly routine for a future week, do you pick days only, or days + times?
+ Q11 What day/time do you want to do the weekly planning itself (e.g. Sunday evening review)?
+ Q12 If a planned day passes without it done: carry to next free day automatically, ask you, or just mark missed?
+MONTHLY / DAYS-SINCE
+ Q13 Zone thresholds: green/yellow/red as % of the interval (e.g. green <70%, yellow 70-100%, red overdue), or
+     fixed days per routine?
+ Q14 Where should red items alert you: Today list, dashboard Due section, a phone notification, Morning Brief?
+ Q15 Should other things use days-since too (e.g. "days since last beat", "days since last gym", "last called mum")?
+HABIT DESIGN
+ Q16 Floor vs goal: want a minimum version for each habit (e.g. 2 pages minimum, 20 goal) that still counts?
+ Q17 Habit stacking: link routines in order ("after coffee → read → plan day")?
+ Q18 Missing a day: streak breaks, "never miss twice" rule, or no streaks at all?
+ Q19 Weekly review/reflection in the Journal: yes/no, what questions?
+ Q20 XP: same small XP for all, or more XP for harder habits / red-zone catch-ups?
+WHAT HABITS (open — answer as many as you like)
+ Q21 Psychology: which book(s)? Physical, Kindle, audiobook? Add to Bookworm? Notes / "apply one idea" practice?
+ Q22 Other reading/learning: music theory book (in Bookworm), anything else (business, language, cooking)?
+ Q23 Sleep: target bedtime/wake time? Different on shift days? Wind-down habits (screens off, reading)?
+ Q24 Movement: gym days per week, what kind (weights/cardio), walking/steps, stretching/mobility, sport?
+ Q25 Food & drink: water target, meals per day, protein, cooking days, takeaway limit, alcohol/caffeine?
+ Q26 Mind: meditation, breathing, gratitude, journaling, therapy-style exercises from the psychology reading?
+ Q27 Social: calling family/friends, seeing people, dating, community?
+ Q28 Money: budget check frequency, savings, wishlist review, side income?
+ Q29 Home: which chores, which days (kitchen, bathroom, hoover, laundry, bins day, sheets, plants, car)?
+ Q30 Personal care: skincare, haircut interval, dentist/doctor checkups, nails, toothbrush change?
+ Q31 Creative: beats per week, practice (scales/sound design), posting schedule, sample digging, collabs?
+ Q32 Digital: screen-time limits, phone-free mornings, social media caps, inbox zero?
+ Q33 Anything you want to STOP doing (habits to break), and how should RPGACE help (track days without)?
+ Q34 Which 3 habits matter most right now — the ones RPGACE should never let slip?
+
+---------------------------------------------------------------------
+5. INTERROGATION ANSWERS (verbatim, Oct 12 2026, 5 batches)
+---------------------------------------------------------------------
+Rota source: "Fourth app, no calendar"
+Auto import: "4 if can be done without laptop, otherwise 2, then 3, and 1 backup to all"
+  (read as: the Fourth script running without the laptop = cloud login; calendar (2) unavailable since the app
+   has no calendar sync; share screenshot = backup)
+Workplace: "Old bar only"
+Travel: "90 minutes - 60 journey and 20 min for coffee and cigarette"
+Fourth login secret: "Yes, store it"
+After shift: "60 min journey"
+Week plan: "As far as rota known"
+Missed planned day: "Ask me (Recommended)"
+Zones: "i think some maybe be less and some more, we will decide what belongs to monthly, then come up with a
+  period of days for each case to maximise everything with purpose of task at maximum potential with doing it the
+  least amount of times"
+Alerts: "i think morning brief as suggestions and reason for it, dashboard que is a cool idea, notification seems
+  cool too"
+Habit design: "Minimum + goal, Habit stacking, Never miss twice, Weekly review"
+Days since: "i need more too, Last beat made, Last gym session, Last post, Last call to family"
+Psychology: "i think 2 but chapters not pages, ill just log what book and chapter, Pages-a-day habit"
+Sleep: "Not a priority"
+Movement: "1. i think i will plan out routines based on muscles to hit, this will need its own module planning
+  and literature input. 2. im think of getting the google app that tracks steps, ive always got my phone in my
+  pocket, so will work if we extract data. 3. i say stretching in the morning, hitting all muscle groups. 4. i
+  rarely play sports, so leave it for now, id leave empty spaces as leisure/prep time depending on what coming
+  next (like a shift or meeting someone, always 30 minutes to get ready, then journey i enter myself in
+  approximate minutes i think it takes + 10% time buffer that i judge myself)"
+Food: "for 4, it would be cool if i can take a picture of back label and get all info on intake and tracking
+  useful and harmful substances in the food etc. if im bulking/cutting, these things on what and how much will be
+  needed as database of what is needed, Water target, Cook / meal prep, Cut back on something,
+  Protein / nutrition"
+Mind: "Journaling, Gratitude, Psych exercises"
+Social: "Call family, Birthdays/dates, Networking/collabs"
+Creative: "come up with more for these, like digging for books or articles or skills that are needed, or new
+  industries etc that can be joined, anything please, Beats per week, Practice/skills, Posting schedule,
+  Sample digging"
+Life admin: "Budget check, Cleaning by day, Personal care, Digital limits"
+Build order: "Shifts -> weeks -> zones (Rec.)"
+Cut back: "Cigarettes, Caffeine/energy drinks"
+Top habits (never slip): "Gym + food, Reading + learning, Home + money"  (note: beats+posting NOT picked)
+Gym module: "Separate plan later"
+
+---------------------------------------------------------------------
+6. /CEO LOOP 1 DRAFT (ceo_plans "My Day Round 2", basis provisional, items MD2-1..14)
+---------------------------------------------------------------------
+Phase A — shifts (build first)
+ MD2-1 Shift pipe fix. Every import writes rpgace_shifts; shiftSync merges by date instead of overwriting;
+       paste-import BST date bug; keep the role; delete DEFAULT_SHIFTS; one-time push of each device's browser
+       shifts. Needs Alex OK: tighten rpgace_shifts RLS from anon_all to read-only + logged-in writes (RLS change).
+ MD2-2 Fourth cloud import (GitHub Action, weekly Mon + manual run + after any failed run). Headless Playwright
+       login with FOURTH_USERNAME/FOURTH_PASSWORD secrets; Claude reads the schedule page; writes rpgace_shifts.
+       Public-repo logs print only "N shifts found", never dates. If Fourth shows a code/captcha or the layout
+       changes, the run says so and the dashboard Due list asks for a screenshot instead.
+       Fork: how the runner writes (a) RPGACE_API_SECRET as another GitHub secret -> /api/data-write (rec.),
+       (b) leave rpgace_shifts anon-writable.
+ MD2-3 Screenshot backup: share/upload a rota screenshot -> Screenshot inbox "Shifts" home -> confirm -> saved.
+ MD2-4 Buffers: settings for get-ready minutes, journey minutes per place, buffer %; shift defaults 90 before /
+       60 after; Plan my day keeps them clear and labels the gaps "prep"/"leisure".
+Phase B — weeks
+ MD2-5 Week planner as far ahead as the rota is known: per weekly / N-a-week routine, tap days per week; shifts
+       and prep shown; writes agendas; passed planned day asks move / skip.
+Phase C — zones and alerts
+ MD2-6 Every-N-days cadence + days-since + green/yellow/red (thresholds per task). Red joins Today.
+ MD2-7 Alerts: Morning Brief suggestion + reason; dashboard Due; phone push (needs VAPID keys + a sender —
+       credential decision, ask before building that part).
+ MD2-8 Days-since trackers (auto + per-person manual).
+Phase D — habits (after Alex has used Phases A-C for about a week)
+ MD2-9  Minimum + goal, stacking, never miss twice, weekly review.
+ MD2-10 Ideas menu round 2 (list in report).
+ MD2-11 Cigarettes + caffeine counters.
+Ideas, not in this build (blue): MD2-12 nutrition scan (own plan), MD2-13 steps, MD2-14 gym muscle-split plan.
+
+Proposed intervals for every-N-days items (Alex to approve/edit each):
+ toothbrush/head 90 · haircut 21 · dentist 180 · oven deep clean 90 · fridge deep clean 30 · descale kettle 30 ·
+ washing-machine maintenance wash 30 · shower head limescale 30 · wash pillows/duvet 180 · rotate mattress 90 ·
+ back up beats/projects 14 · phone/laptop storage + updates 30 · subscriptions review 90 · budget deep review 30
+ (weekly quick check separate) · deep clean bathroom grout/extractor 60 · car/bike check n/a unless owned.
+
+Creative/skills digging ideas (Alex asked for more):
+ weekly "dig" session rotating: books/articles (Bookworm), skill gaps (Knowledge Gaps), new income streams
+ (sync licensing briefs, sample/drum kits, beat leasing platforms, mixing/mastering services, YouTube tutorials,
+ teaching, game/app audio), opportunities (BBC Introducing, beat battles, competitions), reference-track
+ analysis, ear training, sound-design challenge, catalogue tidy + tagging, release planning, collab outreach.
+
+Council of 5 (why-NOT included):
+ Risk: Fourth scraping is fragile (login checks, layout changes, their terms) — screenshot backup is mandatory,
+   not optional. Shift data is personal; public logs must never print it.
+ Cost: Phases A-C need almost no AI calls (one per Fourth run / screenshot). Push notifications add keys + a
+   sender. Nutrition scanning is a product of its own — kept out.
+ Maintainability: everything reuses myDay, scheduleToCalendar, screenshotInbox, Morning Brief, dashDeck Due.
+ UX/goals: top habits are gym+food, reading+learning, home+money — Phase D content should lead with those.
+ Why not: 0 routines are picked yet. Building habit mechanics before Alex has used the basics risks features
+   nobody uses. Hence Phase D waits until he has used A-C for about a week; Phases A-C fix real gaps (shifts are
+   broken now) and are worth building regardless.
