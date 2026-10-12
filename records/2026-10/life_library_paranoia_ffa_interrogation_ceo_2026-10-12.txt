@@ -1,0 +1,122 @@
+LIFE LIBRARY — /paranoia + /free-for-all-debate + /interrogation (3 rounds) + /CEO Loop 1
+Oct 12 2026. Follows TP-1..4 (Trips & Plans with Oracle) the same day.
+
+=====================================================================
+1. ALEX'S ASK (verbatim, in order)
+=====================================================================
+"Can we also make it that oracle uses gemini to search web for links when I'm learning, or search
+for something relevant when I'm asking something off the internet so it can get more data, then the
+data can be stored by date and topic if I ever need revisiting, just saving factors. 2. Nah I'll just
+mention when I think about them"  (2. = TP-5: no people mentions in ideas)
+
+"Web lookups should be in one system with bibliography - I'd like bibliography to become the life
+library like discussed in one of the 4 videos from yesterday"
+
+"Could this possibly be integrate with or instead of taxonomy tree possibly? /paranoia and
+/free-for-all-debate this to determine it, /interrogation me into oblivion please, then /CEO"
+
+=====================================================================
+2. EVIDENCE (live, Oct 12 2026)
+=====================================================================
+- "Life library" not found anywhere saved: the 4 Oct 11 reels (Red Bow Music, Baptiste O'Donovan,
+  Opus Jake, mcdenil) only keep a 500-char transcript_snippet; mcdenil's "5 Claude weekend projects"
+  (mentions his Notion "second brain") is cut off during project #1. Definition therefore comes from
+  Alex's interrogation answers below, not the video.
+- taxonomy_tree 0 rows (wiped Sep 25), still referenced 45 times across 12 modules (phylumPath 19,
+  taxonomyReviewQueue 7, bookworm 6 ...). Phyla hardcoded (phylumPath.ENABLED_PHYLA).
+- jargon_encyclopedia 545 (22 accepted); encyclopedia 42 articles; encyclopedia_insights 814 idea
+  cards (dated, tagged); intel_reports 41; intel_bibliography 15 (title/url only); bibliography 0
+  (finished Bookworm books); bookworm_books 1 / chapters 26; screenshots 0; taxonomy_proposals 65
+  pending; reference_tracks 32.
+- Key finding: the tree answers "what should I know / where does it fit" (curriculum); a library
+  answers "what have I taken in, and when" (sources). Different axes.
+- Oracle already has a trailer pattern for mid-answer lookups: askMyData (DATA_QUERY:, 5th gate in
+  oracleAppGrounding). Web lookups reuse it (WEB_QUERY:), no new callOracle wrapper.
+- /api/search type 'web' (Gemini 2.5 Flash + Google Search) live; key saved in Vercel as
+  "Gemini_API_Key" (code reads both spellings since commit e1674b7).
+
+=====================================================================
+3. FREE-FOR-ALL DEBATE
+=====================================================================
+A Replace the tree: empty, so cheap; tags+search simpler. LOSES: curriculum, Alex's Sep 27 "make
+  each phylum structure planned out, all 20", Phylum Path learning/review queue.
+B Integrate (WINNER): library = source layer (dated, topics, one of 21 phyla as shelf); tree, once
+  rebuilt, is the map that pulls library items. Bonus: phylum-tagged items unblock the Phylum XP
+  ledger open fork (activity needed phylum tags).
+C Keep separate: smallest, but knowledge stays scattered over 5 tables.
+D Don't build yet (backlog of 523 terms/65 proposals): weak - library only stores, adds nothing to
+  review; web lookups need a home anyway.
+E Encyclopedia already is it: strong on dedup - ideas stay in encyclopedia_insights; library holds
+  only SOURCES; idea cards link back to their source item. Adopted inside B.
+
+=====================================================================
+4. INTERROGATION (verbatim answers)
+=====================================================================
+Round 1
+- Tree: "Integrate (Recommended)"
+- Contents: "Books + videos + links, Oracle web lookups, Screenshots, Starred Oracle answers, Cone up
+  with more cases if possible"
+- Organise: "Phylum shelf + topics (Recommended)"
+- Location: "Own page under Knowledge (Recommended)"
+Round 2
+- More inputs: "Music you study, Files, PDFs, courses, Recommendations, Quick notes & quotes"
+- Outputs: "None, inputs only, The top 3 should be in chronicles under subsections"
+  (top 3 = Beats & content, Recipes cooked, Trips & plans done -> Chronicles subsections)
+- Shelving: "Oracle auto, you can change (Recommended)"
+- Oracle use: "Check library first, then web (Recommended)"
+Round 3
+- Existing data: "Start fresh"  (41 reports / 15 links / 1 book / 32 tracks stay where they are)
+- Recommendations: "Pick from People list (Recommended)"
+- Resurface: "Yes, in Morning Brief (Recommended)"
+- Order: "Library first, then TP-5 (Recommended)"
+
+=====================================================================
+5. /drift
+=====================================================================
+VERDICT on track. BASIS provisional until Alex approves the plan below.
+MINOR: "bibliography to become the life library" + "Start fresh" -> the old Bibliography (15 saved
+links, finished-books list) stays readable as-is; NEW saves of links/books go to the library only, so
+there is one place going forward. Old Bibliography view gets a pointer to the Life Library.
+MINOR: "web search when I'm learning" -> a "Find links" button on Jargon terms / Bookworm insights
+(not automatic per chapter: Gemini free limits).
+
+=====================================================================
+6. COUNCIL OF 5
+=====================================================================
+Risk: auto-shelving wrong phylum -> editable chip; keyword prefilter (existing phylum keyword lists)
+  first, cheap Oracle call only when no keyword match (rule 11). Private data -> table locked like
+  people/plans (service-role read via /api/data-write action read).
+Cost: shelving mostly free (keywords); web lookups = 1 Gemini call + 1 follow-up Oracle call, only
+  when Oracle decides it needs the web and the library had nothing.
+Maintainability: ONE new table library_items with a kind column (not a table per kind); URL-normalised
+  dedup (same link saved twice = one item); feeds hook existing save points (no new pipelines);
+  reuse askMyData trailer flow, recall resurfacing, people list, secureWrite.
+UX: phone-first page; quick-add sheet (link / note / quote / recommendation); filters shelf/topic/
+  kind/date + search; star button on Oracle replies.
+Why NOT: more surface while hand-testing is behind. Mitigation: start fresh = no migration risk; the
+  library is passive (no review queue).
+/simplify: no separate web_lookups table (kind='web_lookup'); no second bibliography; Chronicles
+  subsections read existing tables (content_productions, planned_cooks/recipes, plans) - no copies.
+
+=====================================================================
+7. DRAFT PLAN — "Life Library" (LL-1..LL-6)
+=====================================================================
+LL-1 Library core: private table library_items (kind book/video/link/web_lookup/screenshot/answer/
+     music/file/course/recommendation/note/quote; title, url, url_key unique, summary, topics[],
+     phylum_number, source_table/source_id, recommended_by -> people, status to_check/done,
+     created_at). "📚 Life Library" page under Knowledge: shelf/topic/kind/date filters, search,
+     quick add, shelf chip edit, 2-tap delete. Auto-shelve: keywords first, Oracle (cheap) fallback.
+LL-2 Feeds (new items only): Bookworm books, Content Intelligence reports, screenshot inbox, File
+     Analyzer / Video Finder, new reference tracks, ⭐ on Oracle replies, recommendations (People
+     picker). Encyclopedia idea cards show a link to their source item.
+LL-3 Oracle web lookups: WEB_QUERY trailer (askMyData pattern) - library searched first, Gemini only
+     for what's missing; result saved as kind web_lookup with date/topic/answer/links; "🌐 Searched"
+     + links under the reply; "🔗 Find links" button on Jargon terms and Bookworm insights.
+LL-4 Resurface: Recall adds 1 library item a day to the Morning Brief (unread recommendations and
+     older items first).
+LL-5 Tree hook: Phylum Path shows each phylum's shelf (library item count + list); when a phylum is
+     rebuilt, its shelf is the source material. Bibliography view points to the Life Library.
+LL-6 Chronicles subsections: Beats & content, Recipes cooked, Trips & plans done (read from existing
+     tables, no copies).
+Then TP-5 Ideas board (settled: all four types, no people mentions).
+Rule 18: brief before each item.
