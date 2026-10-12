@@ -15124,6 +15124,10 @@ RPGACE.register('intelDelete', {
     // real save/delete) instead of the old bare "already exists, bail" guard.
     _injectBibSection: function(force) {
       var self = RPGACE.modules.intelDelete;
+      // Oct 12 2026: the boot task can run before config.init() sets
+      // RPGACE.sb ("boot task failed ... reading 'select'"); page:show
+      // re-runs this once the Encyclopedia page opens.
+      if (!RPGACE.sb || !RPGACE.sb.select) return;
       var existing = document.getElementById('rpgace-bib-section');
       if (existing && !force) return;
       var enc = document.getElementById('page-encyclopedia');
@@ -32730,7 +32734,7 @@ RPGACE.register('questEngine', {
     { table: 'smoke_test_items', params: 'select=id,item_name&needs_confirm_highlight=is.true',
       label: 'hand-test confirmation', ref: 'smoke_test_needs_confirm',
       desc: 'shipped fix(es) waiting for you to confirm they actually work' },
-    { table: 'error_log', params: 'select=id,title&status=eq.active',
+    { table: 'error_log', params: 'select=id&status=eq.active',
       label: 'active error', ref: 'error_log_active',
       desc: 'unresolved error(s) in the error log' },
     { table: 'oracle_dev_suggestions', params: 'select=id&status=eq.new',
@@ -48214,7 +48218,9 @@ RPGACE.register('screenshotInbox', {
       });
     },
     list: function(q, status) { return RPGACE.modules.screenshotInbox.logic.api('list', { q: q || '', status: status || '' }); },
-    count: function() { return RPGACE.modules.screenshotInbox.logic.api('count').then(function(d) { return (d && d.count) || 0; }); },
+    // Oct 12 2026: before login there is no API secret yet, so the call
+    // could only come back 401 - report 0 until signed in.
+    count: function() { var ag = RPGACE.modules.authGate; if (!ag || !ag._apiSecret) return Promise.resolve(0); return RPGACE.modules.screenshotInbox.logic.api('count').then(function(d) { return (d && d.count) || 0; }); },
     setStatus: function(id, status, routedTo) {
       var patch = { status: status };
       if (routedTo !== undefined) patch.routed_to = routedTo;

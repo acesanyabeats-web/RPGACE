@@ -90,7 +90,7 @@ LOGIC_POINTS = [
         'id': 'oracle-mode',
         'title': 'Oracle Mode: Real / Dummy / Fallback Scout',
         'decider': 'Alex (manual toggle)',
-        'module': 'mockOracle', 'func': 'setMode', 'lines': (37382, 37394), 'anchor': "self.MODES.indexOf(mode) === -1",  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep) - drifted -5 lines from 34588-34600 to the real setMode: function span 34583-34595, confirmed by direct read
+        'module': 'mockOracle', 'func': 'setMode', 'lines': (37386, 37398), 'anchor': "self.MODES.indexOf(mode) === -1",  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep) - drifted -5 lines from 34588-34600 to the real setMode: function span 34583-34595, confirmed by direct read
         'decides': 'Which of 3 real paths every single Oracle call in the app takes, app-wide, until toggled again.',
         'changes': 'Real: every window.callOracle() call in main.js checks getMode() first. \'dummy\' short-circuits to a synthetic labeled reply, zero API cost. \'fallback\' queues the real prompt into oracle_fallback_queue instead of calling the live API. \'real\' calls the live Anthropic API as normal.',
         'result': 'A visible top-right toggle switch (red/green/gold) whose state persists in localStorage and is checked on literally every real Oracle send in the app.',
@@ -111,7 +111,7 @@ LOGIC_POINTS = [
         'id': 'placement-scored',
         'title': 'Taxonomy placement: Council-of-5 scored decision',
         'decider': 'Oracle (ground-worker judgment call)',
-        'module': 'phylumPath', 'func': 'decidePlacementScored', 'lines': (19696, 19735),  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep), drifted -3 lines from 18264-18303; re-confirmed against 3 other real matches of the same substring (a top-level pass-through wrapper at 19934, and _decidePlacementScored/its own wrapper at 21008/22237) -- 18261 is the real logic:{} implementation, not a wrapper or the underscore-prefixed sibling
+        'module': 'phylumPath', 'func': 'decidePlacementScored', 'lines': (19711, 19750),  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep), drifted -3 lines from 18264-18303; re-confirmed against 3 other real matches of the same substring (a top-level pass-through wrapper at 19934, and _decidePlacementScored/its own wrapper at 21008/22237) -- 18261 is the real logic:{} implementation, not a wrapper or the underscore-prefixed sibling
         'anchor': 'decidePlacementScored: function',
         'decides': 'Where a new insight/leaf attaches in the taxonomy tree — an existing node (by number) or a brand-new path from the phylum root — and whether it belongs in this phylum at all.',
         'changes': 'The full numbered, indented tree for that phylum (real Supabase read), plus 5 named checks (pedagogical clarity, non-redundancy, practical applicability, structural fit, expansion headroom) folded into one prompt.',
@@ -189,7 +189,7 @@ TEXT_INPUT_POINTS = [
     {
         'id': 'beat-log-form',
         'title': 'Beat Log form — real multi-field text entry that creates a content_productions/video_jobs row',
-        'module': 'beatLog', 'func': '_getForm', 'lines': (26725, 26741),  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep), drifted -4 lines from 24323-24344; re-narrowed to the real `return {...}` object literal containing the literal
+        'module': 'beatLog', 'func': '_getForm', 'lines': (26740, 26756),  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep), drifted -4 lines from 24323-24344; re-narrowed to the real `return {...}` object literal containing the literal
         'anchor': "title:    get('bl-title')",
         'decides': "Title/key/BPM/scale/energy/mood/genre/rating/licence/collab/ref-track/FL-path — real typed values read directly off the DOM, no defaults faked — that _submit() turns into the actual real database row this ConID's whole downstream pipeline is built from.",
         'link': None,

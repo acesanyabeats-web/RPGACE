@@ -73,6 +73,18 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-12-console-errors" style="margin-bottom:30px;">
+    <div class="card-title">🧹 Oct 12 — Three console errors on load fixed</div>
+    <div class="card-body">
+      Found from Alex's own DevTools screenshot (taken while looking for the API secret), each reproduced in a headless page load before fixing:
+      <ul>
+        <li><strong>"a boot task failed ... reading 'select'"</strong>: <code>intelDelete._injectBibSection</code> (Encyclopedia bibliography list) ran before <code>config.init()</code> had set <code>RPGACE.sb</code>. It now waits; opening the Encyclopedia page draws it as before.</li>
+        <li><strong>401 on /api/data-write before login</strong>: the dashboard asked the Screenshot Inbox for its count before the app had its API secret. <code>screenshotInbox.logic.count</code> now reports 0 until signed in; the dashboard refreshes on login anyway.</li>
+        <li><strong>400 on error_log</strong>: <code>questEngine</code>'s "active error needs you" check selected a <code>title</code> column that <code>error_log</code> doesn't have, so it failed silently every time and that quest could never appear. Now selects <code>id</code> only. Effect: if there are active errors, a "N active errors need you" generated quest now shows up.</li>
+      </ul>
+      Not changed: the <code>/api/auth</code> <code>ERR_SSL_PROTOCOL_ERROR</code> line was a one-off connection failure in Alex's browser, not something in the code. When that check can't connect, the app keeps the saved sign-in and asks for the password. Not yet hand-tested by Alex.
+    </div>
+</div>
 <div class="card" id="card-2026-10-12-fourth-cloud-import" style="margin-bottom:30px;">
     <div class="card-title">☁️ Oct 12 — Fourth rota import without the laptop (MD2-2)</div>
     <div class="card-body">
