@@ -404,6 +404,7 @@ Real design choice, not an oversight: `chronicles_finance` feeds Chronicles' dis
 ### Built but NEVER verified — treat as unconfirmed, test before building on
 **This section predates HABITS, the Galaxy Map's G13-G117 build-out, and everything shipped after this doc's own last full re-verification — treat it as a real historical record of what was known-unverified at each build's own time, not a live status feed.** For CURRENT hand-test status on any given feature, `smoke_test.html`'s own Supabase-backed, Alex-hand-confirmed tally is the authoritative source (see CLAUDE.md's "Hand-testing" open fork — 27 of 99 rows confirmed as of Aug 30, 70 still unverified). Full build narrative for everything below lives in `patch_notes.html`'s own dated cards — every one of these items already cites it there, this section never re-tells the story.
 
+- **My Day (Oct 12 2026)**: routines, Plan my day, Quest Board template removed — headless-tested only, see §15e.
 - **Cook Mode (Oct 11 2026)**: one-step-per-screen cooking, step rules, and the 8 proposed step splits — headless-tested only, see §15d.
 - **Bookworm**: no book has ever completed the full pipeline start to finish (structure detection is solid on both entry points; a clean chapter run through the post-retune engine is the real remaining open test). `_looksLikeTableOfContents()`'s warning heuristic has never been observed catching a real mistake. Bibliography section render has nothing to show until a book completes.
 - **F16 Beatstars listing / F17 video pipeline stages / F18 auto visual treatment / highlight-to-Phylum-Path button** — real, shipped, hand-test status tracked in `smoke_test.html` (also named in CLAUDE.md's own "F16/F17/F18 hand-test sweep" open fork).
@@ -627,6 +628,24 @@ flowchart TD
 **Honest limit, restated because it is the single most misreadable claim in this pipeline:** RPGACE does not generate video. It tracks, briefs, and hands off. OpenMontage stays an externally-operated tool, per CLAUDE.md's own standing verdict; Phase F's "Generate Video" builds and can send a real job payload, but the freeze flag defaults OFF pending Alex's own Tier-3 paid-provider decision, and the handoff view surfaces real data — it never simulates a real render as if it were genuine (the Simulate Response tool exists specifically so a fake result is always labeled `[SIMULATED]`, never silently indistinguishable from a real one).
 
 ---
+
+## 15e. My Day (Oct 12 2026) — built, untested by Alex
+
+```mermaid
+flowchart LR
+  I[IDEAS menu in myDay] -->|Alex picks + sets cadence/time/goal| R[(routines)]
+  R --> T[Today list on Agenda page]
+  T -->|tick / skip| Q[(quest_log, quest_kind=routine)]
+  Q --> X[addXP + questEngine restore = level]
+  T -->|timed tick| D[(quest_duration_stats)]
+  R --> P[Plan my day: suggestSlots around shifts + sched]
+  P -->|accepted| S[scheduleToCalendar -> rpgace_agendas]
+  O[Oracle Accept / Insta + Add] -->|one-off due today| R
+  R -->|next time shopping| C[Cooking shopping list]
+  T --> G[Landing Today: N routines left]
+```
+
+`routines` is `anon_read_only`/`authenticated_all` and in `api/data-write.js`'s allowlist. Timers and sub-step ticks are per-device (localStorage). The old `QUESTS` template is empty; `questEngine`'s generated quests are unchanged.
 
 ## 15d. Cook Mode (Oct 11 2026) — built, untested by Alex
 

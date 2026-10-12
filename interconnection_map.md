@@ -164,6 +164,8 @@ Every domain in RPGACE ultimately touches one of exactly two hubs — **Oracle**
 
 `rpgace_shifts` ↔ `shiftSync` ↔ `rpgace_agendas` → Weekly/Daily/Monthly Calendar → `scheduleToCalendar()` (single write path, extended with `source_type`/`source_id` so any block can link back to its origin module).
 
+**☀️ My Day** (`myDay`, Oct 12 2026) — the one place daily/weekly routines live. Reads `routines` (Alex-picked rows; the module's `IDEAS` array is only a menu) and `quest_log` rows with `quest_kind='routine'`; writes both through `RPGACE.sb.secureWrite`. A tick writes a `quest_log` row, calls `addXP()` and, when timed, `questEngine.recordDuration('routine', id, …)` — so `questEngine._restoreBoardState` counts routine XP into the level with no second XP store. Plan my day reads shifts (`getShiftsForDate`) and today's `sched` entries, then writes accepted slots through `scheduleToCalendar()` with `source_type:'routine'`. Each routine's "Open" button calls `dashDeck._navOpenCard(key)`. Consumers: `dashDeck._refreshGlance` (Today: routines left), `cookingOracle`'s shopping list (`myDay.ui.appendShopping`, next-time-shopping routines), `acceptSuggestions()` and `addInstaQuest()` (one-off routines due today). The hardcoded `QUESTS` template is now empty.
+
 **🔔 Reminder** (`agendaReminder`) — third button alongside Start/Done on Daily Grid blocks, reads the block's own stored title/description/category/duration/XP straight from `localStorage.rpgace_sched_agendas`, no Oracle call, no Supabase read.
 
 **📅 Schedule Oracle (F11, Phase 1 shipped):** 3 entry points (direct-launch button, chat-mode `schedule oracle:`/`schedule this:`/`learn later:` prefix intercepting `sendChat()`, panel's own paste field) → `scheduleOracle._ingest()` → `/api/scout` (URL detect + Jina fetch) ⋯> `/api/analyst` (type-aware analysis) → sequential 3-option reveal, one at a time: Save to Encyclopedia → Schedule a session (real Schedule modal, pre-filled) → Queue for Taxonomy Tree (same `silentPropose()` path Encyclopedia's button uses). **Phase 2 (F12 — carousel toggle, two-tier session memory, auto-routing confidence gate) is not started**, explicitly depends on F11 proving out first.
@@ -466,12 +468,14 @@ This is a real, still-live tool — not the only way to edit `rpgace_core.js` (d
 |---|---|
 | ☀️ Morning Brief | 4-source (Gmail, shifts, YouTube, top gap). Also runs automatically every day at 6am UTC via a Claude Code Remote Routine, writing into `journal` and pushing a phone notification. The dashDeck card opens this real widget in a popup (`_openMorningBrief`). |
 
-### SCHEDULE (2 buttons)
+### SCHEDULE (4 button rows)
 
 | Button | Chain |
 |---|---|
 | Free calendar rows | Opens Schedule modal, pre-filled. |
 | Start / Done | Task tracking + XP. |
+| My Day: tick / Skip / Undo / ▶ timer / step boxes / Open tool | `myDay.ui.row` → `logic.tick`/`skip`/`undo` → `quest_log` (+ `addXP`, `questEngine.recordDuration`). |
+| My Day: 🗓 Plan my day / + Add routines / ⚙ Manage | `logic.suggestSlots` → `scheduleToCalendar()`; ideas picker → editor → `routines` insert/update; Remove sets `active=false`. |
 
 ### CHRONICLES (1 button)
 
