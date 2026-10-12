@@ -73,6 +73,19 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-12-shift-sync-fix" style="margin-bottom:30px;">
+    <div class="card-title">🧑‍🍳 Oct 12 — Shift imports finally stick (My Day Round 2, MD2-1)</div>
+    <div class="card-body">
+      Alex: "i want the auto import to work again", then "forget about june/july, just start fresh". The evidence pass found the import had never really worked end to end:
+      <ul>
+        <li><strong>Nothing ever saved shifts to Supabase.</strong> The 15 rows there were added by hand on Jul 6 (last date Jul 26). Every import (rota screenshot in Oracle chat, the paste box, the PC script's console paste) only reached the browser, and <code>shiftSync</code> then <em>replaced</em> the browser copy with those July rows on every load, so imports vanished.</li>
+        <li><strong>The paste box was unreachable.</strong> The Schedule page's shift panel (with "+ Update Rota") was only ever drawn after a successful paste, and drawing it threw an error.</li>
+        <li><strong>Paste saved the wrong day</strong> during British Summer Time (local midnight converted to UTC), and every shift was labelled "Bar Tender".</li>
+      </ul>
+      Fixed: one shared save path (<code>shiftSync.replaceDates</code>) replaces only the dates an import covers and uploads them through <code>/api/data-write</code>; if you're offline or not signed in they wait and upload later. Loading now merges (Supabase is the truth except dates still waiting to upload). The Schedule page always shows the shift panel, with "No upcoming shifts yet" when empty. Paste uses the right date and keeps any role typed after the times (otherwise the last role used). Screenshot import keeps the role and reads dd/mm with no year correctly. The hardcoded June–July rota is gone. Each device uploads its stored shifts from today onwards once. <code>rpgace_shifts</code> gained read-only + signed-in-write rules; removing the old open rule and deleting the 15 July rows are waiting for Alex's approval in the Supabase prompt.
+      Checked: 17/17 headless checks (first-run queue, no upload before login, upload on login, BST date, role, merge with another device's change, offline failure kept and retried, panel visible, no page errors) + empty-state panel + My Day 40/40. Galaxy Map regenerated, 26/26 anchors fresh. The rota-screenshot conversion itself wasn't run (needs a real Oracle vision call). <strong>Untested by Alex's own hand.</strong>
+    </div>
+</div>
 <div class="card" id="card-2026-10-12-my-day" style="margin-bottom:30px;">
     <div class="card-title">☀️ Oct 12 — My Day replaces the Quest Board</div>
     <div class="card-body">

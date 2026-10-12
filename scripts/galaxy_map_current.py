@@ -183,7 +183,7 @@ PLAIN_ENGLISH = {
     },
     ('contentProductionLive', '_openProductionPanel'): {
         'anchor': '  _openProductionPanel: function() {',
-        'lines': (29963, 30315),  # re-verified Sep 8 2026 (/Routine), drifted from 22560 due to the G53 60-module ui/logic split
+        'lines': (29910, 30262),  # re-verified Sep 8 2026 (/Routine), drifted from 22560 due to the G53 60-module ui/logic split
         'headline': 'Opens the slide-in Production Panel for whichever ConID is currently selected — and builds a different panel depending on what kind of content it is.',
         'input': 'Nothing passed in. It reads the currently-active ConID off the module itself, then fetches that production\'s real `content_type` from Supabase.',
         'does': 'First it refuses to open twice (if the panel is already on screen it stops immediately). Then it builds the panel shell by hand in code — header, close button, scrolling body — and only after the database answers does it decide which set of phases to draw: a tutorial gets the original 3-phase recording flow, a music video gets the 4-phase reference/direction/script/video flow, and OBS raw footage gets its own 4-stage flow. Almost all the branching this function is scored on is that fork, plus the many small "does this ConID already have a script / a treatment / a video job" checks that decide which buttons are live.',
@@ -213,7 +213,7 @@ PLAIN_ENGLISH = {
     },
     ('conidPot', '_quickDetectPhyla'): {
         'anchor': '  _quickDetectPhyla: function(text) {',
-        'lines': (31253, 31262),  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep), drifted -3 lines from 28812-28821; re-confirmed against a 2nd real match, the thin top-level pass-through wrapper at 29405 -- 28809 is the real logic:{} implementation
+        'lines': (31231, 31240),  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep), drifted -3 lines from 28812-28821; re-confirmed against a 2nd real match, the thin top-level pass-through wrapper at 29405 -- 28809 is the real logic:{} implementation
         'headline': 'A free, instant guess at which taxonomy phyla an idea belongs to — plain keyword spotting, no AI involved.',
         'input': 'One string: the text of a content idea.',
         'does': 'Lowercases it and checks for a handful of giveaway words. Drums, 808 or kick suggests phylum 2; mix, EQ or compress suggests 4; FL Studio, plugin or VST suggests 6; tutorial, teach or learn suggests 12; YouTube, Instagram or content suggests 13. It returns whichever numbers matched, and an empty list is a perfectly normal answer.',

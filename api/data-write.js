@@ -114,6 +114,7 @@ const ALLOWED_TABLES = new Set([
   // be - questEngine routes every write through this endpoint.
   'quest_log',
   'routines', // Oct 12 2026 My Day routines (anon_read_only from creation)
+  'rpgace_shifts', // Oct 12 2026 MD2-1: RLS flipped to anon_read_only/authenticated_all same day; shiftSync + the Fourth cloud runner write here
   'quest_duration_stats',
   // 2026-08-26 - G41 Phase 2 (self-aware vocabulary growth). Created
   // anon_read_only/authenticated_all FROM THE START (same as
