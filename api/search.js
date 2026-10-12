@@ -15,6 +15,7 @@ export default async function handler(req, res){
   if(!query) return res.status(400).json({ error: 'No query' });
 
   if (type === 'recipe-image') return handleRecipeImage(query, res);
+  if (type === 'web') return handleWeb(query, res);
 
   try {
     // Fetch YouTube search page via server-side (avoids CORS)
@@ -103,4 +104,63 @@ async function handleRecipeImage(query, res) {
     }
   } catch (e) { /* honest no-image response below */ }
   return res.status(200).json({ image: null });
+}
+
+// Oct 12 2026 — TP-2 of the ratified "Trips & Plans with Oracle" plan
+// (records/2026-10/trips_plans_oracle_paranoia_ceo_2026-10-12.txt). Alex:
+// "connect a free ai model that can search internet", "Both, Gemini first".
+// Gemini 2.5 Flash with Google Search grounding (free AI Studio key), then
+// Tavily (1,000 free searches/month) if Gemini has no key, errors or hits
+// its free limit. Only the search question is sent - callers never put
+// personal data in it (Gemini's free tier may use inputs to improve
+// Google products). Never invents results: with no key or both providers
+// failing it returns an error the app shows as-is.
+async function handleWeb(query, res) {
+  const q = String(query).slice(0, 500);
+  const tried = [];
+  const geminiKey = process.env.GEMINI_API_KEY;
+  if (geminiKey) {
+    try {
+      const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': geminiKey },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ text: q + '\n\nAnswer from current web results. Be specific: names, dates, prices, addresses where known. Keep it under 250 words.' }] }],
+          tools: [{ google_search: {} }],
+        }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error((d.error && d.error.message) || ('HTTP ' + r.status));
+      const cand = (d.candidates || [])[0] || {};
+      const answer = ((cand.content && cand.content.parts) || []).map(p => p.text || '').join('').trim();
+      const chunks = (cand.groundingMetadata && cand.groundingMetadata.groundingChunks) || [];
+      const sources = [];
+      const seen = {};
+      chunks.forEach(c => { const w = c.web || {}; if (w.uri && !seen[w.uri]) { seen[w.uri] = 1; sources.push({ title: w.title || w.uri, url: w.uri }); } });
+      if (!answer) throw new Error('empty answer');
+      return res.status(200).json({ provider: 'gemini', answer, sources: sources.slice(0, 8) });
+    } catch (e) {
+      tried.push('Gemini: ' + e.message);
+    }
+  } else tried.push('Gemini: no GEMINI_API_KEY');
+  const tavilyKey = process.env.TAVILY_API_KEY;
+  if (tavilyKey) {
+    try {
+      const r = await fetch('https://api.tavily.com/search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + tavilyKey },
+        body: JSON.stringify({ api_key: tavilyKey, query: q, max_results: 6, include_answer: true, search_depth: 'basic' }),
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error((d.detail && (d.detail.error || d.detail)) || d.error || ('HTTP ' + r.status));
+      const sources = (d.results || []).map(x => ({ title: x.title || x.url, url: x.url, snippet: String(x.content || '').slice(0, 300) }));
+      const answer = String(d.answer || '').trim() || sources.map(x => '- ' + x.title + ': ' + (x.snippet || '')).join('\n');
+      if (!answer) throw new Error('no results');
+      return res.status(200).json({ provider: 'tavily', answer, sources: sources.slice(0, 8) });
+    } catch (e) {
+      tried.push('Tavily: ' + e.message);
+    }
+  } else tried.push('Tavily: no TAVILY_API_KEY');
+  const setup = !geminiKey && !tavilyKey;
+  return res.status(setup ? 503 : 502).json({ error: setup ? 'Web search is not set up yet (add GEMINI_API_KEY / TAVILY_API_KEY in Vercel)' : 'Web search failed', setup, tried });
 }

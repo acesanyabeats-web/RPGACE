@@ -118,6 +118,7 @@ const ALLOWED_TABLES = new Set([
   'sync_status', // Oct 12 2026 MD2-2: created anon_read_only/authenticated_all; the Fourth cloud runner reports its last run here
   'activity_templates', // Oct 12 2026 MD2-4: schedule activity templates (place, journey, get-ready, category); anon_read_only from creation
   'myday_settings', // Oct 12 2026 MD2-4: single-row get-ready/margin/shift travel settings; anon_read_only from creation
+  'travel_profile', 'people', 'plans', 'plan_tasks', // Oct 12 2026 Trips & Plans: locked tables (no anon policy), read via action 'read'
   'routine_plans', // Oct 12 2026 MD2-5: week planner - which days a routine is planned; anon_read_only from creation
   'day_blocks', // Oct 12 2026 MD2-5: multi-day blocks (holiday/trip/event) shown on planner headers; anon_read_only from creation
   'quest_duration_stats',
@@ -320,6 +321,7 @@ async function handleBundleDeliverables(req, res, serviceKey) {
 // Every access is this action, behind requireAuth() with the service-role
 // key - the same posture as bundle-deliverables above (rule 8: no 13th
 // api file). Ops: upload | update | list | count | delete.
+const PRIVATE_READ_TABLES = new Set(['travel_profile', 'people', 'plans', 'plan_tasks']);
 const SHOTS_BUCKET = 'screenshots';
 const SHOT_PATCH_FIELDS = ['extracted_text', 'description', 'tags', 'kind', 'suggestions', 'status', 'routed_to', 'read_at'];
 const SHOT_COLS = 'id,storage_path,source,extracted_text,description,tags,kind,suggestions,status,routed_to,created_at,read_at';
@@ -432,6 +434,18 @@ export default async function handler(req, res) {
     }
     if (body && body.action === 'screenshots') {
       return await handleScreenshots(body, res, serviceKey);
+    }
+    // Oct 12 2026 — Trips & Plans (TP-1/TP-3): people, travel profile and
+    // plans are personal, so those tables have RLS with no anon policy and
+    // are read only here, after login (same posture as screenshots).
+    if (body && body.action === 'read') {
+      if (!PRIVATE_READ_TABLES.has(body.table)) return res.status(403).json({ error: 'Table not readable here: ' + body.table });
+      const params = String(body.params || 'select=*');
+      if (/[\r\n#]/.test(params) || params.length > 600) return res.status(400).json({ error: 'Bad params' });
+      const r = await sbFetch('/rest/v1/' + body.table + '?' + params, serviceKey);
+      const rows = await r.json().catch(() => null);
+      if (!r.ok || !Array.isArray(rows)) return res.status(502).json({ error: 'Read failed', detail: rows });
+      return res.status(200).json({ data: rows });
     }
 
     const { table, operation, payload, match, onConflict } = body || {};

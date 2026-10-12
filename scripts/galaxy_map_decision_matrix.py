@@ -90,7 +90,7 @@ LOGIC_POINTS = [
         'id': 'oracle-mode',
         'title': 'Oracle Mode: Real / Dummy / Fallback Scout',
         'decider': 'Alex (manual toggle)',
-        'module': 'mockOracle', 'func': 'setMode', 'lines': (37409, 37421), 'anchor': "self.MODES.indexOf(mode) === -1",  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep) - drifted -5 lines from 34588-34600 to the real setMode: function span 34583-34595, confirmed by direct read
+        'module': 'mockOracle', 'func': 'setMode', 'lines': (37417, 37429), 'anchor': "self.MODES.indexOf(mode) === -1",  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep) - drifted -5 lines from 34588-34600 to the real setMode: function span 34583-34595, confirmed by direct read
         'decides': 'Which of 3 real paths every single Oracle call in the app takes, app-wide, until toggled again.',
         'changes': 'Real: every window.callOracle() call in main.js checks getMode() first. \'dummy\' short-circuits to a synthetic labeled reply, zero API cost. \'fallback\' queues the real prompt into oracle_fallback_queue instead of calling the live API. \'real\' calls the live Anthropic API as normal.',
         'result': 'A visible top-right toggle switch (red/green/gold) whose state persists in localStorage and is checked on literally every real Oracle send in the app.',
@@ -155,7 +155,7 @@ LOGIC_POINTS = [
         'id': 'artist-phylum-routing',
         'title': 'Last.fm-discovered artists: which phylum they get filed under',
         'decider': 'Code logic (hardcoded phylum_number literal)',
-        'module': 'beatLog', 'func': '_addNewArtistsToTaxonomy', 'lines': (26213, 26220),  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep), drifted -5 lines from 23780-23793; re-narrowed to the real secureWrite insert object literal containing the literal, not the whole enclosing forEach
+        'module': 'beatLog', 'func': '_addNewArtistsToTaxonomy', 'lines': (26221, 26228),  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep), drifted -5 lines from 23780-23793; re-narrowed to the real secureWrite insert object literal containing the literal, not the whole enclosing forEach
         'anchor': 'phylum_number: 11',
         'decides': 'Which taxonomy phylum a newly-discovered Last.fm artist (via _addNewArtistsToTaxonomy) gets written into.',
         'changes': 'Nothing dynamic — this is a fixed literal, the real near-miss CLAUDE.md rule 13 was written about: the Aug 11 phylum renumber (11<->12) needed a SECOND, separate grep for this raw literal because no adjacent "Phylum 12" text existed nearby to catch it in the first display-text-only pass.',
@@ -189,7 +189,7 @@ TEXT_INPUT_POINTS = [
     {
         'id': 'beat-log-form',
         'title': 'Beat Log form — real multi-field text entry that creates a content_productions/video_jobs row',
-        'module': 'beatLog', 'func': '_getForm', 'lines': (26752, 26768),  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep), drifted -4 lines from 24323-24344; re-narrowed to the real `return {...}` object literal containing the literal
+        'module': 'beatLog', 'func': '_getForm', 'lines': (26760, 26776),  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep), drifted -4 lines from 24323-24344; re-narrowed to the real `return {...}` object literal containing the literal
         'anchor': "title:    get('bl-title')",
         'decides': "Title/key/BPM/scale/energy/mood/genre/rating/licence/collab/ref-track/FL-path — real typed values read directly off the DOM, no defaults faked — that _submit() turns into the actual real database row this ConID's whole downstream pipeline is built from.",
         'link': None,

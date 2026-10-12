@@ -213,7 +213,7 @@ PLAIN_ENGLISH = {
     },
     ('conidPot', '_quickDetectPhyla'): {
         'anchor': '  _quickDetectPhyla: function(text) {',
-        'lines': (31258, 31267),  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep), drifted -3 lines from 28812-28821; re-confirmed against a 2nd real match, the thin top-level pass-through wrapper at 29405 -- 28809 is the real logic:{} implementation
+        'lines': (31266, 31275),  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep), drifted -3 lines from 28812-28821; re-confirmed against a 2nd real match, the thin top-level pass-through wrapper at 29405 -- 28809 is the real logic:{} implementation
         'headline': 'A free, instant guess at which taxonomy phyla an idea belongs to — plain keyword spotting, no AI involved.',
         'input': 'One string: the text of a content idea.',
         'does': 'Lowercases it and checks for a handful of giveaway words. Drums, 808 or kick suggests phylum 2; mix, EQ or compress suggests 4; FL Studio, plugin or VST suggests 6; tutorial, teach or learn suggests 12; YouTube, Instagram or content suggests 13. It returns whichever numbers matched, and an empty list is a perfectly normal answer.',
