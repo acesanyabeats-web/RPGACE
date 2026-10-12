@@ -96,6 +96,43 @@ def clean(shifts, today):
     return uniq
 
 
+async def _settle(page, seconds=20):
+    """After login Fourth redirects through several pages; wait until the URL
+    stops changing and the page has loaded before reading or clicking."""
+    last, same = None, 0
+    for _ in range(seconds):
+        await asyncio.sleep(1)
+        try:
+            await page.wait_for_load_state("domcontentloaded", timeout=5000)
+        except Exception:
+            pass
+        if page.url == last:
+            same += 1
+            if same >= 2:
+                return
+        else:
+            last, same = page.url, 0
+
+
+async def _text(page):
+    """document.body.innerText, retried if a redirect destroys the page mid-read."""
+    for _ in range(5):
+        try:
+            return await page.evaluate("() => document.body ? document.body.innerText : ''")
+        except Exception:
+            await _settle(page, 5)
+    return await page.evaluate("() => document.body ? document.body.innerText : ''")
+
+
+def _safe_error(e):
+    """Short, public-safe description: error class + first line, URLs cut to
+    host/path (query strings can carry session tokens)."""
+    import re
+    first = (str(e).strip().splitlines() or [""])[0]
+    first = re.sub(r"(https?://[^\s?#]+)[?#]\S*", r"\1", first)
+    return f"{type(e).__name__}: {first[:140]}"
+
+
 async def _password_visible(page):
     loc = page.locator('input[type="password"]')
     for i in range(await loc.count()):
@@ -210,7 +247,8 @@ async def read_schedule_text(username, password):
             except Exception:
                 pass
             await _wait_login_gone(page, 15)
-        body = (await page.evaluate("() => document.body.innerText")).lower()
+        await _settle(page)
+        body = (await _text(page)).lower()
         if any(h in body for h in CODE_HINTS):
             await browser.close()
             raise RuntimeError("Fourth asked for a code or captcha, so it can't log in unattended")
@@ -224,7 +262,8 @@ async def read_schedule_text(username, password):
                 await page.wait_for_load_state("networkidle", timeout=20000)
             except Exception:
                 await asyncio.sleep(3)
-        text = await page.evaluate("() => document.body.innerText")
+            await _settle(page)
+        text = await _text(page)
         await browser.close()
         return text
 
@@ -239,7 +278,11 @@ def main():
     try:
         text = asyncio.run(read_schedule_text(os.environ["FOURTH_USERNAME"], os.environ["FOURTH_PASSWORD"]))
     except Exception as e:
-        report(False, str(e) if isinstance(e, RuntimeError) else f"Fourth couldn't be read ({type(e).__name__})")
+        if isinstance(e, RuntimeError):
+            report(False, str(e))
+        else:
+            print("error detail:", _safe_error(e))
+            report(False, f"Fourth couldn't be read ({_safe_error(e)[:150]})")
         return 0
     try:
         shifts = clean(fr.parse_shifts(text, os.environ["ANTHROPIC_API_KEY"], today), today)
