@@ -201,6 +201,28 @@ async def _log_form_structure(page, username=""):
         print(f"could not read login page structure ({type(e).__name__})")
 
 
+async def _log_landing(page, username, text_len):
+    """Public-safe: where the run ended up and what the menu offers (labels
+    only, short ones, username dropped) - never the page's shift text."""
+    from urllib.parse import urlparse
+    try:
+        u = urlparse(page.url)
+        print("landed on:", f"{u.netloc}{u.path}"[:90], "| title:", (await page.title())[:60], "| text chars:", text_len)
+        print("frames:", [f"{urlparse(f.url).netloc}{urlparse(f.url).path}"[:80] for f in page.frames[1:]][:10])
+        labels = await page.evaluate("""() => Array.from(document.querySelectorAll('a, button, [role=tab], [role=menuitem]'))
+            .map(e => (e.innerText || e.getAttribute('aria-label') || '').trim().replace(/\\s+/g, ' '))
+            .filter(t => t && t.length <= 30)""")
+        seen = []
+        for l in labels:
+            if username and len(username) >= 3 and username.lower() in l.lower():
+                continue
+            if l not in seen and not any(ch.isdigit() for ch in l):
+                seen.append(l)
+        print("menu labels:", seen[:60])
+    except Exception as e:
+        print("could not describe landing page", type(e).__name__)
+
+
 async def read_schedule_text(username, password):
     from playwright.async_api import async_playwright
     async with async_playwright() as p:
@@ -264,6 +286,7 @@ async def read_schedule_text(username, password):
                 await asyncio.sleep(3)
             await _settle(page)
         text = await _text(page)
+        await _log_landing(page, username, len(text))
         await browser.close()
         return text
 
