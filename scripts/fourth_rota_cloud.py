@@ -155,6 +155,11 @@ async def _log_form_structure(page):
         for k in ("title", "frames", "forms", "inputs", "buttons"):
             print(f"login page {k}: {info.get(k)}")
         print("browser user agent headless:", "Headless" in await page.evaluate("() => navigator.userAgent"))
+        text = await page.evaluate("() => document.body.innerText")
+        lines = [l.strip() for l in text.splitlines() if l.strip()][:25]
+        if username and len(username) >= 3:
+            lines = [l.replace(username, "<user>") for l in lines]
+        print("login page text:", [l[:100] for l in lines])
     except Exception as e:
         print(f"could not read login page structure ({type(e).__name__})")
 
@@ -165,10 +170,24 @@ async def read_schedule_text(username, password):
         # CHROMIUM_PATH: a pre-installed Chrome/Chromium. Actions sets it to
         # the runner's Google Chrome (no browser download needed).
         browser = await p.chromium.launch(headless=True, executable_path=os.environ.get("CHROMIUM_PATH") or None)
-        page = await (await browser.new_context(viewport={"width": 1280, "height": 900})).new_page()
+        # Oct 12 2026: Fourth's login (a Salesforce page) silently re-showed the
+        # form for a browser announcing itself as "HeadlessChrome" - present
+        # the same browser's normal Chrome identity instead.
+        probe_ctx = await browser.new_context()
+        probe = await probe_ctx.new_page()
+        real_ua = (await probe.evaluate("() => navigator.userAgent")).replace("HeadlessChrome", "Chrome")
+        await probe_ctx.close()
+        ctx = await browser.new_context(viewport={"width": 1280, "height": 900}, user_agent=real_ua,
+                                        locale="en-GB", timezone_id="Europe/London")
+        page = await ctx.new_page()
         await page.goto(fr.LOGIN_URL, wait_until="domcontentloaded", timeout=45000)
         u = await fr.try_fill(page, USER_SELECTORS, username)
         pw = await fr.try_fill(page, PASS_SELECTORS, password)
+        if pw:
+            # Type it key by key too, so any key-event handlers on the page fire.
+            box = page.locator(pw).first
+            await box.fill("")
+            await box.press_sequentially(password, delay=40)
         if not (u and pw):
             await browser.close()
             raise RuntimeError("Fourth's login page wasn't recognised (layout may have changed)")
