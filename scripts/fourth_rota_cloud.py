@@ -201,6 +201,77 @@ async def _log_form_structure(page, username=""):
         print(f"could not read login page structure ({type(e).__name__})")
 
 
+async def _wait_app_loaded(page, seconds=45):
+    """Fourth's FMPApp page is a shell that fills itself in with scripts after
+    load (run 11: 134 chars, no links). Wait until links appear and the text
+    stops growing."""
+    last = -1
+    for _ in range(seconds // 3):
+        await asyncio.sleep(3)
+        try:
+            n_links = await page.locator("a, button, [role=tab], [role=menuitem]").count()
+            n_text = len(await _text(page))
+        except Exception:
+            continue
+        if n_text > 0 and n_text == last:
+            return
+        last = n_text
+
+
+async def _open_my_schedule(page):
+    """Oct 12 2026: Fourth's home (apex/FMPApp, Alex's screenshot) is a grid of
+    icon tiles - COVID Health Survey, Ordering, ..., My Schedule, HR & Payroll -
+    that aren't plain links, so the old a:has-text selectors never matched.
+    Click the tile by its text; it may open in a new tab. Returns the page
+    showing the schedule (or the same page if no tile was found)."""
+    import re
+    ctx = page.context
+    target = page.get_by_text(re.compile(r"^\s*my\s*schedule\s*$", re.I)).first
+    if await target.count() == 0:
+        target = page.get_by_text(re.compile(r"my\s*schedule", re.I)).first
+    if await target.count() == 0:
+        if not await fr.try_click(page, SCHEDULE_SELECTORS):
+            print("My Schedule tile not found")
+            return page
+    else:
+        before = len(ctx.pages)
+        await target.click()
+        await asyncio.sleep(3)
+        if len(ctx.pages) > before:
+            page = ctx.pages[-1]
+            print("My Schedule opened in a new tab")
+    try:
+        await page.wait_for_load_state("networkidle", timeout=20000)
+    except Exception:
+        pass
+    await _settle(page)
+    await _wait_app_loaded(page)
+    return page
+
+
+async def _scroll_all(page, rounds=15):
+    """My Schedule is a scrolling list of shift cards (about 3 weeks, Alex) that
+    may load more as you scroll. Scroll the window and every scrollable box to
+    the bottom until the text stops growing."""
+    last = -1
+    for _ in range(rounds):
+        try:
+            await page.evaluate("""() => {
+              window.scrollTo(0, document.body.scrollHeight);
+              document.querySelectorAll('*').forEach(e => {
+                if (e.scrollHeight > e.clientHeight + 20) e.scrollTop = e.scrollHeight;
+              });
+            }""")
+        except Exception:
+            pass
+        await asyncio.sleep(1.5)
+        n = len(await _text(page))
+        if n == last:
+            break
+        last = n
+    print("schedule text chars after scrolling:", last)
+
+
 async def _log_landing(page, username, text_len):
     """Public-safe: where the run ended up and what the menu offers (labels
     only, short ones, username dropped) - never the page's shift text."""
@@ -219,6 +290,17 @@ async def _log_landing(page, username, text_len):
             if l not in seen and not any(ch.isdigit() for ch in l):
                 seen.append(l)
         print("menu labels:", seen[:60])
+        # Headings/short lines with no digits (no dates/times), name dropped.
+        lines = [l.strip() for l in (await _text(page)).splitlines() if l.strip()]
+        safe = []
+        for l in lines:
+            if len(l) > 40 or any(ch.isdigit() for ch in l):
+                continue
+            if username and len(username) >= 3 and username.lower() in l.lower():
+                continue
+            if l not in safe:
+                safe.append(l)
+        print("page words:", safe[:40])
     except Exception as e:
         print("could not describe landing page", type(e).__name__)
 
@@ -270,6 +352,7 @@ async def read_schedule_text(username, password):
                 pass
             await _wait_login_gone(page, 15)
         await _settle(page)
+        await _wait_app_loaded(page)
         body = (await _text(page)).lower()
         if any(h in body for h in CODE_HINTS):
             await browser.close()
@@ -279,12 +362,8 @@ async def read_schedule_text(username, password):
             await _log_form_structure(page, username)
             await browser.close()
             raise RuntimeError("Fourth login didn't go through - " + why)
-        if await fr.try_click(page, SCHEDULE_SELECTORS):
-            try:
-                await page.wait_for_load_state("networkidle", timeout=20000)
-            except Exception:
-                await asyncio.sleep(3)
-            await _settle(page)
+        page = await _open_my_schedule(page)
+        await _scroll_all(page)
         text = await _text(page)
         await _log_landing(page, username, len(text))
         await browser.close()

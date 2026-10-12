@@ -97,6 +97,7 @@ Rules:
 - role: job title as shown
 - start/end: 24-hour HH:MM (midnight = 00:00)
 - hours: decimal (e.g. 13:00-22:00 = 9.0)
+- Fourth's My Schedule page lists one card per shift: weekday, day number, month (e.g. MON / 12 / OCT), role, start time, arrow, end time, venue. No year is shown - use today's year, or next year if the month is before today's month
 - Only include shifts from {today_str} onwards
 - If no shifts found return: []"""
         }]
