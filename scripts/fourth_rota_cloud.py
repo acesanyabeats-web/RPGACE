@@ -96,6 +96,48 @@ def clean(shifts, today):
     return uniq
 
 
+async def _password_visible(page):
+    loc = page.locator('input[type="password"]')
+    for i in range(await loc.count()):
+        try:
+            if await loc.nth(i).is_visible():
+                return True
+        except Exception:
+            pass
+    return False
+
+
+async def _wait_login_gone(page, seconds):
+    for _ in range(seconds):
+        await asyncio.sleep(1)
+        try:
+            if not await _password_visible(page):
+                return True
+        except Exception:
+            pass  # mid-navigation
+    return False
+
+
+ERROR_HINTS = ["invalid", "incorrect", "not recognised", "not recognized", "locked",
+               "expired", "try again", "failed", "wrong", "disabled", "required"]
+
+
+async def _login_diagnostic(page, username):
+    """Short, public-safe reason: the page's own error line if there is one
+    (username redacted), plus where the browser ended up (host + path only)."""
+    from urllib.parse import urlparse
+    try:
+        lines = [l.strip() for l in (await page.evaluate("() => document.body.innerText")).splitlines()]
+    except Exception:
+        lines = []
+    msg = next((l for l in lines if 3 < len(l) < 160 and any(h in l.lower() for h in ERROR_HINTS)), "")
+    if username and len(username) >= 3:
+        msg = msg.replace(username, "<user>")
+    u = urlparse(page.url)
+    where = f"{u.netloc}{u.path}"[:70]
+    return (f'page says "{msg[:90]}"' if msg else "no error message shown") + f" (still on {where})"
+
+
 async def read_schedule_text(username, password):
     from playwright.async_api import async_playwright
     async with async_playwright() as p:
@@ -109,18 +151,28 @@ async def read_schedule_text(username, password):
         if not (u and pw):
             await browser.close()
             raise RuntimeError("Fourth's login page wasn't recognised (layout may have changed)")
-        await fr.try_click(page, SUBMIT_SELECTORS)
-        try:
-            await page.wait_for_load_state("networkidle", timeout=25000)
-        except Exception:
-            await asyncio.sleep(4)
+        clicked = await fr.try_click(page, SUBMIT_SELECTORS)
+        if not clicked:
+            await page.keyboard.press("Enter")
+        # Oct 12 2026: first real run reported "login didn't go through".
+        # networkidle can settle before a redirect, and a hidden password
+        # input left in the DOM counted as "still on the login page" - so
+        # wait up to 30s for the VISIBLE password box to go away instead.
+        if not await _wait_login_gone(page, 30):
+            # Enter as a second try, in case the button click didn't submit.
+            try:
+                await page.locator('input[type="password"]').first.press("Enter")
+            except Exception:
+                pass
+            await _wait_login_gone(page, 15)
         body = (await page.evaluate("() => document.body.innerText")).lower()
         if any(h in body for h in CODE_HINTS):
             await browser.close()
             raise RuntimeError("Fourth asked for a code or captcha, so it can't log in unattended")
-        if await page.locator('input[type="password"]').count() > 0:
+        if await _password_visible(page):
+            why = await _login_diagnostic(page, username)
             await browser.close()
-            raise RuntimeError("Fourth login didn't go through (check FOURTH_USERNAME/FOURTH_PASSWORD)")
+            raise RuntimeError("Fourth login didn't go through - " + why)
         if await fr.try_click(page, SCHEDULE_SELECTORS):
             try:
                 await page.wait_for_load_state("networkidle", timeout=20000)
