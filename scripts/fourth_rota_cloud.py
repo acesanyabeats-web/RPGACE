@@ -138,7 +138,7 @@ async def _login_diagnostic(page, username):
     return (f'page says "{msg[:90]}"' if msg else "no error message shown") + f" (still on {where})"
 
 
-async def _log_form_structure(page):
+async def _log_form_structure(page, username=""):
     """Public-safe evidence for a failed login: field types/names/visibility,
     button labels, frames, and which kinds of field are filled. Never values."""
     try:
@@ -211,7 +211,7 @@ async def read_schedule_text(username, password):
             raise RuntimeError("Fourth asked for a code or captcha, so it can't log in unattended")
         if await _password_visible(page):
             why = await _login_diagnostic(page, username)
-            await _log_form_structure(page)
+            await _log_form_structure(page, username)
             await browser.close()
             raise RuntimeError("Fourth login didn't go through - " + why)
         if await fr.try_click(page, SCHEDULE_SELECTORS):
