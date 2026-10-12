@@ -59,6 +59,7 @@ Newer modules (`cookingOracle`, `shoppingWishlist`, `oracleControl`, and any shi
 | `conid_pot` | Idea bank | — |
 | `reference_tracks` | Artist-matching corpus for Beat Log's "find artists" step | 32 rows. `scale`/`genre`/`url` columns exist and `findMatches()` scores them, but scale/genre are still 0/32 populated — the real root cause of "beat matches are always the same"; the backfill popup requires Alex's own per-track judgment call, not an automated guess (confirmed Sep 23 2026) |
 | `video_jobs` | Beat log entries + the granular file-path sub-tracker under `content_productions` | `content_production_id` FK has no cascade — ConID delete handles it explicitly. `edl` and `style_profile_id` wired |
+| `sync_status` | Last run of a background sync (key `rota` = the Fourth cloud import); written via `/api/data-write`, anon read-only | PK key |
 | `rpgace_shifts` | Rota. Written only through `/api/data-write` by `shiftSync.logic.replaceDates`/`pushPending` (and, from MD2-2, the Fourth cloud runner). Read by anon; `anon_read_only` + `authenticated_all` added Oct 12 2026, old `anon_all` removal awaiting Alex's approval | UNIQUE(date, start) |
 | `rpgace_agendas` | Scheduled tasks, cross-device | — |
 | `intel_jobs` / `intel_reports` | Content Intelligence pipeline | — |

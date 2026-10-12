@@ -73,6 +73,18 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-12-fourth-cloud-import" style="margin-bottom:30px;">
+    <div class="card-title">☁️ Oct 12 — Fourth rota import without the laptop (MD2-2)</div>
+    <div class="card-body">
+      Alex: run the Fourth script "if can be done without laptop", with his Fourth login stored as GitHub secrets ("Yes, store it") and the app's API secret as a second secret ("use the second secret").
+      <ul>
+        <li><strong>GitHub Action "Fourth rota import"</strong> (<code>.github/workflows/rota-sync.yml</code>): Mondays 06:17 UTC and on demand. Runs <code>scripts/fourth_rota_cloud.py</code>: headless login to Fourth, opens the schedule page, Claude reads the shifts (same helper and prompt as the laptop script, now shared as <code>fourth_rota.parse_shifts</code>), then replaces today → the last scraped date in <code>rpgace_shifts</code> through <code>/api/data-write</code>.</li>
+        <li><strong>Fails safe, never fakes:</strong> if Fourth asks for a code or captcha, the login doesn't go through, the page layout changed or no shifts are found, nothing is overwritten and the dashboard's Due list shows "Rota import needs you" with the reason. If the Monday run hasn't happened for 9+ days it says so.</li>
+        <li><strong>Private:</strong> the repo is public, so the logs print only counts and short reasons, never dates, times, roles or page text. New table <code>sync_status</code> (read-only to the public key) holds the last run.</li>
+      </ul>
+      Needs repo secrets <code>FOURTH_USERNAME</code>, <code>FOURTH_PASSWORD</code>, <code>RPGACE_API_SECRET</code> (and the existing <code>INTEL_ANTHROPIC_KEY</code>); without them the run just warns and does nothing. Checked: 12/12 local runs against fake Fourth pages (success, code prompt, wrong password, changed layout, empty rota, unreadable reply, missing secret, no shift details in logs) + 4/4 dashboard checks. Not yet run against the real Fourth site, so whether Fourth demands a code is still unknown. <strong>Untested by Alex's own hand.</strong>
+    </div>
+</div>
 <div class="card" id="card-2026-10-12-shift-sync-fix" style="margin-bottom:30px;">
     <div class="card-title">🧑‍🍳 Oct 12 — Shift imports finally stick (My Day Round 2, MD2-1)</div>
     <div class="card-body">

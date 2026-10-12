@@ -67,6 +67,58 @@ async def try_fill(page, selectors, value):
     return None
 
 
+def parse_shifts(page_text, api_key, today=None):
+    """Shared by this PC script and scripts/fourth_rota_cloud.py (rule 8):
+    send the schedule page's text to Claude, return a list of shift dicts.
+    Raises ValueError if the reply isn't a JSON array."""
+    import anthropic as ant
+    client    = ant.Anthropic(api_key=api_key)
+    today_str = today or date.today().strftime("%Y-%m-%d")
+    msg = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=2000,
+        messages=[{
+            "role": "user",
+            "content": f"""You are extracting work shift data from a hospitality scheduling app (Fourth).
+Today's date is {today_str}. Extract ALL upcoming shifts (today onwards, next 8 weeks).
+
+PAGE CONTENT:
+{page_text[:9000]}
+
+Return ONLY a valid JSON array, no markdown, no explanation:
+[
+  {{"date":"2026-07-04","day":"SAT","role":"Bar Tender","start":"13:00","end":"22:00","hours":9.0}},
+  {{"date":"2026-07-05","day":"SUN","role":"Bar Tender","start":"17:00","end":"00:00","hours":7.0}}
+]
+
+Rules:
+- date: YYYY-MM-DD format
+- day: 3-letter abbreviation MON/TUE/WED/THU/FRI/SAT/SUN
+- role: job title as shown
+- start/end: 24-hour HH:MM (midnight = 00:00)
+- hours: decimal (e.g. 13:00-22:00 = 9.0)
+- Only include shifts from {today_str} onwards
+- If no shifts found return: []"""
+        }]
+    )
+    raw = msg.content[0].text.strip()
+    if "```" in raw:
+        raw = raw.split("```")[1]
+        if raw.startswith("json"):
+            raw = raw[4:]
+        raw = raw.strip()
+    try:
+        shifts = json.loads(raw)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Claude's reply wasn't JSON ({e})")
+    if not isinstance(shifts, list):
+        raise ValueError("Claude's reply wasn't a list")
+    for s in shifts:
+        if not s.get("day") or s["day"] == "???":
+            s["day"] = day_abbr(s.get("date", ""))
+    return shifts
+
+
 async def extract():
     print("=" * 60)
     print("RPGACE — Fourth Rota Extractor")
@@ -155,52 +207,10 @@ async def extract():
 
     # ── PARSE WITH CLAUDE ─────────────────────────────────────
     print("\nStep 4: Extracting shifts with Claude...")
-    import anthropic as ant
-    client    = ant.Anthropic(api_key=API_KEY_FILE.read_text().strip())
-    today_str = date.today().strftime("%Y-%m-%d")
-
-    msg = client.messages.create(
-        model="claude-sonnet-4-6",
-        max_tokens=2000,
-        messages=[{
-            "role": "user",
-            "content": f"""You are extracting work shift data from a hospitality scheduling app (Fourth).
-Today's date is {today_str}. Extract ALL upcoming shifts (today onwards, next 8 weeks).
-
-PAGE CONTENT:
-{page_text[:9000]}
-
-Return ONLY a valid JSON array, no markdown, no explanation:
-[
-  {{"date":"2026-07-04","day":"SAT","role":"Bar Tender","start":"13:00","end":"22:00","hours":9.0}},
-  {{"date":"2026-07-05","day":"SUN","role":"Bar Tender","start":"17:00","end":"00:00","hours":7.0}}
-]
-
-Rules:
-- date: YYYY-MM-DD format
-- day: 3-letter abbreviation MON/TUE/WED/THU/FRI/SAT/SUN
-- role: job title as shown
-- start/end: 24-hour HH:MM (midnight = 00:00)
-- hours: decimal (e.g. 13:00-22:00 = 9.0)
-- Only include shifts from {today_str} onwards
-- If no shifts found return: []"""
-        }]
-    )
-
-    raw = msg.content[0].text.strip()
-
-    # Clean markdown fences if present
-    if "```" in raw:
-        raw = raw.split("```")[1]
-        if raw.startswith("json"):
-            raw = raw[4:]
-        raw = raw.strip()
-
     try:
-        shifts = json.loads(raw)
-    except json.JSONDecodeError as e:
-        print(f"\n❌ JSON parse error: {e}")
-        print("Claude returned:", raw[:500])
+        shifts = parse_shifts(page_text, API_KEY_FILE.read_text().strip())
+    except ValueError as e:
+        print(f"\n❌ {e}")
         print("\nCheck the raw page text at:", raw_file)
         print("Screenshots at:", SS_DIR)
         return

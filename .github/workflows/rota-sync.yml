@@ -1,0 +1,51 @@
+name: Fourth rota import
+
+# Oct 12 2026 - MD2-2 (My Day Round 2): reads Alex's rota from Fourth without
+# the laptop and saves it to rpgace_shifts. Mondays + run on demand
+# (Actions -> Fourth rota import -> Run workflow).
+# Needs repo secrets FOURTH_USERNAME, FOURTH_PASSWORD, RPGACE_API_SECRET and
+# INTEL_ANTHROPIC_KEY. Logs are public (public repo): the script prints counts
+# and short reasons only, never shift details.
+on:
+  schedule:
+    - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: rota-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip + Playwright browser
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.cache/ms-playwright
+          key: rota-${{ runner.os }}-pw-v1
+
+      - name: Install Playwright + Anthropic
+        run: |
+          python -m pip install -q playwright anthropic
+          python -m playwright install --with-deps chromium > /dev/null
+
+      - name: Import rota
+        env:
+          FOURTH_USERNAME: ${{ secrets.FOURTH_USERNAME }}
+          FOURTH_PASSWORD: ${{ secrets.FOURTH_PASSWORD }}
+          RPGACE_API_SECRET: ${{ secrets.RPGACE_API_SECRET }}
+          ANTHROPIC_API_KEY: ${{ secrets.INTEL_ANTHROPIC_KEY }}
+        run: python scripts/fourth_rota_cloud.py
