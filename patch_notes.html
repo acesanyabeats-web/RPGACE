@@ -73,6 +73,20 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-12-week-planner" style="margin-bottom:30px;">
+    <div class="card-title">📅 Oct 12 — Week planner, time off / trips / events (MD2-5)</div>
+    <div class="card-body">
+      Alex: plan weeklies "this week, next week, week after etc", "as far as rota known", a passed planned day should "Ask me". At build time he added: "in header show all planned things that ive put well in advance ... this way i dont clash with plans (eg. holiday or event)". Then: "my 1-8 november ive got nothing planned", so time off counts as free days, not as being away.
+      <ul>
+        <li><strong>My Day → 📅 Plan weeks</strong>: tabs from this week up to the last week of the Fourth rota, plus <em>+ Add a week</em>. Each day lists everything already booked: shifts (or "off"), Daily Schedule items, time off, trips and events.</li>
+        <li><strong>Day chips per routine</strong> (weekly and N-a-week only; daily routines aren't planned). Weekly ones start on their usual days. N-a-week ones are suggested on days off first, then lighter shift days, spread out, skipping trips and all-day events. Saving writes <code>routine_plans</code>. A saved week makes the routine due only on its planned days; clearing every day stores a "skipped" marker so it doesn't fall back to the usual days.</li>
+        <li><strong>Planned but not done</strong>: a planned day that passed undone shows on My Day with <em>Move</em> to one of the next free days or <em>Skip this one</em>.</li>
+        <li><strong>🌴 Time off, trips &amp; events</strong> (<code>day_blocks</code>): name, kind, dates, optional times, two-tap delete. Time off is free (preferred for routines); a trip or all-day event blocks the day.</li>
+        <li><strong>Reminder</strong>: from Saturday, if next week has no plans, the dashboard Due list shows "Plan next week".</li>
+      </ul>
+      Verified with 30 headless-browser checks (Supabase mocked; real October rota pattern, a gym 3×/week, a weekly bins routine, a dentist appointment, time off 1–8 Nov and a trip). Earlier My Day (40), timings (24) and shift (17) tests still pass. Oracle can't add plans or blocks yet; that's the next idea being scoped. Not yet hand-tested by Alex.
+    </div>
+</div>
 <div class="card" id="card-2026-10-12-myday-timings" style="margin-bottom:30px;">
     <div class="card-title">⏱ Oct 12 — Get-ready + travel time and activity templates (MD2-4)</div>
     <div class="card-body">

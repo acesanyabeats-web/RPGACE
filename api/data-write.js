@@ -118,6 +118,8 @@ const ALLOWED_TABLES = new Set([
   'sync_status', // Oct 12 2026 MD2-2: created anon_read_only/authenticated_all; the Fourth cloud runner reports its last run here
   'activity_templates', // Oct 12 2026 MD2-4: schedule activity templates (place, journey, get-ready, category); anon_read_only from creation
   'myday_settings', // Oct 12 2026 MD2-4: single-row get-ready/margin/shift travel settings; anon_read_only from creation
+  'routine_plans', // Oct 12 2026 MD2-5: week planner - which days a routine is planned; anon_read_only from creation
+  'day_blocks', // Oct 12 2026 MD2-5: multi-day blocks (holiday/trip/event) shown on planner headers; anon_read_only from creation
   'quest_duration_stats',
   // 2026-08-26 - G41 Phase 2 (self-aware vocabulary growth). Created
   // anon_read_only/authenticated_all FROM THE START (same as
