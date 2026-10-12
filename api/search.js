@@ -111,7 +111,8 @@ async function handleRecipeImage(query, res) {
 // "connect a free ai model that can search internet", "Both, Gemini first".
 // Gemini 2.5 Flash with Google Search grounding (free AI Studio key), then
 // Tavily (1,000 free searches/month) if Gemini has no key, errors or hits
-// its free limit. Only the search question is sent - callers never put
+// its free limit. Oct 12 2026, Alex: "skip tavily for now" - Tavily stays
+// built but off (no TAVILY_API_KEY set); Gemini is the only live provider. Only the search question is sent - callers never put
 // personal data in it (Gemini's free tier may use inputs to improve
 // Google products). Never invents results: with no key or both providers
 // failing it returns an error the app shows as-is.
@@ -162,5 +163,5 @@ async function handleWeb(query, res) {
     }
   } else tried.push('Tavily: no TAVILY_API_KEY');
   const setup = !geminiKey && !tavilyKey;
-  return res.status(setup ? 503 : 502).json({ error: setup ? 'Web search is not set up yet (add GEMINI_API_KEY / TAVILY_API_KEY in Vercel)' : 'Web search failed', setup, tried });
+  return res.status(setup ? 503 : 502).json({ error: setup ? 'Web search is not set up yet (add GEMINI_API_KEY in Vercel)' : 'Web search failed', setup, tried });
 }
