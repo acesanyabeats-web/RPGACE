@@ -200,8 +200,13 @@ async def read_schedule_text(username, password):
         # wait up to 30s for the VISIBLE password box to go away instead.
         if not await _wait_login_gone(page, 30):
             # Enter as a second try, in case the button click didn't submit.
+            # Only if the box still holds the password - pressing Enter on an
+            # emptied box after a rejected login just adds "Enter a value in
+            # the Password field" and hides Fourth's real answer (run 7).
             try:
-                await page.locator('input[type="password"]').first.press("Enter")
+                box = page.locator('input[type="password"]').first
+                if await box.input_value():
+                    await box.press("Enter")
             except Exception:
                 pass
             await _wait_login_gone(page, 15)
