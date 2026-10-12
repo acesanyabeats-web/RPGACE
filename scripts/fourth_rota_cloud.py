@@ -138,6 +138,27 @@ async def _login_diagnostic(page, username):
     return (f'page says "{msg[:90]}"' if msg else "no error message shown") + f" (still on {where})"
 
 
+async def _log_form_structure(page):
+    """Public-safe evidence for a failed login: field types/names/visibility,
+    button labels, frames, and which kinds of field are filled. Never values."""
+    try:
+        info = await page.evaluate("""() => {
+          const vis = e => !!(e.offsetWidth || e.offsetHeight || e.getClientRects().length);
+          return {
+            title: document.title,
+            frames: Array.from(document.querySelectorAll('iframe')).map(f => (f.src || '').split('?')[0].slice(0, 80)),
+            inputs: Array.from(document.querySelectorAll('input')).map(e => [e.type, e.name || '', e.id || '', vis(e) ? 'visible' : 'hidden', e.value ? 'filled' : 'empty']),
+            buttons: Array.from(document.querySelectorAll('button, input[type=submit], a[role=button]')).map(e => [(e.innerText || e.value || '').trim().slice(0, 40), e.type || '', vis(e) ? 'visible' : 'hidden']),
+            forms: Array.from(document.forms).map(f => (f.getAttribute('action') || '').split('?')[0].slice(0, 80)),
+          };
+        }""")
+        for k in ("title", "frames", "forms", "inputs", "buttons"):
+            print(f"login page {k}: {info.get(k)}")
+        print("browser user agent headless:", "Headless" in await page.evaluate("() => navigator.userAgent"))
+    except Exception as e:
+        print(f"could not read login page structure ({type(e).__name__})")
+
+
 async def read_schedule_text(username, password):
     from playwright.async_api import async_playwright
     async with async_playwright() as p:
@@ -171,6 +192,7 @@ async def read_schedule_text(username, password):
             raise RuntimeError("Fourth asked for a code or captcha, so it can't log in unattended")
         if await _password_visible(page):
             why = await _login_diagnostic(page, username)
+            await _log_form_structure(page)
             await browser.close()
             raise RuntimeError("Fourth login didn't go through - " + why)
         if await fr.try_click(page, SCHEDULE_SELECTORS):
