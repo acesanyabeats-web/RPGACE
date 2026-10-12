@@ -29,18 +29,19 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Cache pip + Playwright browser
+      - name: Cache pip
         uses: actions/cache@v4
         with:
-          path: |
-            ~/.cache/pip
-            ~/.cache/ms-playwright
-          key: rota-${{ runner.os }}-pw-v1
+          path: ~/.cache/pip
+          key: rota-${{ runner.os }}-pip-v1
 
+      # GitHub's Ubuntu runners already ship Google Chrome, so Playwright
+      # drives that instead of downloading its own browser
+      # (`playwright install --with-deps` hung for 11+ min on the first run).
       - name: Install Playwright + Anthropic
         run: |
           python -m pip install -q playwright anthropic
-          python -m playwright install --with-deps chromium > /dev/null
+          which google-chrome && google-chrome --version
 
       - name: Import rota
         env:
@@ -48,4 +49,5 @@ jobs:
           FOURTH_PASSWORD: ${{ secrets.FOURTH_PASSWORD }}
           RPGACE_API_SECRET: ${{ secrets.RPGACE_API_SECRET }}
           ANTHROPIC_API_KEY: ${{ secrets.INTEL_ANTHROPIC_KEY }}
+          CHROMIUM_PATH: /usr/bin/google-chrome
         run: python scripts/fourth_rota_cloud.py

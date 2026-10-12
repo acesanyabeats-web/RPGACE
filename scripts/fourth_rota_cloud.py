@@ -99,8 +99,8 @@ def clean(shifts, today):
 async def read_schedule_text(username, password):
     from playwright.async_api import async_playwright
     async with async_playwright() as p:
-        # CHROMIUM_PATH: optional, only for running this outside Actions with
-        # a pre-installed browser; Actions uses the one it installs.
+        # CHROMIUM_PATH: a pre-installed Chrome/Chromium. Actions sets it to
+        # the runner's Google Chrome (no browser download needed).
         browser = await p.chromium.launch(headless=True, executable_path=os.environ.get("CHROMIUM_PATH") or None)
         page = await (await browser.new_context(viewport={"width": 1280, "height": 900})).new_page()
         await page.goto(fr.LOGIN_URL, wait_until="domcontentloaded", timeout=45000)
