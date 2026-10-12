@@ -90,7 +90,7 @@ LOGIC_POINTS = [
         'id': 'oracle-mode',
         'title': 'Oracle Mode: Real / Dummy / Fallback Scout',
         'decider': 'Alex (manual toggle)',
-        'module': 'mockOracle', 'func': 'setMode', 'lines': (37386, 37398), 'anchor': "self.MODES.indexOf(mode) === -1",  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep) - drifted -5 lines from 34588-34600 to the real setMode: function span 34583-34595, confirmed by direct read
+        'module': 'mockOracle', 'func': 'setMode', 'lines': (37397, 37409), 'anchor': "self.MODES.indexOf(mode) === -1",  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep) - drifted -5 lines from 34588-34600 to the real setMode: function span 34583-34595, confirmed by direct read
         'decides': 'Which of 3 real paths every single Oracle call in the app takes, app-wide, until toggled again.',
         'changes': 'Real: every window.callOracle() call in main.js checks getMode() first. \'dummy\' short-circuits to a synthetic labeled reply, zero API cost. \'fallback\' queues the real prompt into oracle_fallback_queue instead of calling the live API. \'real\' calls the live Anthropic API as normal.',
         'result': 'A visible top-right toggle switch (red/green/gold) whose state persists in localStorage and is checked on literally every real Oracle send in the app.',
@@ -100,7 +100,7 @@ LOGIC_POINTS = [
         'id': 'taxonomy-card-branch',
         'title': 'Taxonomy & Review: which part to open',
         'decider': 'Alex (picker popup)',
-        'module': 'dashDeck', 'lines': (16267, 16307),  # Oct 11 2026 (M1 anchor sweep): rewritten, not just re-lined. The old "_pendingReviewCount !== 0" auto-branch was removed Sep 26 2026 (commit cd51f44); the card now always opens dashDeck._openTaxonomy's picker.
+        'module': 'dashDeck', 'lines': (16293, 16333),  # Oct 11 2026 (M1 anchor sweep): rewritten, not just re-lined. The old "_pendingReviewCount !== 0" auto-branch was removed Sep 26 2026 (commit cd51f44); the card now always opens dashDeck._openTaxonomy's picker.
         'anchor': "if (rq && rq._openCard) rq._openCard();",
         'decides': 'Whether Alex goes to the pending-placement review queue, the Phylum Path tree, or the Jargon Encyclopedia.',
         'changes': 'Nothing is decided by code any more: the picker shows the live pending-placement count (dashDeck._pendingReviewCount, set by _refreshGlance) under the Review button so Alex can see if review is worth it.',
@@ -155,7 +155,7 @@ LOGIC_POINTS = [
         'id': 'artist-phylum-routing',
         'title': 'Last.fm-discovered artists: which phylum they get filed under',
         'decider': 'Code logic (hardcoded phylum_number literal)',
-        'module': 'beatLog', 'func': '_addNewArtistsToTaxonomy', 'lines': (26190, 26197),  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep), drifted -5 lines from 23780-23793; re-narrowed to the real secureWrite insert object literal containing the literal, not the whole enclosing forEach
+        'module': 'beatLog', 'func': '_addNewArtistsToTaxonomy', 'lines': (26201, 26208),  # re-verified Sep 23 2026 (Minotaur/Manual Unification follow-up anchor sweep), drifted -5 lines from 23780-23793; re-narrowed to the real secureWrite insert object literal containing the literal, not the whole enclosing forEach
         'anchor': 'phylum_number: 11',
         'decides': 'Which taxonomy phylum a newly-discovered Last.fm artist (via _addNewArtistsToTaxonomy) gets written into.',
         'changes': 'Nothing dynamic — this is a fixed literal, the real near-miss CLAUDE.md rule 13 was written about: the Aug 11 phylum renumber (11<->12) needed a SECOND, separate grep for this raw literal because no adjacent "Phylum 12" text existed nearby to catch it in the first display-text-only pass.',

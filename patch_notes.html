@@ -73,6 +73,19 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-12-myday-timings" style="margin-bottom:30px;">
+    <div class="card-title">⏱ Oct 12 — Get-ready + travel time and activity templates (MD2-4)</div>
+    <div class="card-body">
+      Alex: "always 30 minutes to get ready, then journey i enter myself in approximate minutes + 10% time buffer that i judge myself"; before a shift "90 minutes - 60 journey and 20 min for coffee and cigarette", after "60 min journey". Plus, at build time: "make it so i can delete or add templates when im creating a new one, all the activities and events will get categorized later on so i have more metrics".
+      <ul>
+        <li><strong>Timings</strong> (My Day → Manage, table <code>myday_settings</code>): get-ready 30, journey margin 10%, journey to work 60, before-shift extra 20, journey home 60. The margin applies to journeys only, so a shift keeps 116 min clear before and 66 after. Plan my day avoids those times. It used to keep a fixed 30 min either side.</li>
+        <li><strong>Activity templates</strong> (table <code>activity_templates</code>): name, category, place, journey minutes, get-ready, length. The Daily Schedule's Schedule Task form has a template picker with <em>+ New</em> and <em>Delete</em> (two clicks) right there. Picking one fills the title, category, length and travel. The templates are also listed in My Day → Manage.</li>
+        <li><strong>Every scheduled item can carry a category, place, journey and get-ready</strong> (new optional <code>rpgace_agendas</code> columns <code>template_id</code>/<code>place</code>/<code>journey_mins</code>/<code>ready_mins</code>), ready for the metrics Alex wants later. Items without them behave exactly as before.</li>
+        <li><strong>Today shows the rest of the day</strong>: shifts and schedule items with their get-ready/travel blocks, and free gaps labelled <em>Prep</em> (leads into travel within the hour) or <em>Leisure</em>.</li>
+      </ul>
+      Verified with 24 headless-browser checks (Supabase mocked): timing maths, Plan my day avoidance, the timeline, picking, adding and deleting a template inside the form, the saved item's fields, and saving Timings. Existing My Day (40) and shift (17) tests still pass. Not yet hand-tested by Alex.
+    </div>
+</div>
 <div class="card" id="card-2026-10-12-console-errors" style="margin-bottom:30px;">
     <div class="card-title">🧹 Oct 12 — Three console errors on load fixed</div>
     <div class="card-body">
