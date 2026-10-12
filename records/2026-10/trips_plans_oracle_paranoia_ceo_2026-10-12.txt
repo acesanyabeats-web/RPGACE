@@ -1,0 +1,150 @@
+TRIPS & PLANS WITH ORACLE — /paranoia + /free-for-all-debate + /drift + /interrogation + /CEO Loop 1
+Oct 12 2026. Builds on MD2-5 (routine_plans + day_blocks + week planner), shipped the same day.
+
+=====================================================================
+1. ALEX'S ASK (verbatim)
+=====================================================================
+"in header show all planned things that ive put well in advance ... this way i dont clash with plans
+(eg. holiday or event - need to plan journey and day around blocks when needed depending on scenarios)
+/paranoia and /free-for-all-debate this idea, i want oracle to handle my requests for adding such
+things, eg im planning a trip, i need tickets and hotel, i plan it out with arrangement with oracle with
+him helping me finding nuances and things that are needed etc. you get my drift? /drift the whole thing
+ironically, /interrogation me into oblivion if needed, then we /CEO and build my idea after current
+recommendations"
+
+"my 1-8 november ive got nothing planned, so creating plans well in advance would be a massive benefit
+like reaching out if someone whats to do something, research whats about in other countries to do cool
+shit, right now im just staying home investing my time into these projects and my life, cleanliness
+reading working, spending money on these things, i cut down on video game to honestly 4 hours a week at
+this point"
+
+(The header half shipped as MD2-5: the week planner's day list shows shifts, schedule items and
+time off / trips / events. Time off 1-8 Nov 2026 was added as a day_blocks row, kind 'off'.)
+
+=====================================================================
+2. EVIDENCE (Steps 1-2: Aintergration + restructure + GODMODE, live code)
+=====================================================================
+- Oracle has NO live web search. It answers from training knowledge (stale for events/prices).
+  RPGACE can READ a pasted URL (api/_context.js fetches via r.jina.ai). /api/search = YouTube search
+  + recipe-image lookup only (type dispatch: query/type/sort) - the natural home for a 'web' type.
+- No booking or payment path exists, and none should: spending is Tier 3.
+- Reach-out: only Gmail drafts (oracleControl draft_email via Composio). No WhatsApp/IG DM/SMS.
+- Reusable blocks: RECIPE_JSON-style Oracle trailer -> review card -> Accept; askMyData; day_blocks
+  (MD2-5); scheduleToCalendar (agendas with place/journey since MD2-4); wishlist budget;
+  chronicles_finance expense write shape (shoppingWishlist); journal rows.
+- Landmine: oracle:response-scanned text is rendered DOM text - lists don't survive; any multi-item
+  reply must be one JSON trailer or a single delimited line.
+- Vercel function cap 11/12: fold any server job into an existing endpoint (api/search.js 'web' type).
+- Free search options checked Oct 12 2026 (web search):
+  * Gemini 2.5 Flash + Google Search grounding: free AI Studio key, no card; free tier reported ~500
+    grounded requests/day for 2.5 Flash/Flash-Lite (sources disagree; Google no longer publishes
+    free-tier numbers; Gemini 3.x free tier lists grounding as not available). Free-tier inputs may be
+    used by Google to improve products -> send only the search question, never personal data.
+  * Tavily: 1,000 free credits/month, no card (search + extract).
+  * Brave Search API: free plan replaced by metered credits needing a card - ruled out.
+
+=====================================================================
+3. FREE-FOR-ALL DEBATE (5 competitors)
+=====================================================================
+A Plan of record: Oracle drafts a plan as structured data; Accept creates the trip block, timed
+  schedule items and a checklist with book-by dates. Cheapest; reuses MD2-4/MD2-5. SURVIVES.
+B Researcher: without live search, "what's on in X on these dates" is guessed. Needs a search
+  connector. -> Alex's call (asked).
+C Social connector: reaching out needs a people list (contact, birthday, last spoke) - same data as
+  MD2-8 "last call to family" -> build once.
+D Budget realist: per-plan budget, daily money limit, actual paid -> Chronicles Finance (wishlist's
+  shape).
+E Why-not: don't build a travel agency (flight/hotel APIs need keys/affiliate deals; scraping
+  breaks; invented dates are worse than none). Kept as guardrails: Oracle never books, every
+  researched fact carries its source link, Alex ticks "booked" and enters what he paid.
+
+=====================================================================
+4. /drift ("the whole thing, ironically")
+=====================================================================
+VERDICT: on track - the idea serves his stated goals (use free time well, plan ahead without clashes,
+reach out to people, discover things; he has cut gaming to ~4h/week and is investing time at home).
+BASIS: provisional (idea + interrogation answers; becomes ratified on his approval of this plan).
+Gap found: "build my idea after current recommendations" was ambiguous (after MD2-5, or after all of
+MD2) -> asked; answer: build next, before MD2-6. No MATERIAL or CAPTURED drift.
+Note: My Day Round 2 remains the active plan; MD2-6..MD2-11 resume after this one.
+
+=====================================================================
+5. INTERROGATION (3 rounds, verbatim answers)
+=====================================================================
+Round 1
+- Order: "Next, before MD2-6 (Recommended)"
+- Research: "how about we connect a free ai model that can search internet for this?"
+- Plan parts: "give me more ideas, Dates + day-by-day itinerary, Checklist + book-by dates, Budget, People"
+- Booking: "Me, Oracle gives links (Recommended)"
+Round 2
+- Search AI: "Both, Gemini first"
+- Extra parts set 1: "documents, ill be using passportindex.org, very essential website for knowing
+  this, weather and packing only in terms of worst case scenario so i always have extra to fallback on
+  if something goes wrong if it makes sense, just safeguarding while travelling in a specific chosen
+  country with accurate advise you get me?, Producer angle, Weather + packing list, Travel legs,
+  Documents check"
+- Extra parts set 2: "Food spots + bring a recipe home, Rain / backup plan, After-trip log, Daily money limit"
+- People + ideas: "People list, Ideas board for free days, Interests profile" (message drafts NOT picked)
+Round 3
+- Safety sources: "im russian and french though, with eu settled status, UK gov travel advice (FCDO)
+  (Recommended), passportindex.org, Emergency card, Worst-case packing"
+- People: "Reminders only (Recommended)"
+- Budget: "Decide per plan"
+- Home: "New 'Plans' page (Recommended)"
+
+Consequences of the nationality answer:
+- FCDO advice targets British passports - keep for safety/local laws; entry rules come from the
+  passport he travels on. Add France Diplomatie "Conseils aux voyageurs" (French passport).
+- Each plan records the passport used (French / Russian); Russian-passport entry is far more
+  restricted (Schengen visas etc.) - the docs check must say so per plan, linking passportindex.org.
+- Every plan carries a UK re-entry check: travel on the passport linked to EU Settled Status; have
+  the share code / eVisa access ready.
+
+=====================================================================
+6. COUNCIL OF 5 FACT-CHECK (Step 5, + /simplify)
+=====================================================================
+Risk: wrong entry/safety info is the real danger -> every docs/safety line links its official source
+  (FCDO, France Diplomatie, passportindex.org) and is labelled "check before booking". Gemini free
+  limits are unpublished -> Tavily fallback, fail loud when both fail, never invent results.
+Cost: one search per question (free tiers) + one Oracle call per plan build/ideas round (<=3000 tokens).
+  No paid search. Two free keys Alex creates himself (credentials = Tier 3, his hands).
+Maintainability: one new api/search.js 'web' type (no new function), PLAN_JSON / IDEAS trailers parsed
+  from the raw reply (RECIPE_JSON lessons), plan rows + task rows via secureWrite; reuses day_blocks,
+  scheduleToCalendar, chronicles_finance, journal, cookingOracle recipe idea.
+UX: phone-first Plans page; review card before anything is written; nothing auto-booked or sent.
+Why NOT: this is big (7 items) and he hasn't used My Day yet. Mitigation: TP-1..TP-4 first so the 1-8
+  Nov time off can actually use it; TP-5..TP-7 after; MD2-6.. resumes after.
+/simplify: interests + travel documents live in ONE profile row; people list is the SAME table MD2-8
+  will use for days-since (no second contacts list); plan checklist/packing/legs live as task rows
+  with a kind, not separate tables.
+
+=====================================================================
+7. DRAFT PLAN — "Trips & Plans with Oracle" (TP-1..TP-7)
+=====================================================================
+TP-1 Profile + people: travel_profile (one row: home Derby, nationalities FR/RU, EU Settled Status,
+     default passport, interests, travel limits) + people (name, relation, how to contact, birthday,
+     last spoke, reach-out every N days). Plans page sections for both. Due list: "haven't spoken to X
+     in N days", birthdays within 7 days. (Shared with MD2-8.)
+TP-2 Web search connector: /api/search type:'web' -> Gemini 2.5 Flash with Google Search grounding,
+     Tavily fallback; returns short answer + source links; only the question is sent. Needs Alex's
+     GEMINI_API_KEY + TAVILY_API_KEY in Vercel (verification step handed to him).
+TP-3 Plans page + data: plans (idea/planning/booked/done/dropped, destination, country, dates,
+     passport, budget, daily limit, notes, emergency card, sources) + plan_tasks (kind: ticket, stay,
+     document, packing, leg, food, backup, other; title, book-by date, link, est/paid cost, done).
+     Accepting/booking writes a trip day_block and timed schedule items (with journey).
+TP-4 Oracle plan builder: "plan a trip to X, dates" (Plans page or chat) -> search -> Oracle drafts
+     PLAN_JSON: itinerary, travel legs, stays/tickets with links + book-by dates, documents check per
+     passport (FCDO + France Diplomatie + passportindex.org links + UK re-entry), worst-case weather +
+     packing (backups), emergency card (112/local number, nearest French/Russian consulate + UK
+     re-entry note, insurance), producer angle (record shops, studios, open mics, gigs, B-roll
+     spots), food spots, rain/backup per day, daily money limit -> review card -> Accept.
+TP-5 Ideas board: "what could I do <dates>?" -> search + interests -> 5-8 ideas (UK day trips,
+     abroad, events, at-home projects) with cost ranges, one-line delimited -> shortlist -> Make it a
+     plan.
+TP-6 Book-by + money + after-trip: book-by deadlines on the Due list; "Booked" asks what was paid ->
+     chronicles_finance (category Travel); after the end date, an after-trip log (journal: best
+     moments, real cost) and "bring a recipe home" -> Cooking idea.
+TP-7 People nudges in plans: add people to a plan; reach-out reminders (no drafted messages).
+
+Build order: TP-1, TP-2, TP-3, TP-4 (usable for 1-8 Nov), then TP-5, TP-6, TP-7. Rule 18: brief before
+each item. My Day Round 2 MD2-6.. resumes afterwards.
