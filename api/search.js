@@ -119,7 +119,8 @@ async function handleRecipeImage(query, res) {
 async function handleWeb(query, res) {
   const q = String(query).slice(0, 500);
   const tried = [];
-  const geminiKey = process.env.GEMINI_API_KEY;
+  // Vercel env names are case-sensitive; Alex saved it as "Gemini_API_Key" (Oct 12 2026), so accept both.
+  const geminiKey = process.env.GEMINI_API_KEY || process.env.Gemini_API_Key;
   if (geminiKey) {
     try {
       const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
