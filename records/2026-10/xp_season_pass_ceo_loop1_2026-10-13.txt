@@ -1,0 +1,396 @@
+XP SEASON PASS — /CEO Loop 1 record (Oct 13 2026)
+=================================================
+Status: Loop 1 in progress (compile -> paranoia evidence -> free-for-all debate ->
+drift -> interrogation -> Council of 5 report). NOTHING BUILT.
+
+1. ALEX'S WORDS (verbatim)
+--------------------------
+Prompt: "go ahead, also we should change how xp works to make it work and make sense"
+
+Answers to the first brief (AskUserQuestion, Oct 13):
+- XP model: "One XP log (Recommended)"
+- Auto-made items (idea cards from video analyses, auto-filed screenshots): "Nothing (Recommended)"
+- Titles: "producer title in producer realm of xp, cooking would have its own, reading
+  its own, but they contribute to one singular xp that shows what ive done for the
+  year. think of it as the current battlepasses in dota 2, then 1st january it
+  resets, that would be an awesome concept for xp and levelling up and keeping
+  motivated each year. /paranoia and /debate-free-for-all on this with /drift and
+  /interrogation me into oblivion, then /CEO and council of 5 outcome"
+
+2. EVIDENCE — how XP works today (live code + Supabase, Oct 13)
+---------------------------------------------------------------
+Three separate XP systems paint the same profile card (#char-title, #xp-bar,
+#stat-xp, #stat-lvl, #stat-tasks, #stat-streak; plus #output-bar / #growth-bar):
+
+A. Career score — careerStatCard.ui._render (rpgace_core.js ~35795).
+   Recomputed from row counts on every render. WEIGHTS: shipped 100, idea 5,
+   journal 8, insight 4, accepted proposal 6, chapter 15, reference track 3.
+   Bands CUM_BANDS [500,1700,3900,...]; titles LEVEL_TITLES (9, all producer-themed).
+   Live: 814 insights x4 = 3,256 of 3,698 XP (88%). Insights are auto-made by video
+   analyses. 0 shipped. Shows Level 3 "Rising Creator".
+   Not counted: cooks, gym, My Day ticks, quests, trips, books finished, jargon reviews.
+
+B. Quest / My Day XP — questEngine._restoreBoardState (~33805) sums quest_log.xp
+   (status completed) into legacy STATE with STATE.xpRequired bands. myDay routine
+   ticks write quest_log rows (5-25 XP each, myDay.IDEAS). Live: 31 quest_log rows,
+   0 completed; 0 routines set up.
+
+C. Legacy addXP() pop-ups — 14 call sites in the LEGACY:mainjs section (agent run
+   addXP(a.xp), shift import +30, chat actions +30/+20/+50, agenda done +50,
+   notes +40, video workshop +75, Notion save +20, intel job +100, encyclopedia
+   compile +100). In-memory only (STATE). The wrapped addXP fires 'xp:awarded',
+   which careerStatCard listens to and re-renders -> the bar snaps back to (A).
+   Result: "+50 XP" toast, bar doesn't move, gone on reload.
+
+Conflict: (A) and (B) both write #stat-xp/#xp-val/#char-title; whichever renders
+last wins. Two level scales from the same bands but different totals.
+
+Real activity volume (live counts): journal 11, library_items 42, recipes 8,
+planned_cooks 1 (0 cooked), gym_sessions 0, routines 0, bibliography 0,
+jargon accepted 37, chronicles_finance 0, content_productions 0 shipped.
+=> A backfilled season would be small. Most XP will come from now on.
+
+Commit archaeology: limited — this clone's history starts at the Sep 25 squash
+(c717017); careerStatCard's own header comment dates it to July 22 (the "inert
+HP/MP bars" GODMODE finding) and records two deliberate decisions worth keeping:
+(1) Output (shipping) and Growth (learning) kept as separate lanes so studying
+can't masquerade as shipping (Goodhart); (2) variable-ratio/loot-box rewards
+explicitly rejected as an engagement-farming anti-pattern.
+
+Open fork this closes: CLAUDE.md "Phylum XP Ledger" (dedicated ledger vs tagging
+activity tables) — Alex's "One XP log" answer picks the dedicated ledger.
+
+3. PARANOIA PASS (Aintergration + restructure, scoped to one design)
+--------------------------------------------------------------------
+Reference model (Aintergration, "Reference only — borrow the principle"):
+Dota 2 battle pass = a season with a fixed end, flat XP per level (1,000/level),
+weekly + seasonal challenges that pay big chunks, rewards unlocked at set levels,
+a visible level number that keeps climbing past the reward track, and the past
+season kept as history. Borrow: season, flat levels, challenges, reward track,
+history. Do NOT borrow: paid tiers, loot boxes/random drops, FOMO timers that
+punish missing a day (conflicts with the July 22 anti-loot-box decision).
+
+Restructure verdict (what changes in RPGACE's skeleton):
+- ONE ledger table (proposed name xp_events): one row per earned action:
+  realm, source_table, source_id (unique pair = no double counting), xp,
+  earned_at, season (year). Level, realm levels, titles, Chronicles "XP by
+  section" and the yearly recap are all read from it. Kills systems A, B, C.
+- How rows get written — two real options:
+  (i) Postgres triggers on the source tables (one SQL function + an xp_rules
+      table). Catches every writer (app, Routines, local_server.py), undo on
+      delete is automatic, backfill = same function run once. One pipeline (rule 8).
+  (ii) Client calls a shared RPGACE.xp.award() at each action. Easier to read,
+      but every new feature must remember to call it (the exact drift that made
+      addXP lie).
+  Recommendation: (i) triggers, with (ii) only for things that have no row of
+  their own (rare).
+- Profile card: replace OUTPUT/GROWTH/XP bars with season level + realm bars.
+- Legacy addXP(): becomes a no-op toast or is removed; questEngine stops
+  painting the card.
+
+Risks found:
+- R1 Gaming/Goodhart: easy, repeatable actions (journal, ticks) can outpace
+  shipping. Needs per-realm weights and/or daily caps.
+- R2 Season start: today is Oct 13; a Jan-1 reset means Season 2026 is 11 weeks.
+- R3 Undo/abuse: tick-untick loops; deleted rows. Triggers handle delete; ticks
+  need a unique key per day.
+- R4 Realm boundaries: some actions are two realms (cooking a recipe from a book,
+  reading about production). One realm per action keeps it simple.
+- R5 Triggers on tables with no backup: additive only (new table + triggers),
+  no change to existing rows. Safe class under the CEO carve-out, but still shown.
+- R6 Motivation decay mid-season: battle passes fix this with challenges; without
+  them a flat ledger is just a counter.
+
+4. FREE-FOR-ALL DEBATE (each competitor picks 2 real problems)
+-------------------------------------------------------------
+Competitor "The Producer" (governing rule: beat made or video posted in 48h):
+ - P1: Shipping must dominate. One shipped beat/video should be worth more than
+   a week of chores, or the pass rewards being busy, not shipping.
+ - P2: Producer realm needs its own ladder (making beats, finishing, posting,
+   selling) — not one "content" blob.
+Competitor "The Habit Coach":
+ - P1: Small daily wins (routines, gym, cooking) keep the streak alive on days
+   music doesn't happen; they must count, or the pass stalls on off days.
+ - P2: Weekly challenges are the motivational engine; a ledger with no goals is
+   just a number.
+Competitor "The Skeptic" (why NOT):
+ - P1: Real activity is low (0 cooks, 0 gym, 0 shipped). A big XP system risks
+   being built before the habits it measures exist — infrastructure for its own
+   sake (the Galaxy-Map trap, Sep 15 finding).
+ - P2: Yearly reset wipes visible progress; for a solo user, losing level could
+   demotivate. Needs a permanent "career" number alongside the season.
+Competitor "The Engineer":
+ - P1: Three systems today — any new one must DELETE the old two, not add a fourth.
+ - P2: Triggers > client calls; otherwise this rots like addXP did.
+Competitor "The Designer":
+ - P1: The profile card is cramped on a phone; realm bars must fit at 400px.
+ - P2: Realm titles need to read as earned ranks, not jokes; one ladder per realm.
+
+Cross-examination outcome: Producer vs Habit Coach resolved by weighting, not
+exclusion (both count; shipping weighted far higher). Skeptic P1 answered by
+keeping the build small (ledger + triggers + card) and letting challenges come
+later. Skeptic P2 is a real interrogation question (career total kept or not).
+
+5. DRIFT CHECK (against Alex's answers)
+---------------------------------------
+VERDICT: on track. BASIS: provisional (answers given, design not ratified).
+- "One XP log" -> ledger: covered.
+- "auto items earn nothing" -> rules table excludes encyclopedia_insights,
+  screenshots auto-filed, auto library feeds: covered.
+- "producer title in producer realm, cooking its own, reading its own" -> realm
+  ladders: covered; full realm list NOT yet confirmed (interrogation).
+- "contribute to one singular xp ... for the year" -> season total: covered.
+- "1st january it resets" -> covered; what happens to Oct 13-Dec 31 is open.
+- "battlepass" -> rewards/challenges NOT yet specified (interrogation).
+No MINOR/MATERIAL/CAPTURED gaps yet; 6 open forks below.
+
+6. INTERROGATION — rounds and answers
+-------------------------------------
+(filled in as answers arrive)
+
+Round 1 (verbatim answers):
+Q Season 1 -> "Pre-season now, Season 2027 Jan 1 (Recommended)"
+Q Realms -> "try think of more,🎵 Producer,🍳 Chef + 💪 Athlete,📚 Scholar,🏠 Life + ✈️ Explorer"
+Q After reset -> "Season resets, career total stays (Recommended)"
+Q Rewards -> "think of more categories for this, also in 1 - hitmaker is a lie if i didnt
+  make a hit, that a one off badge for when it actually happens, some titles need
+  mandatory conditions to unlock,Realm titles (Recommended),Real-life treats you set,
+  Badges for milestones,App looks / themes"
+Design consequences:
+- Titles must be TRUE. A title that claims something (Hitmaker, Seller, Released
+  Artist) needs a real condition met, not just XP. "Hit" is a one-off badge.
+- Realm list is open: propose more (round 2).
+- All four reward kinds wanted; propose more kinds (round 2).
+
+Round 2 (verbatim answers):
+Q More realms -> "Something else,🎬 Creator,💼 Hustler,🤝 Connector,🛠 Builder"
+  ("Something else" ticked with no text -> asked again in round 3)
+Q Title rules -> "XP ranks + gated claims (Recommended)"
+Q Proof -> "Auto where possible, else you claim it (Recommended)"
+Q More rewards -> "dota-style in terms of concept not actual names,Season ranks (Dota-style),
+  Year Wrapped,Trophy cabinet,Oracle flair"
+Design consequences:
+- Realms so far (10): Producer, Creator, Hustler, Chef, Athlete, Scholar, Life,
+  Explorer, Connector, Builder.
+- Season ranks: own names, Dota-like concept (medal tiers), not Dota's words.
+- Rewards: realm titles, real-life treats, badges, themes, season ranks,
+  Year Wrapped, trophy cabinet, Oracle flair.
+
+Round 3 (verbatim answers):
+Q Realm 11+ -> "🏠 Homekeeper,🧘 Mind,💷 Steward"
+Q Rank names -> "the overarching rank names where all xp is in one pool are not good here,
+  i want it broader please, the studio ladder is great for producer xp side, but not
+  main one. each xp realm should have their own rank names"
+Q Weighting -> "Shipping ≈ a week of habits (Recommended)"
+Q Challenges -> "Weekly, you pick (Recommended),Season goals,Oracle suggests them,Realm quests"
+Design consequences:
+- 13 realms: Producer, Creator, Hustler, Chef, Athlete, Scholar, Life, Homekeeper,
+  Mind, Steward, Explorer, Connector, Builder.
+- Studio ladder (Bedroom -> Home Studio -> Session -> Studio A -> Main Room ->
+  Headliner -> Icon) becomes PRODUCER's rank ladder. Every realm gets its own
+  ladder. The overall (all-XP) season rank needs a broader, life-wide theme.
+- Weights: ship/sell ~300, cook ~60, gym ~40, routine tick 5-25 (to be tabled).
+- All four challenge kinds wanted.
+
+Round 4 (verbatim answers):
+Q Overall rank -> "Sky ladder" (Spark -> Ember -> Flame -> Comet -> Star -> Nova ->
+  Constellation -> Galaxy, sub-stars 1-5)
+Q Realm names -> "I draft all 13 in the report (Recommended)"
+Q Anti-grind -> "i think 2 into 1, helps keep a balance in my life"
+  (= combine daily cap AND diminishing returns)
+Q Undo -> "1 but depends how long ago, if a while back, it stays just wiped record, only
+  weekly, monthly and end of year reports stay, if recent, ask if the action was done,
+  if so keep xp"
+Design consequences:
+- Anti-grind: repeats on the same day pay 100% -> 50% -> 25% -> 0 (cap). Never
+  capped: shipping, sales, milestones, challenges. Balance is a stated goal.
+- Undo: the XP ledger is a COPY, not tied to the source row's life.
+  Recent undo (window TBD) -> RPGACE asks "was this actually done?"; yes = XP
+  stays, no = XP comes off. Old record deleted -> XP stays; the detailed record is
+  gone, only weekly/monthly/yearly report snapshots keep it.
+  => needs saved weekly/monthly/season reports (snapshot table), not just live sums.
+
+Round 5 (verbatim answers):
+Q Undo window -> "Same week (Recommended)"
+Q Treats -> "Both"
+Q Profile card -> "Season rank + balance wheel"
+Q Flair level -> "1 but keep records of these in chronicles for the record"
+  (= quiet but present + every level-up/rank-up/badge/title logged to Chronicles)
+
+7. DRAFT PLAN — "XP Season Pass" (provisional, awaiting Alex's approval)
+=======================================================================
+
+7.1 Shape
+- Pre-season ("Season 0"): Oct 13 -> Dec 31 2026, a real test run, kept in history.
+- Season 2027 starts Jan 1; every Jan 1 the season resets.
+- ONE ledger. Every real action Alex does earns XP in exactly one realm.
+  Season level = all realm XP in the season. Career total = all seasons, never resets.
+- Season level: flat 1,000 XP per level (battle-pass style), no cap.
+- Overall rank (Sky ladder): Spark, Ember, Flame, Comet, Star, Nova,
+  Constellation, Galaxy; 5 stars each; 1 star per 2 season levels
+  (Galaxy 1 at level 71). Rank and level reset each season.
+- Realm ranks: 7 per realm, by realm XP within the season
+  (0 / 500 / 1,500 / 3,500 / 7,000 / 12,000 / 20,000). Reset each season.
+- Gated titles + badges: permanent once earned (career, not season).
+- Auto-made things earn 0: encyclopedia_insights, auto library feeds,
+  auto-filed screenshots, intel reports, system_updates, Morning Brief,
+  generated taxonomy proposals.
+
+7.2 The 13 realms — draft ladders, actions, gated titles (all for Alex to edit)
+(XP = base; "cap" = anti-grind applies; ship/sell/milestones never capped)
+
+🎵 PRODUCER — Bedroom, Home Studio, Session, Studio A, Main Room, Headliner, Icon
+  beat logged 30 (cap) · beat finished 120 · beat posted/released 300 ·
+  reference track added by hand 10 (cap) · My Day "Music" ticks
+  Gated: Released Artist (1+ beat posted, auto) · Catalogue Builder (25 posted in a season, auto)
+  Badges: First beat posted (auto) · Hit (claimed, link) · Placement (claimed, link)
+
+🎬 CREATOR — Viewer, Clipper, Editor, Director, Showrunner, Auteur, Visionary
+  video posted 300 · visual treatment made 60 · captions done 30 (cap) · "Content" ticks
+  Gated: Consistent Creator (a post every week for 4 weeks, auto)
+  Badges: First video posted (auto) · 10k views (claimed)
+
+💼 HUSTLER — Starter, Lister, Pitcher, Closer, Operator, Executive, Tycoon
+  beat sold 300 · Beatstars listing up 40 · outreach sent 10 (cap) · collab done 150
+  Gated: Closer (1+ real sale, auto) · Tycoon (season revenue target Alex sets, auto)
+  Badges: First sale (auto) · First £100 month (auto)
+  NOTE: outreach + collabs aren't tracked anywhere yet -> need a small "log it" button.
+
+🍳 CHEF — Kitchen Porter, Commis, Line Cook, Sous Chef, Head Chef, Chef de Cuisine, Executive Chef
+  cook finished 60 (+10 per extra recipe) · new recipe saved 25 · shopping list done 15 ·
+  stock updated 5 (cap)
+  Gated: Sous Chef (10 cooks finished), Head Chef (25 cooks, 5 different recipes)
+  Badges: First cook (auto) · Cooked for others (claimed)
+
+💪 ATHLETE — Rookie, Regular, Grinder, Iron, Steel, Titan, Unbreakable
+  gym session 40 · "Health" ticks · new personal best +30 (auto from gym_sets)
+  Gated: Iron (3 sessions a week for 4 weeks, auto)
+  Badges: First PB (auto) · 5-a-week week (auto)
+
+📚 SCHOLAR — Curious, Reader, Student, Scholar, Sage, Polymath, Luminary
+  chapter finished 25 · book finished 150 · jargon term reviewed 5 (cap) ·
+  library item added by hand 5 (cap) · "Learning" ticks
+  Gated: Polymath (books finished across 5 different phyla)
+  Badges: First book finished (auto) · 100 terms reviewed (auto)
+
+🏠 LIFE — Drifter, Starter, Steady, Grounded, Disciplined, Anchored, Unshakeable
+  journal entry 15 (cap) · quest completed (its own XP) · "Admin"/"Other" ticks
+  Gated: Disciplined (every planned routine done for 2 weeks)
+
+🏡 HOMEKEEPER — Lodger, Tenant, Tidy, Housekeeper, Homemaker, Head of House, Sanctuary
+  "Home" ticks (chores) · weekly clean-sweep (all home routines that week) +50
+
+🧘 MIND — Restless, Settling, Calm, Centred, Clear, Still, Zen
+  needs a new My Day area "Mind": sleep routine kept, screen limit kept, meditation
+  Gated: Still (sleep routine kept 21 of 28 days)
+
+💷 STEWARD — Spender, Budgeter, Saver, Planner, Keeper, Treasurer, Sovereign
+  wishlist item waited out through cool-off 30 · expense logged 5 (cap) ·
+  weekly budget kept 50 (uses wishlist budget target)
+  Gated: Saver (a savings goal hit — claimed until a savings tracker exists)
+
+✈️ EXPLORER — Homebody, Day-tripper, Wanderer, Traveller, Voyager, Globetrotter, Cartographer
+  trip/plan done 200 · plan made 30
+  Badges: New country (auto, from plans.country) · First solo trip (claimed)
+
+🤝 CONNECTOR — Loner, Acquaintance, Friend, Regular, Anchor, Host, Heart
+  reached out on time (People: last spoke updated within reach-every days) 20 ·
+  birthday remembered 40
+  Gated: Heart (no one overdue for a whole month)
+
+🛠 BUILDER — Tester, Tinkerer, Debugger, Maintainer, Architect, Systems Lead, Founder
+  smoke-test item ticked by Alex 20 · bug/idea flagged by Alex 15
+  (never Claude's own work, never system_updates)
+
+My Day area -> realm: Music->Producer, Content->Creator, Health->Athlete,
+Learning->Scholar, Home->Homekeeper, Coding->Builder, Admin/Other->Life, Mind (new)->Mind.
+
+7.3 Anti-grind + balance ("2 into 1")
+- Same action, same day: 1st-2nd 100%, 3rd 50%, 4th 25%, 5th+ 0.
+- Never reduced: posted/released, sold, trip done, book finished, milestones, challenges.
+- Balance bonus (weekly): touch 5+ realms +100, 8+ realms +250.
+
+7.4 Undo
+- Undone in the same week (before Sunday's report is saved): RPGACE asks
+  "Was this actually done?" Yes = XP stays. No = XP comes off.
+- After that week: XP stays; the detailed record may be gone; the saved
+  weekly / monthly / season reports keep it.
+
+7.5 Challenges (all four)
+- Weekly: Monday, pick 3 from suggestions (at least 1 Oracle-suggested from real
+  gaps); +150 each.
+- Season goals: 3-5 set in January (e.g. ship 24 beats, read 6 books); 1,000-3,000 each.
+- Realm quests: a short chain to each realm's next gated title.
+
+7.6 Rewards
+- Realm ranks, gated titles, badges (auto or claimed with a link/note).
+- Treats: pin a Shopping Wishlist item OR a free-text treat to a season level or
+  realm rank; hitting it marks it earned (buying still uses the normal cool-off).
+- Themes: accent colours / profile frames unlock at season levels 10/25/50/75.
+- Season rank (Sky ladder), Year Wrapped on Dec 31, Trophy cabinet page,
+  Oracle flair (quiet: title in greetings, one toast + Morning Brief line).
+- Every level-up, rank-up, badge and title is also a Chronicles item.
+
+7.7 Profile card
+- Sky rank medal + season level + progress to next level, a 13-spoke balance
+  wheel (this week's XP per realm), tap -> Season page (realms, pass track,
+  challenges, trophy cabinet). The OUTPUT / GROWTH / XP bars are removed.
+
+7.8 How it's built (one pipeline, rule 8)
+- New private tables (no anon policy, read via /api/data-write like plans):
+  xp_rules (action -> realm, base XP, cap rule), xp_events (the ledger, one row
+  per earned action; unique source_table+source_id+action; status
+  active/pending_confirm/removed), xp_unlocks (titles, badges, ranks, themes,
+  claimed proofs), xp_treats, xp_challenges, xp_reports (weekly/monthly/season
+  snapshots, Year Wrapped).
+- Postgres triggers on the source tables write xp_events using xp_rules, apply the
+  cap, and on delete either mark pending_confirm (same week) or leave the row.
+  The trigger function catches its own errors so an XP bug can never block
+  saving a cook, tick or sale.
+- Retired: careerStatCard's WEIGHTS/CUM_BANDS score, questEngine's card
+  painting, legacy addXP pop-ups (removed or turned into ledger-backed toasts).
+- Additive only: new tables + triggers; no existing rows changed.
+
+7.9 Plan items (each briefed before building, rule 18)
+XP-1 Ledger, rules, triggers for existing sources, retire the 3 old systems; pre-season starts.
+XP-2 Profile card (Sky rank, level, balance wheel) + Season page.
+XP-3 Realm ladders, gated titles, badges (auto + claim), Trophy cabinet, Chronicles records.
+XP-4 Undo prompt + weekly/monthly/season report snapshots.
+XP-5 Challenges: weekly pick-3 (+Oracle suggestions), season goals, realm quests.
+XP-6 Treats (wishlist pin + free text), themes, Oracle flair.
+XP-7 New tracking the realms need: Mind area, outreach/collab log, budget-kept week.
+XP-8 Year Wrapped + Hall of Seasons + Jan 1 Season 2027 switch-over.
+
+8. COUNCIL OF 5
+---------------
+Technical risk: triggers on ~12 source tables are the riskiest part; a wrong rule
+silently mis-awards. Mitigation: rules in a table (fixable without a deploy), the
+trigger swallows its own errors, and XP-1 ships with a test script that inserts
+and rolls back one row per source.
+Scope/cost: 8 items over several sessions; near-zero AI cost (only Oracle
+challenge suggestions and greetings). The heavy part is UI (season page, wheel,
+cabinet).
+Maintainability: one ledger + one rules table replaces 3 systems; a new feature
+adds one rule row and one trigger line.
+User experience: 13 realms is a lot; the wheel keeps the card light; realm
+names are drafts for Alex to edit.
+Why NOT (honest):
+ 1. Real usage is low today (0 cooks finished, 0 gym, 0 shipped, 0 routines).
+    The pass can't motivate habits that never get logged; it risks becoming
+    another system built ahead of use (the Sep 15 Galaxy Map finding).
+ 2. Points can replace the work (Goodhart). Shipping weight + caps reduce it,
+    they don't remove it.
+ 3. Time spent here is time not spent on product debt (reference_tracks
+    scale/genre backfill, hand-testing).
+Verdict: build, but staged — XP-1 + XP-2 first (they also fix today's real bug of
+three systems fighting the bar); use pre-season to see if it actually changes
+behaviour before building XP-5..XP-8.
+
+9. DRIFT (final)
+----------------
+VERDICT: on track. BASIS: provisional (pending Alex's approval).
+Every answer from rounds 1-5 maps to a section above. Open forks left for Alex:
+ F1 Realm ranks reset each season (drafted) or carry over like titles?
+ F2 XP tables private (drafted, like plans) or readable with the public key?
+ F3 Rank-name drafts for 12 realms — edit/approve.
+ F4 XP values in 7.2 — edit/approve.
