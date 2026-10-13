@@ -242,5 +242,6 @@ end $$;
 --   journal manual 15/8/0, app-written 0; sale 80 -> 160, sale 20 -> 100,
 --   expense 5; cook with 2 recipes 70; plan made 30 + trip done 200; Home routine
 --   -> homekeeper 10; beat logged 30 / finished 120 / released 300, treatment 60,
---   video posted 300. Same-week delete -> pending_confirm NOT verified: the
---   Supabase connector holds any statement containing DELETE for user approval.
+--   video posted 300. Same-week delete -> pending_confirm verified by Alex in the
+--   SQL editor (gym_session=40[pending_confirm], rolled back); the connector holds
+--   any statement containing DELETE for user approval, so the session couldn't run it.
