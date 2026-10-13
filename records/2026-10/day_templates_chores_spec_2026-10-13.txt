@@ -44,3 +44,20 @@ Q Missed -> "Stays as overdue (Recommended)" (stays in the section, marked overd
   chore block, no stacking)
 DT-3/DT-4 now: chores are deadline-based, not fixed-day; ticked chores leave the section until
 their next period; chore blocks fill by nearest deadline (overdue first).
+
+ALEX, verbatim (4): "So we will allocate number of days, and when chores is done start of count down
+by number of days chosen. Research makes things change and hygiene etc always updates, some habits
+are too strict some too loose, by keeping standard as number of days and counting down from last
+done will main 1. Yestain chores up to standard. 2. finishes before midnight ( early as I don't close)
+if I'm closing indépendant if start is later shift 3. After, brief me, I want to finish xp planned
+steps 4. I will decide once I get a list and 8 add my own extra chores 8 know 8 need to do"
+Read as (dictation merged sentences; "8" = "I"):
+- SUPERSEDES the "End of its period" deadline answer: each chore has its own number of days; ticking
+  it starts a countdown of that many days from the tick (rolling). Days are editable per chore so the
+  standard can be tightened/loosened as research/hygiene advice changes. Missed = stays overdue (kept).
+- 1. Fallback OK: "Yes" (same shift type any weekday, then Plan-my-day fit).
+- 2. Shift kind = by finish time: a shift ending before midnight = early (not closing); a closing shift
+  = late, whatever its start time.
+- 3. Order: AFTER the XP steps (XP-5..XP-8 first); brief XP-5 next.
+- 4. Chores list: Claude Code proposes a starter list of room chores with suggested day counts; Alex
+  picks from it and adds his own.
