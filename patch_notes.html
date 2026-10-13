@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-13-xp-challenges" style="margin-bottom:30px;">
+    <div class="card-title">🎯 Oct 13 — XP Season Pass, step 5: weekly challenges, season resolutions, realm quests</div>
+    <div class="card-body">
+      Alex: challenges "Counted automatically", "Nudge, no auto-pick", resolutions "Set any time, 1-5", "One Oracle call on Monday".
+      <ul>
+        <li><strong>3 weekly challenges.</strong> The dashboard's Due list nudges "Pick this week's 3 challenges" (or "Pick N more") until 3 are picked; nothing is picked for you. The picker shows up to 2 Oracle ideas first (one call a week, sending only your realm totals; reused if you open it again), then ideas for the realms you've done least this week, then a box for your own. Each pays +75 XP.</li>
+        <li><strong>Counted automatically</strong> from what you already log (gym sessions, cooks finished, videos posted, journal entries, realm XP, …). Your own challenges get a ✅ tick button instead. Unfinished ones are marked missed when the week closes and listed ✅/❌ in that week's saved report.</li>
+        <li><strong>Season resolutions</strong>: 1–5 per UK season, set any time on the Year page (small 500 / medium 1000 / big 1500 XP), counted the same way, closed as missed at the season's end if not reached.</li>
+        <li><strong>Realm quests</strong>: each gated rank (Sous Chef, Head Chef, Gladiator, Polymath, Pathfinder, Globetrotter, Consistent Creator, Catalogue Builder) is now 3 steps, +50 XP each ("step 2 of 3 — Finish 10 cooks, 7 / 10").</li>
+        <li>Done challenges, kept resolutions and quest steps show in Chronicles (💪 Life).</li>
+        <li>Bug caught in testing: the season end date was a month late (Autumn ended 31 Dec instead of 30 Nov); fixed before shipping.</li>
+      </ul>
+      Verified: the database side in rolled-back transactions on the live database (3 gyms auto-completed a challenge for 75 and a resolution for 1000; a hand tick paid 75; 6 cooks paid Sous Chef step 1; week close marked missed/expired and the report listed them). 22 new headless checks (picker with a mocked Oracle, Oracle failure, reuse without a second call, manual tick, Due nudge, Chronicles, report rows), and the XP-1/2, XP-3, XP-4, Chronicles, Plans, LL-7 and Cook Mode suites still pass. Not yet hand-tested by Alex.
+    </div>
+</div>
 <div class="card" id="card-2026-10-13-xp-reports-year" style="margin-bottom:30px;">
     <div class="card-title">📅 Oct 13 — XP Season Pass, step 4: "was it done?", saved reports, the pass becomes a Year</div>
     <div class="card-body">

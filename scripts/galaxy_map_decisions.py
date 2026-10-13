@@ -107,7 +107,7 @@ DECISION_POINTS = [
     {
         'id': 'video-summary-delete', 'category': 'destructive',
         'title': 'Delete a video summary report (legacy fallback path)',
-        'module': 'videoSummary', 'func': '_delete', 'lines': (17956, 17970),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 17560-17574; span = real function start to its closing line
+        'module': 'videoSummary', 'func': '_delete', 'lines': (17965, 17979),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 17560-17574; span = real function start to its closing line
         'anchor': "window.confirm('Delete \"' + title + '\"?')",
         'trigger': 'Same 🗑 delete action as intelDelete — this is the REAL fallback branch when `intelDelete._deleteUnified` isn\'t available, using a bare browser `confirm()` instead of the richer popup.',
         'logic': 'A plain `window.confirm()` — real, but honestly the least-informative gate in this whole category (no context shown beyond the title). Real, minor future cleanup candidate: route this through `intelDelete._confirm` directly instead of the JS-native fallback.',
@@ -115,7 +115,7 @@ DECISION_POINTS = [
     {
         'id': 'conidpot-delete', 'category': 'destructive',
         'title': 'Delete an idea from the Idea Bank (ConID Pot)',
-        'module': 'conidPot', 'func': '_refreshIdeaBank', 'lines': (32322, 32322),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 31788-31788; single-line citation kept
+        'module': 'conidPot', 'func': '_refreshIdeaBank', 'lines': (32331, 32331),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 31788-31788; single-line citation kept
         'anchor': "confirm('Delete \"' + row.title + '\"?')",
         'trigger': 'A real 🗑 button rendered per-row inside the Idea Bank list.',
         'logic': 'A plain `confirm()` — real, same minimal-context shape as videoSummary\'s.',
@@ -131,7 +131,7 @@ DECISION_POINTS = [
     {
         'id': 'placement-confirm', 'category': 'taxonomy',
         'title': 'New insight placement — accept/reject before a real taxonomy_tree write',
-        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (21745, 21745),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 21314-21314; single-line citation kept; 2+ matches, picked the real implementation over the pass-through wrapper
+        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (21754, 21754),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 21314-21314; single-line citation kept; 2+ matches, picked the real implementation over the pass-through wrapper
         'anchor': '_showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject)',
         'trigger': 'Shown automatically after `decidePlacementScored()` (a real curated core-logic point in its own right — see the Decision Matrix for the full scoring logic) returns a real placement candidate.',
         'logic': 'A real popup showing Oracle\'s own proposed attach point + new steps, with explicit onAccept/onReject callbacks — nothing writes to taxonomy_tree without this gate, per rule 4.',
@@ -140,7 +140,7 @@ DECISION_POINTS = [
     {
         'id': 'article-confirm', 'category': 'taxonomy',
         'title': 'Dedup-extend article regeneration — approve before overwriting an existing leaf',
-        'module': 'phylumPath', 'func': '_showArticleConfirm', 'lines': (22276, 22276),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 21845-21845; single-line citation kept; 2+ matches, picked the real implementation over the pass-through wrapper
+        'module': 'phylumPath', 'func': '_showArticleConfirm', 'lines': (22285, 22285),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 21845-21845; single-line citation kept; 2+ matches, picked the real implementation over the pass-through wrapper
         'anchor': '_showArticleConfirm: function(node, articleTitle, text, onApprove, onDeny)',
         'trigger': 'Shown when `_insertNewSteps()` (a real curated core-logic point in its own right — the dedup-extend decision, written up in full on the Decision Matrix) finds a real near-duplicate and proposes extending the existing leaf\'s own article instead of creating a new one.',
         'logic': 'Same real checkpoint pattern as `_showPlacementConfirm`, simpler — an existing leaf\'s content is about to be regenerated, so this gate specifically protects against overwriting real prior content on a bad match.',
@@ -173,7 +173,7 @@ DECISION_POINTS = [
     {
         'id': 'undo-conid-stage', 'category': 'pipeline',
         'title': 'Undo a ConID\'s last completed production stage',
-        'module': 'contentProductionLive', 'func': '_undoLastStage', 'lines': (28803, 28803),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 28316-28316; single-line citation kept
+        'module': 'contentProductionLive', 'func': '_undoLastStage', 'lines': (28812, 28812),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 28316-28316; single-line citation kept
         'anchor': "confirm('Undo ConID #' + row.con_id",
         'trigger': 'The real standalone "Undo" button on a music_video ConID card (Aug 6 UX pass — paired with a "revert progress" checkbox, default unchecked = edit-in-place).',
         'logic': 'A plain `confirm()`, but with real, specific consequence text in the message itself ("deletes the creative-doc output that stage produced... cannot be undone") — more informative than the bare delete-confirms above despite using the same native browser dialog.',

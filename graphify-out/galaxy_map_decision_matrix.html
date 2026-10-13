@@ -95,7 +95,7 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>Which of 3 real paths every single Oracle call in the app takes, app-wide, until toggled again.</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>Real: every window.callOracle() call in main.js checks getMode() first. 'dummy' short-circuits to a synthetic labeled reply, zero API cost. 'fallback' queues the real prompt into oracle_fallback_queue instead of calling the live API. 'real' calls the live Anthropic API as normal.</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>A visible top-right toggle switch (red/green/gold) whose state persists in localStorage and is checked on literally every real Oracle send in the app.</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 38748-38760)</div><pre>  setMode: function(mode) {
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 39127-39139)</div><pre>  setMode: function(mode) {
     var self = RPGACE.modules.mockOracle;
     if (self.MODES.indexOf(mode) === -1) return;
     try { localStorage.setItem(self.MODE_KEY, mode); } catch (e) {}
@@ -147,7 +147,13 @@
         ]).then(function(x) { return { routines: (x[0] || []).length, plans: (x[1] || []).length }; });
       })(),
       // Oct 12 2026 (Trips &amp; Plans TP-1): people to reach out to / birthdays.
-      RPGACE.modules.tripPlans ? RPGACE.modules.tripPlans.logic.read('people', 'select=id,name,last_spoke,reach_every_days,birthday').catch(function() { return []; }) : Promise.resolve([])
+      RPGACE.modules.tripPlans ? RPGACE.modules.tripPlans.logic.read('people', 'select=id,name,last_spoke,reach_every_days,birthday').catch(function() { return []; }) : Promise.resolve([]),
+      // Oct 13 2026 (XP-5): this week's picked challenges (private, after sign-in).
+      (function() {
+        var xs = RPGACE.modules.xpSeason, tp2 = RPGACE.modules.tripPlans;
+        if (!xs || !tp2 || !tp2.logic.signedIn()) return Promise.resolve(null);
+        return tp2.logic.read('xp_challenges', 'select=status&amp;kind=eq.weekly&amp;status=in.(active,done)&amp;period_start=eq.' + xs.logic.weekStart(today)).catch(function() { return null; });
+      })()
     ]).then(function(r) {
       var due = [];
       var tax = (r[0] ? r[0].length : 0) + (r[1] ? r[1].length : 0);
@@ -160,13 +166,7 @@
       if (rec) due.push({ icon: '🧠', text: rec + ' saved idea' + (rec === 1 ? '' : 's') + ' to recall', sub: 'In your Morning Brief', on: card('morningBrief') });
       var dec = r[4] ? r[4].length : 0;
       if (dec) due.push({ icon: '⚖', text: dec + ' decision' + (dec === 1 ? '' : 's') + ' to review', sub: 'How did it turn out?', on: go(P.journal) });
-      (r[5] || []).forEach(function(it) {
-        var c = wl &amp;&amp; wl.logic &amp;&amp; wl.logic._coolOff ? wl.logic._coolOff(it) : { active: true };
-        if (!c.active) due.push({ icon: '🛒', text: it.name + ' — cool-off over', sub: 'Still want it? Buy or drop', on: card('wishlist') });
-      });
-      var q = r[6] ? r[6].length : 0;
-      if (q) due.push({ icon: '🔗', text: q + ' shared link' + (q === 1 ? '' : 's') + ' queued', sub: 'Analysed when the local server runs on your PC', on: null });
-      var shots = r[7] || 0;</pre>
+      (r[5] || []).forEach(function(it) {</pre>
     <div class="cite">Verified live against rpgace_core.js at build time — a moved/changed anchor fails this script's own build, never silently shown stale.</div>
     <a class="mod-chip" href="galaxy_map_current.html#mod-taxonomyReviewQueue">🔽 taxonomyReviewQueue — Current Series</a>
     <a class="mod-chip" href="galaxy_map_level6.html#m-taxonomyReviewQueue">🔬 every branch in taxonomyReviewQueue — Branch Ledger</a>
@@ -185,7 +185,16 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>Where a new insight/leaf attaches in the taxonomy tree — an existing node (by number) or a brand-new path from the phylum root — and whether it belongs in this phylum at all.</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>The full numbered, indented tree for that phylum (real Supabase read), plus 5 named checks (pedagogical clarity, non-redundancy, practical applicability, structural fit, expansion headroom) folded into one prompt.</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>A real, structured JSON verdict — fits (bool), attachTo (node number or null), newSteps, explainers, a one-sentence justification citing which check(s) drove it, and a self-scored 1-10 confidence — fed into _resolvePlacementDecision() and, past a human checkpoint, an actual taxonomy_tree write.</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 20201-20240)</div><pre>    decidePlacementScored: function(insightText, phylumNumber, priorLeaves, fallbackContext) {
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 20201-20240)</div><pre>    // to fix. The audit's confirmed failure modes are addressed as
+    // EXPLICIT RULES in the prompt below, each tied to a real observed
+    // failure, plus mechanical guards in sanitizePlacement/_insertNewSteps
+    // that hold even if a model regression slips past the wording.
+    // priorLeaves: optional array of leaf names already created by the
+    // same batch (e.g. earlier insights from the same book chapter) —
+    // audit finding: without this, one chapter about inversions created
+    // 5+ overlapping sibling leaves, each individually scored 9/10,
+    // because every insight was placed blind to its siblings.
+    decidePlacementScored: function(insightText, phylumNumber, priorLeaves, fallbackContext) {
       var self = RPGACE.modules.phylumPath;
       return RPGACE.sb.select('taxonomy_tree', 'phylum_number=eq.' + phylumNumber + '&amp;order=path.asc').then(function(existing) {
         existing = existing || [];
@@ -215,16 +224,7 @@
           'First decide honestly: does this insight genuinely belong in THIS phylum - not just loosely related? If it would sit more naturally in a DIFFERENT discipline, return fits:false rather than stretching a justification to make it fit here. A placement that needs a creative argument to defend is a wrong placement.\n\n' +
           'Then, using these 5 checks - pedagogical clarity, non-redundancy, practical applicability, structural fit, expansion headroom - decide where it attaches (the NUMBER of the existing node from the list above, or null for a new path from the phylum root), the new rank steps needed, one-sentence explainers per step, a one-sentence justification citing which check(s) drove the decision, and a self-scored confidence 1-10.\n\n' +
           'HARD RULES, each from a real corruption found in this tree:\n' +
-          '1. NAMING: every step name is a general CONCEPT label - never a video/song/book title, never an artist name, never a year, never platform text like "| FL Studio Tutorial". If the insight text is itself a content title, name the leaf after the TECHNIQUE it teaches.\n' +
-          '2. NO NEAR-DUPLICATE SIBLINGS: if an existing leaf (or a batch leaf listed above) already covers this concept or a facet of it, attach to/extend THAT area - do not create another sibling restating it. Several narrow facets of one concept belong as ONE leaf, not five.\n' +
-          '3. STEPS ARE SINGLE RANKS: each newSteps entry is ONE new rank\'s own name - never a "/"-joined path, never a restatement of the attach path or any earlier step, never two ideas joined by "; then" or similar.\n' +
-          '4. DEPTH: the rank chain starts Phylum(0)→Order→Class→Family→Genus→Species→Variant(6) and may continue past that - a placement may NEVER exceed depth ' + (self.MAX_TREE_DEPTH || 10) + '. Prefer 1-2 new steps for a single insight; more than 3 is almost always padding.\n\n' +
-          'Return ONLY JSON: {"fits": true, "attachTo": 12, "newSteps": ["..."], "explainers": ["..."], "justification": "...", "confidenceScore": 8} (attachTo: node NUMBER or null)';
-        return self.logic._callGroundWorkerJSON(prompt, 700, undefined, fallbackContext).then(function(parsed) {
-          return self.logic._resolvePlacementDecision(parsed, phylumNumber, existing);
-        });
-      });
-    },</pre>
+          '1. NAMING: every step name is a general CONCEPT label - never a video/song/book title, never an artist name, never a year, never platform text like "| FL Studio Tutorial". If the insight text is itself a content title, name the leaf after the TECHNIQUE it teaches.\n' +</pre>
     <div class="cite">Verified live against rpgace_core.js at build time — a moved/changed anchor fails this script's own build, never silently shown stale.</div>
     <a class="mod-chip" href="galaxy_map_current.html#mod-phylumPath">🔽 phylumPath — Current Series</a>
     <a class="mod-chip" href="galaxy_map_level6.html#m-phylumPath">🔬 every branch in phylumPath — Branch Ledger</a>
@@ -243,7 +243,16 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>What happens when Oracle judges an insight to be a near-duplicate of something already in the tree (returns zero newSteps).</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>attachNode's own node_type — a real 'leaf' means there's a real existing article to extend; anything else means there's nowhere real to attach the insight without a new step.</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>Existing leaf: regenerate that leaf's own article via _generateInsightContent() (the real 'extend' behavior, logged to taxonomy_decision_log) — a real dedup-extend, not a silent drop. No attach point: Promise.reject('Oracle returned no new steps to place this insight').</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 20494-20666)</div><pre>    _insertNewSteps: function(phylumNumber, attachNode, newSteps, explainers, insightText, sourceMeta) {
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 20494-20666)</div><pre>    // no new schema, no new table. Genuinely dormant today: no current real
+    // caller has a bibliography.id to pass (A7's OBS-raw scripting phase is
+    // the confirmed real future trigger; built now per Alex's own "build the
+    // structure now, dormant" answer, same pattern as A10's Kimi/Luna
+    // routing). Deliberately NOT wired into the dedup-extend early-return
+    // branch above this function's own newSteps.length guard — that branch
+    // already has a real, separately-flagged companion-entry gap (see the
+    // Worm Family Aug 22 record), left alone here rather than folded into
+    // an unrelated fix.
+    _insertNewSteps: function(phylumNumber, attachNode, newSteps, explainers, insightText, sourceMeta) {
       var self = RPGACE.modules.phylumPath;
       if (!newSteps.length) {
         if (attachNode &amp;&amp; attachNode.node_type === 'leaf') {
@@ -406,16 +415,7 @@
           // (was: awaited/returned) so this promise resolves with the real
           // inserted row instead of _generateInsightContent's own write
           // result. Safe: every one of the 3 existing real callers
-          // (_placeInsight, taxonomyReviewQueue's _acceptPhylumPathProposal/
-          // _editPhylumPathProposal) already ignores the resolved value —
-          // confirmed by direct read, not assumed — so this only ADDS a real
-          // capability (taxonomyTree._acceptLineage's own dedup pass needs
-          // finalRow.id back for its Encyclopedia back-reference write).
-          self.logic._generateInsightContent(finalRow, phylumNumber, insightText);
-        }
-        return finalRow;
-      });
-    },</pre>
+          // (_placeInsight, taxonomyReviewQueue's _acceptPhylumPathProposal/</pre>
     <div class="cite">Verified live against rpgace_core.js at build time — a moved/changed anchor fails this script's own build, never silently shown stale.</div>
     <a class="mod-chip" href="galaxy_map_current.html#mod-phylumPath">🔽 phylumPath — Current Series</a>
     <a class="mod-chip" href="galaxy_map_level6.html#m-phylumPath">🔬 every branch in phylumPath — Branch Ledger</a>
@@ -499,7 +499,16 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>Which ONE real action button shows on a music_video ConID card — the real fix for the Aug 6 "duplicate stage" complaint, where every ConID used to render a FIXED set of buttons regardless of real progress.</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>The ConID row's own real content_productions.status column value ('Idea'/'Scripted'/'Filmed'/'Edited'/'Posted'/'Analysed').</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>A single real MUSIC_VIDEO_PRIMARY_ACTION[row.status] lookup returns exactly one {label, fn} pair to render — 'Posted'/'Analysed' correctly render nothing further (real last-stage), never a guessed extra button.</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 29966-30390)</div><pre>    _refreshWidget: function() {
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 29966-30390)</div><pre>        holder.style.display = 'none';
+        page.appendChild(holder);
+      }
+      holder.appendChild(widget);
+
+      self._refreshWidget();
+      console.log('[contentProductionLive] Dashboard widget injected (stashed for dashDeck popup)');
+    },
+
+    _refreshWidget: function() {
       var self = RPGACE.modules.contentProductionLive;
       var list = document.getElementById('cpl-list');
       if (!list) return;
@@ -914,16 +923,7 @@
                 .catch(function(e) {
                   RPGACE.utils.toast('⚠️ Delete failed (' + e.message + ')', '#CC4A4A', 4500);
                 });
-            };
-            actions.appendChild(delBtn);
-
-            item.appendChild(actions);
-            list.appendChild(item);
-          });
-        }).catch(function(e) {
-          list.innerHTML = '&lt;div style="color:#CC4A4A;font-size:11px;"&gt;Load error: ' + e.message + '&lt;/div&gt;';
-        });
-    },</pre>
+            };</pre>
     <div class="cite">Verified live against rpgace_core.js at build time — a moved/changed anchor fails this script's own build, never silently shown stale.</div>
     <a class="mod-chip" href="galaxy_map_current.html#mod-contentProductionLive">🔽 contentProductionLive — Current Series</a>
     <a class="mod-chip" href="galaxy_map_level6.html#m-contentProductionLive">🔬 every branch in contentProductionLive — Branch Ledger</a>
@@ -942,7 +942,7 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>Which taxonomy phylum a newly-discovered Last.fm artist (via _addNewArtistsToTaxonomy) gets written into.</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>Nothing dynamic — this is a fixed literal, the real near-miss CLAUDE.md rule 13 was written about: the Aug 11 phylum renumber (11&lt;-&gt;12) needed a SECOND, separate grep for this raw literal because no adjacent "Phylum 12" text existed nearby to catch it in the first display-text-only pass.</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>Every new artist row from this path lands in Phylum 11 (Fons Educationis, post-renumber) — a real, silent-miss risk if this literal is ever forgotten in a future renumber.</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 26694-26701)</div><pre>            RPGACE.sb.secureWrite('taxonomy_nodes', 'insert', {
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 26703-26710)</div><pre>            RPGACE.sb.secureWrite('taxonomy_nodes', 'insert', {
               concept:       a.name,
               phylum_number: 11,
               phylum_name:   'Fons Educationis',

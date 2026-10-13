@@ -479,3 +479,14 @@ Design consequences:
   xp_unlocks.season) stay as-is internally; they hold the year number (0 = Year 0).
 - Reports: week (Mon-Sun), month, season (UK weather), year. Frozen once saved.
 - XP-5 season goals become "season resolutions" per UK weather season.
+
+13. XP-5 BRIEF ANSWERS (Oct 13 2026, verbatim)
+Q Checking -> "Counted automatically (Recommended)" (do X N times, counted from the XP log; the odd
+  uncountable one is ticked by hand)
+Q No pick -> "Nudge, no auto-pick (Recommended)"
+Q Resolutions -> "Set any time, 1-5 (Recommended)" (small/medium/big = 500/1,000/1,500; locked when
+  the UK season ends)
+Q Oracle -> "One Oracle call on Monday (Recommended)" (realm totals + this week vs usual only, no
+  personal text; 2 suggestions for the weakest realms; the rest rule-based)
+Values (ratified round G): weekly challenge 75 (3/week), realm-quest step 50; challenges and
+resolutions never capped.

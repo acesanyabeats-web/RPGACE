@@ -90,7 +90,7 @@ LOGIC_POINTS = [
         'id': 'oracle-mode',
         'title': 'Oracle Mode: Real / Dummy / Fallback Scout',
         'decider': 'Alex (manual toggle)',
-        'module': 'mockOracle', 'func': 'setMode', 'lines': (38748, 38760), 'anchor': "self.MODES.indexOf(mode) === -1",  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 37417-37429, then 38582-38594 before XP-4 (+166 lines); span = real function start to its closing line
+        'module': 'mockOracle', 'func': 'setMode', 'lines': (39127, 39139), 'anchor': "self.MODES.indexOf(mode) === -1",  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 37417-37429, then 38582-38594 before XP-4 (+166 lines), then 38748-38760 before XP-5 (+379); span = real function start to its closing line
         'decides': 'Which of 3 real paths every single Oracle call in the app takes, app-wide, until toggled again.',
         'changes': 'Real: every window.callOracle() call in main.js checks getMode() first. \'dummy\' short-circuits to a synthetic labeled reply, zero API cost. \'fallback\' queues the real prompt into oracle_fallback_queue instead of calling the live API. \'real\' calls the live Anthropic API as normal.',
         'result': 'A visible top-right toggle switch (red/green/gold) whose state persists in localStorage and is checked on literally every real Oracle send in the app.',
@@ -155,7 +155,7 @@ LOGIC_POINTS = [
         'id': 'artist-phylum-routing',
         'title': 'Last.fm-discovered artists: which phylum they get filed under',
         'decider': 'Code logic (hardcoded phylum_number literal)',
-        'module': 'beatLog', 'func': '_addNewArtistsToTaxonomy', 'lines': (26694, 26701),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 26221-26228; kept narrow: the real secureWrite insert object literal holding the literal, not the whole function
+        'module': 'beatLog', 'func': '_addNewArtistsToTaxonomy', 'lines': (26703, 26710),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 26221-26228; kept narrow: the real secureWrite insert object literal holding the literal, not the whole function
         'anchor': 'phylum_number: 11',
         'decides': 'Which taxonomy phylum a newly-discovered Last.fm artist (via _addNewArtistsToTaxonomy) gets written into.',
         'changes': 'Nothing dynamic — this is a fixed literal, the real near-miss CLAUDE.md rule 13 was written about: the Aug 11 phylum renumber (11<->12) needed a SECOND, separate grep for this raw literal because no adjacent "Phylum 12" text existed nearby to catch it in the first display-text-only pass.',
@@ -205,7 +205,7 @@ TEXT_INPUT_POINTS = [
     {
         'id': 'taxonomy-placement-editor',
         'title': 'Taxonomy Placement Editor — editing a proposed step name/explainer before it writes to taxonomy_tree',
-        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (21745, 21820),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 21240-21315; span = real function start to its closing line; 2+ matches, picked the real implementation over the pass-through wrapper
+        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (21754, 21829),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 21240-21315; span = real function start to its closing line; 2+ matches, picked the real implementation over the pass-through wrapper
         'anchor': '_showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject)',
         'decides': "Alex can edit Oracle's own proposed step names/explainers inline before confirming — real typed text that replaces the AI's own wording in the eventual taxonomy_tree write, the one place in the whole taxonomy pipeline where his own words can override the model's.",
         # Aug 25 2026 — real dead-anchor fix (see the note on the gate
