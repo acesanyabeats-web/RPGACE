@@ -73,6 +73,20 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-13-library-feeds" style="margin-bottom:30px;">
+    <div class="card-title">📥 Oct 13 — Life Library feeds (LL-4): new things arrive on their own</div>
+    <div class="card-body">
+      Alex: "yes, recommended options, start LL-4" (every saved screenshot; new reference tracks only; free keyword shelving, unshelved if nothing matches).
+      <ul>
+        <li><strong>One entry point</strong>, <code>lifeLibrary.logic.feed</code>: never calls Oracle (shelf by keywords only), never saves the same link or the same source row twice, and does nothing before login.</li>
+        <li><strong>New video analyses</strong> (from Oct 13 on) become video items with their summary and tags as topics. Video Finder's "Learn" and Videoworm uploads go through the same analysis, so they are covered too.</li>
+        <li><strong>Screenshots</strong>: every one Oracle reads becomes a screenshot item (description as title, the text it read as body, its tags as topics).</li>
+        <li><strong>Reference tracks</strong> you add (single or bulk) become music items (BPM · key · mood · genre). The artists the beat matcher discovers are left out on purpose.</li>
+        <li><strong>⭐ Keep in Library</strong> under every Oracle reply, in the main chat and the floating 🔮 overlay: saves the full answer with your question as the title. A long app-generated prompt (e.g. the Morning Brief) uses the answer's first line instead. Text room raised to 20,000 characters so a long answer is not cut.</li>
+      </ul>
+      Verified with 16 new headless-browser checks (Supabase and Oracle mocked; one found the long-prompt title issue, fixed); LL-1/2/3 suites still pass (48 checks). Not yet hand-tested by Alex.
+    </div>
+</div>
 <div class="card" id="card-2026-10-13-taxonomy-pause" style="margin-bottom:30px;">
     <div class="card-title">⏸ Oct 13 — Taxonomy pause (LL-3): no more tree proposals until the phyla are rebuilt</div>
     <div class="card-body">
