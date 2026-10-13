@@ -73,6 +73,20 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-13-phylum-shelves" style="margin-bottom:30px;">
+    <div class="card-title">🧬 Oct 13 — Phylum shelves + one Knowledge system (LL-7)</div>
+    <div class="card-body">
+      Alex: "yes, recommended options, start LL-7" (5 per section before "Show all"; counts on the phylum list).
+      <ul>
+        <li><strong>Phylum Path shows each phylum's shelf</strong> above its (still empty) tree: 📚 the Library items on that shelf, 💡 idea cards whose source sits on that shelf, 📖 that phylum's jargon terms. 5 each with "Show all"; Library opens the shelf in the Life Library, Jargon opens the Jargon page filtered to that phylum (a chip clears it; a later visit is unfiltered). Hidden while drilled into a node.</li>
+        <li><strong>Counts on every phylum row</strong> of the switcher, e.g. "📚 7 · 💡 1 · 📖 26", refreshed each time Phylum Path opens.</li>
+        <li><strong>One "what this is" header</strong> on the 4 Knowledge pages (Life Library, Bookworm, Encyclopedia + Jargon, Phylum Path), with links to the other three. The menu lists them in that order with the same one-liners.</li>
+        <li>Real bug caught by the tests before shipping: the counts were computed before login and that empty result was cached; now only signed-in reads are cached and counts refresh on open.</li>
+        <li>Book-chapter idea cards are not on a shelf yet (their book has a Library item, the chapter link doesn't reach it); named, not hidden.</li>
+      </ul>
+      Verified with 13 new headless checks; LL-1–6 suites still pass (88 checks). Not yet hand-tested by Alex.
+    </div>
+</div>
 <div class="card" id="card-2026-10-13-library-resurfacing" style="margin-bottom:30px;">
     <div class="card-title">📚 Oct 13 — Library resurfacing + jargon "where you met it" (LL-6)</div>
     <div class="card-body">
