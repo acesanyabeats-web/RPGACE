@@ -73,6 +73,22 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-13-xp-season-pass" style="margin-bottom:30px;">
+    <div class="card-title">🌌 Oct 13 — XP Season Pass, steps 1+2: one XP log, new profile card, realm strips</div>
+    <div class="card-body">
+      Alex approved XP-1 with "Add two ticks to the beat card", "Only ones you write", "Build XP-1 and XP-2 together", then mid-build: "i also want the profile cards to show differently when in each domain, this way when im doing something, i see how poorly im doing".
+      <ul>
+        <li><strong>One XP system.</strong> A private <code>xp_events</code> log is filled only by the database: a trigger on 15 tables (cooks, recipes, gym, chapters, books, jargon reviews, library adds, journal, sales/expenses, plans, people, smoke tests, flags, My Day/quests, beats) writes one XP row per real action, using the ratified values in <code>xp_rules</code>. The app never awards XP itself, so XP can't be lost on reload or faked by a pop-up.</li>
+        <li><strong>Retired:</strong> the old career score (88% of it came from auto-made idea cards), the Quest Board painting over the card, and the 14 "+XP" pop-ups that vanished on reload.</li>
+        <li><strong>Season 0: Construction</strong> starts now; Season 2027 starts 1 January. Level 1 = 500 XP, +25 per level. Sky ladder rank with 5 stars.</li>
+        <li><strong>Profile card:</strong> Sky rank + stars, season level bar, a 13-spoke balance wheel of this week, Done / Streak / Level / Season XP. Tap it for the Season page (13 realms, this week vs usual, recent XP).</li>
+        <li><strong>Realm strips in each domain:</strong> Cooking shows Chef, Content Pipeline shows Producer/Creator/Hustler, Knowledge shows Scholar, My Day shows Life/Homekeeper/Mind, Plans shows Explorer/Connector, Wishlist shows Steward, Oversight shows Builder — this week against your usual week so far, red when you're behind.</li>
+        <li><strong>Beat card:</strong> new "✅ Beat finished" and "🚀 Beat released" (optional link) buttons, so Producer XP has something real to fire on.</li>
+        <li>Anti-grind: repeats of the same capped action on one day pay 100%, 50%, then 0. App-written journal entries earn 0.</li>
+      </ul>
+      Verified: every trigger tested in rolled-back transactions on the live database (gym 40; journal 15/8/0; sales 160 and min 100; cook with 2 recipes 70; plan 30 + trip 200; Home routine → Homekeeper 10; beat 30/120/300 + treatment 60 + video 300); 18 headless checks; earlier Chronicles, Plans, Ideas, LL-6/7 suites pass. <strong>Not tested:</strong> the same-week undo path — the Supabase connector holds any DELETE for your approval and times out when no one answers. Honest number note: with Galaxy at ~72,000 XP (1.6× a steady year, as ratified) a steady ~45,000 XP year ends in Star, not Nova. Not yet hand-tested by Alex.
+    </div>
+</div>
 <div class="card" id="card-2026-10-13-ideas-board" style="margin-bottom:30px;">
     <div class="card-title">💡 Oct 13 — Plans: Ideas board (TP-5)</div>
     <div class="card-body">

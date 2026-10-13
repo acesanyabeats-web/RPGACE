@@ -339,15 +339,11 @@ function paintXpBar(xp,req){
   const pct=Math.max(0,Math.min(100,Math.round((xp/(req||1))*100)));
   el.style.width=pct+'%';el.style.transform='scaleX('+(pct/100)+')';
 }
-function addXP(amount){
-  STATE.xp+=amount;STATE.totalXP+=amount;STATE.tasksCompleted++;showXPToast(amount);
-  const req=STATE.xpRequired[STATE.level-1]||9999;
-  paintXpBar(STATE.xp,req);
-  document.getElementById('xp-val').textContent=STATE.xp+' / '+req;
-  document.getElementById('stat-tasks').textContent=STATE.tasksCompleted;
-  document.getElementById('stat-xp').textContent=STATE.totalXP;
-  if(STATE.xp>=req)levelUp();
-}
+// Oct 13 2026 (XP-1, XP Season Pass): retired. These "+XP" pop-ups were
+// in-memory only and vanished on reload. Real XP is now written by the
+// database (xp_on_change triggers -> xp_events) and shown by xpSeason.
+// Kept as a no-op so the existing call sites stay harmless.
+function addXP(amount){}
 function levelUp(){
   STATE.xp-=STATE.xpRequired[STATE.level-1];STATE.level++;
   document.getElementById('stat-lvl').textContent=STATE.level;
@@ -11224,7 +11220,7 @@ RPGACE.register('oracleAppGrounding', {
   // bugs"/"Biggest confirmed-not-built items" sections should update this
   // string in the same session - same discipline as every other oversight
   // doc, just condensed for token cost (rule 11).
-  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested by Alex; where a bullet doesn\'t explicitly say hand-tested, assume it hasn\'t been). Never assume this string is automatically current just because it exists - check its own newest dated fact before trusting an old memory of it; last reviewed Oct 13 2026 (Life Library, see LIFE LIBRARY below; Plans: trips with Oracle + people; My Day week planner, timings + activity templates; Cook Mode, see COOK MODE in HABITS; Screenshot Inbox, see SCREENSHOT INBOX below; Galaxy Map rivers replaced by the 8 app domains; Dashboard landing page + grouped menu, Cooking layout, Knowledge layout, Content & Video layout, Oracle page layout, gym tracker, stay signed in, share-and-return; daily life: fridge photo, watchlist digest; Business producer tools, recall + Bookworm cards, money guardrails, share-to-RPGACE; Encyclopedia posts from analysed videos, see the ENCYCLOPEDIA paragraph below; planned cooks can no longer vanish, see HABITS). ARCHITECTURE: the client is exactly ONE script, rpgace_core.js (index.html loads only rpgace_core.min.js) - main.js was mechanically merged into it Aug 20 2026, living on as a LEGACY SECTION near the top (bootstrap, password gate, page routing, career score, Quest Board). 73 real registered RPGACE.register() modules as of Oct 13 2026 - re-verify this count before quoting it, it has drifted before (a naive grep can double-count a documentation-template example inside a comment). DOMAINS (Oct 11 2026, M1): every module declares one of 8 domains in code (the domain: key, listed in RPGACE.DOMAINS) - Oracle, Content & Video, Knowledge, Habits, Schedule & Journal, Chronicles, Oversight, Platform - the same groups as the left menu. The developer Galaxy Map groups modules by these domains too; the older \'rivers\' grouping is retired. Every module has a real internal ui/logic split (Sep 2026, G53) - zero public-API change, purely structural. RPGACE is a real installable PWA (Android/desktop Add-to-Home-Screen). Chronicles is a full searchable log page with click-through detail plus a personal-visibility-only finance ledger (not bookkeeping-grade). The profile stat card runs on real Supabase-derived data (Output = shipped content, Growth = learning/tree activity, kept as separate lanes). MY DAY (new Oct 12 2026, owned by the myDay module, routines table) replaced the old generic Quest Board template (the hardcoded career/health/lifestyle quests are gone): Alex picks routines from a drafted ideas menu built on RPGACE\'s own tools (morning routine, cleaning split by day, gym, cooking, reading, beats, posting, coding, budget, etc.) or writes his own, and sets each one\'s schedule (every day, certain days, N times a week, one date, or next time he is shopping/in town/at the PC), part of day, optional time, minutes, goal, steps and which tool it opens. The agenda page shows what is due today by morning/afternoon/evening with tick, skip, undo, a timer, sub-step ticks, streaks, missed-earlier-this-week catch-ups and a week done-vs-planned line; Plan my day suggests free times around his shift and today\'s schedule and adds the ones he accepts to the Daily Schedule. TIMINGS + TEMPLATES (Oct 12 2026, myDay module, myday_settings + activity_templates tables): My Day keeps get-ready and travel time clear - around a shift by default 30 min get-ready + 20 min coffee + the journey to work before, and the journey home after, with Alex\'s own margin % added to journeys only (all editable in My Day > Manage > Timings); the Daily Schedule\'s Schedule Task form has an optional activity template picker (name, category, place, journey minutes, get-ready, length) with + New and Delete right there, plus Category and Place/journey fields saved on the rpgace_agendas row; Today shows the rest of the day with travel blocks and free gaps labelled Prep or Leisure. Categories are stored for later metrics; nothing reports on them yet. WEEK PLANNER (Oct 12 2026, myDay module, routine_plans + day_blocks tables): My Day > Plan weeks shows this week up to the last week the Fourth rota covers (plus + Add a week); each day lists his shifts (or off), Daily Schedule items and any time off / trip / event, and each weekly or N-times-a-week routine has 7 day chips (weekly ones start on their usual days, N-a-week ones are suggested on days off then lighter shift days, spread out). A saved week makes the routine due only on its planned days; a planned day that passes undone shows under Planned but not done with Move to a free day or Skip. Time off counts as free; a trip or all-day event blocks the day. From Saturday the dashboard Due list says Plan next week if it is not planned. Plans (below) adds trip blocks when a plan goes on the calendar. LIFE LIBRARY (new Oct 13 2026, owned by the lifeLibrary module; library_items table, private - read only after login through /api/data-write): the Life Library card (first in the Knowledge menu) is where everything Alex takes in is kept - links, videos, books, music, files, courses, notes, quotes and recommendations (picked from his People list, ticked off once checked), each with the date he took it in, ONE phylum shelf (1-21) and free topics. A link saved twice stays one item (YouTube/Instagram/TikTok links are matched by video id). Shelving: a free keyword match on the 21 phyla first; one small Oracle call only when no keyword matches or no topics were typed; the shelf chip can always be changed. Roles (ratified plan Life Library & Knowledge Untangle): Life Library = what he took in; Bookworm = how he studies a source; Encyclopedia = what he learned (idea cards + jargon); Phylum Path = where it fits. Built Oct 13: LL-1 (the library itself, manual adding) and LL-2 (the untangle moves): the 41 Encyclopedia articles from analysed videos plus the Bookworm book are now Library items with their full text (an article item has an Idea cards button); a new Bookworm book creates its Library item automatically; Save-to-bibliography links now save to the Library (the old bibliography page stays as read-only history); the Encyclopedia page (encyclopediaPosts module) shows Ideas | Jargon | Sources tabs - an All ideas list with search, Save and From links that open the source in the Library - and the old article list is folded away at the bottom; Jargon moved under Encyclopedia in the menu. LL-3 (built Oct 13): automatic tree growth is PAUSED while the taxonomy_tree table has no rebuilt rows - owned by the taxonomyTree module (isPaused/checkPaused): video analysis (ciAutoPropose), encyclopedia sync (encSync) and silentPropose stop queueing taxonomy_proposals, Bookworm (bookworm module) skips its tree-placement step and offers Keep instead (the insight still becomes an idea card), and the Taxonomy & Review card says Paused until the phyla are rebuilt; the 65 old pending video proposals were archived (kept, not deleted). It turns back on by itself once a phylum gets its first rebuilt branch. LL-4 (built Oct 13): things now arrive automatically through lifeLibrary.logic.feed (free keyword shelf only, never an Oracle call; unshelved if no keyword matches; deduped by link and by source row): each video analysed from Oct 13 on (intel_reports via syncIntelData - this covers Video Finder Learn and Videoworm uploads), every screenshot Oracle reads (screenshotInbox), reference tracks Alex adds by hand (refCorpus; not the beat-match artist rows), and any Oracle reply he taps the star button on (main chat and the floating overlay; kind answer, his question as the title). LL-5 (built Oct 13, webLookup module): in the main chat Oracle may end a reply with a WEB_QUERY line when a question needs current or outside facts; RPGACE then reuses a Life Library lookup of the same question from the last 30 days, or sends only the search question to /api/search (Gemini), saves the result as a web_lookup library_items row, shows a Searched line with the sources and gives one follow-up answer (at most one search per message; other Oracle calls never get this option). Jargon terms and Bookworm insights have a Find links button that does the same. LL-6 (built Oct 13, lifeLibrary module): the Morning Brief shows one library_items row a day under From your Library (unchecked recommendations first, then the oldest; every kind including web lookups; not repeated for 30 days via resurfaced_at; Done with it sets resurface_off and marks a recommendation checked), and each jargon_encyclopedia term shows Met in links to the Library items and idea cards that mention it. LL-7 (built Oct 13, lifeLibrary module): each Phylum Path phylum shows its shelf above the tree - the library_items on that shelf, the idea cards (encyclopedia_insights) whose source item is on it, and the jargon_encyclopedia terms of that phylum, 5 each with Show all - and each phylum row in the switcher shows counts; the 4 Knowledge pages (Life Library, Bookworm, Encyclopedia, Phylum Path) share a one-line what-this-is header with links to the other three, and the menu lists them in that order. CHRONICLES SECTIONS (LL-8, owned by the chroniclesLog module, items built by careerStatCard): the Chronicles page filters by 8 life sections instead of 14 type chips - All, Beats & content, Recipes cooked (each finished planned_cooks row now names its recipes from the recipes table), Trips & plans (plans rows with status done, read privately after login; dropped plans never show), Learning, Life (quests, gym, journal), Money, App updates. Display only - XP and the career score did not change. PLANS (new Oct 12 2026, owned by the tripPlans module; travel_profile, people, plans, plan_tasks tables, all private - read only after login through /api/data-write): the Plans card (Schedule & Journal menu) has Plans, Ideas, People and Profile tabs. Profile holds Alex\'s home (Derby), nationalities (French and Russian), EU Settled Status in the UK, usual passport, interests, travel limits and insurance. People holds who he wants to keep in touch with (birthday, last spoke, remind every N days); the dashboard Due list shows reach-outs and birthdays in the next 7 days; RPGACE does not draft or send messages. Plan something (or typing plan a trip to ... in Oracle chat) runs up to 3 web searches through /api/search type web (Gemini with Google Search, Tavily built as a backup but switched off for now; only the search question is sent; it needs GEMINI_API_KEY in Vercel and says so when it is missing), then one Oracle call drafts the plan: itinerary, travel legs, tickets and stays with book-by dates and links, documents for the passport he travels on plus UK re-entry with settled status, worst-case packing, an emergency card, a producer angle (record shops, studios, gigs, B-roll spots), food, backup plans and a daily money limit; official links (UK FCDO, France Diplomatie for the French passport, passportindex.org, gov.uk view-and-prove status) are always added. Alex reviews it, can ask Oracle to change it, then saves; saved plans have tickable tasks, a status (idea, planning, booked, done, dropped) and Add to calendar (a trip block plus timed items on the Daily Schedule). RPGACE never books or pays for anything. IDEAS BOARD (TP-5, Oct 13 2026, same tripPlans module): the Ideas tab (or typing what could I do 1-8 Nov? / weekend ideas in Oracle chat, which opens it with the dates filled in) takes dates, an optional budget, a mood/theme, how far (abroad fine / UK only / stay home) and which of 4 kinds to include (UK day trip, abroad, event, at-home project); it runs up to 3 web searches using only his home city, interests and limits (never anyone from People), then one Oracle call returns 5-8 mixed ideas with cost ranges, travel time, why it suits him and links only from the search results. Save (star) stores an idea as a plans row with status idea; Make it a plan opens the plan builder pre-filled. If the search fails the ideas are marked as Oracle\'s own knowledge. Not yet hand-tested by Alex. Ticks write quest_log rows (quest_kind routine) so XP/level (questEngine restore) count them; XP is small (5-25 each). Accepted Oracle task suggestions become one-off routines due today. The questEngine module\'s Generated-from-your-real-data quests still exist below it. SHIFTS (fixed Oct 12 2026, owned by the shiftSync module, rpgace_shifts table): a rota screenshot sent to Oracle or the Schedule page\'s paste box now saves the shifts to Supabase so every device sees them (before this, imports only lived in one browser and were wiped on the next load); the old hardcoded June-July rota is gone. A weekly GitHub job also logs into Fourth and imports the rota automatically; its last result is in the sync_status table and a failed or stale run shows on the dashboard Due list. Never repeat the old ("zero persistence") claim - false since Aug 24 2026. SECURITY/DATA: the app password and every /api/*.js endpoint are checked server-side (fixed July 24, independently verified live). Since Oct 10 2026 (authGate) a device that logs in with the password stays signed in: it keeps the server-issued secret in local storage, re-checks it with /api/auth on each launch (a rotated secret sends it back to the password screen), and the left-nav drawer has a Sign out on this device button. renderMarkdown() escapes HTML before rendering (XSS fixed July 28). RLS is enabled on every real Supabase table - most are anon-read-only/authenticated-all; a small, deliberate, named set (oracle_fallback_queue, openmontage_jobs, error_log, smoke_test_items, ceo_plan_items) stays anon-writable because a real external writer (a Routine, the browser app itself, or a separate Claude Code session) genuinely needs that access - never suggest restricting those without checking first. There is NO Supabase backup or point-in-time recovery at all - Alex explicitly chose to stay on the Free plan and accept that risk (confirmed Sep 15 2026); do not re-raise this as an open question. ORACLE MECHANISMS: Oracle Control (a curated oracle_actions Supabase table) drives a real confirm-before-execute mechanism - 5 real wired dispatch branches exist now (log_beat, new_quests, draft_email, yt_stats, log_notion), reached both from the floating overlay button on any page and from the dashboard quick-action/Agents-page buttons (both rewired in Sep 2026 to go through this one shared mechanism instead of their own bespoke per-button calls - a real rule-8 dedup). Oracle can also DRAFT a suggested brand-new action from its own self-awareness, but a suggestion only grows the real vocabulary once Alex approves it, and it still then needs a human-coded execution branch before it can do anything - never claim Oracle can execute an arbitrary task on its own. Fish Audio (real voice input/output) is a dormant, gated scaffold - no real API key exists, Oracle cannot actually speak or listen by voice yet. The browser-mic voiceInput module was retired outright Aug 30 2026 (Alex\'s own direct ask, ahead of Fish Audio) - there is currently NO voice-input path in RPGACE at all. Real Anthropic prompt caching is live on every Oracle call (a pure cost optimization, never changes what Oracle can say). A Kimi/Luna free-tier routing option exists in api/oracle.js but is dormant, no real key configured - never claim RPGACE runs on multiple AI models. errorLog automatically resolves a real thrown error back to the one module that caused it, attaches that module\'s real /perspective baseline, and - if that module has a smoke_test_items row - flips it to broken (cascading a linked plan item to purple only if it was genuinely green before) - this only ever catches errors that actually throw or show an error-colored toast, never a silent wrong-output bug with no visible symptom, and Oracle never proactively monitors the app - it only reacts when a real message is sent to it. OVERSIGHT / GALAXY MAP: 13 real oversight docs exist now (Tier a/b explaining+truth docs, this Oracle self-awareness string, smoke_test.html/error_log.html, future_integrations.html/achiever.html, and perspective_map.html - new Sep 2026, a live-query page cross-referencing every real perspective_reports row - plus graphify/Obsidian/the Galaxy Map). The Galaxy Map (reachable from the in-app Oversight popup) is a real 4-stop CONTAINMENT hierarchy - L0 (9 real units: RPGACE Architecture/Orchestrator CC/OpenMontage CC/Graphify CC/External AI/Skills/Alex/Supabase/Oversight Docs) contains L1 (12 live app-code rivers, plus 5 retired Total-systems categories kept as per-actor Infra/Inter breakdowns, not deleted) contains L2 (modules) contains Current/L3 (functions). Older Level-2.5/4/5/6 "rail stops" from earlier in the build are all retired or folded into Current/the Decision Matrix - never describe the map as having numbered levels past L3; cross-cutting facts (Externals/Decisions/Skills/Load/etc) are Dimension pages layered over the hierarchy, not additional rungs. 23 real Galaxy Map pages exist on disk as of late Sep 2026 - re-verify this count too before quoting it, it changes whenever a new page ships (most recently G117, a Generator Toolchain catalog page, Sep 22 2026). Every one of the 58 real registered modules plus all 12 live rivers has a real, evidence-grounded /perspective self-report as of mid-Sep 2026 (the Perspective Full Coverage plan is complete). A standing project-wide PAUSE on new Galaxy Map/Dimension work has been in effect since Sep 15 2026 (real evidence: product debt was sitting untouched under a wave of Galaxy-Map/meta work) - only explicit, narrowly-scoped, Alex-approved exceptions have shipped since - never assume a new Galaxy Map feature is fair game without checking whether Alex explicitly overrode the pause for it that specific time. KNOWN, STILL-OPEN GAPS: the swipe-gesture freeze bug has recurred for real (69 real occurrences logged Aug 27-Sep 20 2026) but still has no root cause found and no stack trace available (the browser\'s own Long Task API exposes no call stack) - never claim it\'s fixed, and don\'t attempt another blind code-only fix pass. reference_tracks.scale/genre are still 0 of 32 populated - "beat matches are always the same" traces directly to this; a backfill popup exists and has not been run. smoke_test.html\'s real hand-confirmed tally sits well under half of its rows - a large amount of shipped work is real and code-verified but genuinely unconfirmed by Alex\'s own hand; only his own hand-tick counts as "confirmed working," never a code-level test pass alone. HABITS/COOKING (cookingOracle + shoppingWishlist, RPGACE\'s newest domain, built Sep 10-22 2026): reached from Cooking in the left menu (Habits group). Generate a recipe via Oracle chat (a real RECIPE_JSON: trailer); a real "Narrow it down" step runs first for a short/ambiguous description. Ingredients render with a live 7-color status system wherever shown - green=plenty, yellow=short (worded as "need N more, have M, T total needed"), red=none, blue=a same-aisle alternative in stock, purple=will run low/restock after this cook, orange=a real curated-or-heuristic substitute exists in stock, brown=a separable/optional component that can be omitted in No-Shop mode. Orange substitutes can be permanently confirmed (a tick, colour never changes) or declared-the-same-item as an existing stock row (a real, standing alias merge reassigning every FK reference) - curated potency ratios exist for a few specific real pairs Alex stated (e.g. tamarind concentrate is about 1/3 the amount of tamarind paste) and a real garlic clove/bulb count-equivalent bridge (8 cloves per bulb, bidirectional) - none of these numbers are invented, only ones Alex explicitly gave. A recipe card supports pantry-aware Oracle-suggested ingredient additions and a real diff-only critique-and-update flow via the floating overlay (Accept/Deny, never the whole recipe re-shown). New Sep 22: clicking Start on a scheduled planned cook opens a real, persistent Live Cook Mode panel inside the Oracle page itself (step timeline, elapsed-time ticker, per-step and recurring reminder timers) - not just a silent flag flip. New Oct 1 2026 (cookingOracle): a scheduled planned cook can also be started (Start cooking now, or Cook now straight from the schedule preview), finished (Cook finished in the Cooking hub or a Finished button in Live Cook Mode - marks planned_cooks cooked, completes its agenda entry and marks the recipes cooked in the journal) and given another recipe (reopens it as a draft) from inside Cooking itself, not only from the Daily Schedule. Planned-cook sessions persist as a real draft from the moment the first recipe joins (never silently lost on close/navigate-away); since Oct 5 2026 (cookingOracle), emptying a session only marks a still-draft planned_cooks row discarded (never a hard delete, never touching a scheduled or cooked cook), and pressing Done on a planned-cook entry in the Daily Schedule now marks that planned_cooks row cooked - before this, two real scheduled cooks were lost with no trace, support a real per-recipe delete, and use a true cross-recipe interleaved scheduler that front-loads prep across every recipe in the session rather than finishing one recipe\'s steps before starting the next. COOK MODE (new Oct 11 2026, cookingOracle): a recipe card shows a spec line (steps, minutes hands-on, servings) and a Start Cooking button that opens a full-screen, one-step-per-screen view - Step X of Y, the equipment, that step ingredients at the scaled amounts, the instruction, a Done-when cue and the step timer, with Back/Next/Done, phone Back stepping back, and resume where Alex stopped; timers keep running across steps. Live Cook Mode has a Cook Mode button that walks a whole planned cook the same way. New recipes are asked for one action per step with a done cue and equipment, and every ingredient placed in a step; the card warns when an ingredient is in no step. The 8 recipes saved before this have one-action splits written by a Claude Code session (not by Oracle) waiting as proposals (recipes.steps_proposed) - nothing changes until Alex presses Use these steps on a recipe card (old steps are kept in recipes.steps_previous). Not yet hand-tested by Alex. A real Current Stock view (Pantry/Fridge/Freezer/Equipment) and a real have/not-have shopping list (with a real "in basket" state between "need to find" and "bought") both exist, aisle-sorted. shoppingWishlist is a genuinely separate module (general future purchases like batteries/a wok/games, not ingredients) with its own priority-plus-budget-target fit calculator, writing a real Chronicles Finance expense on purchase. Every HABITS feature above is real, shipped, code-verified - but per the standing flag across this whole domain, effectively none of it has been hand-tested by Alex yet. TAXONOMY: real architecture change Sep 25 2026, now in a genuinely empty pre-rebuild state. jargon_encyclopedia is no longer a view over taxonomy_tree - it is a real standalone anchor table (term/phylum_number/explainer/status/taxonomy_node_id), now holding 545 real curated terms across phyla 1-20 (Phylum 1 got a real same-day top-up to 51 terms per Alex\'s own live-review feedback while browsing it; the other 19 phyla still sit at 26 each; none for phylum 21), most status=\'pending\' (a real, growing number are status=\'accepted\' as Alex works through his own review queue) - directly authored by a Claude Code session (source-tagged claude_code_prebuild), never yet generated by the live AI generator that also exists in code but has never actually been run. Jargon Encyclopedia is now a real standalone page (owned by the jargonEncyclopedia module, Sep 26 2026 UI rework) - reached via leftNav\'s Phylum Path subItem or the Taxonomy dashboard card\'s picker popup (dashDeck._openTaxonomy), never a button crammed onto Phylum Path\'s own title anymore. It shows EVERY term regardless of status (pending/accepted/rejected, each with a real status badge and filter chip), with real inline Accept/Edit/Reject actions per pending term (reusing phylumPath._resolvePendingTerm, the one real write path - never a second one). taxonomy_tree itself was first archived in full (671 old branch/leaf rows, a reversible flag) then, same day, actually DELETED to 0 rows at Alex\'s own direct follow-up ask (he judged even the archived structure not worth keeping while jargon gets built out first) - every phylum (1-21) is now a genuinely empty canvas below the phylum level, zero branches, zero leaves, zero fusion links (taxonomy_links is also 0 rows). A full pre-delete snapshot was committed first as the real restore path, since Supabase has no backup/PITR. The old \'Review Archived Terms\'/\'Review Pending Terms\' buttons on the Phylum Path page are gone - the former is genuinely dead (nothing archived left to review) and the latter is superseded by the new Jargon Encyclopedia page above. Never claim any specific phylum currently has real depth, real Orders/Classes, or any structure at all - every earlier claim of that shape (phyla 1-10 depth, Phylum 12\'s real Orders, a structurally-clean tree) describes a state from before this restructure and is not true again until Alex reviews the jargon terms and a real new phylum structure gets built around them. GYM (new Oct 10 2026, owned by the gymTracker module, HABITS module 2 after Cooking - both in the Habits group of the left menu): Gym logs sessions (exercise, sets, reps, kg; gym_sessions + gym_sets tables), shows this week against a 5-session target, personal bests per exercise (heaviest set plus an estimated 1-rep max) and recent sessions with a two-tap delete; Repeat last prefills the previous session, and beating a previous heaviest weight shows a New best toast. Gym sessions appear in Chronicles and the Morning Brief own-words section, and Ask My Data can read gym sets. No sessions exist until Alex logs one. Not yet hand-tested by Alex. DAILY LIFE (new Oct 10 2026, owned by the dailyLife module): every Current Stock tab (Pantry/Fridge/Freezer) has an Add-from-a-photo button - Oracle lists the food it sees in the photo, Alex reviews and edits the list, and each ticked row sets that item\'s amount through cookingOracle\'s own stock write (the same one the manual form uses); Oracle never adds stock without that review. Morning Brief has a New-from-your-watchlist button that checks the YouTube creators in intel_watchlist for uploads from the last 7 days (YouTube only - Instagram/TikTok creators cannot be checked) with an Analyse button that queues a video for Content Intelligence, and the brief prompt now includes Alex\'s own open quests, decisions due for a look-back and latest journal note so it can quote them back. Chronicles also shows completed quests and finished planned cooks. Not yet hand-tested by Alex. RECALL (new Oct 10 2026, owned by the recall module): saving an Encyclopedia idea card puts it on a forgetting-curve schedule (encyclopedia_insights.recall_step/recall_due: back after 1, 3, 7, 16 and 35 days); due ideas appear at the top of Morning Brief with Again (back tomorrow) or Got it (next interval; after the last one it counts as learned). A Bookworm chapter with insights has a Cards button that opens its insights as the same Deepstash-style idea cards; saving one writes it to encyclopedia_insights (source_entry_id book:<chapter id>) so book and video ideas share one Saved list and one recall queue. Not yet hand-tested by Alex. MONEY GUARDRAILS (new Oct 10 2026): the shoppingWishlist module asks an optional why-do-you-want-it reason when an item is added (wishlist_items.want_reason) and, for an item added under 24 hours ago, shows a cool-off step (time left plus that reason, Wait or Buy anyway) before the normal what-did-you-pay confirm - it never blocks a purchase. The decisionJournal module adds a Decisions strip on the Journal page: log a decision with the reason at the time and a look-back in 2, 4 or 8 weeks (journal rows, entry_type=decision, review_on); when the date arrives it asks how it turned out and saves the answer (journal.outcome). Not yet hand-tested by Alex. SHARE TO RPGACE (new Oct 10 2026, owned by the shareInbox module): the installed app appears in the Android share sheet (manifest share_target); sharing an Instagram reel, YouTube Short, TikTok or any link queues it into intel_jobs for Content Intelligence analysis, which needs Alex\'s PC analysis server running; after queuing it shows Sent to RPGACE and closes itself so Alex lands back in the app he shared from (if Android refuses the close, it says press Back). iPhone has no share-target support - an iOS Shortcut that opens the app with ?share_url= does the same. Not yet hand-tested by Alex. PATHWAYS (new Oct 10 2026, owned by the pathways module): an Encyclopedia post that came from an analysed video has buttons to turn that video\'s suggested quests into real Quest Board quests (questEngine, duplicates skipped), add its creator to the watchlist (intel_watchlist), and list Jargon Encyclopedia terms that appear in the article; Platform Oracle has an optional About-a-beat picker (beat_audio_jobs / content_productions) that prefixes every command with that beat; the Cooking shopping list has an Add-a-non-food-item-to-your-Wishlist form (shoppingWishlist). Not yet hand-tested by Alex. COOKING LAYOUT (Oct 10 2026, N2 slice 4): every Cooking button comes from one shared token set (cookingOracle BTN_VARIANTS) and now has a 36-44px tap target with 13px+ text; ingredient rows, step headers and hub descriptions are 12-13px; the Current Stock unit box no longer runs off the screen; and liquid amounts read in quarter cups with the original ml kept, e.g. 200 ml = 3/4 cup + 1 tbsp + 1 tsp (200 ml) instead of 13 tbsp 1 tsp. Not yet hand-tested by Alex. KNOWLEDGE LAYOUT (Oct 10 2026, N2 slice 3): the Encyclopedia page starts with the articles - category/sort chips sit in a folded Filter & sort section and Sync/Clear All in a folded Maintenance tools section, with search and a count line (naming the active category and sort) always visible; article titles wrap in full; an article made from an analysed video previews its first idea cards instead of making an Oracle call. Jargon Encyclopedia no longer repeats a not-placed line under every term. Encyclopedia, Jargon Encyclopedia and Phylum Path use 40px buttons and 13px+ text. Not yet hand-tested by Alex. CONTENT & VIDEO LAYOUT (Oct 10 2026, N2 slice 2): the ConID list, Idea Bank, Beat Log and Upload Workshop pages now use 40px buttons and 13px+ text, drop their doubled titles (the ConID list header reads Your productions), let ConID titles wrap instead of truncating, and show the stage badge as e.g. Visual Treatment ✓ - before this fix the badge text was the same colour as its background and could not be read. Beat Log extra fields reflow to two columns on a phone. Not yet hand-tested by Alex. ORACLE PAGE LAYOUT (Oct 10 2026, N2 slice 1): the chat input sits directly under the messages with one Tools row below it (New quests, Draft email, Log to Notion, YT stats, Prod. Oracle, Platform Oracle, Visual Oracle, Repurpose, Schedule Oracle, Phylum Path); the old Insta-Oracle button and a duplicate Quick Actions bar are gone; the former Agents page content (connected apps, one-click agent cards, activity log) is in a collapsed Agent actions & connected apps section at the bottom (agentsIntoOracle); long app-generated prompts in the chat show a 4-line preview with Show all. Not yet hand-tested by Alex. PLATFORM ORACLE (new Oct 10 2026, owned by the captionsPanel module): the Instagram, YouTube and TikTok command panels are now ONE panel - a single Platform Oracle button on the Oracle page opens it, with an Instagram / YouTube / TikTok / Business switch (13 / 8 / 8 / 5 pre-filled commands, stored in instaOraclePanel/youtubeOracle/tiktokOracle/producerTools). The Business tab (producerTools, Oct 10 2026) holds producer tools: A&R Critic, Artist Outreach, Contract Red Flags (plain-English explainer, not legal advice), Negotiation Rehearsal (role-play, then a debrief) and Playlist Psychologist (listening to beat ideas) - prompts only, nothing is sent to anyone automatically; a beat-pricing calculator does not exist because no finance data is logged yet. Tapping a command sends it to Oracle chat; the old Insta-Oracle button opens the same panel. Not yet hand-tested by Alex. ASK MY DATA (new Oct 10 2026, owned by the askMyData module): when Alex asks about his own saved data (pantry/stock, shopping list, recipes, planned cooks, wishlist, journal, quests, agenda, creator watchlist, analysed videos, encyclopedia, idea cards, jargon, reference tracks, finance log, books, content productions, RPGACE changelog), Oracle can request ONE read-only lookup with a DATA_QUERY trailer; the app fetches up to 30 rows, shows Alex which rows were used, and Oracle answers from those rows only. It cannot write or change data, and it only knows what those rows contain. Not yet hand-tested by Alex. DASHBOARD + MENU (Oct 10 2026, N2 slice 5, owned by dashDeck + leftNav): the left menu is the ONE place to reach everything, grouped Oracle / Content & Video / Knowledge / Habits (Cooking, Gym, Shopping Wishlist) / Schedule & Journal / Chronicles / Oversight - popup modules like Cooking, Gym, Morning Brief and Oversight open from it too. The dashboard no longer has a card grid; it is a landing page with four sections: Today (shifts and scheduled tasks for today, a planned cook today, My Day routines left today, gym sessions this week against 5), Due - waiting on you (pending taxonomy reviews, jargon terms to review, saved ideas due for recall, decisions due for a look-back, wishlist items whose 24h cool-off is over, shared links queued for the PC analysis server - a row only appears when there is something in it), Continue where you left off (the last pages/modules Alex opened, kept in this browser only, plus the book in progress, latest recipe and latest production) and Morning Brief + an Ask Oracle box that sends the question through the normal Oracle chat. It makes no Oracle call itself. Not yet hand-tested by Alex. NAVIGATION (new Oct 10 2026, owned by dashDeck + pathRouter): every popup has a sticky header with a Back button, a Domain > Card label and buttons for the other modules in the same domain; phone/browser Back closes the open popup first instead of leaving the page, and Back from a page that was opened from inside a popup returns to that page and reopens the card it came from. The sub-pages of Content Pipeline (ConID list, Idea Bank, Beat Log, Upload Workshop) and Bookworm (Bookworm, Videoworm, MusicWorm, Bibliography) have their own Back button (\u2190 Content Pipeline / \u2190 Bookworm, dashDeck._pageBack, Oct 10 2026) that does the same as phone Back; opened directly by link it shows the dashboard with that menu open. Not yet hand-tested by Alex. ENCYCLOPEDIA (new Oct 10 2026, owned by the encyclopediaPosts module): every Content Intelligence report (intel_reports) is automatically turned into a real encyclopedia article (source=intel, source_url = the video) plus one encyclopedia_insights row per idea card (idea_section/idea_order; saved_at when Alex saves an idea). Articles read Deepstash-style as a post of idea cards (Back/Next, card count, read time, Save idea, Full article); the Encyclopedia page shows a Posts strip with Series (posts sharing a tag) and Saved ideas. This replaced an old auto-save that only looked at the newest 5 reports and had stopped saving after the encyclopedia was cleared - so before Oct 10 none of the 37 analysed videos had an article. Not yet hand-tested by Alex; Knowledge Tree links to articles do not exist yet (the tree is empty). SCREENSHOT INBOX (new Oct 11 2026, owned by the screenshotInbox module, Knowledge menu): Alex adds screenshots in the app or shares an image to RPGACE from the Android share sheet; each is stored privately (screenshots table + private bucket, readable only after login through /api/data-write) and Oracle reads it once, saving the visible text, a one-sentence description, tags and a kind, and suggesting up to two homes. Nothing moves automatically: per screenshot Alex can Add to Wishlist (shoppingWishlist), Save as idea card (encyclopedia_insights, joins the recall schedule), Start a recipe (opens Cooking\'s Generate form filled in), Journal it, Keep it in the inbox, or delete it. Screenshots are searchable in the inbox and through Ask My Data (screenshots source, text only), and the dashboard Due section shows how many are waiting to be sorted. Each read is one Oracle vision call. Not yet hand-tested by Alex. CONTENT PIPELINE: Research Lab is fully retired as a user-facing destination - its former panels live inside Content Pipeline/Bookworm cards now. RPGACE does not generate video itself - OpenMontage (a separate Claude Code session in its own repo) is briefed and handed off via openmontage_jobs, never live infrastructure; RPGACE has ruled out paid video providers on principle (zero spend). Real beat-grid audio sync does not exist - "in sync with the beat" currently means mood/palette-matched only. Features F0 through F18 have shipped except F12 (deliberately deferred); F16/F17/F18 remain real execution debt - shipped code, genuinely never hand-tested through their full flow yet.',
+  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested by Alex; where a bullet doesn\'t explicitly say hand-tested, assume it hasn\'t been). Never assume this string is automatically current just because it exists - check its own newest dated fact before trusting an old memory of it; last reviewed Oct 13 2026 (Life Library, see LIFE LIBRARY below; Plans: trips with Oracle + people; My Day week planner, timings + activity templates; Cook Mode, see COOK MODE in HABITS; Screenshot Inbox, see SCREENSHOT INBOX below; Galaxy Map rivers replaced by the 8 app domains; Dashboard landing page + grouped menu, Cooking layout, Knowledge layout, Content & Video layout, Oracle page layout, gym tracker, stay signed in, share-and-return; daily life: fridge photo, watchlist digest; Business producer tools, recall + Bookworm cards, money guardrails, share-to-RPGACE; Encyclopedia posts from analysed videos, see the ENCYCLOPEDIA paragraph below; planned cooks can no longer vanish, see HABITS). ARCHITECTURE: the client is exactly ONE script, rpgace_core.js (index.html loads only rpgace_core.min.js) - main.js was mechanically merged into it Aug 20 2026, living on as a LEGACY SECTION near the top (bootstrap, password gate, page routing, career score, Quest Board). 74 real registered RPGACE.register() modules as of Oct 13 2026 - re-verify this count before quoting it, it has drifted before (a naive grep can double-count a documentation-template example inside a comment). DOMAINS (Oct 11 2026, M1): every module declares one of 8 domains in code (the domain: key, listed in RPGACE.DOMAINS) - Oracle, Content & Video, Knowledge, Habits, Schedule & Journal, Chronicles, Oversight, Platform - the same groups as the left menu. The developer Galaxy Map groups modules by these domains too; the older \'rivers\' grouping is retired. Every module has a real internal ui/logic split (Sep 2026, G53) - zero public-API change, purely structural. RPGACE is a real installable PWA (Android/desktop Add-to-Home-Screen). Chronicles is a full searchable log page with click-through detail plus a personal-visibility-only finance ledger (not bookkeeping-grade). The profile stat card runs on real Supabase-derived data (Output = shipped content, Growth = learning/tree activity, kept as separate lanes). MY DAY (new Oct 12 2026, owned by the myDay module, routines table) replaced the old generic Quest Board template (the hardcoded career/health/lifestyle quests are gone): Alex picks routines from a drafted ideas menu built on RPGACE\'s own tools (morning routine, cleaning split by day, gym, cooking, reading, beats, posting, coding, budget, etc.) or writes his own, and sets each one\'s schedule (every day, certain days, N times a week, one date, or next time he is shopping/in town/at the PC), part of day, optional time, minutes, goal, steps and which tool it opens. The agenda page shows what is due today by morning/afternoon/evening with tick, skip, undo, a timer, sub-step ticks, streaks, missed-earlier-this-week catch-ups and a week done-vs-planned line; Plan my day suggests free times around his shift and today\'s schedule and adds the ones he accepts to the Daily Schedule. TIMINGS + TEMPLATES (Oct 12 2026, myDay module, myday_settings + activity_templates tables): My Day keeps get-ready and travel time clear - around a shift by default 30 min get-ready + 20 min coffee + the journey to work before, and the journey home after, with Alex\'s own margin % added to journeys only (all editable in My Day > Manage > Timings); the Daily Schedule\'s Schedule Task form has an optional activity template picker (name, category, place, journey minutes, get-ready, length) with + New and Delete right there, plus Category and Place/journey fields saved on the rpgace_agendas row; Today shows the rest of the day with travel blocks and free gaps labelled Prep or Leisure. Categories are stored for later metrics; nothing reports on them yet. WEEK PLANNER (Oct 12 2026, myDay module, routine_plans + day_blocks tables): My Day > Plan weeks shows this week up to the last week the Fourth rota covers (plus + Add a week); each day lists his shifts (or off), Daily Schedule items and any time off / trip / event, and each weekly or N-times-a-week routine has 7 day chips (weekly ones start on their usual days, N-a-week ones are suggested on days off then lighter shift days, spread out). A saved week makes the routine due only on its planned days; a planned day that passes undone shows under Planned but not done with Move to a free day or Skip. Time off counts as free; a trip or all-day event blocks the day. From Saturday the dashboard Due list says Plan next week if it is not planned. Plans (below) adds trip blocks when a plan goes on the calendar. LIFE LIBRARY (new Oct 13 2026, owned by the lifeLibrary module; library_items table, private - read only after login through /api/data-write): the Life Library card (first in the Knowledge menu) is where everything Alex takes in is kept - links, videos, books, music, files, courses, notes, quotes and recommendations (picked from his People list, ticked off once checked), each with the date he took it in, ONE phylum shelf (1-21) and free topics. A link saved twice stays one item (YouTube/Instagram/TikTok links are matched by video id). Shelving: a free keyword match on the 21 phyla first; one small Oracle call only when no keyword matches or no topics were typed; the shelf chip can always be changed. Roles (ratified plan Life Library & Knowledge Untangle): Life Library = what he took in; Bookworm = how he studies a source; Encyclopedia = what he learned (idea cards + jargon); Phylum Path = where it fits. Built Oct 13: LL-1 (the library itself, manual adding) and LL-2 (the untangle moves): the 41 Encyclopedia articles from analysed videos plus the Bookworm book are now Library items with their full text (an article item has an Idea cards button); a new Bookworm book creates its Library item automatically; Save-to-bibliography links now save to the Library (the old bibliography page stays as read-only history); the Encyclopedia page (encyclopediaPosts module) shows Ideas | Jargon | Sources tabs - an All ideas list with search, Save and From links that open the source in the Library - and the old article list is folded away at the bottom; Jargon moved under Encyclopedia in the menu. LL-3 (built Oct 13): automatic tree growth is PAUSED while the taxonomy_tree table has no rebuilt rows - owned by the taxonomyTree module (isPaused/checkPaused): video analysis (ciAutoPropose), encyclopedia sync (encSync) and silentPropose stop queueing taxonomy_proposals, Bookworm (bookworm module) skips its tree-placement step and offers Keep instead (the insight still becomes an idea card), and the Taxonomy & Review card says Paused until the phyla are rebuilt; the 65 old pending video proposals were archived (kept, not deleted). It turns back on by itself once a phylum gets its first rebuilt branch. LL-4 (built Oct 13): things now arrive automatically through lifeLibrary.logic.feed (free keyword shelf only, never an Oracle call; unshelved if no keyword matches; deduped by link and by source row): each video analysed from Oct 13 on (intel_reports via syncIntelData - this covers Video Finder Learn and Videoworm uploads), every screenshot Oracle reads (screenshotInbox), reference tracks Alex adds by hand (refCorpus; not the beat-match artist rows), and any Oracle reply he taps the star button on (main chat and the floating overlay; kind answer, his question as the title). LL-5 (built Oct 13, webLookup module): in the main chat Oracle may end a reply with a WEB_QUERY line when a question needs current or outside facts; RPGACE then reuses a Life Library lookup of the same question from the last 30 days, or sends only the search question to /api/search (Gemini), saves the result as a web_lookup library_items row, shows a Searched line with the sources and gives one follow-up answer (at most one search per message; other Oracle calls never get this option). Jargon terms and Bookworm insights have a Find links button that does the same. LL-6 (built Oct 13, lifeLibrary module): the Morning Brief shows one library_items row a day under From your Library (unchecked recommendations first, then the oldest; every kind including web lookups; not repeated for 30 days via resurfaced_at; Done with it sets resurface_off and marks a recommendation checked), and each jargon_encyclopedia term shows Met in links to the Library items and idea cards that mention it. LL-7 (built Oct 13, lifeLibrary module): each Phylum Path phylum shows its shelf above the tree - the library_items on that shelf, the idea cards (encyclopedia_insights) whose source item is on it, and the jargon_encyclopedia terms of that phylum, 5 each with Show all - and each phylum row in the switcher shows counts; the 4 Knowledge pages (Life Library, Bookworm, Encyclopedia, Phylum Path) share a one-line what-this-is header with links to the other three, and the menu lists them in that order. CHRONICLES SECTIONS (LL-8, owned by the chroniclesLog module, items built by careerStatCard): the Chronicles page filters by 8 life sections instead of 14 type chips - All, Beats & content, Recipes cooked (each finished planned_cooks row now names its recipes from the recipes table), Trips & plans (plans rows with status done, read privately after login; dropped plans never show), Learning, Life (quests, gym, journal), Money, App updates. Display only. XP SEASON PASS (XP-1 + XP-2, Oct 13 2026, owned by the xpSeason module; xp_events and xp_rules tables, private, read after login through /api/data-write): there is ONE XP system. The database writes every XP row itself - an xp_on_change trigger on 15 tables (content_productions, planned_cooks, recipes, gym_sessions, bookworm_chapters, bibliography, jargon_encyclopedia, library_items, journal, chronicles_finance, plans, people, smoke_test_items, oracle_dev_suggestions, quest_log) calls xp_award, which reads xp_rules (22 actions, each with a realm and XP) and writes one xp_events row; the app never awards XP itself. 13 realms: Producer, Creator, Hustler, Chef, Athlete, Scholar, Life, Homekeeper, Mind, Steward, Explorer, Connector, Builder. Examples: beat logged 30, beat finished 120, beat released 300 (Producer; the beat card in Content Pipeline has Beat finished / Beat released buttons for this), video posted 300 and treatment 60 (Creator), sale 2 XP per pound min 100 (Hustler), cook finished 60 +10 per extra recipe, recipe saved 25 (Chef), gym 40 (Athlete), chapter 30, book 300, jargon review 3, library item added by hand 3 (Scholar), journal entry he wrote 15 (Life; app-written journal rows earn 0), My Day routines their own 5-25 XP in the realm of their area, expense 5 (Steward), plan made 30, trip done 200 (Explorer), caught up on time 20 (Connector), hand-tested feature 20 and flag to Claude Code 15 (Builder). Auto-made things (idea cards from video analyses, auto-filed screenshots) earn 0. Repeats of capped actions on one day pay 100%, then 50%, then 0; shipping, sales and milestones are never reduced. Season 0: Construction runs from Oct 13 2026 to the end of that year (nothing before it counts); Season 2027 starts on 1 January and every 1 January resets the season; a career total never resets. Season level: level 1 needs 500 XP, each next level 25 more. Overall rank (Sky ladder): Spark, Ember, Flame, Comet, Star, Nova, Constellation, Galaxy, 5 stars each, evenly spaced, Galaxy 1 at about 72,000 XP. The dashboard profile card shows the Sky rank, season level, a 13-spoke balance wheel of this week\'s XP and Done/Streak/Level/Season XP; each domain popup and page shows a strip with that domain\'s realm(s) and this week against his usual week so far; tapping either opens the Season page (realms, recent XP). A source row deleted in the same week leaves its XP marked pending (the was-this-done question is XP-4, not built). The old row-count career score (careerStatCard), questEngine\'s card painting and the legacy addXP pop-ups are retired. Not built yet: realm ranks, titles and badges (XP-3), the undo question and saved reports (XP-4), challenges (XP-5), treats, themes and Oracle flair (XP-6), Mind area and outreach/budget tracking (XP-7), Year Wrapped (XP-8). Not yet hand-tested by Alex. PLANS (new Oct 12 2026, owned by the tripPlans module; travel_profile, people, plans, plan_tasks tables, all private - read only after login through /api/data-write): the Plans card (Schedule & Journal menu) has Plans, Ideas, People and Profile tabs. Profile holds Alex\'s home (Derby), nationalities (French and Russian), EU Settled Status in the UK, usual passport, interests, travel limits and insurance. People holds who he wants to keep in touch with (birthday, last spoke, remind every N days); the dashboard Due list shows reach-outs and birthdays in the next 7 days; RPGACE does not draft or send messages. Plan something (or typing plan a trip to ... in Oracle chat) runs up to 3 web searches through /api/search type web (Gemini with Google Search, Tavily built as a backup but switched off for now; only the search question is sent; it needs GEMINI_API_KEY in Vercel and says so when it is missing), then one Oracle call drafts the plan: itinerary, travel legs, tickets and stays with book-by dates and links, documents for the passport he travels on plus UK re-entry with settled status, worst-case packing, an emergency card, a producer angle (record shops, studios, gigs, B-roll spots), food, backup plans and a daily money limit; official links (UK FCDO, France Diplomatie for the French passport, passportindex.org, gov.uk view-and-prove status) are always added. Alex reviews it, can ask Oracle to change it, then saves; saved plans have tickable tasks, a status (idea, planning, booked, done, dropped) and Add to calendar (a trip block plus timed items on the Daily Schedule). RPGACE never books or pays for anything. IDEAS BOARD (TP-5, Oct 13 2026, same tripPlans module): the Ideas tab (or typing what could I do 1-8 Nov? / weekend ideas in Oracle chat, which opens it with the dates filled in) takes dates, an optional budget, a mood/theme, how far (abroad fine / UK only / stay home) and which of 4 kinds to include (UK day trip, abroad, event, at-home project); it runs up to 3 web searches using only his home city, interests and limits (never anyone from People), then one Oracle call returns 5-8 mixed ideas with cost ranges, travel time, why it suits him and links only from the search results. Save (star) stores an idea as a plans row with status idea; Make it a plan opens the plan builder pre-filled. If the search fails the ideas are marked as Oracle\'s own knowledge. Not yet hand-tested by Alex. Ticks write quest_log rows (quest_kind routine); the database turns each completed tick into an xp_events row (5-25 XP, realm from the routine\'s area - see XP SEASON PASS). Accepted Oracle task suggestions become one-off routines due today. The questEngine module\'s Generated-from-your-real-data quests still exist below it. SHIFTS (fixed Oct 12 2026, owned by the shiftSync module, rpgace_shifts table): a rota screenshot sent to Oracle or the Schedule page\'s paste box now saves the shifts to Supabase so every device sees them (before this, imports only lived in one browser and were wiped on the next load); the old hardcoded June-July rota is gone. A weekly GitHub job also logs into Fourth and imports the rota automatically; its last result is in the sync_status table and a failed or stale run shows on the dashboard Due list. Never repeat the old ("zero persistence") claim - false since Aug 24 2026. SECURITY/DATA: the app password and every /api/*.js endpoint are checked server-side (fixed July 24, independently verified live). Since Oct 10 2026 (authGate) a device that logs in with the password stays signed in: it keeps the server-issued secret in local storage, re-checks it with /api/auth on each launch (a rotated secret sends it back to the password screen), and the left-nav drawer has a Sign out on this device button. renderMarkdown() escapes HTML before rendering (XSS fixed July 28). RLS is enabled on every real Supabase table - most are anon-read-only/authenticated-all; a small, deliberate, named set (oracle_fallback_queue, openmontage_jobs, error_log, smoke_test_items, ceo_plan_items) stays anon-writable because a real external writer (a Routine, the browser app itself, or a separate Claude Code session) genuinely needs that access - never suggest restricting those without checking first. There is NO Supabase backup or point-in-time recovery at all - Alex explicitly chose to stay on the Free plan and accept that risk (confirmed Sep 15 2026); do not re-raise this as an open question. ORACLE MECHANISMS: Oracle Control (a curated oracle_actions Supabase table) drives a real confirm-before-execute mechanism - 5 real wired dispatch branches exist now (log_beat, new_quests, draft_email, yt_stats, log_notion), reached both from the floating overlay button on any page and from the dashboard quick-action/Agents-page buttons (both rewired in Sep 2026 to go through this one shared mechanism instead of their own bespoke per-button calls - a real rule-8 dedup). Oracle can also DRAFT a suggested brand-new action from its own self-awareness, but a suggestion only grows the real vocabulary once Alex approves it, and it still then needs a human-coded execution branch before it can do anything - never claim Oracle can execute an arbitrary task on its own. Fish Audio (real voice input/output) is a dormant, gated scaffold - no real API key exists, Oracle cannot actually speak or listen by voice yet. The browser-mic voiceInput module was retired outright Aug 30 2026 (Alex\'s own direct ask, ahead of Fish Audio) - there is currently NO voice-input path in RPGACE at all. Real Anthropic prompt caching is live on every Oracle call (a pure cost optimization, never changes what Oracle can say). A Kimi/Luna free-tier routing option exists in api/oracle.js but is dormant, no real key configured - never claim RPGACE runs on multiple AI models. errorLog automatically resolves a real thrown error back to the one module that caused it, attaches that module\'s real /perspective baseline, and - if that module has a smoke_test_items row - flips it to broken (cascading a linked plan item to purple only if it was genuinely green before) - this only ever catches errors that actually throw or show an error-colored toast, never a silent wrong-output bug with no visible symptom, and Oracle never proactively monitors the app - it only reacts when a real message is sent to it. OVERSIGHT / GALAXY MAP: 13 real oversight docs exist now (Tier a/b explaining+truth docs, this Oracle self-awareness string, smoke_test.html/error_log.html, future_integrations.html/achiever.html, and perspective_map.html - new Sep 2026, a live-query page cross-referencing every real perspective_reports row - plus graphify/Obsidian/the Galaxy Map). The Galaxy Map (reachable from the in-app Oversight popup) is a real 4-stop CONTAINMENT hierarchy - L0 (9 real units: RPGACE Architecture/Orchestrator CC/OpenMontage CC/Graphify CC/External AI/Skills/Alex/Supabase/Oversight Docs) contains L1 (12 live app-code rivers, plus 5 retired Total-systems categories kept as per-actor Infra/Inter breakdowns, not deleted) contains L2 (modules) contains Current/L3 (functions). Older Level-2.5/4/5/6 "rail stops" from earlier in the build are all retired or folded into Current/the Decision Matrix - never describe the map as having numbered levels past L3; cross-cutting facts (Externals/Decisions/Skills/Load/etc) are Dimension pages layered over the hierarchy, not additional rungs. 23 real Galaxy Map pages exist on disk as of late Sep 2026 - re-verify this count too before quoting it, it changes whenever a new page ships (most recently G117, a Generator Toolchain catalog page, Sep 22 2026). Every one of the 58 real registered modules plus all 12 live rivers has a real, evidence-grounded /perspective self-report as of mid-Sep 2026 (the Perspective Full Coverage plan is complete). A standing project-wide PAUSE on new Galaxy Map/Dimension work has been in effect since Sep 15 2026 (real evidence: product debt was sitting untouched under a wave of Galaxy-Map/meta work) - only explicit, narrowly-scoped, Alex-approved exceptions have shipped since - never assume a new Galaxy Map feature is fair game without checking whether Alex explicitly overrode the pause for it that specific time. KNOWN, STILL-OPEN GAPS: the swipe-gesture freeze bug has recurred for real (69 real occurrences logged Aug 27-Sep 20 2026) but still has no root cause found and no stack trace available (the browser\'s own Long Task API exposes no call stack) - never claim it\'s fixed, and don\'t attempt another blind code-only fix pass. reference_tracks.scale/genre are still 0 of 32 populated - "beat matches are always the same" traces directly to this; a backfill popup exists and has not been run. smoke_test.html\'s real hand-confirmed tally sits well under half of its rows - a large amount of shipped work is real and code-verified but genuinely unconfirmed by Alex\'s own hand; only his own hand-tick counts as "confirmed working," never a code-level test pass alone. HABITS/COOKING (cookingOracle + shoppingWishlist, RPGACE\'s newest domain, built Sep 10-22 2026): reached from Cooking in the left menu (Habits group). Generate a recipe via Oracle chat (a real RECIPE_JSON: trailer); a real "Narrow it down" step runs first for a short/ambiguous description. Ingredients render with a live 7-color status system wherever shown - green=plenty, yellow=short (worded as "need N more, have M, T total needed"), red=none, blue=a same-aisle alternative in stock, purple=will run low/restock after this cook, orange=a real curated-or-heuristic substitute exists in stock, brown=a separable/optional component that can be omitted in No-Shop mode. Orange substitutes can be permanently confirmed (a tick, colour never changes) or declared-the-same-item as an existing stock row (a real, standing alias merge reassigning every FK reference) - curated potency ratios exist for a few specific real pairs Alex stated (e.g. tamarind concentrate is about 1/3 the amount of tamarind paste) and a real garlic clove/bulb count-equivalent bridge (8 cloves per bulb, bidirectional) - none of these numbers are invented, only ones Alex explicitly gave. A recipe card supports pantry-aware Oracle-suggested ingredient additions and a real diff-only critique-and-update flow via the floating overlay (Accept/Deny, never the whole recipe re-shown). New Sep 22: clicking Start on a scheduled planned cook opens a real, persistent Live Cook Mode panel inside the Oracle page itself (step timeline, elapsed-time ticker, per-step and recurring reminder timers) - not just a silent flag flip. New Oct 1 2026 (cookingOracle): a scheduled planned cook can also be started (Start cooking now, or Cook now straight from the schedule preview), finished (Cook finished in the Cooking hub or a Finished button in Live Cook Mode - marks planned_cooks cooked, completes its agenda entry and marks the recipes cooked in the journal) and given another recipe (reopens it as a draft) from inside Cooking itself, not only from the Daily Schedule. Planned-cook sessions persist as a real draft from the moment the first recipe joins (never silently lost on close/navigate-away); since Oct 5 2026 (cookingOracle), emptying a session only marks a still-draft planned_cooks row discarded (never a hard delete, never touching a scheduled or cooked cook), and pressing Done on a planned-cook entry in the Daily Schedule now marks that planned_cooks row cooked - before this, two real scheduled cooks were lost with no trace, support a real per-recipe delete, and use a true cross-recipe interleaved scheduler that front-loads prep across every recipe in the session rather than finishing one recipe\'s steps before starting the next. COOK MODE (new Oct 11 2026, cookingOracle): a recipe card shows a spec line (steps, minutes hands-on, servings) and a Start Cooking button that opens a full-screen, one-step-per-screen view - Step X of Y, the equipment, that step ingredients at the scaled amounts, the instruction, a Done-when cue and the step timer, with Back/Next/Done, phone Back stepping back, and resume where Alex stopped; timers keep running across steps. Live Cook Mode has a Cook Mode button that walks a whole planned cook the same way. New recipes are asked for one action per step with a done cue and equipment, and every ingredient placed in a step; the card warns when an ingredient is in no step. The 8 recipes saved before this have one-action splits written by a Claude Code session (not by Oracle) waiting as proposals (recipes.steps_proposed) - nothing changes until Alex presses Use these steps on a recipe card (old steps are kept in recipes.steps_previous). Not yet hand-tested by Alex. A real Current Stock view (Pantry/Fridge/Freezer/Equipment) and a real have/not-have shopping list (with a real "in basket" state between "need to find" and "bought") both exist, aisle-sorted. shoppingWishlist is a genuinely separate module (general future purchases like batteries/a wok/games, not ingredients) with its own priority-plus-budget-target fit calculator, writing a real Chronicles Finance expense on purchase. Every HABITS feature above is real, shipped, code-verified - but per the standing flag across this whole domain, effectively none of it has been hand-tested by Alex yet. TAXONOMY: real architecture change Sep 25 2026, now in a genuinely empty pre-rebuild state. jargon_encyclopedia is no longer a view over taxonomy_tree - it is a real standalone anchor table (term/phylum_number/explainer/status/taxonomy_node_id), now holding 545 real curated terms across phyla 1-20 (Phylum 1 got a real same-day top-up to 51 terms per Alex\'s own live-review feedback while browsing it; the other 19 phyla still sit at 26 each; none for phylum 21), most status=\'pending\' (a real, growing number are status=\'accepted\' as Alex works through his own review queue) - directly authored by a Claude Code session (source-tagged claude_code_prebuild), never yet generated by the live AI generator that also exists in code but has never actually been run. Jargon Encyclopedia is now a real standalone page (owned by the jargonEncyclopedia module, Sep 26 2026 UI rework) - reached via leftNav\'s Phylum Path subItem or the Taxonomy dashboard card\'s picker popup (dashDeck._openTaxonomy), never a button crammed onto Phylum Path\'s own title anymore. It shows EVERY term regardless of status (pending/accepted/rejected, each with a real status badge and filter chip), with real inline Accept/Edit/Reject actions per pending term (reusing phylumPath._resolvePendingTerm, the one real write path - never a second one). taxonomy_tree itself was first archived in full (671 old branch/leaf rows, a reversible flag) then, same day, actually DELETED to 0 rows at Alex\'s own direct follow-up ask (he judged even the archived structure not worth keeping while jargon gets built out first) - every phylum (1-21) is now a genuinely empty canvas below the phylum level, zero branches, zero leaves, zero fusion links (taxonomy_links is also 0 rows). A full pre-delete snapshot was committed first as the real restore path, since Supabase has no backup/PITR. The old \'Review Archived Terms\'/\'Review Pending Terms\' buttons on the Phylum Path page are gone - the former is genuinely dead (nothing archived left to review) and the latter is superseded by the new Jargon Encyclopedia page above. Never claim any specific phylum currently has real depth, real Orders/Classes, or any structure at all - every earlier claim of that shape (phyla 1-10 depth, Phylum 12\'s real Orders, a structurally-clean tree) describes a state from before this restructure and is not true again until Alex reviews the jargon terms and a real new phylum structure gets built around them. GYM (new Oct 10 2026, owned by the gymTracker module, HABITS module 2 after Cooking - both in the Habits group of the left menu): Gym logs sessions (exercise, sets, reps, kg; gym_sessions + gym_sets tables), shows this week against a 5-session target, personal bests per exercise (heaviest set plus an estimated 1-rep max) and recent sessions with a two-tap delete; Repeat last prefills the previous session, and beating a previous heaviest weight shows a New best toast. Gym sessions appear in Chronicles and the Morning Brief own-words section, and Ask My Data can read gym sets. No sessions exist until Alex logs one. Not yet hand-tested by Alex. DAILY LIFE (new Oct 10 2026, owned by the dailyLife module): every Current Stock tab (Pantry/Fridge/Freezer) has an Add-from-a-photo button - Oracle lists the food it sees in the photo, Alex reviews and edits the list, and each ticked row sets that item\'s amount through cookingOracle\'s own stock write (the same one the manual form uses); Oracle never adds stock without that review. Morning Brief has a New-from-your-watchlist button that checks the YouTube creators in intel_watchlist for uploads from the last 7 days (YouTube only - Instagram/TikTok creators cannot be checked) with an Analyse button that queues a video for Content Intelligence, and the brief prompt now includes Alex\'s own open quests, decisions due for a look-back and latest journal note so it can quote them back. Chronicles also shows completed quests and finished planned cooks. Not yet hand-tested by Alex. RECALL (new Oct 10 2026, owned by the recall module): saving an Encyclopedia idea card puts it on a forgetting-curve schedule (encyclopedia_insights.recall_step/recall_due: back after 1, 3, 7, 16 and 35 days); due ideas appear at the top of Morning Brief with Again (back tomorrow) or Got it (next interval; after the last one it counts as learned). A Bookworm chapter with insights has a Cards button that opens its insights as the same Deepstash-style idea cards; saving one writes it to encyclopedia_insights (source_entry_id book:<chapter id>) so book and video ideas share one Saved list and one recall queue. Not yet hand-tested by Alex. MONEY GUARDRAILS (new Oct 10 2026): the shoppingWishlist module asks an optional why-do-you-want-it reason when an item is added (wishlist_items.want_reason) and, for an item added under 24 hours ago, shows a cool-off step (time left plus that reason, Wait or Buy anyway) before the normal what-did-you-pay confirm - it never blocks a purchase. The decisionJournal module adds a Decisions strip on the Journal page: log a decision with the reason at the time and a look-back in 2, 4 or 8 weeks (journal rows, entry_type=decision, review_on); when the date arrives it asks how it turned out and saves the answer (journal.outcome). Not yet hand-tested by Alex. SHARE TO RPGACE (new Oct 10 2026, owned by the shareInbox module): the installed app appears in the Android share sheet (manifest share_target); sharing an Instagram reel, YouTube Short, TikTok or any link queues it into intel_jobs for Content Intelligence analysis, which needs Alex\'s PC analysis server running; after queuing it shows Sent to RPGACE and closes itself so Alex lands back in the app he shared from (if Android refuses the close, it says press Back). iPhone has no share-target support - an iOS Shortcut that opens the app with ?share_url= does the same. Not yet hand-tested by Alex. PATHWAYS (new Oct 10 2026, owned by the pathways module): an Encyclopedia post that came from an analysed video has buttons to turn that video\'s suggested quests into real Quest Board quests (questEngine, duplicates skipped), add its creator to the watchlist (intel_watchlist), and list Jargon Encyclopedia terms that appear in the article; Platform Oracle has an optional About-a-beat picker (beat_audio_jobs / content_productions) that prefixes every command with that beat; the Cooking shopping list has an Add-a-non-food-item-to-your-Wishlist form (shoppingWishlist). Not yet hand-tested by Alex. COOKING LAYOUT (Oct 10 2026, N2 slice 4): every Cooking button comes from one shared token set (cookingOracle BTN_VARIANTS) and now has a 36-44px tap target with 13px+ text; ingredient rows, step headers and hub descriptions are 12-13px; the Current Stock unit box no longer runs off the screen; and liquid amounts read in quarter cups with the original ml kept, e.g. 200 ml = 3/4 cup + 1 tbsp + 1 tsp (200 ml) instead of 13 tbsp 1 tsp. Not yet hand-tested by Alex. KNOWLEDGE LAYOUT (Oct 10 2026, N2 slice 3): the Encyclopedia page starts with the articles - category/sort chips sit in a folded Filter & sort section and Sync/Clear All in a folded Maintenance tools section, with search and a count line (naming the active category and sort) always visible; article titles wrap in full; an article made from an analysed video previews its first idea cards instead of making an Oracle call. Jargon Encyclopedia no longer repeats a not-placed line under every term. Encyclopedia, Jargon Encyclopedia and Phylum Path use 40px buttons and 13px+ text. Not yet hand-tested by Alex. CONTENT & VIDEO LAYOUT (Oct 10 2026, N2 slice 2): the ConID list, Idea Bank, Beat Log and Upload Workshop pages now use 40px buttons and 13px+ text, drop their doubled titles (the ConID list header reads Your productions), let ConID titles wrap instead of truncating, and show the stage badge as e.g. Visual Treatment ✓ - before this fix the badge text was the same colour as its background and could not be read. Beat Log extra fields reflow to two columns on a phone. Not yet hand-tested by Alex. ORACLE PAGE LAYOUT (Oct 10 2026, N2 slice 1): the chat input sits directly under the messages with one Tools row below it (New quests, Draft email, Log to Notion, YT stats, Prod. Oracle, Platform Oracle, Visual Oracle, Repurpose, Schedule Oracle, Phylum Path); the old Insta-Oracle button and a duplicate Quick Actions bar are gone; the former Agents page content (connected apps, one-click agent cards, activity log) is in a collapsed Agent actions & connected apps section at the bottom (agentsIntoOracle); long app-generated prompts in the chat show a 4-line preview with Show all. Not yet hand-tested by Alex. PLATFORM ORACLE (new Oct 10 2026, owned by the captionsPanel module): the Instagram, YouTube and TikTok command panels are now ONE panel - a single Platform Oracle button on the Oracle page opens it, with an Instagram / YouTube / TikTok / Business switch (13 / 8 / 8 / 5 pre-filled commands, stored in instaOraclePanel/youtubeOracle/tiktokOracle/producerTools). The Business tab (producerTools, Oct 10 2026) holds producer tools: A&R Critic, Artist Outreach, Contract Red Flags (plain-English explainer, not legal advice), Negotiation Rehearsal (role-play, then a debrief) and Playlist Psychologist (listening to beat ideas) - prompts only, nothing is sent to anyone automatically; a beat-pricing calculator does not exist because no finance data is logged yet. Tapping a command sends it to Oracle chat; the old Insta-Oracle button opens the same panel. Not yet hand-tested by Alex. ASK MY DATA (new Oct 10 2026, owned by the askMyData module): when Alex asks about his own saved data (pantry/stock, shopping list, recipes, planned cooks, wishlist, journal, quests, agenda, creator watchlist, analysed videos, encyclopedia, idea cards, jargon, reference tracks, finance log, books, content productions, RPGACE changelog), Oracle can request ONE read-only lookup with a DATA_QUERY trailer; the app fetches up to 30 rows, shows Alex which rows were used, and Oracle answers from those rows only. It cannot write or change data, and it only knows what those rows contain. Not yet hand-tested by Alex. DASHBOARD + MENU (Oct 10 2026, N2 slice 5, owned by dashDeck + leftNav): the left menu is the ONE place to reach everything, grouped Oracle / Content & Video / Knowledge / Habits (Cooking, Gym, Shopping Wishlist) / Schedule & Journal / Chronicles / Oversight - popup modules like Cooking, Gym, Morning Brief and Oversight open from it too. The dashboard no longer has a card grid; it is a landing page with four sections: Today (shifts and scheduled tasks for today, a planned cook today, My Day routines left today, gym sessions this week against 5), Due - waiting on you (pending taxonomy reviews, jargon terms to review, saved ideas due for recall, decisions due for a look-back, wishlist items whose 24h cool-off is over, shared links queued for the PC analysis server - a row only appears when there is something in it), Continue where you left off (the last pages/modules Alex opened, kept in this browser only, plus the book in progress, latest recipe and latest production) and Morning Brief + an Ask Oracle box that sends the question through the normal Oracle chat. It makes no Oracle call itself. Not yet hand-tested by Alex. NAVIGATION (new Oct 10 2026, owned by dashDeck + pathRouter): every popup has a sticky header with a Back button, a Domain > Card label and buttons for the other modules in the same domain; phone/browser Back closes the open popup first instead of leaving the page, and Back from a page that was opened from inside a popup returns to that page and reopens the card it came from. The sub-pages of Content Pipeline (ConID list, Idea Bank, Beat Log, Upload Workshop) and Bookworm (Bookworm, Videoworm, MusicWorm, Bibliography) have their own Back button (\u2190 Content Pipeline / \u2190 Bookworm, dashDeck._pageBack, Oct 10 2026) that does the same as phone Back; opened directly by link it shows the dashboard with that menu open. Not yet hand-tested by Alex. ENCYCLOPEDIA (new Oct 10 2026, owned by the encyclopediaPosts module): every Content Intelligence report (intel_reports) is automatically turned into a real encyclopedia article (source=intel, source_url = the video) plus one encyclopedia_insights row per idea card (idea_section/idea_order; saved_at when Alex saves an idea). Articles read Deepstash-style as a post of idea cards (Back/Next, card count, read time, Save idea, Full article); the Encyclopedia page shows a Posts strip with Series (posts sharing a tag) and Saved ideas. This replaced an old auto-save that only looked at the newest 5 reports and had stopped saving after the encyclopedia was cleared - so before Oct 10 none of the 37 analysed videos had an article. Not yet hand-tested by Alex; Knowledge Tree links to articles do not exist yet (the tree is empty). SCREENSHOT INBOX (new Oct 11 2026, owned by the screenshotInbox module, Knowledge menu): Alex adds screenshots in the app or shares an image to RPGACE from the Android share sheet; each is stored privately (screenshots table + private bucket, readable only after login through /api/data-write) and Oracle reads it once, saving the visible text, a one-sentence description, tags and a kind, and suggesting up to two homes. Nothing moves automatically: per screenshot Alex can Add to Wishlist (shoppingWishlist), Save as idea card (encyclopedia_insights, joins the recall schedule), Start a recipe (opens Cooking\'s Generate form filled in), Journal it, Keep it in the inbox, or delete it. Screenshots are searchable in the inbox and through Ask My Data (screenshots source, text only), and the dashboard Due section shows how many are waiting to be sorted. Each read is one Oracle vision call. Not yet hand-tested by Alex. CONTENT PIPELINE: Research Lab is fully retired as a user-facing destination - its former panels live inside Content Pipeline/Bookworm cards now. RPGACE does not generate video itself - OpenMontage (a separate Claude Code session in its own repo) is briefed and handed off via openmontage_jobs, never live infrastructure; RPGACE has ruled out paid video providers on principle (zero spend). Real beat-grid audio sync does not exist - "in sync with the beat" currently means mood/palette-matched only. Features F0 through F18 have shipped except F12 (deliberately deferred); F16/F17/F18 remain real execution debt - shipped code, genuinely never hand-tested through their full flow yet.',
 
   init: function() {
     var self = this;
@@ -16497,6 +16493,11 @@ RPGACE.register('dashDeck', {
         }
       }
       box.appendChild(nav);
+      // Oct 13 2026 (XP-2): that domain's realm(s), this week vs usual.
+      if (cardMeta && !dd._navStack.length && RPGACE.modules.xpSeason) {
+        var xpStrip = RPGACE.modules.xpSeason.ui.popupStrip(cardMeta.key);
+        if (xpStrip) box.appendChild(xpStrip);
+      }
     }
     if (opts.eyebrow) {
       var eb = document.createElement('div');
@@ -30191,6 +30192,53 @@ RPGACE.register('contentProductionLive', {
               actions.appendChild(postBtn);
             }
 
+            // Oct 13 2026 (XP-1, Alex: "Add two ticks to the beat card"):
+            // the pipeline had no "beat finished" / "beat released" step, so
+            // Producer XP had nothing to fire on. Setting these columns is
+            // all it takes: the database's xp_on_change trigger awards
+            // beat_finished (120) / beat_released (300) to the Producer realm.
+            if (row.content_type === 'music_video') {
+              var tickCss = 'padding:4px 10px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:5px;color:#C9A84C;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;min-height:32px;';
+              if (!row.finished_at) {
+                var finBtn = document.createElement('button');
+                finBtn.className = 'cpl-beat-finished';
+                finBtn.textContent = '✅ Beat finished';
+                finBtn.style.cssText = tickCss;
+                finBtn.onclick = function() {
+                  finBtn.disabled = true;
+                  self.updateEntry(row.id, { finished_at: new Date().toISOString() }).then(function() {
+                    self._refreshWidget();
+                    RPGACE.utils.toast('✅ Beat finished: ' + (row.title || 'ConID #' + row.con_id), color, 2200);
+                  }).catch(function(e) { finBtn.disabled = false; RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500, 'contentProductionLive'); });
+                };
+                actions.appendChild(finBtn);
+              } else if (!row.released_at) {
+                var relBtn = document.createElement('button');
+                relBtn.className = 'cpl-beat-released';
+                relBtn.textContent = '🚀 Beat released';
+                relBtn.style.cssText = tickCss;
+                relBtn.onclick = function() {
+                  var link = window.prompt('Where is it out? Paste a link (optional), then OK.', '');
+                  if (link === null) return;
+                  link = String(link || '').trim();
+                  var upd = { released_at: new Date().toISOString() };
+                  if (/^https?:\/\//.test(link)) upd.release_url = link;
+                  relBtn.disabled = true;
+                  self.updateEntry(row.id, upd).then(function() {
+                    self._refreshWidget();
+                    RPGACE.utils.toast('🚀 Beat released: ' + (row.title || 'ConID #' + row.con_id), color, 2200);
+                  }).catch(function(e) { relBtn.disabled = false; RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500, 'contentProductionLive'); });
+                };
+                actions.appendChild(relBtn);
+              } else if (row.release_url && /^https?:\/\//.test(row.release_url)) {
+                var relLink = document.createElement('a');
+                relLink.href = row.release_url; relLink.target = '_blank'; relLink.rel = 'noopener noreferrer';
+                relLink.textContent = '🚀 Released';
+                relLink.style.cssText = tickCss + 'text-decoration:none;';
+                actions.appendChild(relLink);
+              }
+            }
+
             // Open in Oracle button
             var oracleBtn = document.createElement('button');
             oracleBtn.textContent = '💬 Oracle session';
@@ -33868,18 +33916,11 @@ RPGACE.register('questEngine', {
   // ============================================================
   ui: {
 
+    // Oct 13 2026 (XP-1): the card is no longer painted from quest_log here;
+    // quest/routine XP now reaches the xp_events ledger through the
+    // database trigger, and xpSeason paints the card from that one source.
     _paintRestoredState: function() {
-      var set = function(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; };
-      var req = STATE.xpRequired[STATE.level - 1] || 9999;
-      if (typeof paintXpBar === 'function') paintXpBar(STATE.xp, req);
-      set('xp-val', STATE.xp + ' / ' + req);
-      set('stat-tasks', STATE.tasksCompleted);
-      set('stat-xp', STATE.totalXP);
-      set('stat-lvl', STATE.level);
-      set('lvl-display', STATE.level);
-      var title = (typeof LEVEL_TITLES !== 'undefined' && LEVEL_TITLES)
-        ? LEVEL_TITLES[Math.min(STATE.level - 1, LEVEL_TITLES.length - 1)] : null;
-      if (title) set('char-title', title + ' • Level ' + STATE.level);
+      if (RPGACE.modules.xpSeason) RPGACE.modules.xpSeason.ui.renderCard();
       if (typeof updateSkillTree === 'function') { try { updateSkillTree(); } catch (e) {} }
     },
 
@@ -35404,20 +35445,9 @@ RPGACE.hooks.on('rpgace:login', function() {
 //   follow than relying on classic-script global-scope leakage.
 RPGACE.register('careerStatCard', {
   domain: 'chronicles',
-  WEIGHTS: {
-    contentShipped: 100,
-    contentIdea: 5,
-    journalEntry: 8,
-    insight: 4,
-    proposalAccepted: 6,
-    chapterComplete: 15,
-    referenceTrack: 3
-  },
-  LEVEL_TITLES: ['Novice Producer','Content Apprentice','Rising Creator','Consistent Grinder','Viral Contender','Established Creator','Platform Veteran','The Producer','Elite Creator'],
-  // Cumulative XP ceiling per level - running total of main.js's own
-  // per-level requirements ([500,1200,2200,3500,5000,7000,9500,12500]),
-  // reused so a "Level" here means the same thing on the same scale.
-  CUM_BANDS: [500,1700,3900,7400,12400,19400,28900,41400],
+  // WEIGHTS / LEVEL_TITLES / CUM_BANDS (the old row-count career score)
+  // removed Oct 13 2026 (XP-1): XP now lives in the xp_events ledger,
+  // painted by xpSeason.
 
   // ══════════════════════════════════════════════════════════════════
   // G53 (Sep 2026), batch 16, module 47 of 60 — real, ratified /CEO plan
@@ -35648,24 +35678,6 @@ RPGACE.register('careerStatCard', {
 
   _dateStr: function(iso) { return iso ? iso.slice(0, 10) : null; },
 
-  _computeStreak: function(data) {
-    var days = {};
-    var addAll = function(rows) { rows.forEach(function(r) { var d = data.self._dateStr(r.created_at); if (d) days[d] = true; }); };
-    addAll(data.content); addAll(data.journal); addAll(data.insights); addAll(data.proposals); addAll(data.tracks);
-    var today = new Date();
-    var toKey = function(d) { return d.toISOString().slice(0, 10); };
-    var todayKey = toKey(today);
-    var yest = new Date(today.getTime() - 86400000);
-    var yestKey = toKey(yest);
-    if (!days[todayKey] && !days[yestKey]) return 0;
-    var cursor = days[todayKey] ? today : yest;
-    var count = 0;
-    while (days[toKey(cursor)]) {
-      count++;
-      cursor = new Date(cursor.getTime() - 86400000);
-    }
-    return count;
-  },
 
   _relTime: function(iso) {
     var diff = Date.now() - new Date(iso).getTime();
@@ -35677,18 +35689,6 @@ RPGACE.register('careerStatCard', {
     return Math.floor(hrs / 24) + 'd ago';
   },
 
-  _levelFor: function(totalXP) {
-    var self = RPGACE.modules.careerStatCard;
-    var bands = self.CUM_BANDS;
-    for (var i = 0; i < bands.length; i++) {
-      if (totalXP < bands[i]) {
-        var floor = i === 0 ? 0 : bands[i - 1];
-        return { levelNum: i + 1, title: self.LEVEL_TITLES[i], floor: floor, ceil: bands[i] };
-      }
-    }
-    var last = bands.length - 1;
-    return { levelNum: bands.length + 1, title: self.LEVEL_TITLES[self.LEVEL_TITLES.length - 1], floor: bands[last], ceil: bands[last] + 10000 };
-  },
 
   // July 22, round 3: renamed "Recent Wins" -> "The Chronicles" (Alex's own
   // name for the whole group), and added a real "View Full Log" nav button
@@ -35794,63 +35794,14 @@ RPGACE.register('careerStatCard', {
   // ============================================================
   ui: {
 
+  // Oct 13 2026 (XP-1, XP Season Pass): the row-count career score that
+  // used to be computed here (WEIGHTS x row counts, 88% of it from
+  // auto-made idea cards) is retired. The profile card is painted from the
+  // xp_events ledger by xpSeason; this module keeps its Chronicles feed
+  // (_fetchAll/_buildItems/_showDetail) unchanged.
   _render: function() {
-    var self = RPGACE.modules.careerStatCard;
-    self._fetchAll().then(function(data) {
-      data.self = self; // let _computeStreak reuse _dateStr without rebinding
-      var W = self.WEIGHTS;
-      var shipped = data.content.filter(function(r) { return self._isShipped(r); });
-      var ideas = data.content.filter(function(r) { return !self._isShipped(r); });
-
-      var totalXP = shipped.length * W.contentShipped
-        + ideas.length * W.contentIdea
-        + data.journal.length * W.journalEntry
-        + data.insights.length * W.insight
-        + data.proposals.length * W.proposalAccepted
-        + data.chapters.length * W.chapterComplete
-        + data.tracks.length * W.referenceTrack;
-
-      var lvl = self._levelFor(totalXP);
-      var streak = self._computeStreak(data);
-      var totalActions = shipped.length + ideas.length + data.journal.length + data.insights.length + data.proposals.length + data.chapters.length + data.tracks.length;
-      var growthTotal = data.journal.length + data.insights.length + data.proposals.length + data.chapters.length + data.tracks.length;
-
-      // Output lane: real shipped count only - the honest, ungamed number.
-      var outMilestone = Math.max(3, Math.ceil((shipped.length + 1) / 3) * 3);
-      var outBar = document.getElementById('output-bar'), outVal = document.getElementById('output-val');
-      if (outBar) outBar.style.transform = 'scaleX(' + (Math.min(100, Math.round(shipped.length / outMilestone * 100)) / 100) + ')';
-      if (outVal) outVal.textContent = shipped.length + ' / ' + outMilestone + ' shipped';
-
-      // Growth lane: combined small-wins volume.
-      var groMilestone = Math.max(50, Math.ceil((growthTotal + 1) / 50) * 50);
-      var groBar = document.getElementById('growth-bar'), groVal = document.getElementById('growth-val');
-      if (groBar) groBar.style.transform = 'scaleX(' + (Math.min(100, Math.round(growthTotal / groMilestone * 100)) / 100) + ')';
-      if (groVal) groVal.textContent = growthTotal + ' / ' + groMilestone;
-
-      // XP lane: real cumulative career score, progress within current level.
-      var xpBar = document.getElementById('xp-bar'), xpVal = document.getElementById('xp-val');
-      var bandWidth = lvl.ceil - lvl.floor;
-      var withinLevel = totalXP - lvl.floor;
-      if (xpBar) xpBar.style.transform = 'scaleX(' + (Math.min(100, Math.round(withinLevel / bandWidth * 100)) / 100) + ')';
-      if (xpVal) xpVal.textContent = withinLevel + ' / ' + bandWidth;
-
-      var charTitle = document.getElementById('char-title');
-      if (charTitle) charTitle.innerHTML = lvl.title + ' • Level <span id="lvl-display">' + lvl.levelNum + '</span>';
-
-      var statTasks = document.getElementById('stat-tasks'); if (statTasks) statTasks.textContent = totalActions;
-      var statStreak = document.getElementById('stat-streak'); if (statStreak) statStreak.textContent = streak;
-      var statLvl = document.getElementById('stat-lvl'); if (statLvl) statLvl.textContent = lvl.levelNum;
-      var statXp = document.getElementById('stat-xp'); if (statXp) statXp.textContent = totalXP;
-      // July 23: the standalone "Recent Wins" header+feed that used to sit
-      // here (._renderWins/._ensureWinsContainer) is gone - real feedback
-      // from Alex, this was a bespoke treatment that didn't match the
-      // other 11 dashDeck cards visually. Chronicles now lives ONLY as a
-      // real card in that grid (dashDeck.MODULES 'chronicles' entry ->
-      // chroniclesLog._openCard()), reusing this exact _buildItems/
-      // _showDetail logic for its popup preview - removed, not duplicated.
-    }).catch(function(e) {
-      console.warn('[RPGACE:careerStatCard] render failed, leaving prior display untouched', e.message);
-    });
+    var xs = RPGACE.modules.xpSeason;
+    return xs ? xs.ui.renderCard() : null;
   },
 
   // Builds the {what, outcome, whereStored, whySignificant} shape every
@@ -36081,9 +36032,7 @@ RPGACE.register('careerStatCard', {
   _isShipped: function(row) { return this.logic._isShipped(row); },
   _cookNames: function(r, titles) { return this.logic._cookNames(r, titles); },
   _dateStr: function(iso) { return this.logic._dateStr(iso); },
-  _computeStreak: function(data) { return this.logic._computeStreak(data); },
   _relTime: function(iso) { return this.logic._relTime(iso); },
-  _levelFor: function(totalXP) { return this.logic._levelFor(totalXP); },
   _buildItems: function(data, shipped, ideas) { return this.logic._buildItems(data, shipped, ideas); },
   _proposalShortName: function(r) { return this.logic._proposalShortName(r); },
   _esc: function(s) { return this.logic._esc(s); },
@@ -36487,6 +36436,330 @@ RPGACE.register('chroniclesLog', {
 
 });
 /* ===END:chroniclesLog=== */
+/* ===MODULE:xpSeason=== */
+// XP Season Pass, XP-1 + XP-2 (Oct 13 2026). Ratified plan "XP Season Pass",
+// record: records/2026-10/xp_season_pass_ceo_loop1_2026-10-13.txt.
+//
+// ONE XP system. The database writes every XP row itself: xp_on_change()
+// triggers on 15 source tables call xp_award(), which reads xp_rules
+// (values, realm, daily cap) and inserts into the private xp_events ledger
+// (migration: records/2026-10/xp1_migration_2026-10-13.sql). The client never
+// awards XP; it only reads xp_events (through tripPlans.logic.read, the
+// shared signed-in /api/data-write 'read' action) and paints:
+//   - the dashboard profile card: Sky rank + stars, season level, level bar,
+//     a 13-spoke balance wheel of this week's XP, Done/Streak/Level/XP chips;
+//   - a realm strip under each domain popup's header and at the top of each
+//     domain page (Alex: "profile cards show differently when in each domain,
+//     so when I'm doing something I see how poorly I'm doing"): that domain's
+//     realm(s), this week's XP against the usual week so far;
+//   - the Season page (tap the card or a strip).
+// Retired by this module: careerStatCard's row-count career score,
+// questEngine painting the card from quest_log, and the legacy addXP() pop-ups.
+// Not here yet: realm ranks/titles/badges (XP-3), the undo question (XP-4),
+// challenges (XP-5), treats/themes/flair (XP-6).
+RPGACE.register('xpSeason', {
+  domain: 'chronicles',
+
+  REALMS: {
+    producer:   { icon: '🎵', name: 'Producer' },
+    creator:    { icon: '🎬', name: 'Creator' },
+    hustler:    { icon: '💼', name: 'Hustler' },
+    chef:       { icon: '🍳', name: 'Chef' },
+    athlete:    { icon: '💪', name: 'Athlete' },
+    scholar:    { icon: '📚', name: 'Scholar' },
+    life:       { icon: '🏠', name: 'Life' },
+    homekeeper: { icon: '🏡', name: 'Homekeeper' },
+    mind:       { icon: '🧘', name: 'Mind' },
+    steward:    { icon: '💷', name: 'Steward' },
+    explorer:   { icon: '✈️', name: 'Explorer' },
+    connector:  { icon: '🤝', name: 'Connector' },
+    builder:    { icon: '🛠', name: 'Builder' },
+  },
+  ORDER: ['producer', 'creator', 'hustler', 'chef', 'athlete', 'scholar', 'life', 'homekeeper', 'mind', 'steward', 'explorer', 'connector', 'builder'],
+  SKY: ['Spark', 'Ember', 'Flame', 'Comet', 'Star', 'Nova', 'Constellation', 'Galaxy'],
+  // Ratified: 40 stars spaced evenly by XP; Galaxy 1 (star 36) at ~72,000 XP.
+  STAR_XP: 72000 / 35,
+  // Which realm(s) a domain card or page shows. Keys are dashDeck card keys
+  // and RPGACE.CONFIG.pages slugs.
+  CARD_REALMS: {
+    cooking: ['chef'], gym: ['athlete'], wishlist: ['steward'],
+    pipeline: ['producer', 'creator', 'hustler'],
+    library: ['scholar'], bookworm: ['scholar'], taxonomy: ['scholar'], gaps: ['scholar'], encyclopedia: ['scholar'], screenshots: ['scholar'],
+    agenda: ['life', 'homekeeper', 'mind'], morningBrief: ['life'], journal: ['life'], plans: ['explorer', 'connector'],
+    oversight: ['builder'],
+  },
+  PAGE_REALMS: {
+    'content-pipeline': ['producer', 'creator', 'hustler'], 'idea-bank': ['producer', 'creator'], 'beat-log': ['producer'], 'upload-workshop': ['creator', 'hustler'],
+    'bookworm': ['scholar'], 'videoworm': ['scholar'], 'musicworm': ['scholar'], 'bibliography': ['scholar'], 'encyclopedia': ['scholar'],
+    'phylumpath': ['scholar'], 'jargon-encyclopedia': ['scholar'],
+    'quests': ['life', 'homekeeper', 'mind'], 'schedule': ['life', 'homekeeper'], 'journal': ['life'],
+  },
+
+  _cache: null,
+  _inflight: null,
+
+  init: function() {
+    var self = this;
+    RPGACE.registerBootTask(function() { self.ui.renderCard(); });
+    RPGACE.hooks.on('rpgace:login', function() { self.logic.clear(); setTimeout(function() { self.ui.renderCard(); }, 800); });
+    RPGACE.hooks.on('page:show', function(name) {
+      self.logic.clear();
+      if (name === 'dashboard') setTimeout(function() { self.ui.renderCard(); }, 300);
+      if (self.PAGE_REALMS[name]) setTimeout(function() { self.ui.pageStrip(name); }, 500);
+    });
+  },
+
+  logic: {
+    clear: function() { RPGACE.modules.xpSeason._cache = null; },
+    signedIn: function() { var tp = RPGACE.modules.tripPlans; return !!(tp && tp.logic.signedIn()); },
+    seasonOf: function(isoDay) { return isoDay < '2027-01-01' ? 0 : Number(isoDay.slice(0, 4)); },
+    seasonName: function(season) { return season === 0 ? 'Season 0: Construction' : 'Season ' + season; },
+    today: function() { var d = new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); },
+    addDays: function(isoDay, n) { var d = new Date(isoDay + 'T12:00:00'); d.setDate(d.getDate() + n); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); },
+    weekStart: function(isoDay) { var d = new Date(isoDay + 'T12:00:00'), dow = (d.getDay() + 6) % 7; return RPGACE.modules.xpSeason.logic.addDays(isoDay, -dow); },
+    // Ratified rising curve: level 1 needs 500 XP, each next level 25 more.
+    levelFor: function(xp) {
+      var lvl = 1, need = 500, rem = Math.max(0, xp || 0);
+      while (rem >= need) { rem -= need; lvl++; need = 500 + 25 * (lvl - 1); }
+      return { level: lvl, into: rem, need: need };
+    },
+    skyFor: function(xp) {
+      var S = RPGACE.modules.xpSeason, idx = Math.min(39, Math.floor(Math.max(0, xp || 0) / S.STAR_XP));
+      return { rank: S.SKY[Math.floor(idx / 5)], stars: (idx % 5) + 1, index: idx, nextAt: idx >= 39 ? null : Math.ceil((idx + 1) * S.STAR_XP) };
+    },
+    load: function(force) {
+      var S = RPGACE.modules.xpSeason, L = S.logic;
+      if (!L.signedIn()) return Promise.resolve(null);
+      if (!force && S._cache && Date.now() - S._cache.at < 15000) return Promise.resolve(S._cache.events);
+      if (S._inflight) return S._inflight;
+      S._inflight = RPGACE.modules.tripPlans.logic.read('xp_events',
+        'select=season,realm,action,xp,earned_on,earned_at,status,note&status=neq.removed&order=earned_at.desc&limit=10000')
+        .then(function(rows) { S._cache = { at: Date.now(), events: rows || [] }; S._inflight = null; return S._cache.events; },
+              function(e) { S._inflight = null; throw e; });
+      return S._inflight;
+    },
+    // Everything the card, strips and Season page show, from the ledger.
+    summary: function(events, todayIso) {
+      var S = RPGACE.modules.xpSeason, L = S.logic;
+      var today = todayIso || L.today(), season = L.seasonOf(today), wk = L.weekStart(today);
+      var out = { season: season, seasonName: L.seasonName(season), total: 0, career: 0, done: 0, realms: {}, week: {}, prevWeeks: {}, days: {}, recent: [] };
+      S.ORDER.forEach(function(r) { out.realms[r] = 0; out.week[r] = 0; out.prevWeeks[r] = {}; });
+      var firstDay = null;
+      (events || []).forEach(function(e) {
+        var xp = Number(e.xp) || 0;
+        out.career += xp;
+        if (Number(e.season) !== season) return;
+        out.total += xp; out.done++;
+        if (!(e.realm in out.realms)) { out.realms[e.realm] = 0; out.week[e.realm] = 0; out.prevWeeks[e.realm] = {}; }
+        out.realms[e.realm] += xp;
+        out.days[e.earned_on] = 1;
+        if (!firstDay || e.earned_on < firstDay) firstDay = e.earned_on;
+        var w = L.weekStart(e.earned_on);
+        if (w === wk) out.week[e.realm] += xp;
+        else out.prevWeeks[e.realm][w] = (out.prevWeeks[e.realm][w] || 0) + xp;
+        if (out.recent.length < 25) out.recent.push(e);
+      });
+      // Usual week = average over the season's full weeks before this one.
+      var seasonStart = season === 0 ? (firstDay && firstDay < wk ? L.weekStart(firstDay) : wk) : (season + '-01-01');
+      var weeksBefore = Math.max(0, Math.round((new Date(wk + 'T12:00:00') - new Date(L.weekStart(seasonStart) + 'T12:00:00')) / (7 * 86400000)));
+      out.weeksBefore = weeksBefore;
+      out.usual = {};
+      Object.keys(out.realms).forEach(function(r) {
+        var sum = 0; Object.keys(out.prevWeeks[r]).forEach(function(k) { sum += out.prevWeeks[r][k]; });
+        out.usual[r] = weeksBefore ? sum / weeksBefore : null;
+      });
+      out.dayOfWeek = ((new Date(today + 'T12:00:00').getDay() + 6) % 7) + 1;  // Mon=1..Sun=7
+      out.level = L.levelFor(out.total);
+      out.sky = L.skyFor(out.total);
+      out.realmsThisWeek = S.ORDER.filter(function(r) { return out.week[r] > 0; }).length;
+      var streak = 0, d = out.days[today] ? today : L.addDays(today, -1);
+      while (out.days[d]) { streak++; d = L.addDays(d, -1); }
+      out.streak = streak;
+      return out;
+    },
+    // How this week compares with the usual week so far (pro-rated by day).
+    pace: function(sum, realm) {
+      var usual = sum.usual[realm], now = sum.week[realm] || 0;
+      if (usual == null) return { key: 'first', text: now ? 'first week of the season' : 'nothing yet: first week of the season' };
+      if (usual <= 0) return now > 0 ? { key: 'up', text: 'above your usual (usually 0)' } : { key: 'none', text: 'nothing yet, like most weeks' };
+      var expect = usual * sum.dayOfWeek / 7, ratio = expect > 0 ? now / expect : 1;
+      if (ratio < 0.5) return { key: 'behind', text: 'behind: ' + Math.round(now) + ' vs ~' + Math.round(expect) + ' usual by now' };
+      if (ratio < 0.9) return { key: 'slow', text: 'a bit slow: ' + Math.round(now) + ' vs ~' + Math.round(expect) + ' usual by now' };
+      return { key: 'up', text: 'on pace: ' + Math.round(now) + ' vs ~' + Math.round(expect) + ' usual by now' };
+    },
+    label: function(action) {
+      var L = { beat_logged: 'Beat logged', beat_finished: 'Beat finished', beat_released: 'Beat released', treatment_done: 'Visual treatment', video_posted: 'Video posted',
+        sale: 'Sale', cook_finished: 'Cook finished', recipe_saved: 'Recipe saved', gym_session: 'Gym session', chapter_done: 'Chapter analysed', book_finished: 'Book finished',
+        jargon_reviewed: 'Jargon reviewed', library_added: 'Library item added', journal_entry: 'Journal entry', quest_done: 'Quest done', routine_tick: 'Routine done',
+        expense_logged: 'Expense logged', plan_made: 'Plan made', trip_done: 'Trip done', caught_up: 'Caught up', hand_test: 'Hand-tested a feature', flag: 'Flag to Claude Code' };
+      return L[action] || action;
+    },
+  },
+
+  ui: {
+    _esc: function(s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; },
+    PACE_COLOR: { behind: '#CC4A4A', slow: '#E2A83D', up: '#4CAF82', first: 'var(--muted)', none: 'var(--muted)' },
+    stars: function(n) { return '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n); },
+
+    // 13-spoke balance wheel: spoke length = this week's realm XP vs the
+    // biggest realm this week. An empty week draws only the guide circle.
+    wheel: function(sum, size) {
+      var S = RPGACE.modules.xpSeason, n = S.ORDER.length, c = size / 2, r = size / 2 - 14;
+      var max = 0; S.ORDER.forEach(function(k) { if (sum.week[k] > max) max = sum.week[k]; });
+      var parts = ['<svg class="xp-wheel" viewBox="0 0 ' + size + ' ' + size + '" width="' + size + '" height="' + size + '" role="img" aria-label="This week, XP by realm">',
+        '<circle cx="' + c + '" cy="' + c + '" r="' + r + '" fill="none" stroke="var(--border)" stroke-width="1"/>'];
+      S.ORDER.forEach(function(k, i) {
+        var a = -Math.PI / 2 + i * 2 * Math.PI / n, v = max ? sum.week[k] / max : 0;
+        var x2 = c + Math.cos(a) * r, y2 = c + Math.sin(a) * r;
+        parts.push('<line x1="' + c + '" y1="' + c + '" x2="' + x2.toFixed(1) + '" y2="' + y2.toFixed(1) + '" stroke="var(--border)" stroke-width="1"/>');
+        if (v > 0) {
+          var xv = c + Math.cos(a) * r * Math.max(0.12, v), yv = c + Math.sin(a) * r * Math.max(0.12, v);
+          parts.push('<line class="xp-spoke" data-realm="' + k + '" x1="' + c + '" y1="' + c + '" x2="' + xv.toFixed(1) + '" y2="' + yv.toFixed(1) + '" stroke="var(--gold)" stroke-width="4" stroke-linecap="round"><title>' + S.REALMS[k].name + ': ' + sum.week[k] + ' XP this week</title></line>');
+        }
+        var lx = c + Math.cos(a) * (r + 8), ly = c + Math.sin(a) * (r + 8);
+        parts.push('<text x="' + lx.toFixed(1) + '" y="' + (ly + 4).toFixed(1) + '" text-anchor="middle" font-size="10">' + S.REALMS[k].icon + '</text>');
+      });
+      parts.push('</svg>');
+      return parts.join('');
+    },
+
+    // Dashboard profile card (the existing .char-header, repainted).
+    renderCard: function() {
+      var S = RPGACE.modules.xpSeason, L = S.logic, U = S.ui;
+      var head = document.querySelector('.char-header');
+      if (!head) return Promise.resolve();
+      if (!head.dataset.xpWired) {
+        head.dataset.xpWired = '1';
+        head.style.cursor = 'pointer';
+        head.title = 'Open your Season';
+        head.addEventListener('click', function(e) { if (e.target.closest('button,a')) return; U.openSeason(); });
+      }
+      return L.load().then(function(events) {
+        if (!events) return;
+        var sum = L.summary(events);
+        var set = function(id, v) { var el = document.getElementById(id); if (el) el.textContent = v; };
+        var title = document.getElementById('char-title');
+        if (title) title.innerHTML = U._esc(sum.sky.rank) + ' <span style="color:var(--gold);letter-spacing:1px">' + U.stars(sum.sky.stars) + '</span> • Level <span id="lvl-display">' + sum.level.level + '</span>';
+        var bars = head.querySelector('.bars');
+        if (bars) {
+          var pct = Math.round(sum.level.into / sum.level.need * 100);
+          bars.innerHTML = '<div class="bar-row"><span class="bar-label">' + U._esc(sum.season === 0 ? 'S0' : 'S' + sum.season) + ' XP</span><div class="bar-track"><div class="bar-fill xp" id="xp-bar" style="transform:scaleX(' + (pct / 100) + ')"></div></div><span class="bar-val" id="xp-val">' + sum.level.into + ' / ' + sum.level.need + '</span></div>' +
+            '<div class="xp-card-row" style="display:flex;align-items:center;gap:12px;margin-top:6px;">' + U.wheel(sum, 96) +
+            '<div style="font-size:12px;color:var(--muted);line-height:1.5;">' + U._esc(sum.seasonName) + '<br>This week: <b style="color:var(--text)">' + sum.realmsThisWeek + ' of 13</b> realms' +
+            (sum.done ? '' : '<br>Log a cook, a gym session or a routine and XP appears here.') + '</div></div>';
+        }
+        set('stat-tasks', sum.done); set('stat-streak', sum.streak); set('stat-lvl', sum.level.level); set('stat-xp', sum.total);
+        var lbl = document.querySelector('#stat-xp + .lbl'); if (lbl) lbl.textContent = 'Season XP';
+      }).catch(function(e) { console.warn('[RPGACE:xpSeason] card failed', e.message); });
+    },
+
+    // Realm strip for a domain: one line per realm with this week vs usual.
+    strip: function(realms) {
+      var S = RPGACE.modules.xpSeason, L = S.logic, U = S.ui;
+      var el = document.createElement('div');
+      el.className = 'xp-strip';
+      el.style.cssText = 'display:flex;flex-direction:column;gap:4px;border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin:0 0 12px;background:var(--panel2);cursor:pointer;';
+      el.title = 'Open your Season';
+      el.onclick = function() { U.openSeason(); };
+      if (!L.signedIn()) { el.style.display = 'none'; return el; }
+      el.textContent = 'Loading XP…';
+      L.load().then(function(events) {
+        if (!events) { el.style.display = 'none'; return; }
+        var sum = L.summary(events);
+        el.innerHTML = '';
+        realms.forEach(function(r) {
+          var meta = S.REALMS[r]; if (!meta) return;
+          var p = L.pace(sum, r);
+          var row = document.createElement('div');
+          row.className = 'xp-strip-row'; row.dataset.realm = r; row.dataset.pace = p.key;
+          row.style.cssText = 'display:flex;flex-wrap:wrap;align-items:baseline;gap:6px;font-size:13px;color:var(--text);';
+          row.innerHTML = '<b>' + meta.icon + ' ' + U._esc(meta.name) + '</b><span style="color:var(--muted)">' + (sum.realms[r] || 0) + ' XP this season · ' + (sum.week[r] || 0) + ' this week</span>' +
+            '<span class="xp-pace" style="color:' + U.PACE_COLOR[p.key] + ';font-weight:700;">' + U._esc(p.text) + '</span>';
+          el.appendChild(row);
+        });
+      }).catch(function() { el.style.display = 'none'; });
+      return el;
+    },
+    // Popups: dashDeck._popup calls this for the first popup of a card.
+    popupStrip: function(cardKey) {
+      var S = RPGACE.modules.xpSeason, realms = S.CARD_REALMS[cardKey];
+      return realms ? S.ui.strip(realms) : null;
+    },
+    // Pages: put the strip at the top of the page (once).
+    pageStrip: function(name) {
+      var S = RPGACE.modules.xpSeason, realms = S.PAGE_REALMS[name];
+      var page = document.getElementById('page-' + name);
+      if (!realms || !page) return;
+      var old = page.querySelector(':scope > .xp-strip');
+      if (old) old.remove();
+      var st = S.ui.strip(realms);
+      // After the Knowledge "what this is" header when the page has one (LL-7
+      // keeps that header directly under the title), else after the title.
+      var anchor = page.querySelector(':scope > .kn-head') || page.querySelector(':scope > .section-title');
+      if (anchor && anchor.nextSibling) page.insertBefore(st, anchor.nextSibling); else page.insertBefore(st, page.firstChild);
+    },
+
+    openSeason: function() {
+      var S = RPGACE.modules.xpSeason, L = S.logic, U = S.ui;
+      var dd = RPGACE.modules.dashDeck;
+      if (!dd || !dd._popup) return;
+      var pop = dd._popup({ eyebrow: '📜 Chronicles', title: '🌌 Your Season', width: '620px' });
+      pop.box.id = 'xp-season';
+      if (!L.signedIn()) { pop.box.textContent = 'Sign in to see your Season.'; return pop; }
+      pop.box.textContent = 'Loading…';
+      L.load(true).then(function(events) {
+        var sum = L.summary(events || []);
+        var b = pop.box; b.innerHTML = '';
+        var top = document.createElement('div');
+        top.style.cssText = 'display:flex;flex-wrap:wrap;gap:16px;align-items:center;margin-bottom:12px;';
+        var toNext = sum.sky.nextAt == null ? 'top star reached' : (sum.sky.nextAt - sum.total) + ' XP to the next star';
+        top.innerHTML = U.wheel(sum, 150) + '<div style="flex:1;min-width:180px;">' +
+          '<div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">' + U._esc(sum.seasonName) + '</div>' +
+          '<div style="font-size:22px;font-weight:700;color:var(--text);margin:2px 0;">' + U._esc(sum.sky.rank) + ' <span style="color:var(--gold)">' + U.stars(sum.sky.stars) + '</span></div>' +
+          '<div style="font-size:14px;color:var(--text);">Level ' + sum.level.level + ' · ' + sum.level.into + ' / ' + sum.level.need + ' to level ' + (sum.level.level + 1) + '</div>' +
+          '<div style="font-size:13px;color:var(--muted);margin-top:4px;">' + sum.total + ' season XP · ' + U._esc(toNext) + ' · streak ' + sum.streak + ' day' + (sum.streak === 1 ? '' : 's') + ' · ' + sum.career + ' career XP</div>' +
+          '<div style="font-size:13px;color:var(--muted);margin-top:4px;">This week you touched <b style="color:var(--text)">' + sum.realmsThisWeek + ' of 13</b> realms.</div></div>';
+        b.appendChild(top);
+        var h = document.createElement('div');
+        h.style.cssText = 'font-size:12px;font-weight:700;color:var(--gold);letter-spacing:.5px;text-transform:uppercase;margin:12px 0 6px;';
+        h.textContent = 'Realms';
+        b.appendChild(h);
+        S.ORDER.forEach(function(r) {
+          var meta = S.REALMS[r], p = L.pace(sum, r);
+          var row = document.createElement('div'); row.className = 'xp-realm-row'; row.dataset.realm = r;
+          row.style.cssText = 'display:flex;flex-wrap:wrap;align-items:baseline;gap:8px;padding:6px 0;border-bottom:1px solid var(--border);font-size:13px;';
+          row.innerHTML = '<b style="min-width:120px;color:var(--text)">' + meta.icon + ' ' + U._esc(meta.name) + '</b><span style="color:var(--muted);min-width:150px;">' + (sum.realms[r] || 0) + ' XP · ' + (sum.week[r] || 0) + ' this week</span>' +
+            '<span style="color:' + U.PACE_COLOR[p.key] + ';">' + U._esc(p.text) + '</span>';
+          b.appendChild(row);
+        });
+        var h2 = h.cloneNode(); h2.textContent = 'Recent XP'; b.appendChild(h2);
+        if (!sum.recent.length) {
+          var e0 = document.createElement('div'); e0.style.cssText = 'font-size:13px;color:var(--muted);';
+          e0.textContent = 'Nothing yet this season. XP comes from real things you do: cooks, gym, routines, beats, books, trips, sales.';
+          b.appendChild(e0);
+        }
+        sum.recent.forEach(function(e) {
+          var meta = S.REALMS[e.realm] || { icon: '•', name: e.realm };
+          var row = document.createElement('div'); row.className = 'xp-event';
+          row.style.cssText = 'display:flex;gap:8px;font-size:13px;padding:3px 0;color:var(--text);';
+          row.innerHTML = '<span>' + meta.icon + '</span><span style="flex:1;min-width:0;">' + U._esc(L.label(e.action)) + (e.note ? ' <span style="color:var(--muted)">· ' + U._esc(String(e.note).slice(0, 60)) + '</span>' : '') +
+            (e.status === 'pending_confirm' ? ' <span style="color:#E2A83D">(deleted this week, still counted until you confirm)</span>' : '') + '</span>' +
+            '<b style="color:' + (e.xp ? 'var(--gold)' : 'var(--muted)') + '">+' + e.xp + '</b><span style="color:var(--muted);min-width:52px;text-align:right;">' + U._esc(String(e.earned_on).slice(5)) + '</span>';
+          b.appendChild(row);
+        });
+        var note = document.createElement('div');
+        note.style.cssText = 'font-size:12px;color:var(--muted);margin-top:12px;line-height:1.5;';
+        note.textContent = 'Repeats of the same action on one day pay 100%, then 50%, then nothing; shipping, sales and milestones are never reduced. Realm ranks, titles and badges arrive in the next step.';
+        b.appendChild(note);
+      }).catch(function(e) { pop.box.textContent = 'Your Season could not load: ' + (e.message || e); });
+      return pop;
+    },
+  },
+
+  openSeason: function() { return this.ui.openSeason(); },
+});
+/* ===END:xpSeason=== */
+
 
 /* ===MODULE:jargonEncyclopedia=== */
 // July 22 — "biggest confirmed-not-built items" list (CLAUDE.md) named a
@@ -38981,20 +39254,26 @@ RPGACE.register('errorLog', {
   // unattributed, never wrongly attributes (fails open, same discipline
   // as everywhere else in this project).
   METHOD_MODULE_MAP: {
+  "T": "lifeLibrary",
+  "_M": "myDay",
   "_acceptConceptFusion": "taxonomyReviewQueue",
   "_acceptLineage": "taxonomyTree",
   "_acceptPhylumPathProposal": "taxonomyReviewQueue",
   "_activeTab": "researchTabs",
+  "_addItem": "shoppingWishlist",
   "_addMessage": "feynman",
   "_addNewArtistsToTaxonomy": "beatLog",
   "_addSingle": "refCorpus",
+  "_ago": "dashDeck",
   "_analyzeChapter": "bookworm",
   "_anatomyNameVariants": "oracleAppGrounding",
   "_apply": "researchTabs",
   "_applyFilter": "journalQoL",
+  "_applyFiltersAndRender": "jargonEncyclopedia",
   "_applySearch": "encyclopediaQoL",
   "_approveSuggestedAction": "oracleControl",
   "_articleSection": "phylumPath",
+  "_askOracle": "dashDeck",
   "_autoPropose": "encSync",
   "_autoRun": "morningBrief",
   "_autoVisualTreatment": "beatLog",
@@ -39003,9 +39282,10 @@ RPGACE.register('errorLog', {
   "_buildAnatomyBlock": "oracleAppGrounding",
   "_buildBlock": "oracleAppGrounding",
   "_buildCollapsedList": "intelDelete",
-  "_buildDrawer": "leftNav",
   "_buildGroundingBlock": "oracleTreeGrounding",
   "_buildItems": "careerStatCard",
+  "_buildOutJargonEncyclopedia": "phylumPath",
+  "_buildRegisteredContext": "oracleControl",
   "_buildRetroActionButton": "contentProductionLive",
   "_buildRetroButton": "contentProductionLive",
   "_buildScriptEditor": "contentProductionLive",
@@ -39013,6 +39293,7 @@ RPGACE.register('errorLog', {
   "_buildVideoPipelinePayload": "contentProductionLive",
   "_bulkImport": "refCorpus",
   "_bulletGroupHtml": "videoSummary",
+  "_byDate": "shiftSync",
   "_byId": "oracleControl",
   "_callExtractor": "phylumPath",
   "_callGroundWorkerJSON": "phylumPath",
@@ -39020,30 +39301,37 @@ RPGACE.register('errorLog', {
   "_capture": "errorLog",
   "_captureNextResponse": "visualOracle",
   "_cardHtml": "videoSummary",
+  "_cascadeToPlanItem": "errorLog",
+  "_cascadeToSmokeTest": "errorLog",
   "_checkFallbackAnswers": "phylumPath",
-  "_checkForMorph": "taxonomyTree",
   "_checkLastResponse": "phylumPath",
   "_checkUpgradeable": "bookworm",
+  "_chipStyle": "jargonEncyclopedia",
   "_chunkTextForFormatting": "bookworm",
   "_cleanTitle": "videoSummary",
   "_clearBacklog": "encSync",
   "_clearForm": "beatLog",
+  "_clip": "dailyLife",
   "_coerce": "videoSummary",
   "_completeChapter": "bookworm",
   "_computeAutoAdvancedStatus": "videoPipeline",
-  "_computeStreak": "careerStatCard",
+  "_computeBudgetFit": "shoppingWishlist",
   "_condenseIfLarge": "phylumPath",
   "_conf": "videoSummary",
   "_confirm": "intelDelete",
   "_continueAfterLink": "beatLog",
   "_continueAnalyzingInBackground": "bookworm",
+  "_cookNames": "careerStatCard",
+  "_coolOff": "shoppingWishlist",
   "_createBookFromExtraction": "bookworm",
   "_createNewIdea": "conidPot",
   "_createQuests": "questEngine",
+  "_dailyCard": "lifeLibrary",
   "_dateStr": "careerStatCard",
   "_decidePlacementScored": "bookworm",
   "_delete": "videoSummary",
   "_deleteInsight": "intelDelete",
+  "_deleteItem": "shoppingWishlist",
   "_deleteUnified": "intelDelete",
   "_deleteWatchlist": "intelDelete",
   "_detailFor": "careerStatCard",
@@ -39055,13 +39343,18 @@ RPGACE.register('errorLog', {
   "_ensureEpubJs": "bookworm",
   "_ensureHolder": "dashDeck",
   "_ensurePdfJs": "bookworm",
+  "_ensureReaderContainer": "bookworm",
   "_ensureStash": "dashDeck",
+  "_err": "lifeLibrary",
   "_execute": "oracleControl",
   "_extractConcept": "feynman",
+  "_extractModule": "errorLog",
   "_extractTitle": "conidPot",
   "_fakeReply": "mockOracle",
+  "_feedLibrary": "refCorpus",
   "_fetchActions": "oracleControl",
   "_fetchAll": "careerStatCard",
+  "_fetchArchivedLeafQueue": "phylumPath",
   "_fetchProposals": "videoSummary",
   "_fileAppliesToTier": "contentProductionLive",
   "_finalPlacementSearch": "bookworm",
@@ -39070,6 +39363,7 @@ RPGACE.register('errorLog', {
   "_findEntry": "intelDelete",
   "_findFusionLinks": "phylumPath",
   "_findOracleCmdText": "contentProductionLive",
+  "_firstUpload": "shiftSync",
   "_flag": "oracleDevBridge",
   "_flowFor": "contentProductionLive",
   "_fmtDate": "intelDelete",
@@ -39083,9 +39377,11 @@ RPGACE.register('errorLog', {
   "_generateBeatstarsListing": "contentProductionLive",
   "_generateBundle": "contentProductionLive",
   "_generateCaptions": "contentProductionLive",
+  "_generateCurriculumBreakdown": "phylumPath",
+  "_generateCurriculumTree": "phylumPath",
   "_generateInsightContent": "phylumPath",
+  "_generateJargonTermsBatch": "phylumPath",
   "_generateLinkArticle": "phylumPath",
-  "_generateNodeContent": "taxonomyTree",
   "_generateObsScript": "contentProductionLive",
   "_generateOutputs": "beatLog",
   "_generateVideo": "contentProductionLive",
@@ -39098,13 +39394,14 @@ RPGACE.register('errorLog', {
   "_getPhylaContext": "contentRepurpose",
   "_getShifts": "morningBrief",
   "_getYouTube": "morningBrief",
-  "_go": "leftNav",
   "_goToDashboard": "bookworm",
+  "_grid": "tripPlans",
+  "_group": "myDay",
+  "_h": "tripPlans",
   "_headerHtml": "videoSummary",
   "_hideCard": "intelDelete",
   "_hook": "oracleDevBridge",
   "_ingest": "scheduleOracle",
-  "_initSwipeGesture": "leftNav",
   "_injectAgentButtons": "contentRepurpose",
   "_injectAll": "intelDelete",
   "_injectAuditEntries": "journalQoL",
@@ -39112,8 +39409,6 @@ RPGACE.register('errorLog', {
   "_injectBibliographySection": "bookworm",
   "_injectControls": "journalQoL",
   "_injectEntryPoints": "scheduleOracle",
-  "_injectFloatingButton": "voiceInput",
-  "_injectHamburger": "leftNav",
   "_injectIdeaBank": "conidPot",
   "_injectInsights": "intelDelete",
   "_injectManualButton": "taxonomyTree",
@@ -39125,46 +39420,71 @@ RPGACE.register('errorLog', {
   "_injectSaveBtn": "conidPot",
   "_injectScoutButton": "mockOracle",
   "_injectSearchBar": "encyclopediaQoL",
+  "_injectStrip": "encyclopediaPosts",
+  "_injectTabs": "encyclopediaPosts",
   "_injectTaxBadges": "encyclopediaQoL",
   "_injectUI": "taxonomySync",
   "_injectVideoWorkshopBtn": "contentRepurpose",
   "_injectWatchlist": "intelDelete",
   "_insertNewSteps": "phylumPath",
   "_insertProposalFromDecision": "taxonomyTree",
+  "_insertTreeNodes": "phylumPath",
+  "_insertWithCascade": "errorLog",
   "_installFetchWrap": "authGate",
   "_isCreditExhaustionError": "phylumPath",
   "_isShipped": "careerStatCard",
-  "_items": "leftNav",
   "_jumpToNode": "phylumPath",
   "_key": "videoSummary",
+  "_ldFill": "dashDeck",
   "_legacyBulletsHtml": "videoSummary",
-  "_levelFor": "careerStatCard",
+  "_link": "tripPlans",
+  "_linkList": "webLookup",
   "_listenForErrorToasts": "oracleControl",
   "_listenForReplies": "oracleControl",
   "_liveFactsLine": "oracleAppGrounding",
   "_load": "knowledgeGap",
   "_loadAnatomyIndex": "oracleAppGrounding",
+  "_loadAndRenderTerms": "jargonEncyclopedia",
   "_loadBoardStarts": "questEngine",
+  "_loadConfig": "shoppingWishlist",
+  "_loadItems": "shoppingWishlist",
   "_loadList": "refCorpus",
+  "_loadMetIn": "jargonEncyclopedia",
   "_loadNodesAndRender": "phylumPath",
   "_loadStats": "questEngine",
+  "_localDate": "dashDeck",
+  "_localDay": "lifeLibrary",
   "_looksLikeTableOfContents": "bookworm",
   "_makeChip": "journalQoL",
   "_markBookComplete": "bookworm",
+  "_markBought": "shoppingWishlist",
   "_markObsCutDone": "contentProductionLive",
   "_maybeRefresh": "videoSummary",
   "_mirrorReplyToOverlay": "oracleControl",
   "_mkBtn": "intelDelete",
+  "_msgs": "askMyData",
+  "_navAfterPage": "dashDeck",
+  "_navCard": "dashDeck",
+  "_navClosed": "dashDeck",
+  "_navCurrentCard": "dashDeck",
+  "_navOnPopstate": "dashDeck",
+  "_navOpenCard": "dashDeck",
+  "_navPrune": "dashDeck",
+  "_navPush": "dashDeck",
+  "_navReopen": "dashDeck",
+  "_navSwitchCard": "dashDeck",
+  "_note": "askMyData",
+  "_num": "myDay",
   "_openBook": "bookworm",
   "_openBookworm": "dashDeck",
   "_openCorpus": "dashDeck",
   "_openCurrentChapter": "bookworm",
   "_openGaps": "dashDeck",
-  "_openGlossary": "jargonEncyclopedia",
   "_openManualEntry": "taxonomyTree",
   "_openMorningBrief": "dashDeck",
   "_openObsRawIntake": "contentProductionLive",
   "_openOversight": "dashDeck",
+  "_openPage": "dashDeck",
   "_openPanelById": "dashDeck",
   "_openPanelPopup": "dashDeck",
   "_openPipeline": "dashDeck",
@@ -39173,6 +39493,11 @@ RPGACE.register('errorLog', {
   "_openResearch": "dashDeck",
   "_openRetroactive": "beatLog",
   "_openScoutedList": "mockOracle",
+  "_openSource": "encyclopediaPosts",
+  "_openTaxonomy": "dashDeck",
+  "_openTool": "myDay",
+  "_pageBack": "dashDeck",
+  "_pageMeta": "dashDeck",
   "_paintDigest": "chroniclesLog",
   "_paintRestoredState": "questEngine",
   "_parseEpubXml": "bookworm",
@@ -39194,6 +39519,7 @@ RPGACE.register('errorLog', {
   "_popup": "dashDeck",
   "_prefillForm": "beatLog",
   "_prepOracleBarFor": "contentProductionLive",
+  "_pretriageArchivedBatch": "phylumPath",
   "_proposalShortName": "careerStatCard",
   "_proposalsFor": "videoSummary",
   "_propose": "encTaxonomyLink",
@@ -39214,14 +39540,14 @@ RPGACE.register('errorLog', {
   "_removeDeliverableFile": "contentProductionLive",
   "_renderAddChapterText": "bookworm",
   "_renderArtistPanel": "beatLog",
+  "_renderCards": "encyclopediaPosts",
   "_renderChapterList": "bookworm",
   "_renderChapterRead": "bookworm",
   "_renderChapterSummary": "bookworm",
   "_renderDrillDown": "phylumPath",
-  "_renderFilterChips": "chroniclesLog",
   "_renderFusionLinks": "phylumPath",
+  "_renderIdeas": "encyclopediaPosts",
   "_renderInsightReview": "bookworm",
-  "_renderItem": "leftNav",
   "_renderLinkRow": "taxonomyReviewQueue",
   "_renderList": "chroniclesLog",
   "_renderOversightDigest": "chroniclesLog",
@@ -39234,7 +39560,9 @@ RPGACE.register('errorLog', {
   "_renderTree": "phylumPath",
   "_renderWaitingForNextInsight": "bookworm",
   "_reports": "videoSummary",
+  "_resolveArchivedLeaf": "phylumPath",
   "_resolveEpubPath": "bookworm",
+  "_resolvePendingTerm": "phylumPath",
   "_resolvePlacementDecision": "phylumPath",
   "_resolveSections": "researchTabs",
   "_restoreBoardState": "questEngine",
@@ -39249,13 +39577,17 @@ RPGACE.register('errorLog', {
   "_revertToStage": "contentProductionLive",
   "_rewordInsight": "bookworm",
   "_rmLocal": "intelDelete",
+  "_runBoot": "questEngine",
   "_runPhase1": "feynman",
   "_runPhase2": "feynman",
   "_runPhase3": "feynman",
   "_runRetro": "videoSummary",
   "_runSync": "taxonomySync",
   "_safeSet": "intelDedup",
+  "_safeUrl": "webLookup",
+  "_saveArticle": "encyclopediaPosts",
   "_saveBib": "intelDelete",
+  "_saveConfig": "shoppingWishlist",
   "_saveDocToProduction": "visualOracle",
   "_saveEnc": "videoSummary",
   "_saveMatchesToCorpus": "beatLog",
@@ -39269,69 +39601,83 @@ RPGACE.register('errorLog', {
   "_scanObsRaw": "questEngine",
   "_scanTaxonomyReview": "questEngine",
   "_searchArtists": "beatLog",
+  "_sel": "lifeLibrary",
   "_send": "quickActions",
   "_sendFilledPromptToOracle": "contentProductionLive",
   "_sendFromOverlay": "oracleControl",
-  "_setButtonState": "voiceInput",
   "_setLoading": "feynman",
   "_setPhase": "feynman",
   "_setup": "quickActions",
+  "_shelfOptions": "lifeLibrary",
+  "_shelfSection": "lifeLibrary",
   "_show": "agendaReminder",
   "_showActionConfirm": "oracleControl",
   "_showAddForm": "chroniclesLog",
+  "_showArchivedReviewQueue": "phylumPath",
   "_showArticleConfirm": "phylumPath",
   "_showBackfillPopup": "refCorpus",
   "_showCompleteActions": "feynman",
+  "_showCoolOff": "shoppingWishlist",
   "_showDeliverablesManager": "contentProductionLive",
   "_showDetail": "careerStatCard",
   "_showDetails": "videoPipeline",
   "_showDirectorPicker": "visualOracle",
   "_showDoNowChoice": "feynman",
+  "_showEditPopup": "jargonEncyclopedia",
   "_showEncPopup": "intelDelete",
   "_showIdeaSelectPopup": "conidPot",
   "_showLinkArticle": "phylumPath",
+  "_showMain": "shoppingWishlist",
+  "_showMarkBoughtConfirm": "shoppingWishlist",
   "_showMergePrompt": "conidPot",
   "_showNamedTopicPicker": "taxonomyTree",
   "_showOptionSequence": "scheduleOracle",
   "_showOracleOffer": "feynman",
+  "_showPendingTermsReviewQueue": "phylumPath",
   "_showPlacementConfirm": "phylumPath",
   "_showPostDetails": "contentProductionLive",
   "_showProposalPopup": "taxonomyTree",
+  "_showReader": "bookworm",
+  "_showRows": "askMyData",
   "_showSaveToPipelinePicker": "visualOracle",
   "_showSuggestConfirm": "oracleControl",
+  "_showTreeConfirm": "phylumPath",
   "_sid": "videoSummary",
   "_signature": "errorLog",
   "_silentProposeViaPhylumPath": "taxonomyTree",
   "_similarity": "conidPot",
   "_simulateOpenMontageResponse": "contentProductionLive",
   "_sourceMetaForProposal": "taxonomyReviewQueue",
-  "_spawnRecognizer": "voiceInput",
-  "_start": "voiceInput",
   "_startBook": "bookworm",
   "_startBookFromEPUB": "bookworm",
   "_startBookFromPDF": "bookworm",
   "_startBookFromTOC": "bookworm",
+  "_startTicker": "myDay",
   "_stashBookworm": "dashDeck",
   "_stashWidget": "dashDeck",
   "_statId": "questEngine",
   "_statusChip": "videoSummary",
-  "_stop": "voiceInput",
+  "_stripTrailer": "webLookup",
   "_submit": "beatLog",
   "_submitUpdate": "beatLog",
-  "_supported": "voiceInput",
   "_suppress": "suppressQuestPopup",
   "_switchPhylum": "phylumPath",
-  "_syncActive": "leftNav",
   "_syncAgendasFromSupabase": "shiftSync",
   "_syncBatch": "taxonomySync",
   "_syncFromSupabase": "shiftSync",
   "_toProposal": "taxonomyReviewQueue",
+  "_toastErr": "tripPlans",
+  "_today": "dailyLife",
   "_toggle": "videoSummary",
   "_toggleOverlay": "oracleControl",
+  "_tplLine": "myDay",
+  "_trailPush": "dashDeck",
+  "_trailRead": "dashDeck",
   "_tryRealAudioAnalysis": "beatLog",
+  "_typing": "askMyData",
   "_undoLastStage": "contentProductionLive",
   "_updateBriefRotationLabel": "conidPot",
-  "_updateExistingNode": "taxonomyTree",
+  "_updateItem": "shoppingWishlist",
   "_updateTaxonomyNode": "feynman",
   "_uploadDeliverableFiles": "contentProductionLive",
   "_verdictHtml": "videoSummary",
@@ -39343,75 +39689,333 @@ RPGACE.register('errorLog', {
   "_wireOracleDetection": "feynman",
   "_withFilmmakerLibrary": "visualOracle",
   "_wrapStartDoNow": "feynman",
+  "_write": "myDay",
   "_writeStats": "intelDedup",
   "action": "scheduleOracle",
+  "add": "lifeLibrary",
+  "addBlock": "myDay",
+  "addOneOffs": "myDay",
+  "addPerson": "tripPlans",
+  "addTemplate": "myDay",
+  "addToCalendar": "tripPlans",
+  "addWeeks": "decisionJournal",
+  "answer": "recall",
+  "answerFromRows": "askMyData",
+  "answerFromWeb": "webLookup",
+  "api": "screenshotInbox",
+  "appendShopping": "myDay",
+  "articleActions": "pathways",
+  "articleFromReport": "encyclopediaPosts",
+  "autoLogin": "authGate",
+  "autoShelve": "lifeLibrary",
+  "beatContext": "pathways",
+  "bests": "gymTracker",
   "blend": "questEngine",
+  "blocksOn": "myDay",
   "buildActionsBlock": "oracleControl",
+  "buildDataBlock": "askMyData",
+  "buildPrompt": "tripPlans",
+  "buildQuery": "askMyData",
   "buildRecentErrorsBlock": "oracleControl",
   "buildSuggestBlock": "oracleControl",
-  "clear": "config",
-  "close": "leftNav",
+  "buildWebBlock": "webLookup",
+  "byPhylum": "lifeLibrary",
+  "bySource": "lifeLibrary",
+  "cadenceText": "myDay",
+  "card": "screenshotInbox",
+  "chapterIdeas": "recall",
+  "checkPaused": "taxonomyTree",
+  "cleanBlock": "myDay",
+  "cleanPerson": "tripPlans",
+  "cleanSources": "webLookup",
+  "cleanTemplate": "myDay",
+  "cleanTopics": "lifeLibrary",
   "closePanel": "feynman",
   "closeWidgetPopup": "dashDeck",
+  "commands": "captionsPanel",
+  "compactRows": "askMyData",
   "completeQuest": "questEngine",
+  "costText": "tripPlans",
+  "count": "screenshotInbox",
   "createEntry": "contentProductionLive",
+  "creators": "dailyLife",
   "cycleProvider": "oracleProviderMode",
+  "dayLoad": "myDay",
   "decidePlacement": "phylumPath",
   "decidePlacementScored": "phylumPath",
   "dedupArray": "intelDedup",
   "dedupKey": "intelDedup",
   "del": "config",
+  "digest": "dailyLife",
   "dismissQuest": "questEngine",
+  "doneThisWeek": "myDay",
+  "doneWith": "lifeLibrary",
+  "dow": "myDay",
+  "draftIdeas": "tripPlans",
+  "draftPlan": "tripPlans",
+  "dueCount": "myDay",
+  "dueIn": "recall",
+  "dueOn": "myDay",
+  "e1rm": "gymTracker",
+  "ensureArticles": "encyclopediaPosts",
+  "ensureKnowledgeHeader": "lifeLibrary",
   "estimateFor": "questEngine",
+  "exchange": "lifeLibrary",
+  "exercises": "gymTracker",
+  "expand": "gymTracker",
   "extractNamedTopics": "taxonomyTree",
+  "extractUrl": "shareInbox",
+  "feed": "lifeLibrary",
+  "feedQuiet": "lifeLibrary",
+  "feedVideos": "lifeLibrary",
+  "filter": "lifeLibrary",
+  "find": "producerTools",
+  "findByKey": "lifeLibrary",
+  "findLinks": "webLookup",
+  "findLinksButton": "webLookup",
   "findMatches": "refCorpus",
+  "findSaved": "webLookup",
+  "fmtMin": "myDay",
+  "focus": "lifeLibrary",
   "forceGroundNext": "oracleAppGrounding",
+  "forget": "authGate",
+  "fromBody": "webLookup",
   "get": "config",
   "getIdeasForBrief": "conidPot",
   "getProviderName": "oracleProviderMode",
   "getTopGaps": "taxonomySync",
+  "goKnowledge": "lifeLibrary",
+  "guessKind": "lifeLibrary",
+  "handle": "shareInbox",
+  "handleShare": "screenshotInbox",
+  "hashText": "lifeLibrary",
   "headers": "config",
+  "ideaItem": "lifeLibrary",
+  "ideaQueries": "tripPlans",
+  "ideaToBuilder": "tripPlans",
+  "ideasPrompt": "tripPlans",
+  "ingest": "screenshotInbox",
   "insert": "config",
+  "isDueToday": "myDay",
   "isExternal": "oracleProviderMode",
   "isFallbackMode": "mockOracle",
+  "isPaused": "taxonomyTree",
   "isPlausiblePhylum": "taxonomyTree",
+  "isRecent": "dailyLife",
+  "keywordShelf": "lifeLibrary",
+  "knowledgeHeader": "lifeLibrary",
+  "label": "xpSeason",
+  "lastDigestDays": "dailyLife",
+  "lastPlatform": "captionsPanel",
+  "lastRole": "shiftSync",
+  "levelFor": "xpSeason",
+  "lib": "lifeLibrary",
+  "list": "screenshotInbox",
+  "loadAll": "tripPlans",
+  "loadBeats": "pathways",
+  "loadDue": "recall",
+  "loadIdeas": "encyclopediaPosts",
+  "loadJargon": "pathways",
+  "loadSeries": "encyclopediaPosts",
+  "loadTimings": "myDay",
+  "log": "decisionJournal",
+  "logDate": "myDay",
+  "logsFor": "myDay",
+  "lookup": "webLookup",
+  "makeQuests": "pathways",
   "markApplied": "taxonomySync",
+  "markChatTurn": "webLookup",
+  "markSurfaced": "lifeLibrary",
+  "matchJargon": "pathways",
   "matchesAnyTrigger": "oracleControl",
+  "matchesDataTrigger": "askMyData",
+  "metIn": "lifeLibrary",
+  "metInLine": "lifeLibrary",
+  "missedPlanRow": "myDay",
+  "missedPlans": "myDay",
+  "missedThisWeek": "myDay",
+  "monthLabel": "lifeLibrary",
+  "moveOptions": "myDay",
+  "movePlan": "myDay",
+  "newBests": "gymTracker",
+  "newUploads": "dailyLife",
+  "next": "recall",
   "normUrl": "intelDedup",
+  "officialLinks": "tripPlans",
+  "on": "dashDeck",
   "onClose": "dashDeck",
+  "openBlocks": "myDay",
+  "openChapter": "recall",
+  "openChapterById": "recall",
+  "openDigest": "dailyLife",
+  "openEditor": "myDay",
+  "openManage": "myDay",
+  "openPicker": "myDay",
+  "openPlan": "myDay",
   "openPopup": "contentRepurpose",
+  "openPost": "encyclopediaPosts",
+  "openRelatedJargon": "pathways",
+  "openSaved": "encyclopediaPosts",
+  "openSeason": "xpSeason",
+  "openSeries": "encyclopediaPosts",
+  "openWeekPlanner": "myDay",
+  "oracleShelf": "lifeLibrary",
+  "ownWords": "dailyLife",
+  "pace": "xpSeason",
+  "pageStrip": "xpSeason",
+  "parse": "screenshotInbox",
+  "parseDates": "tripPlans",
+  "parseIdeas": "tripPlans",
+  "parseItems": "dailyLife",
+  "parsePlan": "tripPlans",
+  "passports": "tripPlans",
+  "patchChat": "tripPlans",
+  "peopleDue": "tripPlans",
+  "personName": "lifeLibrary",
   "phase1": "feynman",
   "phase2": "feynman",
   "phase3": "feynman",
+  "photoButton": "dailyLife",
+  "phylumNames": "lifeLibrary",
+  "pickDaily": "lifeLibrary",
+  "plannable": "myDay",
+  "plannedOn": "myDay",
+  "plansFor": "myDay",
   "platformOutputInstructions": "contentRepurpose",
+  "popupStrip": "xpSeason",
   "proposeLineage": "taxonomyTree",
   "purge": "intelDedup",
+  "pushPending": "shiftSync",
+  "queryKey": "webLookup",
+  "questsFromReport": "pathways",
+  "queue": "shareInbox",
   "rankNameForDepth": "taxonomyTree",
+  "readMinutes": "encyclopediaPosts",
+  "readPhoto": "dailyLife",
   "recordBoardCompletion": "questEngine",
   "recordDuration": "questEngine",
   "refresh": "questEngine",
+  "registerContextProvider": "oracleControl",
+  "rememberPlatform": "captionsPanel",
+  "removeBlock": "myDay",
+  "removePerson": "tripPlans",
+  "removePlan": "tripPlans",
+  "removeTemplate": "myDay",
+  "renderAdd": "lifeLibrary",
+  "renderBuilder": "tripPlans",
+  "renderCard": "xpSeason",
+  "renderDailyInto": "lifeLibrary",
+  "renderIdeas": "tripPlans",
+  "renderItems": "lifeLibrary",
+  "renderPeople": "tripPlans",
+  "renderPlan": "tripPlans",
+  "renderPlans": "tripPlans",
+  "renderProfile": "tripPlans",
+  "renderRow": "lifeLibrary",
+  "renderShelf": "lifeLibrary",
+  "renderStrip": "recall",
+  "renderSwitcherCounts": "lifeLibrary",
+  "renderTimeline": "myDay",
+  "replaceDates": "shiftSync",
+  "reportForArticle": "pathways",
+  "research": "tripPlans",
+  "researchQueries": "tripPlans",
+  "resizeImage": "dailyLife",
+  "resume": "authGate",
   "resumeFallbackPlacement": "phylumPath",
+  "review": "decisionJournal",
+  "routeForm": "screenshotInbox",
+  "row": "myDay",
+  "rowsOf": "gymTracker",
   "rpc": "config",
   "samplesFor": "questEngine",
   "sanitizePlacement": "phylumPath",
+  "saveChapterIdea": "recall",
   "saveIdea": "conidPot",
+  "saveItems": "dailyLife",
+  "savePlan": "tripPlans",
+  "savePlanWeek": "myDay",
+  "saveProfile": "tripPlans",
+  "saveSettings": "myDay",
+  "savedIdeaFor": "tripPlans",
+  "schedExtras": "myDay",
+  "schedExtrasValues": "myDay",
+  "schedOn": "myDay",
+  "searchRows": "screenshotInbox",
+  "searched": "webLookup",
+  "seasonName": "xpSeason",
+  "seasonOf": "xpSeason",
   "secureWrite": "config",
   "select": "config",
+  "sentScreen": "shareInbox",
   "set": "config",
   "setMode": "mockOracle",
   "setProviderName": "oracleProviderMode",
+  "shelfData": "lifeLibrary",
+  "shelfLabel": "lifeLibrary",
+  "shiftAfter": "myDay",
+  "shiftBefore": "myDay",
+  "shiftsOn": "myDay",
   "show": "researchTabs",
   "silentPropose": "taxonomyTree",
   "singleShot": "feynman",
+  "skip": "myDay",
+  "skipPlan": "myDay",
+  "skyFor": "xpSeason",
+  "split": "decisionJournal",
+  "starAnswer": "lifeLibrary",
+  "starButton": "lifeLibrary",
+  "starIdea": "tripPlans",
+  "stars": "xpSeason",
   "start": "feynman",
   "startBoardQuest": "questEngine",
   "startQuest": "questEngine",
+  "storedToken": "authGate",
+  "streak": "myDay",
+  "strip": "xpSeason",
+  "stripForPrompt": "tripPlans",
   "submit": "feynman",
-  "toggleGlobal": "voiceInput",
-  "update": "config",
+  "suggestDays": "myDay",
+  "suggestSlots": "myDay",
+  "takeChatTurn": "webLookup",
+  "tasksFor": "tripPlans",
+  "templateForm": "myDay",
+  "templatesBox": "myDay",
+  "thisWeek": "gymTracker",
+  "tick": "myDay",
+  "timeline": "myDay",
+  "timing": "myDay",
+  "timingsBox": "myDay",
+  "toBody": "webLookup",
+  "toIdea": "screenshotInbox",
+  "toJournal": "screenshotInbox",
+  "toMin": "myDay",
+  "toWishlist": "screenshotInbox",
+  "todayLog": "myDay",
+  "toggleSave": "encyclopediaPosts",
+  "toggleTask": "tripPlans",
+  "topicCounts": "lifeLibrary",
+  "travelBefore": "myDay",
+  "undo": "myDay",
   "updateGapScore": "taxonomySync",
+  "updatePerson": "tripPlans",
+  "upload": "screenshotInbox",
   "url": "config",
+  "urlKey": "lifeLibrary",
+  "validate": "myDay",
   "verify": "authGate",
+  "videoRow": "lifeLibrary",
+  "viewFull": "screenshotInbox",
+  "watchCreator": "pathways",
+  "webSearch": "tripPlans",
+  "weekDays": "myDay",
+  "weekHasPlan": "myDay",
+  "weekLine": "gymTracker",
+  "weekSummary": "myDay",
+  "weeksToPlan": "myDay",
+  "wheel": "xpSeason",
+  "wishlistLink": "pathways",
+  "withMargin": "myDay",
   "workflowEstimate": "questEngine",
 },
 
