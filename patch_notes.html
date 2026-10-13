@@ -73,6 +73,20 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-13-taxonomy-pause" style="margin-bottom:30px;">
+    <div class="card-title">⏸ Oct 13 — Taxonomy pause (LL-3): no more tree proposals until the phyla are rebuilt</div>
+    <div class="card-body">
+      Alex: "yes, automatic, start LL-3" (plan "Life Library &amp; Knowledge Untangle"). The phyla have been empty since Sep 25, but video analysis kept queueing proposals that had nothing to attach to.
+      <ul>
+        <li><strong>One switch</strong>: <code>taxonomyTree.logic.isPaused()</code> / <code>checkPaused()</code>. It is paused while <code>taxonomy_tree</code> has no non-archived rows, and <strong>turns back on by itself</strong> once a phylum gets its first rebuilt branch (Alex's choice). A forced check clears the 60-second read cache first. A failed check keeps the last answer (stays paused rather than surprising him).</li>
+        <li><strong>Gated</strong>: <code>silentPropose</code> refuses with a clear reason (no Oracle call, no row). The video-analysis scan (<code>ciAutoPropose</code>) and encyclopedia sync skip without using up their "already seen" guard, so videos synced during the pause are still picked up after it ends. The per-video "Run Phylum Path" button explains the pause.</li>
+        <li><strong>Bookworm</strong>: tree placement is skipped (zero Oracle calls per insight). The review screen shows a paused note with <em>✓ Keep</em> / Reject and no Edit. Kept insights still become idea cards.</li>
+        <li><strong>Taxonomy &amp; Review card</strong> shows "Paused until the phyla are rebuilt…".</li>
+        <li><strong>Data</strong>: the 65 pending video proposals were set to <code>archived</code>. They are kept, not deleted (counted before and after).</li>
+      </ul>
+      Verified with 11 new headless-browser checks (Supabase mocked; covers pause, gates, Keep, the card note and auto-resume); the 14 LL-2 checks still pass. A real bug was caught by the tests before shipping: resume wasn't detected because of the read cache. Not yet hand-tested by Alex.
+    </div>
+</div>
 <div class="card" id="card-2026-10-13-knowledge-untangle-moves" style="margin-bottom:30px;">
     <div class="card-title">🧭 Oct 13 — Knowledge untangle moves (LL-2): articles into the Life Library, Encyclopedia = Ideas + Jargon</div>
     <div class="card-body">
