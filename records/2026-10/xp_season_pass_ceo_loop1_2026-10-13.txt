@@ -459,3 +459,23 @@ Approve -> "Approve, TP-5 first"
 Plan "XP Season Pass" ratified with every answer above (sections 6, 10). Order:
 TP-5 (Ideas board) first, then XP-1 (brief first, rule 18). XP-1..XP-8 unchanged
 in scope; values/ladders/gates per rounds A-H supersede section 7's drafts.
+
+12. XP-4 BRIEF ANSWERS (Oct 13 2026, verbatim)
+Round 1:
+Q Unanswered deleted item by Sunday -> "Keep it (Recommended)"
+Q Week close -> "Turn on pg_cron (Recommended)"
+Q Chronicles reports -> "how about we do seasons as the seasons of year, then yearly, we can also
+  set new year resolutions per season for long term goals"
+Q Balance bonus -> "Yes, in XP-4 (Recommended)"
+Round 2 (follow-up on the seasons answer):
+Q Yearly pass name -> "'Year 2027' (Recommended)"  (Season 0: Construction -> Year 0: Construction)
+Q Season boundaries -> "UK weather seasons" (Spring Mar-May, Summer Jun-Aug, Autumn Sep-Nov,
+  Winter Dec-Feb; winter straddles New Year)
+Q Season resolutions -> "In XP-5 with goals (Recommended)"
+Q Chronicles entries -> "Seasons + year (Recommended)"
+Design consequences:
+- The pass that resets on 1 January is a YEAR. "Season" now means a UK weather season.
+  Season/year ranks: ranks reset on 1 January (year ranks). DB column names (xp_events.season,
+  xp_unlocks.season) stay as-is internally; they hold the year number (0 = Year 0).
+- Reports: week (Mon-Sun), month, season (UK weather), year. Frozen once saved.
+- XP-5 season goals become "season resolutions" per UK weather season.

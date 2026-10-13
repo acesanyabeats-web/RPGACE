@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-13-xp-reports-year" style="margin-bottom:30px;">
+    <div class="card-title">📅 Oct 13 — XP Season Pass, step 4: "was it done?", saved reports, the pass becomes a Year</div>
+    <div class="card-body">
+      Alex: unanswered items "Keep it", week close "Turn on pg_cron", balance bonus "Yes, in XP-4", and on reports: "how about we do seasons as the seasons of year, then yearly, we can also set new year resolutions per season for long term goals". Follow-up answers: "'Year 2027'", "UK weather seasons", resolutions "In XP-5 with goals", Chronicles "Seasons + year".
+      <ul>
+        <li><strong>The pass is now a Year.</strong> "Season 0: Construction" is now <strong>Year 0: Construction</strong>, and Year 2027 starts on 1 January (ranks reset then). "Season" now means a UK weather season: Spring Mar–May, Summer Jun–Aug, Autumn Sep–Nov, Winter Dec–Feb ("Winter 2026/27").</li>
+        <li><strong>"Was it actually done?"</strong> Anything deleted in the same week its XP was earned shows on the Year page (and as a ⏳ line on the profile card) with ✅ Yes (keep the XP) / ❌ No (remove it). If you don't answer by Sunday night, the XP stays.</li>
+        <li><strong>Saved reports.</strong> Every night just after midnight, a scheduled database job (pg_cron, now switched on) closes any week, month, season or year that has ended. It saves a frozen snapshot: XP, XP per realm, realms touched, best day, top actions, anything unlocked, and year-to-date level and Sky rank. Later deletes never change a saved report.</li>
+        <li><strong>Weekly balance bonus</strong> is paid as the week closes: touch 5+ realms for +50, or 8+ for +150 (counted in Life).</li>
+        <li><strong>Where to see them:</strong> the Year page has a 📅 Reports list with Weeks / Months / Seasons / Years chips; tap one for the full snapshot. Each season and year report is also a Chronicles entry (💪 Life section) with season icons 🌱 ☀️ 🍂 ❄️ and 🎆 for a year.</li>
+        <li>The first weekly report saves early on Monday 19 October, right after the week ends. The first season report, Autumn 2026, saves after 30 November.</li>
+      </ul>
+      Verified: the week close tested in a rolled-back transaction on the live database. A week with 6 realms got +50, an unanswered deleted trip kept its 200 XP, week, month and Summer 2026 reports were saved, and the labels came out as "Winter 2026/27" and "Spring 2027". The scheduled job is confirmed active. 19 new headless checks pass (including a failed answer that keeps its buttons usable), and the XP-1/2 (18), XP-3 (28), Chronicles, Plans, LL-7 and Cook Mode suites still pass. Not yet hand-tested by Alex.
+    </div>
+</div>
 <div class="card" id="card-2026-10-13-xp-ranks-trophies" style="margin-bottom:30px;">
     <div class="card-title">🏆 Oct 13 — XP Season Pass, step 3: realm ranks, gated titles, badges, Trophy cabinet</div>
     <div class="card-body">
