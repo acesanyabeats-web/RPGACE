@@ -73,6 +73,20 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-13-web-lookups" style="margin-bottom:30px;">
+    <div class="card-title">🌐 Oct 13 — Oracle web lookups (LL-5): searched, sourced, kept in your Life Library</div>
+    <div class="card-body">
+      Alex: "yes, recommended options, start LL-5" (Oracle decides when to search and always shows it; every lookup saved; at most 1 search per message).
+      <ul>
+        <li><strong>In the main chat</strong> (and the floating 🔮 overlay, which sends through it), Oracle may end a reply with a hidden <code>WEB_QUERY:</code> line when a question needs current or outside facts. Only the chat turn gets this option: recipe, extractor and other system calls never do.</li>
+        <li><strong>Library first</strong>: if the same question was looked up in the last 30 days, that saved answer is reused (no web call). Otherwise <em>only the search question</em> goes to Gemini via <code>/api/search</code>.</li>
+        <li><strong>Shown and kept</strong>: a "🌐 Searched the web for …" line with clickable sources (web links only) appears under the reply, the lookup is saved as a 🌐 Web lookup Library item (answer + sources, dated, keyword-shelved), and Oracle gives one follow-up answer using it. The trailer is hidden from the reply.</li>
+        <li><strong>🔗 Find links</strong> on every Jargon term and on each Bookworm insight: finds 3–5 good places to learn more, shows them inline and saves them; a second tap later reuses the saved links.</li>
+        <li>New module <code>webLookup</code> (73 modules). It rides the existing grounding wrap as a 6th gate and reuses the existing web-search and Library helpers.</li>
+      </ul>
+      Verified with 14 new headless-browser checks (Supabase, Oracle and Gemini mocked); LL-1–4 suites still pass (64 checks). Worth knowing: the auto-run Morning Brief goes through the main chat too, so it can also use a lookup. Not yet hand-tested by Alex; the first real search will also be the first live test of the Gemini key.
+    </div>
+</div>
 <div class="card" id="card-2026-10-13-library-feeds" style="margin-bottom:30px;">
     <div class="card-title">📥 Oct 13 — Life Library feeds (LL-4): new things arrive on their own</div>
     <div class="card-body">
