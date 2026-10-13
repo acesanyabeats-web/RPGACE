@@ -73,6 +73,23 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-13-xp-ranks-trophies" style="margin-bottom:30px;">
+    <div class="card-title">🏆 Oct 13 — XP Season Pass, step 3: realm ranks, gated titles, badges, Trophy cabinet</div>
+    <div class="card-body">
+      Alex: "Use as drafted" (rank scale), "Add a cuisine tag", "Pathfinder (rank 4)" for the Life gate, "No, they're recognition" (badges and titles pay no XP).
+      <ul>
+        <li><strong>7 ranks per realm, each realm with its own names</strong> (Producer: Bedroom → Icon; Chef: Kitchen Porter → Executive Chef; Athlete: Recruit → Colossus; all 13 as ratified). A rank's XP = a steady week of that realm × 0/2/6/14/26/40/56, so a steady year lands around rank 5. Season ranks reset on 1 January; career ranks use the same names, never reset, need 4× the XP and show stars toward the next one.</li>
+        <li><strong>Gated ranks need the real thing, not just XP:</strong> Sous Chef (20 cooks), Head Chef (50 cooks, 10 recipes, 3 cuisines), Closer (first sale), Tycoon (your season revenue target), Gladiator (3 gyms a week for 4 weeks), Polymath (books in 8 phyla), Pathfinder (every planned routine kept 6 weeks), Lake (sleep routine 21/28 days — can't be earned until the Mind area exists), Safe (claimed savings goal), Globetrotter (5 countries), Heart (nobody overdue for 3 months).</li>
+        <li><strong>Titles</strong> Released Artist, Catalogue Builder, Consistent Creator. <strong>Badges</strong> automatic (first beat released, first video, first sale, first £100 month, first cook, first PB, 5-gym week, first book, 100 jargon terms, each new country) or claimed with a link or note (Hit, Placement, 10k views, Cooked for others, First solo trip). Permanent, no XP.</li>
+        <li><strong>The database decides and dates everything</strong>: after every XP award it checks all gates, badges and ranks and writes a dated row; every unlock also shows in Chronicles (Life section).</li>
+        <li><strong>Gym personal best</strong> (heavier than any earlier session on that exercise) pays +30 Athlete XP, once per exercise per session.</li>
+        <li><strong>Recipes have a cuisine</strong>: Oracle tags new ones, the 8 existing ones are tagged (Indonesian, Korean, Chinese ×2, Malaysian, British ×2, French — change any on the recipe card).</li>
+        <li><strong>On screen:</strong> strips and the Season page show each realm's rank and what's next (or what the 🔒 gate needs); the card shows your top realm. The Season page opens the new <strong>🏆 Trophy cabinet</strong>: earned items with dates, locked ones with progress ("12 of 20 cooks"), Claim buttons, the Tycoon revenue target, and past seasons.</li>
+        <li>Bug caught before shipping: the first live check function reused one name for a loop counter and a column, so it failed silently; found because the progress snapshot stayed empty, fixed and re-tested.</li>
+      </ul>
+      Verified: gates, ranks, PBs, runs (Gladiator, Consistent Creator) and the Heart overdue check tested in rolled-back transactions on the live database; 28 new headless checks; the XP-1/2 (18), Chronicles (11), Plans (30 + 17), LL-6/7 and Cook Mode (26) suites still pass. Not yet hand-tested by Alex.
+    </div>
+</div>
 <div class="card" id="card-2026-10-13-xp-season-pass" style="margin-bottom:30px;">
     <div class="card-title">🌌 Oct 13 — XP Season Pass, steps 1+2: one XP log, new profile card, realm strips</div>
     <div class="card-body">
