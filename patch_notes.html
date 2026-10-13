@@ -73,6 +73,18 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-13-library-resurfacing" style="margin-bottom:30px;">
+    <div class="card-title">📚 Oct 13 — Library resurfacing + jargon "where you met it" (LL-6)</div>
+    <div class="card-body">
+      Alex: "yes, recommended options, but 2 - every kind probs ... start LL-6" (30-day no-repeat; every kind can come back, including web lookups and starred answers; "Done with it" marks a recommendation checked).
+      <ul>
+        <li><strong>Morning Brief → "📚 From your Library"</strong>: one item a day, under the saved-ideas recall. Unchecked recommendations first, then the oldest. The same item stays all day; once shown it is not picked again for 30 days (<code>library_items.resurfaced_at</code>, so it holds across devices). Shows kind, who recommended it, and the date (lookups say "looked up …" so stale facts are obvious). <em>Open</em> closes the brief and jumps to it in the Library; <em>Done with it</em> keeps it out for good (<code>resurface_off</code>) and marks a recommendation checked. No Oracle call.</li>
+        <li><strong>Jargon "📍 Met in"</strong>: each term lists up to 3 Library items or idea cards that mention it (whole-word match, the same matcher the reading pages use); tapping one opens that source.</li>
+        <li>Schema: 2 additive columns on <code>library_items</code> (<code>resurfaced_at</code>, <code>resurface_off</code> default false).</li>
+      </ul>
+      Implications Alex was told about including every kind: lookups and starred answers come back too, quick throwaway lookups can take a slot when nothing better is waiting, and an old lookup can be out of date (the date is shown). After "Done with it", reopening the brief the same day shows the next item. Verified with 10 new headless checks + a scale check (545 terms × 345 texts: 174 ms once per Jargon page load); LL-1–5 suites still pass (78 checks). Not yet hand-tested by Alex.
+    </div>
+</div>
 <div class="card" id="card-2026-10-13-web-lookups" style="margin-bottom:30px;">
     <div class="card-title">🌐 Oct 13 — Oracle web lookups (LL-5): searched, sourced, kept in your Life Library</div>
     <div class="card-body">
