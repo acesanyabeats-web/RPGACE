@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-13-knowledge-untangle-moves" style="margin-bottom:30px;">
+    <div class="card-title">🧭 Oct 13 — Knowledge untangle moves (LL-2): articles into the Life Library, Encyclopedia = Ideas + Jargon</div>
+    <div class="card-body">
+      Alex: "yes, full text, start LL-2" (plan "Life Library &amp; Knowledge Untangle").
+      <ul>
+        <li><strong>Moved, nothing deleted</strong>: the 41 Encyclopedia articles from analysed videos became Life Library items (kind video) with their <em>full</em> text, the summary idea as their summary, their tags as topics and a shelf picked by Claude Code (no API cost, all editable); the Bookworm book (Music Theory for Computer Musicians) became a book item. 37 video links are deduped by video id. The original <code>encyclopedia</code> rows are kept (no backup exists).</li>
+        <li><strong>Life Library</strong>: an article item opens its full text (rendered safely) with a <em>💡 Idea cards</em> button; a book item has <em>📗 Study in Bookworm</em>; an "Old bibliography" link keeps the pre-Oct-13 saved links and finished books reachable.</li>
+        <li><strong>Encyclopedia page</strong>: a tab bar <em>💡 Ideas | 📖 Jargon | 📚 Sources</em>. Ideas shows the Posts strip plus an "All ideas" list (search, Beat/Content/Strategy chips, ☆ Save, 40 at a time). Each idea's <em>From</em> button opens its source in the Life Library (book chapters and screenshots keep their own routes; a source with no Library item falls back to the post reader). The old article list and its tools are folded at the bottom, unchanged.</li>
+        <li><strong>Bookworm = study</strong>: a new book now creates its Library item automatically; the picker's "Bibliography" button opens the Library filtered to books.</li>
+        <li><strong>Saved links</strong>: "Save to bibliography" on video reports now saves to the Life Library (same link never saved twice).</li>
+        <li><strong>Menu</strong>: Jargon Encyclopedia moved under Encyclopedia; Phylum Path is "the map"; Bookworm's sub-link is "Your books".</li>
+      </ul>
+      Verified with 14 new headless-browser checks (Supabase mocked) plus the 23 LL-1 checks still passing. Next: LL-3 (pause the stale taxonomy proposals). Not yet hand-tested by Alex.
+    </div>
+</div>
 <div class="card" id="card-2026-10-13-life-library" style="margin-bottom:30px;">
     <div class="card-title">📚 Oct 13 — Life Library (LL-1) + the Knowledge untangle plan</div>
     <div class="card-body">

@@ -555,10 +555,20 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
      here. The original rpgace_core.js remains the real, edited,
      fully-commented source - always edit that, never the .min.js file
      directly. -->
-<script src="rpgace_core.min.js?v=20261013a"></script>
+<script src="rpgace_core.min.js?v=20261013b"></script>
 
 <div class="page" id="page-encyclopedia">
   <div class="section-title">📖 Knowledge Encyclopedia ✦</div>
+
+  <!-- Oct 13 2026 (LL-2, Knowledge untangle): Encyclopedia = what you
+       learned. #enc-tabs (Ideas | Jargon | Sources) and #enc-ideas are
+       filled by encyclopediaPosts. The old article list and its tools
+       stay below, folded: the articles themselves now live in the Life
+       Library as sources (full text kept). -->
+  <div id="enc-tabs"></div>
+  <div id="enc-ideas"></div>
+  <details id="enc-old-articles" class="enc-fold">
+  <summary>🗄 Old article view &amp; tools (articles now live in the Life Library)</summary>
 
   <!-- Oct 10 2026 (N2, Knowledge slice): filters, sort and maintenance
        tools fold away so the articles start near the top of the page. -->
@@ -623,6 +633,7 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
       </div>
     </div>
   </div>
+  </details>
 </div>
 
 
