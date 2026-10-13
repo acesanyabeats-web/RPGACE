@@ -34,3 +34,13 @@ DT-4 Chore block: an activity inside a day template; fills itself with the most 
      until the block's time is used; swap any; ticks during the block; leftovers stay due.
 OPEN (to confirm at DT-1 brief): what counts as early vs late shift; fallback when there is no
 past day of that exact kind yet; ordering vs XP-5.
+
+ALEX, verbatim (3): "And chores as section 8 should clear out by deadline"
+(read as: the chores section works to deadlines and empties as chores are done; "section 8"
+taken as a typo for "a section" and said so to Alex)
+Q Deadline -> "End of its period (Recommended)" (weekly by Sunday night, monthly by the last day
+  of the month, fortnightly by the end of a fixed 2-week window; early in the period counts)
+Q Missed -> "Stays as overdue (Recommended)" (stays in the section, marked overdue, top of the next
+  chore block, no stacking)
+DT-3/DT-4 now: chores are deadline-based, not fixed-day; ticked chores leave the section until
+their next period; chore blocks fill by nearest deadline (overdue first).
