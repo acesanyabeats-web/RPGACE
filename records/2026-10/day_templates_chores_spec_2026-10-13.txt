@@ -1,0 +1,36 @@
+DAY TEMPLATES + CHORES — spec record (Oct 13 2026)
+
+ALEX, verbatim (1): "Would it makes sense to do a chores section for habits section, that can be
+entered into schedule. Eg I block of 2 hours and I do chores in my room (only have to do my room
+with my current living situation) and plan out the chores I'm doing (some weekly some monthly)"
+
+ALEX, verbatim (2): "I think routines should remember the day and give 1s suggestion of template for
+day that can be shaped similar, with me being able to change chosen activities within template
+before locking in as planned day"
+
+EVIDENCE (checked before asking):
+- myDay routines: cadences daily / weekly (days) / times_per_week / once / next_time. No monthly or
+  fortnightly. Starter Home chores assume a whole house (kitchen, bathroom, bins).
+- Plan my day fits routines into free gaps around shifts (myday_settings timings) but remembers
+  nothing; activity_templates are single activities, not whole days.
+- Week planner: routine_plans + day_blocks. Daily Schedule = rpgace_agendas via scheduleToCalendar().
+
+INTERROGATION (verbatim answers):
+Q Memory -> "Both: learn + save (Recommended)"
+Q Day kind -> "Shift type + weekday"
+Q Lock in -> "Add to Daily Schedule (Recommended), Plan the routines too (Recommended),
+  Remind me the night before"
+Q Chores -> "Together (Recommended)"
+
+DRAFT PLAN (awaiting Alex's approval; each step briefed before build, rule 18):
+DT-1 Day templates: one suggested day per date, edit (swap/remove/add/move times), Lock in ->
+     Daily Schedule items (with get-ready/travel) + routine_plans + a saved lock record that the
+     learning reads. "Save as template" with a name. Saved templates first, then learned ones.
+DT-2 Night-before reminder in the dashboard Due list ("Tomorrow is planned: ...") and
+     "Tomorrow isn't planned yet" if not.
+DT-3 Chores: room-only chore list on routines (area Chores), new repeat options every 2 weeks /
+     monthly / every N days, last-done from ticks. Alex supplies the real list.
+DT-4 Chore block: an activity inside a day template; fills itself with the most overdue chores
+     until the block's time is used; swap any; ticks during the block; leftovers stay due.
+OPEN (to confirm at DT-1 brief): what counts as early vs late shift; fallback when there is no
+past day of that exact kind yet; ordering vs XP-5.
