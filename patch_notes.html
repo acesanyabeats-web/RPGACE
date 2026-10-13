@@ -73,6 +73,19 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-13-life-library" style="margin-bottom:30px;">
+    <div class="card-title">📚 Oct 13 — Life Library (LL-1) + the Knowledge untangle plan</div>
+    <div class="card-body">
+      Alex: "I'd like bibliography to become the life library", then "dedup bookworm + encyclopedia + taxonomy with life library to untangle and de-merge (or merge if needed) their roles". Run through /paranoia, /free-for-all-debate, 5 interrogation rounds and /drift, ratified as the /CEO plan "Life Library &amp; Knowledge Untangle" (LL-1 to LL-8; record: <code>records/2026-10/life_library_paranoia_ffa_interrogation_ceo_2026-10-12.txt</code>).
+      <ul>
+        <li><strong>Four roles</strong>: Life Library = what you took in (sources); Bookworm = how you study a source; Encyclopedia = what you learned (idea cards + jargon); Phylum Path = where it fits and what to learn next. Chronicles keeps what you made or did.</li>
+        <li><strong>📚 Life Library card</strong> (first in the Knowledge menu, <code>lifeLibrary</code> module, private <code>library_items</code> table): add a link, video, book, music, file, course, note, quote or recommendation (who from, picked from your People list, ticked once checked). Each item has the date you took it in, one phylum shelf and topics. Filter by shelf (or unshelved), kind, topic chips and time; search covers titles, notes, topics and who recommended it. Tap an item for notes, topic edit and two-tap delete; tap the shelf chip to move it.</li>
+        <li><strong>One item per link</strong>: tracking bits are stripped and YouTube/Instagram/TikTok links are matched by video id, so saving the same thing twice says "Already in your library".</li>
+        <li><strong>Shelving</strong>: a free keyword match on the 21 phyla first; one small Oracle call only when nothing matches or you left topics empty. If Oracle is down the item still saves, unshelved.</li>
+      </ul>
+      Verified with 23 headless-browser checks (Supabase and Oracle mocked); the Plans tests still pass (30/30). Next: LL-2 (moving the 42 Encyclopedia articles and your current book into the library, Bookworm as a study tool, Encyclopedia Ideas + Jargon tabs). Not yet hand-tested by Alex.
+    </div>
+</div>
 <div class="card" id="card-2026-10-12-trip-plans" style="margin-bottom:30px;">
     <div class="card-title">🧳 Oct 12 — Plans: trips and events with Oracle, people, travel profile (TP-1 to TP-4)</div>
     <div class="card-body">
@@ -84,7 +97,7 @@
         <li><strong>Plan builder</strong>: up to 3 web searches (what's on, weather + getting there, entry rules for the chosen passport), then one Oracle JSON call drafts the plan: itinerary, legs, tickets/stays with book-by dates, documents + UK re-entry with settled status, worst-case packing, emergency card, producer angle, food, backup plans, daily money limit. Official links (FCDO, France Diplomatie for the French passport, passportindex.org, gov.uk view-and-prove) are added in code. Review → <em>Update plan</em> with a typed change → <em>Save</em>. Typing "plan a trip to …" in Oracle chat opens the builder.</li>
         <li><strong>Saved plans</strong> (<code>plans</code> + <code>plan_tasks</code>): tick tasks, change status (idea, planning, booked, done, dropped), <em>Add to calendar</em> (a trip block on the week planner + timed items on the Daily Schedule with place/journey), two-tap delete (also removes the block). RPGACE never books or pays.</li>
         <li><strong>Web search</strong>: <code>/api/search</code> type <code>web</code> uses Gemini 2.5 Flash with Google Search. A Tavily backup is built but switched off (Alex: "skip tavily for now", no paid or extra key). Only the search question is sent. Until <code>GEMINI_API_KEY</code> is set in Vercel, plans are drafted from Oracle's own knowledge with a clear "check before booking" warning.</li>
-        <li><strong>Private</strong>: the four new tables are read only after login through <code>/api/data-write</code> action <code>read</code>. Removing their anon read policy timed out through the Supabase connector; Alex has the 4 SQL lines to run.</li>
+        <li><strong>Private</strong>: the four new tables are read only after login through <code>/api/data-write</code> action <code>read</code>. Their anon read policy was removed (Oct 12, confirmed in <code>pg_policies</code>: only <code>authenticated_all</code> remains).</li>
       </ul>
       Verified with 30 headless-browser checks (Supabase, search and Oracle mocked), including a malicious link and a bad task kind being dropped, no personal data in search queries, and the passport changing the entry search and links. Earlier My Day / timings / week planner / shift tests still pass. TP-5 (ideas board), TP-6 (book-by on Due, paid → Finance, after-trip log) and TP-7 (people in plans) are next. Not yet hand-tested by Alex.
     </div>

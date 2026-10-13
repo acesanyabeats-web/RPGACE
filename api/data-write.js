@@ -119,6 +119,7 @@ const ALLOWED_TABLES = new Set([
   'activity_templates', // Oct 12 2026 MD2-4: schedule activity templates (place, journey, get-ready, category); anon_read_only from creation
   'myday_settings', // Oct 12 2026 MD2-4: single-row get-ready/margin/shift travel settings; anon_read_only from creation
   'travel_profile', 'people', 'plans', 'plan_tasks', // Oct 12 2026 Trips & Plans: locked tables (no anon policy), read via action 'read'
+  'library_items', // Oct 13 2026 LL-1 Life Library: locked like people (authenticated_all only), read via action 'read'
   'routine_plans', // Oct 12 2026 MD2-5: week planner - which days a routine is planned; anon_read_only from creation
   'day_blocks', // Oct 12 2026 MD2-5: multi-day blocks (holiday/trip/event) shown on planner headers; anon_read_only from creation
   'quest_duration_stats',
@@ -321,7 +322,7 @@ async function handleBundleDeliverables(req, res, serviceKey) {
 // Every access is this action, behind requireAuth() with the service-role
 // key - the same posture as bundle-deliverables above (rule 8: no 13th
 // api file). Ops: upload | update | list | count | delete.
-const PRIVATE_READ_TABLES = new Set(['travel_profile', 'people', 'plans', 'plan_tasks']);
+const PRIVATE_READ_TABLES = new Set(['travel_profile', 'people', 'plans', 'plan_tasks', 'library_items']);
 const SHOTS_BUCKET = 'screenshots';
 const SHOT_PATCH_FIELDS = ['extracted_text', 'description', 'tags', 'kind', 'suggestions', 'status', 'routed_to', 'read_at'];
 const SHOT_COLS = 'id,storage_path,source,extracted_text,description,tags,kind,suggestions,status,routed_to,created_at,read_at';
