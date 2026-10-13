@@ -120,3 +120,69 @@ LL-6 Chronicles subsections: Beats & content, Recipes cooked, Trips & plans done
      tables, no copies).
 Then TP-5 Ideas board (settled: all four types, no people mentions).
 Rule 18: brief before each item.
+
+=====================================================================
+8. KNOWLEDGE UNTANGLE (Oct 13 2026) — Bookworm + Encyclopedia + Taxonomy + Life Library
+=====================================================================
+ASK (verbatim): "dedup bookworm + encyclopedia + taxonomy with life library to untangle and de-merge
+(or merge if needed) their roles to keep each very distinct yet cohesive in the system.
+/interrogation me into oblivion using /paranoia and /free-for-all-debate for my input + their ideas,
+then /CEO and /drift it all"
+
+EVIDENCE (live, table writers grepped per module):
+- encyclopedia 42 articles (intel 37, oracle 4, bookworm 1) = one summary per SOURCE -> overlaps the
+  Life Library. Writers: legacy main.js 5, phylumPath 4, encyclopediaPosts 1, taxonomyTree 1.
+- encyclopedia_insights 814 idea cards (strategy 371 / beat 235 / content 208), all status 'auto'.
+  Writers: recall 4, encyclopediaPosts 2, screenshotInbox 1.
+- jargon_encyclopedia 545 (27 accepted, 518 pending). Writer: phylumPath only.
+- bookworm_books 1, chapters 26 (4 complete, 2 in_progress, 20 pending). Writer: bookworm.
+- taxonomy_tree 0; taxonomy_nodes 91 = 51 directors (f14), 27 encyclopedia_sync, 10 scale colours,
+  3 licence terms (writers taxonomySync, beatLog).
+- taxonomy_proposals: 65 pending + 30 accepted + 76 rejected from content_intelligence, all aimed at
+  the pre-wipe tree; no CHECK constraint on status (verified pg_constraint) -> 'archived' is writable.
+- bibliography 0 (writers intelDelete, phylumPath, bookworm); intel_bibliography 15 (no writer in
+  rpgace_core.js - local server).
+
+FREE-FOR-ALL: A one big merge (no - ideas/terms aren't sources); B four distinct roles (WINNER);
+C fold Encyclopedia into tree (half - ties 545 terms to an undesigned structure; link instead);
+D Bookworm absorbs Library (no - collecting != deep study); E reference lists aren't taxonomy (real
+point; Alex chose to keep them in Taxonomy).
+
+INTERROGATION (verbatim answers)
+Round 1: Roles "Yes, 4 roles (Recommended)"; Articles "Become the Library item's page (Recommended)";
+  Bookworm "Study tool only (Recommended)"; Reference lists "Stay in Taxonomy".
+Round 2: Proposals "Archive them + pause new ones (Recommended)"; Linking "By phylum, automatically
+  (Recommended)"; Old articles "Move them into the Library (Recommended)"; Names "Library · Bookworm ·
+  Encyclopedia · Phylum Path (Recommended)".
+Round 3: Jargon "Inside Encyclopedia (Recommended)"; Term links "Yes, automatic (Recommended)";
+  Current book "Yes, add it (Recommended)"; Plan "One plan, re-ordered (Recommended)".
+
+FINAL ROLES
+- Life Library = what I took in (sources: books, videos, links, web lookups, screenshots, starred
+  answers, music, files/courses, recommendations, notes/quotes). Owns summaries.
+- Bookworm = how I study a source deeply (owns chapters + progress only; creates the Library item;
+  insights -> Encyclopedia idea cards). Worms = study modes.
+- Encyclopedia = what I learned: Ideas tab (idea cards, each linked to its source, shelf inherited)
+  + Jargon tab (terms; each shows where you met it).
+- Taxonomy / Phylum Path = where it fits + what to learn next: phyla, curriculum (rebuild later),
+  reference lists (directors, scale colours, licences). Each phylum page shows its sources, ideas,
+  terms. Tree proposals/placements paused until rebuild.
+- Chronicles = what I made/did (Beats & content, Recipes cooked, Trips done subsections).
+
+/drift (whole thread: web lookups -> life library -> tree -> untangle)
+VERDICT on track. BASIS provisional (pending Alex approval of the plan below).
+- CAPTURED: none.
+- MATERIAL: none.
+- MINOR 1: Round-2 menu label said "Encyclopedia (ideas + jargon + reference)" but Round-1 answer
+  said reference lists stay in Taxonomy -> followed the explicit Round-1 answer.
+- MINOR 2: "Start fresh" (Oct 12) vs moving 42 articles + the current book (Oct 13) -> resolved by
+  Alex's later answers; the 15 old saved links, 41 video reports and 32 reference tracks still stay
+  put (old Bibliography view points to the Library).
+- MINOR 3: open fork from LL-1 brief still unanswered: one shelf per item (recommended) or several.
+- Original asks all covered: web lookups (LL-5), stored by date/topic (LL-1), bibliography ->
+  library (LL-1/LL-2/LL-7), integrate with tree (LL-3/LL-7), distinct roles (LL-2/LL-7), TP-5 after.
+
+PLAN (ceo_plans "Life Library & Knowledge Untangle", items LL-1..LL-8, red/provisional)
+LL-1 Library core   LL-2 Untangle moves   LL-3 Taxonomy pause   LL-4 Feeds   LL-5 Web lookups
+LL-6 Resurface + term "where you met it"   LL-7 Map hook + menu   LL-8 Chronicles subsections
+Then TP-5 Ideas board.
