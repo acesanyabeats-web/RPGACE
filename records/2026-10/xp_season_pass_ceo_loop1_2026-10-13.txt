@@ -394,3 +394,68 @@ Every answer from rounds 1-5 maps to a section above. Open forks left for Alex:
  F2 XP tables private (drafted, like plans) or readable with the public key?
  F3 Rank-name drafts for 12 realms — edit/approve.
  F4 XP values in 7.2 — edit/approve.
+
+10. INTERROGATION OF F1-F4 (Alex: "Ask F1 to f4 through /interrogation into oblivion")
+Round A (verbatim):
+F1 -> "Season rank + career rank (Recommended)"  (season realm rank resets Jan 1;
+      career realm rank never resets, slower ladder; titles/badges forever)
+F2 -> "Private, after sign-in (Recommended)"
+F3 Creator -> "Screen ladder (draft)": Viewer, Clipper, Editor, Director, Showrunner, Auteur, Visionary
+F3 Hustler -> "Deal ladder (draft)": Starter, Lister, Pitcher, Closer*, Operator, Executive, Tycoon*
+Round B (verbatim):
+Chef -> "1 but we will adjust values" (Brigade ladder; gate thresholds to be set in F4)
+Athlete -> "Warrior ladder": Recruit, Soldier, Warrior, Gladiator, Champion, Spartan, Colossus
+Scholar -> "Mind ladder (draft)": Curious, Reader, Student, Scholar, Sage, Polymath*, Luminary
+Life -> "Path ladder": Wanderer, Seeker, Walker, Pathfinder, Guide, Elder, Sage of the Road
+Flags: Scholar "Sage" and Life "Sage of the Road" overlap; Athlete lost its drafted
+"Iron" gate (needs a new gated rank) -> asked in a later round.
+Round C (verbatim):
+Homekeeper -> "House ladder (draft)": Lodger, Tenant, Tidy, Housekeeper, Homemaker, Head of House, Sanctuary
+Mind -> "Water ladder": Storm, Rapids, River, Stream, Pond, Lake, Ocean
+Steward -> "Vault ladder": Loose Change, Piggy Bank, Wallet, Safe, Vault, Treasury, Fort Knox
+Explorer -> "Travel ladder (draft)": Homebody, Day-tripper, Wanderer, Traveller, Voyager, Globetrotter*, Cartographer
+Flags: Mind and Steward chosen ladders carry no gate (old gates Still/Saver
+become badges or a separate gated title — asked next).
+Round D (verbatim):
+Connector -> "Circle ladder (draft)": Loner, Acquaintance, Friend, Regular, Anchor, Host, Heart*
+Builder -> "Systems ladder (draft)": Tester, Tinkerer, Debugger, Maintainer, Architect, Systems Lead, Founder
+Name clash -> "Life top rank → 'Keeper of the Road' (Recommended)"
+  Life final: Wanderer, Seeker, Walker, Pathfinder, Guide, Elder, Keeper of the Road
+Lost gates -> "Gate a rank in each (Recommended)": Athlete Gladiator* (3 sessions/wk x4 wks),
+  Mind Lake* (sleep routine kept 21 of 28 days), Steward Safe* (a savings goal hit)
+F3 now fully decided (13 ladders).
+Round E (verbatim):
+Rank curve -> "Scaled per realm (Recommended)" (each realm tuned so a steady real
+  week of that activity reaches rank 4-5 by year end)
+Career rank -> "Same names, star tiers (Recommended)" (same ladder, much slower curve)
+Producer XP -> "Draft": logged 30, finished 120, posted/released 300, reference 10
+Chef -> "Harder gates": cook 60 (+10/extra recipe), new recipe 25; Sous Chef 20 cooks;
+  Head Chef 50 cooks + 10 different recipes + 3 cuisines
+Round F (verbatim):
+Creator/Hustler -> "Draft + sale scales (Recommended)": video 300, treatment 60, captions 30;
+  sale = 2 XP per £1 (min 100, no cap); listing 40, outreach 10, collab 150
+Athlete/Scholar -> "Books weigh more": gym 40, PB +30; chapter 30, book 300, jargon 3, library 3
+Ticks -> "Your own XP per routine (Recommended)" (My Day 5-25 per routine; area -> realm)
+Explorer/Connector/Steward/Builder -> "Draft": trip 200, plan 30; catch-up 20, birthday 40;
+  cool-off waited 30, expense 5, budget week 50; hand-test 20, flag 15
+Round G (verbatim):
+Level size -> "Rising curve"
+Bonuses -> "Smaller bonuses": weekly challenge 75 (3/week), season goal 500-1,500,
+  realm-quest step 50, balance 5+ realms +50, 8+ realms +150
+Gates -> "Make them harder": Consistent Creator 12 weeks; Polymath 8 phyla;
+  Disciplined 6 weeks; Globetrotter 5 countries; Heart 3 months; Tycoon = season
+  revenue target Alex sets (unchanged)
+Anti-grind -> "Stricter": 1st repeat 100%, 2nd 50%, 3rd+ 0 (same action, same day;
+  ship/sell/milestones/challenges exempt)
+Round H (verbatim):
+Curve -> "Gentle rise (Recommended)": level 1 = 500 XP, each next level +25
+Sky mapping -> "A great year (Recommended)": 40 stars spaced evenly by XP; Galaxy 1
+  at ~1.6x a steady year (~72,000 XP); a steady year ends around Nova
+Pre-season -> "1 but make it Season 0/Construction" (named "Season 0: Construction",
+  gets its own short Year Wrapped + Hall of Seasons entry)
+Approve -> "Approve, TP-5 first"
+
+11. RATIFIED (Oct 13 2026)
+Plan "XP Season Pass" ratified with every answer above (sections 6, 10). Order:
+TP-5 (Ideas board) first, then XP-1 (brief first, rule 18). XP-1..XP-8 unchanged
+in scope; values/ladders/gates per rounds A-H supersede section 7's drafts.
