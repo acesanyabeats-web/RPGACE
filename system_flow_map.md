@@ -676,6 +676,12 @@ flowchart LR
   P -->|Lock in| DT
   NB[Due list from 18:00 / after a close] -->|nightBeforeStatus: locked or on schedule?| DT
   NB -->|tap| P
+  P -->|+ Cooking block: pick recipes| CKB[cooking block]
+  P -->|+ Shopping block: cook missing, cook lists, newest list, Wishlist, routines, own| SHB[shopping block]
+  CKB -->|Lock in: _generateShoppingList + _acceptSchedule| PC[(planned_cooks + shopping_lists)]
+  SHB -->|Lock in: match cook items to that list| CBT
+  CKB --> CBT
+  CBT -->|Blocks today checklist ticks| TK[shopping_list_items bought / Wishlist bought / routine tick / _finishCook]
 ```
 
 `routines` is `anon_read_only`/`authenticated_all` and in `api/data-write.js`'s allowlist. Timers and sub-step ticks are per-device (localStorage). The old `QUESTS` template is empty; `questEngine`'s generated quests are unchanged.

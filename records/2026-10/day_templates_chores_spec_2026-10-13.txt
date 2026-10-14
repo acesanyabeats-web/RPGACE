@@ -91,3 +91,13 @@ ALEX, verbatim (8, Oct 14 2026): "Go DT-2, 1"
 - DT-2 BUILT Oct 14 2026: myDay.logic.nightBeforeTarget/nightBeforeStatus/nightBeforeRow, first row of the
   dashboard Due list; planned = locked-in day or Daily Schedule items; tap opens Plan my day for that date.
   Plan DT-1..DT-4 all built (yellow until Alex hand-tests).
+
+ALEX, verbatim (9, Oct 14 2026): "No I didn't use it since July, make cooking blocks and shopping blocks too, and in
+those blocks I choose what I'm getting etc. like choosing the agenda or step by step checklist"
+Interrogation: view -> "Checklist (Recommended)"; shopping sources -> "Newest Cooking list (Recommended),Wishlist items,
+Type my own,Next-time-shopping routines"; cooking link -> "1 and 2 sound great, together?" (pick recipes AND a real
+Cooking planned cook). Then "go DT-5/6".
+- DT-5/6 BUILT Oct 14 2026: chore_blocks.kind (chores/cooking/shopping) + items jsonb + planned_cook_id; cooking block
+  lock-in = cookingOracle _generateShoppingList + _acceptSchedule; shopping block before cooking; cook items matched to
+  the new list by ingredient; day checklist ticks update list/wishlist/routine; all dishes ticked -> _finishCook.
+  Old 277 list items not offered. rpgace_agendas had 1 row because Alex hasn't scheduled since July (not a bug).
