@@ -75,3 +75,13 @@ ALEX, verbatim (6, Oct 14 2026): "go DT-4, 1"
   ones, greedy by est_mins, skipping ones that don't fit; tick in/out with an over-time warning; Daily
   Schedule entry (0 XP); block card on the day with N of M done; undone chores stay due; Cancel removes
   block + schedule entry. Not done: no shift-clash check (left to DT-1).
+
+ALEX, verbatim (7, Oct 14 2026): "go DT-1, yes, 1, 1"
+- yes = day kinds off / early / late (late = closing shift; his closes end 00:00, so end <= start or >= 23:30).
+- 1 = learn from locked-in days first, falling back to Daily Schedule history of days like it.
+- 1 = Plan my day opens the day template (replaces the old time-suggestion popup).
+- DT-1 BUILT Oct 14 2026: day_templates table (saved + locked rows); learnedSource order: locked same
+  kind+weekday -> schedule history same kind+weekday (56 days) -> locked same kind -> history same kind ->
+  fresh fit. buildDay adjusts for the date; Lock in -> Daily Schedule + routine_plans + chore block +
+  locked record, no doubles. Found: rpgace_agendas holds 1 row (Jul 8), so history learning has little to
+  start from; locked days carry it.

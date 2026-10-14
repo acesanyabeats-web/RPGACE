@@ -73,6 +73,22 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-14-day-templates" style="margin-bottom:30px;">
+    <div class="card-title">🗓 Oct 14 — Day templates: Plan my day starts from a day like this one</div>
+    <div class="card-body">
+      Alex: "routines should remember the day and give 1st suggestion of template for day that can be shaped similar, with me being able to change chosen activities within template before locking in as planned day", then "go DT-1, yes, 1, 1". Step 3 of the Day Templates &amp; Chores plan.
+      <ul>
+        <li><strong>🗓 Plan my day now plans any date</strong> (today by default). It replaces the old time-suggestion popup and still does what that did.</li>
+        <li><strong>Kind of day</strong> comes from your rota: no shift = day off, a closing shift (yours end at 00:00) = late, any other shift = early.</li>
+        <li><strong>First suggestion:</strong> the last day of the same kind and weekday you locked in; failing that, what was really on your Daily Schedule for a day like it (up to 8 weeks back); then the same kind on any weekday; then a fresh fit of what's due. Your saved templates (📌) are in the same list.</li>
+        <li>It's adjusted for that date: routines not due that day drop out, a chore block refills with that day's most overdue chores, and routines due but missing are fitted into free gaps (marked "also due"). Anything that overlaps your shift or its travel gets a ⚠.</li>
+        <li><strong>Shape it:</strong> untick, change start times and lengths, remove, or add a routine, a chore block (the longest that fits a gap, up to 2 h) or anything else.</li>
+        <li><strong>🔒 Lock in:</strong> everything kept goes on your Daily Schedule (places keep their journey time), weekly and "N a week" routines are planned for that day, the chore block becomes a real one, and the day is remembered so the next day like it starts from it. Locking twice doesn't double up.</li>
+        <li><strong>📌 Save as template</strong> keeps a day under a name; Delete template (two taps) removes one.</li>
+      </ul>
+      Verified: new table <code>day_templates</code> on the live database. 24 new headless checks cover day kinds, learning from the schedule and from locked days, routines dropping out or being added, clash warnings, the chore block shrinking to fit, saving a template, locking in (schedule, places, plans, chore block, the day record) and not doubling up. The My Day, chores, chore block and week planner suites pass; the old Plan my day checks were rewritten for the new screen. Caught before shipping: a 2-hour chore block that didn't fit any gap was silently dropped (now it shrinks to fit), and an unescaped apostrophe broke the script check again. Not yet hand-tested by Alex. Note: your Supabase schedule table holds only one row (8 July), so learning from past schedules will mostly start from days you lock in. Next: the night-before reminder (DT-2).
+    </div>
+</div>
 <div class="card" id="card-2026-10-14-chore-block" style="margin-bottom:30px;">
     <div class="card-title">🧹 Oct 14 — Chore block: a slot in your day that fills itself with the most overdue chores</div>
     <div class="card-body">

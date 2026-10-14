@@ -669,6 +669,11 @@ flowchart LR
   CS --> CB[Chore block: day + start + length]
   CB -->|fillBlock: most overdue first, fits by minutes| CBT[(chore_blocks)]
   CBT -->|scheduleToCalendar, 0 XP| S
+  P -->|DT-1: day kind from shifts| DT[(day_templates: saved + locked)]
+  DT -->|learnedSource: same kind + weekday| P
+  P -->|Lock in| S
+  P -->|Lock in| RP[(routine_plans)]
+  P -->|Lock in| DT
 ```
 
 `routines` is `anon_read_only`/`authenticated_all` and in `api/data-write.js`'s allowlist. Timers and sub-step ticks are per-device (localStorage). The old `QUESTS` template is empty; `questEngine`'s generated quests are unchanged.
