@@ -674,6 +674,8 @@ flowchart LR
   P -->|Lock in| S
   P -->|Lock in| RP[(routine_plans)]
   P -->|Lock in| DT
+  NB[Due list from 18:00 / after a close] -->|nightBeforeStatus: locked or on schedule?| DT
+  NB -->|tap| P
 ```
 
 `routines` is `anon_read_only`/`authenticated_all` and in `api/data-write.js`'s allowlist. Timers and sub-step ticks are per-device (localStorage). The old `QUESTS` template is empty; `questEngine`'s generated quests are unchanged.

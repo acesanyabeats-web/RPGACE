@@ -85,3 +85,9 @@ ALEX, verbatim (7, Oct 14 2026): "go DT-1, yes, 1, 1"
   fresh fit. buildDay adjusts for the date; Lock in -> Daily Schedule + routine_plans + chore block +
   locked record, no doubles. Found: rpgace_agendas holds 1 row (Jul 8), so history learning has little to
   start from; locked days carry it.
+
+ALEX, verbatim (8, Oct 14 2026): "Go DT-2, 1"
+- 1 = from 18:00; on a closing shift, after it ends (just after midnight, about the day that has started).
+- DT-2 BUILT Oct 14 2026: myDay.logic.nightBeforeTarget/nightBeforeStatus/nightBeforeRow, first row of the
+  dashboard Due list; planned = locked-in day or Daily Schedule items; tap opens Plan my day for that date.
+  Plan DT-1..DT-4 all built (yellow until Alex hand-tests).
