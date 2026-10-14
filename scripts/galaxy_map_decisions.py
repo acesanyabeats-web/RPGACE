@@ -115,7 +115,7 @@ DECISION_POINTS = [
     {
         'id': 'conidpot-delete', 'category': 'destructive',
         'title': 'Delete an idea from the Idea Bank (ConID Pot)',
-        'module': 'conidPot', 'func': '_refreshIdeaBank', 'lines': (32331, 32331),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 31788-31788; single-line citation kept
+        'module': 'conidPot', 'func': '_refreshIdeaBank', 'lines': (32333, 32333),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 31788-31788; single-line citation kept
         'anchor': "confirm('Delete \"' + row.title + '\"?')",
         'trigger': 'A real 🗑 button rendered per-row inside the Idea Bank list.',
         'logic': 'A plain `confirm()` — real, same minimal-context shape as videoSummary\'s.',
@@ -131,7 +131,7 @@ DECISION_POINTS = [
     {
         'id': 'placement-confirm', 'category': 'taxonomy',
         'title': 'New insight placement — accept/reject before a real taxonomy_tree write',
-        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (21754, 21754),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 21314-21314; single-line citation kept; 2+ matches, picked the real implementation over the pass-through wrapper
+        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (21756, 21756),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 21314-21314; single-line citation kept; 2+ matches, picked the real implementation over the pass-through wrapper
         'anchor': '_showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject)',
         'trigger': 'Shown automatically after `decidePlacementScored()` (a real curated core-logic point in its own right — see the Decision Matrix for the full scoring logic) returns a real placement candidate.',
         'logic': 'A real popup showing Oracle\'s own proposed attach point + new steps, with explicit onAccept/onReject callbacks — nothing writes to taxonomy_tree without this gate, per rule 4.',
@@ -140,7 +140,7 @@ DECISION_POINTS = [
     {
         'id': 'article-confirm', 'category': 'taxonomy',
         'title': 'Dedup-extend article regeneration — approve before overwriting an existing leaf',
-        'module': 'phylumPath', 'func': '_showArticleConfirm', 'lines': (22285, 22285),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 21845-21845; single-line citation kept; 2+ matches, picked the real implementation over the pass-through wrapper
+        'module': 'phylumPath', 'func': '_showArticleConfirm', 'lines': (22287, 22287),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 21845-21845; single-line citation kept; 2+ matches, picked the real implementation over the pass-through wrapper
         'anchor': '_showArticleConfirm: function(node, articleTitle, text, onApprove, onDeny)',
         'trigger': 'Shown when `_insertNewSteps()` (a real curated core-logic point in its own right — the dedup-extend decision, written up in full on the Decision Matrix) finds a real near-duplicate and proposes extending the existing leaf\'s own article instead of creating a new one.',
         'logic': 'Same real checkpoint pattern as `_showPlacementConfirm`, simpler — an existing leaf\'s content is about to be regenerated, so this gate specifically protects against overwriting real prior content on a bad match.',
@@ -173,7 +173,7 @@ DECISION_POINTS = [
     {
         'id': 'undo-conid-stage', 'category': 'pipeline',
         'title': 'Undo a ConID\'s last completed production stage',
-        'module': 'contentProductionLive', 'func': '_undoLastStage', 'lines': (28812, 28812),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 28316-28316; single-line citation kept
+        'module': 'contentProductionLive', 'func': '_undoLastStage', 'lines': (28814, 28814),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 28316-28316; single-line citation kept
         'anchor': "confirm('Undo ConID #' + row.con_id",
         'trigger': 'The real standalone "Undo" button on a music_video ConID card (Aug 6 UX pass — paired with a "revert progress" checkbox, default unchecked = edit-in-place).',
         'logic': 'A plain `confirm()`, but with real, specific consequence text in the message itself ("deletes the creative-doc output that stage produced... cannot be undone") — more informative than the bare delete-confirms above despite using the same native browser dialog.',

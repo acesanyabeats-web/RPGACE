@@ -124,6 +124,7 @@ const ALLOWED_TABLES = new Set([
   'xp_ladders', 'xp_unlock_defs', 'xp_unlocks', 'xp_settings', // XP-3: ranks, badges/titles, claims, revenue target
   'xp_reports', // XP-4: frozen week/month/season/year snapshots (written by pg_cron, read only)
   'xp_challenges', 'xp_quest_steps', // XP-5: weekly challenges, season resolutions, realm quest steps
+  'xp_treats', // XP-6: treats pinned to a level, rank, resolution or full challenge week
   'routine_plans', // Oct 12 2026 MD2-5: week planner - which days a routine is planned; anon_read_only from creation
   'day_blocks', // Oct 12 2026 MD2-5: multi-day blocks (holiday/trip/event) shown on planner headers; anon_read_only from creation
   'quest_duration_stats',
@@ -326,7 +327,7 @@ async function handleBundleDeliverables(req, res, serviceKey) {
 // Every access is this action, behind requireAuth() with the service-role
 // key - the same posture as bundle-deliverables above (rule 8: no 13th
 // api file). Ops: upload | update | list | count | delete.
-const PRIVATE_READ_TABLES = new Set(['travel_profile', 'people', 'plans', 'plan_tasks', 'library_items', 'xp_events', 'xp_rules', 'xp_ladders', 'xp_unlock_defs', 'xp_unlocks', 'xp_settings', 'xp_reports', 'xp_challenges', 'xp_quest_steps']);
+const PRIVATE_READ_TABLES = new Set(['travel_profile', 'people', 'plans', 'plan_tasks', 'library_items', 'xp_events', 'xp_rules', 'xp_ladders', 'xp_unlock_defs', 'xp_unlocks', 'xp_settings', 'xp_reports', 'xp_challenges', 'xp_quest_steps', 'xp_treats']);
 const SHOTS_BUCKET = 'screenshots';
 const SHOT_PATCH_FIELDS = ['extracted_text', 'description', 'tags', 'kind', 'suggestions', 'status', 'routed_to', 'read_at'];
 const SHOT_COLS = 'id,storage_path,source,extracted_text,description,tags,kind,suggestions,status,routed_to,created_at,read_at';

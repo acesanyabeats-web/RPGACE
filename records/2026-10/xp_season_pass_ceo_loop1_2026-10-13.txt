@@ -490,3 +490,9 @@ Q Oracle -> "One Oracle call on Monday (Recommended)" (realm totals + this week 
   personal text; 2 suggestions for the weakest realms; the rest rule-based)
 Values (ratified round G): weekly challenge 75 (3/week), realm-quest step 50; challenges and
 resolutions never capped.
+
+14. XP-6 brief answers (Oct 13 2026, AskUserQuestion, verbatim):
+Q Themes -> "Accent + card frame (Recommended)"
+Q Treat target -> "Year level (Recommended),Realm rank (Recommended),Season resolution kept,Weekly challenges"
+Q Treat earned -> "Mark earned + 🎁 note (Recommended)"
+Q Flair -> "Quiet (Recommended)"
