@@ -1,0 +1,83 @@
+COOKING REORGANISATION — /interrogation → /paranoia (right-sized) + /free-for-all-debate + /drift → /CEO Loop 1
+Date: 2026-10-14
+
+ALEX'S ASK (verbatim)
+"Let's reorganize the cooking module now, I need the internal pages and functions to be better
+interconnected, with flawless logic, /paranoia and /free-for-all-debate this with /drift and
+/interrogation into oblivion to help scrutiny get my input before all debates, then we /CEO it"
+
+EVIDENCE (live code + Supabase, this pass)
+- cookingOracle = rpgace_core.js ~42056-49339, 33 ui + 80 logic functions, 16 popup screens + full-screen Cook Mode.
+- Screen graph: hub -> {Planned Cook, Grocery List, Generator, Current Stock, What Can I Cook}.
+  Dead ends (link nowhere else in Cooking): Current Stock, Settings (only reachable from inside the
+  generator), Cook Mode, Recipe-update confirm, Price entry.
+  Each screen does pop.close() then opens the next: one-way chain, no back.
+- Saved recipes (8 rows) have no library screen; reachable only via a session's recipe list or the
+  stock-match finder.
+- BUG: logic._recordPurchase tops up pantry_stock with on_conflict=ingredient_id, but the table's
+  primary key is (ingredient_id, location) (pg_constraint checked). Postgres rejects that conflict
+  target, so the top-up fails every time -> cb(error) -> "purchase log failed" toast even though the
+  price + bought flip already wrote. It also reads quantity from any one location (limit=1) and
+  never records a location. Never exercised: 0 bought items.
+- GAP: logic._finishCook marks planned_cooks cooked + journal cooked; never deducts stock.
+  0 cooks marked cooked so far.
+- DUP (rule 8): logic._loadPantryNamed and logic._loadPantrySummed run the same pantry_stock read.
+- shopping_lists has planned_cook_id (uuid) + status; a standing "top-up" list can be a row with
+  no planned cook. Status CHECK must be read from pg_constraint before writing a new value.
+- planned_cooks has no column to record what a finish deducted (no undo trail today).
+
+/INTERROGATION — Alex's answers (verbatim choices)
+1. Top level: "Journey hub (Recommended)" — Recipes -> Plan a cook -> Shop -> Cook -> Stock, each
+   step linking forward/back, live "what's next" line.
+2. Saved recipes: "Yes, with actions (Recommended)" — My Recipes list (search, makeable colour,
+   last cooked), each recipe -> Cook now / Add to planned cook / Shopping.
+3. Stock loop (all three): "Bought → adds to stock", "Finished cook → deducts",
+   "Low stock → grocery list".
+4. Back: "Back to previous screen (Recommended)" — ← to wherever you came from, plus 🏠 hub.
+
+/PARANOIA (right-sized per rule 11; one module, answers already in)
+- Restructure/Aintergration: no third-party tool needed. Reuse dashDeck._nav* history (N1) for back,
+  logic._upsertStock for every stock write, logic._computeIngredientUsage for deduction amounts,
+  existing BTN_VARIANTS for every new button. No new api/*.js file (11 of 12 used).
+- Commit archaeology: popups close-then-open on purpose (H18/H20 comments: avoid stacked dashDeck
+  overlays). Back nav must keep that rule: one Cooking popup at a time, history not stacking.
+- Risk: stock deduction changes real data with no Supabase backup -> always preview + confirm,
+  and store exactly what was deducted on the planned cook so it can be put back.
+
+/FREE-FOR-ALL-DEBATE (4 competitors, each 2 angles)
+- Minimalist: fix the purchase bug + finish deduct, skip the hub redesign. Answer: Alex chose the
+  journey hub; but bugs go FIRST so the hub's "Stock" step shows true numbers.
+- Data guardian: deduction with fuzzy units (cups vs grams) can go wrong. Answer: reuse the existing
+  unit bridges in _resolveHaveAmount; anything that can't be converted is shown "not deducted" in
+  the preview, never guessed (rule 7).
+- Workflow advocate (Alex's habits): he starts cooks from My Day and the schedule, not the hub.
+  Answer: back nav + finish flow must work from every entry (myDay block, Daily Schedule, Live Cook),
+  not only from the hub.
+- Builder: one "cooking screen" helper (title, ←, 🏠) used by all 16 screens beats patching each.
+  Answer: adopted — CR-3 builds it once, each screen opts in.
+
+/DRIFT (plan vs the 4 answers + the ask)
+- VERDICT on track, BASIS ratified (Alex's answers). All 4 answers map to items; "flawless logic"
+  maps to CR-1/CR-2 bug fixes + dedup. MINOR: Settings reachability not asked about — folded into
+  CR-6 (hub link), no new decision needed. Nothing CAPTURED.
+
+PLAN (build order; each step briefed before building, rule 18)
+CR-1 Stock data fixes: _recordPurchase writes through _upsertStock with add-to-quantity and a
+     location (asks pantry/fridge/freezer, defaults to the ingredient's last-used location);
+     merge _loadPantryNamed/_loadPantrySummed into one read.
+CR-2 Finish cook deducts: "Cook finished" shows what it will take out of stock (scaled amounts,
+     unconvertible lines flagged), you edit/confirm, it deducts and saves the list on the planned
+     cook (new planned_cooks.stock_deducted jsonb) with an "undo" for that cook; anything that hits
+     zero is offered onto a standing top-up grocery list.
+CR-3 Cooking screen shell: one helper gives every Cooking screen a ← back (previous Cooking screen,
+     via dashDeck history) and 🏠 hub, keeping one popup at a time.
+CR-4 My Recipes library: search, makeable-now colour, last cooked; each row -> Open / Cook now /
+     Add to planned cook / Shopping.
+CR-5 Journey hub: Recipes -> Plan -> Shop -> Cook -> Stock, with a live "what's next" line and
+     counts; Settings reachable from the hub.
+CR-6 Cross-links: Stock -> What can I cook / add to grocery list; Shopping -> Stock; Cook Mode end
+     -> Finish flow; Generator/Recipe card -> My Recipes after save.
+CR-7 Tests (headless), minify, docs, SELF_KNOWLEDGE, push main, verify Vercel READY.
+
+Deliberately left out: visual restyle (done in Polish & speed), H5 calendar collision checks,
+new nutrition work.
