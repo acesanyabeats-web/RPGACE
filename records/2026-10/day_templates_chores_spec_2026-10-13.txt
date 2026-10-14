@@ -61,3 +61,10 @@ Read as (dictation merged sentences; "8" = "I"):
 - 3. Order: AFTER the XP steps (XP-5..XP-8 first); brief XP-5 next.
 - 4. Chores list: Claude Code proposes a starter list of room chores with suggested day counts; Alex
   picks from it and adds his own.
+
+ALEX, verbatim (5, Oct 14 2026): "keep all, order approved, build chores list"
+- All 20 starter chores kept at the proposed day counts. Order approved: DT-3 -> DT-4 -> DT-1 -> DT-2.
+- DT-3 BUILT Oct 14 2026: cadence every_days + routines.every_days/last_done_before; Chores section;
+  "Set up the chore list" sheet (starter list, editable days, optional last done, own chores).
+  Blank last-done -> first due dates staggered ~2 a day within one period (Claude Code's call, told to
+  Alex, so the list doesn't all land on day one). Chores -> Homekeeper XP. ceo_plans "Day Templates & Chores".

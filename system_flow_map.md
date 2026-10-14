@@ -663,6 +663,9 @@ flowchart LR
   O[Oracle Accept / Insta + Add] -->|one-off due today| R
   R -->|next time shopping| C[Cooking shopping list]
   T --> G[Landing Today: N routines left]
+  CH[Chore setup: 20 starters + own] -->|every_days, last_done_before| R
+  R -->|every_days: due when N days since last tick| CS[Chores section on My Day]
+  CS -->|tick| Q
 ```
 
 `routines` is `anon_read_only`/`authenticated_all` and in `api/data-write.js`'s allowlist. Timers and sub-step ticks are per-device (localStorage). The old `QUESTS` template is empty; `questEngine`'s generated quests are unchanged.
