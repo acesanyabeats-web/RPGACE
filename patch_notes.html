@@ -73,6 +73,23 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-14-xp-year-wrapped" style="margin-bottom:30px;">
+    <div class="card-title">🎆 Oct 14 — XP Season Pass, step 8: Year Wrapped, Hall of Seasons, the 1 January switch-over</div>
+    <div class="card-body">
+      Alex: "Swipe cards", "One short paragraph" from Oracle, "Pop up once", and "Yes, 'Year so far'". This is the last step of the XP plan; XP-1 to XP-8 are all built.
+      <ul>
+        <li><strong>Year Wrapped.</strong> When a year closes (Year 0: Construction ends 31 December), its saved year report becomes swipe cards. They show total XP, level and sky rank, top realms, best day and best week, what you did most, titles, badges, ranks and level-ups, resolutions kept, treats earned and outreach. They end with one short paragraph about your year. Swipe or tap ◀ / ▶.</li>
+        <li><strong>One paragraph, written once.</strong> Oracle writes it from the year's numbers only, the first time you reach the last card. It is saved, so it is never paid for twice. If Oracle is down, the card says so and tries again next time; the numbers are still all there.</li>
+        <li><strong>Pops up once.</strong> The first time you open RPGACE after the year closes, Wrapped opens by itself and is marked seen. After that it lives in the Hall of Seasons. The Due list also shows "Your Year 0 Wrapped is ready" until you've seen it.</li>
+        <li><strong>Year so far.</strong> A 🎆 Year so far button on the Year page shows the same cards from live numbers, any time. It has no paragraph; that's written when the year closes.</li>
+        <li><strong>Hall of Seasons.</strong> In the Trophy cabinet, one row per year, with this year so far first. Each shows XP, level, sky rank, top realm, titles and the highest rank in each realm; tap one to open its Wrapped.</li>
+        <li><strong>1 January.</strong> The nightly job already saves the year report and year ranks reset. New: in the first two weeks of January the Due list nudges you to set the new season's resolutions, and warns if last year's report didn't save.</li>
+        <li>Saved reports also now keep the treats earned, the best week and the outreach count.</li>
+        <li>A slip was caught before shipping: the new text Oracle reads about itself had unescaped apostrophes that broke the script check.</li>
+      </ul>
+      Verified: the database change was tested in a rolled-back transaction on the live database (a year report now carries treats, best week and outreach). 21 new headless checks cover the cards, the year so far, the pop-up only once, swiping, the paragraph written once and saved, the Oracle-down message, the Hall and the January Due items, and the earlier XP, My Day and Chronicles suites pass too. Not yet hand-tested by Alex. The first real Wrapped arrives just after midnight on 1 January 2027.
+    </div>
+</div>
 <div class="card" id="card-2026-10-14-xp-mind-outreach-budget" style="margin-bottom:30px;">
     <div class="card-title">🧘 Oct 14 — XP Season Pass, step 7: Mind area, outreach log, weekly spending limit</div>
     <div class="card-body">

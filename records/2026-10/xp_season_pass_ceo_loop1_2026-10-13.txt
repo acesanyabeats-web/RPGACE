@@ -502,3 +502,9 @@ Q Sleep -> "Mark one routine (Recommended)"
 Q Outreach -> "Business tab (Recommended),Oracle chat,Link to People"
 Q Budget week -> "Weekly spending limit (Recommended)"
 Q Cool-off XP -> "Bought after waiting (Recommended)"
+
+16. XP-8 brief answers (Oct 14 2026, AskUserQuestion, verbatim):
+Q Wrapped -> "Swipe cards (Recommended)"
+Q Oracle -> "One short paragraph (Recommended)"
+Q When -> "Pop up once (Recommended)"
+Q Preview -> "Yes, 'Year so far' (Recommended)"
