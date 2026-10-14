@@ -687,6 +687,27 @@ flowchart LR
   CBT -->|+10 tick: quest_log kind block| XPB[xp_on_change → block_tick → realm XP]
 ```
 
+## 15h. Plans money, dates + people (TP-6/TP-7, Oct 14 2026) — built, untested by Alex
+
+```mermaid
+flowchart LR
+  PT[(plan_tasks due_by)] -->|read, signed in| TD[tripPlans.logic.tripDue]
+  PL[(plans: status, end_date, people, details)] --> TD
+  PE[(people last_spoke)] --> TD
+  TD -->|book-by within 7 days, hot on/after the day| DUE[Due list row] -->|tap| PV[Plan view]
+  TD -->|ended ≤30 days, no trip_log| DUE
+  TD -->|trip ≤14 days, person not spoken this week| DUE
+  PV -->|tick money task: what did you pay?| MB{Amount?}
+  MB -- amount --> CP[(plan_tasks.cost_paid + done)] --> FIN[(chronicles_finance expense, Travel)] --> XPE[expense_logged XP]
+  MB -- Done, no cost --> CP
+  PV -->|After-trip log| J[(journal source trip_log)] --> XPJ[journal_entry XP]
+  PV -->|log saved| PD[(plans.details.trip_log, status done)]
+  PD -->|Cook it at home| CO[cookingOracle._showGenerateForm prefilled]
+  PV -->|Who's coming chips| PL
+```
+
+Truth table: book-by Due rows, highlight, pay prompt, single Travel expense, spent vs budget, after-trip log, Cook-at-home prefill, people chips, pre-trip people row, People tab upcoming plans — built, headless-verified (30 checks), not hand-tested. No messages are drafted; RPGACE still never books or pays.
+
 ## 15g. My Day Round 2 (Oct 14 2026) — built, untested by Alex
 
 ```mermaid

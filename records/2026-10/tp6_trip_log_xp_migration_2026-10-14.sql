@@ -1,0 +1,8 @@
+-- TP-6 (Oct 14 2026): the after-trip log is a journal entry Alex writes,
+-- so it earns journal_entry XP like the weekly review. Applied live via a
+-- DO block that replaces the source list inside xp_on_change():
+--   ('manual', 'decision_journal', 'weekly_review')
+--   -> ('manual', 'decision_journal', 'weekly_review', 'trip_log')
+-- No schema change: plan_tasks.cost_paid, plans.people (jsonb) and
+-- plans.details (jsonb, details.trip_log) already exist; the Travel expense
+-- is a normal chronicles_finance row (type 'expense', category 'Travel').

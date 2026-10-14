@@ -73,6 +73,40 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-14-plans-money-people" style="margin-bottom:30px;">
+    <div class="card-title">🧳 Oct 14 — Plans: book-by reminders, what you paid, after-trip log, who's coming</div>
+    <div class="card-body">
+      Plan 2 of today's four ("Trips &amp; Plans finish", TP-6 and TP-7). Alex said "continue" to the brief, which set book-by reminders to show 7 days before and highlight on the day. Everything is in the existing Plans card.
+      <ul>
+        <li><strong>Book-by dates on the Due list (TP-6).</strong> A plan task with a book-by date shows from 7 days before. It is highlighted on the day and when overdue, and tapping it opens that plan. Inside the plan, the same deadlines turn amber within 7 days and are highlighted on the day.</li>
+        <li><strong>What you paid (TP-6).</strong>
+          <ul>
+            <li>Ticking a ticket, stay, travel, food or other task asks what you paid, pre-filled with Oracle's estimate.</li>
+            <li>The amount is saved on the task and logged once in Chronicles Finance as a Travel expense, using the Wishlist's own write.</li>
+            <li>"Done, no cost" just ticks the task. Packing and document tasks tick straight away.</li>
+            <li>Unticking and re-ticking never logs the expense twice.</li>
+            <li>A saved plan shows "Paid so far" against its budget, in red if it goes over.</li>
+          </ul></li>
+        <li><strong>After-trip log (TP-6).</strong>
+          <ul>
+            <li>For up to 30 days after a trip ends, the Due list asks "How was …?".</li>
+            <li>The log asks for the best bits, what you'd do differently next time, the real cost (pre-filled with what you paid) and a dish to bring home. It saves as one Journal entry (+15 journal XP), with the real cost against the budget.</li>
+            <li>It can mark the plan done.</li>
+            <li>After saving, a "🍳 Cook … at home" button opens Cooking's own generate form, pre-filled.</li>
+          </ul></li>
+        <li><strong>People (TP-7).</strong>
+          <ul>
+            <li>A saved plan has "Who's coming" chips from your People list.</li>
+            <li>In the 2 weeks before a trip, the Due list names anyone on it you haven't spoken to this week, e.g. "Sort Lisbon with Mum".</li>
+            <li>The People tab shows each person's upcoming plans.</li>
+            <li>Still no drafted messages.</li>
+          </ul></li>
+      </ul>
+      Database: one small change. Trip logs count as journal entries you wrote, the same as the weekly review (<code>xp_on_change</code>, record <code>records/2026-10/tp6_trip_log_xp_migration_2026-10-14.sql</code>). <code>plan_tasks.cost_paid</code>, <code>plans.people</code> and <code>plans.details</code> already existed.<br>
+      Verified: 30 new headless checks pass (Due rows and order, highlight, opening the plan, the pay prompt, the Finance row, no duplicate expense, people chips, the log and its journal row, the Cook button, the People tab, no page errors). The earlier Plans (30), Ideas (17) and My Day Round 2 suites still pass; one old Plans check was updated because ticking a ticket now asks what was paid. Not yet hand-tested by Alex.
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-14-my-day-round-2" style="margin-bottom:30px;">
     <div class="card-title">✨ Oct 14 — My Day Round 2: habits that stick, days since, cutting back, more ideas, alerts</div>
     <div class="card-body">
