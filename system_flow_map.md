@@ -687,6 +687,30 @@ flowchart LR
   CBT -->|+10 tick: quest_log kind block| XPB[xp_on_change → block_tick → realm XP]
 ```
 
+## 15i. Health & body (HB-1..3, Oct 14 2026) — built, untested by Alex
+
+```mermaid
+flowchart LR
+  PH[📷 Meal photo] -->|oracleVision| IT[Items + grams]
+  LB[🏷 Label photo] -->|oracleVision| LBL[per 100g + portion] --> IT
+  TY[✍️ Typed] -->|_callGroundWorkerJSON| IT
+  IT -->|cookingOracle._lookupCofid| CF{CoFID match?}
+  CF -- yes --> RV[Editable review]
+  CF -- no, Oracle estimate --> RV
+  PC[(planned_cooks cooked ≤3 days + recipe_ingredients)] -->|per serving| RV
+  RV -->|secureWrite| FL[(food_log)]
+  FL --> TOT[kcal + protein vs health_settings targets]
+  BD[Water / weight / sleep] -->|secureWrite| BL[(body_log)] --> TR[7-day weight avg + 14-day trends]
+  HS[(health_settings.programme)] --> WO[Today's workout]
+  GS[(gym_sets via gymTracker.load)] --> SG[suggest: +2.5kg at top of range] --> WO
+  WO -->|Start| GL[gymTracker.ui.openLog prefilled]
+  TOT --> MD[My Day Health today card]
+  WO --> MD
+  STEPS[Google Health API steps] -.->|HB-4 not built, waits on Alex's check| BL
+```
+
+Truth table: photo/label/typed food logging with CoFID re-check, cooks per serving, targets, water/weight/sleep, trends, programme + overload + prefilled gym log, My Day card — built, headless-verified (42 checks), not hand-tested. Steps — not built (HB-4). `food_log`/`body_log`/`health_settings` are authenticated-only.
+
 ## 15h. Plans money, dates + people (TP-6/TP-7, Oct 14 2026) — built, untested by Alex
 
 ```mermaid

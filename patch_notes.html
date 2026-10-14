@@ -73,6 +73,35 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-14-health-body" style="margin-bottom:30px;">
+    <div class="card-title">❤️ Oct 14 — Health &amp; body: food from a photo, gym programme, weight, water, sleep</div>
+    <div class="card-body">
+      Plan 3 of today's four. Your answers were calories + protein, a weekly split with overload, and weight, water and sleep. For steps you said "go straight for the Google Health API", then "Build it, I'll do the API when I'm home". There's a new ❤️ Health &amp; body card in the Habits menu. Record: <code>records/2026-10/health_body_plan_2026-10-14.txt</code>.
+      <ul>
+        <li><strong>Food (HB-1).</strong>
+          <ul>
+            <li>Three ways in: 📷 Meal photo, 🏷 Label photo, ✍️ Type it. Oracle lists each food with grams.</li>
+            <li>Each item is re-checked against the UK food tables Cooking already uses. If it matches, those numbers replace Oracle's guess and the row says which food it matched; if not, it says "Oracle's estimate".</li>
+            <li>You edit anything before saving, and changing the grams rescales calories and protein.</li>
+            <li>A label shows per 100g and the pack portion; you say how much you had.</li>
+            <li>🍳 From your cooks lists recipes from cooks you finished in the last 3 days, one serving each, worked out from the recipe's ingredient weights. It warns when some ingredients have no nutrition, so the number is low.</li>
+            <li>Changed from the brief: cooks are one tap rather than counted automatically, because one cook is often several days of portions.</li>
+          </ul></li>
+        <li><strong>Gym programme (HB-2).</strong>
+          <ul>
+            <li>Pick Push/Pull/Legs, Upper/Lower or Full body and your days; the workouts rotate through them.</li>
+            <li>Each exercise shows what you did last time and a nudge: when every set hit the top of the range, add 2.5kg and drop to the bottom of the range; otherwise, same weight and one more rep.</li>
+            <li>▶ Start this workout opens your existing gym log with those numbers filled in. Exercise lists are editable.</li>
+          </ul></li>
+        <li><strong>Body (HB-3).</strong> Water by the glass (+1 / undo), weight with a 7-day average, sleep hours (6/7/8/9 or type it), a Trends tab with a 2-week weight chart and a day-by-day table, and a Targets tab.</li>
+        <li><strong>My Day</strong> shows a "Health today" card: calories and protein against your targets, water, sleep, and today's workout.</li>
+        <li><strong>Steps (HB-4) are not built.</strong> Samsung Health only shares data with signed partners, and Google Fit's API is closing. The Google Health API sync waits for your 5-minute OAuth Playground check, which shows whether your account holds step data there.</li>
+      </ul>
+      Database: new private tables <code>food_log</code>, <code>body_log</code> and <code>health_settings</code> (signed-in only, read through the app's own server). Record: <code>records/2026-10/health_body_migration_2026-10-14.sql</code>.<br>
+      Verified: 42 new headless checks pass, covering the photo, label, typed and cooks flows, the food-table correction, grams rescaling, the 2-click delete, water/weight/sleep, the bad-number guards, programme rotation, the overload maths, the prefilled gym log, workout edits, trends and the My Day card, with no page errors. The Plans, My Day and My Day Round 2 suites still pass. Not yet hand-tested by Alex.
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-14-plans-money-people" style="margin-bottom:30px;">
     <div class="card-title">🧳 Oct 14 — Plans: book-by reminders, what you paid, after-trip log, who's coming</div>
     <div class="card-body">

@@ -1,0 +1,38 @@
+HEALTH & BODY PLAN (HB-1..HB-4) — Oct 14 2026
+Plan 3 of Alex's four for the day ("All are very needed start with 1, I want them all done today though").
+
+ALEX'S ANSWERS (verbatim, AskUserQuestion):
+- Nutrition: "Calories + protein (Recommended)"
+- Steps: "1 but connect either Google fit or Samsung health directly to extract data"
+- Gym: "Weekly split + overload (Recommended)"
+- Extras: "Body weight trend,Water,Sleep hours"
+- Step sync follow-up, after evidence (Samsung Health = partners only; Google Fit API
+  closing 2026, no sign-ups since May 2024; successor = Google Health API, cloud REST,
+  Fitbit/Google Health account link required): "Go straight for the Google Health API"
+- Brief reply: "Build it, I'll do the API when I'm home"
+
+EVIDENCE FOR STEPS (web search Oct 14 2026):
+- developer.android.com Google Fit migration FAQ: Fit APIs deprecated in 2026, no new
+  sign-ups since 1 May 2024.
+- Samsung developer forum: server REST/SDK data only for contracted partners.
+- developers.google.com/health: cloud REST v4, OAuth, users.getIdentity returns
+  400 ACCOUNT_NOT_LINKED when the Google account is not linked to Google Health.
+- Not confirmed: whether phone/Samsung steps synced via Health Connect reach the Google
+  Health cloud. Hence HB-4 waits for Alex's OAuth Playground check (identity + steps
+  dataPoints). Health Connect itself is on-device only (needs a native app).
+
+BUILT (HB-1..HB-3), module healthBody, tables food_log / body_log / health_settings
+(locked, authenticated_all; read via /api/data-write action 'read'):
+- HB-1 food: meal photo / label photo / typed -> Oracle items with grams -> CoFID re-check
+  (cookingOracle.logic._lookupCofid) -> editable review -> food_log. From your cooks:
+  recipes in planned_cooks status cooked in the last 3 days, per serving from
+  recipe_ingredients.grams_estimate x ingredients per-100g. Changed from the brief:
+  cooked recipes are one tap ("+ Add a serving"), not counted automatically, because a
+  cook is often several days' portions.
+- HB-2 gym: health_settings.programme (PPL / Upper-Lower / Full body templates rotated
+  over chosen days, editable exercise lists), today's workout with last sets and a
+  double-progression nudge (+2.5kg when all sets hit the top of the range), Start ->
+  gymTracker.ui.openLog prefilled.
+- HB-3 body: water glasses (+1 / undo), weight with 7-day average, sleep hours chips,
+  14-day trends (weight chart + day table), targets tab. My Day shows a Health today card.
+- HB-4 steps: NOT built. Waiting on the Playground check.
