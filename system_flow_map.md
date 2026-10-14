@@ -687,6 +687,20 @@ flowchart LR
   CBT -->|+10 tick: quest_log kind block| XPB[xp_on_change → block_tick → realm XP]
 ```
 
+## 15j. Freeze recorder (PS-1/PS-2, Oct 14 2026) — built, untested by Alex
+
+```mermaid
+flowchart LR
+  LT[longtask ≥500ms] --> B{boot done?}
+  LF[long-animation-frame ≥500ms] --> REC[perfWatch.record: scripts, invoker, last taps/pages, slow responses, build]
+  LT -->|before LoAF observer or no LoAF| REC
+  B -- no --> REC
+  B -- yes --> TOAST[red toast → error_log] 
+  REC --> Q[queue + localStorage] -->|signed in| PF[(perf_freezes via secureWrite)]
+```
+
+Truth table: recorder, boot-phase no-alert, sign-in-gated flush — built, headless-verified (13 checks). Splitting the 1.9MB script (the only real cut to the ~690ms load block) — not built.
+
 ## 15i. Health & body (HB-1..3, Oct 14 2026) — built, untested by Alex
 
 ```mermaid

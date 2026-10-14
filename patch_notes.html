@@ -73,6 +73,38 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-14-polish-speed" style="margin-bottom:30px;">
+    <div class="card-title">⚡ Oct 14 — Polish &amp; speed: freeze recorder, the "App froze" alert explained, one size for Cooking buttons</div>
+    <div class="card-body">
+      Plan 4 of today's four. You said "Go with plan 4". Record: <code>records/2026-10/polish_speed_plan_2026-10-14.txt</code>.
+      <ul>
+        <li><strong>Freeze recorder (PS-1).</strong>
+          <ul>
+            <li>"App froze for …ms" had been logged 141 times without ever saying why.</li>
+            <li>Every freeze over half a second now also saves a report: which code was running and what started it (a tap, a timer, a network reply), your last 12 pages and taps, slow network replies just before it, whether the app was still starting, and the build.</li>
+            <li>Reports wait on the phone until you're signed in, then save privately.</li>
+            <li>Uses Chrome's frame-timing feature where your browser has it.</li>
+          </ul></li>
+        <li><strong>Startup (PS-2): the alert you kept seeing is the app loading.</strong>
+          <ul>
+            <li>I profiled startup with the CPU slowed 6× to phone speed. Reading and starting the one 1.9MB app script is a single ~690ms block, which matches the ~669ms in the logged alerts. Module setup adds ~290ms. Both happen behind the loading screen.</li>
+            <li>Nothing after sign-in came close to half a second.</li>
+            <li>Fix: blocks during startup are still recorded, but no longer pop a red alert. Freezes after startup alert exactly as before.</li>
+            <li>Not done: the only way to make that first block much shorter is to split the app script into parts that load on demand, which is a big job. Also, every update changes the script's version tag, which throws away Chrome's saved compiled copy, so the first launch after each update is always the slow one.</li>
+          </ul></li>
+        <li><strong>Cooking buttons (PS-3).</strong>
+          <ul>
+            <li>One size scale: 44px for main buttons, 36px for small row buttons, and 52px for Cook Mode's Back/Next and Start Cooking, all with 8px corners (chips stay round). Text comes in 4 sizes.</li>
+            <li>9 tiny buttons (3px padding, about 26px tall), like "Use X instead", "Pick from stock instead" and "Derive &amp; use", now share one 36px "small" style.</li>
+            <li>Cook Mode's close, Back/Next and "Start from step 1" now come from the same shared button maker as everything else.</li>
+            <li>Layout is unchanged.</li>
+          </ul></li>
+      </ul>
+      Database: new private table <code>perf_freezes</code> (<code>records/2026-10/perf_freezes_migration_2026-10-14.sql</code>). The Supabase connector refused two writes (the hand-test rows and the note on the freeze row in the error log). They're saved in <code>records/2026-10/pending_sql_2026-10-14.sql</code> to run later.<br>
+      Verified: 13 headless checks on the recorder (a forced 700ms freeze recorded with its trigger, page and tap; startup blocks recorded without an alert; reports sent only after sign-in; capped per session) and 13 on Cooking (every button style measured, Cook Mode opens, steps and closes, the Cooking hub buttons are at least 36px). The Health, Plans and My Day suites still pass. The design scan only reads the page's HTML and CSS files, so it can't see these script-built buttons; that's why I measured them directly instead. Not yet hand-tested by Alex.
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-14-health-body" style="margin-bottom:30px;">
     <div class="card-title">❤️ Oct 14 — Health &amp; body: food from a photo, gym programme, weight, water, sleep</div>
     <div class="card-body">

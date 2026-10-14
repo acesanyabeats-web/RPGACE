@@ -1,0 +1,30 @@
+POLISH & SPEED (PS-1..PS-3) — Oct 14 2026, plan 4 of Alex's four for the day.
+Alex: "Go with plan 4" (after the brief: find the freeze first, startup tidy-up, Cooking uniformity).
+
+EVIDENCE BEFORE BUILDING
+- error_log 81bcf07f: "App froze for <n>ms" 141 occurrences (Aug 27 -> Oct 14), latest 669ms. No cause ever recorded.
+- Cooking button spread: min-heights 20..70px (8 values), radii 3..16px (6), text 12..21px (8); 5 hand-built buttons.
+
+PS-1 FREEZE RECORDER (built): perfWatch writes perf_freezes rows (Long Animation Frame scripts + invoker,
+last 12 pages/taps, slow network responses, boot phase + pending boot tasks, build, device). Queued until
+sign-in, sent through secureWrite. Headless-verified: a forced 700ms tap freeze recorded with its invoker
+(BUTTON#freeze-me.onclick), the page and the tap.
+
+PS-2 STARTUP (measured, then a narrow fix): headless Chromium at 6x CPU throttle (phone-speed):
+- loading rpgace_core.min.js (1.9MB): one 692ms block (CPU profile: ~741ms "(program)" compile + ~281ms
+  top-level), the ~669ms the alert keeps reporting;
+- module start-up (rpgace:ready fire -> every init + registerBootTask): 288ms;
+- nothing over 500ms after sign-in.
+Both blocks happen behind the boot loader. Fix: before boot finishes, a block is recorded (phase 'boot')
+but no red "App froze" toast / error_log row. After boot, unchanged.
+NOT done (named, not hidden): splitting the 1.9MB script into on-demand parts (the only real way to cut
+the 692ms) is a large refactor; deferring module inits risks boot-gate ordering. Also: every deploy
+changes the ?v= cache-bust, which resets Chrome's compiled-code cache, so frequent deploys keep launches
+on the slow path.
+
+PS-3 COOKING UNIFORMITY (built): BTN_VARIANTS = one scale: 44px full-width actions, 36px row actions,
+52px kitchen buttons (new hero/cookNav/cookNavPrimary), 44px closeIcon/textLink; corners 8px (chips 16px,
+recipe side-tab kept); text 12/13/14/16px. 9 call-site shrinks (3px padding, 12px text) moved to a new
+'small' variant (36px); Cook Mode's 3 hand-built buttons now use _mkBtn. Layout unchanged.
+The impeccable scan only reads index.html/style.css, so it cannot see these JS-built buttons; verification
+is a headless measurement of every variant + Cook Mode + the Cooking hub instead.
