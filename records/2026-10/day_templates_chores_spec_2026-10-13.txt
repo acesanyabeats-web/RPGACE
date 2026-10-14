@@ -68,3 +68,10 @@ ALEX, verbatim (5, Oct 14 2026): "keep all, order approved, build chores list"
   "Set up the chore list" sheet (starter list, editable days, optional last done, own chores).
   Blank last-done -> first due dates staggered ~2 a day within one period (Claude Code's call, told to
   Alex, so the list doesn't all land on day one). Chores -> Homekeeper XP. ceo_plans "Day Templates & Chores".
+
+ALEX, verbatim (6, Oct 14 2026): "go DT-4, 1"
+- Option 1 = a "🧹 Chore block" button in the Chores section (usable now; DT-1 day templates reuse it).
+- DT-4 BUILT Oct 14 2026: chore_blocks table; fill = due-by-date chores most overdue first, then next-due
+  ones, greedy by est_mins, skipping ones that don't fit; tick in/out with an over-time warning; Daily
+  Schedule entry (0 XP); block card on the day with N of M done; undone chores stay due; Cancel removes
+  block + schedule entry. Not done: no shift-clash check (left to DT-1).

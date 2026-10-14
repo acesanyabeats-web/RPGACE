@@ -666,6 +666,9 @@ flowchart LR
   CH[Chore setup: 20 starters + own] -->|every_days, last_done_before| R
   R -->|every_days: due when N days since last tick| CS[Chores section on My Day]
   CS -->|tick| Q
+  CS --> CB[Chore block: day + start + length]
+  CB -->|fillBlock: most overdue first, fits by minutes| CBT[(chore_blocks)]
+  CBT -->|scheduleToCalendar, 0 XP| S
 ```
 
 `routines` is `anon_read_only`/`authenticated_all` and in `api/data-write.js`'s allowlist. Timers and sub-step ticks are per-device (localStorage). The old `QUESTS` template is empty; `questEngine`'s generated quests are unchanged.

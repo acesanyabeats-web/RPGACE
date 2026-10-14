@@ -73,6 +73,22 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-14-chore-block" style="margin-bottom:30px;">
+    <div class="card-title">🧹 Oct 14 — Chore block: a slot in your day that fills itself with the most overdue chores</div>
+    <div class="card-body">
+      Alex: "go DT-4, 1" (a button in the Chores section, usable now and reused by day templates later). Step 2 of the Day Templates &amp; Chores plan.
+      <ul>
+        <li><strong>🧹 Chore block</strong> in the Chores section: pick the day, start time and length (30 min to 4 h, 2 h by default).</li>
+        <li>It fills itself: chores due by that day first, most overdue first, then the next ones due if there's time left (doing one early just restarts its countdown). A chore that doesn't fit is skipped so a shorter one can still go in. Tick any chore in or out; it shows "N of M min filled" and warns if you go over.</li>
+        <li><strong>Add to my day</strong> puts "🧹 Chore block" on your Daily Schedule at that time, with its chores listed. The block itself is worth 0 XP; the chores earn their own.</li>
+        <li>On the day, My Day shows the block with its time, its chores to tick and "N of M done". Anything you don't finish stays due and comes first next time. Later blocks show as "Next chore block: …".</li>
+        <li><strong>Cancel block</strong> (two taps) removes it and its schedule entry; the chores stay due.</li>
+        <li>Small fix along the way: a Daily Schedule item meant to be worth 0 XP was shown as +50 XP; 0 now stays 0.</li>
+        <li>Caught before shipping: a new function had the same name as the week planner's days-off function, so the block didn't show. Renamed and re-tested; the week planner tests pass.</li>
+      </ul>
+      Verified: new table <code>chore_blocks</code> created on the live database. 25 new headless checks cover filling, overdue order, skipping what doesn't fit, chores already in another block, the popup, going over, saving, the schedule entry, ticking in the block, cancelling and the 0-XP fix; the chores and older My Day suites pass too. Not yet hand-tested by Alex. It doesn't check against your shift times yet; day templates (DT-1) will. Next in the plan: day templates (DT-1).
+    </div>
+</div>
 <div class="card" id="card-2026-10-14-chores" style="margin-bottom:30px;">
     <div class="card-title">🧹 Oct 14 — Chores: each one counts down from the last time you did it</div>
     <div class="card-body">
