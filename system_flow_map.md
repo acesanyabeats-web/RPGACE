@@ -630,6 +630,25 @@ flowchart TD
 
 ---
 
+## 15f. XP Season Pass (Oct 13-14 2026, XP-1..8) — built, untested by Alex
+
+```mermaid
+flowchart LR
+  W[Writes to 15 tables + gym_sets] -->|DB trigger xp_on_change| A[xp_award + xp_rules]
+  A --> E[(xp_events — private ledger)]
+  E --> U[xp_check_unlocks: lake, ranks, progress, challenges, quest steps, levels, treats]
+  U --> UL[(xp_unlocks)]
+  U --> CH[(xp_challenges)]
+  U --> TR[(xp_treats -> wishlist_items.treat_earned_at)]
+  C[pg_cron xp-close-periods 00:05 UTC] --> CP[xp_close_periods: unanswered XP, balance + budget-week bonus]
+  CP --> RP[(xp_reports — frozen week/season/year)]
+  RP --> WR[Year Wrapped cards + one Oracle paragraph, wrapped_text]
+  E --> CARD[xpSeason card: realms, Trophy cabinet, Hall of Seasons, themes]
+  M[Monday: one Oracle call] --> CH
+```
+
+Only DB triggers write `xp_events`; the client never awards XP. Private tables (`xp_*`, `outreach_log`) are read through `/api/data-write` action `read`. Year Wrapped reads the frozen year report, never live rows; "Year so far" is the live version. Migrations: `records/2026-10/xp5..xp8_migration_*.sql`.
+
 ## 15e. My Day (Oct 12 2026) — built, untested by Alex
 
 ```mermaid
