@@ -9,7 +9,7 @@
  * and only cache-first for the icon/manifest files that never change without
  * a filename bump. Bump CACHE_NAME whenever this file's caching list changes.
  */
-const CACHE_NAME = 'rpgace-shell-v20261011a';
+const CACHE_NAME = 'rpgace-shell-v20261014a';
 // Oct 11 2026 (S1): holds a shared image for a few seconds until the app
 // (screenshotInbox.handleShare) uploads it and deletes it. Not a page cache.
 const SHARE_CACHE = 'rpgace-share';
@@ -96,4 +96,27 @@ self.addEventListener('fetch', function (event) {
       })
       .catch(function () { return caches.match(event.request); })
   );
+});
+
+// Oct 14 2026 (MD2-7): My Day phone alerts. The Supabase edge function
+// myday-push sends {title, body, url}; tapping opens that page of the app
+// (or focuses an open RPGACE tab and sends it there).
+self.addEventListener('push', function (event) {
+  var d = {};
+  try { d = event.data ? event.data.json() : {}; } catch (e) { d = { body: event.data ? event.data.text() : '' }; }
+  event.waitUntil(self.registration.showNotification(d.title || 'RPGACE', {
+    body: d.body || '', icon: '/icons/icon-192.png', badge: '/icons/icon-192.png',
+    tag: d.kind ? 'rpgace-' + d.kind : undefined, data: { url: d.url || '/' }
+  }));
+});
+
+self.addEventListener('notificationclick', function (event) {
+  event.notification.close();
+  var url = (event.notification.data && event.notification.data.url) || '/';
+  event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (list) {
+    for (var i = 0; i < list.length; i++) {
+      if ('navigate' in list[i]) return list[i].navigate(url).then(function (c) { return c && c.focus(); });
+    }
+    return self.clients.openWindow(url);
+  }));
 });

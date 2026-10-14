@@ -687,6 +687,24 @@ flowchart LR
   CBT -->|+10 tick: quest_log kind block| XPB[xp_on_change → block_tick → realm XP]
 ```
 
+## 15g. My Day Round 2 (Oct 14 2026) — built, untested by Alex
+
+```mermaid
+flowchart LR
+  R[(routines: minimum, after_routine_id)] --> T[Today rows: zone dot, never-miss-twice, stacked waits]
+  T -->|Did the minimum: half XP| QL[(quest_log)]
+  QL --> RV[Sunday 18:00 review card + Due row] -->|Save| J[(journal weekly_review)] --> XP[xp_on_change journal_entry]
+  SRC[(gym_sessions, planned_cooks, quest_log, content_productions, journal)] --> DS[Days since card]
+  PE[(people via read)] --> DS -->|Talked today| PE
+  CI[(cutback_items)] --> CUT[Cutting back + / − / None today] -->|upsert| CL[(cutback_log)]
+  CL -->|pg_cron 00:10 xp_cutback_close| XPM[cutback_day → Mind XP]
+  DS --> DT[doToday picks with reasons] --> MB[Morning Brief prompt]
+  CRON[pg_cron hourly myday-push] --> EF[edge fn myday-push] -->|push_digest: 08:00 morning, Sun 18:00 review| PS[(push_subscriptions)] --> PH[phone] -->|tap| OPEN[/?open=myday]
+  SH[Screenshot kind rota] -->|Import shifts: fromRotaJson| SS[shiftSync.replaceDates] --> RS[(rpgace_shifts)]
+```
+
+`cutback_*`, `push_subscriptions`, `push_log` are locked (authenticated only); `app_secrets` has no policies (service role only). Truth table: habit design, weekly review, days since, cut-back counters, ideas round 2, Morning Brief picks, push alerts and rota screenshot import are BUILT (headless-verified; push send verified live to a throwaway endpoint), not hand-tested.
+
 `routines` is `anon_read_only`/`authenticated_all` and in `api/data-write.js`'s allowlist. Timers and sub-step ticks are per-device (localStorage). The old `QUESTS` template is empty; `questEngine`'s generated quests are unchanged.
 
 ## 15d. Cook Mode (Oct 11 2026) — built, untested by Alex

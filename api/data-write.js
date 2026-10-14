@@ -124,6 +124,7 @@ const ALLOWED_TABLES = new Set([
   'library_items', // Oct 13 2026 LL-1 Life Library: locked like people (authenticated_all only), read via action 'read'
   'xp_events', 'xp_rules', // Oct 13 2026 XP Season Pass (XP-1): private, written by DB triggers, read via action 'read'
   'cutback_items', 'cutback_log', // Oct 14 2026 MD2-11 cut-back trackers: locked (authenticated_all only), read via action 'read'
+  'push_subscriptions', // Oct 14 2026 MD2-7 phone alerts: locked (authenticated_all only); the myday-push edge function reads it with the service role
   'xp_ladders', 'xp_unlock_defs', 'xp_unlocks', 'xp_settings', // XP-3: ranks, badges/titles, claims, revenue target
   'xp_reports', // XP-4: frozen week/month/season/year snapshots (written by pg_cron, read only)
   'xp_challenges', 'xp_quest_steps', // XP-5: weekly challenges, season resolutions, realm quest steps

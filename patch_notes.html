@@ -73,6 +73,56 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-14-my-day-round-2" style="margin-bottom:30px;">
+    <div class="card-title">✨ Oct 14 — My Day Round 2: habits that stick, days since, cutting back, more ideas, alerts</div>
+    <div class="card-body">
+      Alex asked for the next plans, "start with 1, I want them all done today". This finishes My Day Round 2 (MD2-3, 6 to 11). His answers: targets set in the app, push alerts built with no keys for him to paste, weekly review on Sunday evening. Record: <code>records/2026-10/my_day_round2_paranoia_ffa_2026-10-12.txt</code> section 6.
+      <ul>
+        <li><strong>Habit design (MD2-9).</strong>
+          <ul>
+            <li>Any routine can have a <em>minimum</em> as well as a goal. "▫ Did the minimum" logs half XP and keeps the streak.</li>
+            <li>Habit stacks: "Do it after…" hides a routine until the one before it is ticked or skipped that day.</li>
+            <li>Never miss twice: a row warns after one missed day, and after two it says to do the minimum. Skips don't count as misses.</li>
+            <li>Every regular routine shows days since it was last done, as a 🟢🟡🔴 dot against its own rhythm (the rest of MD2-6; the every-N-days countdown already shipped as chores).</li>
+            <li>Weekly review: from Sunday 18:00 (Monday is a catch-up), a My Day card and a Due row open a pre-filled look back with what you kept, what slipped and your best streaks, plus 3 short prompts. It saves as one Journal entry and earns journal XP.</li>
+          </ul></li>
+        <li><strong>Days since (MD2-8).</strong> Last gym, cook, reading/study, beat, post and journal entry, each read from where it really happens, coloured against an "aim every N days" you can change with ⚙. Your People are listed too, with a "✓ Talked today" button, which also earns catch-up XP.</li>
+        <li><strong>Cutting back (MD2-11).</strong>
+          <ul>
+            <li>Cigarettes and caffeine / energy drinks, or any counter you add. You type your current amount and target the first time.</li>
+            <li>Use + and − during the day, or "None today ✓".</li>
+            <li>A 7-day bar trend and the days you stayed at or under target.</li>
+            <li>No red and no judging: over target just says tomorrow is a fresh count.</li>
+            <li>Each logged day at or under target earns +15 Mind XP overnight.</li>
+          </ul></li>
+        <li><strong>Ideas round 2 (MD2-10).</strong> 23 new ideas:
+          <ul>
+            <li>Mind: psychology reading (log book + chapter), a psych exercise, gratitude, a screen-time check.</li>
+            <li>Body: a full-body morning stretch, water, protein.</li>
+            <li>People: call family, birthdays and gifts, networking.</li>
+            <li>Music and learning: sample digging, skills drills, a weekly dig for books, skills and income streams.</li>
+            <li>Money: post planning, a budget deep review, a subscriptions review.</li>
+            <li>Interval items: haircut 21 days, toothbrush head 90, dentist 180, kettle, washing machine, backups, device updates.</li>
+          </ul>
+          New areas: Social (pays Connector XP) and Money (pays Steward XP).</li>
+        <li><strong>Alerts (MD2-7).</strong>
+          <ul>
+            <li>Morning Brief now lists up to 5 "do today" picks, each with its reason.</li>
+            <li>Phone alerts: "Turn on" at the bottom of My Day. At 08:00 you get today's shift, chores due and who to catch up with. On Sunday at 18:00 you get the review. Tapping one opens My Day.</li>
+            <li>Sent by a Supabase function each hour. Its keys were made and are kept on the server, so there was nothing for you to paste.</li>
+          </ul></li>
+        <li><strong>Rota screenshot backup (MD2-3).</strong> Share a rota screenshot and the Screenshot inbox suggests "🧑‍🍳 Import shifts". It reads the shifts and lists them so you can untick any that are wrong, then saves them. It uses the same reader as sending a rota to Oracle; that reader is now one shared function.</li>
+      </ul>
+      Verified:
+      <ul>
+        <li>Headless checks pass for all five steps: 23 (habits), 21 (trackers), 10 (ideas), 18 (alerts + rota), plus the earlier My Day and block tests.</li>
+        <li>On the live database (rolled back): the cut-back XP job pays 1 day under target, not one over, and nothing twice. The alert schedule sends morning at 08:00 once, the Sunday review, and nothing at midday.</li>
+        <li>The live push function sent a real encrypted message to a throwaway address, refused a wrong secret (403), and removed a dead address by itself.</li>
+        <li><strong>Not tested by Alex yet.</strong> A real phone alert needs his phone to tap Turn on.</li>
+      </ul>
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-14-realm-blocks" style="margin-bottom:30px;">
     <div class="card-title">✨ Oct 14 — Realm blocks: a block for any of your 13 realms, filled with activities you chose</div>
     <div class="card-body">
