@@ -249,3 +249,16 @@ Council of 5 (why-NOT included):
  Why not: 0 routines are picked yet. Building habit mechanics before Alex has used the basics risks features
    nobody uses. Hence Phase D waits until he has used A-C for about a week; Phases A-C fix real gaps (shifts are
    broken now) and are worth building regardless.
+
+---------------------------------------------------------------------
+6. OCT 14 2026 — PHASE D GO (verbatim answers)
+---------------------------------------------------------------------
+Alex asked for the next plans: "All are very needed start with 1, I want them all done today though"
+(order: My Day Round 2 -> Trips & Plans finish -> Health & body plan -> Polish & speed). This overrides the
+Council's "wait a week before Phase D" note — his call.
+Cut-back targets: "I'll set them in the app"
+Push notifications: "Build it, I'll add 2 keys (Recommended)"
+Weekly review: "Sunday evening"
+Go: "Go, all 5" (habit design; days-since trackers; cut-back trackers; ideas menu round 2; alerts + rota
+screenshot). MD2-6 core (every_days countdown) already shipped as DT-3; remaining part = colour zones on all
+routines.
