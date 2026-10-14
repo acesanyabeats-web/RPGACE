@@ -101,3 +101,32 @@ Cooking planned cook). Then "go DT-5/6".
   lock-in = cookingOracle _generateShoppingList + _acceptSchedule; shopping block before cooking; cook items matched to
   the new list by ingredient; day checklist ticks update list/wishlist/routine; all dishes ticked -> _finishCook.
   Old 277 list items not offered. rpgace_agendas had 1 row because Alex hasn't scheduled since July (not a bug).
+
+ALEX, verbatim (10, Oct 14 2026): "Make it possible to do blocks for all realms and domains, so I can do activities that
+help boost those areas"
+Interrogation: block type -> "The 13 realms (Recommended)"; tick XP -> "No double counting (Recommended)"
+(+10 realm XP on tick only for activities with no XP source of their own; ⚡ ones earn from the real action);
+activities -> "1 but we will do /interrogation rounds to pick"; suggest -> "Yes, gently (Recommended)" (realm behind
+this week listed first).
+Rounds (all picked = every drafted option chosen unless noted):
+- Producer: Make a beat (90, ⚡ beat logged), Sound design / digging (45, +10), Practise a technique (30, +10);
+  asked "What's a WIP beat?" -> explained -> "Yes, add it": Finish/mix a WIP beat (60, ⚡ beat finished).
+- Creator: Post a short (30 ⚡), Film/record content (60 +10), Write captions or a script (20 +10), Visual treatment (45 ⚡).
+- Hustler: Message 3 artists (20 ⚡ outreach), Beatstars listing (30 +10), Research artists to pitch (30 +10), Follow up a collab (15 +10).
+- Chef: Generate & save a new recipe (30 ⚡), Update kitchen stock (10 +10), Meal prep (90 ⚡), Learn a technique (20 +10).
+- Athlete: Gym session (60 ⚡), Run or walk (30 +10), Stretch/mobility (15 +10), Home workout (30 +10).
+- Scholar: Read a Bookworm chapter (30 ⚡), Review 10 jargon terms (15 ⚡), Watch & analyse a video (30 +10), Fill a knowledge gap (30 +10);
+  + "I also read outside of rpgace scope, rn it's Robert Greene and nine minds Daniel tammet" -> "Books I'm reading (Recommended)"
+  -> Greene book = "The 48 Laws of Power". Both go in the Life Library as books being read; Scholar block offers "Read <book>" (30, +10).
+- Life: Journal 3 lines (5 ⚡), Plan tomorrow (10 +10), Weekly review (15 +10), Admin & errands (30 +10).
+- Homekeeper: Deep clean one area (45 +10), Declutter one spot (20 +10), Fix or repair something (30 +10), Restock household items (10 +10).
+- Mind: Meditate (10 +10), Screen-free hour (60 +10), Walk outside/breathing (15 +10), Wind-down routine (20 ⚡ via sleep routine).
+- Steward: Budget check (15 +10), Log this week's spending (10 ⚡), Review Wishlist (10 +10), Plan bills & savings (20 +10).
+- Explorer: Plan a trip or day out (20 ⚡), Try somewhere new locally (60 +10), Research a place or event (20 +10), Practise a language (20 +10).
+- Connector: Catch up with someone (20 ⚡), Message a friend or family (10 +10), Plan a meetup (15 +10), Join a community/event (30 +10).
+- Builder: Hand-test RPGACE features (15 ⚡), Flag an idea to Claude Code (5 ⚡), Coding session (60 +10), Learn a coding skill (30 +10).
+Plus: his own routines in that realm and anything he types.
+- DT-7 BUILT Oct 14 2026: chore_blocks.realm + kind 'realm'; myDay.REALM_ACTIVITIES (13 x 4, as picked);
+  +10 ticks write quest_log (quest_kind block, category realm) -> xp_on_change -> xp_award('block_tick') (new xp_rules row);
+  'real' items only check off; books The 48 Laws of Power + Nine Minds added to library_items (status to_check,
+  source_table reading_now) and offered in the Scholar block; realm with least XP this week listed first.

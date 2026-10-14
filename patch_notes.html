@@ -73,6 +73,33 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-14-realm-blocks" style="margin-bottom:30px;">
+    <div class="card-title">✨ Oct 14 — Realm blocks: a block for any of your 13 realms, filled with activities you chose</div>
+    <div class="card-body">
+      Alex: "Make it possible to do blocks for all realms and domains, so I can do activities that help boost those areas". He chose the 13 realms, no double counting, gentle suggestions, and picked every realm's activities himself over 4 question rounds (step 7 of the Day Templates &amp; Chores plan).
+      <ul>
+        <li><strong>+ Realm block</strong> in Plan my day. The realm with the least XP this week is listed first, marked "behind this week".</li>
+        <li><strong>What you can put in a block:</strong>
+          <ul>
+            <li>That realm's 4 activities, for example Producer: make a beat, finish or mix a WIP beat, sound design, practise a technique.</li>
+            <li>Your routines in that realm.</li>
+            <li>Anything you type yourself.</li>
+          </ul>
+          The block's length is the activities' minutes added up.</li>
+        <li><strong>No double counting.</strong> Things that already earn XP when you really do them are marked ⚡: logging a beat, a gym session, a Bookworm chapter, outreach, saving a plan, a journal entry. Ticking those only checks them off. Everything else pays +10 XP into that realm when ticked, and unticking takes it back. Routines tick as normal routines.</li>
+        <li><strong>Books you're reading outside RPGACE.</strong> <em>The 48 Laws of Power</em> and <em>Nine Minds</em> are now in your Life Library as books you're reading. The Scholar block offers "Read …" for each, +10 Scholar XP per session.</li>
+        <li><strong>On the day</strong>, My Day shows the block as a checklist with ⚡ or +10 notes and an Open button to the right tool, such as Content Pipeline, Gym, Bookworm, the outreach log, Plans or the smoke test page.</li>
+        <li>Saved day templates keep realm blocks. Cancel block takes two taps, and XP you've already earned stays.</li>
+      </ul>
+      Verified:
+      <ul>
+        <li>On the live database, a block activity tick paid 10 XP to Scholar (tested in a rolled-back transaction). The block table now allows realm blocks, and a new XP rule (<code>block_tick</code>) covers the ticks.</li>
+        <li>19 new headless checks cover: 13 realms × 4 activities, Mind listed first as behind, Scholar's options (starters, routine, books being read, not Bookworm or finished books), the earn labels, minutes adding up, lock-in, the Daily Schedule entry, the day record, the My Day checklist, Open buttons, the +10 tick and its undo, the ⚡ tick paying nothing extra, and routine ticks.</li>
+        <li>The earlier block and day-template tests pass too.</li>
+      </ul>
+      Not yet hand-tested by Alex.
+    </div>
+</div>
 <div class="card" id="card-2026-10-14-cooking-shopping-blocks" style="margin-bottom:30px;">
     <div class="card-title">🍳🛒 Oct 14 — Cooking and shopping blocks: pick what you're making and getting, tick it off on the day</div>
     <div class="card-body">

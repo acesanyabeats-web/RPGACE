@@ -682,6 +682,9 @@ flowchart LR
   SHB -->|Lock in: match cook items to that list| CBT
   CKB --> CBT
   CBT -->|Blocks today checklist ticks| TK[shopping_list_items bought / Wishlist bought / routine tick / _finishCook]
+  P -->|+ Realm block: realm behind this week first| RB[realm block: starters + routines + books + own]
+  RB --> CBT
+  CBT -->|+10 tick: quest_log kind block| XPB[xp_on_change → block_tick → realm XP]
 ```
 
 `routines` is `anon_read_only`/`authenticated_all` and in `api/data-write.js`'s allowlist. Timers and sub-step ticks are per-device (localStorage). The old `QUESTS` template is empty; `questEngine`'s generated quests are unchanged.
