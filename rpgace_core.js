@@ -2332,6 +2332,7 @@ function completeScheduledTask(id){
   // too. (_finishCook calls this function, so no call back the other way.)
   if(entry.source_type==='planned_cook'&&entry.source_id&&RPGACE.sb&&RPGACE.sb.secureWrite){
     RPGACE.sb.secureWrite('planned_cooks','update',{status:'cooked'},'id=eq.'+entry.source_id+'&status=neq.cooked')
+      .then(function(){var co=RPGACE.modules&&RPGACE.modules.cookingOracle;if(co&&co.ui&&co.ui._offerStockUpdate)co.ui._offerStockUpdate(entry.source_id,null);})
       .catch(function(e){console.warn('[completeScheduledTask] planned_cooks cooked write failed:',e.message);});
   }
   // H20 (Sep 17 2026) — same real "give visible feedback, don't just
@@ -11302,7 +11303,7 @@ RPGACE.register('oracleAppGrounding', {
   // bugs"/"Biggest confirmed-not-built items" sections should update this
   // string in the same session - same discipline as every other oversight
   // doc, just condensed for token cost (rule 11).
-  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested by Alex; where a bullet doesn\'t explicitly say hand-tested, assume it hasn\'t been). Never assume this string is automatically current just because it exists - check its own newest dated fact before trusting an old memory of it; last reviewed Oct 14 2026 (Freezes and speed, see FREEZES AND SPEED; Health and body, see HEALTH AND BODY; Plans money, dates + people, see PLAN MONEY under PLANS; Chores, see CHORES under MY DAY; Life Library, see LIFE LIBRARY below; Plans: trips with Oracle + people; My Day week planner, timings + activity templates; Cook Mode, see COOK MODE in HABITS; Screenshot Inbox, see SCREENSHOT INBOX below; Galaxy Map rivers replaced by the 8 app domains; Dashboard landing page + grouped menu, Cooking layout, Knowledge layout, Content & Video layout, Oracle page layout, gym tracker, stay signed in, share-and-return; daily life: fridge photo, watchlist digest; Business producer tools, recall + Bookworm cards, money guardrails, share-to-RPGACE; Encyclopedia posts from analysed videos, see the ENCYCLOPEDIA paragraph below; planned cooks can no longer vanish, see HABITS). ARCHITECTURE: the client is exactly ONE script, rpgace_core.js (index.html loads only rpgace_core.min.js) - main.js was mechanically merged into it Aug 20 2026, living on as a LEGACY SECTION near the top (bootstrap, password gate, page routing, career score, Quest Board). 75 real registered RPGACE.register() modules as of Oct 14 2026 - re-verify this count before quoting it, it has drifted before (a naive grep can double-count a documentation-template example inside a comment). DOMAINS (Oct 11 2026, M1): every module declares one of 8 domains in code (the domain: key, listed in RPGACE.DOMAINS) - Oracle, Content & Video, Knowledge, Habits, Schedule & Journal, Chronicles, Oversight, Platform - the same groups as the left menu. The developer Galaxy Map groups modules by these domains too; the older \'rivers\' grouping is retired. Every module has a real internal ui/logic split (Sep 2026, G53) - zero public-API change, purely structural. RPGACE is a real installable PWA (Android/desktop Add-to-Home-Screen). Chronicles is a full searchable log page with click-through detail plus a personal-visibility-only finance ledger (not bookkeeping-grade). The profile stat card runs on real Supabase-derived data (Output = shipped content, Growth = learning/tree activity, kept as separate lanes). MY DAY (new Oct 12 2026, owned by the myDay module, routines table) replaced the old generic Quest Board template (the hardcoded career/health/lifestyle quests are gone): Alex picks routines from a drafted ideas menu built on RPGACE\'s own tools (morning routine, cleaning split by day, gym, cooking, reading, beats, posting, coding, budget, etc.) or writes his own, and sets each one\'s schedule (every day, certain days, N times a week, one date, or next time he is shopping/in town/at the PC), part of day, optional time, minutes, goal, steps and which tool it opens. The agenda page shows what is due today by morning/afternoon/evening with tick, skip, undo, a timer, sub-step ticks, streaks, missed-earlier-this-week catch-ups and a week done-vs-planned line; Plan my day suggests free times around his shift and today\'s schedule and adds the ones he accepts to the Daily Schedule. CHORES (Oct 14 2026, DT-3 of the Day Templates & Chores plan, owned by the myDay module, routines table, area Chores): room-only chores each repeat every N days counted from the last time he ticked them (routines.every_days; routines.last_done_before holds a last-done date he set before RPGACE tracked it, and a newer tick wins). A missed chore stays on the list marked overdue - it never stacks. My Day shows a Chores section (due and overdue chores, most overdue first) plus a Coming up line; it empties as chores are ticked. He set up the list from a 20-chore starter list (Set up the chore list in + Add routines) and can add his own and change any day count. Chore ticks earn Homekeeper XP. CHORE BLOCK (DT-4, Oct 14 2026, myDay module, chore_blocks table): from the Chores section he picks a day, start time and length; the block fills itself with the most overdue chores (then the next ones due, done early) until their minutes fill the time, skipping any that do not fit; he can tick any chore in or out, and it warns if he goes over. Adding it writes a chore_blocks row and a Daily Schedule entry (0 XP; the chores themselves earn XP). On the day, My Day shows the block with its chores to tick and an N of M done count; chores left undone stay due and come first next time. Cancel block (two taps) removes it and its schedule entry. DAY TEMPLATES (DT-1, Oct 14 2026, myDay module, day_templates table): Plan my day now opens a day template for any date. The day kind comes from his shift: no shift = day off, a closing shift (his close at 00:00) = late, any other shift = early. The first suggestion is the most recent day of the same kind and weekday that he locked in, else what was really on his Daily Schedule for a day like it (8 weeks back), else same kind any weekday, else a fresh fit of what is due. Saved templates (📌, Save as template) are offered too. Routines not due that day drop out, a chore block refills with that day\'s most overdue chores, and routines due but missing are fitted into free gaps (marked also due). Items that overlap the shift or its travel get a warning. He can untick, change times and lengths, remove, or add a routine, a chore block (longest that fits, up to 2 h) or anything else. Lock in puts every kept item on the Daily Schedule (places keep their journey time), plans weekly and N-a-week routines for that day (routine_plans), makes the chore block real (chore_blocks), and records the day (day_templates, source locked) so the next day like it starts from it; locking twice does not double up. NIGHT-BEFORE REMINDER (DT-2, Oct 14 2026, myDay module, shown in the dashboard Due list by dashDeck): from 18:00 the Due list says whether tomorrow is planned (locked in, or already has Daily Schedule items, with the first few listed) or is not planned yet (with its day kind and shift); on a closing shift it waits until the shift ends, so just after midnight it is about the day that has just started. Tapping it opens Plan my day for that date. COOKING AND SHOPPING BLOCKS (DT-5/6, Oct 14 2026, myDay module, chore_blocks rows of kind cooking/shopping with an items checklist): in Plan my day he can add a cooking block (pick saved recipes; its length comes from the cookingOracle scheduler) and a shopping block (pick from what that day cooking is missing, lists made for planned cooks, the newest Cooking shopping list, Wishlist items, next-time-shopping routines, or his own typed items; it goes before the cooking block). Lock in turns a cooking block into a real scheduled planned cook through cookingOracle (grocery list, schedule, Daily Schedule entry) and saves the shopping block with its own Daily Schedule entry (0 XP). On the day My Day shows both as checklists: ticking a Cooking list item marks it bought in Cooking, a Wishlist item asks what was paid and logs it to Chronicles Finance, a next-time routine is ticked; ticking every dish marks the planned cook cooked; Start cooking opens Live Cook Mode; Cancel block (two taps) removes it and its schedule entry (a cooking block also discards its still-scheduled planned cook). Old Cooking lists are not offered. HABIT DESIGN (MD2-9, Oct 14 2026, myDay module, routines.minimum + routines.after_routine_id): a routine can have a minimum (the small version) and a goal; "Did the minimum" logs a quest_log tick with description minimum at half XP and still keeps the streak. Habit stacks: a routine set to come after another waits off the Today list until that one is ticked or skipped (only when that one is due today). Never miss twice: a row warns after one missed due day and says do the minimum after two (skips do not count as misses). Every regular routine shows days since last done as a green/yellow/red dot against its own rhythm. Weekly review: Sunday from 17:00 (Monday is the catch-up), a My Day card and a Due row open a pre-filled look back (kept, slipped, best streaks) with three prompts, saved as one journal row (source weekly_review, review_on = that Monday) that earns the normal journal XP. DAYS SINCE + CUTTING BACK (MD2-8, MD2-11, Oct 14 2026, myDay module): My Day shows a Days since card read from the real tables (gym_sessions, planned_cooks cooked, Learning/scholar ticks in quest_log, beats and posts in content_productions, journal), each green/yellow/red against an aim-every-N-days he can change (myday_settings.tracker_days), plus People from the people table with a Talked today button (writes people.last_spoke, which already earns caught_up XP). Cutting back: private cutback_items (name, baseline, daily target) and cutback_log (one count per item per day); +/- buttons and None today on My Day, a 7-day bar trend and days at or under target, never red or judging. pg_cron xp-cutback-close (00:10 UTC) runs xp_cutback_close(), giving +15 Mind XP (cutback_day) for each logged day at or under target. IDEAS ROUND 2 (MD2-10, Oct 14 2026, myDay.IDEAS): the Add routines menu now also has psychology reading (log book + chapter), a psych exercise, gratitude, screen-time check, a full-body morning stretch, water, protein, call family, birthdays and gifts, networking, sample digging, skills drills, a weekly dig (books, skills, income streams, opportunities), post planning, budget and subscriptions reviews, and interval items (haircut 21 days, toothbrush head 90, dentist 180, kettle, washing machine, backups 14, device updates 30). New areas: Social (pays the Connector realm) and Money (Steward). Nothing goes live until he adds it. ALERTS + ROTA BACKUP (MD2-7, MD2-3, Oct 14 2026): Morning Brief gets up to 5 My Day picks with reasons (myDay.logic.doToday: missed-twice habits with their minimum, red days-since trackers, overdue chores, people to catch up with) and keeps the reasons. Phone alerts: a switch at the bottom of My Day subscribes this phone (push_subscriptions); the Supabase edge function myday-push, run hourly by pg_cron, sends what push_digest() decides: 08:00 London morning summary (shift, chores due, who to catch up with) and Sunday 18:00 weekly review. Tapping opens My Day. Keys live server-side only (app_secrets). On iPhone alerts need RPGACE added to the Home Screen. Rota backup: the Screenshot inbox recognises a rota (kind rota) and its Import shifts route reads the shifts (shiftSync.logic.fromRotaJson, the same parser the Oracle chat rota upload uses), shows them to untick, and saves through shiftSync.replaceDates. REALM BLOCKS (DT-7, Oct 14 2026, myDay module, chore_blocks rows of kind realm with a realm column and an items checklist): in Plan my day he can add a block for any of the 13 XP realms (the realm with the least XP this week is listed first, marked behind this week). Each realm has 4 starter activities he picked himself (myDay.REALM_ACTIVITIES), plus his own routines in that realm, books he is reading outside RPGACE (library_items books not done and not from Bookworm, e.g. The 48 Laws of Power and Nine Minds) and anything he types. No double counting: an activity that already earns XP from the real action (log a beat, gym set, chapter analysed, outreach, plan saved, journal entry) only checks off when ticked; every other activity pays +10 XP into that realm on tick through a quest_log row (quest_kind block, category = realm) that xp_on_change awards as block_tick; unticking removes it. Routines tick as normal routines. Activities with a tool have an Open button. The Day Templates and Chores plan (DT-1 to DT-7) is fully built. TIMINGS + TEMPLATES (Oct 12 2026, myDay module, myday_settings + activity_templates tables): My Day keeps get-ready and travel time clear - around a shift by default 30 min get-ready + 20 min coffee + the journey to work before, and the journey home after, with Alex\'s own margin % added to journeys only (all editable in My Day > Manage > Timings); the Daily Schedule\'s Schedule Task form has an optional activity template picker (name, category, place, journey minutes, get-ready, length) with + New and Delete right there, plus Category and Place/journey fields saved on the rpgace_agendas row; Today shows the rest of the day with travel blocks and free gaps labelled Prep or Leisure. Categories are stored for later metrics; nothing reports on them yet. WEEK PLANNER (Oct 12 2026, myDay module, routine_plans + day_blocks tables): My Day > Plan weeks shows this week up to the last week the Fourth rota covers (plus + Add a week); each day lists his shifts (or off), Daily Schedule items and any time off / trip / event, and each weekly or N-times-a-week routine has 7 day chips (weekly ones start on their usual days, N-a-week ones are suggested on days off then lighter shift days, spread out). A saved week makes the routine due only on its planned days; a planned day that passes undone shows under Planned but not done with Move to a free day or Skip. Time off counts as free; a trip or all-day event blocks the day. From Saturday the dashboard Due list says Plan next week if it is not planned. Plans (below) adds trip blocks when a plan goes on the calendar. LIFE LIBRARY (new Oct 13 2026, owned by the lifeLibrary module; library_items table, private - read only after login through /api/data-write): the Life Library card (first in the Knowledge menu) is where everything Alex takes in is kept - links, videos, books, music, files, courses, notes, quotes and recommendations (picked from his People list, ticked off once checked), each with the date he took it in, ONE phylum shelf (1-21) and free topics. A link saved twice stays one item (YouTube/Instagram/TikTok links are matched by video id). Shelving: a free keyword match on the 21 phyla first; one small Oracle call only when no keyword matches or no topics were typed; the shelf chip can always be changed. Roles (ratified plan Life Library & Knowledge Untangle): Life Library = what he took in; Bookworm = how he studies a source; Encyclopedia = what he learned (idea cards + jargon); Phylum Path = where it fits. Built Oct 13: LL-1 (the library itself, manual adding) and LL-2 (the untangle moves): the 41 Encyclopedia articles from analysed videos plus the Bookworm book are now Library items with their full text (an article item has an Idea cards button); a new Bookworm book creates its Library item automatically; Save-to-bibliography links now save to the Library (the old bibliography page stays as read-only history); the Encyclopedia page (encyclopediaPosts module) shows Ideas | Jargon | Sources tabs - an All ideas list with search, Save and From links that open the source in the Library - and the old article list is folded away at the bottom; Jargon moved under Encyclopedia in the menu. LL-3 (built Oct 13): automatic tree growth is PAUSED while the taxonomy_tree table has no rebuilt rows - owned by the taxonomyTree module (isPaused/checkPaused): video analysis (ciAutoPropose), encyclopedia sync (encSync) and silentPropose stop queueing taxonomy_proposals, Bookworm (bookworm module) skips its tree-placement step and offers Keep instead (the insight still becomes an idea card), and the Taxonomy & Review card says Paused until the phyla are rebuilt; the 65 old pending video proposals were archived (kept, not deleted). It turns back on by itself once a phylum gets its first rebuilt branch. LL-4 (built Oct 13): things now arrive automatically through lifeLibrary.logic.feed (free keyword shelf only, never an Oracle call; unshelved if no keyword matches; deduped by link and by source row): each video analysed from Oct 13 on (intel_reports via syncIntelData - this covers Video Finder Learn and Videoworm uploads), every screenshot Oracle reads (screenshotInbox), reference tracks Alex adds by hand (refCorpus; not the beat-match artist rows), and any Oracle reply he taps the star button on (main chat and the floating overlay; kind answer, his question as the title). LL-5 (built Oct 13, webLookup module): in the main chat Oracle may end a reply with a WEB_QUERY line when a question needs current or outside facts; RPGACE then reuses a Life Library lookup of the same question from the last 30 days, or sends only the search question to /api/search (Gemini), saves the result as a web_lookup library_items row, shows a Searched line with the sources and gives one follow-up answer (at most one search per message; other Oracle calls never get this option). Jargon terms and Bookworm insights have a Find links button that does the same. LL-6 (built Oct 13, lifeLibrary module): the Morning Brief shows one library_items row a day under From your Library (unchecked recommendations first, then the oldest; every kind including web lookups; not repeated for 30 days via resurfaced_at; Done with it sets resurface_off and marks a recommendation checked), and each jargon_encyclopedia term shows Met in links to the Library items and idea cards that mention it. LL-7 (built Oct 13, lifeLibrary module): each Phylum Path phylum shows its shelf above the tree - the library_items on that shelf, the idea cards (encyclopedia_insights) whose source item is on it, and the jargon_encyclopedia terms of that phylum, 5 each with Show all - and each phylum row in the switcher shows counts; the 4 Knowledge pages (Life Library, Bookworm, Encyclopedia, Phylum Path) share a one-line what-this-is header with links to the other three, and the menu lists them in that order. CHRONICLES SECTIONS (LL-8, owned by the chroniclesLog module, items built by careerStatCard): the Chronicles page filters by 8 life sections instead of 14 type chips - All, Beats & content, Recipes cooked (each finished planned_cooks row now names its recipes from the recipes table), Trips & plans (plans rows with status done, read privately after login; dropped plans never show), Learning, Life (quests, gym, journal), Money, App updates. Display only. XP SEASON PASS (XP-1 + XP-2, Oct 13 2026, owned by the xpSeason module; xp_events and xp_rules tables, private, read after login through /api/data-write): there is ONE XP system. The database writes every XP row itself - an xp_on_change trigger on 15 tables (content_productions, planned_cooks, recipes, gym_sessions, bookworm_chapters, bibliography, jargon_encyclopedia, library_items, journal, chronicles_finance, plans, people, smoke_test_items, oracle_dev_suggestions, quest_log) calls xp_award, which reads xp_rules (22 actions, each with a realm and XP) and writes one xp_events row; the app never awards XP itself. 13 realms: Producer, Creator, Hustler, Chef, Athlete, Scholar, Life, Homekeeper, Mind, Steward, Explorer, Connector, Builder. Examples: beat logged 30, beat finished 120, beat released 300 (Producer; the beat card in Content Pipeline has Beat finished / Beat released buttons for this), video posted 300 and treatment 60 (Creator), sale 2 XP per pound min 100 (Hustler), cook finished 60 +10 per extra recipe, recipe saved 25 (Chef), gym 40 (Athlete), chapter 30, book 300, jargon review 3, library item added by hand 3 (Scholar), journal entry he wrote 15 (Life; app-written journal rows earn 0), My Day routines their own 5-25 XP in the realm of their area, expense 5 (Steward), plan made 30, trip done 200 (Explorer), caught up on time 20 (Connector), hand-tested feature 20 and flag to Claude Code 15 (Builder). Auto-made things (idea cards from video analyses, auto-filed screenshots) earn 0. Repeats of capped actions on one day pay 100%, then 50%, then 0; shipping, sales and milestones are never reduced. The pass runs by YEAR (renamed from "season" in XP-4): Year 0: Construction runs from Oct 13 2026 to the end of that year (nothing before it counts); Year 2027 starts on 1 January and every 1 January resets it; a career total never resets. "Season" now means a UK weather season (Spring Mar-May, Summer Jun-Aug, Autumn Sep-Nov, Winter Dec-Feb). Year level: level 1 needs 500 XP, each next level 25 more. Overall rank (Sky ladder): Spark, Ember, Flame, Comet, Star, Nova, Constellation, Galaxy, 5 stars each, evenly spaced, Galaxy 1 at about 72,000 XP. The dashboard profile card shows the Sky rank, year level, a 13-spoke balance wheel of this week\'s XP and Done/Streak/Level/Year XP; each domain popup and page shows a strip with that domain\'s realm(s) and this week against his usual week so far; tapping either opens the Year page (realms, recent XP, reports). A source row deleted in the same week leaves its XP marked pending (the was-this-done question is XP-4, not built). The old row-count career score (careerStatCard), questEngine\'s card painting and the legacy addXP pop-ups are retired. REALM RANKS, TITLES AND BADGES (XP-3, Oct 13 2026, owned by the xpSeason module; xp_ladders, xp_unlock_defs, xp_unlocks and xp_settings tables, private): every realm has 7 ranks with its own names (Producer: Bedroom, Home Studio, Session, Studio A, Main Room, Headliner, Icon; Chef: Kitchen Porter up to Executive Chef; Athlete: Recruit up to Colossus; and so on). A year rank resets on 1 January; a career rank uses the same names, never resets and climbs 4x slower, shown with stars. Some ranks are gated by a real event, not XP alone: Sous Chef (20 cooks), Head Chef (50 cooks, 10 recipes, 3 cuisines - recipes carry a cuisine tag Oracle sets and Alex can change on the recipe card), Closer (first sale), Tycoon (yearly revenue target Alex sets), Gladiator (3 gym sessions a week for 4 weeks), Polymath (books in 8 phyla), Pathfinder (every planned routine kept 6 weeks), Lake (sleep routine 21 of 28 days - cannot be earned until the Mind area exists), Safe (claimed savings goal), Globetrotter (5 countries), Heart (nobody overdue for 3 months). Titles: Released Artist, Catalogue Builder, Consistent Creator. Badges are automatic (first beat released, first video, first sale, first 100 pound month, first cook, first PB, 5-gym week, first book, 100 jargon terms, each new country) or claimed with a link or note (Hit, Placement, 10k views, Cooked for others, First solo trip); badges and titles pay no XP. A gym personal best (heavier than any earlier session on that exercise) pays 30 Athlete XP. The database decides all of this (xp_check_unlocks runs after every award) and dates each unlock; every unlock is also a Chronicles item (Life section). The Trophy cabinet (button on the Year page) lists earned and locked items with progress, claims, the revenue target and past years. WAS-IT-DONE AND REPORTS (XP-4, Oct 13 2026, owned by the xpSeason module; xp_reports table, private; a pg_cron job runs xp_close_periods nightly): a row deleted in the same week its XP was earned shows on the Year page and the profile card as "was it actually done?" - Yes keeps the XP, No removes it, and an unanswered one is kept when the week ends. Each finished week also pays a balance bonus (5+ realms 50 XP, 8+ realms 150, Life realm). Frozen reports are saved per week, month, UK season and year (XP, realms, best day, top actions, unlocks, year-to-date level); later deletes never change a saved report. The Year page lists them; each season and year report is also a Chronicles item. CHALLENGES, RESOLUTIONS, REALM QUESTS (XP-5, Oct 13 2026, owned by the xpSeason module; xp_challenges and xp_quest_steps tables, private): each week Alex picks up to 3 challenges on the Year page (rule-based suggestions for his slowest realms plus 2 from one Oracle call that sees only realm XP totals), each worth 75 XP and counted automatically from the XP log (e.g. gym 3 times, finish 2 cooks); his own free-text ones are ticked by hand. Unfinished ones are just missed at week end, no penalty; the dashboard Due list nudges him to pick, nothing is auto-picked. Season resolutions: 1 to 5 per UK season, set any time in the season, small/medium/big = 500/1,000/1,500 XP, counted automatically or ticked; missed when the season ends. Realm quests: 3 steps of 50 XP towards each rank gate (e.g. Sous Chef: 5, 10, 20 cooks). Completions are Chronicles items and appear in the saved reports. TREATS, THEMES, FLAIR (XP-6, Oct 14 2026, owned by the xpSeason module; xp_treats table, private): on the Year page Alex pins a treat (a Wishlist item or his own words) to a year level, a realm rank, a kept season resolution, or a week with all 3 challenges done; the database marks it earned (a gift icon, a Chronicles item, and an earned tag on the Wishlist item) - nothing is bought, the Wishlist wait still applies. Level-ups are now dated records (xp_unlocks kind level) shown in Chronicles. Themes change only the profile card accent colour and frame (Classic gold, then Ember at level 10, Tide 25, Aurora 50, Crown 75), saved in xp_settings.theme. Flair is quiet: his title and level at the top of the Oracle chat greeting, one toast per batch of level/rank-ups, and one Morning Brief line for level/rank-ups since yesterday. MIND, OUTREACH, BUDGET (XP-7, Oct 14 2026): My Day (myDay module, routines table) has a Mind area; Mind routine ticks pay Mind XP, and one Mind routine can be marked as the sleep routine (routines.is_sleep) - keeping it 21 of the last 28 days unlocks the Lake rank gate. The Business tab of Platform Oracle (producerTools module, outreach_log table, private) logs outreach sent (+10 Hustler XP, capped per day) and collabs done (+150); picking someone from People also counts as catching up with them; Oracle can offer the log_outreach action, which only opens the form filled in. The Year page (xpSeason module) has a weekly spending limit (xp_settings.weekly_spend_limit): a week whose expenses logged in Chronicles stay at or under it, with at least one expense logged, pays +50 Steward XP when the week closes. A Wishlist item (shoppingWishlist module) bought after its 24-hour wait pays +30 Steward XP. YEAR WRAPPED (XP-8, Oct 14 2026, xpSeason module; xp_reports table): when a year closes (Year 0: Construction ends 31 Dec 2026), its saved year report becomes swipe cards - total XP, level, sky rank, top realms, best day and week, most-done actions, titles/badges/ranks unlocked, resolutions kept, treats earned, outreach - ending with one short paragraph Oracle writes once from the year\'s numbers only (saved in xp_reports.wrapped_text, never paid for twice). It pops up once the first time the app opens after the year closes (xp_reports.wrapped_seen_at), and the Due list says it\'s ready. A Year-so-far version (numbers only, no paragraph) opens any time from the Year page. The Trophy cabinet\'s Hall of Seasons lists each year (this year so far first) with XP, level, sky rank, top realm, titles and highest ranks; each opens its Wrapped. In the first two weeks of January the Due list nudges setting the new season\'s resolutions, and warns if last year\'s report didn\'t save. The XP Season Pass plan (XP-1 to XP-8) is fully built. Not yet hand-tested by Alex. PLANS (new Oct 12 2026, owned by the tripPlans module; travel_profile, people, plans, plan_tasks tables, all private - read only after login through /api/data-write): the Plans card (Schedule & Journal menu) has Plans, Ideas, People and Profile tabs. Profile holds Alex\'s home (Derby), nationalities (French and Russian), EU Settled Status in the UK, usual passport, interests, travel limits and insurance. People holds who he wants to keep in touch with (birthday, last spoke, remind every N days); the dashboard Due list shows reach-outs and birthdays in the next 7 days; RPGACE does not draft or send messages. Plan something (or typing plan a trip to ... in Oracle chat) runs up to 3 web searches through /api/search type web (Gemini with Google Search, Tavily built as a backup but switched off for now; only the search question is sent; it needs GEMINI_API_KEY in Vercel and says so when it is missing), then one Oracle call drafts the plan: itinerary, travel legs, tickets and stays with book-by dates and links, documents for the passport he travels on plus UK re-entry with settled status, worst-case packing, an emergency card, a producer angle (record shops, studios, gigs, B-roll spots), food, backup plans and a daily money limit; official links (UK FCDO, France Diplomatie for the French passport, passportindex.org, gov.uk view-and-prove status) are always added. Alex reviews it, can ask Oracle to change it, then saves; saved plans have tickable tasks, a status (idea, planning, booked, done, dropped) and Add to calendar (a trip block plus timed items on the Daily Schedule). RPGACE never books or pays for anything. PLAN MONEY, DATES + PEOPLE (TP-6/TP-7, Oct 14 2026, same tripPlans module): a task\'s book-by date shows on the dashboard Due list from 7 days before, highlighted on the day and when overdue; tapping it opens that plan. Ticking a ticket/stay/travel/food/other task asks what was paid: the amount is saved on the task (plan_tasks.cost_paid) and logged once as a Travel expense in Chronicles Finance (chronicles_finance); packing/document tasks tick straight away. A saved plan shows paid so far against its budget. After a trip ends (up to 30 days) the Due list asks How was it?: the after-trip log writes a journal entry (source trip_log, +15 journal XP) with best bits, next time, real cost vs budget and a recipe to bring home, can mark the plan done, and offers a Cook it at home button that opens Cooking\'s generate form prefilled. Who\'s coming can be changed on a saved plan (plans.people); in the 2 weeks before a trip the Due list names anyone on it Alex hasn\'t spoken to this week, and the People tab shows each person\'s upcoming plans. Still no drafted messages. IDEAS BOARD (TP-5, Oct 13 2026, same tripPlans module): the Ideas tab (or typing what could I do 1-8 Nov? / weekend ideas in Oracle chat, which opens it with the dates filled in) takes dates, an optional budget, a mood/theme, how far (abroad fine / UK only / stay home) and which of 4 kinds to include (UK day trip, abroad, event, at-home project); it runs up to 3 web searches using only his home city, interests and limits (never anyone from People), then one Oracle call returns 5-8 mixed ideas with cost ranges, travel time, why it suits him and links only from the search results. Save (star) stores an idea as a plans row with status idea; Make it a plan opens the plan builder pre-filled. If the search fails the ideas are marked as Oracle\'s own knowledge. Not yet hand-tested by Alex. Ticks write quest_log rows (quest_kind routine); the database turns each completed tick into an xp_events row (5-25 XP, realm from the routine\'s area - see XP SEASON PASS). Accepted Oracle task suggestions become one-off routines due today. The questEngine module\'s Generated-from-your-real-data quests still exist below it. SHIFTS (fixed Oct 12 2026, owned by the shiftSync module, rpgace_shifts table): a rota screenshot sent to Oracle or the Schedule page\'s paste box now saves the shifts to Supabase so every device sees them (before this, imports only lived in one browser and were wiped on the next load); the old hardcoded June-July rota is gone. A weekly GitHub job also logs into Fourth and imports the rota automatically; its last result is in the sync_status table and a failed or stale run shows on the dashboard Due list. Never repeat the old ("zero persistence") claim - false since Aug 24 2026. SECURITY/DATA: the app password and every /api/*.js endpoint are checked server-side (fixed July 24, independently verified live). Since Oct 10 2026 (authGate) a device that logs in with the password stays signed in: it keeps the server-issued secret in local storage, re-checks it with /api/auth on each launch (a rotated secret sends it back to the password screen), and the left-nav drawer has a Sign out on this device button. renderMarkdown() escapes HTML before rendering (XSS fixed July 28). RLS is enabled on every real Supabase table - most are anon-read-only/authenticated-all; a small, deliberate, named set (oracle_fallback_queue, openmontage_jobs, error_log, smoke_test_items, ceo_plan_items) stays anon-writable because a real external writer (a Routine, the browser app itself, or a separate Claude Code session) genuinely needs that access - never suggest restricting those without checking first. There is NO Supabase backup or point-in-time recovery at all - Alex explicitly chose to stay on the Free plan and accept that risk (confirmed Sep 15 2026); do not re-raise this as an open question. ORACLE MECHANISMS: Oracle Control (a curated oracle_actions Supabase table) drives a real confirm-before-execute mechanism - 5 real wired dispatch branches exist now (log_beat, new_quests, draft_email, yt_stats, log_notion), reached both from the floating overlay button on any page and from the dashboard quick-action/Agents-page buttons (both rewired in Sep 2026 to go through this one shared mechanism instead of their own bespoke per-button calls - a real rule-8 dedup). Oracle can also DRAFT a suggested brand-new action from its own self-awareness, but a suggestion only grows the real vocabulary once Alex approves it, and it still then needs a human-coded execution branch before it can do anything - never claim Oracle can execute an arbitrary task on its own. Fish Audio (real voice input/output) is a dormant, gated scaffold - no real API key exists, Oracle cannot actually speak or listen by voice yet. The browser-mic voiceInput module was retired outright Aug 30 2026 (Alex\'s own direct ask, ahead of Fish Audio) - there is currently NO voice-input path in RPGACE at all. Real Anthropic prompt caching is live on every Oracle call (a pure cost optimization, never changes what Oracle can say). A Kimi/Luna free-tier routing option exists in api/oracle.js but is dormant, no real key configured - never claim RPGACE runs on multiple AI models. errorLog automatically resolves a real thrown error back to the one module that caused it, attaches that module\'s real /perspective baseline, and - if that module has a smoke_test_items row - flips it to broken (cascading a linked plan item to purple only if it was genuinely green before) - this only ever catches errors that actually throw or show an error-colored toast, never a silent wrong-output bug with no visible symptom, and Oracle never proactively monitors the app - it only reacts when a real message is sent to it. OVERSIGHT / GALAXY MAP: 13 real oversight docs exist now (Tier a/b explaining+truth docs, this Oracle self-awareness string, smoke_test.html/error_log.html, future_integrations.html/achiever.html, and perspective_map.html - new Sep 2026, a live-query page cross-referencing every real perspective_reports row - plus graphify/Obsidian/the Galaxy Map). The Galaxy Map (reachable from the in-app Oversight popup) is a real 4-stop CONTAINMENT hierarchy - L0 (9 real units: RPGACE Architecture/Orchestrator CC/OpenMontage CC/Graphify CC/External AI/Skills/Alex/Supabase/Oversight Docs) contains L1 (12 live app-code rivers, plus 5 retired Total-systems categories kept as per-actor Infra/Inter breakdowns, not deleted) contains L2 (modules) contains Current/L3 (functions). Older Level-2.5/4/5/6 "rail stops" from earlier in the build are all retired or folded into Current/the Decision Matrix - never describe the map as having numbered levels past L3; cross-cutting facts (Externals/Decisions/Skills/Load/etc) are Dimension pages layered over the hierarchy, not additional rungs. 23 real Galaxy Map pages exist on disk as of late Sep 2026 - re-verify this count too before quoting it, it changes whenever a new page ships (most recently G117, a Generator Toolchain catalog page, Sep 22 2026). Every one of the 58 real registered modules plus all 12 live rivers has a real, evidence-grounded /perspective self-report as of mid-Sep 2026 (the Perspective Full Coverage plan is complete). A standing project-wide PAUSE on new Galaxy Map/Dimension work has been in effect since Sep 15 2026 (real evidence: product debt was sitting untouched under a wave of Galaxy-Map/meta work) - only explicit, narrowly-scoped, Alex-approved exceptions have shipped since - never assume a new Galaxy Map feature is fair game without checking whether Alex explicitly overrode the pause for it that specific time. KNOWN, STILL-OPEN GAPS: the swipe-gesture freeze bug has recurred for real (69 real occurrences logged Aug 27-Sep 20 2026) but still has no root cause found and no stack trace available (the browser\'s own Long Task API exposes no call stack) - never claim it\'s fixed, and don\'t attempt another blind code-only fix pass. reference_tracks.scale/genre are still 0 of 32 populated - "beat matches are always the same" traces directly to this; a backfill popup exists and has not been run. smoke_test.html\'s real hand-confirmed tally sits well under half of its rows - a large amount of shipped work is real and code-verified but genuinely unconfirmed by Alex\'s own hand; only his own hand-tick counts as "confirmed working," never a code-level test pass alone. HABITS/COOKING (cookingOracle + shoppingWishlist, RPGACE\'s newest domain, built Sep 10-22 2026): reached from Cooking in the left menu (Habits group). Generate a recipe via Oracle chat (a real RECIPE_JSON: trailer); a real "Narrow it down" step runs first for a short/ambiguous description. Ingredients render with a live 7-color status system wherever shown - green=plenty, yellow=short (worded as "need N more, have M, T total needed"), red=none, blue=a same-aisle alternative in stock, purple=will run low/restock after this cook, orange=a real curated-or-heuristic substitute exists in stock, brown=a separable/optional component that can be omitted in No-Shop mode. Orange substitutes can be permanently confirmed (a tick, colour never changes) or declared-the-same-item as an existing stock row (a real, standing alias merge reassigning every FK reference) - curated potency ratios exist for a few specific real pairs Alex stated (e.g. tamarind concentrate is about 1/3 the amount of tamarind paste) and a real garlic clove/bulb count-equivalent bridge (8 cloves per bulb, bidirectional) - none of these numbers are invented, only ones Alex explicitly gave. A recipe card supports pantry-aware Oracle-suggested ingredient additions and a real diff-only critique-and-update flow via the floating overlay (Accept/Deny, never the whole recipe re-shown). New Sep 22: clicking Start on a scheduled planned cook opens a real, persistent Live Cook Mode panel inside the Oracle page itself (step timeline, elapsed-time ticker, per-step and recurring reminder timers) - not just a silent flag flip. New Oct 1 2026 (cookingOracle): a scheduled planned cook can also be started (Start cooking now, or Cook now straight from the schedule preview), finished (Cook finished in the Cooking hub or a Finished button in Live Cook Mode - marks planned_cooks cooked, completes its agenda entry and marks the recipes cooked in the journal) and given another recipe (reopens it as a draft) from inside Cooking itself, not only from the Daily Schedule. Planned-cook sessions persist as a real draft from the moment the first recipe joins (never silently lost on close/navigate-away); since Oct 5 2026 (cookingOracle), emptying a session only marks a still-draft planned_cooks row discarded (never a hard delete, never touching a scheduled or cooked cook), and pressing Done on a planned-cook entry in the Daily Schedule now marks that planned_cooks row cooked - before this, two real scheduled cooks were lost with no trace, support a real per-recipe delete, and use a true cross-recipe interleaved scheduler that front-loads prep across every recipe in the session rather than finishing one recipe\'s steps before starting the next. COOK MODE (new Oct 11 2026, cookingOracle): a recipe card shows a spec line (steps, minutes hands-on, servings) and a Start Cooking button that opens a full-screen, one-step-per-screen view - Step X of Y, the equipment, that step ingredients at the scaled amounts, the instruction, a Done-when cue and the step timer, with Back/Next/Done, phone Back stepping back, and resume where Alex stopped; timers keep running across steps. Live Cook Mode has a Cook Mode button that walks a whole planned cook the same way. New recipes are asked for one action per step with a done cue and equipment, and every ingredient placed in a step; the card warns when an ingredient is in no step. The 8 recipes saved before this have one-action splits written by a Claude Code session (not by Oracle) waiting as proposals (recipes.steps_proposed) - nothing changes until Alex presses Use these steps on a recipe card (old steps are kept in recipes.steps_previous). Not yet hand-tested by Alex. A real Current Stock view (Pantry/Fridge/Freezer/Equipment) and a real have/not-have shopping list (with a real "in basket" state between "need to find" and "bought") both exist, aisle-sorted. shoppingWishlist is a genuinely separate module (general future purchases like batteries/a wok/games, not ingredients) with its own priority-plus-budget-target fit calculator, writing a real Chronicles Finance expense on purchase. Every HABITS feature above is real, shipped, code-verified - but per the standing flag across this whole domain, effectively none of it has been hand-tested by Alex yet. TAXONOMY: real architecture change Sep 25 2026, now in a genuinely empty pre-rebuild state. jargon_encyclopedia is no longer a view over taxonomy_tree - it is a real standalone anchor table (term/phylum_number/explainer/status/taxonomy_node_id), now holding 545 real curated terms across phyla 1-20 (Phylum 1 got a real same-day top-up to 51 terms per Alex\'s own live-review feedback while browsing it; the other 19 phyla still sit at 26 each; none for phylum 21), most status=\'pending\' (a real, growing number are status=\'accepted\' as Alex works through his own review queue) - directly authored by a Claude Code session (source-tagged claude_code_prebuild), never yet generated by the live AI generator that also exists in code but has never actually been run. Jargon Encyclopedia is now a real standalone page (owned by the jargonEncyclopedia module, Sep 26 2026 UI rework) - reached via leftNav\'s Phylum Path subItem or the Taxonomy dashboard card\'s picker popup (dashDeck._openTaxonomy), never a button crammed onto Phylum Path\'s own title anymore. It shows EVERY term regardless of status (pending/accepted/rejected, each with a real status badge and filter chip), with real inline Accept/Edit/Reject actions per pending term (reusing phylumPath._resolvePendingTerm, the one real write path - never a second one). taxonomy_tree itself was first archived in full (671 old branch/leaf rows, a reversible flag) then, same day, actually DELETED to 0 rows at Alex\'s own direct follow-up ask (he judged even the archived structure not worth keeping while jargon gets built out first) - every phylum (1-21) is now a genuinely empty canvas below the phylum level, zero branches, zero leaves, zero fusion links (taxonomy_links is also 0 rows). A full pre-delete snapshot was committed first as the real restore path, since Supabase has no backup/PITR. The old \'Review Archived Terms\'/\'Review Pending Terms\' buttons on the Phylum Path page are gone - the former is genuinely dead (nothing archived left to review) and the latter is superseded by the new Jargon Encyclopedia page above. Never claim any specific phylum currently has real depth, real Orders/Classes, or any structure at all - every earlier claim of that shape (phyla 1-10 depth, Phylum 12\'s real Orders, a structurally-clean tree) describes a state from before this restructure and is not true again until Alex reviews the jargon terms and a real new phylum structure gets built around them. GYM (new Oct 10 2026, owned by the gymTracker module, HABITS module 2 after Cooking - both in the Habits group of the left menu): Gym logs sessions (exercise, sets, reps, kg; gym_sessions + gym_sets tables), shows this week against a 5-session target, personal bests per exercise (heaviest set plus an estimated 1-rep max) and recent sessions with a two-tap delete; Repeat last prefills the previous session, and beating a previous heaviest weight shows a New best toast. Gym sessions appear in Chronicles and the Morning Brief own-words section, and Ask My Data can read gym sets. No sessions exist until Alex logs one. Not yet hand-tested by Alex. FREEZES AND SPEED (Oct 14 2026, perfWatch module, perf_freezes table): any freeze over half a second is saved with what was running (script functions and what triggered them, the last pages and taps, slow network replies, whether the app was still starting); the old repeated App froze alert of about 670ms was the app script loading behind the loading screen (about 690ms at phone speed), so blocks during startup are recorded but no longer alert. Cooking buttons (cookingOracle) share one size scale: 44px main, 36px small, 52px Cook Mode Back/Next and Start Cooking. HEALTH AND BODY (Oct 14 2026, owned by the healthBody module; food_log, body_log and health_settings tables, private - read only after login through /api/data-write): the Health & body card (Habits menu) has Today, Gym plan, Trends and Targets tabs. Food: a meal photo, a nutrition-label photo or typed words go to Oracle, which lists each food with grams; each item is re-checked against the UK food tables (cofid_foods, the same lookup Cooking uses) and those numbers win when they match, otherwise Oracle\'s estimate is kept and labelled; Alex edits and saves to food_log. From your cooks adds one serving of a recipe from a cook finished in the last 3 days (planned_cooks status cooked), per serving from the recipe\'s ingredient grams; it is one tap, not automatic. Only calories and protein are counted, against targets Alex sets. Body: water in glasses, weight with a 7-day average, sleep hours, a 14-day trends table and weight chart (body_log). Gym plan: a Push/Pull/Legs, Upper/Lower or Full body programme rotated over the days Alex picks (health_settings.programme, exercise lists editable); today\'s workout shows last time\'s sets from gym_sets and a nudge (all sets at the top of the rep range = add 2.5kg and drop to the bottom, otherwise same weight, one more rep); Start this workout opens the gymTracker log prefilled. My Day shows a Health today card (calories, protein, water, sleep, today\'s workout). Steps are NOT connected yet: Samsung Health only shares with signed partners and Google Fit\'s API is closing; a Google Health API sync is planned once Alex checks his account has step data there. DAILY LIFE (new Oct 10 2026, owned by the dailyLife module): every Current Stock tab (Pantry/Fridge/Freezer) has an Add-from-a-photo button - Oracle lists the food it sees in the photo, Alex reviews and edits the list, and each ticked row sets that item\'s amount through cookingOracle\'s own stock write (the same one the manual form uses); Oracle never adds stock without that review. Morning Brief has a New-from-your-watchlist button that checks the YouTube creators in intel_watchlist for uploads from the last 7 days (YouTube only - Instagram/TikTok creators cannot be checked) with an Analyse button that queues a video for Content Intelligence, and the brief prompt now includes Alex\'s own open quests, decisions due for a look-back and latest journal note so it can quote them back. Chronicles also shows completed quests and finished planned cooks. Not yet hand-tested by Alex. RECALL (new Oct 10 2026, owned by the recall module): saving an Encyclopedia idea card puts it on a forgetting-curve schedule (encyclopedia_insights.recall_step/recall_due: back after 1, 3, 7, 16 and 35 days); due ideas appear at the top of Morning Brief with Again (back tomorrow) or Got it (next interval; after the last one it counts as learned). A Bookworm chapter with insights has a Cards button that opens its insights as the same Deepstash-style idea cards; saving one writes it to encyclopedia_insights (source_entry_id book:<chapter id>) so book and video ideas share one Saved list and one recall queue. Not yet hand-tested by Alex. MONEY GUARDRAILS (new Oct 10 2026): the shoppingWishlist module asks an optional why-do-you-want-it reason when an item is added (wishlist_items.want_reason) and, for an item added under 24 hours ago, shows a cool-off step (time left plus that reason, Wait or Buy anyway) before the normal what-did-you-pay confirm - it never blocks a purchase. The decisionJournal module adds a Decisions strip on the Journal page: log a decision with the reason at the time and a look-back in 2, 4 or 8 weeks (journal rows, entry_type=decision, review_on); when the date arrives it asks how it turned out and saves the answer (journal.outcome). Not yet hand-tested by Alex. SHARE TO RPGACE (new Oct 10 2026, owned by the shareInbox module): the installed app appears in the Android share sheet (manifest share_target); sharing an Instagram reel, YouTube Short, TikTok or any link queues it into intel_jobs for Content Intelligence analysis, which needs Alex\'s PC analysis server running; after queuing it shows Sent to RPGACE and closes itself so Alex lands back in the app he shared from (if Android refuses the close, it says press Back). iPhone has no share-target support - an iOS Shortcut that opens the app with ?share_url= does the same. Not yet hand-tested by Alex. PATHWAYS (new Oct 10 2026, owned by the pathways module): an Encyclopedia post that came from an analysed video has buttons to turn that video\'s suggested quests into real Quest Board quests (questEngine, duplicates skipped), add its creator to the watchlist (intel_watchlist), and list Jargon Encyclopedia terms that appear in the article; Platform Oracle has an optional About-a-beat picker (beat_audio_jobs / content_productions) that prefixes every command with that beat; the Cooking shopping list has an Add-a-non-food-item-to-your-Wishlist form (shoppingWishlist). Not yet hand-tested by Alex. COOKING LAYOUT (Oct 10 2026, N2 slice 4): every Cooking button comes from one shared token set (cookingOracle BTN_VARIANTS) and now has a 36-44px tap target with 13px+ text; ingredient rows, step headers and hub descriptions are 12-13px; the Current Stock unit box no longer runs off the screen; and liquid amounts read in quarter cups with the original ml kept, e.g. 200 ml = 3/4 cup + 1 tbsp + 1 tsp (200 ml) instead of 13 tbsp 1 tsp. Not yet hand-tested by Alex. KNOWLEDGE LAYOUT (Oct 10 2026, N2 slice 3): the Encyclopedia page starts with the articles - category/sort chips sit in a folded Filter & sort section and Sync/Clear All in a folded Maintenance tools section, with search and a count line (naming the active category and sort) always visible; article titles wrap in full; an article made from an analysed video previews its first idea cards instead of making an Oracle call. Jargon Encyclopedia no longer repeats a not-placed line under every term. Encyclopedia, Jargon Encyclopedia and Phylum Path use 40px buttons and 13px+ text. Not yet hand-tested by Alex. CONTENT & VIDEO LAYOUT (Oct 10 2026, N2 slice 2): the ConID list, Idea Bank, Beat Log and Upload Workshop pages now use 40px buttons and 13px+ text, drop their doubled titles (the ConID list header reads Your productions), let ConID titles wrap instead of truncating, and show the stage badge as e.g. Visual Treatment ✓ - before this fix the badge text was the same colour as its background and could not be read. Beat Log extra fields reflow to two columns on a phone. Not yet hand-tested by Alex. ORACLE PAGE LAYOUT (Oct 10 2026, N2 slice 1): the chat input sits directly under the messages with one Tools row below it (New quests, Draft email, Log to Notion, YT stats, Prod. Oracle, Platform Oracle, Visual Oracle, Repurpose, Schedule Oracle, Phylum Path); the old Insta-Oracle button and a duplicate Quick Actions bar are gone; the former Agents page content (connected apps, one-click agent cards, activity log) is in a collapsed Agent actions & connected apps section at the bottom (agentsIntoOracle); long app-generated prompts in the chat show a 4-line preview with Show all. Not yet hand-tested by Alex. PLATFORM ORACLE (new Oct 10 2026, owned by the captionsPanel module): the Instagram, YouTube and TikTok command panels are now ONE panel - a single Platform Oracle button on the Oracle page opens it, with an Instagram / YouTube / TikTok / Business switch (13 / 8 / 8 / 5 pre-filled commands, stored in instaOraclePanel/youtubeOracle/tiktokOracle/producerTools). The Business tab (producerTools, Oct 10 2026) holds producer tools: A&R Critic, Artist Outreach, Contract Red Flags (plain-English explainer, not legal advice), Negotiation Rehearsal (role-play, then a debrief) and Playlist Psychologist (listening to beat ideas) - prompts only, nothing is sent to anyone automatically; a beat-pricing calculator does not exist because no finance data is logged yet. Tapping a command sends it to Oracle chat; the old Insta-Oracle button opens the same panel. Not yet hand-tested by Alex. ASK MY DATA (new Oct 10 2026, owned by the askMyData module): when Alex asks about his own saved data (pantry/stock, shopping list, recipes, planned cooks, wishlist, journal, quests, agenda, creator watchlist, analysed videos, encyclopedia, idea cards, jargon, reference tracks, finance log, books, content productions, RPGACE changelog), Oracle can request ONE read-only lookup with a DATA_QUERY trailer; the app fetches up to 30 rows, shows Alex which rows were used, and Oracle answers from those rows only. It cannot write or change data, and it only knows what those rows contain. Not yet hand-tested by Alex. DASHBOARD + MENU (Oct 10 2026, N2 slice 5, owned by dashDeck + leftNav): the left menu is the ONE place to reach everything, grouped Oracle / Content & Video / Knowledge / Habits (Cooking, Gym, Shopping Wishlist) / Schedule & Journal / Chronicles / Oversight - popup modules like Cooking, Gym, Morning Brief and Oversight open from it too. The dashboard no longer has a card grid; it is a landing page with four sections: Today (shifts and scheduled tasks for today, a planned cook today, My Day routines left today, gym sessions this week against 5), Due - waiting on you (pending taxonomy reviews, jargon terms to review, saved ideas due for recall, decisions due for a look-back, wishlist items whose 24h cool-off is over, shared links queued for the PC analysis server - a row only appears when there is something in it), Continue where you left off (the last pages/modules Alex opened, kept in this browser only, plus the book in progress, latest recipe and latest production) and Morning Brief + an Ask Oracle box that sends the question through the normal Oracle chat. It makes no Oracle call itself. Not yet hand-tested by Alex. NAVIGATION (new Oct 10 2026, owned by dashDeck + pathRouter): every popup has a sticky header with a Back button, a Domain > Card label and buttons for the other modules in the same domain; phone/browser Back closes the open popup first instead of leaving the page, and Back from a page that was opened from inside a popup returns to that page and reopens the card it came from. The sub-pages of Content Pipeline (ConID list, Idea Bank, Beat Log, Upload Workshop) and Bookworm (Bookworm, Videoworm, MusicWorm, Bibliography) have their own Back button (\u2190 Content Pipeline / \u2190 Bookworm, dashDeck._pageBack, Oct 10 2026) that does the same as phone Back; opened directly by link it shows the dashboard with that menu open. Not yet hand-tested by Alex. ENCYCLOPEDIA (new Oct 10 2026, owned by the encyclopediaPosts module): every Content Intelligence report (intel_reports) is automatically turned into a real encyclopedia article (source=intel, source_url = the video) plus one encyclopedia_insights row per idea card (idea_section/idea_order; saved_at when Alex saves an idea). Articles read Deepstash-style as a post of idea cards (Back/Next, card count, read time, Save idea, Full article); the Encyclopedia page shows a Posts strip with Series (posts sharing a tag) and Saved ideas. This replaced an old auto-save that only looked at the newest 5 reports and had stopped saving after the encyclopedia was cleared - so before Oct 10 none of the 37 analysed videos had an article. Not yet hand-tested by Alex; Knowledge Tree links to articles do not exist yet (the tree is empty). SCREENSHOT INBOX (new Oct 11 2026, owned by the screenshotInbox module, Knowledge menu): Alex adds screenshots in the app or shares an image to RPGACE from the Android share sheet; each is stored privately (screenshots table + private bucket, readable only after login through /api/data-write) and Oracle reads it once, saving the visible text, a one-sentence description, tags and a kind, and suggesting up to two homes. Nothing moves automatically: per screenshot Alex can Add to Wishlist (shoppingWishlist), Save as idea card (encyclopedia_insights, joins the recall schedule), Start a recipe (opens Cooking\'s Generate form filled in), Journal it, Keep it in the inbox, or delete it. Screenshots are searchable in the inbox and through Ask My Data (screenshots source, text only), and the dashboard Due section shows how many are waiting to be sorted. Each read is one Oracle vision call. Not yet hand-tested by Alex. CONTENT PIPELINE: Research Lab is fully retired as a user-facing destination - its former panels live inside Content Pipeline/Bookworm cards now. RPGACE does not generate video itself - OpenMontage (a separate Claude Code session in its own repo) is briefed and handed off via openmontage_jobs, never live infrastructure; RPGACE has ruled out paid video providers on principle (zero spend). Real beat-grid audio sync does not exist - "in sync with the beat" currently means mood/palette-matched only. Features F0 through F18 have shipped except F12 (deliberately deferred); F16/F17/F18 remain real execution debt - shipped code, genuinely never hand-tested through their full flow yet.',
+  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested by Alex; where a bullet doesn\'t explicitly say hand-tested, assume it hasn\'t been). Never assume this string is automatically current just because it exists - check its own newest dated fact before trusting an old memory of it; last reviewed Oct 14 2026 (Cooking reorganised, see COOKING JOURNEY in HABITS; Freezes and speed, see FREEZES AND SPEED; Health and body, see HEALTH AND BODY; Plans money, dates + people, see PLAN MONEY under PLANS; Chores, see CHORES under MY DAY; Life Library, see LIFE LIBRARY below; Plans: trips with Oracle + people; My Day week planner, timings + activity templates; Cook Mode, see COOK MODE in HABITS; Screenshot Inbox, see SCREENSHOT INBOX below; Galaxy Map rivers replaced by the 8 app domains; Dashboard landing page + grouped menu, Cooking layout, Knowledge layout, Content & Video layout, Oracle page layout, gym tracker, stay signed in, share-and-return; daily life: fridge photo, watchlist digest; Business producer tools, recall + Bookworm cards, money guardrails, share-to-RPGACE; Encyclopedia posts from analysed videos, see the ENCYCLOPEDIA paragraph below; planned cooks can no longer vanish, see HABITS). ARCHITECTURE: the client is exactly ONE script, rpgace_core.js (index.html loads only rpgace_core.min.js) - main.js was mechanically merged into it Aug 20 2026, living on as a LEGACY SECTION near the top (bootstrap, password gate, page routing, career score, Quest Board). 75 real registered RPGACE.register() modules as of Oct 14 2026 - re-verify this count before quoting it, it has drifted before (a naive grep can double-count a documentation-template example inside a comment). DOMAINS (Oct 11 2026, M1): every module declares one of 8 domains in code (the domain: key, listed in RPGACE.DOMAINS) - Oracle, Content & Video, Knowledge, Habits, Schedule & Journal, Chronicles, Oversight, Platform - the same groups as the left menu. The developer Galaxy Map groups modules by these domains too; the older \'rivers\' grouping is retired. Every module has a real internal ui/logic split (Sep 2026, G53) - zero public-API change, purely structural. RPGACE is a real installable PWA (Android/desktop Add-to-Home-Screen). Chronicles is a full searchable log page with click-through detail plus a personal-visibility-only finance ledger (not bookkeeping-grade). The profile stat card runs on real Supabase-derived data (Output = shipped content, Growth = learning/tree activity, kept as separate lanes). MY DAY (new Oct 12 2026, owned by the myDay module, routines table) replaced the old generic Quest Board template (the hardcoded career/health/lifestyle quests are gone): Alex picks routines from a drafted ideas menu built on RPGACE\'s own tools (morning routine, cleaning split by day, gym, cooking, reading, beats, posting, coding, budget, etc.) or writes his own, and sets each one\'s schedule (every day, certain days, N times a week, one date, or next time he is shopping/in town/at the PC), part of day, optional time, minutes, goal, steps and which tool it opens. The agenda page shows what is due today by morning/afternoon/evening with tick, skip, undo, a timer, sub-step ticks, streaks, missed-earlier-this-week catch-ups and a week done-vs-planned line; Plan my day suggests free times around his shift and today\'s schedule and adds the ones he accepts to the Daily Schedule. CHORES (Oct 14 2026, DT-3 of the Day Templates & Chores plan, owned by the myDay module, routines table, area Chores): room-only chores each repeat every N days counted from the last time he ticked them (routines.every_days; routines.last_done_before holds a last-done date he set before RPGACE tracked it, and a newer tick wins). A missed chore stays on the list marked overdue - it never stacks. My Day shows a Chores section (due and overdue chores, most overdue first) plus a Coming up line; it empties as chores are ticked. He set up the list from a 20-chore starter list (Set up the chore list in + Add routines) and can add his own and change any day count. Chore ticks earn Homekeeper XP. CHORE BLOCK (DT-4, Oct 14 2026, myDay module, chore_blocks table): from the Chores section he picks a day, start time and length; the block fills itself with the most overdue chores (then the next ones due, done early) until their minutes fill the time, skipping any that do not fit; he can tick any chore in or out, and it warns if he goes over. Adding it writes a chore_blocks row and a Daily Schedule entry (0 XP; the chores themselves earn XP). On the day, My Day shows the block with its chores to tick and an N of M done count; chores left undone stay due and come first next time. Cancel block (two taps) removes it and its schedule entry. DAY TEMPLATES (DT-1, Oct 14 2026, myDay module, day_templates table): Plan my day now opens a day template for any date. The day kind comes from his shift: no shift = day off, a closing shift (his close at 00:00) = late, any other shift = early. The first suggestion is the most recent day of the same kind and weekday that he locked in, else what was really on his Daily Schedule for a day like it (8 weeks back), else same kind any weekday, else a fresh fit of what is due. Saved templates (📌, Save as template) are offered too. Routines not due that day drop out, a chore block refills with that day\'s most overdue chores, and routines due but missing are fitted into free gaps (marked also due). Items that overlap the shift or its travel get a warning. He can untick, change times and lengths, remove, or add a routine, a chore block (longest that fits, up to 2 h) or anything else. Lock in puts every kept item on the Daily Schedule (places keep their journey time), plans weekly and N-a-week routines for that day (routine_plans), makes the chore block real (chore_blocks), and records the day (day_templates, source locked) so the next day like it starts from it; locking twice does not double up. NIGHT-BEFORE REMINDER (DT-2, Oct 14 2026, myDay module, shown in the dashboard Due list by dashDeck): from 18:00 the Due list says whether tomorrow is planned (locked in, or already has Daily Schedule items, with the first few listed) or is not planned yet (with its day kind and shift); on a closing shift it waits until the shift ends, so just after midnight it is about the day that has just started. Tapping it opens Plan my day for that date. COOKING AND SHOPPING BLOCKS (DT-5/6, Oct 14 2026, myDay module, chore_blocks rows of kind cooking/shopping with an items checklist): in Plan my day he can add a cooking block (pick saved recipes; its length comes from the cookingOracle scheduler) and a shopping block (pick from what that day cooking is missing, lists made for planned cooks, the newest Cooking shopping list, Wishlist items, next-time-shopping routines, or his own typed items; it goes before the cooking block). Lock in turns a cooking block into a real scheduled planned cook through cookingOracle (grocery list, schedule, Daily Schedule entry) and saves the shopping block with its own Daily Schedule entry (0 XP). On the day My Day shows both as checklists: ticking a Cooking list item marks it bought in Cooking, a Wishlist item asks what was paid and logs it to Chronicles Finance, a next-time routine is ticked; ticking every dish marks the planned cook cooked; Start cooking opens Live Cook Mode; Cancel block (two taps) removes it and its schedule entry (a cooking block also discards its still-scheduled planned cook). Old Cooking lists are not offered. HABIT DESIGN (MD2-9, Oct 14 2026, myDay module, routines.minimum + routines.after_routine_id): a routine can have a minimum (the small version) and a goal; "Did the minimum" logs a quest_log tick with description minimum at half XP and still keeps the streak. Habit stacks: a routine set to come after another waits off the Today list until that one is ticked or skipped (only when that one is due today). Never miss twice: a row warns after one missed due day and says do the minimum after two (skips do not count as misses). Every regular routine shows days since last done as a green/yellow/red dot against its own rhythm. Weekly review: Sunday from 17:00 (Monday is the catch-up), a My Day card and a Due row open a pre-filled look back (kept, slipped, best streaks) with three prompts, saved as one journal row (source weekly_review, review_on = that Monday) that earns the normal journal XP. DAYS SINCE + CUTTING BACK (MD2-8, MD2-11, Oct 14 2026, myDay module): My Day shows a Days since card read from the real tables (gym_sessions, planned_cooks cooked, Learning/scholar ticks in quest_log, beats and posts in content_productions, journal), each green/yellow/red against an aim-every-N-days he can change (myday_settings.tracker_days), plus People from the people table with a Talked today button (writes people.last_spoke, which already earns caught_up XP). Cutting back: private cutback_items (name, baseline, daily target) and cutback_log (one count per item per day); +/- buttons and None today on My Day, a 7-day bar trend and days at or under target, never red or judging. pg_cron xp-cutback-close (00:10 UTC) runs xp_cutback_close(), giving +15 Mind XP (cutback_day) for each logged day at or under target. IDEAS ROUND 2 (MD2-10, Oct 14 2026, myDay.IDEAS): the Add routines menu now also has psychology reading (log book + chapter), a psych exercise, gratitude, screen-time check, a full-body morning stretch, water, protein, call family, birthdays and gifts, networking, sample digging, skills drills, a weekly dig (books, skills, income streams, opportunities), post planning, budget and subscriptions reviews, and interval items (haircut 21 days, toothbrush head 90, dentist 180, kettle, washing machine, backups 14, device updates 30). New areas: Social (pays the Connector realm) and Money (Steward). Nothing goes live until he adds it. ALERTS + ROTA BACKUP (MD2-7, MD2-3, Oct 14 2026): Morning Brief gets up to 5 My Day picks with reasons (myDay.logic.doToday: missed-twice habits with their minimum, red days-since trackers, overdue chores, people to catch up with) and keeps the reasons. Phone alerts: a switch at the bottom of My Day subscribes this phone (push_subscriptions); the Supabase edge function myday-push, run hourly by pg_cron, sends what push_digest() decides: 08:00 London morning summary (shift, chores due, who to catch up with) and Sunday 18:00 weekly review. Tapping opens My Day. Keys live server-side only (app_secrets). On iPhone alerts need RPGACE added to the Home Screen. Rota backup: the Screenshot inbox recognises a rota (kind rota) and its Import shifts route reads the shifts (shiftSync.logic.fromRotaJson, the same parser the Oracle chat rota upload uses), shows them to untick, and saves through shiftSync.replaceDates. REALM BLOCKS (DT-7, Oct 14 2026, myDay module, chore_blocks rows of kind realm with a realm column and an items checklist): in Plan my day he can add a block for any of the 13 XP realms (the realm with the least XP this week is listed first, marked behind this week). Each realm has 4 starter activities he picked himself (myDay.REALM_ACTIVITIES), plus his own routines in that realm, books he is reading outside RPGACE (library_items books not done and not from Bookworm, e.g. The 48 Laws of Power and Nine Minds) and anything he types. No double counting: an activity that already earns XP from the real action (log a beat, gym set, chapter analysed, outreach, plan saved, journal entry) only checks off when ticked; every other activity pays +10 XP into that realm on tick through a quest_log row (quest_kind block, category = realm) that xp_on_change awards as block_tick; unticking removes it. Routines tick as normal routines. Activities with a tool have an Open button. The Day Templates and Chores plan (DT-1 to DT-7) is fully built. TIMINGS + TEMPLATES (Oct 12 2026, myDay module, myday_settings + activity_templates tables): My Day keeps get-ready and travel time clear - around a shift by default 30 min get-ready + 20 min coffee + the journey to work before, and the journey home after, with Alex\'s own margin % added to journeys only (all editable in My Day > Manage > Timings); the Daily Schedule\'s Schedule Task form has an optional activity template picker (name, category, place, journey minutes, get-ready, length) with + New and Delete right there, plus Category and Place/journey fields saved on the rpgace_agendas row; Today shows the rest of the day with travel blocks and free gaps labelled Prep or Leisure. Categories are stored for later metrics; nothing reports on them yet. WEEK PLANNER (Oct 12 2026, myDay module, routine_plans + day_blocks tables): My Day > Plan weeks shows this week up to the last week the Fourth rota covers (plus + Add a week); each day lists his shifts (or off), Daily Schedule items and any time off / trip / event, and each weekly or N-times-a-week routine has 7 day chips (weekly ones start on their usual days, N-a-week ones are suggested on days off then lighter shift days, spread out). A saved week makes the routine due only on its planned days; a planned day that passes undone shows under Planned but not done with Move to a free day or Skip. Time off counts as free; a trip or all-day event blocks the day. From Saturday the dashboard Due list says Plan next week if it is not planned. Plans (below) adds trip blocks when a plan goes on the calendar. LIFE LIBRARY (new Oct 13 2026, owned by the lifeLibrary module; library_items table, private - read only after login through /api/data-write): the Life Library card (first in the Knowledge menu) is where everything Alex takes in is kept - links, videos, books, music, files, courses, notes, quotes and recommendations (picked from his People list, ticked off once checked), each with the date he took it in, ONE phylum shelf (1-21) and free topics. A link saved twice stays one item (YouTube/Instagram/TikTok links are matched by video id). Shelving: a free keyword match on the 21 phyla first; one small Oracle call only when no keyword matches or no topics were typed; the shelf chip can always be changed. Roles (ratified plan Life Library & Knowledge Untangle): Life Library = what he took in; Bookworm = how he studies a source; Encyclopedia = what he learned (idea cards + jargon); Phylum Path = where it fits. Built Oct 13: LL-1 (the library itself, manual adding) and LL-2 (the untangle moves): the 41 Encyclopedia articles from analysed videos plus the Bookworm book are now Library items with their full text (an article item has an Idea cards button); a new Bookworm book creates its Library item automatically; Save-to-bibliography links now save to the Library (the old bibliography page stays as read-only history); the Encyclopedia page (encyclopediaPosts module) shows Ideas | Jargon | Sources tabs - an All ideas list with search, Save and From links that open the source in the Library - and the old article list is folded away at the bottom; Jargon moved under Encyclopedia in the menu. LL-3 (built Oct 13): automatic tree growth is PAUSED while the taxonomy_tree table has no rebuilt rows - owned by the taxonomyTree module (isPaused/checkPaused): video analysis (ciAutoPropose), encyclopedia sync (encSync) and silentPropose stop queueing taxonomy_proposals, Bookworm (bookworm module) skips its tree-placement step and offers Keep instead (the insight still becomes an idea card), and the Taxonomy & Review card says Paused until the phyla are rebuilt; the 65 old pending video proposals were archived (kept, not deleted). It turns back on by itself once a phylum gets its first rebuilt branch. LL-4 (built Oct 13): things now arrive automatically through lifeLibrary.logic.feed (free keyword shelf only, never an Oracle call; unshelved if no keyword matches; deduped by link and by source row): each video analysed from Oct 13 on (intel_reports via syncIntelData - this covers Video Finder Learn and Videoworm uploads), every screenshot Oracle reads (screenshotInbox), reference tracks Alex adds by hand (refCorpus; not the beat-match artist rows), and any Oracle reply he taps the star button on (main chat and the floating overlay; kind answer, his question as the title). LL-5 (built Oct 13, webLookup module): in the main chat Oracle may end a reply with a WEB_QUERY line when a question needs current or outside facts; RPGACE then reuses a Life Library lookup of the same question from the last 30 days, or sends only the search question to /api/search (Gemini), saves the result as a web_lookup library_items row, shows a Searched line with the sources and gives one follow-up answer (at most one search per message; other Oracle calls never get this option). Jargon terms and Bookworm insights have a Find links button that does the same. LL-6 (built Oct 13, lifeLibrary module): the Morning Brief shows one library_items row a day under From your Library (unchecked recommendations first, then the oldest; every kind including web lookups; not repeated for 30 days via resurfaced_at; Done with it sets resurface_off and marks a recommendation checked), and each jargon_encyclopedia term shows Met in links to the Library items and idea cards that mention it. LL-7 (built Oct 13, lifeLibrary module): each Phylum Path phylum shows its shelf above the tree - the library_items on that shelf, the idea cards (encyclopedia_insights) whose source item is on it, and the jargon_encyclopedia terms of that phylum, 5 each with Show all - and each phylum row in the switcher shows counts; the 4 Knowledge pages (Life Library, Bookworm, Encyclopedia, Phylum Path) share a one-line what-this-is header with links to the other three, and the menu lists them in that order. CHRONICLES SECTIONS (LL-8, owned by the chroniclesLog module, items built by careerStatCard): the Chronicles page filters by 8 life sections instead of 14 type chips - All, Beats & content, Recipes cooked (each finished planned_cooks row now names its recipes from the recipes table), Trips & plans (plans rows with status done, read privately after login; dropped plans never show), Learning, Life (quests, gym, journal), Money, App updates. Display only. XP SEASON PASS (XP-1 + XP-2, Oct 13 2026, owned by the xpSeason module; xp_events and xp_rules tables, private, read after login through /api/data-write): there is ONE XP system. The database writes every XP row itself - an xp_on_change trigger on 15 tables (content_productions, planned_cooks, recipes, gym_sessions, bookworm_chapters, bibliography, jargon_encyclopedia, library_items, journal, chronicles_finance, plans, people, smoke_test_items, oracle_dev_suggestions, quest_log) calls xp_award, which reads xp_rules (22 actions, each with a realm and XP) and writes one xp_events row; the app never awards XP itself. 13 realms: Producer, Creator, Hustler, Chef, Athlete, Scholar, Life, Homekeeper, Mind, Steward, Explorer, Connector, Builder. Examples: beat logged 30, beat finished 120, beat released 300 (Producer; the beat card in Content Pipeline has Beat finished / Beat released buttons for this), video posted 300 and treatment 60 (Creator), sale 2 XP per pound min 100 (Hustler), cook finished 60 +10 per extra recipe, recipe saved 25 (Chef), gym 40 (Athlete), chapter 30, book 300, jargon review 3, library item added by hand 3 (Scholar), journal entry he wrote 15 (Life; app-written journal rows earn 0), My Day routines their own 5-25 XP in the realm of their area, expense 5 (Steward), plan made 30, trip done 200 (Explorer), caught up on time 20 (Connector), hand-tested feature 20 and flag to Claude Code 15 (Builder). Auto-made things (idea cards from video analyses, auto-filed screenshots) earn 0. Repeats of capped actions on one day pay 100%, then 50%, then 0; shipping, sales and milestones are never reduced. The pass runs by YEAR (renamed from "season" in XP-4): Year 0: Construction runs from Oct 13 2026 to the end of that year (nothing before it counts); Year 2027 starts on 1 January and every 1 January resets it; a career total never resets. "Season" now means a UK weather season (Spring Mar-May, Summer Jun-Aug, Autumn Sep-Nov, Winter Dec-Feb). Year level: level 1 needs 500 XP, each next level 25 more. Overall rank (Sky ladder): Spark, Ember, Flame, Comet, Star, Nova, Constellation, Galaxy, 5 stars each, evenly spaced, Galaxy 1 at about 72,000 XP. The dashboard profile card shows the Sky rank, year level, a 13-spoke balance wheel of this week\'s XP and Done/Streak/Level/Year XP; each domain popup and page shows a strip with that domain\'s realm(s) and this week against his usual week so far; tapping either opens the Year page (realms, recent XP, reports). A source row deleted in the same week leaves its XP marked pending (the was-this-done question is XP-4, not built). The old row-count career score (careerStatCard), questEngine\'s card painting and the legacy addXP pop-ups are retired. REALM RANKS, TITLES AND BADGES (XP-3, Oct 13 2026, owned by the xpSeason module; xp_ladders, xp_unlock_defs, xp_unlocks and xp_settings tables, private): every realm has 7 ranks with its own names (Producer: Bedroom, Home Studio, Session, Studio A, Main Room, Headliner, Icon; Chef: Kitchen Porter up to Executive Chef; Athlete: Recruit up to Colossus; and so on). A year rank resets on 1 January; a career rank uses the same names, never resets and climbs 4x slower, shown with stars. Some ranks are gated by a real event, not XP alone: Sous Chef (20 cooks), Head Chef (50 cooks, 10 recipes, 3 cuisines - recipes carry a cuisine tag Oracle sets and Alex can change on the recipe card), Closer (first sale), Tycoon (yearly revenue target Alex sets), Gladiator (3 gym sessions a week for 4 weeks), Polymath (books in 8 phyla), Pathfinder (every planned routine kept 6 weeks), Lake (sleep routine 21 of 28 days - cannot be earned until the Mind area exists), Safe (claimed savings goal), Globetrotter (5 countries), Heart (nobody overdue for 3 months). Titles: Released Artist, Catalogue Builder, Consistent Creator. Badges are automatic (first beat released, first video, first sale, first 100 pound month, first cook, first PB, 5-gym week, first book, 100 jargon terms, each new country) or claimed with a link or note (Hit, Placement, 10k views, Cooked for others, First solo trip); badges and titles pay no XP. A gym personal best (heavier than any earlier session on that exercise) pays 30 Athlete XP. The database decides all of this (xp_check_unlocks runs after every award) and dates each unlock; every unlock is also a Chronicles item (Life section). The Trophy cabinet (button on the Year page) lists earned and locked items with progress, claims, the revenue target and past years. WAS-IT-DONE AND REPORTS (XP-4, Oct 13 2026, owned by the xpSeason module; xp_reports table, private; a pg_cron job runs xp_close_periods nightly): a row deleted in the same week its XP was earned shows on the Year page and the profile card as "was it actually done?" - Yes keeps the XP, No removes it, and an unanswered one is kept when the week ends. Each finished week also pays a balance bonus (5+ realms 50 XP, 8+ realms 150, Life realm). Frozen reports are saved per week, month, UK season and year (XP, realms, best day, top actions, unlocks, year-to-date level); later deletes never change a saved report. The Year page lists them; each season and year report is also a Chronicles item. CHALLENGES, RESOLUTIONS, REALM QUESTS (XP-5, Oct 13 2026, owned by the xpSeason module; xp_challenges and xp_quest_steps tables, private): each week Alex picks up to 3 challenges on the Year page (rule-based suggestions for his slowest realms plus 2 from one Oracle call that sees only realm XP totals), each worth 75 XP and counted automatically from the XP log (e.g. gym 3 times, finish 2 cooks); his own free-text ones are ticked by hand. Unfinished ones are just missed at week end, no penalty; the dashboard Due list nudges him to pick, nothing is auto-picked. Season resolutions: 1 to 5 per UK season, set any time in the season, small/medium/big = 500/1,000/1,500 XP, counted automatically or ticked; missed when the season ends. Realm quests: 3 steps of 50 XP towards each rank gate (e.g. Sous Chef: 5, 10, 20 cooks). Completions are Chronicles items and appear in the saved reports. TREATS, THEMES, FLAIR (XP-6, Oct 14 2026, owned by the xpSeason module; xp_treats table, private): on the Year page Alex pins a treat (a Wishlist item or his own words) to a year level, a realm rank, a kept season resolution, or a week with all 3 challenges done; the database marks it earned (a gift icon, a Chronicles item, and an earned tag on the Wishlist item) - nothing is bought, the Wishlist wait still applies. Level-ups are now dated records (xp_unlocks kind level) shown in Chronicles. Themes change only the profile card accent colour and frame (Classic gold, then Ember at level 10, Tide 25, Aurora 50, Crown 75), saved in xp_settings.theme. Flair is quiet: his title and level at the top of the Oracle chat greeting, one toast per batch of level/rank-ups, and one Morning Brief line for level/rank-ups since yesterday. MIND, OUTREACH, BUDGET (XP-7, Oct 14 2026): My Day (myDay module, routines table) has a Mind area; Mind routine ticks pay Mind XP, and one Mind routine can be marked as the sleep routine (routines.is_sleep) - keeping it 21 of the last 28 days unlocks the Lake rank gate. The Business tab of Platform Oracle (producerTools module, outreach_log table, private) logs outreach sent (+10 Hustler XP, capped per day) and collabs done (+150); picking someone from People also counts as catching up with them; Oracle can offer the log_outreach action, which only opens the form filled in. The Year page (xpSeason module) has a weekly spending limit (xp_settings.weekly_spend_limit): a week whose expenses logged in Chronicles stay at or under it, with at least one expense logged, pays +50 Steward XP when the week closes. A Wishlist item (shoppingWishlist module) bought after its 24-hour wait pays +30 Steward XP. YEAR WRAPPED (XP-8, Oct 14 2026, xpSeason module; xp_reports table): when a year closes (Year 0: Construction ends 31 Dec 2026), its saved year report becomes swipe cards - total XP, level, sky rank, top realms, best day and week, most-done actions, titles/badges/ranks unlocked, resolutions kept, treats earned, outreach - ending with one short paragraph Oracle writes once from the year\'s numbers only (saved in xp_reports.wrapped_text, never paid for twice). It pops up once the first time the app opens after the year closes (xp_reports.wrapped_seen_at), and the Due list says it\'s ready. A Year-so-far version (numbers only, no paragraph) opens any time from the Year page. The Trophy cabinet\'s Hall of Seasons lists each year (this year so far first) with XP, level, sky rank, top realm, titles and highest ranks; each opens its Wrapped. In the first two weeks of January the Due list nudges setting the new season\'s resolutions, and warns if last year\'s report didn\'t save. The XP Season Pass plan (XP-1 to XP-8) is fully built. Not yet hand-tested by Alex. PLANS (new Oct 12 2026, owned by the tripPlans module; travel_profile, people, plans, plan_tasks tables, all private - read only after login through /api/data-write): the Plans card (Schedule & Journal menu) has Plans, Ideas, People and Profile tabs. Profile holds Alex\'s home (Derby), nationalities (French and Russian), EU Settled Status in the UK, usual passport, interests, travel limits and insurance. People holds who he wants to keep in touch with (birthday, last spoke, remind every N days); the dashboard Due list shows reach-outs and birthdays in the next 7 days; RPGACE does not draft or send messages. Plan something (or typing plan a trip to ... in Oracle chat) runs up to 3 web searches through /api/search type web (Gemini with Google Search, Tavily built as a backup but switched off for now; only the search question is sent; it needs GEMINI_API_KEY in Vercel and says so when it is missing), then one Oracle call drafts the plan: itinerary, travel legs, tickets and stays with book-by dates and links, documents for the passport he travels on plus UK re-entry with settled status, worst-case packing, an emergency card, a producer angle (record shops, studios, gigs, B-roll spots), food, backup plans and a daily money limit; official links (UK FCDO, France Diplomatie for the French passport, passportindex.org, gov.uk view-and-prove status) are always added. Alex reviews it, can ask Oracle to change it, then saves; saved plans have tickable tasks, a status (idea, planning, booked, done, dropped) and Add to calendar (a trip block plus timed items on the Daily Schedule). RPGACE never books or pays for anything. PLAN MONEY, DATES + PEOPLE (TP-6/TP-7, Oct 14 2026, same tripPlans module): a task\'s book-by date shows on the dashboard Due list from 7 days before, highlighted on the day and when overdue; tapping it opens that plan. Ticking a ticket/stay/travel/food/other task asks what was paid: the amount is saved on the task (plan_tasks.cost_paid) and logged once as a Travel expense in Chronicles Finance (chronicles_finance); packing/document tasks tick straight away. A saved plan shows paid so far against its budget. After a trip ends (up to 30 days) the Due list asks How was it?: the after-trip log writes a journal entry (source trip_log, +15 journal XP) with best bits, next time, real cost vs budget and a recipe to bring home, can mark the plan done, and offers a Cook it at home button that opens Cooking\'s generate form prefilled. Who\'s coming can be changed on a saved plan (plans.people); in the 2 weeks before a trip the Due list names anyone on it Alex hasn\'t spoken to this week, and the People tab shows each person\'s upcoming plans. Still no drafted messages. IDEAS BOARD (TP-5, Oct 13 2026, same tripPlans module): the Ideas tab (or typing what could I do 1-8 Nov? / weekend ideas in Oracle chat, which opens it with the dates filled in) takes dates, an optional budget, a mood/theme, how far (abroad fine / UK only / stay home) and which of 4 kinds to include (UK day trip, abroad, event, at-home project); it runs up to 3 web searches using only his home city, interests and limits (never anyone from People), then one Oracle call returns 5-8 mixed ideas with cost ranges, travel time, why it suits him and links only from the search results. Save (star) stores an idea as a plans row with status idea; Make it a plan opens the plan builder pre-filled. If the search fails the ideas are marked as Oracle\'s own knowledge. Not yet hand-tested by Alex. Ticks write quest_log rows (quest_kind routine); the database turns each completed tick into an xp_events row (5-25 XP, realm from the routine\'s area - see XP SEASON PASS). Accepted Oracle task suggestions become one-off routines due today. The questEngine module\'s Generated-from-your-real-data quests still exist below it. SHIFTS (fixed Oct 12 2026, owned by the shiftSync module, rpgace_shifts table): a rota screenshot sent to Oracle or the Schedule page\'s paste box now saves the shifts to Supabase so every device sees them (before this, imports only lived in one browser and were wiped on the next load); the old hardcoded June-July rota is gone. A weekly GitHub job also logs into Fourth and imports the rota automatically; its last result is in the sync_status table and a failed or stale run shows on the dashboard Due list. Never repeat the old ("zero persistence") claim - false since Aug 24 2026. SECURITY/DATA: the app password and every /api/*.js endpoint are checked server-side (fixed July 24, independently verified live). Since Oct 10 2026 (authGate) a device that logs in with the password stays signed in: it keeps the server-issued secret in local storage, re-checks it with /api/auth on each launch (a rotated secret sends it back to the password screen), and the left-nav drawer has a Sign out on this device button. renderMarkdown() escapes HTML before rendering (XSS fixed July 28). RLS is enabled on every real Supabase table - most are anon-read-only/authenticated-all; a small, deliberate, named set (oracle_fallback_queue, openmontage_jobs, error_log, smoke_test_items, ceo_plan_items) stays anon-writable because a real external writer (a Routine, the browser app itself, or a separate Claude Code session) genuinely needs that access - never suggest restricting those without checking first. There is NO Supabase backup or point-in-time recovery at all - Alex explicitly chose to stay on the Free plan and accept that risk (confirmed Sep 15 2026); do not re-raise this as an open question. ORACLE MECHANISMS: Oracle Control (a curated oracle_actions Supabase table) drives a real confirm-before-execute mechanism - 5 real wired dispatch branches exist now (log_beat, new_quests, draft_email, yt_stats, log_notion), reached both from the floating overlay button on any page and from the dashboard quick-action/Agents-page buttons (both rewired in Sep 2026 to go through this one shared mechanism instead of their own bespoke per-button calls - a real rule-8 dedup). Oracle can also DRAFT a suggested brand-new action from its own self-awareness, but a suggestion only grows the real vocabulary once Alex approves it, and it still then needs a human-coded execution branch before it can do anything - never claim Oracle can execute an arbitrary task on its own. Fish Audio (real voice input/output) is a dormant, gated scaffold - no real API key exists, Oracle cannot actually speak or listen by voice yet. The browser-mic voiceInput module was retired outright Aug 30 2026 (Alex\'s own direct ask, ahead of Fish Audio) - there is currently NO voice-input path in RPGACE at all. Real Anthropic prompt caching is live on every Oracle call (a pure cost optimization, never changes what Oracle can say). A Kimi/Luna free-tier routing option exists in api/oracle.js but is dormant, no real key configured - never claim RPGACE runs on multiple AI models. errorLog automatically resolves a real thrown error back to the one module that caused it, attaches that module\'s real /perspective baseline, and - if that module has a smoke_test_items row - flips it to broken (cascading a linked plan item to purple only if it was genuinely green before) - this only ever catches errors that actually throw or show an error-colored toast, never a silent wrong-output bug with no visible symptom, and Oracle never proactively monitors the app - it only reacts when a real message is sent to it. OVERSIGHT / GALAXY MAP: 13 real oversight docs exist now (Tier a/b explaining+truth docs, this Oracle self-awareness string, smoke_test.html/error_log.html, future_integrations.html/achiever.html, and perspective_map.html - new Sep 2026, a live-query page cross-referencing every real perspective_reports row - plus graphify/Obsidian/the Galaxy Map). The Galaxy Map (reachable from the in-app Oversight popup) is a real 4-stop CONTAINMENT hierarchy - L0 (9 real units: RPGACE Architecture/Orchestrator CC/OpenMontage CC/Graphify CC/External AI/Skills/Alex/Supabase/Oversight Docs) contains L1 (12 live app-code rivers, plus 5 retired Total-systems categories kept as per-actor Infra/Inter breakdowns, not deleted) contains L2 (modules) contains Current/L3 (functions). Older Level-2.5/4/5/6 "rail stops" from earlier in the build are all retired or folded into Current/the Decision Matrix - never describe the map as having numbered levels past L3; cross-cutting facts (Externals/Decisions/Skills/Load/etc) are Dimension pages layered over the hierarchy, not additional rungs. 23 real Galaxy Map pages exist on disk as of late Sep 2026 - re-verify this count too before quoting it, it changes whenever a new page ships (most recently G117, a Generator Toolchain catalog page, Sep 22 2026). Every one of the 58 real registered modules plus all 12 live rivers has a real, evidence-grounded /perspective self-report as of mid-Sep 2026 (the Perspective Full Coverage plan is complete). A standing project-wide PAUSE on new Galaxy Map/Dimension work has been in effect since Sep 15 2026 (real evidence: product debt was sitting untouched under a wave of Galaxy-Map/meta work) - only explicit, narrowly-scoped, Alex-approved exceptions have shipped since - never assume a new Galaxy Map feature is fair game without checking whether Alex explicitly overrode the pause for it that specific time. KNOWN, STILL-OPEN GAPS: the swipe-gesture freeze bug has recurred for real (69 real occurrences logged Aug 27-Sep 20 2026) but still has no root cause found and no stack trace available (the browser\'s own Long Task API exposes no call stack) - never claim it\'s fixed, and don\'t attempt another blind code-only fix pass. reference_tracks.scale/genre are still 0 of 32 populated - "beat matches are always the same" traces directly to this; a backfill popup exists and has not been run. smoke_test.html\'s real hand-confirmed tally sits well under half of its rows - a large amount of shipped work is real and code-verified but genuinely unconfirmed by Alex\'s own hand; only his own hand-tick counts as "confirmed working," never a code-level test pass alone. HABITS/COOKING (cookingOracle + shoppingWishlist, RPGACE\'s newest domain, built Sep 10-22 2026): reached from Cooking in the left menu (Habits group). Generate a recipe via Oracle chat (a real RECIPE_JSON: trailer); a real "Narrow it down" step runs first for a short/ambiguous description. Ingredients render with a live 7-color status system wherever shown - green=plenty, yellow=short (worded as "need N more, have M, T total needed"), red=none, blue=a same-aisle alternative in stock, purple=will run low/restock after this cook, orange=a real curated-or-heuristic substitute exists in stock, brown=a separable/optional component that can be omitted in No-Shop mode. Orange substitutes can be permanently confirmed (a tick, colour never changes) or declared-the-same-item as an existing stock row (a real, standing alias merge reassigning every FK reference) - curated potency ratios exist for a few specific real pairs Alex stated (e.g. tamarind concentrate is about 1/3 the amount of tamarind paste) and a real garlic clove/bulb count-equivalent bridge (8 cloves per bulb, bidirectional) - none of these numbers are invented, only ones Alex explicitly gave. A recipe card supports pantry-aware Oracle-suggested ingredient additions and a real diff-only critique-and-update flow via the floating overlay (Accept/Deny, never the whole recipe re-shown). New Sep 22: clicking Start on a scheduled planned cook opens a real, persistent Live Cook Mode panel inside the Oracle page itself (step timeline, elapsed-time ticker, per-step and recurring reminder timers) - not just a silent flag flip. New Oct 1 2026 (cookingOracle): a scheduled planned cook can also be started (Start cooking now, or Cook now straight from the schedule preview), finished (Cook finished in the Cooking hub or a Finished button in Live Cook Mode - marks planned_cooks cooked, completes its agenda entry and marks the recipes cooked in the journal) and given another recipe (reopens it as a draft) from inside Cooking itself, not only from the Daily Schedule. Planned-cook sessions persist as a real draft from the moment the first recipe joins (never silently lost on close/navigate-away); since Oct 5 2026 (cookingOracle), emptying a session only marks a still-draft planned_cooks row discarded (never a hard delete, never touching a scheduled or cooked cook), and pressing Done on a planned-cook entry in the Daily Schedule now marks that planned_cooks row cooked - before this, two real scheduled cooks were lost with no trace, support a real per-recipe delete, and use a true cross-recipe interleaved scheduler that front-loads prep across every recipe in the session rather than finishing one recipe\'s steps before starting the next. COOKING JOURNEY (new Oct 14 2026, cookingOracle): the Cooking home is laid out as five steps - Recipes, Plan a cook, Shop, Cook, Stock - with a line on top saying what is next (the next scheduled cook, how many things it still needs buying, and the top-up list count), plus New recipe, What can I cook?, Top-up list and Settings. My Recipes lists every saved recipe (recipes table) with search, cuisine, whether everything is in stock, when it was last cooked (journal), and Open / Cook now / + Planned cook / Missing to top-up list. Every Cooking screen has a Back button to the Cooking screen it came from, plus a Cooking home button. Stock now moves by itself, always after Alex confirms: ticking a grocery item bought asks pantry, fridge or freezer and adds the pack to pantry_stock there (it did not work before Oct 14 - the old write always failed); finishing a cook (any finish path) shows what it will take out of pantry_stock, converting ml/cups and g/kg and using a recipe\'s gram estimate, never guessing units it cannot convert; what was taken out is saved on planned_cooks.stock_deducted with a Put it all back undo, and a cook is only ever deducted once; anything that runs out can go onto the standing top-up grocery list (shopping_lists kind topup). Not yet hand-tested by Alex. COOK MODE (new Oct 11 2026, cookingOracle): a recipe card shows a spec line (steps, minutes hands-on, servings) and a Start Cooking button that opens a full-screen, one-step-per-screen view - Step X of Y, the equipment, that step ingredients at the scaled amounts, the instruction, a Done-when cue and the step timer, with Back/Next/Done, phone Back stepping back, and resume where Alex stopped; timers keep running across steps. Live Cook Mode has a Cook Mode button that walks a whole planned cook the same way. New recipes are asked for one action per step with a done cue and equipment, and every ingredient placed in a step; the card warns when an ingredient is in no step. The 8 recipes saved before this have one-action splits written by a Claude Code session (not by Oracle) waiting as proposals (recipes.steps_proposed) - nothing changes until Alex presses Use these steps on a recipe card (old steps are kept in recipes.steps_previous). Not yet hand-tested by Alex. A real Current Stock view (Pantry/Fridge/Freezer/Equipment) and a real have/not-have shopping list (with a real "in basket" state between "need to find" and "bought") both exist, aisle-sorted. shoppingWishlist is a genuinely separate module (general future purchases like batteries/a wok/games, not ingredients) with its own priority-plus-budget-target fit calculator, writing a real Chronicles Finance expense on purchase. Every HABITS feature above is real, shipped, code-verified - but per the standing flag across this whole domain, effectively none of it has been hand-tested by Alex yet. TAXONOMY: real architecture change Sep 25 2026, now in a genuinely empty pre-rebuild state. jargon_encyclopedia is no longer a view over taxonomy_tree - it is a real standalone anchor table (term/phylum_number/explainer/status/taxonomy_node_id), now holding 545 real curated terms across phyla 1-20 (Phylum 1 got a real same-day top-up to 51 terms per Alex\'s own live-review feedback while browsing it; the other 19 phyla still sit at 26 each; none for phylum 21), most status=\'pending\' (a real, growing number are status=\'accepted\' as Alex works through his own review queue) - directly authored by a Claude Code session (source-tagged claude_code_prebuild), never yet generated by the live AI generator that also exists in code but has never actually been run. Jargon Encyclopedia is now a real standalone page (owned by the jargonEncyclopedia module, Sep 26 2026 UI rework) - reached via leftNav\'s Phylum Path subItem or the Taxonomy dashboard card\'s picker popup (dashDeck._openTaxonomy), never a button crammed onto Phylum Path\'s own title anymore. It shows EVERY term regardless of status (pending/accepted/rejected, each with a real status badge and filter chip), with real inline Accept/Edit/Reject actions per pending term (reusing phylumPath._resolvePendingTerm, the one real write path - never a second one). taxonomy_tree itself was first archived in full (671 old branch/leaf rows, a reversible flag) then, same day, actually DELETED to 0 rows at Alex\'s own direct follow-up ask (he judged even the archived structure not worth keeping while jargon gets built out first) - every phylum (1-21) is now a genuinely empty canvas below the phylum level, zero branches, zero leaves, zero fusion links (taxonomy_links is also 0 rows). A full pre-delete snapshot was committed first as the real restore path, since Supabase has no backup/PITR. The old \'Review Archived Terms\'/\'Review Pending Terms\' buttons on the Phylum Path page are gone - the former is genuinely dead (nothing archived left to review) and the latter is superseded by the new Jargon Encyclopedia page above. Never claim any specific phylum currently has real depth, real Orders/Classes, or any structure at all - every earlier claim of that shape (phyla 1-10 depth, Phylum 12\'s real Orders, a structurally-clean tree) describes a state from before this restructure and is not true again until Alex reviews the jargon terms and a real new phylum structure gets built around them. GYM (new Oct 10 2026, owned by the gymTracker module, HABITS module 2 after Cooking - both in the Habits group of the left menu): Gym logs sessions (exercise, sets, reps, kg; gym_sessions + gym_sets tables), shows this week against a 5-session target, personal bests per exercise (heaviest set plus an estimated 1-rep max) and recent sessions with a two-tap delete; Repeat last prefills the previous session, and beating a previous heaviest weight shows a New best toast. Gym sessions appear in Chronicles and the Morning Brief own-words section, and Ask My Data can read gym sets. No sessions exist until Alex logs one. Not yet hand-tested by Alex. FREEZES AND SPEED (Oct 14 2026, perfWatch module, perf_freezes table): any freeze over half a second is saved with what was running (script functions and what triggered them, the last pages and taps, slow network replies, whether the app was still starting); the old repeated App froze alert of about 670ms was the app script loading behind the loading screen (about 690ms at phone speed), so blocks during startup are recorded but no longer alert. Cooking buttons (cookingOracle) share one size scale: 44px main, 36px small, 52px Cook Mode Back/Next and Start Cooking. HEALTH AND BODY (Oct 14 2026, owned by the healthBody module; food_log, body_log and health_settings tables, private - read only after login through /api/data-write): the Health & body card (Habits menu) has Today, Gym plan, Trends and Targets tabs. Food: a meal photo, a nutrition-label photo or typed words go to Oracle, which lists each food with grams; each item is re-checked against the UK food tables (cofid_foods, the same lookup Cooking uses) and those numbers win when they match, otherwise Oracle\'s estimate is kept and labelled; Alex edits and saves to food_log. From your cooks adds one serving of a recipe from a cook finished in the last 3 days (planned_cooks status cooked), per serving from the recipe\'s ingredient grams; it is one tap, not automatic. Only calories and protein are counted, against targets Alex sets. Body: water in glasses, weight with a 7-day average, sleep hours, a 14-day trends table and weight chart (body_log). Gym plan: a Push/Pull/Legs, Upper/Lower or Full body programme rotated over the days Alex picks (health_settings.programme, exercise lists editable); today\'s workout shows last time\'s sets from gym_sets and a nudge (all sets at the top of the rep range = add 2.5kg and drop to the bottom, otherwise same weight, one more rep); Start this workout opens the gymTracker log prefilled. My Day shows a Health today card (calories, protein, water, sleep, today\'s workout). Steps are NOT connected yet: Samsung Health only shares with signed partners and Google Fit\'s API is closing; a Google Health API sync is planned once Alex checks his account has step data there. DAILY LIFE (new Oct 10 2026, owned by the dailyLife module): every Current Stock tab (Pantry/Fridge/Freezer) has an Add-from-a-photo button - Oracle lists the food it sees in the photo, Alex reviews and edits the list, and each ticked row sets that item\'s amount through cookingOracle\'s own stock write (the same one the manual form uses); Oracle never adds stock without that review. Morning Brief has a New-from-your-watchlist button that checks the YouTube creators in intel_watchlist for uploads from the last 7 days (YouTube only - Instagram/TikTok creators cannot be checked) with an Analyse button that queues a video for Content Intelligence, and the brief prompt now includes Alex\'s own open quests, decisions due for a look-back and latest journal note so it can quote them back. Chronicles also shows completed quests and finished planned cooks. Not yet hand-tested by Alex. RECALL (new Oct 10 2026, owned by the recall module): saving an Encyclopedia idea card puts it on a forgetting-curve schedule (encyclopedia_insights.recall_step/recall_due: back after 1, 3, 7, 16 and 35 days); due ideas appear at the top of Morning Brief with Again (back tomorrow) or Got it (next interval; after the last one it counts as learned). A Bookworm chapter with insights has a Cards button that opens its insights as the same Deepstash-style idea cards; saving one writes it to encyclopedia_insights (source_entry_id book:<chapter id>) so book and video ideas share one Saved list and one recall queue. Not yet hand-tested by Alex. MONEY GUARDRAILS (new Oct 10 2026): the shoppingWishlist module asks an optional why-do-you-want-it reason when an item is added (wishlist_items.want_reason) and, for an item added under 24 hours ago, shows a cool-off step (time left plus that reason, Wait or Buy anyway) before the normal what-did-you-pay confirm - it never blocks a purchase. The decisionJournal module adds a Decisions strip on the Journal page: log a decision with the reason at the time and a look-back in 2, 4 or 8 weeks (journal rows, entry_type=decision, review_on); when the date arrives it asks how it turned out and saves the answer (journal.outcome). Not yet hand-tested by Alex. SHARE TO RPGACE (new Oct 10 2026, owned by the shareInbox module): the installed app appears in the Android share sheet (manifest share_target); sharing an Instagram reel, YouTube Short, TikTok or any link queues it into intel_jobs for Content Intelligence analysis, which needs Alex\'s PC analysis server running; after queuing it shows Sent to RPGACE and closes itself so Alex lands back in the app he shared from (if Android refuses the close, it says press Back). iPhone has no share-target support - an iOS Shortcut that opens the app with ?share_url= does the same. Not yet hand-tested by Alex. PATHWAYS (new Oct 10 2026, owned by the pathways module): an Encyclopedia post that came from an analysed video has buttons to turn that video\'s suggested quests into real Quest Board quests (questEngine, duplicates skipped), add its creator to the watchlist (intel_watchlist), and list Jargon Encyclopedia terms that appear in the article; Platform Oracle has an optional About-a-beat picker (beat_audio_jobs / content_productions) that prefixes every command with that beat; the Cooking shopping list has an Add-a-non-food-item-to-your-Wishlist form (shoppingWishlist). Not yet hand-tested by Alex. COOKING LAYOUT (Oct 10 2026, N2 slice 4): every Cooking button comes from one shared token set (cookingOracle BTN_VARIANTS) and now has a 36-44px tap target with 13px+ text; ingredient rows, step headers and hub descriptions are 12-13px; the Current Stock unit box no longer runs off the screen; and liquid amounts read in quarter cups with the original ml kept, e.g. 200 ml = 3/4 cup + 1 tbsp + 1 tsp (200 ml) instead of 13 tbsp 1 tsp. Not yet hand-tested by Alex. KNOWLEDGE LAYOUT (Oct 10 2026, N2 slice 3): the Encyclopedia page starts with the articles - category/sort chips sit in a folded Filter & sort section and Sync/Clear All in a folded Maintenance tools section, with search and a count line (naming the active category and sort) always visible; article titles wrap in full; an article made from an analysed video previews its first idea cards instead of making an Oracle call. Jargon Encyclopedia no longer repeats a not-placed line under every term. Encyclopedia, Jargon Encyclopedia and Phylum Path use 40px buttons and 13px+ text. Not yet hand-tested by Alex. CONTENT & VIDEO LAYOUT (Oct 10 2026, N2 slice 2): the ConID list, Idea Bank, Beat Log and Upload Workshop pages now use 40px buttons and 13px+ text, drop their doubled titles (the ConID list header reads Your productions), let ConID titles wrap instead of truncating, and show the stage badge as e.g. Visual Treatment ✓ - before this fix the badge text was the same colour as its background and could not be read. Beat Log extra fields reflow to two columns on a phone. Not yet hand-tested by Alex. ORACLE PAGE LAYOUT (Oct 10 2026, N2 slice 1): the chat input sits directly under the messages with one Tools row below it (New quests, Draft email, Log to Notion, YT stats, Prod. Oracle, Platform Oracle, Visual Oracle, Repurpose, Schedule Oracle, Phylum Path); the old Insta-Oracle button and a duplicate Quick Actions bar are gone; the former Agents page content (connected apps, one-click agent cards, activity log) is in a collapsed Agent actions & connected apps section at the bottom (agentsIntoOracle); long app-generated prompts in the chat show a 4-line preview with Show all. Not yet hand-tested by Alex. PLATFORM ORACLE (new Oct 10 2026, owned by the captionsPanel module): the Instagram, YouTube and TikTok command panels are now ONE panel - a single Platform Oracle button on the Oracle page opens it, with an Instagram / YouTube / TikTok / Business switch (13 / 8 / 8 / 5 pre-filled commands, stored in instaOraclePanel/youtubeOracle/tiktokOracle/producerTools). The Business tab (producerTools, Oct 10 2026) holds producer tools: A&R Critic, Artist Outreach, Contract Red Flags (plain-English explainer, not legal advice), Negotiation Rehearsal (role-play, then a debrief) and Playlist Psychologist (listening to beat ideas) - prompts only, nothing is sent to anyone automatically; a beat-pricing calculator does not exist because no finance data is logged yet. Tapping a command sends it to Oracle chat; the old Insta-Oracle button opens the same panel. Not yet hand-tested by Alex. ASK MY DATA (new Oct 10 2026, owned by the askMyData module): when Alex asks about his own saved data (pantry/stock, shopping list, recipes, planned cooks, wishlist, journal, quests, agenda, creator watchlist, analysed videos, encyclopedia, idea cards, jargon, reference tracks, finance log, books, content productions, RPGACE changelog), Oracle can request ONE read-only lookup with a DATA_QUERY trailer; the app fetches up to 30 rows, shows Alex which rows were used, and Oracle answers from those rows only. It cannot write or change data, and it only knows what those rows contain. Not yet hand-tested by Alex. DASHBOARD + MENU (Oct 10 2026, N2 slice 5, owned by dashDeck + leftNav): the left menu is the ONE place to reach everything, grouped Oracle / Content & Video / Knowledge / Habits (Cooking, Gym, Shopping Wishlist) / Schedule & Journal / Chronicles / Oversight - popup modules like Cooking, Gym, Morning Brief and Oversight open from it too. The dashboard no longer has a card grid; it is a landing page with four sections: Today (shifts and scheduled tasks for today, a planned cook today, My Day routines left today, gym sessions this week against 5), Due - waiting on you (pending taxonomy reviews, jargon terms to review, saved ideas due for recall, decisions due for a look-back, wishlist items whose 24h cool-off is over, shared links queued for the PC analysis server - a row only appears when there is something in it), Continue where you left off (the last pages/modules Alex opened, kept in this browser only, plus the book in progress, latest recipe and latest production) and Morning Brief + an Ask Oracle box that sends the question through the normal Oracle chat. It makes no Oracle call itself. Not yet hand-tested by Alex. NAVIGATION (new Oct 10 2026, owned by dashDeck + pathRouter): every popup has a sticky header with a Back button, a Domain > Card label and buttons for the other modules in the same domain; phone/browser Back closes the open popup first instead of leaving the page, and Back from a page that was opened from inside a popup returns to that page and reopens the card it came from. The sub-pages of Content Pipeline (ConID list, Idea Bank, Beat Log, Upload Workshop) and Bookworm (Bookworm, Videoworm, MusicWorm, Bibliography) have their own Back button (\u2190 Content Pipeline / \u2190 Bookworm, dashDeck._pageBack, Oct 10 2026) that does the same as phone Back; opened directly by link it shows the dashboard with that menu open. Not yet hand-tested by Alex. ENCYCLOPEDIA (new Oct 10 2026, owned by the encyclopediaPosts module): every Content Intelligence report (intel_reports) is automatically turned into a real encyclopedia article (source=intel, source_url = the video) plus one encyclopedia_insights row per idea card (idea_section/idea_order; saved_at when Alex saves an idea). Articles read Deepstash-style as a post of idea cards (Back/Next, card count, read time, Save idea, Full article); the Encyclopedia page shows a Posts strip with Series (posts sharing a tag) and Saved ideas. This replaced an old auto-save that only looked at the newest 5 reports and had stopped saving after the encyclopedia was cleared - so before Oct 10 none of the 37 analysed videos had an article. Not yet hand-tested by Alex; Knowledge Tree links to articles do not exist yet (the tree is empty). SCREENSHOT INBOX (new Oct 11 2026, owned by the screenshotInbox module, Knowledge menu): Alex adds screenshots in the app or shares an image to RPGACE from the Android share sheet; each is stored privately (screenshots table + private bucket, readable only after login through /api/data-write) and Oracle reads it once, saving the visible text, a one-sentence description, tags and a kind, and suggesting up to two homes. Nothing moves automatically: per screenshot Alex can Add to Wishlist (shoppingWishlist), Save as idea card (encyclopedia_insights, joins the recall schedule), Start a recipe (opens Cooking\'s Generate form filled in), Journal it, Keep it in the inbox, or delete it. Screenshots are searchable in the inbox and through Ask My Data (screenshots source, text only), and the dashboard Due section shows how many are waiting to be sorted. Each read is one Oracle vision call. Not yet hand-tested by Alex. CONTENT PIPELINE: Research Lab is fully retired as a user-facing destination - its former panels live inside Content Pipeline/Bookworm cards now. RPGACE does not generate video itself - OpenMontage (a separate Claude Code session in its own repo) is briefed and handed off via openmontage_jobs, never live infrastructure; RPGACE has ruled out paid video providers on principle (zero spend). Real beat-grid audio sync does not exist - "in sync with the beat" currently means mood/palette-matched only. Features F0 through F18 have shipped except F12 (deliberately deferred); F16/F17/F18 remain real execution debt - shipped code, genuinely never hand-tested through their full flow yet.',
 
   init: function() {
     var self = this;
@@ -42292,6 +42293,7 @@ RPGACE.register('cookingOracle', {
   ],
 
   init: function() {
+    RPGACE.modules.cookingOracle.ui._wrapScreens(); // CR-3: ← back to the previous Cooking screen
     // No boot-time DOM injection needed - ui.openMain() is reached only
     // via the dashboard card's own click (dashDeck.MODULES 'cooking'
     // entry), same lazy-build-on-demand pattern as fillGaps/oracleControl's
@@ -42571,95 +42573,117 @@ RPGACE.register('cookingOracle', {
       });
     },
 
+    // CR-5 (Oct 14 2026, Cooking Reorganisation) — the journey hub. Alex's
+    // pick: "Recipes → Plan a cook → Shop → Cook → Stock", each step a card,
+    // with a live "what's next" line on top. Every card opens the same
+    // existing screen it always did (rule 8); the old 5 cards are all still
+    // reachable, just in journey order, plus My Recipes and Settings.
     _renderModuleHub: function() {
       var self = RPGACE.modules.cookingOracle;
       var pop = RPGACE.modules.dashDeck._popup({
-        width: '380px', eyebrow: '🍳 COOKING', title: 'What do you want to do?',
+        width: '420px', eyebrow: '🍳 COOKING', title: 'Your cooking, step by step',
         borderColor: 'rgba(76,175,130,0.3)',
       });
       var box = pop.box;
+      box.classList.add('co-hub');
 
-      var mkBtn = function(label, sub, onClick) {
+      var next = document.createElement('div');
+      next.className = 'co-next';
+      next.style.cssText = 'font-size:14px;color:var(--text);background:rgba(76,175,130,0.08);border:1px solid rgba(76,175,130,0.25);border-radius:8px;padding:10px 12px;margin-bottom:12px;line-height:1.45;';
+      next.textContent = 'Checking what\'s next...';
+      box.appendChild(next);
+
+      var mkBtn = function(label, sub, onClick, step) {
         var btn = self.ui._mkBtn('', 'hubCard');
+        if (step) btn.dataset.step = step;
         var top = document.createElement('div');
         top.textContent = label;
         btn.appendChild(top);
-        if (sub) {
-          var subEl = document.createElement('div');
-          subEl.style.cssText = 'font-size:13px;color:var(--muted);font-weight:400;margin-top:2px;';
-          subEl.textContent = sub;
-          btn.appendChild(subEl);
-        }
+        var subEl = document.createElement('div');
+        subEl.style.cssText = 'font-size:13px;color:var(--muted);font-weight:400;margin-top:2px;';
+        subEl.textContent = sub || '';
+        btn.appendChild(subEl);
         btn.onclick = function() { pop.close(); onClick(); };
         box.appendChild(btn);
-        return btn;
+        return subEl;
       };
 
       var sessCount = (self._session && self._session.recipeIds && self._session.recipeIds.length) || 0;
-      // H20 (Sep 17 2026, real Alex bug report: "no way to revert planned
-      // cook back from scheduled to planned cook in cooking module") — a
-      // real scheduled session (self._scheduledSession, loaded by
-      // _showModuleHub above whenever there's no active draft) now gets
-      // its own real sub-label + entry point instead of silently
-      // vanishing into "no cook session in progress."
+      // H20 (Sep 17 2026): a scheduled session keeps its own entry point.
       var scheduled = !sessCount ? self._scheduledSession : null;
+
+      var recipesSub = mkBtn('📖 Recipes', 'Your saved recipes — search, cook, plan', function() { self.ui._showMyRecipes(); }, 'recipes');
+
       var plannedSub = sessCount ? (sessCount + ' recipe' + (sessCount === 1 ? '' : 's') + ' in progress — resume')
-        : (scheduled ? 'Scheduled for ' + (scheduled.scheduledAt || '?') + ' — view / revert' : 'No cook session in progress yet');
-      mkBtn('🍳 Planned Cook', plannedSub, function() {
+        : (scheduled ? 'Scheduled for ' + (scheduled.scheduledAt || '?') + ' — view / revert' : 'Pick recipes to cook together');
+      mkBtn('🍳 Plan a cook', plannedSub, function() {
         if (sessCount) { self.ui._showSessionBuilder(); return; }
         if (scheduled) { self.ui._showScheduledCookInfo(scheduled); return; }
-        // Real, honest empty state - a session only exists once a real
-        // recipe joins it (logic._addRecipeToSession), so an empty
-        // "Planned Cook" click routes into the generator instead of
-        // showing a builder with nothing in it, matching the module's own
-        // real generate -> save -> session data flow.
-        RPGACE.utils.toast('No planned cook yet — generate or save a recipe first', '#E2A83D', 3000);
-        self.logic._loadConfig(function(cfg) { self.ui._showGenerateForm(cfg || {}); });
-      });
+        // A session only exists once a recipe joins it, so an empty plan
+        // starts from the recipes (+ Planned cook on any of them).
+        RPGACE.utils.toast('Tap "+ Planned cook" on the recipes you want to cook together', '#E2A83D', 3200);
+        self.ui._showMyRecipes();
+      }, 'plan');
 
-      mkBtn('🛒 Grocery List', 'Your most recently generated shopping list', function() {
-        if (self._session && self._session.shoppingListId) {
-          self.ui._showShoppingList(self._session.shoppingListId);
-          return;
-        }
-        // Real, honest fallback - _session is module-scope memory only
-        // (lost on reload), but a real shopping_lists row persists in
-        // Supabase - check for the actual most recent one rather than
-        // claiming "none exists" just because this page load hasn't
-        // rebuilt a session yet.
-        RPGACE.sb.select('shopping_lists', 'select=id&order=created_at.desc&limit=1')
-          .then(function(rows) {
-            var row = (rows || [])[0];
-            if (row && row.id) { self.ui._showShoppingList(row.id); return; }
-            RPGACE.utils.toast('No shopping list yet — generate one from a planned cook session first', '#E2A83D', 3200);
-          })
-          .catch(function() {
-            RPGACE.utils.toast('⚠️ Could not check for a shopping list right now', '#CC4A4A', 3000);
-          });
-      });
+      mkBtn('🛒 Shop', 'This cook\'s grocery list', function() {
+        if (self._session && self._session.shoppingListId) { self.ui._showShoppingList(self._session.shoppingListId); return; }
+        // _session is page-memory only; the real list row persists, so
+        // find this cook's own list first, then the newest cook list.
+        var pcId = (self._session && self._session.plannedCookId) || (scheduled && scheduled.plannedCookId);
+        var q = pcId ? RPGACE.sb.select('shopping_lists', 'select=id&planned_cook_id=eq.' + pcId + '&order=created_at.desc&limit=1') : Promise.resolve([]);
+        q.then(function(rows) {
+          if (rows && rows[0]) return rows;
+          return RPGACE.sb.select('shopping_lists', 'select=id&kind=eq.cook&order=created_at.desc&limit=1');
+        }).then(function(rows) {
+          var row = (rows || [])[0];
+          if (row && row.id) { self.ui._showShoppingList(row.id); return; }
+          RPGACE.utils.toast('No grocery list yet — plan a cook, then make its list', '#E2A83D', 3200);
+        }).catch(function() { RPGACE.utils.toast('⚠️ Could not check for a grocery list right now', '#CC4A4A', 3000); });
+      }, 'shop');
 
-      mkBtn('⚡ Recipe Generator', 'Generate a new recipe from a description', function() {
-        self.logic._loadConfig(function(cfg) { self.ui._showGenerateForm(cfg || {}); });
-      });
+      mkBtn('🔥 Cook', scheduled ? 'Start the scheduled cook now' : 'Cook a saved recipe step by step', function() {
+        if (scheduled) { self.logic._startCookNow(scheduled.plannedCookId, scheduled.agendaId); return; }
+        self.ui._showMyRecipes();
+      }, 'cook');
 
-      // Sep 16 2026 - real Alex ask: a 4th button, live reads on current
-      // stock (Pantry/Fridge/Freezer/Equipment) to make batch cooking less
-      // wasteful. Real /interrogation confirmed Equipment = a real owned-
-      // equipment inventory (genuinely new, distinct from habits_config's
-      // oven_slots/stovetop_slots capacity numbers and from
-      // shoppingWishlist's planned-purchase tracking).
-      mkBtn('📦 Current Stock', 'Pantry, fridge, freezer & equipment — live', function() {
-        self.ui._showCurrentStock();
-      });
+      mkBtn('📦 Stock', 'Pantry, fridge, freezer & equipment — live', function() { self.ui._showCurrentStock(); }, 'stock');
 
-      // H18 (Sep 16 2026, real Alex ask: "now i can look for recipes that
-      // will only give me purple or green ingredients so i can have
-      // perfect recipes with my context") — a real 6th button, the actual
-      // named entry point for the new 5-color "what's makeable right now"
-      // finder (ui._showStockMatchFinder).
-      mkBtn('🥫 What Can I Cook Right Now?', 'Saved recipes needing zero shopping trip', function() {
-        self.ui._showStockMatchFinder();
+      var extras = document.createElement('div');
+      extras.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;';
+      [['⚡ New recipe', function() { self.logic._loadConfig(function(cfg) { self.ui._showGenerateForm(cfg || {}); }); }],
+       ['🥫 What can I cook?', function() { self.ui._showStockMatchFinder(); }],
+       ['🛒 Top-up list', function() { self.ui._showTopUpList(); }],
+       ['⚙️ Settings', function() { self.logic._loadConfig(function(cfg) { self.ui._showSettings(cfg || {}); }); }]].forEach(function(x) {
+        var b = self.ui._mkBtn(x[0], 'small', { extra: 'flex:1;min-width:120px;' });
+        b.onclick = function() { pop.close(); x[1](); };
+        extras.appendChild(b);
       });
+      box.appendChild(extras);
+
+      // Live "what's next" + counts — read after render so the hub opens
+      // instantly; any failed read just leaves that bit out.
+      Promise.all([
+        RPGACE.sb.select('recipes', 'select=id').catch(function() { return []; }),
+        scheduled ? RPGACE.sb.select('shopping_lists', 'select=id&planned_cook_id=eq.' + scheduled.plannedCookId + '&order=created_at.desc&limit=1').catch(function() { return []; }) : Promise.resolve([]),
+        RPGACE.sb.select('shopping_lists', 'select=id&kind=eq.topup&status=eq.open&order=created_at.desc&limit=1').catch(function() { return []; }),
+      ]).then(function(r) {
+        var n = (r[0] || []).length;
+        recipesSub.textContent = n + ' saved — search, cook, plan';
+        var cookList = (r[1] || [])[0], topList = (r[2] || [])[0];
+        return Promise.all([
+          cookList ? RPGACE.sb.select('shopping_list_items', 'select=id&bought=eq.false&to_buy_amount=gt.0&list_id=eq.' + cookList.id).catch(function() { return null; }) : Promise.resolve(null),
+          topList ? RPGACE.sb.select('shopping_list_items', 'select=id&bought=eq.false&list_id=eq.' + topList.id).catch(function() { return null; }) : Promise.resolve(null),
+        ]).then(function(c) {
+          var bits = [];
+          if (sessCount) bits.push('🍳 A planned cook with ' + sessCount + ' recipe' + (sessCount === 1 ? '' : 's') + ' is in progress — schedule it when ready.');
+          else if (scheduled) {
+            var titles = (scheduled.recipes || []).map(function(x) { return x.title; }).join(', ');
+            bits.push('🍳 Next cook ' + (scheduled.scheduledAt || '') + ': ' + titles + (c[0] ? ' — ' + c[0].length + ' thing' + (c[0].length === 1 ? '' : 's') + ' to buy' : '') + '.');
+          } else bits.push(n ? '🍳 No cook planned — pick a recipe to cook or plan one.' : '⚡ No recipes yet — start with ⚡ New recipe.');
+          if (c[1] && c[1].length) bits.push('🛒 ' + c[1].length + ' on your top-up list.');
+          next.textContent = bits.join(' ');
+        });
+      }).catch(function() { next.textContent = '🍳 Pick a step below.'; });
     },
 
     // H20 (Sep 17 2026, real Alex bug report: "no way to revert planned
@@ -43507,7 +43531,7 @@ RPGACE.register('cookingOracle', {
       cookModeBtn.onclick = function() {
         self.ui._openCookMode(self.logic._cookModeSteps(pc.schedule.blocks, 1), {
           title: 'Cook session', key: 'planned_' + pc.id,
-          onDone: function() { RPGACE.utils.toast('🍽 All steps done — tap ✅ Finished when you\'ve eaten', '#4caf82', 3500); },
+          onDone: function() { self.ui._askFinishCook(pc); }, // CR-6
         });
       };
       var headerBtns = document.createElement('div');
@@ -44112,6 +44136,8 @@ RPGACE.register('cookingOracle', {
           var want = parseFloat(scaleInput && scaleInput.value) || base;
           self.ui._openCookMode(self.logic._cookModeSteps(st, want / base, recipe.title), {
             title: recipe.title, key: savedRecipeId ? 'recipe_' + savedRecipeId : null,
+            // CR-6: a saved recipe's last step offers the stock update.
+            onDone: savedRecipeId ? function() { self.ui._offerStockUpdate(null, [savedRecipeId], { scale: want / base }); } : null,
           });
         };
         specBox.appendChild(go);
@@ -45491,6 +45517,16 @@ RPGACE.register('cookingOracle', {
 
       box.appendChild(tabBar);
       box.appendChild(content);
+      // CR-6: from stock straight to what it can make, or what's run out.
+      var links = document.createElement('div');
+      links.style.cssText = 'display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;';
+      var canCook = self.ui._mkBtn('🥫 What can I cook?', 'secondary', { extra: 'flex:1;' });
+      canCook.classList.add('co-link-cancook');
+      canCook.onclick = function() { pop.close(); self.ui._showStockMatchFinder(); };
+      var topUp = self.ui._mkBtn('🛒 Top-up list', 'secondary', { extra: 'flex:1;' });
+      topUp.onclick = function() { pop.close(); self.ui._showTopUpList(); };
+      links.appendChild(canCook); links.appendChild(topUp);
+      box.appendChild(links);
       render((initialTab && tabBtns[initialTab]) ? initialTab : 'pantry');
     },
 
@@ -45735,14 +45771,23 @@ RPGACE.register('cookingOracle', {
       renderList();
     },
 
-    _showShoppingList: function(listId) {
+    _showShoppingList: function(listId, opts) {
       var self = RPGACE.modules.cookingOracle;
+      opts = opts || {};
       var pop = RPGACE.modules.dashDeck._popup({
-        width: '560px', scroll: true, eyebrow: '🛒 SHOPPING LIST', title: 'Ingredients for this cook',
+        width: '560px', scroll: true, eyebrow: '🛒 SHOPPING LIST', title: opts.title || 'Ingredients for this cook',
         borderColor: 'rgba(76,175,130,0.3)',
       });
       // Oct 10 2026 (P1): non-food items go to the Shopping Wishlist.
       if (RPGACE.modules.pathways) RPGACE.modules.pathways.wishlistLink(pop);
+      // CR-6: bought items land in stock, so the list links to it.
+      var navBar = pop.overlay.querySelector('.dd-pop-nav');
+      if (navBar) {
+        var toStock = self.ui._mkBtn('📦 Stock', 'small');
+        toStock.classList.add('co-link-stock');
+        toStock.onclick = function() { pop.close(); self.ui._showCurrentStock(); };
+        navBar.appendChild(toStock);
+      }
       var box = pop.box;
       var loadingMsg = document.createElement('div');
       loadingMsg.style.cssText = 'font-size:12px;color:var(--muted);';
@@ -46127,6 +46172,407 @@ RPGACE.register('cookingOracle', {
     // combined tick-bought -> price-entry flow, never a second screen.
     // Nothing writes until Confirm — Redo just clears the just-entered
     // fields so a better find at the shop can be re-entered cleanly.
+    // ── CR-2 (Oct 14 2026) — "Cook finished → take it out of stock" ────
+    // One preview for every finish path (logic._finishCook calls this).
+    // plannedCookId may be null (a single recipe's Cook Mode): then there is
+    // no cook row to record the change on, so no undo — the popup says so.
+    _offerStockUpdate: function(plannedCookId, recipeIds, opts) {
+      var self = RPGACE.modules.cookingOracle;
+      opts = opts || {};
+      self._stockOffer = self._stockOffer || {};
+      var lockKey = plannedCookId || ('recipes:' + (recipeIds || []).join(','));
+      if (self._stockOffer[lockKey]) return;
+      self._stockOffer[lockKey] = true;
+      var release = function() { delete self._stockOffer[lockKey]; };
+      var getIds = plannedCookId
+        ? RPGACE.sb.select('planned_cooks', 'select=recipe_ids,stock_deducted&id=eq.' + plannedCookId + '&limit=1').then(function(rows) {
+            var pc = rows && rows[0];
+            if (!pc) return null;
+            if (pc.stock_deducted) return null; // already taken out once — never twice
+            return (recipeIds && recipeIds.length) ? recipeIds : (pc.recipe_ids || []);
+          })
+        : Promise.resolve(recipeIds || []);
+      getIds.then(function(ids) {
+        if (!ids || !ids.length) { release(); return; }
+        self.logic._planDeduction(ids, function(err, lines) {
+          if (err) { release(); RPGACE.utils.toast('⚠️ Could not work out what to take out of stock: ' + err, '#CC4A4A', 4000); return; }
+          if (opts.scale && opts.scale !== 1) {
+            lines.forEach(function(l) { l.amount = Math.round(l.amount * opts.scale * 100) / 100; l.takes.forEach(function(t) { t.take = Math.round(Math.min(t.have, t.take * opts.scale) * 100) / 100; }); });
+          }
+          var usable = lines.filter(function(l) { return l.takes.length; });
+          if (!usable.length) { release(); RPGACE.utils.toast('🍽 Cook finished — none of its ingredients are in your stock list', '#4caf82', 3200); return; }
+          self.ui._renderStockOffer(plannedCookId, lines, release);
+        });
+      }).catch(function(e) { release(); RPGACE.utils.toast('⚠️ ' + (e.message || 'could not load the cook'), '#CC4A4A', 3500); });
+    },
+
+    _renderStockOffer: function(plannedCookId, lines, release) {
+      var self = RPGACE.modules.cookingOracle;
+      var LOC = { pantry: '🥫 pantry', fridge: '🧊 fridge', freezer: '❄️ freezer' };
+      var pop = RPGACE.modules.dashDeck._popup({
+        width: '480px', scroll: true, eyebrow: '🍽 COOK FINISHED', title: 'Take what you used out of stock?',
+        borderColor: 'rgba(76,175,130,0.3)', onClose: release,
+      });
+      var box = pop.box;
+      box.classList.add('co-stock-offer');
+      var intro = document.createElement('div');
+      intro.style.cssText = 'font-size:13px;color:var(--muted);margin-bottom:10px;';
+      intro.textContent = plannedCookId
+        ? 'Change any amount, untick anything you didn\'t use. You can put it all back afterwards.'
+        : 'Change any amount, untick anything you didn\'t use. (This recipe wasn\'t a planned cook, so there\'s no undo afterwards.)';
+      box.appendChild(intro);
+      var rows = [];
+      lines.filter(function(l) { return l.takes.length; }).forEach(function(l) {
+        l.takes.forEach(function(t) {
+          var row = document.createElement('label');
+          row.className = 'co-take-row';
+          row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;color:var(--text);';
+          var cb = document.createElement('input');
+          cb.type = 'checkbox'; cb.checked = true;
+          cb.style.cssText = 'width:20px;height:20px;flex-shrink:0;';
+          var name = document.createElement('span');
+          name.style.cssText = 'flex:1;min-width:0;';
+          name.textContent = l.name + (l.status === 'short' ? ' (you had less than the recipe uses)' : '');
+          var amt = document.createElement('input');
+          amt.type = 'number'; amt.min = '0'; amt.step = 'any'; amt.value = String(t.take);
+          amt.setAttribute('aria-label', 'Amount of ' + l.name + ' to take out');
+          amt.style.cssText = 'width:80px;min-height:40px;padding:6px;border:1px solid var(--border);border-radius:8px;background:var(--panel2);color:var(--text);font-size:14px;';
+          var unit = document.createElement('span');
+          unit.style.cssText = 'font-size:13px;color:var(--muted);white-space:nowrap;';
+          unit.textContent = (t.unit || '') + ' from ' + (LOC[t.location] || t.location) + ' (have ' + t.have + ')';
+          row.appendChild(cb); row.appendChild(name); row.appendChild(amt); row.appendChild(unit);
+          box.appendChild(row);
+          rows.push({ cb: cb, amt: amt, line: l, take: t });
+        });
+      });
+      var skipped = lines.filter(function(l) { return !l.takes.length; });
+      if (skipped.length) {
+        var sk = document.createElement('div');
+        sk.style.cssText = 'font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5;';
+        sk.textContent = 'Not taken out: ' + skipped.map(function(l) {
+          return l.name + (l.status === 'unconvertible' ? ' (stock is in a different unit with no weight to convert)' : ' (not in stock)');
+        }).join(', ') + '.';
+        box.appendChild(sk);
+      }
+      var err = document.createElement('div');
+      err.style.cssText = 'font-size:13px;color:#CC4A4A;margin-top:8px;display:none;';
+      box.appendChild(err);
+      var btns = document.createElement('div');
+      btns.style.cssText = 'display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;';
+      var go = self.ui._mkBtn('✅ Take out of stock', 'primary', { extra: 'flex:2;' });
+      go.classList.add('co-take-go');
+      var leave = self.ui._mkBtn('Leave stock as it is', 'ghost', { extra: 'flex:1;' });
+      leave.onclick = function() { pop.close(); };
+      go.onclick = function() {
+        var takes = rows.filter(function(r) { return r.cb.checked; }).map(function(r) {
+          var v = parseFloat(r.amt.value);
+          return { ingredient_id: r.line.ingredient_id, name: r.line.name, location: r.take.location, unit: r.take.unit, take: isNaN(v) ? 0 : Math.max(0, v), amount: r.line.amount, recipeUnit: r.line.unit };
+        }).filter(function(t) { return t.take > 0; });
+        if (!takes.length) { pop.close(); return; }
+        go.disabled = true; leave.disabled = true; go.textContent = '⏳ Updating stock...';
+        var after = function(e, done) {
+          if (e && !(done && done.length)) { go.disabled = false; leave.disabled = false; go.textContent = '✅ Take out of stock'; err.textContent = '⚠️ ' + e; err.style.display = 'block'; return; }
+          if (e) RPGACE.utils.toast('⚠️ ' + e, '#CC4A4A', 4500);
+          self.ui._renderStockResult(pop, plannedCookId, done, takes);
+        };
+        if (plannedCookId) self.logic._applyDeduction(plannedCookId, takes, after);
+        else self.logic._applyDeduction(null, takes, after);
+      };
+      btns.appendChild(go); btns.appendChild(leave);
+      box.appendChild(btns);
+    },
+
+    // After the deduction: what changed, undo, and anything that ran out
+    // offered onto the top-up grocery list.
+    _renderStockResult: function(pop, plannedCookId, done, takes) {
+      var self = RPGACE.modules.cookingOracle;
+      var box = pop.box;
+      box.innerHTML = '';
+      var head = document.createElement('div');
+      head.style.cssText = 'font-size:15px;font-weight:700;color:var(--green);margin-bottom:8px;';
+      head.textContent = '📦 Stock updated — ' + done.length + ' item' + (done.length === 1 ? '' : 's') + ' taken out';
+      box.appendChild(head);
+      done.forEach(function(d) {
+        var r = document.createElement('div');
+        r.style.cssText = 'font-size:13px;color:var(--text);padding:3px 0;';
+        r.textContent = d.name + ': −' + d.took + ' ' + (d.unit || '') + ' (' + d.left + ' left in ' + d.location + ')';
+        box.appendChild(r);
+      });
+      var out = done.filter(function(d) { return !(d.left > 0); });
+      var picks = [];
+      if (out.length) {
+        var oh = document.createElement('div');
+        oh.style.cssText = 'font-size:14px;font-weight:700;color:#E2A83D;margin:14px 0 6px;';
+        oh.textContent = '⚠️ Now run out';
+        box.appendChild(oh);
+        out.forEach(function(d) {
+          var lab = document.createElement('label');
+          lab.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:14px;color:var(--text);min-height:40px;';
+          var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = true; cb.style.cssText = 'width:20px;height:20px;';
+          lab.appendChild(cb); lab.appendChild(document.createTextNode(d.name));
+          box.appendChild(lab);
+          picks.push({ cb: cb, d: d });
+        });
+        var add = self.ui._mkBtn('🛒 Add to top-up grocery list', 'primary', { extra: 'margin-top:8px;width:100%;' });
+        add.classList.add('co-topup-add');
+        add.onclick = function() {
+          var items = picks.filter(function(p) { return p.cb.checked; }).map(function(p) { return { ingredient_id: p.d.ingredient_id, amount: p.d.took, unit: p.d.unit }; });
+          if (!items.length) return;
+          add.disabled = true;
+          self.logic._addToTopUpList(items, function(e, listId, n) {
+            if (e) { add.disabled = false; RPGACE.utils.toast('⚠️ ' + e, '#CC4A4A', 4000); return; }
+            add.textContent = n ? ('✓ ' + n + ' added to your top-up list') : '✓ Already on your top-up list';
+            var open = self.ui._mkBtn('Open top-up list', 'secondary', { extra: 'margin-top:8px;width:100%;' });
+            open.onclick = function() { pop.close(); self.ui._showShoppingList(listId, { title: 'Top-up list' }); };
+            add.parentNode.insertBefore(open, add.nextSibling);
+          });
+        };
+        box.appendChild(add);
+      }
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;';
+      if (plannedCookId) {
+        var undo = self.ui._mkBtn('↩ Put it all back', 'ghost', { extra: 'flex:1;' });
+        undo.classList.add('co-stock-undo');
+        undo.onclick = function() {
+          undo.disabled = true;
+          self.logic._undoDeduction(plannedCookId, function(e, n) {
+            if (e) { undo.disabled = false; RPGACE.utils.toast('⚠️ ' + e, '#CC4A4A', 4000); return; }
+            RPGACE.utils.toast('↩ ' + n + ' item' + (n === 1 ? '' : 's') + ' put back in stock', '#4caf82', 3000);
+            pop.close();
+          });
+        };
+        row.appendChild(undo);
+      }
+      var stockBtn = self.ui._mkBtn('📦 See stock', 'secondary', { extra: 'flex:1;' });
+      stockBtn.onclick = function() { pop.close(); self.ui._showCurrentStock(); };
+      row.appendChild(stockBtn);
+      box.appendChild(row);
+    },
+
+    // Cook Mode's last step on a planned cook: finish it right there.
+    _askFinishCook: function(pc) {
+      var self = RPGACE.modules.cookingOracle;
+      var pop = RPGACE.modules.dashDeck._popup({ width: '380px', eyebrow: '🍽 ALL STEPS DONE', title: 'Mark this cook finished?', borderColor: 'rgba(76,175,130,0.3)' });
+      var yes = self.ui._mkBtn('✅ Cook finished', 'primary', { extra: 'width:100%;margin-bottom:8px;' });
+      yes.onclick = function() {
+        yes.disabled = true;
+        self.logic._finishCook(pc.id, pc.agenda_id, pc.recipe_ids, function(err) {
+          if (err) { yes.disabled = false; RPGACE.utils.toast('⚠️ ' + err, '#CC4A4A', 4000); return; }
+          pop.close();
+          self.ui._clearLiveCookIntervals && self.ui._clearLiveCookIntervals();
+          var p = document.getElementById('live-cook-panel');
+          if (p) p.remove();
+        });
+      };
+      var later = self.ui._mkBtn('Not yet', 'ghost', { extra: 'width:100%;' });
+      later.onclick = function() { pop.close(); };
+      pop.box.appendChild(yes); pop.box.appendChild(later);
+    },
+
+    // ── CR-4 (Oct 14 2026) — My Recipes: every saved recipe in one place ──
+    _showMyRecipes: function() {
+      var self = RPGACE.modules.cookingOracle;
+      var pop = RPGACE.modules.dashDeck._popup({
+        width: '560px', scroll: true, eyebrow: '📖 MY RECIPES', title: 'Your saved recipes',
+        borderColor: 'rgba(76,175,130,0.3)',
+      });
+      var box = pop.box;
+      box.classList.add('co-my-recipes');
+      var top = document.createElement('div');
+      top.style.cssText = 'display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;';
+      var search = document.createElement('input');
+      search.id = 'co-recipe-search'; search.type = 'search'; search.placeholder = 'Search recipes';
+      search.setAttribute('aria-label', 'Search recipes');
+      search.style.cssText = 'flex:1;min-width:160px;min-height:44px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--panel2);color:var(--text);font-size:14px;';
+      var gen = self.ui._mkBtn('⚡ New recipe', 'secondary');
+      gen.onclick = function() { pop.close(); self.logic._loadConfig(function(cfg) { self.ui._showGenerateForm(cfg || {}); }); };
+      top.appendChild(search); top.appendChild(gen);
+      box.appendChild(top);
+      var list = document.createElement('div');
+      list.textContent = 'Loading...';
+      list.style.cssText = 'font-size:13px;color:var(--muted);';
+      box.appendChild(list);
+      var all = [];
+      var paint = function() {
+        list.innerHTML = '';
+        list.style.cssText = '';
+        var q = search.value.trim().toLowerCase();
+        var shown = all.filter(function(r) { return !q || r.title.toLowerCase().indexOf(q) !== -1 || (r.cuisine || '').toLowerCase().indexOf(q) !== -1; });
+        if (!shown.length) {
+          var e = document.createElement('div');
+          e.style.cssText = 'font-size:13px;color:var(--muted);padding:10px 0;';
+          e.textContent = all.length ? 'No recipe matches that.' : 'No saved recipes yet — make one with ⚡ New recipe.';
+          list.appendChild(e);
+          return;
+        }
+        shown.forEach(function(r) {
+          var card = document.createElement('div');
+          card.className = 'co-recipe-row';
+          card.style.cssText = 'padding:12px 0;border-bottom:1px solid var(--border);';
+          var t = document.createElement('div');
+          t.style.cssText = 'font-size:15px;font-weight:700;color:var(--text);';
+          t.textContent = (r.makeable ? '🟢 ' : '') + r.title;
+          var meta = document.createElement('div');
+          meta.style.cssText = 'font-size:13px;color:var(--muted);margin:2px 0 8px;';
+          var bits = [];
+          if (r.cuisine) bits.push(r.cuisine);
+          bits.push(r.makeable ? 'Everything in stock' : (r.missing + ' to buy'));
+          bits.push(r.lastCooked ? 'Last cooked ' + r.lastCooked : 'Not cooked yet');
+          meta.textContent = bits.join(' · ');
+          var acts = document.createElement('div');
+          acts.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
+          var open = self.ui._mkBtn('Open', 'small');
+          open.onclick = function() {
+            self.logic._loadSavedRecipe(r.id, function(err, recipe) {
+              if (err) { RPGACE.utils.toast('⚠️ ' + err, '#CC4A4A', 3000); return; }
+              pop.close(); self.ui._showRecipeCard(recipe, null, r.id);
+            });
+          };
+          var cook = self.ui._mkBtn('▶ Cook now', 'small');
+          cook.onclick = function() {
+            self.logic._loadSavedRecipe(r.id, function(err, recipe) {
+              if (err) { RPGACE.utils.toast('⚠️ ' + err, '#CC4A4A', 3000); return; }
+              pop.close();
+              var steps = (recipe.steps || []);
+              self.ui._openCookMode(self.logic._cookModeSteps(steps, 1, recipe.title), {
+                title: recipe.title, key: 'recipe_' + r.id,
+                onDone: function() { self.ui._offerStockUpdate(null, [r.id]); },
+              });
+            });
+          };
+          var plan = self.ui._mkBtn('+ Planned cook', 'small');
+          plan.onclick = function() {
+            self.logic._addRecipeToSession(r.id, r.title);
+            RPGACE.utils.toast('🍳 ' + r.title + ' added to your planned cook', '#4caf82', 2600);
+            pop.close(); self.ui._showSessionBuilder();
+          };
+          var shop = self.ui._mkBtn('🛒 Missing → top-up list', 'small');
+          shop.onclick = function() {
+            shop.disabled = true;
+            self.logic._computeIngredientUsage([r.id], function(err, usage) {
+              if (err) { shop.disabled = false; RPGACE.utils.toast('⚠️ ' + err, '#CC4A4A', 3000); return; }
+              var need = (usage || []).filter(function(u) { return u.toBuy > 0; }).map(function(u) { return { ingredient_id: u.ingredient_id, amount: u.toBuy, unit: u.unit }; });
+              if (!need.length) { shop.disabled = false; RPGACE.utils.toast('✓ Nothing to buy for this one', '#4caf82', 2400); return; }
+              self.logic._addToTopUpList(need, function(e, listId, n) {
+                shop.disabled = false;
+                if (e) { RPGACE.utils.toast('⚠️ ' + e, '#CC4A4A', 3500); return; }
+                RPGACE.utils.toast('🛒 ' + n + ' added to your top-up list', '#4caf82', 2600);
+              });
+            });
+          };
+          [open, cook, plan, shop].forEach(function(b) { acts.appendChild(b); });
+          card.appendChild(t); card.appendChild(meta); card.appendChild(acts);
+          list.appendChild(card);
+        });
+      };
+      search.oninput = paint;
+      Promise.all([
+        new Promise(function(res) { self.logic._findMakeableRecipes(function(err, rows) { res(err ? [] : (rows || [])); }); }),
+        RPGACE.sb.select('recipes', 'select=id,cuisine').catch(function() { return []; }),
+        RPGACE.sb.select('journal', 'select=recipe_id,cooked_at&status=eq.cooked&order=cooked_at.desc').catch(function() { return []; }),
+      ]).then(function(res) {
+        var cuisine = {}; (res[1] || []).forEach(function(r) { cuisine[r.id] = r.cuisine; });
+        var cooked = {}; (res[2] || []).forEach(function(j) { if (j.recipe_id && !cooked[j.recipe_id] && j.cooked_at) cooked[j.recipe_id] = j.cooked_at.slice(0, 10); });
+        all = res[0].map(function(r) {
+          var c = r.counts || {};
+          return { id: r.id, title: r.title || 'Untitled', makeable: r.makeable, missing: (c.red || 0) + (c.yellow || 0) + (c.blue || 0), cuisine: cuisine[r.id] || '', lastCooked: cooked[r.id] || null };
+        });
+        all.sort(function(a, b) { return (b.makeable - a.makeable) || a.title.localeCompare(b.title); });
+        paint();
+      });
+    },
+
+    // The newest open top-up list (shopping_lists.kind='topup').
+    _showTopUpList: function() {
+      var self = RPGACE.modules.cookingOracle;
+      RPGACE.sb.select('shopping_lists', 'select=id&kind=eq.topup&status=eq.open&order=created_at.desc&limit=1')
+        .then(function(rows) {
+          if (rows && rows[0]) { self.ui._showShoppingList(rows[0].id, { title: 'Top-up list' }); return; }
+          RPGACE.utils.toast('Your top-up list is empty — things you run out of after a cook land here', '#E2A83D', 3500);
+        })
+        .catch(function() { RPGACE.utils.toast('⚠️ Could not open the top-up list', '#CC4A4A', 3000); });
+    },
+
+    // ── CR-3 (Oct 14 2026) — back to the previous Cooking screen ─────────
+    // Every Cooking screen closes itself then opens the next, so the
+    // popup's own ← Back (dashDeck N1) had nothing underneath to return to.
+    // ui._wrapScreens (run once from init) records each screen opened into
+    // self._trail, then re-points that popup's ← Back at the previous
+    // Cooking screen and adds 🏠 Cooking. One popup at a time, as before.
+    NAV_LABELS: {
+      _showModuleHub: 'Cooking', _showMyRecipes: 'My Recipes', _showGenerateForm: 'Recipe Generator',
+      _showNarrowDown: 'Narrow it down', _showRecipeCard: 'Recipe', _showSettings: 'Cooking settings',
+      _showSessionBuilder: 'Planned Cook', _showAddToSessionPicker: 'Add to cook', _showScheduledCookInfo: 'Scheduled cook',
+      _showSchedulePreview: 'Cook schedule', _showCurrentStock: 'Current Stock', _showShoppingList: 'Grocery list',
+      _showStockMatchFinder: 'What can I cook', _showTopUpList: 'Top-up list',
+    },
+    _wrapScreens: function() {
+      var self = RPGACE.modules.cookingOracle;
+      if (self._screensWrapped) return;
+      self._screensWrapped = true;
+      self._trail = [];
+      Object.keys(self.ui.NAV_LABELS).forEach(function(name) {
+        var orig = self.ui[name];
+        if (typeof orig !== 'function' || name === '_showTopUpList') return;
+        self.ui[name] = function() {
+          var args = Array.prototype.slice.call(arguments);
+          var now = Date.now();
+          if (self._navBack) self._navBack = false;
+          else {
+            if (name === '_showModuleHub' || now - (self._trailAt || 0) > 15 * 60000) self._trail = [];
+            var top = self._trail[self._trail.length - 1];
+            if (top && top.name === name) top.args = args;
+            else self._trail.push({ name: name, args: args });
+          }
+          self._trailAt = now;
+          var entry = self._trail[self._trail.length - 1];
+          var before = Array.prototype.slice.call(document.body.children);
+          var out = orig.apply(self.ui, args);
+          self.ui._decorateWhenOpen(entry, before);
+          return out;
+        };
+      });
+    },
+    _decorateWhenOpen: function(entry, before, tries) {
+      var self = RPGACE.modules.cookingOracle;
+      tries = tries || 0;
+      var kids = Array.prototype.slice.call(document.body.children);
+      var fresh = null;
+      for (var i = kids.length - 1; i >= 0; i--) {
+        if (before.indexOf(kids[i]) === -1 && kids[i].querySelector && kids[i].querySelector('.dd-pop-nav')) { fresh = kids[i]; break; }
+      }
+      if (!fresh) { if (tries < 40) setTimeout(function() { self.ui._decorateWhenOpen(entry, before, tries + 1); }, 100); return; }
+      entry.overlay = fresh;
+      var nav = fresh.querySelector('.dd-pop-nav');
+      var back = nav.querySelector('button[aria-label="Back"]');
+      if (!back || back.dataset.coNav) return;
+      back.dataset.coNav = '1';
+      var origClose = back.onclick;
+      var idx = self._trail.indexOf(entry);
+      var prev = idx > 0 ? self._trail[idx - 1] : null;
+      if (prev) {
+        back.textContent = '← ' + (self.ui.NAV_LABELS[prev.name] || 'Back');
+        back.onclick = function() {
+          self._trail = self._trail.slice(0, idx);
+          if (origClose) origClose();
+          if (prev.overlay && prev.overlay.isConnected) return; // still open underneath
+          self._navBack = true;
+          self.ui[prev.name].apply(self.ui, prev.args || []);
+        };
+      }
+      if (entry.name !== '_showModuleHub') {
+        var home = document.createElement('button');
+        home.type = 'button';
+        home.className = 'co-nav-home';
+        home.textContent = '🏠 Cooking';
+        home.setAttribute('aria-label', 'Cooking home');
+        home.style.cssText = back.style.cssText;
+        home.onclick = function() { if (origClose) origClose(); self.ui._showModuleHub(); };
+        back.parentNode.insertBefore(home, back.nextSibling);
+      }
+    },
+
     _showPriceEntryPopup: function(item, onDone) {
       var self = RPGACE.modules.cookingOracle;
       var pop = RPGACE.modules.dashDeck._popup({
@@ -46165,6 +46611,35 @@ RPGACE.register('cookingOracle', {
 
       var priceInput = mkInput('Price paid (£)', 'number');
 
+      // CR-1 — where it goes once bought (adds to that location's stock).
+      var locLabel = document.createElement('div');
+      locLabel.style.cssText = 'font-size:12px;color:var(--muted);margin:2px 0 6px;';
+      locLabel.textContent = 'Put it in';
+      box.appendChild(locLabel);
+      var locRow = document.createElement('div');
+      locRow.className = 'co-loc-row';
+      locRow.style.cssText = 'display:flex;gap:6px;margin-bottom:10px;';
+      var location = 'pantry';
+      var locBtns = {};
+      var paintLoc = function() {
+        Object.keys(locBtns).forEach(function(k) {
+          var on = k === location;
+          locBtns[k].style.background = on ? 'rgba(76,175,130,0.18)' : 'transparent';
+          locBtns[k].style.borderColor = on ? 'rgba(76,175,130,0.5)' : 'var(--border)';
+          locBtns[k].setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+      };
+      [['pantry', '🥫 Pantry'], ['fridge', '🧊 Fridge'], ['freezer', '❄️ Freezer']].forEach(function(l) {
+        var b = self.ui._mkBtn(l[1], 'small', { extra: 'flex:1;' });
+        b.dataset.loc = l[0];
+        b.onclick = function() { location = l[0]; paintLoc(); };
+        locBtns[l[0]] = b;
+        locRow.appendChild(b);
+      });
+      box.appendChild(locRow);
+      paintLoc();
+      self.logic._defaultLocation(item.ingredient_id, (item.ingredients && item.ingredients.name) || '', function(loc) { location = loc; paintLoc(); });
+
       var errBox = document.createElement('div');
       errBox.style.cssText = 'font-size:12px;color:#CC4A4A;margin-bottom:8px;display:none;';
       box.appendChild(errBox);
@@ -46193,14 +46668,15 @@ RPGACE.register('cookingOracle', {
         }
         errBox.style.display = 'none';
         confirmBtn.disabled = true; redoBtn.disabled = true;
-        self.logic._recordPurchase(item, { brand: brand, store: store, packSize: packSize, unit: unit, price: price }, function(err) {
+        self.logic._recordPurchase(item, { brand: brand, store: store, packSize: packSize, unit: unit, price: price, location: location }, function(err, res) {
           if (err) {
             confirmBtn.disabled = false; redoBtn.disabled = false;
             errBox.textContent = '⚠️ ' + err;
             errBox.style.display = 'block';
             return;
           }
-          RPGACE.utils.toast('💷 Purchase logged', '#4caf82', 2200);
+          if (res && res.stocked) RPGACE.utils.toast('💷 Logged — ' + packSize + ' ' + (unit || '') + ' added to ' + location, '#4caf82', 2600);
+          else RPGACE.utils.toast('💷 Logged — stock not updated (bought in ' + (unit || 'no unit') + ', list tracks ' + (item.needed_unit || 'no unit') + '). Add it in Current Stock.', '#E2A83D', 4200);
           pop.close();
           if (onDone) onDone();
         });
@@ -46852,6 +47328,41 @@ RPGACE.register('cookingOracle', {
       });
     },
 
+    // CR-1 (Oct 14 2026) — the one "add an amount to stock" write: reads the
+    // exact (ingredient_id, location) row and upserts quantity + amount on
+    // that same key. _upsertStock above SETS a quantity (fridge photo, Current
+    // Stock form); this ADDS one (bought items, undoing a deduction).
+    _addStock: function(ingredientId, location, amount, unit, cb) {
+      RPGACE.sb.select('pantry_stock', 'select=quantity,unit&ingredient_id=eq.' + ingredientId + '&location=eq.' + encodeURIComponent(location) + '&limit=1')
+        .then(function(rows) {
+          var row = (rows || [])[0];
+          var current = (row && typeof row.quantity === 'number') ? row.quantity : 0;
+          return RPGACE.sb.secureWrite('pantry_stock', 'insert', {
+            ingredient_id: ingredientId, location: location, quantity: Math.round((current + amount) * 100) / 100,
+            unit: (row && row.unit) || unit, updated_at: new Date().toISOString(),
+          }, null, 'ingredient_id,location');
+        })
+        .then(function() { RPGACE.cache && RPGACE.cache.clear && RPGACE.cache.clear('pantry_stock'); cb(null); })
+        .catch(function(e) { cb(e.message || 'stock update failed'); });
+    },
+
+    // CR-1 — where a bought item most likely goes: the location it was last
+    // stocked in, else a guess from its aisle (chilled -> fridge, frozen ->
+    // freezer, everything else -> pantry). Alex can always change it.
+    _defaultLocation: function(ingredientId, name, cb) {
+      var self = RPGACE.modules.cookingOracle;
+      var guess = function() {
+        var aisle = self.logic._classifyAisle(name || '').name;
+        if (aisle === 'Frozen') return 'freezer';
+        if (aisle === 'Dairy & Chilled' || aisle === 'Meat & Fish') return 'fridge';
+        return 'pantry';
+      };
+      if (!ingredientId) { cb(guess()); return; }
+      RPGACE.sb.select('pantry_stock', 'select=location&ingredient_id=eq.' + ingredientId + '&order=updated_at.desc&limit=1')
+        .then(function(rows) { cb((rows && rows[0] && rows[0].location) || guess()); })
+        .catch(function() { cb(guess()); });
+    },
+
     // H9 (calories/macros, Sep 13 2026) — same case-insensitive resolve-or-
     // create as _resolveIngredient above, but returns the FULL cached-
     // nutrition row too (not just an id) — a separate function rather than
@@ -47090,20 +47601,22 @@ RPGACE.register('cookingOracle', {
     // so rows are summed per ingredient+unit across all 3 locations here,
     // keeping this function's own return shape (and its existing caller)
     // unchanged.
+    // CR-1 (Oct 14 2026, Cooking Reorganisation) — no longer its own
+    // pantry_stock read: it flattens logic._loadPantrySummed's
+    // byIngredient buckets (rule 8 — one read for "what's in stock").
+    // Same return shape for its 2 callers: [{name, quantity, unit}],
+    // summed per ingredient + unit across pantry/fridge/freezer.
     _loadPantryNamed: function(cb) {
-      RPGACE.sb.select('pantry_stock', 'select=ingredient_id,quantity,unit,ingredients(name)&order=updated_at.desc')
-        .then(function(rows) {
-          var byKey = {};
-          (rows || []).forEach(function(r) {
-            var name = (r.ingredients && r.ingredients.name) || '';
-            if (!name) return;
-            var key = r.ingredient_id + '|' + (r.unit || '');
-            if (!byKey[key]) byKey[key] = { name: name, quantity: 0, unit: r.unit };
-            byKey[key].quantity += (r.quantity || 0);
+      var self = RPGACE.modules.cookingOracle;
+      self.logic._loadPantrySummed(function(snap) {
+        var out = [];
+        Object.keys((snap && snap.byIngredient) || {}).forEach(function(id) {
+          snap.byIngredient[id].forEach(function(b) {
+            if (b.name) out.push({ name: b.name, quantity: b.quantity, unit: b.unit });
           });
-          cb(Object.keys(byKey).map(function(k) { return byKey[k]; }), null);
-        })
-        .catch(function(e) { cb([], e); });
+        });
+        cb(out, null);
+      });
     },
 
     // Real, location-filtered read for the Current Stock tabs (H11, Sep 16
@@ -48739,7 +49252,7 @@ RPGACE.register('cookingOracle', {
         // An essential missing ingredient (any other status) still goes
         // on the list unchanged, No-Shop mode or not.
         var toInsert = usage.filter(function(u) { return u.status !== 'brown'; });
-        RPGACE.sb.secureWrite('shopping_lists', 'insert', { planned_cook_id: null, status: 'open', shop_mode: sess.shopMode || 'can_shop' })
+        RPGACE.sb.secureWrite('shopping_lists', 'insert', { planned_cook_id: sess.plannedCookId || null, status: 'open', shop_mode: sess.shopMode || 'can_shop', kind: 'cook' })
           .then(function(data) {
             var listRow = Array.isArray(data) ? data[0] : data;
             if (!listRow || !listRow.id) throw new Error('shopping list insert returned no row');
@@ -48789,23 +49302,23 @@ RPGACE.register('cookingOracle', {
           return RPGACE.sb.secureWrite('shopping_list_items', 'update', { bought: true, in_basket: true, ingredient_price_id: priceId }, 'id=eq.' + item.id);
         })
         .then(function() {
-          if (entry.unit && item.needed_unit && entry.unit.toLowerCase() === item.needed_unit.toLowerCase()) {
-            return RPGACE.sb.select('pantry_stock', 'select=quantity&ingredient_id=eq.' + item.ingredient_id + '&limit=1')
-              .then(function(rows) {
-                var current = (rows && rows[0] && typeof rows[0].quantity === 'number') ? rows[0].quantity : 0;
-                var newQty = current + entry.packSize;
-                return RPGACE.sb.secureWrite('pantry_stock', 'insert', {
-                  ingredient_id: item.ingredient_id, quantity: newQty, unit: entry.unit, updated_at: new Date().toISOString(),
-                }, null, 'ingredient_id');
-              });
+          // CR-1 (Oct 14 2026) — the old top-up upserted on ingredient_id
+          // alone, but pantry_stock's key is (ingredient_id, location), so
+          // Postgres rejected it every time (0 bought items had ever hit it).
+          // Now adds the pack to the location Alex picked, via the one
+          // shared logic._addStock. A unit that doesn't match the item's
+          // tracked unit is reported back, never guessed (rule 7).
+          var self = RPGACE.modules.cookingOracle;
+          if (!entry.unit || !item.needed_unit || self.logic._normalizeUnit(entry.unit) !== self.logic._normalizeUnit(item.needed_unit)) {
+            return { stocked: false };
           }
-          // Real, honest note — not silently swallowed, just not blocking
-          // the real outcome already written above (the price log + bought
-          // flip): a unit mismatch means the pantry can't be safely topped
-          // up without guessing a conversion.
-          console.warn('[cookingOracle] pantry not updated — purchased unit "' + entry.unit + '" does not match tracked unit "' + item.needed_unit + '" for this ingredient');
+          return new Promise(function(resolve, reject) {
+            self.logic._addStock(item.ingredient_id, entry.location || 'pantry', entry.packSize, entry.unit, function(err) {
+              if (err) reject(new Error('bought and price saved, but stock not updated: ' + err)); else resolve({ stocked: true });
+            });
+          });
         })
-        .then(function() { cb(null); })
+        .then(function(res) { cb(null, res || { stocked: false }); })
         .catch(function(e) { cb(e.message || 'purchase log failed'); });
     },
 
@@ -49287,9 +49800,175 @@ RPGACE.register('cookingOracle', {
     // _markCooked. The planned_cooks write is the one that must succeed;
     // the agenda/journal follow-ups are best-effort and toast on failure
     // (rule 7) rather than undoing a real finished cook.
-    _finishCook: function(plannedCookId, agendaId, recipeIds, cb) {
+    // ── CR-2 (Oct 14 2026, Cooking Reorganisation) — the stock loop ──────
+    // Alex: "Finished cook → deducts", "Low stock → grocery list". Nothing
+    // is taken out until he confirms a preview, every deduction is stored on
+    // the planned cook (planned_cooks.stock_deducted) so it can be put back
+    // (no Supabase backup exists), and anything that can't be converted
+    // between units is listed as "not taken out", never guessed (rule 7).
+
+    // Amount `amount` in recipe unit `fromUnit` expressed in a stock row's
+    // unit, or null. Same bridges as _resolveHaveAmount (exact unit,
+    // volume<->volume, weight<->weight, recipe grams estimate -> weight).
+    _toStockUnit: function(amount, fromUnit, gramsEstimate, rowUnit) {
+      var self = RPGACE.modules.cookingOracle, L = self.logic;
+      var f = L._normalizeUnit(fromUnit), r = L._normalizeUnit(rowUnit);
+      if (f === r) return amount;
+      if (L.VOLUME_TO_ML[f] && L.VOLUME_TO_ML[r]) return L._convertVolumeUnits(amount, f, r);
+      if (L.WEIGHT_TO_G[f] && L.WEIGHT_TO_G[r]) return amount * L.WEIGHT_TO_G[f] / L.WEIGHT_TO_G[r];
+      if (!L.WEIGHT_TO_G[f] && L.WEIGHT_TO_G[r] && typeof gramsEstimate === 'number' && gramsEstimate > 0) return gramsEstimate / L.WEIGHT_TO_G[r];
+      return null;
+    },
+
+    // What finishing these recipes would take out of stock. cb(err, lines);
+    // a line is {ingredient_id, name, amount, unit, status:'ok'|'short'|
+    // 'none'|'unconvertible', takes:[{location, unit, have, take}]}.
+    _planDeduction: function(recipeIds, cb) {
+      var self = RPGACE.modules.cookingOracle;
+      var ids = (recipeIds || []).filter(Boolean);
+      if (!ids.length) { cb('no recipes on this cook'); return; }
+      RPGACE.sb.select('recipe_ingredients', 'select=ingredient_id,amount,unit,grams_estimate,ingredients(name)&recipe_id=in.(' + ids.join(',') + ')')
+        .then(function(rows) {
+          var groups = {};
+          (rows || []).forEach(function(r) {
+            if (!r.ingredient_id) return;
+            var key = r.ingredient_id + '|' + self.logic._normalizeUnit(r.unit);
+            if (!groups[key]) groups[key] = { ingredient_id: r.ingredient_id, name: (r.ingredients && r.ingredients.name) || '?', unit: r.unit || '', amount: 0, grams: null };
+            groups[key].amount += (typeof r.amount === 'number' ? r.amount : 0);
+            if (typeof r.grams_estimate === 'number') groups[key].grams = (groups[key].grams || 0) + r.grams_estimate;
+          });
+          var ingIds = Object.keys(groups).map(function(k) { return groups[k].ingredient_id; });
+          if (!ingIds.length) { cb(null, []); return; }
+          return RPGACE.sb.select('pantry_stock', 'select=ingredient_id,location,quantity,unit&ingredient_id=in.(' + ingIds.filter(function(v, i, a) { return a.indexOf(v) === i; }).join(',') + ')')
+            .then(function(stock) {
+              var left = {}; // shared across groups so two groups never take the same stock twice
+              (stock || []).forEach(function(s) { left[s.ingredient_id + '|' + s.location] = (typeof s.quantity === 'number' ? s.quantity : 0); });
+              var lines = Object.keys(groups).map(function(k) {
+                var g = groups[k];
+                var line = { ingredient_id: g.ingredient_id, name: g.name, amount: Math.round(g.amount * 100) / 100, unit: g.unit, status: 'none', takes: [] };
+                var mine = (stock || []).filter(function(s) { return s.ingredient_id === g.ingredient_id && left[s.ingredient_id + '|' + s.location] > 0; });
+                if (!mine.length || !(g.amount > 0)) return line;
+                mine.sort(function(a, b) { return (self.logic._normalizeUnit(b.unit) === self.logic._normalizeUnit(g.unit)) - (self.logic._normalizeUnit(a.unit) === self.logic._normalizeUnit(g.unit)); });
+                var remainingFrac = 1; // share of the recipe amount still to take
+                var anyConvertible = false;
+                mine.forEach(function(s) {
+                  if (remainingFrac <= 0) return;
+                  var need = self.logic._toStockUnit(g.amount * remainingFrac, g.unit, g.grams == null ? null : g.grams * remainingFrac, s.unit);
+                  if (need == null) return;
+                  anyConvertible = true;
+                  var keyL = s.ingredient_id + '|' + s.location;
+                  var have = left[keyL];
+                  var take = Math.min(have, need);
+                  if (take <= 0) return;
+                  left[keyL] = have - take;
+                  remainingFrac = need > 0 ? remainingFrac * (1 - take / need) : 0;
+                  line.takes.push({ location: s.location, unit: s.unit, have: have, take: Math.round(take * 100) / 100 });
+                });
+                line.status = !anyConvertible ? 'unconvertible' : (remainingFrac > 0.001 ? 'short' : 'ok');
+                return line;
+              });
+              cb(null, lines);
+            });
+        })
+        .catch(function(e) { cb(e.message || 'could not work out the stock change'); });
+    },
+
+    // Takes the confirmed amounts out and records them on the cook.
+    // `takes` = [{ingredient_id, name, location, unit, take}]. Re-reads each
+    // row first and never goes below zero. cb(err, items) — items carry
+    // `took` and `left`.
+    _applyDeduction: function(plannedCookId, takes, cb) {
+      var done = [];
+      var step = function(i) {
+        if (i >= takes.length) {
+          var rec = { at: new Date().toISOString(), items: done };
+          if (!plannedCookId) { RPGACE.cache && RPGACE.cache.clear && RPGACE.cache.clear('pantry_stock'); cb(null, done); return; }
+          RPGACE.sb.secureWrite('planned_cooks', 'update', { stock_deducted: rec }, 'id=eq.' + plannedCookId)
+            .then(function() { RPGACE.cache && RPGACE.cache.clear && RPGACE.cache.clear('pantry_stock'); cb(null, done); })
+            .catch(function(e) { cb('stock updated, but the record of it did not save: ' + (e.message || 'unknown'), done); });
+          return;
+        }
+        var t = takes[i];
+        if (!(t.take > 0)) { step(i + 1); return; }
+        var where = 'ingredient_id=eq.' + t.ingredient_id + '&location=eq.' + encodeURIComponent(t.location);
+        RPGACE.sb.select('pantry_stock', 'select=quantity&' + where + '&limit=1')
+          .then(function(rows) {
+            var cur = (rows && rows[0] && typeof rows[0].quantity === 'number') ? rows[0].quantity : 0;
+            var took = Math.min(cur, t.take);
+            var left = Math.round((cur - took) * 100) / 100;
+            return RPGACE.sb.secureWrite('pantry_stock', 'update', { quantity: left, updated_at: new Date().toISOString() }, where)
+              .then(function() { done.push({ ingredient_id: t.ingredient_id, name: t.name, location: t.location, unit: t.unit, took: Math.round(took * 100) / 100, left: left }); step(i + 1); });
+          })
+          .catch(function(e) { cb('stopped part-way: ' + (e.message || 'stock update failed'), done); });
+      };
+      step(0);
+    },
+
+    // Puts a cook's recorded deduction back. cb(err, count).
+    _undoDeduction: function(plannedCookId, cb) {
+      var self = RPGACE.modules.cookingOracle;
+      RPGACE.sb.select('planned_cooks', 'select=stock_deducted&id=eq.' + plannedCookId + '&limit=1')
+        .then(function(rows) {
+          var rec = rows && rows[0] && rows[0].stock_deducted;
+          if (!rec || !rec.items || !rec.items.length) { cb('nothing was taken out for this cook'); return; }
+          if (rec.undone_at) { cb('already put back'); return; }
+          var items = rec.items;
+          var step = function(i) {
+            if (i >= items.length) {
+              rec.undone_at = new Date().toISOString();
+              RPGACE.sb.secureWrite('planned_cooks', 'update', { stock_deducted: rec }, 'id=eq.' + plannedCookId)
+                .then(function() { cb(null, items.length); })
+                .catch(function(e) { cb('stock put back, but the record did not update: ' + (e.message || 'unknown')); });
+              return;
+            }
+            var it = items[i];
+            if (!(it.took > 0)) { step(i + 1); return; }
+            self.logic._addStock(it.ingredient_id, it.location, it.took, it.unit, function(err) {
+              if (err) { cb('stopped part-way: ' + err); return; }
+              step(i + 1);
+            });
+          };
+          step(0);
+        })
+        .catch(function(e) { cb(e.message || 'could not read the cook'); });
+    },
+
+    // The standing top-up grocery list (shopping_lists.kind='topup'): reuses
+    // the newest open one or makes it. Skips ingredients already on it and
+    // not yet bought (rule 8, data dedup). cb(err, listId, added).
+    _addToTopUpList: function(items, cb) {
+      var getList = RPGACE.sb.select('shopping_lists', 'select=id&kind=eq.topup&status=eq.open&order=created_at.desc&limit=1')
+        .then(function(rows) {
+          if (rows && rows[0]) return rows[0].id;
+          return RPGACE.sb.secureWrite('shopping_lists', 'insert', { planned_cook_id: null, status: 'open', shop_mode: 'can_shop', kind: 'topup' })
+            .then(function(data) {
+              var row = Array.isArray(data) ? data[0] : data;
+              if (!row || !row.id) throw new Error('top-up list insert returned no row');
+              return row.id;
+            });
+        });
+      getList
+        .then(function(listId) {
+          return RPGACE.sb.select('shopping_list_items', 'select=ingredient_id&bought=eq.false&list_id=eq.' + listId)
+            .then(function(existing) {
+              var have = (existing || []).map(function(e) { return e.ingredient_id; });
+              var fresh = (items || []).filter(function(it, i, a) {
+                return it.ingredient_id && have.indexOf(it.ingredient_id) === -1 && a.findIndex(function(x) { return x.ingredient_id === it.ingredient_id; }) === i;
+              });
+              if (!fresh.length) return [listId, 0];
+              return RPGACE.sb.secureWrite('shopping_list_items', 'insert', fresh.map(function(it) {
+                return { list_id: listId, ingredient_id: it.ingredient_id, needed_amount: it.amount || null, needed_unit: it.unit || null, have_amount: 0, to_buy_amount: it.amount || null, bought: false };
+              })).then(function() { return [listId, fresh.length]; });
+            });
+        })
+        .then(function(r) { RPGACE.cache && RPGACE.cache.clear && RPGACE.cache.clear('shopping_list_items'); cb(null, r[0], r[1]); })
+        .catch(function(e) { cb(e.message || 'could not add to the top-up list'); });
+    },
+
+    _finishCook: function(plannedCookId, agendaId, recipeIds, cb, opts) {
       var self = RPGACE.modules.cookingOracle;
       cb = cb || function() {};
+      opts = opts || {};
       if (!plannedCookId) { cb('no cook session id'); return; }
       RPGACE.sb.secureWrite('planned_cooks', 'update', { status: 'cooked' }, 'id=eq.' + plannedCookId)
         .then(function() {
@@ -49317,6 +49996,10 @@ RPGACE.register('cookingOracle', {
           }
           if (self._scheduledSession && self._scheduledSession.plannedCookId === plannedCookId) self._scheduledSession = null;
           cb(null);
+          // CR-2 — every finish path (hub, Live Cook, My Day cooking block,
+          // Daily Schedule Done) lands here, so the stock preview is offered
+          // from one place. After cb so the caller's own popup closes first.
+          if (!opts.skipStock) setTimeout(function() { self.ui._offerStockUpdate(plannedCookId, ids); }, 0);
         })
         .catch(function(e) { cb(e.message || 'could not mark cook finished'); });
     },

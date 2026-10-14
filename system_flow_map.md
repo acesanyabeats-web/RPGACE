@@ -687,6 +687,23 @@ flowchart LR
   CBT -->|+10 tick: quest_log kind block| XPB[xp_on_change → block_tick → realm XP]
 ```
 
+## 15k. Cooking reorganisation (CR-1..6, Oct 14 2026) — built, untested by Alex
+
+```mermaid
+flowchart LR
+  HUB[Cooking home: Recipes → Plan → Shop → Cook → Stock + what's next] --> MR[My Recipes]
+  MR -->|Cook now / + Planned cook / missing → top-up| PLAN[Planned cook] --> SHOP[Grocery list]
+  SHOP -->|bought + price + pantry/fridge/freezer| ADD[_addStock → pantry_stock]
+  PLAN --> COOK[Cook Mode / Live Cook] --> FIN[_finishCook]
+  MD[My Day cooking block] --> FIN
+  DS[Daily Schedule Done] --> OFF
+  FIN --> OFF[_offerStockUpdate preview] -->|confirm| DED[_applyDeduction → pantry_stock + planned_cooks.stock_deducted]
+  DED -->|undo| ADD
+  DED -->|ran out| TOP[(shopping_lists kind=topup)]
+```
+
+Truth table: bought → stock with location, finish → preview → deduct/undo, top-up list, journey hub, My Recipes, ← back to the previous Cooking screen, cross-links — built, headless-verified (38 checks). Cooking in servings other than the recipe's base on a planned cook — deducts base amounts (editable in the preview).
+
 ## 15j. Freeze recorder (PS-1/PS-2, Oct 14 2026) — built, untested by Alex
 
 ```mermaid

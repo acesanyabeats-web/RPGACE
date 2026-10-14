@@ -90,7 +90,7 @@ LOGIC_POINTS = [
         'id': 'oracle-mode',
         'title': 'Oracle Mode: Real / Dummy / Fallback Scout',
         'decider': 'Alex (manual toggle)',
-        'module': 'mockOracle', 'func': 'setMode', 'lines': (39921, 39933), 'anchor': "self.MODES.indexOf(mode) === -1",  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 37417-37429, then 38582-38594 before XP-4 (+166 lines), then 38748-38760 before XP-5 (+379); span = real function start to its closing line
+        'module': 'mockOracle', 'func': 'setMode', 'lines': (39922, 39934), 'anchor': "self.MODES.indexOf(mode) === -1",  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 37417-37429, then 38582-38594 before XP-4 (+166 lines), then 38748-38760 before XP-5 (+379); span = real function start to its closing line
         'decides': 'Which of 3 real paths every single Oracle call in the app takes, app-wide, until toggled again.',
         'changes': 'Real: every window.callOracle() call in main.js checks getMode() first. \'dummy\' short-circuits to a synthetic labeled reply, zero API cost. \'fallback\' queues the real prompt into oracle_fallback_queue instead of calling the live API. \'real\' calls the live Anthropic API as normal.',
         'result': 'A visible top-right toggle switch (red/green/gold) whose state persists in localStorage and is checked on literally every real Oracle send in the app.',
@@ -100,7 +100,7 @@ LOGIC_POINTS = [
         'id': 'taxonomy-card-branch',
         'title': 'Taxonomy & Review: which part to open',
         'decider': 'Alex (picker popup)',
-        'module': 'dashDeck', 'lines': (16379, 16440),  # Oct 11 2026 (M1 anchor sweep): rewritten, not just re-lined. The old "_pendingReviewCount !== 0" auto-branch was removed Sep 26 2026 (commit cd51f44); the card now always opens dashDeck._openTaxonomy's picker.
+        'module': 'dashDeck', 'lines': (16380, 16441),  # Oct 11 2026 (M1 anchor sweep): rewritten, not just re-lined. The old "_pendingReviewCount !== 0" auto-branch was removed Sep 26 2026 (commit cd51f44); the card now always opens dashDeck._openTaxonomy's picker.
         'anchor': "if (rq && rq._openCard) rq._openCard();",
         'decides': 'Whether Alex goes to the pending-placement review queue, the Phylum Path tree, or the Jargon Encyclopedia.',
         'changes': 'Nothing is decided by code any more: the picker shows the live pending-placement count (dashDeck._pendingReviewCount, set by _refreshGlance) under the Review button so Alex can see if review is worth it.',
@@ -111,7 +111,7 @@ LOGIC_POINTS = [
         'id': 'placement-scored',
         'title': 'Taxonomy placement: Council-of-5 scored decision',
         'decider': 'Oracle (ground-worker judgment call)',
-        'module': 'phylumPath', 'func': 'decidePlacementScored', 'lines': (20321, 20360),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 19749-19788; span = real function start to its closing line; 2+ matches, picked the real implementation over the pass-through wrapper
+        'module': 'phylumPath', 'func': 'decidePlacementScored', 'lines': (20322, 20361),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 19749-19788; span = real function start to its closing line; 2+ matches, picked the real implementation over the pass-through wrapper
         'anchor': 'decidePlacementScored: function',
         'decides': 'Where a new insight/leaf attaches in the taxonomy tree — an existing node (by number) or a brand-new path from the phylum root — and whether it belongs in this phylum at all.',
         'changes': 'The full numbered, indented tree for that phylum (real Supabase read), plus 5 named checks (pedagogical clarity, non-redundancy, practical applicability, structural fit, expansion headroom) folded into one prompt.',
@@ -122,7 +122,7 @@ LOGIC_POINTS = [
         'id': 'dedup-extend',
         'title': 'Taxonomy dedup: extend existing leaf vs. reject',
         'decider': 'Code logic (real empty-newSteps + existing-leaf check)',
-        'module': 'phylumPath', 'func': '_insertNewSteps', 'lines': (20614, 20786),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 19989-20163; span = real function start to its closing line; 2+ matches, picked the real implementation over the pass-through wrapper
+        'module': 'phylumPath', 'func': '_insertNewSteps', 'lines': (20615, 20787),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 19989-20163; span = real function start to its closing line; 2+ matches, picked the real implementation over the pass-through wrapper
         'anchor': '_insertNewSteps: function',
         'decides': 'What happens when Oracle judges an insight to be a near-duplicate of something already in the tree (returns zero newSteps).',
         'changes': "attachNode's own node_type — a real 'leaf' means there's a real existing article to extend; anything else means there's nowhere real to attach the insight without a new step.",
@@ -133,7 +133,7 @@ LOGIC_POINTS = [
         'id': 'oracle-grounding-gate',
         'title': "Oracle grounding gate: does this prompt get RPGACE's own facts injected",
         'decider': 'Code logic (real keyword match against the live prompt)',
-        'module': 'oracleAppGrounding', 'lines': (11324, 11370),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 10882-10905; kept the narrow anatomy-gate block, ending at the `if (!matched && !anatomyHit ...) return orig.apply` short-circuit line, not the whole enclosing wrap
+        'module': 'oracleAppGrounding', 'lines': (11325, 11371),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 10882-10905; kept the narrow anatomy-gate block, ending at the `if (!matched && !anatomyHit ...) return orig.apply` short-circuit line, not the whole enclosing wrap
         'anchor': 'anatomyHit = self.ANATOMY_KEYWORDS.some',
         'decides': "Whether a real window.callOracle() send gets RPGACE's own SELF_KNOWLEDGE/anatomy grounding block injected into the system prompt before it goes out.",
         'changes': "The user's own last message text, scanned against 2 real keyword lists (TRIGGER_KEYWORDS for general app-knowledge grounding, ANATOMY_KEYWORDS for module-architecture grounding) — or a forced override via forceGroundNext() for a command that always needs it (Prod Oracle's \"5thDimension\").",
@@ -144,7 +144,7 @@ LOGIC_POINTS = [
         'id': 'primary-action-lookup',
         'title': 'Content Pipeline: which single primary action button renders',
         'decider': 'Code logic (real content_productions.status lookup)',
-        'module': 'contentProductionLive', 'func': '_refreshWidget', 'lines': (30086, 30510),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 29489-29864; span = real function start to its closing line
+        'module': 'contentProductionLive', 'func': '_refreshWidget', 'lines': (30087, 30511),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 29489-29864; span = real function start to its closing line
         'anchor': 'flow.primary[row.status]',
         'decides': "Which ONE real action button shows on a music_video ConID card — the real fix for the Aug 6 \"duplicate stage\" complaint, where every ConID used to render a FIXED set of buttons regardless of real progress.",
         'changes': "The ConID row's own real content_productions.status column value ('Idea'/'Scripted'/'Filmed'/'Edited'/'Posted'/'Analysed').",
@@ -155,7 +155,7 @@ LOGIC_POINTS = [
         'id': 'artist-phylum-routing',
         'title': 'Last.fm-discovered artists: which phylum they get filed under',
         'decider': 'Code logic (hardcoded phylum_number literal)',
-        'module': 'beatLog', 'func': '_addNewArtistsToTaxonomy', 'lines': (26823, 26830),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 26221-26228; kept narrow: the real secureWrite insert object literal holding the literal, not the whole function
+        'module': 'beatLog', 'func': '_addNewArtistsToTaxonomy', 'lines': (26824, 26831),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 26221-26228; kept narrow: the real secureWrite insert object literal holding the literal, not the whole function
         'anchor': 'phylum_number: 11',
         'decides': 'Which taxonomy phylum a newly-discovered Last.fm artist (via _addNewArtistsToTaxonomy) gets written into.',
         'changes': 'Nothing dynamic — this is a fixed literal, the real near-miss CLAUDE.md rule 13 was written about: the Aug 11 phylum renumber (11<->12) needed a SECOND, separate grep for this raw literal because no adjacent "Phylum 12" text existed nearby to catch it in the first display-text-only pass.',
@@ -189,7 +189,7 @@ TEXT_INPUT_POINTS = [
     {
         'id': 'beat-log-form',
         'title': 'Beat Log form — real multi-field text entry that creates a content_productions/video_jobs row',
-        'module': 'beatLog', 'func': '_getForm', 'lines': (27361, 27377),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 26760-26776; kept narrow: the real `return {...}` object literal holding the literal
+        'module': 'beatLog', 'func': '_getForm', 'lines': (27362, 27378),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 26760-26776; kept narrow: the real `return {...}` object literal holding the literal
         'anchor': "title:    get('bl-title')",
         'decides': "Title/key/BPM/scale/energy/mood/genre/rating/licence/collab/ref-track/FL-path — real typed values read directly off the DOM, no defaults faked — that _submit() turns into the actual real database row this ConID's whole downstream pipeline is built from.",
         'link': None,
@@ -197,7 +197,7 @@ TEXT_INPUT_POINTS = [
     {
         'id': 'director-blend-inspiration',
         'title': "Director Blend inspiration notes — Alex's own free-text creative direction",
-        'module': 'visualOracle', 'lines': (7293, 7311),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +32 lines from 7050-7067 due to real code changes earlier in the file since Sep 8
+        'module': 'visualOracle', 'lines': (7294, 7312),  # re-verified Sep 15 2026 (real wiring-sweep pass), drifted +32 lines from 7050-7067 due to real code changes earlier in the file since Sep 8
         'anchor': "var insp = insBox.value.trim()",
         'decides': "Alex's own typed creative notes, kept in a real, separately-labeled group (never conflated with the director-blend keywords) so the outbound Visual Treatment prompt can't confuse his own words with Oracle-generated style language.",
         'link': None,
@@ -205,7 +205,7 @@ TEXT_INPUT_POINTS = [
     {
         'id': 'taxonomy-placement-editor',
         'title': 'Taxonomy Placement Editor — editing a proposed step name/explainer before it writes to taxonomy_tree',
-        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (21874, 21949),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 21240-21315; span = real function start to its closing line; 2+ matches, picked the real implementation over the pass-through wrapper
+        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (21875, 21950),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 21240-21315; span = real function start to its closing line; 2+ matches, picked the real implementation over the pass-through wrapper
         'anchor': '_showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject)',
         'decides': "Alex can edit Oracle's own proposed step names/explainers inline before confirming — real typed text that replaces the AI's own wording in the eventual taxonomy_tree write, the one place in the whole taxonomy pipeline where his own words can override the model's.",
         # Aug 25 2026 — real dead-anchor fix (see the note on the gate

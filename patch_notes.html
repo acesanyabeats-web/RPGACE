@@ -73,6 +73,42 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-14-cooking-reorg" style="margin-bottom:30px;">
+    <div class="card-title">🍳 Oct 14 — Cooking reorganised: a step-by-step home, My Recipes, back buttons, and stock that keeps itself up to date</div>
+    <div class="card-body">
+      You asked for Cooking's screens to be "better interconnected, with flawless logic". Your answers: a journey hub, a My Recipes screen with actions, all three automatic stock moves, and Back to the previous screen. You approved the plan with "All approved". Record: <code>records/2026-10/cooking_reorg_ceo_plan_2026-10-14.txt</code>.
+      <ul>
+        <li><strong>Two bugs fixed first (CR-1).</strong>
+          <ul>
+            <li>Ticking a grocery item "bought" tried to add it to your stock using the wrong key. It would have failed every time with "purchase log failed" and never recorded where the item went. No item had been ticked bought yet, so nothing was lost.</li>
+            <li>It now asks Pantry, Fridge or Freezer after the price (pre-picked: wherever that ingredient was last kept, otherwise fridge for chilled/meat, freezer for frozen, pantry for the rest) and adds the pack to that place.</li>
+            <li>If the pack's unit doesn't match the list's unit, it says so instead of guessing.</li>
+            <li>Two functions that read your stock the same way are now one.</li>
+          </ul></li>
+        <li><strong>Finishing a cook updates stock (CR-2).</strong>
+          <ul>
+            <li>"Cook finished" (from the Cooking home, Live Cook, a My Day cooking block or the Daily Schedule) now shows what it will take out of stock. You can change any amount or untick it before anything changes.</li>
+            <li>Amounts convert between ml/l/cups, g/kg, and from a recipe's own gram estimate. Anything that can't be converted (e.g. "a pinch" against grams) is listed as not taken out, never guessed.</li>
+            <li>What was taken out is saved on the cook, with "↩ Put it all back". A cook can only be taken out of stock once.</li>
+            <li>Anything that hits zero is offered onto a standing <strong>top-up grocery list</strong>, with no duplicates.</li>
+            <li>Finishing a single recipe in Cook Mode offers the same, scaled to the servings you cooked (no undo there, and it says so).</li>
+          </ul></li>
+        <li><strong>Back goes back (CR-3).</strong> Every Cooking screen's ← now returns to the Cooking screen you came from, named ("← Current Stock"), and there's a 🏠 Cooking button. Still one popup at a time.</li>
+        <li><strong>My Recipes (CR-4).</strong> All saved recipes in one list: search, cuisine, "Everything in stock" or how many things to buy, and when you last cooked it. Each has Open, ▶ Cook now, + Planned cook, and 🛒 Missing → top-up list.</li>
+        <li><strong>A new Cooking home (CR-5).</strong> 📖 Recipes → 🍳 Plan a cook → 🛒 Shop → 🔥 Cook → 📦 Stock, with a line on top saying what's next (e.g. "Next cook 18 Oct: Rice bowl — 3 things to buy", plus your top-up count). New recipe, What can I cook?, Top-up list and Settings sit underneath.</li>
+        <li><strong>Missing links added (CR-6).</strong>
+          <ul>
+            <li>Current Stock → What can I cook? / Top-up list.</li>
+            <li>Grocery list → 📦 Stock.</li>
+            <li>The last step of a planned cook's Cook Mode asks "Mark this cook finished?".</li>
+            <li>A new grocery list is now linked to its own cook, so 🛒 Shop opens the right one.</li>
+          </ul></li>
+      </ul>
+      Database: <code>planned_cooks.stock_deducted</code> and <code>shopping_lists.kind</code> (cook / topup), both new and additive (<code>records/2026-10/cooking_reorg_migration_2026-10-14.sql</code>).
+      Verified: 38 new headless checks against a mock database (bought → freezer adds 1000ml; 2 onions → 0.3kg via the gram estimate; a pinch of saffron left alone; preview, untick, deduct, undo, no second deduction; top-up list without duplicates; journey order and "what's next"; Back chains Stock → What can I cook → Stock → Cooking with one popup open; My Recipes search and + Planned cook; half-servings scale), plus the earlier Cooking, Cook Mode, Health, My Day and Plans suites, all passing. <strong>Not yet tested by you.</strong>
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-14-polish-speed" style="margin-bottom:30px;">
     <div class="card-title">⚡ Oct 14 — Polish &amp; speed: freeze recorder, the "App froze" alert explained, one size for Cooking buttons</div>
     <div class="card-body">
