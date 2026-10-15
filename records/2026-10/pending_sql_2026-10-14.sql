@@ -11,3 +11,7 @@ update error_log set rationale = 'Oct 14 2026: root cause found by a headless pr
 insert into smoke_test_items (category, item_name, description, status, source_ref) values
 ('RPGACE App — Modules','Freeze recorder + no startup freeze alert (perfWatch, PS-1/PS-2)','HOW TO TEST: open RPGACE fresh on the phone; there should be no red App froze alert during the loading screen. Use the app normally for a day; any freeze after loading still alerts, and a perf_freezes row says what was running.','unverified','patch_notes.html#card-2026-10-14-polish-speed'),
 ('RPGACE App — Modules','Cooking buttons one size (cookingOracle, PS-3)','HOW TO TEST: open Cooking, a recipe card and Cook Mode; main buttons are the same height, small row buttons (Use X instead, Pick from stock) are easy to tap, Cook Mode Back/Next are big.','unverified','patch_notes.html#card-2026-10-14-polish-speed');
+
+-- Oct 15 2026: connector timed out 3x on this (no lock, no trigger found). Realm Inputs RI-0 status.
+update ceo_plan_items set status='yellow', last_verdict='built: realm_lenses.json, realms columns, RPGACE.realmOf; 4 headless checks; lenses awaiting Alex review'
+ where plan_id='83816395-aa36-48f7-9aec-6c63003f860b' and item_code='RI-0';
