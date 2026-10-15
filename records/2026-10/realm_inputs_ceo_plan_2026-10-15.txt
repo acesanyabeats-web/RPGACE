@@ -271,3 +271,16 @@ realms columns (migration realm_inputs_ri5_encyclopedia_realms: default {produce
 kept rows, then default dropped); writers: articleFromReport/_saveArticle, saveChapterIdea, toIdea,
 video analyser encyclopedia insert; realm card "Taken in this month" line + wheel chips.
 Tests: ri5_test.js 16/16.
+
+=== Menu quick changes (Oct 15 2026, Alex mid-build) ===
+"roll up all tabs", "make oracle tab the actual button to access the domain", "when i click close, return
+me to dashboard, not last viewed page". Built: bands start folded (rpgace.ln.open), no auto-open of the
+current area; Oracle heading carries page -> band is the button, Oracle AI item removed; dashDeck popup
+Close -> dashboard when no popup left. ln_test.js 8/8; kn0 assertion updated to the new behaviour.
+Alex then: "after go straight to next step plan".
+
+=== RI-6 (Oct 15 2026) - input XP ===
+xp_rules input_taken; trigger xp_input_taken on library_items -> xp_on_input(): 60/n per realm, first 3
+inputs a day, insert-with-realms or held {} answered only, library_added removed. Verified with a
+rolled-back DO block: A 2 realms 30+30; B held->chef 60; C null->life 0; D 3rd input 60; E capped 0;
+re-tag 0; library_added removed.
