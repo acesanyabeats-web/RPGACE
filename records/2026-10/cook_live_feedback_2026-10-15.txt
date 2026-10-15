@@ -16,3 +16,14 @@ Seen in the screenshots (not raised by Alex, found on inspection):
 - step 10 ingredient reads "star anise 0 whole" (a removal step shows a zero quantity).
 - "Step 9 ⏱ 3:41" running-timer chip already carries a timer across steps.
 Status: logged, not built. Needs a brief (rule 18) before building.
+
+ANSWERS (Oct 15, same evening)
+- Order: "Finish RC-5 first" (Cook Mode fixes come right after RC-5).
+- Timer ends: "Oracle writes it, old recipes reuse the next step (Recommended)" - new recipes get a
+  per-passive-step "when the timer ends" line; old recipes show the following step; Done on the bar clears it.
+- Done on an unscheduled cook (all three picked): mark it cooked + back-fill the schedule (Cook Mode open ->
+  Done, real minutes, Chef XP); take it out of any cook session it's queued in; then offer the stock update.
+- Cook chat: "Built-in chat panel (Recommended)" - a slide-up Ask panel inside Cook Mode, knows recipe, step
+  and running timers, separate from main chat; the 🔮 orb moves off the Next button.
+Also to fix: "0 whole" quantity on removal steps; passive timers start on an active confirm and the step
+carries forward until the timer goes off.
