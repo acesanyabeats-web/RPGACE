@@ -73,6 +73,20 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-15-input-quests" style="margin-bottom:30px;">
+    <div class="card-title">⚔️ Oct 15 — Quests from what you take in, per realm (RI-7)</div>
+    <div class="card-body">
+      Step 8 of "Realm Inputs" — your "Quests per realm", after the /paranoia pass you asked for.
+      <ul>
+        <li><b>What the check found:</b> "Make quests" used to add every quest from a video at once, at Oracle's own figure (up to 200 XP each), and completing any quest paid <b>Life</b> XP no matter what it was about.</li>
+        <li><b>Now:</b> a video's summary and its Encyclopedia post show "Suggested quests", each with its realm icon, the XP it will pay and its own <b>+ Add</b>. Added quests appear in your quest list with their realm icon.</li>
+        <li><b>XP (your choice):</b> Oracle's figure rounded to 5, never above 100; only the <b>first 3 input-quests you complete each day</b> pay. Completing one pays its own realm.</li>
+        <li><b>Every quest pays its realm now:</b> older quests in career/health/lifestyle pay Producer/Athlete/Life instead of always Life.</li>
+      </ul>
+      Tested: database cases in a rolled-back run (cap, rounding, daily limit, old categories) and 13 in-app checks. <b>Untested by your own hand.</b>
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-15-input-xp" style="margin-bottom:30px;">
     <div class="card-title">⭐ Oct 15 — What you take in now earns realm XP (RI-6)</div>
     <div class="card-body">

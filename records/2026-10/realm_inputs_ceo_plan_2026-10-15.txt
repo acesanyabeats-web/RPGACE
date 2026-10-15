@@ -284,3 +284,44 @@ xp_rules input_taken; trigger xp_input_taken on library_items -> xp_on_input(): 
 inputs a day, insert-with-realms or held {} answered only, library_added removed. Verified with a
 rolled-back DO block: A 2 realms 30+30; B held->chef 60; C null->life 0; D 3rd input 60; E capped 0;
 re-tag 0; library_added removed.
+
+=== RI-7 /paranoia (right-sized) - quest XP: cap 100 vs flat 50 ===
+Alex: "go, cap at 100 or 50, /paranoia this"
+EVIDENCE
+- pathways.logic.makeQuests (rpgace_core ~9697) adds ALL of a report's quests in one tap via
+  questEngine._createQuests at xp = Oracle's figure (prompt asks 50-200), category career/health/lifestyle.
+- xp_on_change quest_log branch: block -> category realm; routine -> area realm; everything else ->
+  xp_award('quest_done', ..., p_realm null) -> xp_rules quest_done realm = LIFE. So input quests pay Life only.
+- quest_log today: 39 rows (workflow steps 0 XP, knowledge_gap 90, needs_input 60, taxonomy_review 80),
+  0 completed; no quest_done XP ever paid. Quest ticks are unverified (was-it-done covers deletes only).
+- Economy: beat_finished 120, video_posted 300, cook 60, gym 40, challenge 75, realm_quest_step 50,
+  input 60 (split, first 3/day), beat_logged 30 (capped).
+FREE-FOR-ALL (2 points each)
+- Economy guardian: flat 50 keeps 2 quests from one video (100) under a finished beat (120). / Today's
+  uncapped 200x2 can out-earn posting a video.
+- Discipline advocate (Alex: "a discipline machine with tasks broken down"): doing must outrank taking
+  in - flat 50 < the 60 an input pays, so watching would beat doing. / Cap 100 keeps doing > watching.
+- Effort-honesty: Oracle's figure is the only effort signal (a studio task vs "write 3 lines"); a cap
+  keeps it, a flat value erases it. / Round to 5/10 like the input split.
+- Anti-farming: ticks are honour-system; a per-day ceiling (like inputs' first 3) bounds abuse either way.
+- Simplicity: flat 50 = one number, same as realm quest steps. / Cap 100 = one more rule to explain.
+DRIFT: both options on track vs RI-7 ("quests carry their realm, land as suggestions you can add");
+MATERIAL gap in today's code either way: realm ignored (Life only) and all-at-once adding.
+BUILD (independent of the number): quest realm in category (the block precedent, no new column);
+xp_on_change's quest_done branch pays the category realm (realm keys as-is; career->producer,
+health->athlete, lifestyle->life per RPGACE.QUEST_CATEGORY_REALM); per-quest "+ Add to My Day" with
+realm icon on the video summary + article; source_table intel_reports / source_ref url.
+ALEX'S ANSWERS: "Oracle's figure, capped at 100 (Recommended)"; daily cap "First 3 a day (Recommended)".
+RI-7 BUILT: migration realm_inputs_ri7_quest_realms (xp_rules input_quest; xp_on_change quest branch via
+an exact-text replace that fails loud if not found): category realm, input_quest 5..100 rounded to 5,
+first 3/day. Verified in a rolled-back DO block: 150->100 mind, 47->45 producer, 60 chef, 4th -> 0,
+career 80 -> producer, lifestyle 30 -> life. Client: pathways questCand/questRealm/questXp/addQuest,
+ui.questList replaces "Make N quests"; videoSummary _questsHtml + delegated "quest"; questEngine card
+icon. ri7_test.js 13/13.
+ALEX'S ANSWERS: "Oracle's figure, capped at 100 (Recommended)"; daily cap "First 3 a day (Recommended)".
+RI-7 BUILT: migration realm_inputs_ri7_quest_realms (xp_rules input_quest; xp_on_change quest branch via
+an exact-text replace that fails loud if not found): category realm, input_quest 5..100 rounded to 5,
+first 3/day. Verified in a rolled-back DO block: 150->100 mind, 47->45 producer, 60 chef, 4th -> 0,
+career 80 -> producer, lifestyle 30 -> life. Client: pathways questCand/questRealm/questXp/addQuest,
+ui.questList replaces "Make N quests"; videoSummary _questsHtml + delegated "quest"; questEngine card
+icon. ri7_test.js 13/13.
