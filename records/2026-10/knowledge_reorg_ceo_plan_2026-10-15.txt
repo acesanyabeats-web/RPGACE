@@ -1,0 +1,100 @@
+KNOWLEDGE REORGANISATION (Scholar) - /interrogation -> /paranoia (right-sized) + /free-for-all-debate + /drift -> /CEO Loop 1
+Date: 2026-10-15
+Plan 1 of the "regen every area" series (Cooking was the pattern, done Oct 14).
+
+ALEX'S ASK (verbatim)
+"Now I'd like you to regen every domain like you did for cooking, include left nav section of each too
+to make this pop"
+
+ROUND 1 ANSWERS (whole series)
+- Pacing: "2 but nav done with each area, also make sub-domain separate plans with realms in mind"
+  -> one sub-area plan at a time; that area's left nav section is built inside its own plan.
+- Nav pop: "Colour + icon per area", "Mini XP bar per area".
+- Hubs: "Yes, every area (Recommended)" - Cooking-style journey hub for every area.
+- Hidden features: asked for a summary first; then "Into their area's hub (Recommended)":
+  Business tab + Captions -> Content & Video; fridge photo -> Cooking stock; Decision Journal -> Journal;
+  Trophy cabinet -> Chronicles; Ask My Data + Pathways -> Oracle; watchlist digest -> its area.
+- First plan: "Knowledge (Scholar)". Split by realm: "Yes, as listed (Recommended)" - 12 plans:
+  Habits: Cooking (done) / Gym+Health (Athlete) / Wishlist (Steward)
+  Content: Beats (Producer) / Posting (Creator) / Selling + Business tab (Hustler)
+  Knowledge (Scholar) - this plan
+  Schedule: My Day (Life, Homekeeper, Mind) / Plans+People (Explorer, Connector) / Journal+Brief+Decisions (Life)
+  Oracle (no realm) / Chronicles+XP / Oversight (Builder)
+
+ROUND 2 ANSWERS (Knowledge)
+1. Journey: "Take in -> Study -> Learned -> Map (Recommended)" - Library -> Bookworm/Videoworm ->
+   Encyclopedia (ideas + jargon) -> Phylum Path; Review shown as a badge where a queue exists.
+2. Empty cards: "Fold into a Review step (Recommended)" - one Review step: jargon queue now;
+   placements + gaps join automatically once the tree has rows; both separate nav cards go.
+3. Screens: "All pages" - Library, Review, Screenshots (and the hub) become full pages.
+4. What's next sources: "Jargon to review, Today's recall card, Continue reading, New in the Library,
+   I'm sure there are more" -> added: screenshots waiting, video analyses not yet studied,
+   web lookups not saved to a shelf, phylums with an empty shelf.
+
+EVIDENCE (live, this pass)
+- Knowledge = 22 modules, 13,850 lines. Entry points: 5 pages (Bookworm, Videoworm, Encyclopedia,
+  Jargon Encyclopedia, Phylum Path) + 4 dashboard cards that open pop-ups (library, taxonomy, gaps,
+  screenshots) + Bookworm's worm picker pop-up.
+- Links out (static grep): screenshotInbox, recall, feynman, taxonomyTree, pathways, shareInbox,
+  webLookup link to no other Knowledge screen. Bookworm only links to itself. Encyclopedia posts link
+  only to Screenshots. No Knowledge screen has a "Knowledge home".
+- Data: library_items 45 (3 books), bookworm_books 1 / 26 chapters, encyclopedia_insights 831,
+  encyclopedia 43, jargon 507 pending / 38 accepted, taxonomy_tree 0 live rows (paused, LL-3),
+  taxonomy_proposals 0 pending, screenshots 0.
+- So: Taxonomy & Review and Knowledge Gaps cards are empty right now; the jargon queue is the real work.
+- Bug for the series: dashDeck.NAV_DOMAINS lacks 'health' -> Health popup shows no domain crumb.
+- Pages are late-injected shells (pattern: phylumPath/jargonEncyclopedia _injectPageShell), need a
+  CONFIG.pages slug + pathRouter membership + leftNav LATE_PAGES guard + xpSeason PAGE_REALMS entry.
+
+/PARANOIA (right-sized, rule 11)
+- No new tool, no new api/*.js (11 of 12), no new table expected. Reuse: lifeLibrary/screenshotInbox
+  render functions (render into a page container instead of a popup box), jargonEncyclopedia queue,
+  taxonomyReviewQueue + knowledgeGap renderers, recall.logic.today, bookworm chapter state,
+  Cooking's _wrapScreens idea for Back/home.
+- Commit archaeology: Library/Screenshots became pop-ups on purpose in N2 (dashboard -> left nav
+  dedup, Oct 10); turning them into pages is Alex's explicit reversal (answer 3), not drift.
+- Risk: old entry points (dashboard card keys 'library'/'taxonomy'/'gaps'/'screenshots', share target,
+  Morning Brief library pick, Bookworm "Your books") must keep working -> they route to the new pages.
+- Risk: the paused tree must stay paused - Review never triggers growth (taxonomyTree.logic.isPaused).
+- Landmine: page divs inside #app, created via document.createElement, never Python string replace.
+
+/FREE-FOR-ALL-DEBATE (4 competitors)
+- Minimalist: "pages are churn". Answer: Alex chose all pages; cost kept low by re-pointing the
+  existing render functions at a page container - no UI rewritten twice.
+- Workflow advocate: his real Knowledge work right now is jargon review (38 accepted, 507 to go;
+  phylum structuring waits on it). Answer: Review step + what's-next lead with the jargon count when
+  it is above zero; Jargon Encyclopedia stays one tap from the hub and the nav.
+- Data guardian: Review must not resurrect taxonomy writes. Answer: Review shows placements/gaps only
+  when the tree has rows; every write keeps its existing human checkpoint.
+- Builder: the area shell (colour, icon, realm XP bar, Back + home) will be reused by 11 more plans -
+  build it once here, small: one AREAS table {key, label, icon, colour, realms, hub()} + one helper.
+  Answer: adopted as KN-0, kept to what Knowledge needs plus the fields the others will need.
+
+/DRIFT (plan vs answers)
+- VERDICT on track, BASIS ratified (answers above). Every answer maps to an item. MINOR: Feynman and
+  Pathways buttons have no hub place - Feynman sits under Study, Pathways stays on posts (its hub home
+  is Oracle's plan per answer). Nothing CAPTURED.
+
+PLAN (each step briefed before building, rule 18)
+KN-0 Area shell (shared by every later plan): AREAS table (icon, colour, realms, hub page) + nav section
+     heading in the area colour with icon, fold open/closed, and a thin realm XP bar per realm; a
+     Back-to-previous-screen + 🏠 area-hub helper for pages and pop-ups; NAV_DOMAINS 'health' fix.
+KN-1 Knowledge hub page: Take in -> Study -> Learned -> Map steps with live counts, Review badge,
+     "what's next" line (jargon to review, continue reading, recall card, new in Library, screenshots
+     waiting, analyses not studied, unsaved web lookups, empty phylum shelves), Scholar XP card.
+KN-2 Life Library + Screenshot Inbox as full pages (same render code), old card keys/share target/
+     Morning Brief links route to them.
+KN-3 Review page: jargon queue (inline accept/edit/reject via the existing path), placements and gaps
+     sections that appear only when the tree has rows; Taxonomy & Review + Knowledge Gaps cards retired
+     (keys redirect here).
+KN-4 Back + 🏠 on every Knowledge page (Library, Screenshots, Bookworm, Videoworm, MusicWorm,
+     Encyclopedia, Jargon, Phylum Path, Review): Back = previous Knowledge screen.
+KN-5 Cross-links for the dead ends: Library item -> Study in Bookworm/Videoworm; screenshot -> its
+     Library item; idea card -> its phylum shelf; jargon term -> Review/Met in; Phylum shelf -> items;
+     recall card -> its source; Feynman under Study.
+KN-6 Left nav Knowledge section on the new shell: Hub, 4 steps (+ Jargon, Videoworm sub-items),
+     Review (with count), Screenshots; Scholar XP bar.
+KN-7 Tests (headless), minify, docs, SELF_KNOWLEDGE, Galaxy Map regen, push main, verify Vercel READY.
+
+Deliberately left out: rebuilding phylum structure (waits on jargon review), new AI features,
+restyling Bookworm's own chapter screens beyond Back/home.
