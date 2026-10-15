@@ -98,3 +98,14 @@ KN-7 Tests (headless), minify, docs, SELF_KNOWLEDGE, Galaxy Map regen, push main
 
 Deliberately left out: rebuilding phylum structure (waits on jargon review), new AI features,
 restyling Bookworm's own chapter screens beyond Back/home.
+
+OUTCOME (Oct 15 2026)
+All 8 steps built and pushed to main, each briefed and approved first (rule 18):
+KN-0 area shell, KN-1 Knowledge home, KN-2 Library/Screenshots pages, KN-3 Review page,
+KN-4 Back/home row on every page, KN-5 cross-links (Alex: video -> idea cards when they exist,
+else Videoworm), KN-6 menu in step order + Review count, KN-7 tests (16 suites passing),
+phone-width check of 11 pages (fixed 40px Back buttons on Jargon/Phylum Path), Galaxy Map regen.
+Found and fixed along the way: Videoworm fake "Ready" status (real intel_jobs queue), jargon
+saves failing silently, routines not editable, worm pages empty when opened from the menu.
+Deliberately not done: a "Review this" button on jargon rows (inline Accept/Edit/Reject exist).
+All items yellow = built and headless-verified, untested by Alex.
