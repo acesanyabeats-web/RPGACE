@@ -349,3 +349,23 @@ journal 6, kn0 12, kn1 15, ll 23, myday 39, xp12 25, vw 10 = 288 checks, 0 faile
 CLAUDE.md Plan 2 line folded (99,802 -> 99,069 chars in Current state). SELF_KNOWLEDGE FRESH,
 contradictions none, anchors 26/26. Galaxy Map regenerated (realmBrief on module/current pages),
 idempotent on a 2nd run, div/a/svg balanced. Plan close needs Alex's SQL (connector drops updates).
+
+=== RC-0 (Oct 15 2026) - Realm Connectors step 1 ===
+Alex: "go, start rc-0". Answers (verbatim choices):
+- Map: "i like 1 a lot, but i dont think tutorials falls under scholar, technically producer as a category
+  falls under scholar but i dont want that, /paranoia this i need thoughts on this"
+- New phyla: "Approve all 8 (Recommended)"
+/paranoia (right-sized): phylum 11's own 26 jargon terms are all learning methods (spaced repetition,
+retrieval practice, metacognition...) = the Scholar lens; 0 library items on 11; tutorials are a format,
+so shelve by subject; the real "producer under scholar" leak is XP (chapter_done/book_finished/
+library_added always pay scholar). /drift MATERIAL found: taxonomySync.PHYLUM_MAP kept the pre-Aug-11
+order (11 colour, 12 education, 13 content, 14 film) - fixed here (dormant: tree paused, 0 rows).
+Answers round 2: phylum 11 = "Scholar: \"Learning Methods, Study Skills\" (Recommended)";
+reading XP = "Half Scholar, half its realms" -> queued for RC-2 (knowledge feeds realms).
+Design note: phylum NAMES stay in taxonomyTree.PHYLUM_* (sync, read everywhere); the realm<->phylum MAP
+lives in realm_lenses.json (each realm's phyla) - one source each, checked by
+scripts/check_phylum_realms.py.
+Built: names/English/purpose 22-29, 11 renamed, Life scope group, lifeLibrary.maxShelf + SHELF_KEYWORDS,
+PHYLUM_MAP fix + 22-29, prompt counts no longer hardcoded 21, RPGACE.phylumRealms(), DB check 1..29.
+Tests: rc0_test 7/7; ll 23, ll2 14, ll4 16, ll7 13, ri4 11, ri0 4, ri4_py 13.
+Also this turn: chore edit-form fix (Laundry Colours), laundry "Put away" follow-up, 18:05 push alarm.
