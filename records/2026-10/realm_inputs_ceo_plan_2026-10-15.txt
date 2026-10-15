@@ -105,3 +105,10 @@ RATIFIED (Oct 15 2026)
 Alex: "confirming all 8 steps" (RI-0..RI-8 as listed; the plan has 9 codes counting the wrap-up).
 XP cap question left unanswered -> asked again in the RI-6 brief; default if never answered:
 first 3 inputs a day earn XP.
+
+ALEX, same day (after the XP + "left out" explanation):
+- XP cap: "First 3 inputs a day earn XP (up to 180 a day) ... agreed".
+- On realm-based Morning Brief picks: "this is awesome i like that, including realms into reports,
+  im think of making jargon and phylum path the connectors to the realms so that the knowledge is
+  fed into the realms, feeds quest and promotes success with back up from outsources".
+  -> asked whether these join this plan or a follow-up plan (see next entry).
