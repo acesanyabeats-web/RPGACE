@@ -4,7 +4,7 @@
   --panel:#13161e;--panel2:#1a1e29;--panel3:#20263a;
   --border:#2a3050;--border2:#3a4570;
   --text:#d4daf5;--muted:#868db8;
-  --green:#4caf82;--blue:#4a8ccc;--red:#cc4a4a;--purple:#9b6ec8;--orange:#cc7a3a;
+  --green:#4caf82;--blue:#4a8ccc;--red:#cc4a4a;--purple:#9b6ec8;--orange:#cc7a3a;--steel:#7f93c4;
   --hp-col:#e05555;--mp-col:#5588ee;--xp-col:#c9a84c;
   /* RGB triplets for rgba() — July 20 page-restructure pass, matching the
      values DESIGN.md already declared for its own token re-export */

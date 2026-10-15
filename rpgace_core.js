@@ -5530,6 +5530,94 @@ document.addEventListener('keydown', e=>{
     schedule: 'Schedule & Journal', chronicles: 'Chronicles', oversight: 'Oversight', platform: 'Platform'
   };
 
+  // Oct 15 2026 (KN-0, area regen series) — the look of each area in the
+  // left nav and on its hub: icon, colour token, and the XP realms it
+  // feeds (xpSeason.REALMS keys). `hub` is set by each area's own plan
+  // (e.g. Knowledge's hub page) and is what the 🏠 button opens.
+  // Record: records/2026-10/knowledge_reorg_ceo_plan_2026-10-15.txt
+  R.AREAS = {
+    oracle:     { label: 'Oracle', icon: '🔮', color: 'var(--gold)', realms: [] },
+    content:    { label: 'Content & Video', icon: '🎬', color: 'var(--purple)', realms: ['producer', 'creator', 'hustler'] },
+    knowledge:  { label: 'Knowledge', icon: '📚', color: 'var(--blue)', realms: ['scholar'] },
+    habits:     { label: 'Habits', icon: '🌱', color: 'var(--green)', realms: ['chef', 'athlete', 'steward'] },
+    schedule:   { label: 'Schedule & Journal', icon: '☀️', color: 'var(--orange)', realms: ['life', 'homekeeper', 'mind', 'explorer', 'connector'] },
+    chronicles: { label: 'Chronicles', icon: '📜', color: 'var(--gold)', realms: [] },
+    oversight:  { label: 'Oversight', icon: '🛠', color: 'var(--steel)', realms: ['builder'] },
+  };
+  R.areaForLabel = function (label) {
+    for (var k in R.AREAS) if (R.AREAS[k].label === label) return k;
+    return null;
+  };
+
+  // Back + 🏠 for any area screen (page or popup). A screen calls
+  // visit(area, {key, label, open}) when it shows; bar(area, opts) gives the
+  // "← Back to <previous>" + "🏠 <Area>" row. Back re-opens the previous
+  // screen of the SAME area (one stack per area); 🏠 opens R.AREAS[area].hub.
+  R.areaNav = {
+    _stacks: {},
+    visit: function (area, entry) {
+      if (!area || !entry || !entry.key) return;
+      var s = this._stacks[area] = this._stacks[area] || [];
+      for (var i = s.length - 1; i >= 0; i--) if (s[i].key === entry.key) { s.length = i; break; }
+      s.push(entry);
+      if (s.length > 20) s.shift();
+    },
+    previous: function (area) {
+      var s = this._stacks[area] || [];
+      return s.length > 1 ? s[s.length - 2] : null;
+    },
+    back: function (area) {
+      var s = this._stacks[area] || [];
+      if (s.length < 2) { this.home(area); return; }
+      s.pop();
+      var e = s[s.length - 1];
+      try { e.open(); } catch (err) { console.warn('[areaNav] back failed', err); }
+    },
+    home: function (area) {
+      var a = R.AREAS[area];
+      if (a && typeof a.hub === 'function') a.hub();
+    },
+    _css: function () {
+      if (document.getElementById('area-nav-css')) return;
+      var st = document.createElement('style');
+      st.id = 'area-nav-css';
+      st.textContent = '.area-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:0 0 12px}' +
+        '.area-bar button{min-height:44px;padding:8px 14px;border-radius:22px;border:1px solid var(--border);background:var(--panel2);color:var(--text);font-family:Rajdhani,sans-serif;font-size:14px;font-weight:700;cursor:pointer}' +
+        '.area-bar button:hover{border-color:var(--border2)}' +
+        '.area-bar .area-home{border-color:var(--area-c,var(--gold));color:var(--area-c,var(--gold))}';
+      document.head.appendChild(st);
+    },
+    // opts: { isHub: true } hides 🏠 on the hub itself.
+    bar: function (area, opts) {
+      opts = opts || {};
+      this._css();
+      var self = this, a = R.AREAS[area] || {}, prev = this.previous(area);
+      var el = document.createElement('div');
+      el.className = 'area-bar';
+      el.dataset.area = area;
+      if (a.color) el.style.setProperty('--area-c', a.color);
+      if (prev) {
+        var b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'area-back';
+        b.setAttribute('aria-label', 'Back');
+        b.textContent = '← ' + prev.label;
+        b.onclick = function () { self.back(area); };
+        el.appendChild(b);
+      }
+      if (!opts.isHub && typeof a.hub === 'function') {
+        var h = document.createElement('button');
+        h.type = 'button';
+        h.className = 'area-home';
+        h.textContent = '🏠 ' + a.label;
+        h.onclick = function () { self.home(area); };
+        el.appendChild(h);
+      }
+      if (!el.children.length) el.style.display = 'none';
+      return el;
+    },
+  };
+
   R.register = function (name, module) {
     if (R.modules[name]) {
       console.warn('[RPGACE.register] Already registered:', name);
@@ -12573,7 +12661,20 @@ RPGACE.register('leftNav', {
       '.ln-subcard{display:flex;align-items:center;gap:7px;width:100%;min-height:38px;padding:7px 10px;background:var(--dark);border:1px solid var(--border);border-radius:8px;color:var(--muted);font-family:Rajdhani,sans-serif;font-size:12px;font-weight:600;letter-spacing:.4px;text-align:left;cursor:pointer;transition:color .2s,border-color .2s,background .2s}',
       '.ln-subcard:hover{color:var(--text);border-color:var(--border2)}',
       '.ln-subcard.active{color:var(--gold);border-color:var(--gold);background:rgba(201,168,76,0.06)}',
-      '@media (prefers-reduced-motion: reduce){#ln-drawer,#ln-backdrop{transition:none}}',
+      // Oct 15 2026 (KN-0): each area is a coloured band (icon, name, fold
+      // chevron, one thin XP bar per realm) over its own entries.
+      '.ln-area{display:flex;flex-direction:column;gap:6px}',
+      '.ln-band{display:flex;flex-direction:column;gap:5px;width:100%;margin-top:8px;padding:9px 12px;border:1px solid var(--area-c);border-left-width:4px;border-radius:10px;background:color-mix(in srgb,var(--area-c) 12%,var(--darker));color:var(--text);cursor:pointer;text-align:left;font-family:Rajdhani,sans-serif;min-height:44px}',
+      '.ln-band-top{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--area-c)}',
+      '.ln-band-top .ln-chev{margin-left:auto;color:var(--muted);transition:transform .2s var(--ease-out)}',
+      '.ln-area.folded .ln-chev{transform:rotate(-90deg)}',
+      '.ln-area.folded .ln-abody{display:none}',
+      '.ln-abody{display:flex;flex-direction:column;gap:6px}',
+      '.ln-bars{display:flex;flex-direction:column;gap:3px}',
+      '.ln-bar{display:grid;grid-template-columns:18px 1fr auto;align-items:center;gap:6px;font-size:11px;color:var(--muted);letter-spacing:.3px}',
+      '.ln-bar-track{height:4px;border-radius:2px;background:rgba(255,255,255,0.08);overflow:hidden}',
+      '.ln-bar-fill{height:100%;background:var(--area-c);transform-origin:left;transform:scaleX(0);transition:transform .4s var(--ease-out)}',
+      '@media (prefers-reduced-motion: reduce){#ln-drawer,#ln-backdrop,.ln-bar-fill,.ln-chev{transition:none}}',
     ].join('');
     document.head.appendChild(st);
   },
@@ -12629,7 +12730,13 @@ RPGACE.register('leftNav', {
     panel.appendChild(hdr);
     var list = document.createElement('div');
     list.id = 'ln-list';
-    items.forEach(function(it) { self._renderItem(list, it); });
+    // Oct 15 2026 (KN-0): entries after a heading go inside that area's
+    // band section so the whole area folds as one.
+    var section = list;
+    items.forEach(function(it) {
+      if (it.heading) { section = RPGACE.modules.leftNav.ui._areaSection(list, it.heading); return; }
+      self._renderItem(section, it);
+    });
     panel.appendChild(list);
     document.body.appendChild(panel);
   },
@@ -12765,6 +12872,7 @@ RPGACE.register('leftNav', {
     if (!panel || !back) { self._buildDrawer(); panel = document.getElementById('ln-drawer'); back = document.getElementById('ln-backdrop'); }
     if (!panel || !back) return;
     self._syncActive();
+    RPGACE.modules.leftNav.ui._fillBars();
     back.style.display = 'block';
     panel.style.display = 'flex';
     // Force layout, then add .open on the next frame so the slide animates.
@@ -12808,6 +12916,91 @@ RPGACE.register('leftNav', {
     Array.prototype.forEach.call(panel.querySelectorAll('.ln-subcard[data-page]'), function(s) {
       s.classList.toggle('active', s.dataset.page === activePage);
     });
+    // KN-0: the area you are in always shows open (not saved as unfolded).
+    var hit = panel.querySelector('.ln-card.active, .ln-subcard.active');
+    var area = hit && hit.closest('.ln-area');
+    if (!area) {
+      var dd = RPGACE.modules.dashDeck, key = dd && dd._activeCardKey;
+      var lbl = key && dd.NAV_DOMAINS ? dd.NAV_DOMAINS[key] : null;
+      var ak = lbl ? RPGACE.areaForLabel(lbl) : null;
+      if (ak) area = panel.querySelector('.ln-area[data-area="' + ak + '"]');
+    }
+    if (area) area.classList.remove('folded');
+  },
+
+  // KN-0: one area band + its body; returns the body to render entries into.
+  _areaSection: function(list, heading) {
+    var ui = RPGACE.modules.leftNav.ui;
+    var key = RPGACE.areaForLabel(heading), a = key ? RPGACE.AREAS[key] : null;
+    var wrap = document.createElement('div');
+    wrap.className = 'ln-area';
+    if (key) wrap.dataset.area = key;
+    wrap.style.setProperty('--area-c', a ? a.color : 'var(--gold)');
+    if (key && ui._foldedSet()[key]) wrap.classList.add('folded');
+    var band = document.createElement('button');
+    band.type = 'button';
+    band.className = 'ln-band';
+    band.setAttribute('aria-expanded', wrap.classList.contains('folded') ? 'false' : 'true');
+    var top = document.createElement('div');
+    top.className = 'ln-band-top';
+    top.textContent = (a ? a.icon + ' ' : '') + heading;
+    var chev = document.createElement('span');
+    chev.className = 'ln-chev';
+    chev.textContent = '▾';
+    top.appendChild(chev);
+    band.appendChild(top);
+    if (a && a.realms.length) {
+      var bars = document.createElement('div');
+      bars.className = 'ln-bars';
+      a.realms.forEach(function(r) {
+        var row = document.createElement('div');
+        row.className = 'ln-bar';
+        row.dataset.realm = r;
+        row.innerHTML = '<span class="ln-bar-ic"></span><div class="ln-bar-track"><div class="ln-bar-fill"></div></div><span class="ln-bar-rk"></span>';
+        bars.appendChild(row);
+      });
+      bars.style.display = 'none';
+      band.appendChild(bars);
+    }
+    band.onclick = function() {
+      var folded = wrap.classList.toggle('folded');
+      band.setAttribute('aria-expanded', folded ? 'false' : 'true');
+      if (key) ui._saveFold(key, folded);
+    };
+    wrap.appendChild(band);
+    var body = document.createElement('div');
+    body.className = 'ln-abody';
+    wrap.appendChild(body);
+    list.appendChild(wrap);
+    return body;
+  },
+
+  _foldedSet: function() {
+    try { return JSON.parse(localStorage.getItem('rpgace.ln.folded') || '{}') || {}; } catch (e) { return {}; }
+  },
+  _saveFold: function(key, folded) {
+    var f = RPGACE.modules.leftNav.ui._foldedSet();
+    if (folded) f[key] = 1; else delete f[key];
+    try { localStorage.setItem('rpgace.ln.folded', JSON.stringify(f)); } catch (e) {}
+  },
+
+  // KN-0: fill every realm bar from xpSeason (cached a minute). Bars stay
+  // hidden when signed out or XP can't load.
+  _fillBars: function() {
+    var X = RPGACE.modules.xpSeason, panel = document.getElementById('ln-drawer');
+    if (!X || !X.logic.navBars || !panel) return;
+    X.logic.navBars().then(function(map) {
+      if (!map) return;
+      Array.prototype.forEach.call(panel.querySelectorAll('.ln-bar'), function(row) {
+        var r = row.dataset.realm, m = map[r], meta = X.REALMS[r];
+        if (!m || !meta) return;
+        row.querySelector('.ln-bar-ic').textContent = meta.icon;
+        row.querySelector('.ln-bar-fill').style.transform = 'scaleX(' + m.pct.toFixed(3) + ')';
+        row.querySelector('.ln-bar-rk').textContent = m.rank;
+        row.title = meta.name + ': ' + m.rank + ' · ' + m.xp.toLocaleString('en-GB') + ' XP this Year';
+        row.parentNode.style.display = '';
+      });
+    }).catch(function() {});
   },
 
   },
@@ -15971,7 +16164,7 @@ RPGACE.register('dashDeck', {
     oracle: 'Oracle',
     agenda: 'Schedule & Journal', morningBrief: 'Schedule & Journal', journal: 'Schedule & Journal', plans: 'Schedule & Journal',
     pipeline: 'Content & Video', chronicles: 'Chronicles', cooking: 'Habits', gym: 'Habits',
-    wishlist: 'Habits', oversight: 'Oversight',
+    health: 'Habits', wishlist: 'Habits', oversight: 'Oversight',
   },
   _navStack: [],
   _activeCardKey: null,
@@ -36948,6 +37141,24 @@ RPGACE.register('xpSeason', {
       if (next) stars = Math.max(1, Math.min(5, 1 + Math.floor(5 * (xp - curNeed) / Math.max(1, next.need - curNeed))));
       return { idx: cur.idx, name: cur.name, next: next, stars: stars, from: curNeed };
     },
+    // KN-0: per-realm rank progress for the left nav bars, cached a minute.
+    navBars: function() {
+      var S = RPGACE.modules.xpSeason, L = S.logic;
+      if (!L.signedIn()) return Promise.resolve(null);
+      if (S._navBars && Date.now() - S._navBars.at < 60000) return Promise.resolve(S._navBars.map);
+      return Promise.all([L.load(), L.loadTrophies().catch(function() { return null; })]).then(function(res) {
+        if (!res[0]) return null;
+        var sum = L.summary(res[0]), T = res[1], map = {};
+        S.ORDER.forEach(function(r) {
+          var xp = sum.realms[r] || 0, rk = T ? L.realmRanks(sum, T, r) : null, se = rk && rk.season, pct = 0;
+          if (se && se.next) pct = Math.max(0, Math.min(1, (xp - se.from) / Math.max(1, se.next.need - se.from)));
+          else if (se) pct = 1;
+          map[r] = { xp: xp, pct: pct, rank: se ? se.name : xp.toLocaleString('en-GB') + ' XP' };
+        });
+        S._navBars = { at: Date.now(), map: map };
+        return map;
+      });
+    },
     realmRanks: function(sum, T, realm) {
       var L = RPGACE.modules.xpSeason.logic, lad = T && T.ladders[realm];
       if (!lad) return null;
@@ -41712,6 +41923,7 @@ RPGACE.register('errorLog', {
   "moveOptions": "myDay",
   "movePlan": "myDay",
   "myDayCard": "healthBody",
+  "navBars": "xpSeason",
   "newBests": "gymTracker",
   "newUploads": "dailyLife",
   "next": "recall",
