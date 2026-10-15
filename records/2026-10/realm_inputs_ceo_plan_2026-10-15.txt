@@ -186,3 +186,17 @@ Snapshot: private `snapshots` schema, 6 full table copies, counts verified (44/4
 Delete: blocked - the Supabase connector holds destructive SQL for Alex's approval and times out
 after 60s when he is away (same cause as the RI-0 ceo_plan_items update). Ready to run:
 records/2026-10/ri1_fresh_start_2026-10-15.sql. Lens review: default "use them, adjust later".
+RI-1 DONE: Alex ran the SQL in the Supabase editor ("run RL-1 too"). Result: reports 19, articles 20,
+idea_cards 327, library 22, watchlist 10, jobs 22 (19 distinct urls - repeat jobs for kept videos).
+Verified after: 19 reports + 20 library items tagged producer, 3 books kept, RI-0 item yellow.
+Finding: destructive SQL sent through the Supabase connector never reaches the database and shows Alex
+no approval prompt; it times out at 60s. Standing workaround: hand Alex the SQL for the Supabase editor.
+
+=== RI-2 (Oct 15 2026) - realm picker ===
+RPGACE.realmPicker (rpgace_core.js, next to realmOf): pick(opts) -> keys | null, tag(table,id,opts),
+recent-first, max 4, queued, z 100001. Wired: submitIntelURL, learnVideo, shareInbox.logic.queue
+(share + watchlist digest), both Bookworm book inserts, lifeLibrary.logic.add (asks when no realms key),
+screenshotInbox.ui.ingest (one pick per batch; api/data-write cleanRealms), starAnswer, webLookup
+(tags after save). Oracle chat has no video-link analysis path today - nothing to wire.
+"Not now" still sends the input on with realms [] until RI-3 adds holding.
+Tests: ri2_test.js 20/20 headless at 400px.

@@ -336,8 +336,13 @@ async function handleBundleDeliverables(req, res, serviceKey) {
 // api file). Ops: upload | update | list | count | delete.
 const PRIVATE_READ_TABLES = new Set(['travel_profile', 'people', 'plans', 'plan_tasks', 'library_items', 'xp_events', 'xp_rules', 'xp_ladders', 'xp_unlock_defs', 'xp_unlocks', 'xp_settings', 'xp_reports', 'xp_challenges', 'xp_quest_steps', 'xp_treats', 'outreach_log', 'cutback_items', 'cutback_log', 'food_log', 'body_log', 'health_settings']);
 const SHOTS_BUCKET = 'screenshots';
-const SHOT_PATCH_FIELDS = ['extracted_text', 'description', 'tags', 'kind', 'suggestions', 'status', 'routed_to', 'read_at'];
-const SHOT_COLS = 'id,storage_path,source,extracted_text,description,tags,kind,suggestions,status,routed_to,created_at,read_at';
+const SHOT_PATCH_FIELDS = ['extracted_text', 'description', 'tags', 'kind', 'suggestions', 'status', 'routed_to', 'read_at', 'realms'];
+// Realm Inputs RI-2: the 13 xpSeason realm keys a screenshot may carry (max 4).
+const REALM_KEYS = ['producer', 'creator', 'hustler', 'chef', 'athlete', 'scholar', 'life', 'homekeeper', 'mind', 'steward', 'explorer', 'connector', 'builder'];
+function cleanRealms(list) {
+  return Array.isArray(list) ? list.filter(function (k, i) { return REALM_KEYS.indexOf(k) !== -1 && list.indexOf(k) === i; }).slice(0, 4) : [];
+}
+const SHOT_COLS = 'id,storage_path,source,extracted_text,description,tags,kind,suggestions,status,routed_to,created_at,read_at,realms';
 
 async function signShotPaths(paths, serviceKey) {
   if (!paths.length) return {};
@@ -372,7 +377,7 @@ async function handleScreenshots(body, res, serviceKey) {
     const ins = await sbFetch('/rest/v1/screenshots?select=' + SHOT_COLS, serviceKey, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Prefer: 'return=representation' },
-      body: JSON.stringify({ storage_path: path, mime: mediaType, source: body.source === 'share' ? 'share' : 'upload' }),
+      body: JSON.stringify({ storage_path: path, mime: mediaType, source: body.source === 'share' ? 'share' : 'upload', realms: cleanRealms(body.realms) }),
     });
     const rows = await ins.json().catch(() => null);
     if (!ins.ok || !Array.isArray(rows) || !rows[0]) {
@@ -385,6 +390,7 @@ async function handleScreenshots(body, res, serviceKey) {
     if (!body.id || !body.patch) return res.status(400).json({ error: 'id and patch required' });
     const patch = {};
     SHOT_PATCH_FIELDS.forEach(function (k) { if (k in body.patch) patch[k] = body.patch[k]; });
+    if ('realms' in patch) patch.realms = cleanRealms(patch.realms);
     const r = await sbFetch('/rest/v1/screenshots?id=eq.' + encodeURIComponent(body.id) + '&select=' + SHOT_COLS, serviceKey, {
       method: 'PATCH', headers: { 'Content-Type': 'application/json', Prefer: 'return=representation' }, body: JSON.stringify(patch),
     });
