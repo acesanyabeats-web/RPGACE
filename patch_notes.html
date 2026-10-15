@@ -73,6 +73,18 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-15-journal-hidden-entry" style="margin-bottom:30px;">
+    <div class="card-title">📓 Oct 15 — A saved journal entry looked like it vanished (fixed)</div>
+    <div class="card-body">
+      You saved "Moving w Jack" and it seemed to disappear.
+      <ul>
+        <li><b>What happened:</b> it saved fine (it is in the database, 14:19). The Journal page pinned 20 old system rows (taxonomy decisions from September and Oracle suggestions) <b>above</b> your own writing every time it loaded, so a new entry landed 21st on the page.</li>
+        <li><b>Now:</b> your entries come first. The system rows sit at the bottom, folded into one "🧬 System log (20)" line you can open.</li>
+        <li><b>Also:</b> saving shows "📓 Saved to Journal". If the online save ever fails, you get a red warning that it is only on this device. Before, a failed save was silent.</li>
+      </ul>
+      Tested: 6 in-app checks (new entry first, log folded at the bottom, saved and failed-save messages, 44px toggle). <b>Untested by your own hand.</b>
+    </div>
+</div>
 <div class="card" id="card-2026-10-15-input-quests" style="margin-bottom:30px;">
     <div class="card-title">⚔️ Oct 15 — Quests from what you take in, per realm (RI-7)</div>
     <div class="card-body">

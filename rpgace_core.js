@@ -3836,9 +3836,17 @@ async function saveToJournal(title, content, source='manual'){
   // directly with the plain anon key), but routing the app's OWN client
   // writes through the authenticated proxy is still correct for
   // consistency/dedup (rule 8) regardless of that table's RLS state.
+  // Oct 15 2026: a failed save used to be silent (console only) - fail loud.
+  let saved = false;
   try {
     await RPGACE.sb.secureWrite('journal', 'insert', entry);
-  } catch(e){ console.log('Journal Supabase push failed:', e.message); }
+    saved = true;
+    if (RPGACE.cache) RPGACE.cache.clear('journal');
+  } catch(e){
+    console.log('Journal Supabase push failed:', e.message);
+    RPGACE.utils.toast('⚠️ Journal entry NOT saved online: ' + (e.message || e) + ' — kept on this device only', '#CC4A4A', 6000, 'journal');
+  }
+  if (saved && source === 'manual') RPGACE.utils.toast('📓 Saved to Journal — it is at the top of the list', '#4CAF82', 2500);
 
   // Cache locally
   const existing = JSON.parse(localStorage.getItem('rpgace_journal') || '[]');
@@ -36137,8 +36145,11 @@ RPGACE.register('journalQoL', {
       }));
       if (!rows.length) return;
       rows.sort(function(a, b) { return (b.date || '').localeCompare(a.date || ''); });
+      // Oct 15 2026 (Alex: "saved a journal entry... it disappeared"): these 20
+      // system rows used to be prepended ABOVE his own entries, pushing a fresh
+      // entry to 21st place. They now sit folded at the END, below his writing.
       var html = rows.map(function(r) {
-        return '<div class="journal-audit-entry" style="background:var(--panel2);border:1px solid var(--border);border-left:3px solid ' + r.color + ';border-radius:10px;padding:14px 16px;margin-bottom:12px;opacity:0.9">'
+        return '<div style="background:var(--panel2);border:1px solid var(--border);border-left:3px solid ' + r.color + ';border-radius:10px;padding:14px 16px;margin-bottom:12px;opacity:0.9">'
           + '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;flex-wrap:wrap">'
           + '<div style="font-family:Cinzel,serif;font-size:12px;color:' + r.color + ';font-weight:600">' + r.label + (r.status ? ' — ' + r.status : '') + '</div>'
           + '<div style="font-size:11px;color:var(--muted)">📅 ' + (r.date || '') + '</div>'
@@ -36146,7 +36157,7 @@ RPGACE.register('journalQoL', {
           + '<div style="font-size:12px;color:var(--text);line-height:1.6;margin-top:6px">' + r.text.replace(/</g, '&lt;') + '</div>'
           + '</div>';
       }).join('');
-      el.insertAdjacentHTML('afterbegin', html);
+      el.insertAdjacentHTML('beforeend', '<details class="journal-audit-entry" style="margin-top:8px"><summary style="cursor:pointer;color:var(--muted);font-size:12px;padding:10px 4px;min-height:44px;display:flex;align-items:center">🧬 System log (' + rows.length + ') — taxonomy decisions and Oracle suggestions</summary>' + html + '</details>');
       self._applyFilter();
     });
   },
