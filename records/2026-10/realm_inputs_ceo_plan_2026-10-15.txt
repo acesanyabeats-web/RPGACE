@@ -172,3 +172,17 @@ RC-3 Daily quests by realm: quest_log gains realm (old career/health/lifestyle m
 RC-4 Realm milestones: proposed quest steps from knowledge, approved by Alex before they join the
      realm quest ladder.
 RC-5 Tests, docs, SELF_KNOWLEDGE, Galaxy regen, push, verify.
+
+=== RI-1 (Oct 15 2026) ===
+Keep list as presented, Alex replied "continue" -> applied the listed default (his earlier answer
+"Videos + articles, keep production ones"). Real count is 20 kept / 25 removed (the presented
+list said 21/24; the list itself named 20 - corrected here).
+Kept: Music Theory for Computer Musicians (book article), Neptunes, Sad Piano, Vinyl Piano Trap,
+Spanish Guitar, Jazz Sample, New Jazz x UK Drill, West Coast x New Jazz, 45Breakers SA2, Rhythmic
+Counterpoint, Choir Drill (DUTCHY), Vintage Boom-Bap, Reverse-Pitch Flip, 2000s 50 Cent, Trifecta,
+5-Step Dark Trap, 3-Step Beginner Mixing, Pizza Melody, Soulful Hip-Hop, Mobile Beat CIS Trap.
+Books (Music Theory, 48 Laws of Power, Nine Minds) and jargon untouched.
+Snapshot: private `snapshots` schema, 6 full table copies, counts verified (44/45/848/47/26/68).
+Delete: blocked - the Supabase connector holds destructive SQL for Alex's approval and times out
+after 60s when he is away (same cause as the RI-0 ceo_plan_items update). Ready to run:
+records/2026-10/ri1_fresh_start_2026-10-15.sql. Lens review: default "use them, adjust later".
