@@ -62,3 +62,5 @@ CM-3 Passive timers: "Start timer & move on", step carries forward, bottom timer
 CM-4 Built-in 💬 Ask panel inside Cook Mode (recipe, step, timers as context); 🔮 orb hidden off the Next button.
 CM-5 "0 whole" removal-step quantity fix.
 CM-6 Tests, docs, SELF_KNOWLEDGE, push, verify live.
+
+BUILT (Oct 15, all yellow until Alex hand-tests): CM-1+CM-2 e4b59e1, CM-3 9062e06, CM-4+CM-5 this commit, CM-6 tests/docs each step.
