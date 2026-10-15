@@ -43386,6 +43386,7 @@ RPGACE.register('errorLog', {
   "flush": "perfWatch",
   "fmtMin": "myDay",
   "focus": "lifeLibrary",
+  "followUp": "myDay",
   "forceGroundNext": "oracleAppGrounding",
   "forget": "authGate",
   "fromBody": "webLookup",
@@ -54944,7 +54945,23 @@ RPGACE.register('myDay', {
         if (qe && qe.recordDuration && opts.actual != null) {
           qe.recordDuration('routine', String(r.id), r.title, r.est_mins, opts.actual).catch(function(e) { console.warn('[myDay] duration:', e.message); });
         }
+        self.logic.followUp(r).catch(function(e) { console.warn('[myDay] follow-up:', e && e.message); });
         return row;
+      });
+    },
+    // Oct 15 2026 (Alex: "then i hang clothes and the job is done, then on next
+    // morning it is in with the morning routine"): ticking a matching chore adds
+    // a one-off follow-up for tomorrow morning (once, never doubled).
+    FOLLOW_UPS: [{ match: /laundry|washing/i, title: function(t) { return 'Put away ' + t; }, inDays: 1, part: 'morning', mins: 10 }],
+    followUp: function(r) {
+      var self = RPGACE.modules.myDay, L = self.logic;
+      var rule = L.FOLLOW_UPS.filter(function(f) { return f.match.test(r.title || ''); })[0];
+      if (!rule || r.cadence === 'once') return Promise.resolve(null);
+      var title = rule.title(r.title), due = L.addDays(L.iso(), rule.inDays);
+      if ((self._routines || []).some(function(x) { return x.cadence === 'once' && x.title === title && x.due_date === due; })) return Promise.resolve(null);
+      return L.save({ title: title, area: r.area || 'Chores', icon: '🧺', cadence: 'once', due_date: due, part_of_day: rule.part, est_mins: rule.mins, xp: 5 }).then(function() {
+        RPGACE.utils.toast('🧺 "' + title + '" added to tomorrow morning', '#4caf82', 3000);
+        return L.load();
       });
     },
     skip: function(r) { return RPGACE.modules.myDay.logic._write(r, 'skipped'); },
