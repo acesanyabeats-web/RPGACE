@@ -73,6 +73,20 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-15-videoworm-status" style="margin-bottom:30px;">
+    <div class="card-title">🐛 Oct 15 — Videoworm tells the truth about the video queue</div>
+    <div class="card-body">
+      From your message: "this looks off" (the Videoworm panel).
+      <ul>
+        <li>The old status went green "Ready" whenever the database answered, even if nothing could process a video. It now reads the queue: ✅ Ready (last analysed …), ⏳ N waiting, ⚡ analysing, or ⚠️ stuck.</li>
+        <li>The note said your PC had to run start_server.bat. Since Oct 11 a cloud runner works through the queue every 10 minutes; the note now says so (YouTube links may still wait for your PC).</li>
+        <li>Failed jobs show one readable line (e.g. "Instagram gave no video — it may be a photo post…") instead of the raw downloader error, and failed or stuck jobs get a 🔁 Retry button.</li>
+        <li>The stray "1 —" heading is gone, and the old Setup tab (SQL to run by hand, files to copy) is now an accurate "How it works".</li>
+      </ul>
+      Live data when fixed: one YouTube job has been "processing" since 00:55 today and 12 Instagram jobs failed with "No video formats found" — the new Retry button covers both. Tested headless (10 checks). <b>Untested by your own hand.</b>
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-15-area-bands" style="margin-bottom:30px;">
     <div class="card-title">🎨 Oct 15 — Left nav: coloured area bands with realm XP bars (KN-0)</div>
     <div class="card-body">

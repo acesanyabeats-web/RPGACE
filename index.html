@@ -262,7 +262,6 @@
          clears it back to the CSS default when it MOVES this node into its
          own popup, and restores display:none when it moves it back here. -->
     <div class="learn-panel learn-full" id="file-analyzer-panel" style="display:none">
-      <h3>🐛 1 — VIDEOWORM</h3>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;flex-wrap:wrap">
         <div id="intel-server-status" style="display:flex;align-items:center;gap:6px;font-size:12px">
           <div id="intel-server-dot" style="width:8px;height:8px;border-radius:50%;background:var(--muted)"></div>
@@ -281,7 +280,7 @@
             onkeydown="if(event.key==='Enter')submitIntelURL()"/>
           <button class="learn-btn green" onclick="submitIntelURL()" id="intel-submit-btn">⚡ Analyse</button>
         </div>
-        <div style="font-size:11px;color:var(--muted);margin-top:6px">Keep <strong>start_server.bat</strong> running in background for this to work</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px">Analysed in the cloud every 10 minutes. YouTube links may wait for your PC (<strong>start_server.bat</strong>).</div>
       </div>
 
       <!-- Active jobs -->
@@ -292,7 +291,7 @@
         <button class="learn-btn" style="border-color:var(--blue);color:var(--blue);background:rgba(74,144,226,.08)" onclick="showIntelTab('insights')">📊 Insights</button>
         <button class="learn-btn" style="border-color:var(--purple);color:var(--purple);background:rgba(139,92,246,.08)" onclick="showIntelTab('watchlist')">⭐ Watchlist</button>
         <button class="learn-btn green" onclick="syncIntelData(true)">🔄 Sync</button>
-        <button class="learn-btn" onclick="showIntelTab('setup')" style="border-color:var(--muted);color:var(--muted)">⚙️ Setup</button>
+        <button class="learn-btn" onclick="showIntelTab('setup')" style="border-color:var(--muted);color:var(--muted)">ℹ️ How it works</button>
         <button class="learn-btn" onclick="importIntelJSON()" style="border-color:var(--muted);color:var(--muted);font-size:11px">📥 Manual Import</button>
       </div>
 
@@ -304,39 +303,21 @@
         <div id="intel-watchlist-content"><div style="color:var(--muted);font-size:13px;text-align:center;padding:20px">Watchlist empty.</div></div>
       </div>
       <div id="intel-tab-setup" style="display:none">
-        <div style="background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:14px;margin-bottom:10px">
-          <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">SETUP</div>
-          <div style="font-size:12px;color:var(--text);line-height:2.2">
-            1. Run SQL in Supabase for <strong>intel_jobs</strong> table (see below)<br>
-            2. Copy <strong>local_server.py</strong> to <strong>C:\Users\acesa\RPGACE\</strong><br>
-            3. Double-click <strong>start_server.bat</strong> on your PC — keep open<br>
-            4. Paste any URL above → click ⚡ Analyse<br>
-            5. Your PC processes it automatically → results appear here
-          </div>
-        </div>
         <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px">
-          <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">SUPABASE SQL — run this once</div>
-          <div style="font-size:11px;font-family:monospace;color:var(--text);line-height:1.8;background:rgba(0,0,0,.3);padding:10px;border-radius:6px;user-select:all">
-            create table intel_jobs (<br>
-            &nbsp;&nbsp;id uuid default gen_random_uuid() primary key,<br>
-            &nbsp;&nbsp;created_at timestamptz default now(),<br>
-            &nbsp;&nbsp;url text not null,<br>
-            &nbsp;&nbsp;status text default 'queued',<br>
-            &nbsp;&nbsp;progress text,<br>
-            &nbsp;&nbsp;error text<br>
-            );<br>
-            alter table intel_jobs enable row level security;<br>
-            create policy "Allow anon" on intel_jobs<br>
-            &nbsp;&nbsp;for all using (true) with check (true);
+          <div style="font-size:12px;color:var(--gold);font-weight:700;letter-spacing:1px;margin-bottom:8px">HOW IT WORKS</div>
+          <div style="font-size:13px;color:var(--text);line-height:1.8">
+            1. Paste a link above and press ⚡ Analyse — it joins the queue.<br>
+            2. Every 10 minutes a cloud runner picks up anything waiting, downloads the video, transcribes it and asks Oracle for the insights.<br>
+            3. YouTube can block cloud downloads, so YouTube links may wait until your PC runs <strong>start_server.bat</strong>. Your PC and the cloud share one queue, so nothing is analysed twice.<br>
+            4. Results land in 📊 Insights and in your Life Library.
           </div>
         </div>
         <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px">
-          <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">PRIVACY</div>
-          <div style="font-size:12px;color:var(--muted);line-height:2">
-            ✓ Video downloaded to your PC only<br>
-            ✓ Whisper transcribes locally<br>
-            ✓ <span style="color:var(--green);font-weight:600">Video deleted immediately after analysis</span><br>
-            ✓ Insights pushed to Supabase automatically
+          <div style="font-size:12px;color:var(--gold);font-weight:700;letter-spacing:1px;margin-bottom:8px">PRIVACY</div>
+          <div style="font-size:13px;color:var(--muted);line-height:1.8">
+            ✓ The video is downloaded to a temporary cloud machine (wiped after each run) or to your PC<br>
+            ✓ <span style="color:var(--green);font-weight:600">The video file is deleted after analysis</span> — only the insights are kept<br>
+            ✓ Insights are saved to your database automatically
           </div>
         </div>
       </div>
@@ -351,7 +332,7 @@
          UI2) opens it as its own popup instead of navigating to a page.
          Starts display:none, same reasoning as #file-analyzer-panel above. -->
     <div class="learn-panel" id="video-finder-panel" style="display:none">
-      <h3>🐛 2 — VIDEOWORM: FIND VIDEOS</h3>
+      <h3>🔎 Find videos to analyse</h3>
       <p style="font-size:12px;color:var(--muted);margin-bottom:8px">Search YouTube without an API key — powered by Supadata.</p>
       <div class="learn-input-row">
         <input class="learn-input" id="video-search-input" placeholder="e.g. UK drill beat tutorial, FL Studio mixing..." onkeydown="if(event.key==='Enter')searchVideos()"/>
@@ -555,7 +536,7 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
      here. The original rpgace_core.js remains the real, edited,
      fully-commented source - always edit that, never the .min.js file
      directly. -->
-<script src="rpgace_core.min.js?v=20261015a"></script>
+<script src="rpgace_core.min.js?v=20261015b"></script>
 
 <div class="page" id="page-encyclopedia">
   <div class="section-title">📖 Knowledge Encyclopedia ✦</div>

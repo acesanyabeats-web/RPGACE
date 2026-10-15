@@ -4224,28 +4224,66 @@ let INTEL_POLL_INTERVAL = null;
 let JOB_POLL_INTERVAL   = null;
 let SERVER_ONLINE       = false;
 
-// ── SERVER STATUS — check via Supabase job queue ──
+// ── QUEUE STATUS — read from the intel_jobs queue ──
+// Oct 15 2026 (Alex: "this looks off"): the old check showed a green
+// "Ready" whenever Supabase answered, whether or not anything could
+// process a video. The queue is drained by the cloud runner every 10
+// minutes (.github/workflows/intel-queue.yml, since Oct 11) and by the
+// laptop's local_server.py when it is running, so the honest status is
+// what the queue itself shows: waiting, analysing, stuck, or idle.
+const INTEL_STUCK_MIN = 45; // the cloud run's own timeout
+function _intelAgo(iso){
+  const m = Math.round((Date.now() - new Date(iso).getTime()) / 60000);
+  if(m < 1) return 'just now';
+  if(m < 60) return m + ' min ago';
+  const h = Math.round(m / 60);
+  if(h < 48) return h + ' h ago';
+  return Math.round(h / 24) + ' days ago';
+}
+function _intelQueueState(jobs){
+  const now = Date.now();
+  const queued = jobs.filter(j => j.status === 'queued');
+  const proc = jobs.filter(j => j.status === 'processing' || j.status === 'downloading');
+  const stuck = proc.filter(j => now - new Date(j.created_at).getTime() > INTEL_STUCK_MIN * 60000);
+  const done = jobs.filter(j => j.status === 'complete')[0];
+  if(stuck.length) return { color:'var(--gold)', text:'⚠️ ' + stuck.length + ' video' + (stuck.length>1?'s':'') + ' stuck since ' + _intelAgo(stuck[0].created_at) + ' — use Retry below' };
+  if(proc.length) return { color:'var(--green)', text:'⚡ Analysing ' + proc.length + ' video' + (proc.length>1?'s':'') + ' now' };
+  if(queued.length) return { color:'var(--gold)', text:'⏳ ' + queued.length + ' waiting — the cloud checks every 10 min' };
+  return { color:'var(--green)', text:'✅ Ready' + (done ? ' — last analysed ' + _intelAgo(done.created_at) : '') };
+}
 async function checkServerStatus(){
+  const dot   = document.getElementById('intel-server-dot');
+  const label = document.getElementById('intel-server-label');
   try {
-    // Check if any jobs processed recently = server is running
-    const res = await _sbGet('/rest/v1/intel_jobs?status=eq.processing&limit=1');
-    const dot   = document.getElementById('intel-server-dot');
-    const label = document.getElementById('intel-server-label');
-    if(res.ok){
-      const jobs = await res.json();
-      SERVER_ONLINE = true;
-      if(dot) dot.style.background = 'var(--green)';
-      if(label){ label.textContent = jobs.length ? `⚡ Processing ${jobs.length} job(s)` : 'Ready — paste URL to analyse'; label.style.color='var(--green)'; }
-    }
-    return true;
+    const res = await _sbGet('/rest/v1/intel_jobs?select=id,status,created_at&order=created_at.desc&limit=30');
+    if(!res.ok) throw new Error('HTTP ' + res.status);
+    const st = _intelQueueState(await res.json());
+    SERVER_ONLINE = true;
+    if(dot) dot.style.background = st.color;
+    if(label){ label.textContent = st.text; label.style.color = st.color; }
   } catch(e){
-    const dot   = document.getElementById('intel-server-dot');
-    const label = document.getElementById('intel-server-label');
-    if(dot) dot.style.background = 'var(--gold)';
-    if(label){ label.textContent = 'Ready — keep start_server.bat running on your PC'; label.style.color='var(--muted)'; }
-    SERVER_ONLINE = true; // Supabase works regardless of local server
-    return true;
+    SERVER_ONLINE = false;
+    if(dot) dot.style.background = 'var(--red)';
+    if(label){ label.textContent = '❌ Can\'t reach the video queue — check your connection'; label.style.color = 'var(--red)'; }
   }
+  return SERVER_ONLINE;
+}
+
+// One readable line for a failed job; the full message stays in the tooltip.
+function _intelErrorText(j){
+  const e = String(j.error || '');
+  if(/No video formats found/i.test(e) && /instagram/i.test(e + ' ' + (j.url||''))) return 'Instagram gave no video — it may be a photo post, or Instagram blocked the download. Try the reel link.';
+  if(/Sign in to confirm|not a bot/i.test(e)) return 'YouTube blocked the cloud download — it will work from your PC (start_server.bat).';
+  const first = e.replace(/^Error:\s*/,'').split(/[;\n]/)[0];
+  return first.length > 140 ? first.slice(0,140) + '…' : first;
+}
+// Put a failed or stuck job back in the queue.
+async function retryIntelJob(id){
+  try {
+    await RPGACE.sb.secureWrite('intel_jobs', 'update', { status:'queued', progress:null, error:null }, 'id=eq.' + id);
+    RPGACE.utils.toast('🔁 Back in the queue — the cloud checks every 10 min', '#4CAF82', 3000);
+    startJobPolling(id); pollJobs(); checkServerStatus();
+  } catch(e){ RPGACE.utils.toast('⚠️ Retry failed: ' + e.message, '#CC4A4A', 4000); }
 }
 
 // ── SUBMIT URL — via Supabase job queue ──
@@ -4286,14 +4324,14 @@ async function submitIntelURL(){
     const jobsEl = document.getElementById('intel-jobs');
     if(jobsEl) jobsEl.innerHTML = `<div style="background:var(--panel2);border:1px solid var(--gold)33;border-left:3px solid var(--gold);border-radius:6px;padding:10px 14px;margin-bottom:8px">
       <div style="font-size:12px;color:var(--text)">${url.slice(0,60)}</div>
-      <div style="font-size:11px;color:var(--muted);margin-top:2px">\u23F3 Queued — your PC will pick this up automatically...</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:2px">\u23F3 Queued — analysed within about 10 minutes</div>
     </div>`;
 
     // Start polling Supabase for job updates
     startJobPolling(jobId);
 
   } catch(e){
-    alert('Submit failed: ' + e.message + '\n\nMake sure you have run the intel_jobs SQL in Supabase.');
+    alert('Submit failed: ' + e.message);
   }
 
   if(btn){ btn.disabled = false; btn.textContent = '\u26A1 Analyse'; }
@@ -4350,6 +4388,8 @@ function renderJobs(jobs){
   const el = document.getElementById('intel-jobs');
   if(!el || jobs.length === 0){ if(el) el.innerHTML=''; return; }
 
+  const stuckIds = {};
+  jobs.forEach(j => { if((j.status==='processing'||j.status==='downloading') && Date.now() - new Date(j.created_at).getTime() > INTEL_STUCK_MIN*60000) stuckIds[j.id] = true; });
   el.innerHTML = jobs.map(j => {
     const statusColor = j.status==='complete' ? 'var(--green)' : j.status==='error' ? 'var(--red)' : 'var(--gold)';
     const statusIcon  = j.status==='complete' ? '✓' : j.status==='error' ? '✗' : j.status==='processing' ? '⚡' : '⏳';
@@ -4362,7 +4402,8 @@ function renderJobs(jobs){
         </div>
         <div style="font-size:13px;font-weight:700;color:${statusColor};margin-left:12px">${statusIcon}</div>
       </div>
-      ${j.status==='error' ? `<div style="font-size:11px;color:var(--red);margin-top:4px">✗ ${j.error}</div>` : ''}
+      ${j.status==='error' ? `<div style="font-size:12px;color:var(--red);margin-top:4px" title="${String(j.error||'').replace(/"/g,'&quot;').replace(/</g,'&lt;')}">✗ ${_intelErrorText(j).replace(/</g,'&lt;')}</div>` : ''}
+      ${(j.status==='error' || (stuckIds[j.id])) ? `<button class="learn-btn intel-retry" style="margin-top:6px;min-height:36px" onclick="retryIntelJob('${j.id}')">🔁 Retry</button>` : ''}
     </div>`;
   }).join('');
 }
