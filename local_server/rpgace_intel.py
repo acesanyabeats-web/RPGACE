@@ -642,7 +642,9 @@ def process_url(url: str, realms=None):
                         # clearEncyclopedia can't log this entry into the
                         # reanalysis pool if it's later deleted for a bad
                         # extraction (they check for source_url before doing so).
-                        "source_url": meta.get("url","") or None
+                        "source_url": meta.get("url","") or None,
+                        # RI-5: filed under the realms it was read through
+                        "realms": insights.get("realms") or []
                     })
                     log(f"Encyclopedia entry pushed: {enc['title'][:50]}", GREEN)
 

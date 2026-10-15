@@ -262,3 +262,12 @@ RPGACE.realmLensText + splitRealmInsights; Bookworm chapter prompt + bookworm_ch
 (migration realm_inputs_ri4_chapter_insight_realms); screenshot read lens; videoSummary realm scores.
 Tests: ri4_py_test.py 13/13, ri4_test.js 11/11, runner_test.py/runner_test2.py pass (fakes updated to
 accept realms; runner_test now asserts realms reach process_url).
+
+=== RI-5 (Oct 15 2026) - filing by realm ===
+Brief accepted ("go") with the recommended option: filter rows show only realms that have items.
+Built: RPGACE.realmFilterRow/realmCounts/realmTakenIn/realmTakenText; Life Library realm filter + per-item
+realm chip (edit via picker); Encyclopedia Ideas + Posts realm filter; encyclopedia/encyclopedia_insights
+realms columns (migration realm_inputs_ri5_encyclopedia_realms: default {producer} filled the 20 + 327
+kept rows, then default dropped); writers: articleFromReport/_saveArticle, saveChapterIdea, toIdea,
+video analyser encyclopedia insert; realm card "Taken in this month" line + wheel chips.
+Tests: ri5_test.js 16/16.
