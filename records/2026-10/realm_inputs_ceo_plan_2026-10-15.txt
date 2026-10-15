@@ -1,0 +1,102 @@
+REALM INPUTS - /paranoia + /free-for-all-debate + /drift + /interrogation + /commit-archaeologist
+-> /Engineer + Council of 5 -> /CEO Loop 1
+Date: 2026-10-15. Inserted before area plan 2 (Gym + Health), which resumes after this.
+
+ALEX'S ASK (verbatim)
+"i want to change how videos are analyzed when i send a link, it should ask me which realms it
+associates with, could be creative or motivational etc, the videos and books and all inputs have
+value depending on the realm, does that make sense to you? /paranoia and /free-for-all-debate can
+use /drift /misunderstanding /interrogation into oblivion and /commit-archaeologist to get relevant
+info and my opinions, then /Engineer and council of 5 advise on final round of scrutiny, then /CEO
+plan, then we go back to gym and health"
+
+NOTE ON /misunderstanding: that skill is Alex-only (never self-triggered). Its 3-step shape was used
+as a check-back ("what I understood you to mean") inside the interrogation instead.
+
+EVIDENCE (live, this pass)
+- One lens for everything: scripts/rpgace_intel.py generate_oracle_insights() judges every link as
+  "UK music producer building toward 100k YouTube subscribers": one verdict_score 1-10, always
+  production_techniques / content_strategy_insights / what_to_steal, quests in career|health|lifestyle.
+- Commit archaeology: the prompt came from Alex's original laptop tool (local_server.py /
+  rpgace_intel.py, brought into the repo Aug 27 2026 for the delete-tombstone fix) and was never
+  redesigned for the 13-realm system (XP Season Pass, Oct 13).
+- Scores measure YouTube polish, not value to Alex: all 13 reports scored 3-6 are marked down for
+  "tiny audience" / "low production value" (e.g. the Passionfruit chords tutorial 3-5/10).
+- Score spread: 3x3, 3x4, 4x5, 3x6, 16x7, 14x8, 1x9 (44 reports).
+- XP: every learning action pays Scholar only (library_added 3, chapter_done 30, book_finished 300,
+  jargon_reviewed 3). 13 realms exist (xpSeason.REALMS).
+- Entry points that create intel_jobs: Videoworm paste (2870, 4317), share inbox (58982), retry (4283).
+  intel_jobs has no status CHECK constraint. library_items is the shared home for every input kind.
+- Data a fresh start touches: intel_reports 44, intel_jobs 68, intel_watchlist 26, encyclopedia 45,
+  encyclopedia_insights 848 (0 saved -> recall loses nothing), library_items 47, bookworm_books 1,
+  screenshots 0.
+- XP scale for comparison: beat_released 300, beat_finished 120, cook_finished 60, treatment_done 60,
+  gym_session 40, beat_logged 30 (capped).
+
+FREE-FOR-ALL DEBATE
+- Friction guardian: asking on every share slows the phone flow -> one-screen chips, recent realms
+  first; batch of screenshots = one pick.
+- XP sceptic: XP for taking things in could outscore doing -> cap (see open question 1).
+- Cost guardian: one Oracle call per input with all chosen lenses together, never one call per realm.
+- Lens advocate: tags alone change nothing; the realm must change what Oracle looks for and scores.
+- Dedup guardian (rule 8): the lens definitions must live in ONE file read by both the Python cloud
+  runner and the browser (book chapters, screenshots), not two copies.
+
+/DRIFT
+VERDICT on track. BASIS ratified (answers below). One MATERIAL wording gap found and resolved:
+"creative" / "motivational" are not realms -> Alex chose the 13 realms.
+
+INTERROGATION ANSWERS
+Round 1:
+1. Labels: "The 13 realms (Recommended)".
+2. Effect: "think with 3 xp for mission divided between realms equally, but no decimal points, only
+   numbers ending in 5 or 0, How it's analysed (Recommended), Where it's filed, XP to that realm,
+   Quests per realm".
+3. When: "3 but if i return to app without choosing, the pop-up is the first thing i choose and see
+   on return" (3 = Always ask).
+4. Old items: "im thinking of wiping off all of the data and starting fresh to be honest, only keep
+   articles that make sense for educational purposes to the original lens".
+Round 2 (check-back):
+1. XP: "60 XP pot, max 4 realms" -> 60 / 30+30 / 20x3 / 15x4.
+2. Wipe scope: "Videos + articles, keep production ones (Recommended)".
+3. Kept items: "Producer, change if needed (Recommended)".
+4. Inputs with the picker: video links, books, screenshots, web lookups + starred replies (all four).
+
+COUNCIL OF 5 (final scrutiny)
+- Technical risk: share-to-RPGACE (Android) must hold a link until realms are picked; the cloud
+  runner must skip held jobs. Status 'awaiting_realms' needs no constraint change (none exists).
+- Cost: one call per input; prompt grows by the chosen lenses only (max 4).
+- Maintainability: realm_lenses.json is the one place a realm's lens is edited.
+- UX: always-ask is a real tap on every input; mitigated by recent-first chips and batch picks.
+- Why NOT (open question 1): 60 XP per input = a finished cook, > a gym session (40), 2x a beat
+  logged (30). Five videos = a released beat. Recommend a daily cap.
+- Wipe safety: no Supabase backup -> full JSON snapshot committed first; nothing deleted until Alex
+  has confirmed the keep list; counts checked before and after.
+
+PLAN (each step briefed before building, rule 18)
+RI-0 Realm lens file + schema (additive): realm_lenses.json (per realm: what Oracle looks for, what
+     its score means, quest style); realms text[] on intel_jobs, intel_reports, library_items,
+     screenshots, bookworm_books; intel_reports.realm_scores jsonb.
+RI-1 Fresh start: snapshot JSON, keep list (production-teaching videos/articles pre-ticked) for
+     Alex to confirm, delete the rest (reports, articles, idea cards, library items, watchlist, old
+     jobs); kept ones tagged Producer. Bookworm book, jargon, everything else untouched.
+RI-2 Realm picker (one shared component): 13 chips, up to 4, recent first; on Videoworm paste,
+     share-to-RPGACE, links in Oracle chat, Bookworm/Library book add, screenshots (one pick per
+     batch), web lookups and starred replies saved to the Library. Always ask.
+RI-3 Waiting picks: an input without realms is held (intel_jobs 'awaiting_realms' or a held Library
+     item); on app open the picker is the first thing shown; the runner skips held jobs.
+RI-4 Realm-lens analysis: the runner prompt uses the chosen realms' lenses in one call -> a score per
+     realm + insights per realm; the Encyclopedia article gets a section per realm; screenshot reads
+     and book chapter analysis use the same lens file.
+RI-5 Filing: realms on every Library item; Library + Encyclopedia filter by realm; each realm card
+     shows what you have taken in for it.
+RI-6 XP: 60 XP per input split equally over its realms (60/30/20/15), cap per open question 1;
+     replaces the 3 Scholar XP for realm-tagged items.
+RI-7 Quests per realm: suggested quests carry their realm and land as suggestions you can add.
+RI-8 Tests, docs, SELF_KNOWLEDGE, Galaxy Map regen, push, verify.
+
+OPEN QUESTION FOR ALEX AT APPROVAL
+1. XP cap: first 3 inputs a day earn XP (Recommended) / first 5 / no cap.
+
+Deliberately left out: re-analysing kept articles (tagged Producer instead), realm-based Morning Brief
+picks, any change to jargon or the phylum tree.
