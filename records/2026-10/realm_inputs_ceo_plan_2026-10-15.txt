@@ -369,3 +369,9 @@ Built: names/English/purpose 22-29, 11 renamed, Life scope group, lifeLibrary.ma
 PHYLUM_MAP fix + 22-29, prompt counts no longer hardcoded 21, RPGACE.phylumRealms(), DB check 1..29.
 Tests: rc0_test 7/7; ll 23, ll2 14, ll4 16, ll7 13, ri4 11, ri0 4, ri4_py 13.
 Also this turn: chore edit-form fix (Laundry Colours), laundry "Put away" follow-up, 18:05 push alarm.
+
+=== RC-1 (Oct 15 2026) - Phylum Path by realm ===
+Alex: "go, start rc-1". Built: realm-grouped switcher (13 realm heads + Miscellaneous, toggle, counts),
+shelf realm line, ENABLED_PHYLA 1-29, realmOf phylum fallback, jargon realm badge + filter. Note: the
+Phylum Path page forces buttons to 40px (!important, KN-7 phone standard) - realm heads follow it.
+Tests: rc1_test 11/11; ll7 13, ll 23, ri5 16, kn5 17, rc0 7, kn6 7, kn4 18.
