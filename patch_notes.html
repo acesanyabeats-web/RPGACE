@@ -73,6 +73,20 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-15-knowledge-back-row" style="margin-bottom:30px;">
+    <div class="card-title">🔙 Oct 15 — ← Back / 🏠 Knowledge on every Knowledge screen (KN-4)</div>
+    <div class="card-body">
+      Step 5 of "Knowledge Reorganisation (Scholar)".
+      <ul>
+        <li>Bookworm, Videoworm, MusicWorm, Bibliography, Encyclopedia, Jargon and Phylum Path now carry the same row the Library, Screenshots and Review pages have: <b>← (the screen you came from)</b> and <b>🏠 Knowledge</b>, right under the page title, with the Scholar card below it.</li>
+        <li>Back means the previous Knowledge screen, however you got there — the hub, the menu, a link or another Knowledge page. Bookworm → Videoworm → Back lands on Bookworm; Back again lands on the Knowledge home.</li>
+        <li>The Bookworm "Choose where to go" pop-up has the row too; it shows as "← Study" on the screen it opens, and 🏠 closes the pop-up first.</li>
+        <li>Removed: the fixed "← Bookworm" buttons at the top of the four worm pages, and the old "what this is" links bar on Encyclopedia, Phylum Path and the pop-up.</li>
+      </ul>
+      Built in <code>knowledgeHub</code> (one <code>page:show</code> listener, <code>logic.screenFor</code> + <code>ui.decoratePage</code>). Tested headless (18 checks). <b>Untested by your own hand.</b>
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-15-knowledge-review" style="margin-bottom:30px;">
     <div class="card-title">✅ Oct 15 — Review page: jargon one term at a time (KN-3)</div>
     <div class="card-body">
