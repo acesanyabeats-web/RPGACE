@@ -128,3 +128,47 @@ to realms, so knowledge feeds the realms, realms generate quests, quests cite th
 STANDING PRINCIPLE (Alex, verbatim): "any data should be tagged by realms to keep discipline
 categories in check. im just creating a discipline machine for myself with tasks broken down to
 make things easy". Every later area plan should ask: is this data realm-tagged?
+
+=== /paranoia pass on the additions (RI-9, RI-10, Realm Connectors, tagging rule) ===
+EVIDENCE
+- Realm columns exist only on XP tables + chore_blocks. Every XP event already has a realm (xp_rules);
+  My Day areas map to realms (myDay.AREA_REALM).
+- The 21 phyla (taxonomyTree.PHYLUM_NAMES/ENGLISH, rpgace_core.js ~19439) are all music/content/business:
+  1-9 Producer, 10 Mind, 11 Scholar, 12-14 Creator, 15 Connector/Hustler, 16-18 Hustler, 19 market,
+  20 Builder, 21 misc. No phyla for Chef, Athlete, Life, Homekeeper, Steward, Explorer.
+- library_items has CHECK phylum_number 1..21 (widening needed for new phyla).
+- Jargon: 44 accepted (all phylum 1), 487 pending.
+- 4 quest systems: quest_log (questEngine; video quests land here via pathways, category
+  career/health/lifestyle, has source_table/source_ref), routines (myDay), xp_challenges, xp_quest_steps.
+- Commit archaeology: phylum numbering fixed Aug 11; tree wiped Sep 25 by Alex to rebuild after jargon review.
+INTERROGATION (round 3)
+1. Phyla: "2 but also reorganise existing phyla into realms" (map the 21 + add phyla for realms with
+   none, and group the existing phyla under realms).
+2. Quests: "Both" (daily in My Day quest_log with a realm; milestones as realm quest steps).
+3. Brief pick: "think of more scenarios, Neglected realm, Today's shift/day type, Today's planned blocks".
+   -> proposed blend of 9 signals (neglected, day type, today's blocks, streak at risk, coming up
+   (trip/deadline), weekly challenge, season resolution, unstudied input, money week); shows why.
+4. Tagging: "Derived + chosen (Recommended)".
+COUNCIL OF 5
+- One source: realm<->phylum map lives in realm_lenses.json (rule 8); phylum names must come from it too.
+- library_items phylum CHECK widened (additive: allows more numbers, deletes nothing).
+- AI-proposed realm quest steps always pass Alex's approval before entering xp_quest_steps.
+- Empty realm in the Brief: say so and point to feeding it, never pick at random silently.
+- Connector value is limited until more jargon is reviewed; Review page drives it.
+
+REFINED STEPS IN THIS PLAN
+RI-0  + shared RPGACE.realmOf(kind,row) helper (derived tagging) alongside the lens file.
+RI-9  Morning Brief realm blend (9 signals, shows why, empty-realm prompt).
+RI-10 unchanged.
+
+NEW PLAN: Realm Connectors (RC), after Realm Inputs, before Gym + Health
+RC-0 Realm map: realm_lenses.json gains each realm's phyla; the 21 grouped under realms; new phyla for
+     Chef, Athlete, Life, Homekeeper, Steward, Explorer (+ Mind/Connector top-ups) - names approved by
+     Alex first; phylum names read from this one source; phylum limit widened.
+RC-1 Phylum Path by realm: realms as the top level, phyla under them; jargon and shelves carry the realm.
+RC-2 Knowledge feeds realms: accepted jargon + Library items roll up per realm (realm cards show it).
+RC-3 Daily quests by realm: quest_log gains realm (old career/health/lifestyle mapped), each quest shows
+     its source; Oracle suggests quests from a realm's knowledge, you add with one tap.
+RC-4 Realm milestones: proposed quest steps from knowledge, approved by Alex before they join the
+     realm quest ladder.
+RC-5 Tests, docs, SELF_KNOWLEDGE, Galaxy regen, push, verify.
