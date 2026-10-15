@@ -27,3 +27,38 @@ ANSWERS (Oct 15, same evening)
   and running timers, separate from main chat; the 🔮 orb moves off the Next button.
 Also to fix: "0 whole" quantity on removal steps; passive timers start on an active confirm and the step
 carries forward until the timer goes off.
+
+FOLLOW-UP ASK (Oct 15, late) - verbatim:
+"So where multiple recipes can be chosen on planned cook, I was viewing recipe and clicked cooked now, when 12th
+step was done, 8 want it to ask me if it was a preview or actual cook, if actual cook, fantastic deduct it all, if
+not, leave as is, /interrogation and /paranoia with /drift and /CEO to get started"
+
+EVIDENCE (code read before asking):
+- My Recipes "Cook now" (rpgace_core.js ~49075) and recipe card "Start Cooking" (~46780) both end with
+  _offerStockUpdate(null,[id]): a "Take what you used out of stock?" ticked list. Never asks if it was real; does not
+  mark cooked, schedule, journal or XP. Non-planned deductions have no undo (no planned_cooks id to hang it on).
+- Planned session Cook Mode ends with _askFinishCook: "Mark this cook finished? / Not yet" - a second, different question.
+DRIFT vs the Cook Mode answers above: VERDICT on track, BASIS provisional (answers recorded, no ceo_plans row until now).
+Gap grade MINOR-additive: one question in front of the already-agreed "Done on an unscheduled cook" item, goal unchanged.
+PARANOIA (scaled - one MATERIAL point): blind deduct-all with no backup could silently mis-take unconvertible/short
+items -> resolved by deducting instantly but showing a summary with Undo; the back-filled cooked planned_cooks row
+gives a non-planned cook an id, so Undo now works there too.
+
+INTERROGATION ANSWERS (Oct 15):
+- Actual cook stock: "Instant, with Undo (Recommended)" - all out at once, then a summary of what changed + Undo, and
+  anything that couldn't be taken out is named.
+- Cooking one recipe from a multi-recipe session: "Just the recipe I cooked (Recommended)" - only its ingredients,
+  marked cooked, leaves the session; the other recipes stay planned.
+- Preview: "Nothing at all (Recommended)" - no stock, schedule, XP or journal; saved Cook Mode progress cleared.
+- Leftovers: "Remove timers from hands-on steps (Recommended)" and "Same question for planned cooks (Recommended)"
+  - Actual cook / Just a preview / Not finished yet everywhere Cook Mode ends.
+
+PLAN "Cook Mode Fixes" CM-1..6 (ceo_plans, compiled; awaits Alex's go per rule 18):
+CM-1 One end-of-cook question everywhere (Actual / Preview / Not finished yet).
+CM-2 Actual cook = cooked row (back-filled from Cook Mode open -> Done for unplanned), Daily Schedule entry, Chef XP,
+     journal, recipe out of any session, instant deduction with Undo summary. Preview = nothing, progress cleared.
+CM-3 Passive timers: "Start timer & move on", step carries forward, bottom timer bar with the "when it ends" line
+     (Oracle writes it for new recipes; old recipes show the next step), Done on the bar clears it. Hands-on steps: no timer.
+CM-4 Built-in 💬 Ask panel inside Cook Mode (recipe, step, timers as context); 🔮 orb hidden off the Next button.
+CM-5 "0 whole" removal-step quantity fix.
+CM-6 Tests, docs, SELF_KNOWLEDGE, push, verify live.
