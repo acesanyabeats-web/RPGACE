@@ -341,3 +341,11 @@ keys, additive JSON); realmBrief.logic.period/periodFrom/periodLines; reportRows
 Wrapped 'taken' card (frozen + Year so far); Sunday review By realm block + text. Analysis reports
 unchanged (RI-4 realm scores already). Tests: ri10_test 11/11; regressions myday 39, ri9 16, xp12 25,
 xp4 19, xp8 21.
+
+=== RI-8 (Oct 15 2026) - tests, docs, Galaxy regen; PLAN DONE ===
+Alex: "go, start ri-8". Full run: ri0 4, ri2 20 (test ends with HARD TIMEOUT after all pass - the
+test does not close itself), ri3 16, ri4 11, ri4_py 13, ri5 16, ri7 13, ri9 16, ri10 11, ln 8,
+journal 6, kn0 12, kn1 15, ll 23, myday 39, xp12 25, vw 10 = 288 checks, 0 failed.
+CLAUDE.md Plan 2 line folded (99,802 -> 99,069 chars in Current state). SELF_KNOWLEDGE FRESH,
+contradictions none, anchors 26/26. Galaxy Map regenerated (realmBrief on module/current pages),
+idempotent on a 2nd run, div/a/svg balanced. Plan close needs Alex's SQL (connector drops updates).
