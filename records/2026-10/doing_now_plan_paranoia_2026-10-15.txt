@@ -1,0 +1,98 @@
+"DOING NOW" — PLANNING RECORD (Oct 15 2026). PLANNING ONLY, NOT BUILT.
+Build order (Alex): after ALL current plans are done — Realm Inputs (RI-9, RI-10, RI-8),
+Realm Connectors (RC-0..5), then Gym + Health. This plan comes after those.
+
+ALEX, VERBATIM
+"i want an installment where i press im going to do now to make spontaneous decisions that ill
+likely repeat then feed suggestion for filling out days weeks etc. this would be a way of trying
+something new or doing something that doesn't have a record to easily be recorded whilst im doing
+it. only /paranoia and /free-for-all-debate with /commit-archaeologist and /drift , we will plan it
+out while you build the next steps of current plan. once all current plans are done, we build this
+one im describing, only planning for now please"
+
+=== EVIDENCE (live, this pass) ===
+- rpgace_agendas (Daily Schedule entries) already has started_at, ended_at, actual_mins (worked out
+  on End), template_id, place, journey_mins, ready_mins, category, xp, source_type/source_id.
+  Live: 1 row, 0 ever started. Start/End logic lives in the legacy schedule code (rpgace_core.js
+  ~2280-2320); actual_mins = ended_at - started_at.
+- activity_templates (name, category, place, journey_mins, ready_mins, est_mins): 0 rows.
+- routines: 8 rows (My Day). One-off routines (due today) already exist for Oracle suggestions.
+- quest_log has started_at/actual_minutes too (quests, not free activities).
+- day_blocks (week planner) 1 row; chore_blocks has kind/realm; myDay.REALM_ACTIVITIES exists.
+- Realm picker (RPGACE.realmPicker) + input XP pattern (first 3 a day) shipped today (RI-2..7).
+- Live Cook Mode and gymTracker already have their own "start" flows.
+
+=== COMMIT ARCHAEOLOGY ===
+- activity_templates + rpgace_agendas.template_id: introduced 464e8d6 (MD2-4, Oct 12) "get-ready +
+  travel timings and activity templates for My Day and the Daily Schedule". Built to REUSE timings
+  for repeated activities. Never filled (0 rows), because nothing feeds it except a manual save.
+  Inference (medium confidence): "Doing now" is the missing feeder this table was waiting for.
+- Agenda start/end region: last reshaped by 39f7b2c (Oct 5, planned cooks never vanish: Done marks
+  the cook cooked) and b46cd72 (Oct 14, cooking reorganisation). Change risk: an agenda tied to a
+  planned cook has special Done behaviour (source_type 'planned_cook'); a spontaneous entry must use
+  its own source_type so it never triggers cook logic.
+
+=== /drift ===
+Baseline: PROVISIONAL (Alex's message above; not yet a ratified plan)
+Work map: n/a (planning only)
+Verdict: ON TRACK — Alex sequenced this AFTER current plans, so it does not pull work away from
+  Realm Inputs/Connectors. Overlap to watch: RI-9's Morning Brief could later read "things you often
+  do" as a 10th signal — note it, do not add it to RI-9 now (MATERIAL if added without his say-so).
+Grades: none.
+
+=== /free-for-all-debate (4 problems, competitors each argued 2) ===
+P1 Where a "doing now" lives
+  A (reuse): an agenda row: date/hour = now, started_at = now, source_type 'doing_now'. End fills
+    ended_at + actual_mins (already coded). Shows in Daily Schedule and Chronicles for free.
+  B (new table): a clean activity_log. Rejected: duplicates agendas' start/end/minutes (rule 8).
+  C vs A: agendas are hour slots; a spontaneous entry is fine there, it just starts "now".
+  MERGED: reuse rpgace_agendas + source_type 'doing_now'. One new column at most (a note/realms).
+P2 Capturing it while doing
+  D (minimal): one tap, type a few words, timer runs, Stop. E (rich): notes/photos/steps during.
+  D vs E: E is what "easily recorded whilst doing it" points at, but every extra field is friction
+  on a phone. MERGED: start with name + realm (picker) + running timer; a "+ note" while running;
+  on Stop: how it went (1 line) + optional photo. Forgot to stop -> next time the app opens:
+  "Still doing X? Stop at 18:40 / still going". OPEN FORK for Alex: how much to capture.
+P3 Turning repeats into suggestions
+  F (code pattern): same name (normalised) done 3+ times in 21 days -> offer: "make it a routine",
+  "save as template", "put it in the week planner at your usual time". No Oracle cost.
+  G (Oracle): the Sunday review asks Oracle to spot patterns. Costs a call, can find fuzzy repeats.
+  MERGED: F first (free, exact), G as an optional line in the existing Sunday review.
+  Templates: first repeat auto-fills activity_templates (name, category, usual mins, place) so the
+  timings MD2-4 built finally get used.
+  OPEN FORK: the threshold (3 in 21 days?) and whether suggestions appear in My Day or the Brief.
+P4 Realm + XP (standing rule: every input/plan carries realms)
+  H: pick realms on start (same picker, recent first, Not now holds). XP like inputs: a small
+    amount split over realms, capped per day to stop gaming. I: no XP, just records.
+  OPEN FORK for Alex.
+
+=== /paranoia RISKS ===
+- Friction kills it: must be 1 tap + a word, reachable everywhere (floating or nav), 44px targets.
+- Forgotten timers: need the "still doing?" catch, and a 4-hour auto-stop cap marked "estimated".
+- Overlap: "I'm cooking" should offer Live Cook Mode; "gym" should offer gymTracker; never two
+  timers for one activity. Suggest the matching flow on start, by keyword.
+- Suggestion spam: one suggestion per activity, "not now" snoozes it for 30 days.
+- Planned-cook Done logic must never fire for source_type 'doing_now' (archaeology finding).
+- No backup on Supabase: additive schema only (a column or source_type value; check the
+  rpgace_agendas constraints in pg_constraint first, per the Oct 10 planned_cooks lesson).
+- Cost: zero Oracle calls by default.
+
+=== DRAFT STEPS (to ratify after Alex's answers; build later) ===
+DN-0 schema check + additive change (source_type 'doing_now', note/realms on agendas if needed)
+DN-1 the button + running card (start, timer, + note, stop, how it went)
+DN-2 forgot-to-stop catch + auto-stop cap
+DN-3 matching flows (cook/gym) offered on start
+DN-4 repeats -> templates + suggestions (routine / week planner / day template)
+DN-5 realms + XP (per Alex's answer)
+DN-6 Chronicles/Sunday review lines, tests, docs, SELF_KNOWLEDGE, Galaxy regen
+
+=== ALEX'S ANSWERS (Oct 15, verbatim choices) ===
+1. Button: "Top of My Day" (not the recommended floating button) -> DN-1 puts it at the top of
+   My Day (and its dashboard card), not on every page.
+2. Capture: "Name + timer, note + photo on Stop (Recommended)".
+3. Repeats: "3 times in 3 weeks (Recommended)" -> routine / template / week-planner offer,
+   Not now snoozes 30 days.
+4. XP: "Yes, small and capped (Recommended)" -> realm picker on start, small XP split over realms,
+   first 3 a day.
+STATUS: plan drafted with answers; build waits until Realm Inputs, Realm Connectors and
+Gym + Health are all done (Alex's order).
