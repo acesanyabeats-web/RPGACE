@@ -96,3 +96,20 @@ DN-6 Chronicles/Sunday review lines, tests, docs, SELF_KNOWLEDGE, Galaxy regen
    first 3 a day.
 STATUS: plan drafted with answers; build waits until Realm Inputs, Realm Connectors and
 Gym + Health are all done (Alex's order).
+
+=== /interrogation round 2 (Oct 15, Alex: "i like the dn steps, is there more /interrogation or /paranoia to do to elevate it") ===
+1. Log after: "Yes, both start-now and just-did (Recommended)" -> DN-1 gains "I just did X" (name,
+   minutes, realms) on the same button; counts the same toward repeats and XP.
+2. Ideas: "\"Try something new\" from quiet realms (Recommended)" -> 3 ideas in code from the quiet
+   realms realmBrief (RI-9) already finds; one tap starts it. No Oracle cost.
+3. Details: "i reckon there is more, Who with (your People list), Where (place), Money spent,
+   Mood / energy after" -> all four in; Alex expects more. Candidates offered back to him:
+   linked thing (a beat/ConID, recipe, plan or Library input it was for), effort 1-5,
+   "would do again?", travel time, weather, free tags. Pending his pick.
+   Effects: who with -> people.last_spoke + Connector; where -> activity_templates.place/journey;
+   money -> chronicles_finance expense (+ weekly spend); mood/energy -> suggestions favour
+   activities that leave him better.
+4. Learning: "Also teach Plan my day (Recommended)" -> repeats feed day templates (DT-1 learned
+   days by off/early/late kind), not only the routine/week-planner offer.
+DN steps updated: DN-1 (+ just-did, + who/where/money/mood on Stop), DN-1b ideas from quiet realms,
+DN-4 (+ Plan my day learning).

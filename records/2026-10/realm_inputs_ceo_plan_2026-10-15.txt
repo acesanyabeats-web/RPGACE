@@ -334,3 +334,10 @@ reasons, one act; empty realm -> first myDay.REALM_ACTIVITIES entry, flagged). S
 morningBrief._generate's Oracle prompt. No study status exists on library_items, so "unstudied input"
 = a realm-tagged item taken in during the last 14 days (one per realm). Tests: ri9_test 16/16;
 regressions myday 39, ll6 10, xp12 25, journal 6, kn1 15.
+
+=== RI-10 (Oct 15 2026) - realms in reports ===
+Alex: "go, start ri-10". Built: migration realm_inputs_ri10_report_realms (xp_save_report + inputs/quests
+keys, additive JSON); realmBrief.logic.period/periodFrom/periodLines; reportRows Taken in/Quests done;
+Wrapped 'taken' card (frozen + Year so far); Sunday review By realm block + text. Analysis reports
+unchanged (RI-4 realm scores already). Tests: ri10_test 11/11; regressions myday 39, ri9 16, xp12 25,
+xp4 19, xp8 21.
