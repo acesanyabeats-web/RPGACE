@@ -687,6 +687,31 @@ flowchart LR
   CBT -->|+10 tick: quest_log kind block| XPB[xp_on_change → block_tick → realm XP]
 ```
 
+## 15l. Realms on everything (Realm Inputs RI-0..10 + Realm Connectors RC-0..4, Oct 15 2026) — built, untested by Alex
+
+```mermaid
+flowchart LR
+  IN[Input: video link / book / screenshots / Library add / starred answer / web lookup] --> PICK[RPGACE.realmPicker: up to 4 realms, Not now holds]
+  PICK -->|realms column| ROWS[(intel_jobs / bookworm_books / screenshots / library_items)]
+  PICK -->|Not now = realms {}| HELD[held inputs: asked again after sign-in]
+  ROWS --> LENS[realm_lenses.json lenses → Oracle reads through chosen realms]
+  LENS --> REP[(intel_reports.realm_scores + insight realms)]
+  REP --> Q[pathways quest → quest_log input_quest, category = realm]
+  ROWS -->|library_items realms| XPIN[xp_on_input → input_taken XP split over realms]
+  MAP[realm_lenses.json phyla: 29 phyla → 13 realms] --> PP[Phylum Path grouped by realm]
+  MAP --> RO[RPGACE.realmOf phylum fallback → jargon + Library carry a realm]
+  RO --> KN[realmKnowledge: accepted jargon + Library per realm]
+  KN --> CARD[Realm card: Taken in · Knows · ✨ Suggest quests · 🏔️ milestone]
+  CARD -->|Suggest quests: 1 Oracle call| Q
+  CARD -->|Propose: 1 Oracle call, 3 ideas| MS[(xp_quest_steps source knowledge)]
+  MS -->|counter reached: xp_quest_check| DONE[done]
+  MS -->|hand tick: line + realm proof, guard trigger| DONE
+  DONE --> XPM[xp_milestone_xp: 10/20/35% of rank gap] --> TITLE[3 per tier → title in xp_unlocks]
+  XPS[(xp_events)] --> BRIEF[realmBrief: Morning Brief Today's realm + reports by realm]
+```
+
+Truth table: realm picker + held inputs, realm lenses for videos/books/screenshots, input XP, input quests, Today's realm, realm reports (RI-0..10); 29 phyla mapped to realms, Phylum Path by realm, Knows line + reading XP half Scholar, quest realm icons + From links + Suggest quests, knowledge-path milestones with proof by realm and tier titles (RC-0..4) — built, headless-verified (RC tests 6/11/6/11/17 plus DB rolled-back runs). Not built: auto-proposing milestones when a realm gains knowledge (Alex chose tap-only); counters for realms with no app counter (Homekeeper, Steward, Builder) — they tick by hand.
+
 ## 15k. Cooking reorganisation (CR-1..6, Oct 14 2026) — built, untested by Alex
 
 ```mermaid

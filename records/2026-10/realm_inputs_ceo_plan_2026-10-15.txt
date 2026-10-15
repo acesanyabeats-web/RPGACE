@@ -433,3 +433,16 @@ tag milestone_proof instead of widening the screenshots source check). Client: x
 logic, msLine/openMsPropose/openMsTick/msRefresh, Year page path name, myDay review stale section,
 RPGACE.realmKnowledgeFor shared with questEngine.suggestFor, data-write proof upload/list/held.
 Tests: rolled-back DB run all correct; rc4_test 17/17; rc3 11, rc2 6, xp12 25, xp3 28, xp5 22, ri10 11.
+
+=== RC-5 (Oct 15 2026) - Realm Connectors finished ===
+Alex: "go" on the RC-5 brief (hand-test rows now, recommended).
+Re-test: 71 RPGACE suites pass. 5 stale tests updated, no app bugs: xp7 (areas list gained Social/Money),
+ll5 (no separate "Searching" line any more), shot (Screenshots is a page since KN-2; count needs sign-in
+since a10a2c3 Oct 12; menu bands folded since KN-0), landing (mocks lacked CORS + SW block; area bands;
+Library/Screenshots/Review are pages), perf (longest boot frame 355-415ms at 6x throttle < 500ms threshold,
+so nothing to record is correct). ube_* suites belong to another app, excluded; pre/empty are probes.
+Galaxy Map regenerated (24 pages, balanced, anchors fresh). graphify_river_group.py: KeyError 13 since M1
+(zones 12-16 had no colour/name) fixed with grey + domain_label fallbacks; runs clean twice.
+smoke_test_items: 11 rows added (5 RI, 6 RC) with HOW TO TEST + code_verified_note.
+ceo_plan_items RC-0..5 and RI-7..10 set yellow (the connector accepted the update this time).
+Docs: system_flow_map 15l, minotaur "Your year", RC-5 card, CLAUDE.md line (+ one old bullet collapsed).

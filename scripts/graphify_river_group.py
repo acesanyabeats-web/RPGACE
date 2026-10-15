@@ -3974,11 +3974,14 @@ def river_group(html_path: Path, graph_json_path: Path):
         target = river if river is not None else zone
         if target is None:
             continue
-        color = RIVER_COLOR[target]
+        # Oct 15 2026: zones 12-16 (docs/skills/tooling components) have no
+        # domain colour since M1 cut the colour table to the 8 app domains -
+        # this raised KeyError 13 and stopped graph.html recolouring. Neutral grey.
+        color = RIVER_COLOR.get(target, '#5a5f7a')
         node['color'] = {'background': color, 'border': color,
                           'highlight': {'background': '#ffffff', 'border': color}}
         node['community'] = 1000 + target
-        label = RIVER_NAME[target]
+        label = domain_label(target)
         suffix = f' · {label}'
         if nid in mainjs_matched:
             # Honest evidence-tier flag: a rpgace_core.js module marker is
@@ -4013,8 +4016,8 @@ def river_group(html_path: Path, graph_json_path: Path):
         # API/Auth calls to external members, or the dev-process/
         # knowledge layer those members coordinate through).
         icon = '🌊' if target <= 11 else '🔗'
-        legend.append({'cid': 1000 + target, 'color': RIVER_COLOR[target],
-                        'label': f'{icon} {RIVER_NAME[target]}', 'count': count})
+        legend.append({'cid': 1000 + target, 'color': RIVER_COLOR.get(target, '#5a5f7a'),
+                        'label': f'{icon} {domain_label(target)}', 'count': count})
 
     # Re-serialize LEGEND first (higher offset, so RAW_NODES's offsets
     # stay valid when we splice LEGEND back in after it).
@@ -6004,5 +6007,5 @@ if __name__ == '__main__':
     total = sum(counts.values())
     print(f'River-tagged {total} nodes across {len(counts)} domains, each given a real fixed x/y inside its domain zone:')
     for r in sorted(counts):
-        print(f'  {RIVER_NAME[r]}: {counts[r]} nodes')
+        print(f'  {domain_label(r)}: {counts[r]} nodes')
     print(f'nodesDS mapping patch: {"applied" if patched else "already present (no-op)"}')
