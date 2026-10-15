@@ -375,3 +375,11 @@ Alex: "go, start rc-1". Built: realm-grouped switcher (13 realm heads + Miscella
 shelf realm line, ENABLED_PHYLA 1-29, realmOf phylum fallback, jargon realm badge + filter. Note: the
 Phylum Path page forces buttons to 40px (!important, KN-7 phone standard) - realm heads follow it.
 Tests: rc1_test 11/11; ll7 13, ll 23, ri5 16, kn5 17, rc0 7, kn6 7, kn4 18.
+
+=== RC-2 (Oct 15 2026) - knowledge feeds realms ===
+Alex: "go, start rc-2". Built: RPGACE.realmKnowledge/realmKnowledgeText, realm card Knows line -> Jargon
+filtered; migration realm_connectors_rc2_reading_xp_split (xp_award_split; xp_on_change chapter_done +
+book_finished patched by exact-line replace, verified). Library adds unchanged (RI-6 input_taken already
+pays chosen realms; library_added only stays for items without realms).
+Tests: rolled-back DB run (300 -> scholar 150, producer 75, mind 75; none -> scholar 30; scholar+producer
+-> 15/8/8); rc2_test 6/6; ri5 16, xp12 25, rc1 11, rc0 7, xp3 28.
