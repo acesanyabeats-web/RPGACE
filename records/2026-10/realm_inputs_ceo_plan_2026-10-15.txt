@@ -383,3 +383,12 @@ book_finished patched by exact-line replace, verified). Library adds unchanged (
 pays chosen realms; library_added only stays for items without realms).
 Tests: rolled-back DB run (300 -> scholar 150, producer 75, mind 75; none -> scholar 30; scholar+producer
 -> 15/8/8); rc2_test 6/6; ri5 16, xp12 25, rc1 11, rc0 7, xp3 28.
+
+=== RC-3 (Oct 15 2026) - daily quests by realm ===
+Alex: "go, start rc-3". Brief recommendation taken: realm stays in quest_log.category (no new column,
+no bulk update) - this narrows the plan line "quest_log gains realm"; old categories mapped on display.
+Built: questEngine.logic.questRealmKey/questRealmInfo (icon on every card), sourceLink (From link per
+source_table, raw table tag removed), suggestFor/askSuggest/parseSuggest/addSuggested; xpSeason realm
+card .xp-rc-suggest -> ui.openQuestSuggest popup. Suggestions = input_quest (same 5-100 XP, first 3 a
+day), source_table realm_suggest. No Oracle call when the realm knows nothing.
+Tests: rc3_test 11/11; rc2 6, rc1 11, ri7 13, xp12 25.
