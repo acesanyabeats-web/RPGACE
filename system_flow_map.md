@@ -820,6 +820,11 @@ flowchart LR
   CARD --> CMS[_cookModeSteps scale] --> CM[_openCookMode one step per screen]
   PC[(planned_cooks.schedule.blocks)] --> LIVE[Live Cook panel ▶ Cook Mode] --> CMS
   CM --> LS[(localStorage resume position)]
+  CM --> Q{Last Done: real cook?}
+  Q -- Actual, unplanned --> RU[_recordUnplannedCook: planned_cooks cooked + finished agenda + journal + out of drafts] --> INS[_applyStockInstant + Undo]
+  Q -- Actual, planned --> FC[_finishCook instant] --> INS
+  Q -- Preview --> NOP[nothing; clear resume]
+  Q -- Not finished --> LS
 ```
 
 The 8 recipes saved before Oct 11 have `steps_proposed` rows written directly by a Claude Code session (source data: their own steps + `recipe_ingredients`; full set in `records/2026-10/cook_mode_step_splits_2026-10-11.json`). Nothing changes for a recipe until Alex accepts its proposal.
