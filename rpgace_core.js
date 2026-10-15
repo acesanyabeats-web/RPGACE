@@ -5590,6 +5590,40 @@ document.addEventListener('keydown', e=>{
     return null;
   };
 
+  // Realm Inputs RI-0 (Oct 15 2026). Alex: "any data should be tagged by
+  // realms" - chose "derived + chosen": rows that can belong to several
+  // realms (inputs, quests, plans) store the realms he picks; everything
+  // else is worked out here, from the table it lives in. One helper, so the
+  // Brief, reports and realm cards never keep their own copies. Always
+  // returns an array of xpSeason realm keys (maybe empty).
+  R.REALM_OF_TABLE = {
+    recipes: 'chef', planned_cooks: 'chef', pantry_stock: 'chef', shopping_lists: 'chef',
+    gym_sessions: 'athlete', gym_sets: 'athlete', food_log: 'athlete', body_log: 'athlete',
+    wishlist_items: 'steward', cutback_log: 'mind', plans: 'explorer', plan_tasks: 'explorer',
+    people: 'connector', outreach_log: 'connector', content_productions: 'creator',
+    conid_pot: 'producer', reference_tracks: 'producer', video_jobs: 'creator',
+    journal: 'life', bookworm_books: 'scholar', jargon_encyclopedia: 'scholar'
+  };
+  R.QUEST_CATEGORY_REALM = { career: 'producer', health: 'athlete', lifestyle: 'life' };
+  R.realmOf = function (table, row) {
+    row = row || {};
+    var ok = function (k) { return !!(R.modules.xpSeason && R.modules.xpSeason.REALMS[k]); };
+    var list = Array.isArray(row.realms) ? row.realms.filter(ok) : [];
+    if (list.length) return list;
+    if (row.realm && ok(row.realm)) return [row.realm];
+    if (table === 'quest_log' && R.QUEST_CATEGORY_REALM[row.category]) return [R.QUEST_CATEGORY_REALM[row.category]];
+    if (table === 'routines' && R.modules.myDay) return [R.modules.myDay.logic.realmOf(row)];
+    if (table === 'chronicles_finance') return [row.type === 'sale' ? 'hustler' : 'steward'];
+    return R.REALM_OF_TABLE[table] ? [R.REALM_OF_TABLE[table]] : [];
+  };
+  // The realm lens file (realm_lenses.json, repo root): loaded once, shared.
+  R.realmLenses = function () {
+    if (!R._lensP) R._lensP = fetch('/realm_lenses.json', { cache: 'no-cache' })
+      .then(function (r) { if (!r.ok) throw new Error('lenses ' + r.status); return r.json(); })
+      .catch(function (e) { R._lensP = null; throw e; });
+    return R._lensP;
+  };
+
   // Back + 🏠 for any area screen (page or popup). A screen calls
   // visit(area, {key, label, open}) when it shows; bar(area, opts) gives the
   // "← Back to <previous>" + "🏠 <Area>" row. Back re-opens the previous

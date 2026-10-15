@@ -1,0 +1,87 @@
+{
+  "_about": "Realm Inputs RI-0 (Oct 15 2026). One lens per xpSeason realm: what Oracle looks for in an input taken in for that realm, what its 1-10 score means, and the kind of quest it suggests. Read by the cloud video runner (scripts/rpgace_intel.py) and the app (book chapters, screenshots). Edit here only. Draft v1, awaiting Alex's corrections.",
+  "version": 1,
+  "max_realms": 4,
+  "xp_pot": 60,
+  "xp_daily_inputs": 3,
+  "realms": {
+    "producer": {
+      "name": "Producer", "icon": "🎵",
+      "looks_for": "Concrete beat-making knowledge: melody and chord choices, drum and 808 programming, sound design, sampling, mixing and mastering moves, FL Studio workflow, arrangement. Name exact settings, plugins, patterns and why they work.",
+      "score_means": "How much this would improve the next beat Alex makes. 10 = a technique he can use tonight that clearly levels up his sound; 1 = nothing usable.",
+      "quest_style": "A short studio task: recreate, flip or apply one technique in a beat."
+    },
+    "creator": {
+      "name": "Creator", "icon": "🎬",
+      "looks_for": "Content craft: hooks, pacing, editing, thumbnails, titles, visual style, storytelling, platform formats (YouTube, Shorts, TikTok, Instagram) and what made this piece hold attention.",
+      "score_means": "How much this would improve the next video or post Alex makes. 10 = a format or hook he should copy now; 1 = nothing to learn for his content.",
+      "quest_style": "Make or plan one post or video using the idea."
+    },
+    "hustler": {
+      "name": "Hustler", "icon": "💼",
+      "looks_for": "Making money from music: beat selling, licensing, pricing, outreach to artists, collabs, marketing, distribution, business systems. Real numbers and tactics over hype.",
+      "score_means": "How directly this could lead to a sale, placement or paying collab. 10 = a tactic with a clear money path; 1 = vague motivation dressed as business.",
+      "quest_style": "One outreach, listing, pricing or marketing action."
+    },
+    "chef": {
+      "name": "Chef", "icon": "🍳",
+      "looks_for": "Cooking: techniques, recipes, ingredients and substitutes, cuisines, meal prep, kitchen skills, food science that explains why a method works.",
+      "score_means": "How much this would improve what Alex cooks this week. 10 = a dish or technique he will actually make; 1 = food entertainment with nothing to cook.",
+      "quest_style": "Cook, prep or try one dish or technique."
+    },
+    "athlete": {
+      "name": "Athlete", "icon": "💪",
+      "looks_for": "Training and body: exercises and form cues, programming, progression, nutrition, recovery, sleep for performance. Evidence-based over bro-science.",
+      "score_means": "How much this would improve his training or health if applied. 10 = a clear, safe change to his programme; 1 = no usable advice.",
+      "quest_style": "Add one exercise, cue or habit to the next session."
+    },
+    "scholar": {
+      "name": "Scholar", "icon": "📚",
+      "looks_for": "Learning itself: clear explanations, frameworks, ideas worth remembering, how to study and retain, references to go deeper.",
+      "score_means": "How much real understanding this adds. 10 = a framework he will reuse; 1 = shallow or repeated knowledge.",
+      "quest_style": "Explain it back, make recall cards or read the source it cites."
+    },
+    "life": {
+      "name": "Life", "icon": "🏠",
+      "looks_for": "Running a good life: routines, planning, priorities, relationships with self, life admin, balancing work, music and rest.",
+      "score_means": "How much this would make his days run better. 10 = a change to his routine he should adopt; 1 = generic life advice.",
+      "quest_style": "Adjust one routine or plan one thing for the week."
+    },
+    "homekeeper": {
+      "name": "Homekeeper", "icon": "🏡",
+      "looks_for": "The home: cleaning systems, organising, maintenance, laundry, DIY, setting up spaces (including the studio) to work better.",
+      "score_means": "How much easier this would make keeping the home. 10 = a system he will use weekly; 1 = nothing practical.",
+      "quest_style": "One chore, fix or organising job."
+    },
+    "mind": {
+      "name": "Mind", "icon": "🧘",
+      "looks_for": "Mindset and wellbeing: motivation, discipline, focus, confidence, handling setbacks, stress and calm, creative blocks. Pull the strongest quotes and the one belief or habit worth adopting.",
+      "score_means": "How much this would shift his mindset or habits for the better. 10 = a reframe or practice he will keep; 1 = empty hype.",
+      "quest_style": "One reflection, practice or habit for today."
+    },
+    "steward": {
+      "name": "Steward", "icon": "💷",
+      "looks_for": "Money management: budgeting, saving, spending decisions, bills, investing basics, gear buying decisions, cutting waste.",
+      "score_means": "How much this would improve his finances if applied. 10 = a concrete money move; 1 = no actionable advice.",
+      "quest_style": "Review, cut or plan one money item."
+    },
+    "explorer": {
+      "name": "Explorer", "icon": "✈️",
+      "looks_for": "Travel and new experiences: places, trips, planning and booking tips, culture, things to try locally and abroad.",
+      "score_means": "How much this would shape a real trip or new experience. 10 = something he will plan; 1 = just scenery.",
+      "quest_style": "Add a place or idea to Plans, or plan one outing."
+    },
+    "connector": {
+      "name": "Connector", "icon": "🤝",
+      "looks_for": "People: friendships, family, networking, communication, conflict, showing up for others, building a community around his music.",
+      "score_means": "How much this would improve his relationships or network. 10 = a habit or message he will act on; 1 = nothing to apply.",
+      "quest_style": "Reach out to, catch up with or do something for one person."
+    },
+    "builder": {
+      "name": "Builder", "icon": "🛠",
+      "looks_for": "Building tools and systems: coding, AI, automation, RPGACE itself, productivity tooling, technical skills.",
+      "score_means": "How much this would improve what he is building. 10 = a technique or tool he should add; 1 = nothing usable.",
+      "quest_style": "Try one tool, write one note for RPGACE or automate one task."
+    }
+  }
+}
