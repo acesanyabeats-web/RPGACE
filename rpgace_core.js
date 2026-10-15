@@ -56332,7 +56332,20 @@ RPGACE.register('myDay', {
       $('#md-date').value = src.due_date || self.logic.iso();
       $('#md-every').value = src.every_days || 7;
       // Editing: show the real last-done (tick or set date); a newer tick still wins later.
-      $('#md-lastdone').value = id && src.cadence === 'every_days' ? (self.logic.lastDone(src) || '') : (src.last_done_before || '');
+      // Oct 15 2026 (Alex: "i reverted the washing colours but it didnt come
+      // back"): this box used to be pre-filled with the newest TICK date, so
+      // saving the form froze a tick into the chore's own last_done_before and
+      // undoing the tick could never bring the chore back. Now the box only
+      // holds the stored date; the newest tick is shown as a hint.
+      $('#md-lastdone').value = src.last_done_before || '';
+      var lastTick = id && src.cadence === 'every_days' ? self.logic.lastDone(Object.assign({}, src, { last_done_before: null })) : null;
+      if (lastTick) {
+        var hint = document.createElement('div');
+        hint.className = 'md-lastdone-hint';
+        hint.style.cssText = 'font-size:12px;color:var(--muted);margin-top:4px;';
+        hint.textContent = 'Last ticked: ' + lastTick + ' (ticks count on their own; leave the box empty unless it was done before you used RPGACE)';
+        $('#md-lastdone').parentNode.appendChild(hint);
+      }
       $('#md-time').value = src.preferred_time || '';
       $('#md-mins').value = src.est_mins || 15;
       $('#md-xp').value = src.xp != null ? src.xp : 10;

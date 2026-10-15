@@ -73,6 +73,18 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-15-chore-revert" style="margin-bottom:30px;">
+    <div class="card-title">🧺 Oct 15 — An undone chore now comes back</div>
+    <div class="card-body">
+      You undid Laundry Colours but it stayed hidden.
+      <ul>
+        <li><b>What happened:</b> no tick was left, but the chore itself had "last done = today" saved on it, so it counted as done for 15 days. The edit form used to fill its "Last done" box with your newest tick date, and saving that form wrote the tick date into the chore. After that, undoing the tick couldn't bring it back.</li>
+        <li><b>Fixed:</b> Laundry Colours is back on your list. The edit form now leaves "Last done" as you set it, and shows "Last ticked: …" underneath instead. Ticks count on their own.</li>
+        <li><b>Your alarm:</b> a one-off phone alert is set for 18:05 today ("hang the clothes"). It only reaches your phone if alerts are switched on in My Day.</li>
+      </ul>
+      Tested: 5 in-app checks plus the My Day suite. <b>Untested by your own hand.</b>
+    </div>
+</div>
 <div class="card" id="card-2026-10-15-realm-inputs-done" style="margin-bottom:30px;">
     <div class="card-title">✅ Oct 15 — "Realm Inputs" plan finished (RI-8)</div>
     <div class="card-body">
