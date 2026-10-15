@@ -377,7 +377,11 @@ async function handleScreenshots(body, res, serviceKey) {
     const ins = await sbFetch('/rest/v1/screenshots?select=' + SHOT_COLS, serviceKey, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Prefer: 'return=representation' },
-      body: JSON.stringify({ storage_path: path, mime: mediaType, source: body.source === 'share' ? 'share' : 'upload', realms: cleanRealms(body.realms) }),
+      // RC-4: a milestone proof photo stays private and out of the inbox
+      // (tag milestone_proof, status kept - never read, never fed to the Library).
+      body: JSON.stringify(body.source === 'proof'
+        ? { storage_path: path, mime: mediaType, source: 'upload', status: 'kept', tags: ['milestone_proof'], realms: cleanRealms(body.realms) }
+        : { storage_path: path, mime: mediaType, source: body.source === 'share' ? 'share' : 'upload', realms: cleanRealms(body.realms) }),
     });
     const rows = await ins.json().catch(() => null);
     if (!ins.ok || !Array.isArray(rows) || !rows[0]) {
@@ -404,6 +408,8 @@ async function handleScreenshots(body, res, serviceKey) {
     if (body.q && String(body.q).trim()) q += '&search=wfts(english).' + encodeURIComponent(String(body.q).trim().slice(0, 120));
     if (body.status) q += '&status=in.(' + String(body.status).split(',').map(encodeURIComponent).join(',') + ')';
     if (body.id) q += '&id=eq.' + encodeURIComponent(body.id);
+    // RC-4: proof photos only show when asked for (a milestone's own view).
+    q += body.proof ? '&tags=cs.%7Bmilestone_proof%7D' : '&tags=not.cs.%7Bmilestone_proof%7D';
     const r = await sbFetch(q, serviceKey);
     const rows = await r.json().catch(() => null);
     if (!r.ok || !Array.isArray(rows)) return res.status(502).json({ error: 'List failed', detail: rows });
@@ -416,7 +422,7 @@ async function handleScreenshots(body, res, serviceKey) {
   // Realm Inputs RI-3: screenshots saved with "Not now" on the realm picker
   // (realms = {}), oldest first.
   if (op === 'held') {
-    const r = await sbFetch('/rest/v1/screenshots?select=id,description,created_at&realms=eq.%7B%7D&order=created_at.asc&limit=50', serviceKey);
+    const r = await sbFetch('/rest/v1/screenshots?select=id,description,created_at&realms=eq.%7B%7D&tags=not.cs.%7Bmilestone_proof%7D&order=created_at.asc&limit=50', serviceKey);
     const rows = await r.json().catch(() => null);
     if (!r.ok || !Array.isArray(rows)) return res.status(502).json({ error: 'Held list failed', detail: rows });
     return res.status(200).json({ data: rows });

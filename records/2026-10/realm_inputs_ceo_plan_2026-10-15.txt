@@ -392,3 +392,44 @@ source_table, raw table tag removed), suggestFor/askSuggest/parseSuggest/addSugg
 card .xp-rc-suggest -> ui.openQuestSuggest popup. Suggestions = input_quest (same 5-100 XP, first 3 a
 day), source_table realm_suggest. No Oracle call when the realm knows nothing.
 Tests: rc3_test 11/11; rc2 6, rc1 11, ri7 13, xp12 25.
+
+=== RC-4 (Oct 15 2026) - realm milestones: INTERROGATION (3 rounds, /paranoia + /free-for-all-debate
+participants, /commit-archaeologist + GODMODE + /drift + /scope as evidence toolkits) ===
+Alex: "start rc-4 and /interrogation me into oblivion by the /paranoia and /free-for-all-debate
+participants with /commit-archaeologist /Godmode and /drift as tool kits".
+EVIDENCE: every xp_quest_steps chain ends in a gate/title (xp_unlock_defs); zero ladder steps ever
+completed (xp_challenges realm_quest = 0); XP-5 (aacdec2) built auto-counted steps only (progress_key
+from xp_settings.progress); Oct 15 round 3 answer stands ("milestones as realm quest steps", AI
+proposals need Alex's approval). Proof stores already exist: beat-audio bucket/beat_audio_jobs (WAV),
+beat-deliverables + content_productions.deliverable_bundles (stem/tier zips), private screenshots
+bucket (8MB). Ladders: mind rank 1 at 140 XP, chef 290, producer 720 -> flat XP unbalances small realms.
+ROUND 1
+- Shape: "Own path per realm + new title (Recommended)"
+- Proof: "a mix of 1 and 2 maybe" (tick + one Journal line, and link a real thing)
+- Counting: "Counted when it fits, else hand tick (Recommended)"
+- XP: "By size: 50 / 100 / 200"
+ROUND 2
+- Proof mix: "maybe 1 but a picture at the end for the result when link doesnt make sense (eg. cooking)
+  with producing creating wav is the beat, stems into zip for selling beats is its own proof.
+  /paranoia and /debate-free-for-all this with /scope and /drift and /interrogation to further this point"
+- Path: "1 but make it scale so it doesn't propel me too far, it needs to be balanced"
+  (tiers of 3, open-ended)
+- Open limit: "One at a time, in order (Recommended)"
+- Stale: "Sunday review asks keep or drop at 4 weeks (Recommended)"
+ROUND 3 (free-for-all: proof hawk / friction hawk / balance hawk / double-pay worrier)
+- Proof map: "Use this map (Recommended)" - Producer beat (WAV via Beat Log); Hustler stem/tier zip or
+  sale; Chef finished cook + dish photo; Creator posted video/ConID; Athlete gym session; Scholar
+  finished chapter/book; Explorer trip/plan; Connector outreach entry; Steward money entry;
+  Homekeeper/Life/Mind/Builder photo or line. Every tick needs the one line.
+- Photos: "Private photo store, marked as proof (Recommended)" - never into Library, no input XP.
+- Balance: "Scale to each realm's ladder (Recommended)" - S/M/L = 10/20/35% of the realm's current
+  rank gap, round 5, min 25 (overrides the flat 50/100/200 from round 1, Alex's own later pick).
+- Difficulty: "Just past where you are (Recommended)" - Oracle sizes from rank, tier, last milestone.
+Double pay (linking a beat already paid beat_finished): accepted - the milestone is a separate goal.
+BUILT (Oct 15): migrations realm_connectors_rc4_step_columns / _step_checks / _milestone_xp /
+_milestone_guard_v2 / _milestone_after / _quest_check (the connector timed out on any SQL containing
+"drop" - nothing applied from those attempts; rewritten with create-or-replace trigger; proof photos use
+tag milestone_proof instead of widening the screenshots source check). Client: xpSeason MS_* + ms*
+logic, msLine/openMsPropose/openMsTick/msRefresh, Year page path name, myDay review stale section,
+RPGACE.realmKnowledgeFor shared with questEngine.suggestFor, data-write proof upload/list/held.
+Tests: rolled-back DB run all correct; rc4_test 17/17; rc3 11, rc2 6, xp12 25, xp3 28, xp5 22, ri10 11.

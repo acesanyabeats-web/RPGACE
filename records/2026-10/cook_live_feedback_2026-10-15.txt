@@ -1,0 +1,18 @@
+COOK MODE / LIVE COOK - ALEX'S HAND-TEST FEEDBACK (Oct 15 2026, after cooking Spiced Beef & Bacon Mafalda)
+Verbatim:
+"So I've just finished cooking and I've got some things to say: very easy to cook, but I think oracle chat
+should have dedicated text field and interface from conversation during cook live, setting a timer that is
+a passive should have active step confirm, timer set on passive, and the step should carry forward to next
+until timer goes off, this way I can do prep while timers are on and do other steps, then when timer goes
+off, a notification at the bottom says what needed to be done to press done on timer (eg. Remove pasta from
+water, or add ingredient to simmering pot etc. also clicking done with cooking should remove recipe from cook
+even if I didn't schedule the cook, I don't need to schedule something I'm doing now, it should just
+retroactively fill my schedule according to what time it ended and how long the live cook was on for. I also
+highlighted some bits of chat with oracle using realms as tags, absolute game changer, marking builder with
+another realm is flag to orchestrator Cc on steroids"
+Screenshots (3): Cook Mode steps 1, 2 and 10 of 12.
+Seen in the screenshots (not raised by Alex, found on inspection):
+- the floating 🔮 button sits on top of the green Next button (only "N" visible).
+- step 10 ingredient reads "star anise 0 whole" (a removal step shows a zero quantity).
+- "Step 9 ⏱ 3:41" running-timer chip already carries a timer across steps.
+Status: logged, not built. Needs a brief (rule 18) before building.
