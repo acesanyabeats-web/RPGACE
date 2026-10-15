@@ -81,7 +81,7 @@ def main():
     started = time.time()
 
     def next_job(skip):
-        q = "intel_jobs?status=eq.queued&order=created_at.asc&select=id,url&limit=5" + yt_filter
+        q = "intel_jobs?status=eq.queued&order=created_at.asc&select=id,url,realms&limit=5" + yt_filter
         for j in sb("GET", q):
             if j["id"] not in skip:
                 return j
@@ -137,7 +137,8 @@ def main():
         sink = io.StringIO()
         try:
             with contextlib.redirect_stdout(sink), contextlib.redirect_stderr(sink):
-                result = intel.process_url(job["url"])
+                # RI-4: read it through the realms Alex picked (None = Producer).
+                result = intel.process_url(job["url"], job.get("realms"))
         except Exception as e:  # process_url catches its own errors; belt and braces
             result, last["msg"] = None, f"Runner error: {e}"
         ok = bool(result)

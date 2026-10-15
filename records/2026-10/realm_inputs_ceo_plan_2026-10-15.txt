@@ -208,3 +208,57 @@ bookworm_books/screenshots/library_items (null = pre-picker, never asked). realm
 askHeld; asked after rpgace:login + on visibilitychange (10 min throttle); "Ask me later (all)";
 Videoworm 🎯 line + button; Knowledge home first "What's next" row. api/data-write screenshots op 'held'.
 Tests: ri3_test.js 16/16.
+
+=== Builder XP (Oct 15 2026) ===
+Alex: "id like oversight builder to update, i am completing a lot of work with you and it should count
+at some point". Built: xp_rules 'build_shipped' (builder, 30 XP), trigger xp_build_shipped on
+system_updates insert (function xp_on_system_update, max 5 a day = 150, design-scan rows skipped);
+backfilled Oct 13-15 = 5 x 30 x 3 days = 450 Builder XP. (First migration attempt with a DROP TRIGGER
+line timed out at the connector, nothing applied; re-run without it succeeded.)
+
+=== RI-4 scrutiny: /paranoia + /free-for-all-debate + /commit-archaeologist + /drift ===
+Alex's ask (verbatim): "1. Reply length ... 2. Books ... - give me more details of pros and cons with
+/paranoia and /free-for-all-debate with /commit-archaeologist and /drift"
+EVIDENCE
+- Live analyser is local_server/rpgace_intel.py (intel-queue.yml -> intel_cloud_runner.py imports it).
+  scripts/rpgace_intel.py is a STALE duplicate (added in a Sep 25 spec commit, missing the Aug 27 TLS fix
+  and the Oct 11 YouTube download fix) - nothing runs it. Rule 8: remove it.
+- Today's single-lens reply already averages ~1,260 output tokens, max ~1,520 (44 reports, chars/3.5),
+  against max_tokens 1500. Replies are at the ceiling now. A cut-off reply = JSON parse failure = job error.
+  2 old jobs ended "No result returned" (cause unknown, could be this - not provable from the snapshot).
+- The reply shape is read in 15+ places in rpgace_core.js (encyclopediaPosts idea-card kinds map
+  production_techniques -> "Technique"/beat, article builders, recall, Videoworm). Replacing the shape breaks them.
+- Book chapters: one prompt, framed "a music-production knowledge base", max 1200, non-streaming
+  /api/oracle (Vercel maxDuration 300 since July). Rule 3's "response length causes 504s" history
+  predates streaming/maxDuration; still the riskiest path for long replies.
+COMMIT ARCHAEOLOGY
+- generate_oracle_insights + 1500 cap: Alex's original laptop tool, brought in Aug 27 for the
+  delete-tombstone fix, never redesigned. Cap never revisited when the JSON grew.
+- Bookworm extract prompt: July 17-era Bookworm (music-only knowledge base, before realms existed).
+DEBATE (each competitor picked their 2 strongest points)
+- Reliability: tiered 1500 for 1-2 realms would truncate - the cap is a ceiling billed on use, so a flat
+  higher ceiling only removes failures. / Keep the reply shape so 15+ readers keep working.
+- Lens advocate: lens lines alone leave one score - fails "score per realm". / A Mind video still gets
+  "production techniques" unless the lists are written through the lens.
+- Cost: real output ~1.3k tokens (1 realm) to ~2.3k (4 realms) on Sonnet = roughly 2p-4p per video. /
+  Full per-realm sections duplicate content ~250 tokens per realm for little gain.
+- Downstream: idea-card kinds are music-labelled (Technique = beat) - a later pass (RI-5/RC) should relabel.
+  / Book insights with no realm can't be filed per realm when Realm Connectors roll knowledge up.
+- Book risk: splitting every chapter by realm multiplies output on the non-streaming path.
+/DRIFT
+- Choice 1 as recommended (1500 for 1-2 realms): VERDICT drifted (would break) - MATERIAL. Corrected.
+- Video "lens lines only": MATERIAL vs Alex's "How it's analysed ... score" (one score stays).
+- Books "lens lines only": MINOR - the book itself is filed by realm; per-insight filing is a
+  Realm Connectors need (RC-2), so tagging now is cheaper than re-analysing later.
+ALEX'S ANSWERS (after the scrutiny report)
+- Videos: "Hybrid, flat 4,000 cap (Recommended)" - keep the reply shape, lists written through the chosen
+  lenses, + realm_scores {score, why, 2 points} per realm, quests tagged with a realm, article section
+  "Through your realms"; max_tokens 4000 whatever the realm count.
+- Books: "Lens + tag each insight (Recommended)" - book realms replace the music-only framing; every
+  extracted insight carries one realm. Screenshot reads get the lens lines.
+RI-4 BUILT: local_server/rpgace_intel.py (load_lenses/clean_realms/lens_block/parse_insights/realm_section,
+max 4000), intel_cloud_runner.py + local_server.py pass job realms; scripts/rpgace_intel.py deleted (stale dup);
+RPGACE.realmLensText + splitRealmInsights; Bookworm chapter prompt + bookworm_chapters.insight_realms
+(migration realm_inputs_ri4_chapter_insight_realms); screenshot read lens; videoSummary realm scores.
+Tests: ri4_py_test.py 13/13, ri4_test.js 11/11, runner_test.py/runner_test2.py pass (fakes updated to
+accept realms; runner_test now asserts realms reach process_url).

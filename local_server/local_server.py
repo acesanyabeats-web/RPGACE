@@ -303,7 +303,7 @@ def process_job(job):
             print(f"    {msg}")
         intel.log = pl
 
-        result = intel.process_url(url)
+        result = intel.process_url(url, job.get("realms"))  # RI-4: picked realms (None = Producer)
         intel.log = orig_log
 
         status = "complete" if result else "error"

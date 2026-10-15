@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-15-realm-analysis" style="margin-bottom:30px;">
+    <div class="card-title">🔭 Oct 15 — Oracle reads every input through your realms (RI-4) + Builder XP for our build work</div>
+    <div class="card-body">
+      Step 5 of "Realm Inputs", shaped by the scrutiny pass you asked for (both recommended options chosen).
+      <ul>
+        <li><b>Videos:</b> the analysis now reads each link through the realms you picked (up to 4, one Oracle call), using their lenses from <code>realm_lenses.json</code>. Each realm gets its own 1-10 score, a one-line why and 2 key points; the overall score is the best realm score. A video is no longer marked down for a small audience or low polish. Quests carry a realm. The Encyclopedia article gets a "Through your realms" section, and the video summary shows the realm scores. Links from before the picker are read as Producer.</li>
+        <li><b>Reply cap fixed:</b> the old 1,500-token ceiling was already the size of an average reply, so realm sections would have cut replies off and failed the job. It is now 4,000 for any number of realms; you are only charged for what is written (about 2p a video for 1 realm, 4p for 4).</li>
+        <li><b>Books:</b> chapters are read through the book's realms instead of "a music-production knowledge base", and every insight is tagged with one realm (saved beside the chapter for Realm Connectors later). <b>Screenshots</b> with realms are read with those realms in mind.</li>
+        <li>A stale second copy of the video analyser in <code>scripts/</code> (missing two fixes, run by nothing) was deleted; the live one is <code>local_server/rpgace_intel.py</code>.</li>
+        <li><b>Builder XP:</b> every RPGACE change we ship (each one logs an update) now earns 30 Builder XP, up to 5 a day. Oct 13-15 backfilled: 450 Builder XP.</li>
+      </ul>
+      Tested: 13 analyser checks against a fake Oracle reply, 11 in-app checks, and the cloud-runner tests (realms reach the analyser). The first real realm analysis happens on the cloud's next run after you send a link. <b>Untested by your own hand.</b>
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-15-realm-waiting" style="margin-bottom:30px;">
     <div class="card-title">🎯 Oct 15 — Inputs wait for your realms (RI-3)</div>
     <div class="card-body">

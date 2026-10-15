@@ -1,5 +1,5 @@
 {
-  "_about": "Realm Inputs RI-0 (Oct 15 2026). One lens per xpSeason realm: what Oracle looks for in an input taken in for that realm, what its 1-10 score means, and the kind of quest it suggests. Read by the cloud video runner (scripts/rpgace_intel.py) and the app (book chapters, screenshots). Edit here only. Draft v1, awaiting Alex's corrections.",
+  "_about": "Realm Inputs RI-0 (Oct 15 2026). One lens per xpSeason realm: what Oracle looks for in an input taken in for that realm, what its 1-10 score means, and the kind of quest it suggests. Read by the video analyser (local_server/rpgace_intel.py, run by the cloud runner and the laptop server) and the app (book chapters, screenshots). Edit here only. Draft v1, awaiting Alex's corrections.",
   "version": 1,
   "max_realms": 4,
   "xp_pot": 60,
