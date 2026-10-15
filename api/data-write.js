@@ -413,6 +413,14 @@ async function handleScreenshots(body, res, serviceKey) {
     }
     return res.status(200).json({ data: rows });
   }
+  // Realm Inputs RI-3: screenshots saved with "Not now" on the realm picker
+  // (realms = {}), oldest first.
+  if (op === 'held') {
+    const r = await sbFetch('/rest/v1/screenshots?select=id,description,created_at&realms=eq.%7B%7D&order=created_at.asc&limit=50', serviceKey);
+    const rows = await r.json().catch(() => null);
+    if (!r.ok || !Array.isArray(rows)) return res.status(502).json({ error: 'Held list failed', detail: rows });
+    return res.status(200).json({ data: rows });
+  }
   if (op === 'count') {
     const r = await sbFetch('/rest/v1/screenshots?select=id&status=in.(new,unread,read_failed)', serviceKey, { headers: { Prefer: 'count=exact', Range: '0-0' } });
     const range = r.headers.get('content-range') || '';

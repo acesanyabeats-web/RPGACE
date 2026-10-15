@@ -200,3 +200,11 @@ screenshotInbox.ui.ingest (one pick per batch; api/data-write cleanRealms), star
 (tags after save). Oracle chat has no video-link analysis path today - nothing to wire.
 "Not now" still sends the input on with realms [] until RI-3 adds holding.
 Tests: ri2_test.js 20/20 headless at 400px.
+
+=== RI-3 (Oct 15 2026) - waiting inputs ===
+Brief accepted ("go") with the recommended option: Not now allowed again on return, asked every app open.
+Held = intel_jobs.status 'awaiting_realms' (runner skips: it only claims 'queued') or realms = {} on
+bookworm_books/screenshots/library_items (null = pre-picker, never asked). realmPicker.held/release/
+askHeld; asked after rpgace:login + on visibilitychange (10 min throttle); "Ask me later (all)";
+Videoworm 🎯 line + button; Knowledge home first "What's next" row. api/data-write screenshots op 'held'.
+Tests: ri3_test.js 16/16.

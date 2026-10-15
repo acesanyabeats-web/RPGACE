@@ -73,6 +73,20 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-15-realm-waiting" style="margin-bottom:30px;">
+    <div class="card-title">🎯 Oct 15 — Inputs wait for your realms (RI-3)</div>
+    <div class="card-body">
+      Step 4 of "Realm Inputs". "Not now" on the realm picker now holds the input instead of sending it on.
+      <ul>
+        <li><b>Videos:</b> a held link is saved but not analysed (the cloud only takes queued videos). Videoworm shows "🎯 N videos waiting for you to pick realms" and a "Pick realms to analyse it" button. Sending the same link again just asks for its realms.</li>
+        <li><b>Books, screenshots, Library items, starred answers, web lookups:</b> saved with an empty realm list, which marks them as waiting. Anything from before the picker is left alone and never nagged.</li>
+        <li><b>When you come back:</b> after you sign in, and whenever you return to the app (at most every 10 minutes), the picker asks about each waiting input, oldest first, showing "1 of N". "Not now" moves to the next one; "Ask me later (all)" stops until next time.</li>
+        <li><b>Knowledge home:</b> "🎯 N inputs waiting for you to pick realms" is the first "What's next" item and opens the same flow. A book's or screenshot's own Library entry gets the same realms in one go.</li>
+      </ul>
+      Tested headless (16 checks). <b>Untested by your own hand.</b>
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-15-realm-picker" style="margin-bottom:30px;">
     <div class="card-title">🎯 Oct 15 — "Which realms is this for?" on every input (RI-1 + RI-2)</div>
     <div class="card-body">
