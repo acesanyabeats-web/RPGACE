@@ -57,3 +57,38 @@ LEFT OUT (on purpose)
 - Selling, licences, deliverable zips, Business tab -> Selling (Hustler) plan.
 - Real beat-grid sync for video -> not in this plan.
 - Uploading audio/stems anywhere.
+
+RATIFIED (Oct 16): "I approve of all 7 steps, but let's address this, Left out: the video steps (the Posting plan
+covers those), selling and licences (the Selling plan), and any audio or stem uploads. /interrogation and /paranoia"
+
+INTERROGATION ROUND 2 (verbatim answers)
+- Video: "Keep for Posting plan (Recommended)"
+- Selling: "Add a Sell step, no file zips (Recommended)"
+- Uploads: "No audio at all (Recommended)"
+- Release: "Release = put out anywhere, several links (Recommended)"
+- Sale link: "Yes, link sales to the beat (Recommended)"
+
+PARANOIA PASS (right-sized; evidence this pass)
+- beat-audio bucket: 11 files, 51MB (old laptop-scan uploads). beat-deliverables bucket: 0 files.
+- beat_audio_jobs is READ by 2 live features: captionsPanel "About a beat" picker (~L9859) and the RC-4 Producer
+  milestone proof kind 'beat' ("a beat from Beat Log (the WAV)", ~L38546). Stopping uploads without repointing them
+  would leave both empty -> both repoint to logged beats (content_productions music_video). Required, not optional.
+- Deliverable zips: client code in contentProductionLive (~L30191-30960) + api/data-write.js action
+  'bundle-deliverables'. Bucket empty, so retiring loses nothing. No vercel.json change (it is a branch inside
+  data-write, not its own function). content_productions.deliverable_files/deliverable_bundles columns stay (no DROP).
+- chronicles_finance has no beat link (cols: id, created_at, entry_date, type, category, item, amount, notes; 0 rows)
+  -> additive column content_production_id. Sale XP already exists (sale, hustler, max(100, 2x amount)).
+- content_productions has one release_url -> additive release_links jsonb for several links.
+- Release vs listing overlap resolved: a Beatstars link added at Release IS the listing.
+- Debate (short, real): selling in this plan vs Selling plan. For: it is small because most parts already exist,
+  and money is the point of a beat. Against: Hustler realm work in a Producer plan. Alex chose to include it,
+  without zips; the Selling (Hustler) plan later keeps outreach/Business tab/pricing strategy.
+
+PLAN CHANGES
+BT-3  + beats count as Producer (realmOf for content_productions music_video).
+BT-4  + repoint "About a beat" picker and Producer milestone proof to logged beats; stop beat-audio uploads;
+      mark the 11 beat_audio_jobs rows retired (update); Alex deletes the 51MB in the Supabase dashboard.
+BT-5  Release takes one or more links (release_links jsonb); a Beatstars link is the listing.
+BT-8  NEW Sell: licence + price, Beatstars listing text (existing generator), "Log a sale" on a beat
+      (chronicles_finance.content_production_id, Hustler XP via the existing sale rule), sales count + total on the
+      beat; retire the deliverable-zip system (client UI + data-write branch).
