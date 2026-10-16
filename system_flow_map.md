@@ -808,6 +808,20 @@ flowchart LR
 
 `routines` is `anon_read_only`/`authenticated_all` and in `api/data-write.js`'s allowlist. Timers and sub-step ticks are per-device (localStorage). The old `QUESTS` template is empty; `questEngine`'s generated quests are unchanged.
 
+## 15i. Beats home (Oct 16 2026, BT-0 of "Beats (Producer)") — built, untested by Alex
+```mermaid
+flowchart LR
+  menu["Left menu: Content & Video → 🥁 Beats"] --> hub["beatsHub /beats"]
+  pop["Content Pipeline pop-up → 🥁 Beats home"] --> hub
+  cp[(conid_pot potential)] --> hub
+  pr[(content_productions music_video)] --> hub
+  ag[(rpgace_agendas doing_now + producer)] --> hub
+  fin[(chronicles_finance sale)] --> hub
+  hub --> ib["Idea Bank page"] & bl["Beat Log page"] & my["My beats (ConID list)"] & mw["MusicWorm = reference tracks"] & dn["Doing Now start"]
+  ib & bl & my & mw -->|"← Back / 🏠 Beats (areaNav 'beats')"| hub
+```
+Truth table: Beats home with 6 steps (Idea → Make → Mix → Log → Release → Sell), live counts, what's next, Back/🏠 on Idea Bank / Beat Log / My beats and on MusicWorm when opened from Beats — BUILT (headless-verified). NOT built yet: BT-1..8 (start-from-idea, beat sessions, Log = finished, browser scan, Release links, reference-track lookup, Sell).
+
 ## 15h. Doing Now (Oct 16 2026, DN-0/DN-1) — built, untested by Alex
 
 ```mermaid
