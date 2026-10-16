@@ -113,3 +113,12 @@ Gym + Health are all done (Alex's order).
    days by off/early/late kind), not only the routine/week-planner offer.
 DN steps updated: DN-1 (+ just-did, + who/where/money/mood on Stop), DN-1b ideas from quiet realms,
 DN-4 (+ Plan my day learning).
+
+=== Oct 16: Alex "Do doing now" (ahead of Gym + Health, his call) ===
+DN-0 evidence: rpgace_agendas has only a primary key constraint (no CHECK on source_type) - 'doing_now' is safe.
+Extras on Stop (verbatim picks): "Linked thing (Recommended), Would do again?, Effort 1-5". Free tags NOT picked.
+Stop screen layout: Alex "Explain this more I'm confused" - re-asked with a plainer explanation.
+Stop screen layout (after plain re-explanation): "Short: 2 questions + '+ more details' (Recommended)".
+  -> Stop shows "How did it go?" (note) + mood 1-5 + Save; "+ more details" opens photo, who with,
+     where, money, linked thing, would do again, effort 1-5.
+DN-0 schema (additive, CEO): rpgace_agendas + realms text[] default '{}', + details jsonb default '{}'.

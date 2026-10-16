@@ -808,6 +808,23 @@ flowchart LR
 
 `routines` is `anon_read_only`/`authenticated_all` and in `api/data-write.js`'s allowlist. Timers and sub-step ticks are per-device (localStorage). The old `QUESTS` template is empty; `questEngine`'s generated quests are unchanged.
 
+## 15h. Doing Now (Oct 16 2026, DN-0/DN-1) — built, untested by Alex
+
+```mermaid
+flowchart LR
+  BTN[My Day ▶ Doing now] --> RP[realmPicker activity] --> STC[scheduleToCalendar started_at, realms] --> AG[(rpgace_agendas source_type doing_now)]
+  JD[✓ I just did… name + minutes] --> RP2[realmPicker] --> STC2[scheduleToCalendar completed, back-dated] --> AG
+  AG --> CARD[My Day card + dashboard Today 'Doing:' row]
+  CARD -->|+ note| AG
+  CARD -->|■ Stop: how + mood, + more details| FIN[doingNow.logic.finish] --> AG
+  FIN -->|who with| PE[(people.last_spoke)]
+  FIN -->|money| CF[(chronicles_finance expense)]
+  FIN -->|photo| SI[screenshotInbox upload proof]
+  OTHER[other device] -->|logic.sync on boot / My Day| AG
+```
+
+Truth table: start, note, stop (short + more details), just-did, cross-device running card are BUILT (headless-verified), not hand-tested. NOT built yet: quiet-realm ideas (DN-1b), forgot-to-stop catch (DN-2), cook/gym matching (DN-3), repeats → routine (DN-4), XP (DN-5).
+
 ## 15d. Cook Mode (Oct 11 2026) — built, untested by Alex
 
 ```mermaid
