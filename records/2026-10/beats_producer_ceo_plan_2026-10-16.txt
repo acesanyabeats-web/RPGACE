@@ -92,3 +92,9 @@ BT-5  Release takes one or more links (release_links jsonb); a Beatstars link is
 BT-8  NEW Sell: licence + price, Beatstars listing text (existing generator), "Log a sale" on a beat
       (chronicles_finance.content_production_id, Hustler XP via the existing sale rule), sales count + total on the
       beat; retire the deliverable-zip system (client UI + data-write branch).
+
+BT-2 (built Oct 16): "Go, yes ask ready to mix"
+BT-3 (built Oct 16): "Go, fixed list with + add, remember the drive"
+  -> stems: fixed list (Full mix WAV, Drums, 808/Bass, Melody, Chords, FX, Vocals) + add; drive prefilled from
+     the last logged beat. Additive columns content_productions.stems_drive/stems_folder/stems/idea_id/
+     making_mins/mixing_mins; xp_on_change INSERT pays beat_finished when finished_at is set; idea -> 'done'.
