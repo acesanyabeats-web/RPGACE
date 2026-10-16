@@ -90,7 +90,7 @@ LOGIC_POINTS = [
         'id': 'oracle-mode',
         'title': 'Oracle Mode: Real / Dummy / Fallback Scout',
         'decider': 'Alex (manual toggle)',
-        'module': 'mockOracle', 'func': 'setMode', 'lines': (43861, 43873), 'anchor': "self.MODES.indexOf(mode) === -1",  # re-verified Oct 16 2026 (DN-6), earlier Oct 16 (DN-3 Morning Brief catch), was 42511-42523; re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 37417-37429, then 38582-38594 before XP-4 (+166 lines), then 38748-38760 before XP-5 (+379); span = real function start to its closing line
+        'module': 'mockOracle', 'func': 'setMode', 'lines': (43773, 43785), 'anchor': "self.MODES.indexOf(mode) === -1",  # re-verified Oct 16 2026 (DN-6), earlier Oct 16 (DN-3 Morning Brief catch), was 42511-42523; re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 37417-37429, then 38582-38594 before XP-4 (+166 lines), then 38748-38760 before XP-5 (+379); span = real function start to its closing line
         'decides': 'Which of 3 real paths every single Oracle call in the app takes, app-wide, until toggled again.',
         'changes': 'Real: every window.callOracle() call in main.js checks getMode() first. \'dummy\' short-circuits to a synthetic labeled reply, zero API cost. \'fallback\' queues the real prompt into oracle_fallback_queue instead of calling the live API. \'real\' calls the live Anthropic API as normal.',
         'result': 'A visible top-right toggle switch (red/green/gold) whose state persists in localStorage and is checked on literally every real Oracle send in the app.',
@@ -144,7 +144,7 @@ LOGIC_POINTS = [
         'id': 'primary-action-lookup',
         'title': 'Content Pipeline: which single primary action button renders',
         'decider': 'Code logic (real content_productions.status lookup)',
-        'module': 'contentProductionLive', 'func': '_refreshWidget', 'lines': (31532, 31954),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 29489-29864; span = real function start to its closing line
+        'module': 'contentProductionLive', 'func': '_refreshWidget', 'lines': (31285, 31673),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 29489-29864; span = real function start to its closing line
         'anchor': 'flow.primary[row.status]',
         'decides': "Which ONE real action button shows on a music_video ConID card — the real fix for the Aug 6 \"duplicate stage\" complaint, where every ConID used to render a FIXED set of buttons regardless of real progress.",
         'changes': "The ConID row's own real content_productions.status column value ('Idea'/'Scripted'/'Filmed'/'Edited'/'Posted'/'Analysed').",

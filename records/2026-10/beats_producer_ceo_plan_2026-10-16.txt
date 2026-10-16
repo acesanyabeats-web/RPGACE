@@ -106,3 +106,4 @@ SIDE ISSUE Oct 16 (Alex, verbatim): "why did this save in a phylum? one would be
 BT-5 (built Oct 16): "Go with BT-5, yes add links later". Additive column content_productions.release_links (old release_url backfilled).
 BT-6 (built Oct 16): "Go with BT-6, batches of 8, keep mine". Additive column reference_tracks.lookup_at.
 ORACLE ENTRIES (built Oct 16): answers "1. yes. 2. possibly life realm too not sure 3. big unusual tag would be awesome with 50 xp. 4. yes" -> oracleEntry module, journal.realms/big_day, xp rule big_day 50.
+BT-8 (built Oct 16, before BT-7): "Go with BT-8 first, option b tiers". Additive: content_productions.licence_tiers, chronicles_finance.content_production_id (+index). Zip action removed from api/data-write.js; archiver left in package.json (unused, lockfile).
