@@ -173,7 +173,7 @@ DECISIONS_BY_MODULE = _dm_by_module(_dm_build_unified())
 PLAIN_ENGLISH = {
     ('careerStatCard', '_detailFor'): {
         'anchor': '  _detailFor: function(it) {',
-        'lines': (37370, 37574),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 35208-35371; span = real function start to its closing line; 2+ matches, picked the real implementation over the pass-through wrapper
+        'lines': (37372, 37576),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 35208-35371; span = real function start to its closing line; 2+ matches, picked the real implementation over the pass-through wrapper
         'headline': 'Turns one row of raw history into the four sentences the career card actually shows you.',
         'input': 'One activity item — a plain object with a `type` string ("proposal", "journal", "beat", and so on) and `row`, the untouched database record it came from.',
         'does': 'It is one long sorting exercise. For each kind of activity it knows where that kind keeps its real information, and it digs the same four answers out of a differently-shaped record every time: what was done, what the outcome was, where it ended up, and why it mattered. Most of the dense-looking conditions are it trying several likely fields in order and settling for the first one that is actually filled in — an accepted taxonomy proposal, for instance, might carry its description as an insight text, a new branch name, or the first line of its explainers, depending on which part of the app created it.',
