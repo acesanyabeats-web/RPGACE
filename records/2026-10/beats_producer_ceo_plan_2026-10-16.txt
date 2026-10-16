@@ -104,3 +104,5 @@ SIDE ISSUE Oct 16 (Alex, verbatim): "why did this save in a phylum? one would be
   extraordinary event, that would get xp for journal entry". Evidence: neither entry saved (no journal row, no xp_events);
   Oracle's main ORACLE_SYS listed phyla but not realms and had no can't-save rule -> guard added. Design questions put to Alex.
 BT-5 (built Oct 16): "Go with BT-5, yes add links later". Additive column content_productions.release_links (old release_url backfilled).
+BT-6 (built Oct 16): "Go with BT-6, batches of 8, keep mine". Additive column reference_tracks.lookup_at.
+ORACLE ENTRIES (built Oct 16): answers "1. yes. 2. possibly life realm too not sure 3. big unusual tag would be awesome with 50 xp. 4. yes" -> oracleEntry module, journal.realms/big_day, xp rule big_day 50.
