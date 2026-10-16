@@ -115,7 +115,7 @@ DECISION_POINTS = [
     {
         'id': 'conidpot-delete', 'category': 'destructive',
         'title': 'Delete an idea from the Idea Bank (ConID Pot)',
-        'module': 'conidPot', 'func': '_refreshIdeaBank', 'lines': (33770, 33770),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 31788-31788; single-line citation kept
+        'module': 'conidPot', 'func': '_refreshIdeaBank', 'lines': (33768, 33768),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 31788-31788; single-line citation kept
         'anchor': "confirm('Delete \"' + row.title + '\"?')",
         'trigger': 'A real 🗑 button rendered per-row inside the Idea Bank list.',
         'logic': 'A plain `confirm()` — real, same minimal-context shape as videoSummary\'s.',

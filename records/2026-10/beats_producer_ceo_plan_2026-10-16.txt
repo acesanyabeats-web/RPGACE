@@ -103,3 +103,4 @@ BT-4 (built Oct 16): "go ahead with BT-4 too" (recommended middle 60 s taken). 1
 SIDE ISSUE Oct 16 (Alex, verbatim): "why did this save in a phylum? one would be a realm mission, the other is a journal entry of
   extraordinary event, that would get xp for journal entry". Evidence: neither entry saved (no journal row, no xp_events);
   Oracle's main ORACLE_SYS listed phyla but not realms and had no can't-save rule -> guard added. Design questions put to Alex.
+BT-5 (built Oct 16): "Go with BT-5, yes add links later". Additive column content_productions.release_links (old release_url backfilled).
