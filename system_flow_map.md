@@ -820,7 +820,7 @@ flowchart LR
   hub --> ib["Idea Bank page"] & bl["Beat Log page"] & my["My beats (ConID list)"] & mw["MusicWorm = reference tracks"] & dn["Doing Now start"]
   ib & bl & my & mw -->|"← Back / 🏠 Beats (areaNav 'beats')"| hub
 ```
-Truth table: Beats home with 6 steps (Idea → Make → Mix → Log → Release → Sell), live counts, what's next, Back/🏠 on Idea Bank / Beat Log / My beats and on MusicWorm when opened from Beats — BUILT (headless-verified). NOT built yet: BT-1..8 (start-from-idea, beat sessions, Log = finished, browser scan, Release links, reference-track lookup, Sell).
+Truth table: Beats home with 6 steps (Idea → Make → Mix → Log → Release → Sell), live counts, what's next, Back/🏠 on Idea Bank / Beat Log / My beats and on MusicWorm when opened from Beats — BUILT (headless-verified). BT-1: ▶ Start making on an idea (Idea Bank row or Beats home picker) → `beatsHub.logic.startMaking` → Doing Now session "Making: …" (Producer, `details.kind='beat'`, `stage='make'`, `link={kind:'conid_pot',id}`) + `conid_pot.status='making'` (badge + Making filter) — BUILT. NOT built yet: BT-2..8 (beat sessions/mix, Log = finished, browser scan, Release links, reference-track lookup, Sell).
 
 ## 15h. Doing Now (Oct 16 2026, DN-0/DN-1) — built, untested by Alex
 
