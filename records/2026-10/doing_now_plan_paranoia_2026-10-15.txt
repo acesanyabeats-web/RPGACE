@@ -143,3 +143,10 @@ details.auto_stopped && !details.time_fixed, nor when details.planned_cook_id or
 a later link marks the doing_now_done xp_events removed. DB-verified in a rolled-back DO block:
 running=0 stopped=30/2 noteAgain=30 noRealms=life30 autoStopped=0 fixed=30 fourth=0 afterGymLink=0 cookLinked=0 other=0.
 Connector note: apply_migration timed out when the SQL contained DROP; re-run without the drops (none existed).
+
+DN-6 (Oct 16): Alex picked "Section by realm" (Chef -> Recipes cooked, Producer -> Beats & content, Scholar ->
+Learning, rest -> Life; first realm with its own section wins; Creator not in his picked list -> Life, flagged to
+him) and "Short summary" for the Sunday review (count, total time, top 3 by time, best mood; saved in the review
+journal text). Cook/gym-linked activities are left out of Chronicles (already there as cook/gym) but counted in
+the review. Galaxy regen found graphify_river_group.py re-appending ' · Domain N' to graph.html node titles every
+run (it re-reads its own output) - fixed by keeping only the part before the first ' · '.

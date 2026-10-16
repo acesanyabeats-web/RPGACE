@@ -3990,7 +3990,10 @@ def river_group(html_path: Path, graph_json_path: Path):
             # convention already used elsewhere in this project) - say so
             # in the tooltip rather than presenting both the same way.
             suffix += ' (main.js · keyword-matched)'
-        node['title'] = (node.get('title') or node.get('label') or '') + suffix
+        # Oct 16 2026: this script re-reads its own graph.html output, so strip the
+        # suffix a previous run added (graph.json names never contain ' · ') -
+        # titles were growing by one ' · Domain N' per run.
+        node['title'] = (node.get('title') or node.get('label') or '').split(' · ')[0] + suffix
         river_counts[target] = river_counts.get(target, 0) + 1
 
         # Real spatial clustering (Aug 6, 2nd + 3rd Engineer passes): a
