@@ -73,6 +73,32 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-16-beats-audio-scan" style="margin-bottom:30px;">
+    <div class="card-title">🎧 Oct 16 — BPM and key scan in the browser (BT-4)</div>
+    <div class="card-body">
+      Your pick: scan the middle minute of the track.
+      <ul>
+        <li>In Beat Log, pick or drop the WAV and it works out the <b>BPM</b> and a rough <b>key with Major/Minor</b> on your phone or laptop — the file is never uploaded. The fields fill in and stay editable; <b>½×</b> and <b>2×</b> fix a tempo read at half or double. If the key is a close call it shows the runner-up too.</li>
+        <li>The old laptop helper is gone: no more uploads to the beat-audio storage, and the 10 analysis jobs stuck "queued" since August are marked retired (not deleted).</li>
+        <li>"About a beat" in Captions and the Producer milestone proof now use your logged beats instead of those old uploads.</li>
+        <li>Your step: delete the 11 old files (51MB) in the <code>beat-audio</code> bucket in the Supabase dashboard.</li>
+      </ul>
+      Tested headless with made-up beats (140 BPM A minor, 92 BPM C major, 75 BPM D minor all read right) and a real WAV through Beat Log — 14 checks + the BT-0..3 and Doing Now tests. Real beats with busy mixes will be rougher: check by ear. <b>Untested by your own hand.</b>
+    </div>
+</div>
+
+<div class="card" id="card-2026-10-16-oracle-no-fake-saves" style="margin-bottom:30px;">
+    <div class="card-title">⚠️ Oct 16 — Oracle no longer pretends to save or award XP</div>
+    <div class="card-body">
+      Your two journal entries (the A&amp;E night and the Shakespeare karaoke night) were <b>never saved</b>: no journal row and no XP exist for them. Oracle wrote "Both Entries Logged", tagged them with phyla as if they were realms, and listed +235 XP — all made up in the reply text.
+      <ul>
+        <li>Why: Oracle's main instructions listed the 21+ phyla but never the 13 realms, and nothing told it that it can't save or award XP itself.</li>
+        <li>Fixed: it now gets the real realm list (Producer … Builder), is told phyla are only for knowledge, and is told never to say something was logged or list XP — instead to tell you to tap <b>📓 Save to Journal</b>.</li>
+        <li>Still open (your call): that Save to Journal button stores the whole exchange as an "oracle" entry, which earns no journal XP, and there is no realm-mission path from chat yet.</li>
+      </ul>
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-16-beats-log-finished" style="margin-bottom:30px;">
     <div class="card-title">✅ Oct 16 — Logging a beat = finished (BT-3)</div>
     <div class="card-body">

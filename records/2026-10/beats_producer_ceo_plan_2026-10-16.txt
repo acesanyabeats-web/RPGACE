@@ -98,3 +98,8 @@ BT-3 (built Oct 16): "Go, fixed list with + add, remember the drive"
   -> stems: fixed list (Full mix WAV, Drums, 808/Bass, Melody, Chords, FX, Vocals) + add; drive prefilled from
      the last logged beat. Additive columns content_productions.stems_drive/stems_folder/stems/idea_id/
      making_mins/mixing_mins; xp_on_change INSERT pays beat_finished when finished_at is set; idea -> 'done'.
+BT-4 (built Oct 16): "go ahead with BT-4 too" (recommended middle 60 s taken). 10 queued beat_audio_jobs rows -> 'retired'.
+  Alex deletes the 11 files (51MB) in the beat-audio bucket himself.
+SIDE ISSUE Oct 16 (Alex, verbatim): "why did this save in a phylum? one would be a realm mission, the other is a journal entry of
+  extraordinary event, that would get xp for journal entry". Evidence: neither entry saved (no journal row, no xp_events);
+  Oracle's main ORACLE_SYS listed phyla but not realms and had no can't-save rule -> guard added. Design questions put to Alex.
