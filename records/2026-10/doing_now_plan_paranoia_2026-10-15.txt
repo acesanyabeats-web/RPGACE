@@ -134,3 +134,12 @@ DN-4 build note (Oct 16): the shared schedule sync (shiftSync._syncAgendasFromSu
 keeps the OLDEST 300 agendas, so repeats are counted from doingNow.logic.loadRecent (own 21-day query) merged
 with the local list. The sync itself is left unchanged (flagged, not fixed in this step). autoTemplate fills every
 missing template for anything done twice, not just the first one found.
+
+DN-5 (Oct 16, Alex: "go ahead with DN-5", recommended defaults): xp_rules doing_now_done (30, realm life, uncapped
+in xp_award; the per-day limit of 3 activities is counted in xp_on_doing_now by distinct activity id, like
+xp_on_input). Triggers on rpgace_agendas: xp_doing_now (after insert or update -> xp_on_doing_now) and xp_delete
+(after delete -> existing xp_on_delete). Pays once per activity (even if an award was later removed). Not paid while
+details.auto_stopped && !details.time_fixed, nor when details.planned_cook_id or details.link.kind='gym_sessions';
+a later link marks the doing_now_done xp_events removed. DB-verified in a rolled-back DO block:
+running=0 stopped=30/2 noteAgain=30 noRealms=life30 autoStopped=0 fixed=30 fourth=0 afterGymLink=0 cookLinked=0 other=0.
+Connector note: apply_migration timed out when the SQL contained DROP; re-run without the drops (none existed).

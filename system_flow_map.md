@@ -828,7 +828,7 @@ flowchart LR
   XE[(xp_events via xpSeason.load)] --> ID[logic.ideas: quietest realms] --> RA[myDay.REALM_ACTIVITIES] --> IB[✨ Try something new buttons] -->|one tap, realm preset| STC
 ```
 
-Truth table: start, note, stop (short + more details), just-did, cross-device running card, quiet-realm ideas (DN-1b), forgot-to-stop catch + 4h cap (DN-2), cook/gym matching (DN-3), repeats → routine offer + template fill (DN-4) are BUILT (headless-verified), not hand-tested. NOT built yet: XP (DN-5), Chronicles/Sunday review lines (DN-6).
+Truth table: start, note, stop (short + more details), just-did, cross-device running card, quiet-realm ideas (DN-1b), forgot-to-stop catch + 4h cap (DN-2), cook/gym matching (DN-3), repeats → routine offer + template fill (DN-4), XP (DN-5, DB trigger) are BUILT (headless/DB-verified), not hand-tested. NOT built yet: Chronicles/Sunday review lines (DN-6).
 
 ## 15d. Cook Mode (Oct 11 2026) — built, untested by Alex
 
