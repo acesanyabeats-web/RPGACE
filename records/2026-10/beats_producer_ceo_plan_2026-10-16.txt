@@ -1,0 +1,59 @@
+BEATS (PRODUCER) — area plan 4 of the "area regen series" (Cooking was the pattern)
+Oct 16 2026. Status: COMPILED, awaiting Alex's ratification (CEO Loop 1 Step 6).
+
+PROMPT SCOPE (verbatim)
+- "I'm away from laptop run SQL, leave gym and health for now, do another domain"
+- Picked: "Beats (Producer) (Recommended)" from Beats / Posting / Wishlist / Plans+People.
+
+INTERROGATION ANSWERS (verbatim)
+1. Journey: "1 and 2, but mixing would be before log beat with all stems and wavs"
+   -> confirmed: "Idea → Make → Mix → Log (=Finished) → Release (Recommended)"
+      Make = a Doing Now session (Producer). Mix before logging. Logging with WAV + stems IS Finished.
+      Release adds the link, then hands off to Posting / Selling.
+2. Beat vs video: "Released beat hands off to Posting (Recommended)"
+3. Reference tracks: "I quick search online with Gemini on BPM and key websites"
+4. Laptop audio scan: "Analyse in the browser (Recommended)"
+5. Stem files: "1 but it'll be my external harddrive"
+   -> store WHERE they are (drive name + folder path, free text) + a stem checklist. No uploads.
+
+EVIDENCE (live, this pass)
+- Content area = 8 modules, ~7,800 lines (visualOracle, contentRepurpose, videoSummary, beatLog,
+  refCorpus, contentProductionLive, videoPipeline, conidPot). None uses areaNav (no Back/🏠 row) or the
+  realm picker. refCorpus links to no other screen. One entry point: the "Content Pipeline" pop-up
+  (dashDeck._openPipeline) with buttons for ConID List / Idea Bank / Beat Log / Upload Workshop / OBS raw.
+- Data: content_productions 0 (wiped), conid_pot 3 (activated/potential), video_jobs 0,
+  reference_tracks 32 (bpm/key/mood/energy all set; scale 0/32, genre 0/32; key is a bare letter, no
+  major/minor), beat_audio_jobs 11 (1 complete, 10 queued since Aug - local_server.py never ran).
+- XP rules already exist: beat_logged producer 30 (INSERT, content_type music_video), beat_finished 120
+  (UPDATE finished_at null->set), beat_released 300 (UPDATE released_at). None earned yet.
+  NOTE: if Log = Finished on INSERT, xp_on_change's beat_finished branch (UPDATE only) won't fire ->
+  the trigger needs an INSERT-with-finished_at case.
+- RPGACE.REALM_OF_TABLE maps content_productions -> 'creator'; a beat row should read as Producer.
+- Gemini key is set in Vercel production (env name Gemini_API_Key, read by api/search.js) - web lookup can run.
+- Supabase free plan: 1GB storage, 50MB/file - another reason stems stay on the drive.
+
+PLAN ITEMS (each briefed to Alex before it is built, rule 18)
+BT-0  Beats home: /beats page (beatsHub) with the journey Idea → Make → Mix → Log → Release, counts per
+      step and a "what's next" list; Back/🏠 row (areaNav) on every Beats screen; Content band in the
+      left menu gets Beats home first; Content Pipeline pop-up points to it.
+BT-1  Idea: Idea Bank as a full page; "▶ Start making" on an idea starts a Doing Now session
+      "Making: <idea>" (Producer) linked to the idea.
+BT-2  Make + Mix: Doing Now knows beat sessions (making / mixing) like it knows cook/gym; time spent
+      per beat adds up on the beat; "Mixing" offered once a beat has making time.
+BT-3  Log = Finished: Beat Log reworked - title, BPM / key (major/minor) / mood, where the WAV + stems
+      are (drive + folder path) and a stem checklist; saving writes the beat already finished
+      (beat_logged + beat_finished XP, trigger fixed for insert); beats read as Producer.
+BT-4  In-browser audio scan: pick the WAV on the phone/laptop, BPM + rough key detected locally (file
+      never uploaded), editable; the laptop helper is retired (10 stale queued jobs marked retired).
+BT-5  Release: mark released with a link (+300 XP), then two hand-offs - "🎬 Make a video" (today's
+      video steps; Posting plan reorganises them later) and "💰 Sell this beat" (Selling plan later).
+BT-6  Reference tracks: Gemini web lookup (BPM/key sites) per track for major/minor + genre, batched,
+      reviewed in a list (Accept / Edit); a new track gets the same lookup when added; beat matching
+      uses the filled fields.
+BT-7  Cross-links, menu order, full tests, docs, SELF_KNOWLEDGE, Galaxy regen, plan done.
+
+LEFT OUT (on purpose)
+- Video steps (treatment, director, captions, video jobs) -> Posting (Creator) plan.
+- Selling, licences, deliverable zips, Business tab -> Selling (Hustler) plan.
+- Real beat-grid sync for video -> not in this plan.
+- Uploading audio/stems anywhere.
