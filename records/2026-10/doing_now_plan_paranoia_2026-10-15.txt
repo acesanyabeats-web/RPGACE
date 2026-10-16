@@ -122,3 +122,15 @@ Stop screen layout (after plain re-explanation): "Short: 2 questions + '+ more d
   -> Stop shows "How did it go?" (note) + mood 1-5 + Save; "+ more details" opens photo, who with,
      where, money, linked thing, would do again, effort 1-5.
 DN-0 schema (additive, CEO): rpgace_agendas + realms text[] default '{}', + details jsonb default '{}'.
+
+=== Oct 16: DN-4 brief answers ===
+Where: "My Day, under Doing now (Recommended)". Routine: "Open the editor filled in (Recommended)".
+Finding (code read): Plan my day (myDay.logic.learnedSource) already learns from what was on the
+Daily Schedule for days of the same kind over 8 weeks; doing_now rows are Daily Schedule entries, so
+"teach Plan my day" needs no new code. Snooze/stop-asking state lives on activity_templates
+(template is auto-filled on the 2nd time, so it exists by the 3rd).
+
+DN-4 build note (Oct 16): the shared schedule sync (shiftSync._syncAgendasFromSupabase, order=date.asc&limit=300)
+keeps the OLDEST 300 agendas, so repeats are counted from doingNow.logic.loadRecent (own 21-day query) merged
+with the local list. The sync itself is left unchanged (flagged, not fixed in this step). autoTemplate fills every
+missing template for anything done twice, not just the first one found.
