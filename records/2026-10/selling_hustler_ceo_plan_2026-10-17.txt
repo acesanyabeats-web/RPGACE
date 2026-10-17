@@ -75,3 +75,13 @@ SH-3  No "money owed". An artist who replies with pushback = "Potential close". 
       (counted as potential, never as money). Only Paid touches money (one chronicles_finance sale).
 SH-5  "Money owed" removed from the extra-scenarios list.
 SH-F1..F3  Find artist contacts automatically / automatic royalty + store imports / invoices + contracts -> blue ideas.
+STAGE CORRECTION (Oct 17, verbatim, at the SH-0 brief): "Do sh-0, but I don't agree with this (A deal agreed but not paid is a
+Potential pitch.) this is agreed sale, potential pitch is where I only outreach no reply, because I'm waiting for the opportunity
+to continue the pitch through conversation or negotiation. Once that comes, it pushback for negotiation - potential close, or
+agreed sale if no pushback"
+-> pitch_sends.stage: to_send -> potential_pitch (outreach sent, no reply yet) -> potential_close (reply with pushback /
+   negotiation) or agreed_sale (reply, no pushback) -> paid; ends: no, no_reply. "Replied" is not a separate stage.
+   Only paid touches money.
+- SH-0 (Oct 17): "Do sh-0" (+ stage correction). Tables artists / pitches / pitch_sends (authenticated_all, data-write allowlist +
+  PRIVATE_READ_TABLES), sellingHub page, AREAS.selling, menu after Posting, #dd-pipe-selling, realmOf -> hustler, PAGE_REALMS selling.
+  sh0_test 24/24; pc6 + kn0 tests updated (Selling button, 10 areas).
