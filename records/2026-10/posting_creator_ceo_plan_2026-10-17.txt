@@ -76,3 +76,6 @@ BUILD LOG
   openmontage_jobs; xp_on_change posts branch (planned_at -> treatment_done, label "Post planned") + trigger on posts
   (first apply attempt came back "cancelled" with nothing applied; retried without the drop-trigger line, applied;
   verified in a rolled-back block: 1 event for 2 updates). pc2_test 23/23.
+- PC-3 (Oct 17): "Yes and a, also ... save the names and file paths for both beat and video". Record/edit sessions,
+  addTime (counted flag), askRecordDone/askReadyToPost, offerPost, posts.ready_at + posts.files {video,beat}{name,path},
+  Beat Log #bl-wav (beat_meta.wavFile), beat file prefilled from Beat Log. pc3_test 23/23; pc0 test updated (editing = Keep editing).

@@ -90,7 +90,7 @@ LOGIC_POINTS = [
         'id': 'oracle-mode',
         'title': 'Oracle Mode: Real / Dummy / Fallback Scout',
         'decider': 'Alex (manual toggle)',
-        'module': 'mockOracle', 'func': 'setMode', 'lines': (44407, 44419), 'anchor': "self.MODES.indexOf(mode) === -1",  # re-verified Oct 16 2026 (DN-6), earlier Oct 16 (DN-3 Morning Brief catch), was 42511-42523; re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 37417-37429, then 38582-38594 before XP-4 (+166 lines), then 38748-38760 before XP-5 (+379); span = real function start to its closing line
+        'module': 'mockOracle', 'func': 'setMode', 'lines': (44625, 44637), 'anchor': "self.MODES.indexOf(mode) === -1",  # re-verified Oct 16 2026 (DN-6), earlier Oct 16 (DN-3 Morning Brief catch), was 42511-42523; re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 37417-37429, then 38582-38594 before XP-4 (+166 lines), then 38748-38760 before XP-5 (+379); span = real function start to its closing line
         'decides': 'Which of 3 real paths every single Oracle call in the app takes, app-wide, until toggled again.',
         'changes': 'Real: every window.callOracle() call in main.js checks getMode() first. \'dummy\' short-circuits to a synthetic labeled reply, zero API cost. \'fallback\' queues the real prompt into oracle_fallback_queue instead of calling the live API. \'real\' calls the live Anthropic API as normal.',
         'result': 'A visible top-right toggle switch (red/green/gold) whose state persists in localStorage and is checked on literally every real Oracle send in the app.',
@@ -144,7 +144,7 @@ LOGIC_POINTS = [
         'id': 'primary-action-lookup',
         'title': 'Content Pipeline: which single primary action button renders',
         'decider': 'Code logic (real content_productions.status lookup)',
-        'module': 'contentProductionLive', 'func': '_refreshWidget', 'lines': (31219, 31608),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 29489-29864; span = real function start to its closing line
+        'module': 'contentProductionLive', 'func': '_refreshWidget', 'lines': (31222, 31611),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 29489-29864; span = real function start to its closing line
         'anchor': 'flow.primary[row.status]',
         'decides': "Which ONE real action button shows on a music_video ConID card — the real fix for the Aug 6 \"duplicate stage\" complaint, where every ConID used to render a FIXED set of buttons regardless of real progress.",
         'changes': "The ConID row's own real content_productions.status column value ('Idea'/'Scripted'/'Filmed'/'Edited'/'Posted'/'Analysed').",
@@ -189,7 +189,7 @@ TEXT_INPUT_POINTS = [
     {
         'id': 'beat-log-form',
         'title': 'Beat Log form — real multi-field text entry that creates a content_productions/video_jobs row',
-        'module': 'beatLog', 'func': '_getForm', 'lines': (28641, 28656),  # re-verified Oct 16 2026 (BT-3/BT-4 Beat Log growth), was 28516-28532; re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 26760-26776; kept narrow: the real `return {...}` object literal holding the literal
+        'module': 'beatLog', 'func': '_getForm', 'lines': (28643, 28658),  # re-verified Oct 16 2026 (BT-3/BT-4 Beat Log growth), was 28516-28532; re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 26760-26776; kept narrow: the real `return {...}` object literal holding the literal
         'anchor': "title:    get('bl-title')",
         'decides': "Title/key/BPM/scale/energy/mood/genre/rating/licence/collab/ref-track/FL-path — real typed values read directly off the DOM, no defaults faked — that _submit() turns into the actual real database row this ConID's whole downstream pipeline is built from.",
         'link': None,

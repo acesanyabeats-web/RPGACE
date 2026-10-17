@@ -115,7 +115,7 @@ DECISION_POINTS = [
     {
         'id': 'conidpot-delete', 'category': 'destructive',
         'title': 'Delete an idea from the Idea Bank (ConID Pot)',
-        'module': 'conidPot', 'func': '_refreshIdeaBank', 'lines': (33623, 33623),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 31788-31788; single-line citation kept
+        'module': 'conidPot', 'func': '_refreshIdeaBank', 'lines': (33626, 33626),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 31788-31788; single-line citation kept
         'anchor': "confirm('Delete \"' + row.title + '\"?')",
         'trigger': 'A real 🗑 button rendered per-row inside the Idea Bank list.',
         'logic': 'A plain `confirm()` — real, same minimal-context shape as videoSummary\'s.',
@@ -173,7 +173,7 @@ DECISION_POINTS = [
     {
         'id': 'undo-conid-stage', 'category': 'pipeline',
         'title': 'Undo a ConID\'s last completed production stage',
-        'module': 'contentProductionLive', 'func': '_undoLastStage', 'lines': (30314, 30314),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 28316-28316; single-line citation kept
+        'module': 'contentProductionLive', 'func': '_undoLastStage', 'lines': (30317, 30317),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 28316-28316; single-line citation kept
         'anchor': "confirm('Undo ConID #' + row.con_id",
         'trigger': 'The real standalone "Undo" button on a music_video ConID card (Aug 6 UX pass — paired with a "revert progress" checkbox, default unchecked = edit-in-place).',
         'logic': 'A plain `confirm()`, but with real, specific consequence text in the message itself ("deletes the creative-doc output that stage produced... cannot be undone") — more informative than the bare delete-confirms above despite using the same native browser dialog.',
