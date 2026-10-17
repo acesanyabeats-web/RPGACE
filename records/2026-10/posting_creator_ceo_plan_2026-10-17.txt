@@ -94,3 +94,8 @@ BUILD LOG
   mock-Oracle trailers. Also: pop-up rebuilt (5 buttons), My beats = beats only, xp MS_PROOF.video -> posts, xp_check_unlocks
   posted_at reads -> posts (DB, in place), REALM_OF_TABLE content_productions -> producer, METHOD_MODULE_MAP regenerated.
   No data deleted. pc6_test 17/17.
+- PC-7 (Oct 17): "A, but include in report after click when what was done of each stage and dates and time duration". Chronicles:
+  careerStatCard reads posted posts (slot 19) + their ideas -> one 'post' item each (Beats & content); posted posts' Doing Now
+  sessions folded in; detail = postingHub.logic.report (Idea/Plan/Record/Edit/Ready/Posted/Totals, dates, gaps, session minutes,
+  links) + Open this post / Open beat. My beats 📣 Video post; plan screen 🥁 Open beat. Menu order already right.
+  pc7_test 21/21; pc0-6, bt3/5/7 pass (dn6 has 6 date-sensitive fails, same before this change). Plan complete.
