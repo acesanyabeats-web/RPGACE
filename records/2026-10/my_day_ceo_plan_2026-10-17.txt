@@ -1,0 +1,23 @@
+MY DAY — area plan 7 of the "area regen series" (Cooking was the pattern; Beats 4, Posting 5, Selling 6)
+Oct 17 2026. Status: COMPILING (Loop 1, interrogation before drafting).
+
+PROMPT SCOPE (verbatim)
+- "Finish content then with hustler, then my, then schedule"  (order: Selling -> My Day -> Schedule plans)
+- Oct 17, after SH-7: "Save the entries please for me, leave the rest for when I'm home, next module"
+
+EVIDENCE (live, this pass)
+- myDay module: ~3,990 lines, ~173 functions (rpgace_core.js). No area Back/🏠 row (0 RPGACE.areaNav calls),
+  unlike Knowledge/Cooking/Beats/Posting/Selling.
+- Use in the last 14 days: 16 routines exist; 16 routine ticks (quest_log) ~1 a day; Doing Now 2 finished.
+- Built but unused: day_templates 0, chore_blocks 0, routine_plans 0 (week planner), activity_templates 0,
+  day_blocks 1, cutback_items 2 / cutback_log 2.
+- Shifts: rota-sync works, 12 future rpgace_shifts rows.
+- Menu "Schedule & Journal": My Day (routines, plan my day, agenda), Schedule (calendar), Plans, Journal,
+  Morning Brief — My Day's agenda and Schedule's calendar overlap.
+
+ALSO DONE THIS TURN (Alex: "Save the entries please for me")
+- journal 4c8b197f-32ad-46ee-9046-fc4647e3efa2 "The Amphitheatre — A Study in Steel and Skin", 14 Oct 2026,
+  source oracle_entry, ⭐ big day, realms life/athlete/mind -> journal XP 15 + big-day 17 x3.
+- rpgace_agendas sa_1792263330231shk "Shakespeare, Karaoke & The Voice They Never Knew", realm mission
+  (doing_now, just_did + mission), 15 Oct 19:00-22:00 BST (180 min, a guess), realms connector/mind/creator
+  -> doing_now_done 10 x3.
