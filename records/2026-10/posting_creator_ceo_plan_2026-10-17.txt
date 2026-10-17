@@ -99,3 +99,9 @@ BUILD LOG
   sessions folded in; detail = postingHub.logic.report (Idea/Plan/Record/Edit/Ready/Posted/Totals, dates, gaps, session minutes,
   links) + Open this post / Open beat. My beats 📣 Video post; plan screen 🥁 Open beat. Menu order already right.
   pc7_test 21/21; pc0-6, bt3/5/7 pass (dn6 has 6 date-sensitive fails, same before this change). Plan complete.
+- PC-F1 (Oct 17, blue idea, not built): Results & stats. Alex: "We will do that after, blue it for now the stats, we will make it on my
+  first ready post as a gate." GATE = his first post at Ready (posts.ready_at set) -> then brief + build as its own plan
+  (YouTube Data API key first, typed numbers for Instagram/TikTok/DistroKid).
+- Test fix (Oct 17): dn6_test's 6 fails came from the fixed fixture date: the "still running since Oct 16 09:00" row passed
+  Doing Now's 4h cap once real time moved on, so it was auto-closed and counted. Test clock now pinned to Oct 16 10:00
+  (same as pc5). dn6 16/16; dn, dn2-4, myday, due all pass. No app code changed.
