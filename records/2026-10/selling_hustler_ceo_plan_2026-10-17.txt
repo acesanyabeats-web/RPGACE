@@ -137,3 +137,6 @@ number of people that will pass each stage, this way we play the numbers game an
 - SH-6 (Oct 17): built. captionsPanel Business tab removed; producerTools.ui.send(name, context) one path; sellingHub per-artist Outreach
   tool (logic.outreachContext) + Selling home outreach log (ui.renderLog); beatsHub Idea step Playlist Psychologist (go 'playlist');
   producerTools.ui.open/openOutreach -> Selling home. sh6_test 11/11; xp7 repointed to Selling home (16/16); sh0-5b, bt8, kn0 pass.
+- SH-7 GO (Oct 17, verbatim): "Do it" (brief: beat <-> pitches/sales links, pitch beats tappable, People "also an artist", Chronicles agreed-
+  sale + named paid entries, menu order check, full tests, docs, plan done).
+- SH-7 BUILT (Oct 17): beat Sell screen Deals box, pitch beats open Sell, People "also an artist", Chronicles agreed_sale entries + named paid sales, menu order checked; sh7 22/22, all regressions pass. Plan complete.
