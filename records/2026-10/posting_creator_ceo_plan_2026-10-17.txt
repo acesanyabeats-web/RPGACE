@@ -79,3 +79,7 @@ BUILD LOG
 - PC-3 (Oct 17): "Yes and a, also ... save the names and file paths for both beat and video". Record/edit sessions,
   addTime (counted flag), askRecordDone/askReadyToPost, offerPost, posts.ready_at + posts.files {video,beat}{name,path},
   Beat Log #bl-wav (beat_meta.wavFile), beat file prefilled from Beat Log. pc3_test 23/23; pc0 test updated (editing = Keep editing).
+- PC-4 (Oct 17): "Go with PC-4, b, also include distrokid ... I'll be using it in the future for posting too". openPost, postUpdate,
+  savePost (idea posted, beat-video links -> beatsHub.logic.release), DistroKid in beatsHub PLACES/placeOf, chat wrap
+  (_postingLinkPatched) + offerLinkSave, fromBeat (BT-5 Make a video), xp_on_change posted_at -> video_posted (verified once
+  in a rolled-back block). pc4_test 22/22; bt5 test updated (Make a video -> post plan).
