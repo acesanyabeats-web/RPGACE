@@ -104,3 +104,25 @@ number of people that will pass each stage, this way we play the numbers game an
 - SH-4 (Oct 17): built. Additive xp_settings.licence_defaults; beatsHub.logic.UK_DEFAULTS/loadStandard/saveStandard (defaultTiers now = standard
   prices, not the last beat's); sellingHub.logic.beatLists/critiquePrompt + ui.openBeatList/critique/editStandard; step buttons on all 4
   Beats-for-sale steps. sh4_test 26/26; bt8 + sh0 updated for the new defaults; sh1-3, bt7, pc7 pass.
+- SH-5 BRIEF REPLY (Oct 17, verbatim): "the stems and full beat will be exported as zips, just remember the folder location; yes 1 and 3,
+  2 doesnt make sense tbh, i dont spend much apart from time and a one off purchase on beats. using subscriptions like arcade vst, claude
+  etc to run this software or daw workflow would make sense, so i can close the gap on what i spend monthly, in that regard 2 also. all
+  purchases with samples and vsts can be recorded with receipts so i can tax write off it all when i start making money, tying that with
+  shopping list and steward would be awesome"
+  -> Picked: 1 income by type, 3 pitch -> deal rate. 4 best contacts not picked. 2 reshaped: monthly subscriptions (Arcade, Claude...)
+     + one-off sample/VST purchases with receipts (tax write-off), tied to Shopping Wishlist + Steward realm. Zips are NOT retired as
+     files: Alex exports stems + full beat zips himself; RPGACE remembers the folder (only the app-built deliverable zip was retired).
+  Evidence: content_productions.stems_drive/stems_folder already saved by Beat Log; xp_settings.revenue_target = yearly Tycoon target
+  (exists); chronicles_finance has no business flag / receipt column; wishlist bought -> chronicles_finance expense (category Personal);
+  screenshots bucket is the existing private image store.
+- SH-5 CHOICES (Oct 17, verbatim answers): Proof: "zip id say is finishing production side, so thats its milestone, the sale is hustler
+  milestone" -> Producer proof = a finished beat with its zip folder saved; Hustler proof = a logged sale (zip_or_sale -> sale).
+  Target: "One target, monthly (Recommended)" -> monthly target; yearly Tycoon target = 12 x monthly.
+  Subs: "Due row to confirm each renewal (Recommended)". Receipts: "Photo, Oracle fills it in (Recommended)".
+  PLAN CHANGE: SH-5 = money in (target, earnings per beat, best sellers, income by type, pitch -> deal rate, proofs).
+  New SH-5b = money out (subscriptions + renewal Due confirm, business purchases with receipt photo read by Oracle, Wishlist
+  "for the business" + receipt, monthly spend vs income gap, Steward).
+- SH-5 (Oct 17): built. Additive xp_settings.monthly_income_target + chronicles_finance.income_kind. xpSeason.logic.setMonthlyTarget/monthlyOf
+  (Trophy cabinet input now monthly); beatsHub.logic.INCOME_KINDS/incomeKindOf + saleRow income_kind/item; sellingHub.logic PAY_KIND/targetOf/
+  money/moneyLine/kindLine/pitchRates/rateLine/loadMoneyDue + ui.renderMoney/editTarget/logIncome/myDayLine; MS_PROOF zip_or_sale -> sale,
+  beat proof needs stems_folder. sh5_test 23/23; bt8 + xp3 updated; sh0-4, xp7, pc7, myday pass.
