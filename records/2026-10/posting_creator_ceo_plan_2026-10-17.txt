@@ -66,3 +66,7 @@ LEFT OUT (on purpose)
 - Generating video inside RPGACE (still briefs and hands off).
 - Real beat-grid sync.
 - Auto-posting to any platform (links are pasted by hand).
+
+BUILD LOG
+- PC-0 (Oct 17): "Yes" to option (a), type picker in New post only. Built postingHub + posts table (authenticated_all,
+  data-write allowlist + PRIVATE_READ_TABLES), AREAS.posting, menu after Beats, #dd-pipe-posting. pc0_test 20/20.

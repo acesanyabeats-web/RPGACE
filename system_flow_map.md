@@ -846,6 +846,17 @@ flowchart LR
 
 Truth table: start, note, stop (short + more details), just-did, cross-device running card, quiet-realm ideas (DN-1b), forgot-to-stop catch + 4h cap (DN-2), cook/gym matching (DN-3), repeats → routine offer + template fill (DN-4), XP (DN-5, DB trigger), Chronicles entries by realm + Sunday review block (DN-6) are BUILT (headless/DB-verified), not hand-tested. The Doing Now plan is fully built.
 
+## 15j. Posting home (Oct 17 2026, PC-0 of "Posting (Creator)") — built, untested by Alex
+```mermaid
+flowchart LR
+  menu["Left menu: Content & Video → 📣 Posting"] --> hub["postingHub /posting"]
+  pop["Content Pipeline pop-up → 📣 Posting"] --> hub
+  new["＋ New post: title + type → realm picker"] -->|"secureWrite insert"| posts[(posts — private)]
+  posts -->|"data-write action read"| hub
+  hub -->|"next-step buttons (PC-2..4 not built: toast says so)"| soon["Plan / Record / Edit / Post"]
+```
+Truth table: Posting home with 6 steps (Idea → Plan → Record → Edit → Post → Results "coming later"), counts per `posts.stage`, posted this week, what's next (editing → recording → planned → idea, newest first, 5 max), ＋ New post (title + kind beat_video/tutorial/clip/studio_life + realms, Creator default) — BUILT (headless-verified). `posts` is locked (`authenticated_all` only), in `api/data-write.js`'s allowlist and `PRIVATE_READ_TABLES`; `RPGACE.realmOf('posts')` = creator. Plan / Record / Edit / Post / Results — NOT BUILT (PC-2..4, later plan).
+
 ## 15d. Cook Mode (Oct 11 2026) — built, untested by Alex
 
 ```mermaid
