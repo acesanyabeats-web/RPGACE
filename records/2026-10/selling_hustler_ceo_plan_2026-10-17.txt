@@ -1,5 +1,5 @@
 SELLING (HUSTLER) — area plan 6 of the "area regen series" (Cooking was the pattern; Beats 4, Posting 5)
-Oct 17 2026. Status: DRAFT, awaiting Alex's approval.
+Oct 17 2026. Status: RATIFIED Oct 17 (ceo_plans 38fe1c6a-1850-4e59-b239-1918a23a00f3).
 
 PROMPT SCOPE (verbatim)
 - "Finish content then with hustler, then my, then schedule"  (order: Selling (Hustler) -> My Day -> Schedule plans)
@@ -59,6 +59,7 @@ SH-7  Cross-links (beat ↔ its pitches and sales, artist ↔ People, Chronicles
       full tests, phone check, docs, SELF_KNOWLEDGE, Galaxy regen, plan done.
 
 LEFT OUT (on purpose)
+- (Next 3 are blue ideas SH-F1..F3, planned later — Alex: "these we will plan later ... there are plenty of sources for those".)
 - Sending DMs or emails from RPGACE (you send them; RPGACE drafts and tracks).
 - Finding artist contacts automatically (scraping).
 - Automatic royalty / store imports (DistroKid, Beatstars) — typed in for now.
@@ -66,3 +67,11 @@ LEFT OUT (on purpose)
 - Gym + Health (paused).
 
 BUILD LOG
+RATIFIED (Oct 17, verbatim): "Approved, but sh-3 if artist didn't pay, its not money owed, it's potential pitch, an artist that
+contacts me but with pushback is potential close, also these we will plan later (Finding artist contacts automatically.
+Automatic royalty or store imports. Invoices and contracts.) there are plenty of sources for those"
+PLAN CHANGES
+SH-3  No "money owed". An artist who replies with pushback = "Potential close". A deal agreed but not paid = "Potential pitch"
+      (counted as potential, never as money). Only Paid touches money (one chronicles_finance sale).
+SH-5  "Money owed" removed from the extra-scenarios list.
+SH-F1..F3  Find artist contacts automatically / automatic royalty + store imports / invoices + contracts -> blue ideas.
