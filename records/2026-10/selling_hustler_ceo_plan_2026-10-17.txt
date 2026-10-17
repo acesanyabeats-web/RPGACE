@@ -85,3 +85,5 @@ agreed sale if no pushback"
 - SH-0 (Oct 17): "Do sh-0" (+ stage correction). Tables artists / pitches / pitch_sends (authenticated_all, data-write allowlist +
   PRIVATE_READ_TABLES), sellingHub page, AREAS.selling, menu after Posting, #dd-pipe-selling, realmOf -> hustler, PAGE_REALMS selling.
   sh0_test 24/24; pc6 + kn0 tests updated (Selling button, 10 areas).
+- SH-1 (Oct 17): "do it" (name only required; optional People link, never auto-created; warn + delete their pitches).
+  cleanArtist/contactLinks/searchArtists/loadArtist/saveArtist/deleteArtist + editArtist/openArtists/openArtist. sh1_test 26/26.
