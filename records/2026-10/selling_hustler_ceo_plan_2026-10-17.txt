@@ -1,0 +1,68 @@
+SELLING (HUSTLER) — area plan 6 of the "area regen series" (Cooking was the pattern; Beats 4, Posting 5)
+Oct 17 2026. Status: DRAFT, awaiting Alex's approval.
+
+PROMPT SCOPE (verbatim)
+- "Finish content then with hustler, then my, then schedule"  (order: Selling (Hustler) -> My Day -> Schedule plans)
+
+INTERROGATION ANSWERS (verbatim picks)
+1. Journey: "Both as two tracks" -> Beats for sale (List -> Promote -> Sell -> Paid) + Artist outreach
+   (Find -> Pitch -> Follow up -> Deal -> Paid).
+2. Outreach: "1 but also make artist a profile, with contact info, pitches can be sent to multiple artists, an artist
+   can be sent multiple pitches, track the pitch and those 2 factors will be pivotal" -> per-artist pipeline +
+   artist profiles + many-to-many pitches, each send tracked.
+3. Business tools: "Move into Selling home (Recommended)".
+4. Money: "Default licence prices, Earnings per beat + best sellers, Monthly income target, I reckon there are more
+   scenarios" -> all three + extra scenarios offered in SH-5 for Alex to pick.
+
+EVIDENCE (live, this pass)
+- Everything is empty: 0 logged beats, 0 sales (chronicles_finance 0 rows), 0 outreach_log, 0 people, 0 Hustler xp_events.
+  So no migration of old data; a clean build.
+- Already built (BT-8, Oct 16): per-beat licence_tiers, Beatstars listing text, "Log a sale" linked to the beat
+  (chronicles_finance.content_production_id), Hustler XP rules: sale (2 XP per £1, min 100), outreach_sent, collab_done.
+- producerTools = 5 prompt tools (A&R Critic, Artist Outreach, Contract Red Flags, Negotiation Rehearsal, Playlist
+  Psychologist) shown as the Business tab of captionsPanel, plus the outreach_log (Outreach sent / Collab done).
+- people (private, Connector realm) = friends: name, relation, contact_how, birthday, last_spoke, reach_every_days.
+  Artists need more (handles, email, manager, genre, link) and must not clutter friends -> own table, optional link to a person.
+- Stale found: xpSeason MS_REALM_PROOF hustler = 'zip_or_sale' but zips were retired in BT-8 -> becomes 'sale'.
+
+DESIGN (recommended, flag at ratification)
+- New private tables (authenticated_all, data-write allowlist + PRIVATE_READ_TABLES):
+  artists       — name, genre, location, instagram, tiktok, youtube, email, phone, manager, link, notes, person_id, realms
+  pitches       — title, kind (lease / exclusive / beat pack / collab / placement / other), beat_ids[], message, ask (£), notes
+  pitch_sends   — pitch_id, artist_id, channel (DM / email / other), sent_at, stage (to send / sent / replied / talking /
+                  deal / paid / no / no reply), follow_up_on, deal_amount, deal_terms, paid_at, finance_id, notes
+  One pitch -> many artists; one artist -> many pitches; each send is tracked on its own.
+- Paid always writes ONE chronicles_finance sale (linked to the beat when there is one) so XP, Chronicles and money
+  totals keep one source.
+
+PLAN ITEMS (each briefed before it is built, rule 18)
+SH-0  Selling home: /selling page (sellingHub) with two tracks — 🥁 Beats for sale (List → Promote → Sell → Paid) and
+      🎤 Artist outreach (Find → Pitch → Follow up → Deal → Paid) — counts per step, a what's-next list, Back/🏠 row;
+      menu: Selling after Posting; Content Pipeline pop-up gets Selling. New tables (additive).
+SH-1  Artists: add / edit / search artist profiles with contact info; profile screen shows every pitch sent to them
+      and its stage; optional link to someone in People.
+SH-2  Pitches: make a pitch (what you offer: pick beats from My beats, a pack, exclusive, collab…; message; ask price);
+      send it to one or many artists (one tracked send each); the Artist Outreach tool drafts the message from the real
+      beat + artist; each send counts as outreach (Hustler XP, existing rule).
+SH-3  Follow up + Deal + Paid: stage buttons on each send; follow-up Due rows (no reply after N days, default 5);
+      Deal step records terms + amount with Contract Red Flags + Negotiation Rehearsal at hand; agreed-but-unpaid shows as
+      money owed; Paid logs the sale (chronicles_finance, linked beat) → Hustler XP; a collab deal also counts collab_done.
+SH-4  Beats for sale track: default licence prices (your standard tiers prefilled on every beat); List = released beats
+      with / without a selling link; Promote = A&R Critic on that beat + its posts; Sell = Log a sale (BT-8 path).
+SH-5  Money: monthly income target (progress on Selling home + My Day, Due when behind), earnings per beat + best
+      sellers. Extra scenarios to pick from at the SH-5 brief: money owed, income by type (lease / exclusive /
+      placement / collab / royalties typed in), profit (beat costs like samples/plugins vs income), pitch → deal rate
+      per pitch, best artist contacts. Hustler milestone proof: 'zip_or_sale' → sale.
+SH-6  Move the Business tools into the steps (Outreach at Pitch, Contract + Negotiation at Deal, A&R Critic on a beat;
+      Playlist Psychologist → Beats' Idea step); Captions panel keeps captions only.
+SH-7  Cross-links (beat ↔ its pitches and sales, artist ↔ People, Chronicles entries for deals/payments), menu order,
+      full tests, phone check, docs, SELF_KNOWLEDGE, Galaxy regen, plan done.
+
+LEFT OUT (on purpose)
+- Sending DMs or emails from RPGACE (you send them; RPGACE drafts and tracks).
+- Finding artist contacts automatically (scraping).
+- Automatic royalty / store imports (DistroKid, Beatstars) — typed in for now.
+- Invoices or contract generation.
+- Gym + Health (paused).
+
+BUILD LOG
