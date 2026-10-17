@@ -3575,7 +3575,7 @@ async function refreshEncyclopediaDisplay(){
       <div style="font-size:48px;margin-bottom:16px">📖</div>
       <div style="font-size:15px;color:var(--text);margin-bottom:12px;font-family:'Cinzel',serif">Your Encyclopedia is Empty</div>
       <div style="font-size:13px;color:var(--muted);line-height:2.2">
-        Entries appear when you analyse videos, save Oracle chats, or use the Upload Workshop.<br><br>
+        Entries appear when you analyse videos or save Oracle chats.<br><br>
         <button onclick="syncAndPush()" style="background:var(--gold);border:none;color:#000;border-radius:6px;padding:8px 20px;font-size:13px;cursor:pointer;font-family:'Rajdhani',sans-serif;font-weight:700">⚡ Sync &amp; Push All Reports</button>
       </div>
     </div>`;
@@ -4053,174 +4053,7 @@ async function clearJournal(){
   refreshJournalDisplay();
 }
 
-// ═══════════════════════════════════════════════
-// VIDEO WORKSHOP
-// ═══════════════════════════════════════════════
-let VW_LAST_RESULT = null;
-
-async function runVideoWorkshop(){
-  const transcript = document.getElementById('vw-transcript').value.trim();
-  if(!transcript || transcript.length < 50){ alert('Paste a transcript first — at least a few sentences.'); return; }
-
-  const type = document.getElementById('vw-type').value;
-  const duration = document.getElementById('vw-duration').value;
-  document.getElementById('vw-run-btn').disabled = true;
-  document.getElementById('vw-output').style.display = 'none';
-  setLearnStatus('vw-status','⚡ AI analysing transcript...','loading');
-
-  const TYPE_CONTEXT = {
-    beat_tutorial: 'beat-making tutorial for aspiring music producers on YouTube',
-    vlog: 'music production vlog showing behind-the-scenes creator life',
-    review: 'plugin or gear review for music producers',
-    challenge: 'challenge video (e.g. making a beat in X minutes)',
-    shorts: 'YouTube Short (under 60 seconds, vertical format)'
-  };
-
-  const DURATION_CONTEXT = {
-    short: 'under 5 minutes — hook fast, one core idea',
-    medium: '5–15 minutes — standard tutorial length',
-    long: '15+ minutes — deep dive, needs strong chapter structure'
-  };
-
-  const prompt = `You are a 300 IQ YouTube strategist specialising in music production content for UK creators.
-Channel: @AceSanyaBeats | Creator: Alex (AceSanya) | Goal: 100k views, grow producer audience
-
-VIDEO TYPE: ${TYPE_CONTEXT[type]}
-DURATION: ${DURATION_CONTEXT[duration]}
-
-TRANSCRIPT:
-${transcript.slice(0, 6000)}
-
-Respond ONLY with valid JSON. No explanation. No markdown fences. Just the JSON object:
-{
-  "titles": [
-    "Title option 1 — hook-first, under 60 chars",
-    "Title option 2",
-    "Title option 3",
-    "Title option 4",
-    "Title option 5"
-  ],
-  "thumbnail_concepts": [
-    "Concept 1: [describe facial expression] + [bold text overlay] + [background/colour]",
-    "Concept 2: [describe facial expression] + [bold text overlay] + [background/colour]"
-  ],
-  "short_clips": [
-    {"moment": "Quote or description of the moment", "hook": "Why this works as a short", "platform": "TikTok/Reels/Shorts"},
-    {"moment": "...", "hook": "...", "platform": "..."},
-    {"moment": "...", "hook": "...", "platform": "..."},
-    {"moment": "...", "hook": "...", "platform": "..."},
-    {"moment": "...", "hook": "...", "platform": "..."}
-  ],
-  "description": "Full YouTube description (200-300 words). Include: hook paragraph, what viewers learn, call to action, links placeholder. No hashtags here.",
-  "tags": ["tag1","tag2","tag3","tag4","tag5","tag6","tag7","tag8","tag9","tag10","tag11","tag12","tag13","tag14","tag15"],
-  "chapters": [
-    "0:00 Intro",
-    "0:30 [chapter name]",
-    "2:00 [chapter name]"
-  ],
-  "retention_tips": ["Tip 1 for keeping viewers watching", "Tip 2", "Tip 3"]
-}`;
-
-  try {
-    const data = await callOracle([{role:'user', content: prompt}], '', 1500);
-    const raw = data.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim();
-    let result;
-    try { result = JSON.parse(raw); }
-    catch(e) {
-      // Try to extract JSON from response
-      const match = raw.match(/\{[\s\S]*\}/);
-      if(match) result = JSON.parse(match[0]);
-      else throw new Error('AI returned non-JSON response');
-    }
-
-    VW_LAST_RESULT = { result, transcript: transcript.slice(0,500), type, date: new Date().toLocaleDateString() };
-
-    // Populate titles
-    document.getElementById('vw-titles').innerHTML = (result.titles||[]).map(t=>
-      `<div onclick="navigator.clipboard.writeText('${t.replace(/'/g,"\\'")}');this.style.color='var(--green)';setTimeout(()=>this.style.color='',1500)"
-        style="cursor:pointer;padding:4px 8px;border-radius:4px;border:1px solid var(--border);margin-bottom:4px;transition:all .2s"
-        onmouseover="this.style.background='rgba(255,255,255,.04)'" onmouseout="this.style.background=''"
-        title="Click to copy">
-        📋 ${t}
-      </div>`
-    ).join('');
-
-    // Populate thumbnails
-    document.getElementById('vw-thumbnails').innerHTML = (result.thumbnail_concepts||[]).map((t,i)=>
-      `<div style="margin-bottom:10px;padding:8px;background:rgba(255,255,255,.03);border-radius:6px;border-left:2px solid var(--gold)">
-        <strong style="color:var(--gold2)">Option ${i+1}:</strong><br>${t}
-      </div>`
-    ).join('');
-
-    // Populate clips
-    document.getElementById('vw-clips').innerHTML = (result.short_clips||[]).map((c,i)=>
-      `<div style="margin-bottom:10px;padding:8px;background:rgba(255,255,255,.03);border-radius:6px">
-        <span style="background:rgba(201,168,76,.15);color:var(--gold);padding:1px 6px;border-radius:3px;font-size:11px;margin-right:6px">${c.platform||'Short'}</span>
-        <strong style="color:var(--text)">${c.moment||''}</strong>
-        <div style="color:var(--muted);font-size:11px;margin-top:3px">💡 ${c.hook||''}</div>
-      </div>`
-    ).join('');
-
-    // Description
-    document.getElementById('vw-description').textContent = result.description || '';
-
-    // Tags
-    document.getElementById('vw-tags').innerHTML = (result.tags||[]).map(t=>
-      `<span style="display:inline-block;background:rgba(201,168,76,.1);border:1px solid rgba(201,168,76,.2);color:var(--gold);border-radius:4px;padding:1px 7px;font-size:11px;margin:2px">${t}</span>`
-    ).join('');
-
-    // Chapters
-    document.getElementById('vw-chapters').innerHTML = (result.chapters||[]).map(c=>
-      `<div style="font-family:monospace;font-size:12px;color:var(--text);margin-bottom:3px">${c}</div>`
-    ).join('');
-
-    document.getElementById('vw-output').style.display = 'block';
-    setLearnStatus('vw-status','✓ Strategy complete — '+(result.titles?.length||0)+' titles, '+(result.short_clips?.length||0)+' clips identified','ok');
-    addXP(75);
-    showXPToast(75);
-
-  } catch(e) {
-    setLearnStatus('vw-status','✗ Error: '+e.message,'err');
-  }
-  document.getElementById('vw-run-btn').disabled = false;
-}
-
-function copyDescription(){
-  const desc = document.getElementById('vw-description').textContent;
-  if(desc) navigator.clipboard.writeText(desc).then(()=>{ alert('Description copied!'); });
-}
-
-function saveWorkshopToEncyclopedia(){
-  if(!VW_LAST_RESULT) return;
-  const { result, type, date } = VW_LAST_RESULT;
-  const content = `## Upload Workshop Strategy\nType: ${type} | Date: ${date}\n\n### Titles\n${(result.titles||[]).map(t=>'- '+t).join('\n')}\n\n### Thumbnail Concepts\n${(result.thumbnail_concepts||[]).join('\n\n')}\n\n### Short Clips\n${(result.short_clips||[]).map(c=>`- **${c.moment}** (${c.platform})\n  ${c.hook}`).join('\n\n')}\n\n### YouTube Description\n${result.description||''}\n\n### Tags\n${(result.tags||[]).join(', ')}\n\n### Chapters\n${(result.chapters||[]).join('\n')}`;
-  saveOracleToEncyclopedia('Upload Workshop — '+date, content);
-  setLearnStatus('vw-status','✓ Saved to Encyclopedia','ok');
-}
-
-async function saveWorkshopToNotion(){
-  if(!VW_LAST_RESULT) return;
-  const { result, type, date } = VW_LAST_RESULT;
-  setLearnStatus('vw-status','Saving to Notion...','loading');
-  try {
-    const markdown = `# Upload Workshop Strategy\n\n**Type:** ${type}  \n**Date:** ${date}\n\n## Titles\n${(result.titles||[]).map(t=>'- '+t).join('\n')}\n\n## Thumbnail Concepts\n${(result.thumbnail_concepts||[]).map((t,i)=>`**Option ${i+1}:** ${t}`).join('\n\n')}\n\n## Short Clips for TikTok/Reels/Shorts\n${(result.short_clips||[]).map(c=>`- **${c.moment}**\n  - Platform: ${c.platform}\n  - Why it works: ${c.hook}`).join('\n\n')}\n\n## YouTube Description\n\n${result.description||''}\n\n## Tags\n${(result.tags||[]).join(', ')}\n\n## Chapters\n${(result.chapters||[]).join('\n')}`;
-
-    const res = await fetch('/api/executor',{
-      method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ tool:'NOTION_CREATE_NOTION_PAGE', input:{
-        parent_id: '3830f922-7ad0-8064-ac35-f6ebaff22b99',
-        title: `Upload Workshop — ${type} — ${date}`,
-        markdown
-      }})
-    });
-    const data = await res.json();
-    if(!res.ok) throw new Error(data.error||'Executor error');
-    setLearnStatus('vw-status','✓ Saved to Notion!','ok');
-    addXP(20);
-  } catch(e) {
-    setLearnStatus('vw-status','✗ Notion: '+e.message,'err');
-  }
-}
+// PC-6 (Oct 17 2026): the Upload Workshop (runVideoWorkshop and its save buttons) is retired.
 
 // ═══════════════════════════════════════════════
 // CONTENT INTELLIGENCE — AUTO SYNC + SUBMIT
@@ -5642,7 +5475,7 @@ document.addEventListener('keydown', e=>{
     recipes: 'chef', planned_cooks: 'chef', pantry_stock: 'chef', shopping_lists: 'chef',
     gym_sessions: 'athlete', gym_sets: 'athlete', food_log: 'athlete', body_log: 'athlete',
     wishlist_items: 'steward', cutback_log: 'mind', plans: 'explorer', plan_tasks: 'explorer',
-    people: 'connector', outreach_log: 'connector', content_productions: 'creator', posts: 'creator',
+    people: 'connector', outreach_log: 'connector', content_productions: 'producer', posts: 'creator',
     conid_pot: 'producer', reference_tracks: 'producer', video_jobs: 'creator',
     journal: 'life', bookworm_books: 'scholar', jargon_encyclopedia: 'scholar'
   };
@@ -7618,20 +7451,18 @@ RPGACE.register('visualOracle', {
   // embedded in RPGACE's own runtime, so these commands generate a real
   // OpenMontage-ready brief rather than a single AI-video-prompt string).
   CMDS: [
-    ['Director Match', 'I am making a beat with the following characteristics: GENRE: [UK DRILL / UK HIP HOP / TRAP / AFROBEATS — choose one] MOOD: [DARK / EUPHORIC / MELANCHOLIC / AGGRESSIVE / CINEMATIC — choose one] KEY: [TYPE THE KEY AND SCALE, e.g. D Minor, F# Dorian] BPM: [TYPE THE BPM] REFERENCE ARTISTS: [NAME 1-3 ARTISTS THIS BEAT SOUNDS LIKE]. From the Phylum 13 (Visio Cinematica — Visual Treatment, Filmmaking) filmmaker library, match me 3 directors whose visual signature fits this beat. For each director: their signature visual style in 3 words, the camera movement that defines them, their colour palette, why this beat fits their aesthetic, and an 80-word OpenMontage brief I can use immediately. Then, on its own final line, output exactly: DIRECTOR_CHOSEN: <the one director from your 3 matches who fits best>.'],
-    ['Visual Treatment Doc', 'Generate a full Visual Treatment Document for my beat. BEAT TITLE: [TYPE BEAT TITLE] GENRE: [TYPE GENRE] MOOD: [TYPE MOOD] KEY + SCALE: [TYPE KEY AND SCALE] BPM: [TYPE BPM] DIRECTOR REFERENCE: [TYPE A FILMMAKER NAME OR VISUAL STYLE]. The document must include: Concept statement (2 sentences), Visual world description (colour palette, lighting, texture), Camera direction (movement vocabulary, shot types, rhythm), Talent/subject direction if any, Character Reference Block if any recurring character appears across multiple scenes (a fixed physical description — build, face, hair, wardrobe, one or two distinguishing details — written so it can be reused as a consistent image-generation reference in every scene that character appears in, since AI video generators do not remember a character between separate shots on their own), Scene breakdown (4 scenes with duration), OpenMontage production brief (120 words), a COPY-PASTE PROMPT of 500 characters or fewer per scene — the exact text I can paste directly into an AI image/video generation tool\'s own prompt box, which is almost always character-limited (do not assume the full document above fits there; count the characters and cut it down until it genuinely does), and export format recommendations for YouTube, Reels, and Beatstars. Every director/reference/technical claim you make must be something you can actually stand behind — if you are inferring or pattern-matching rather than citing something real and confirmed, say so plainly next to that claim (e.g. "inferred, not confirmed:") rather than stating it as settled fact. Then, on its own final line, output exactly: DIRECTOR_CHOSEN: <the director/visual-style name you were given, or NONE if none was given>.'],
     ['Copyright Risk Analyser', 'Analyse the copyright risk of my planned music video concept. CONCEPT: [DESCRIBE YOUR VIDEO CONCEPT IN DETAIL] VISUAL REFERENCES: [LIST ANY FILMS, MUSIC VIDEOS, OR DIRECTORS YOU PLAN TO REFERENCE] FOOTAGE SOURCES: [LIST WHERE YOU PLAN TO SOURCE FOOTAGE — stock, self-shot, archival, AI-generated]. For each element: copyright risk level (Low / Medium / High), what specifically creates the risk, how to modify the concept to eliminate or reduce the risk, and safe alternative approaches. End with an overall risk score and a clear/proceed/modify verdict.'],
     ['Mood Board Brief', 'Create a detailed mood board brief for my beat visual. BEAT DESCRIPTION: [DESCRIBE YOUR BEAT — genre, mood, key, BPM, feel] TARGET PLATFORM: [YOUTUBE / INSTAGRAM / BEATSTARS / ALL]. The brief must specify: 5 colour hex codes with usage ratios, 3 texture references (describe the material/surface quality), lighting direction (quality, direction, colour temperature), typography direction if text appears, 5 specific shot types with descriptions, 3 real-world location types that fit, and 3 visual DONTs for this concept. Format this so I can hand it directly to a designer or use it in Canva.'],
-    ['Storyboard Scene Builder', 'Build a shot-by-shot storyboard for my music video. SONG SECTION: [INTRO / VERSE / CHORUS / BRIDGE / OUTRO — choose one, or ALL] DURATION: [TYPE THE SECTION LENGTH IN SECONDS] VISUAL STYLE: [TYPE YOUR VISUAL DIRECTION — e.g. dark cinematic UK drill, lo-fi nostalgic, futuristic minimal] LOCATION: [TYPE YOUR PLANNED LOCATION OR WRITE "studio" / "street" / "AI-generated"]. For each shot: shot number, shot type (close-up / medium / wide / extreme close-up), camera movement, subject action, duration in seconds, lighting note, and cut type to next shot. End with a total shot count and pacing assessment. Then output a separate final block, starting on its own line with exactly: EDL_JSON: followed by a compact JSON array with one object per shot in the shape {"scene":<number>,"shot_type":"...","camera_movement":"...","duration_sec":<number>,"cut_type":"..."}.'],
+    ['Storyboard Scene Builder', 'Build a shot-by-shot storyboard for my music video. SONG SECTION: [INTRO / VERSE / CHORUS / BRIDGE / OUTRO — choose one, or ALL] DURATION: [TYPE THE SECTION LENGTH IN SECONDS] VISUAL STYLE: [TYPE YOUR VISUAL DIRECTION — e.g. dark cinematic UK drill, lo-fi nostalgic, futuristic minimal] LOCATION: [TYPE YOUR PLANNED LOCATION OR WRITE "studio" / "street" / "AI-generated"]. For each shot: shot number, shot type (close-up / medium / wide / extreme close-up), camera movement, subject action, duration in seconds, lighting note, and cut type to next shot. End with a total shot count and pacing assessment. '],
     ['OpenMontage Brief', 'Generate 3 OpenMontage production briefs for my beat. BEAT FEEL: [DESCRIBE IN 5 WORDS] COLOUR DIRECTION: [TYPE 2-3 COLOURS OR A PALETTE NAME] SUBJECT: [TYPE WHAT SHOULD APPEAR — abstract, character, landscape, object] AVOID: [TYPE ANYTHING YOU DO NOT WANT — faces, text, specific styles]. For each brief: a 100-word OpenMontage production brief (visual concept, pacing, shot suggestions) optimised for beat-sync, the recommended motion intensity setting (Low / Medium / High / Extreme), the recommended style preset if applicable, and what this brief will generate visually. Label them Option A (safest), Option B (most striking), Option C (most experimental).'],
   ],
 
   // Doc-type slug per CMDS index — used as the key when saving a response
   // into content_productions.creative_docs (2026-07-28 Content Pipeline
   // overseer build, Alex-confirmed forks).
-  DOC_SLUGS: ['director_match', 'visual_treatment', 'copyright_risk', 'mood_board', 'storyboard', 'openmontage_brief'],
+  DOC_SLUGS: ['copyright_risk', 'mood_board', 'storyboard', 'openmontage_brief'],
 
-  ICONS: ['🎬','📄','⚠️','🎨','🎞️','🎥'],
+  ICONS: ['⚠️','🎨','🎞️','🎥'],
 
   _pendingCapture: false,
 
@@ -7690,7 +7521,7 @@ RPGACE.register('visualOracle', {
     lb.textContent = 'VISUAL ORACLE';
     lb.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(155,89,182,0.65);margin-bottom:3px;';
     var sub = document.createElement('div');
-    sub.textContent = RPGACE.utils.phylumLabel(14) + ' · Filmmaker Library · 6 Commands';
+    sub.textContent = RPGACE.utils.phylumLabel(14) + ' · 4 Commands';
     sub.style.cssText = 'font-size:12px;font-weight:700;color:#D4DAF5;';
     ht.appendChild(lb); ht.appendChild(sub);
     var cb = document.createElement('button');
@@ -7704,7 +7535,7 @@ RPGACE.register('visualOracle', {
     body.style.cssText = 'flex:1;overflow-y:auto;padding:14px;';
 
     var note = document.createElement('div');
-    note.textContent = '6 COMMANDS · FILMMAKER LIBRARY · NEURAL FRAMES READY';
+    note.textContent = '4 COMMANDS';
     note.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(226,226,236,0.3);margin-bottom:12px;';
     body.appendChild(note);
 
@@ -7750,27 +7581,7 @@ RPGACE.register('visualOracle', {
             }
           });
         };
-        // F14: Director Match used to just tell Claude to imagine "the Phylum
-        // XXV filmmaker library" with nothing behind it - no such data
-        // existed. Now grounds the prompt in the real 50 profiles stored in
-        // taxonomy_nodes (source='f14_filmmaker_library') instead of hoping
-        // the model improvises consistent answers each time.
-        if (i === 0) {
-          self._withFilmmakerLibrary(function(block) { proceed(cmd[1] + '\n\n' + block); });
-        } else if (i === 1) {
-          // 2026-07-31 — same real gap as Director Match's own i===0 case,
-          // for Visual Treatment Doc's "DIRECTOR REFERENCE" placeholder:
-          // show the real dropdown+taxonomy-summary+inspiration picker
-          // here too, so fillGaps sees this one pre-filled and only ever
-          // asks about genuinely un-fillable fields (beat title/genre/
-          // mood/key/bpm) when this command is run from the global panel
-          // rather than a specific ConID (which has no beat data to pull).
-          self._showDirectorPicker(function(directorText) {
-            proceed(cmd[1].replace('[TYPE A FILMMAKER NAME OR VISUAL STYLE]', directorText));
-          });
-        } else {
-          proceed(cmd[1]);
-        }
+        proceed(cmd[1]);
       };
       body.appendChild(btn);
     });
@@ -7779,235 +7590,6 @@ RPGACE.register('visualOracle', {
     RPGACE.ui.slideInPanel(panel, {edge:'right'});
   },
 
-  // 2026-07-31 — real UX gap Alex hit directly: the Visual Treatment Doc's
-  // "DIRECTOR REFERENCE" placeholder used to fall through to fillGaps'
-  // generic one-line textbox, no different from typing a genre or a BPM.
-  // Real fix, not a generic fillGaps change (that would risk the other 40+
-  // commands sharing it) - a dedicated picker: a real dropdown of the same
-  // 50-director f14_filmmaker_library (reuses this module's own existing
-  // fetch, never re-queried), a "View Style" button showing that director's
-  // real taxonomy_tree data (definition/colour_palette) before committing,
-  // and a free-text box for extra inspiration/keywords layered on top of
-  // the chosen director rather than instead of one. Calling code fills the
-  // placeholder with the result BEFORE calling fillGaps, so fillGaps sees
-  // zero remaining gaps and skips its own step entirely for this field.
-  // Aug 5 (Engineer pass, Phase E) — optional `prefill` param added:
-  // {names:[...], inspiration:''}, used by contentProductionLive's
-  // "Redo Visual Treatment" retroactive button to reopen this exact
-  // picker pre-selected with a previously-saved director blend, per
-  // /interrogation's confirmed "edit in place" answer. Purely additive -
-  // every existing caller that passes nothing behaves exactly as before.
-  // Aug 23 2026 (A7 — OBS-raw pipeline) — third OPTIONAL param `opts`,
-  // default undefined so every existing caller behaves byte-identically:
-  //   { only: ['Concept Name', ...]  — restrict the selectable library to
-  //                                    exactly these f14 concepts
-  //     rows: 1                      — render ONLY the primary row (no
-  //                                    secondary/tertiary blend slots)
-  //     title / intro                — override the popup title/intro copy }
-  // Why this shape rather than a second picker function: A7's own spec says
-  // the OBS-raw scripting phase should NOT use the cinematic Director blend
-  // at all — it uses one real "YouTube Meme Director" instead. Rendering 3
-  // blend slots that can each only hold the same single option would be
-  // genuine UI noise, so `rows:1` collapses to the one row that has a real
-  // choice in it while the free-text inspiration box (the part that IS still
-  // meaningfully variable for an OBS video) stays exactly as it is. One
-  // picker, one blend/callback contract, no second hand-rolled copy (rule 8).
-  _showDirectorPicker: function(callback, prefill, opts) {
-    // G53 split (Sep 2026): `self` below is a pre-existing DEAD LOCAL -
-    // nothing in this body reads it (every real reference inside uses
-    // `rows`/`opts`/local closures directly). Requalified to the module
-    // handle in place rather than deleted, same treatment as every other
-    // dead local this series has found - kept correct if a future edit
-    // ever does read it, per rule 4's "don't make a source change outside
-    // a pure refactor's remit" discipline.
-    var self = RPGACE.modules.visualOracle;
-    opts = opts || {};
-    RPGACE.sb.select('taxonomy_nodes', "source=eq.f14_filmmaker_library&select=concept,definition,colour_palette&order=concept.asc")
-      .catch(function() { return []; })
-      .then(function(rows) {
-        rows = rows || [];
-        if (opts.only && opts.only.length) {
-          rows = rows.filter(function(r) { return opts.only.indexOf(r.concept) !== -1; });
-        }
-        var pop = RPGACE.modules.dashDeck._popup({
-          dim: '0.92', scroll: true, width: '460px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.25)',
-          title: opts.title || 'Choose a Director Blend', noDefaultClose: true,
-        });
-        var overlay = pop.overlay, box = pop.box;
-
-        // 2026-08-05 — Phase C (director blend, item 3 of
-        // content_video_pipeline_unification_spec_2026-08-05.txt).
-        // /interrogation confirmed: 3 SEPARATE dropdown rows (primary/
-        // secondary/tertiary), not one multi-select. Real single-fetch
-        // above (rows) is shared by all 3 rows below - no re-query.
-        var introNote = document.createElement('div');
-        introNote.textContent = opts.intro || 'Pick up to 3 directors to blend their styles. Their Phylum 13 keywords/phrases/insight get conjoined into one grounded reference for Oracle.';
-        introNote.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.4);line-height:1.5;margin-bottom:14px;';
-        box.appendChild(introNote);
-
-        // Real "5 helper phrases" requirement: definitions in
-        // f14_filmmaker_library are written as comma/semicolon-separated
-        // technique clauses (confirmed via live Supabase read, not
-        // guessed) - split on those, not invented metadata that doesn't
-        // exist in the table.
-        function directorPhrases(def) {
-          if (!def) return [];
-          return def.split(/[,;]/).map(function(s) { return s.trim(); }).filter(Boolean).slice(0, 5);
-        }
-
-        // One real row-builder, reused 3x (rule 8 dedup - not 3 hand-
-        // rolled copies of the same select+view-style+phrase-preview
-        // markup). A native <select>'s own options can't render rich
-        // content while the user scrolls through them cross-browser, so
-        // the honest "faster scanning" implementation is a live preview
-        // strip beneath the row that updates the instant a director is
-        // picked or keyboard-navigated to (both 'change' and 'input'),
-        // rather than a fabricated per-option tooltip claim.
-        function buildDirectorRow(labelText) {
-          var wrap = document.createElement('div');
-          wrap.style.cssText = 'margin-bottom:14px;';
-
-          var lbl = document.createElement('div');
-          lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;';
-          lbl.textContent = labelText + ' (' + RPGACE.utils.phylumLabel(14) + ' library)';
-          wrap.appendChild(lbl);
-
-          var selRow = document.createElement('div');
-          selRow.style.cssText = 'display:flex;gap:8px;margin-bottom:6px;';
-          var sel = document.createElement('select');
-          sel.style.cssText = 'flex:1;background:#1a1a24;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
-          var noneOpt = document.createElement('option');
-          noneOpt.value = ''; noneOpt.textContent = '— none / skip —';
-          sel.appendChild(noneOpt);
-          rows.forEach(function(r) {
-            var opt = document.createElement('option');
-            opt.value = r.concept; opt.textContent = r.concept;
-            sel.appendChild(opt);
-          });
-          var viewBtn = document.createElement('button');
-          viewBtn.textContent = 'ℹ️ View Style';
-          viewBtn.style.cssText = 'padding:8px 12px;background:none;border:1px solid rgba(155,89,182,0.3);border-radius:6px;color:#9B6EC8;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;white-space:nowrap;';
-          viewBtn.onclick = function() {
-            var d = rows.filter(function(r) { return r.concept === sel.value; })[0];
-            if (!d) { RPGACE.utils.toast('Pick a director first', '#E2A83D', 2000); return; }
-            var dp = RPGACE.modules.dashDeck._popup({
-              dim: '0.94', scroll: true, width: '400px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.3)',
-              title: d.concept,
-            });
-            var body = document.createElement('div');
-            body.style.cssText = 'font-size:12px;color:#D4DAF5;line-height:1.6;';
-            body.innerHTML = '<div style="margin-bottom:10px;">' + (d.definition || '').replace(/</g, '&lt;') + '</div>' +
-              '<div style="font-size:11px;color:rgba(226,226,236,0.4);">Palette: ' + (d.colour_palette || 'n/a').replace(/</g, '&lt;') + '</div>';
-            dp.box.appendChild(body);
-          };
-          selRow.appendChild(sel); selRow.appendChild(viewBtn);
-          wrap.appendChild(selRow);
-
-          var phraseBox = document.createElement('div');
-          phraseBox.style.cssText = 'font-size:11px;color:rgba(155,89,182,0.55);line-height:1.5;min-height:16px;margin-bottom:2px;';
-          phraseBox.textContent = 'Pick a director to see their signature phrases here.';
-          wrap.appendChild(phraseBox);
-
-          function refreshPhrases() {
-            var d = rows.filter(function(r) { return r.concept === sel.value; })[0];
-            if (!d) { phraseBox.textContent = 'Pick a director to see their signature phrases here.'; return; }
-            var phrases = directorPhrases(d.definition);
-            phraseBox.textContent = phrases.length ? ('✦ ' + phrases.join('  ✦  ')) : '';
-          }
-          sel.addEventListener('change', refreshPhrases);
-          sel.addEventListener('input', refreshPhrases);
-
-          return { wrap: wrap, sel: sel };
-        }
-
-        // A7 (Aug 23 2026): opts.rows === 1 collapses this to the single
-        // primary row. `blendRows` is the one real list every downstream
-        // step (pre-fill, Continue) iterates, so nothing below has to know
-        // whether 1 or 3 rows exist.
-        var singleRow = opts.rows === 1;
-        var primaryRow = buildDirectorRow(singleRow ? 'Direction' : 'Primary Director');
-        var blendRows = [primaryRow];
-        box.appendChild(primaryRow.wrap);
-        if (!singleRow) {
-          var secondaryRow = buildDirectorRow('Secondary Director (optional blend)');
-          var tertiaryRow = buildDirectorRow('Tertiary Director (optional blend)');
-          box.appendChild(secondaryRow.wrap);
-          box.appendChild(tertiaryRow.wrap);
-          blendRows.push(secondaryRow, tertiaryRow);
-        }
-
-        // Real edit-in-place pre-fill (Phase E) - apply AFTER all rows
-        // exist so dispatching 'change' correctly refreshes each row's own
-        // phrase-preview strip too, not just the selected value.
-        if (prefill && prefill.names && prefill.names.length) {
-          var rowsInOrder = blendRows;
-          prefill.names.slice(0, 3).forEach(function(name, i) {
-            var match = rows.filter(function(r) { return r.concept === name; })[0];
-            if (match && rowsInOrder[i]) {
-              rowsInOrder[i].sel.value = match.concept;
-              rowsInOrder[i].sel.dispatchEvent(new Event('change'));
-            }
-          });
-        }
-
-        var insLbl = document.createElement('div');
-        insLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;';
-        insLbl.textContent = 'Your creative inspiration / keywords for THIS beat (optional)';
-        box.appendChild(insLbl);
-        var insBox = document.createElement('textarea');
-        insBox.placeholder = 'e.g. more handheld than usual, add neon signage...';
-        insBox.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;min-height:60px;margin-bottom:16px;';
-        if (prefill && prefill.inspiration) insBox.value = prefill.inspiration;
-        box.appendChild(insBox);
-
-        var btnRow = document.createElement('div');
-        btnRow.style.cssText = 'display:flex;gap:8px;';
-        var contBtn = document.createElement('button');
-        contBtn.textContent = 'Continue';
-        contBtn.style.cssText = 'flex:1;padding:10px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:6px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-        contBtn.onclick = function() {
-          // Real 3-info-group structure confirmed by /interrogation: (a)
-          // beat log metadata stays in the template's own separate fields
-          // (untouched here) - this callback only ever produces groups
-          // (b) director-blend keywords/phrases/insight and (c) Alex's
-          // own free-text creative inspiration, each clearly labeled so
-          // the scriptwriter prompt can't conflate them the way the old
-          // single "director — additional inspiration: X" string did.
-          var chosenNames = blendRows.map(function(r) { return r.sel.value; }).filter(Boolean);
-          var insp = insBox.value.trim();
-          overlay.remove();
-          // Aug 5 (Engineer pass, Phase E) - second callback arg carries
-          // the STRUCTURED choice (names + inspiration) alongside the
-          // rendered text, so a caller can save it verbatim for a later
-          // real edit-in-place pre-fill instead of regex-parsing it back
-          // out of the rendered prose (rule 8 - one real data path, not
-          // a save path plus a fragile re-parse path). Purely additive -
-          // ignored by any caller that only reads the first argument.
-          if (chosenNames.length === 0 && !insp) { callback('NONE', { names: [], inspiration: '' }); return; }
-          var blendText = 'NONE';
-          if (chosenNames.length) {
-            blendText = chosenNames.map(function(name) {
-              var d = rows.filter(function(r) { return r.concept === name; })[0];
-              return d ? ('- ' + d.concept + ': ' + d.definition + ' Palette: ' + d.colour_palette) : ('- ' + name);
-            }).join('\n');
-          }
-          // A7 (Aug 23 2026) — opts.styleLabel/opts.inspLabel let a caller
-          // whose content is NOT a beat (the OBS-raw path) label these two
-          // groups honestly, without forking the rendering itself. Both
-          // default to the original wording, so music_video is unchanged.
-          var out = (opts.styleLabel || ('DIRECTOR-BLEND STYLE (Phylum 13 keyword/phrase/insight blend' +
-            (chosenNames.length > 1 ? ', ' + chosenNames.length + ' directors conjoined' : '') + ')')) + ':\n' + blendText;
-          if (insp) out += '\n\n' + (opts.inspLabel || 'CREATIVE INSPIRATION (Alex\'s own free-text, for this specific beat)') + ':\n' + insp;
-          callback(out, { names: chosenNames, inspiration: insp });
-        };
-        var cancelBtn = document.createElement('button');
-        cancelBtn.textContent = 'Cancel';
-        cancelBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-        cancelBtn.onclick = function() { overlay.remove(); };
-        btnRow.appendChild(contBtn); btnRow.appendChild(cancelBtn);
-        box.appendChild(btnRow);
-      });
-  },
 
   // Manual save picker - shown after any of the 6 commands completes
   // (Fork 3, Alex-confirmed: explicit picker, not an ambient "active
@@ -8051,7 +7633,7 @@ RPGACE.register('visualOracle', {
           var selEl = box.querySelector('select');
           var productionId = selEl ? selEl.value : null;
           pop.close();
-          if (productionId) self._saveDocToProduction(docSlug, text, productionId, null);
+          if (productionId) self._saveDocToProduction(docSlug, text, productionId);
         };
         box.appendChild(saveBtn);
       })
@@ -8063,22 +7645,6 @@ RPGACE.register('visualOracle', {
   // logic - business logic/data.
   logic: {
 
-  // F14: fetches the 50-director Phylum 13 (Visio Cinematica) library and
-  // formats it as a compact reference block for Director Match. Fails open
-  // (empty block, same behaviour as before F14) if the fetch fails, rather
-  // than blocking the command entirely.
-  _withFilmmakerLibrary: function(callback) {
-    RPGACE.sb.select('taxonomy_nodes', "source=eq.f14_filmmaker_library&select=concept,definition,colour_palette&order=concept.asc")
-      .then(function(rows) {
-        rows = rows || [];
-        if (rows.length === 0) { callback(''); return; }
-        var list = rows.map(function(r) {
-          return '- ' + r.concept + ': ' + r.definition + ' Palette: ' + r.colour_palette;
-        }).join('\n');
-        callback(RPGACE.utils.phylumContext(14) + ' FILMMAKER LIBRARY (choose your 3 matches ONLY from this list, do not invent directors outside it):\n' + list);
-      })
-      .catch(function() { callback(''); });
-  },
 
   // ── Content Pipeline overseer build (2026-07-28, Alex-confirmed forks:
   // content_pipeline_overseer_spec_backlog_2026-07-28.txt) ──────────────
@@ -8159,158 +7725,24 @@ RPGACE.register('visualOracle', {
     });
   },
 
-  // Real save logic, no UI - reused by both the automatic Visual
-  // Treatment flow (already knows its target row) and the manual picker
-  // below (asks Alex which row). Parses the two structured trailers
-  // CMDS/the auto-treatment prompt now ask Oracle to emit
-  // (DIRECTOR_CHOSEN, EDL_JSON) so a director pick becomes a real
-  // style_profiles row and a storyboard becomes a real edit-decision-
-  // list, rather than staying locked inside chat prose forever.
-  // Engineer pass 2026-07-30 (Slice A item 1): style_profiles has had 0
-  // rows across 2 real hand-test attempts, both with the DIRECTOR_CHOSEN
-  // trailer expected. Root cause could not be proven from static reading
-  // alone (no live browser/login this session) - every prior failure
-  // point in this function was SILENT (console.warn only, or a bare
-  // `return`), meaning neither Alex nor this session could ever tell
-  // WHICH step actually broke. Per rule 7 (fail loud, never silently
-  // swallow a failed write), every real failure/no-op path below now
-  // surfaces a toast - the next real beat-log test will show exactly
-  // where this chain breaks instead of leaving another silent 0-row
-  // mystery.
-  _saveDocToProduction: function(docSlug, text, productionId, videoJobId) {
+  _saveDocToProduction: function(docSlug, text, productionId) {
     if (!productionId) {
-      console.warn('[visualOracle] _saveDocToProduction: no productionId, cannot save ' + docSlug);
-      RPGACE.utils.toast('⚠️ Could not save ' + docSlug.replace(/_/g, ' ') + ' — no linked Content Pipeline production', '#E2A83D', 3500);
+      RPGACE.utils.toast('⚠️ Could not save ' + docSlug.replace(/_/g, ' ') + ' — no beat linked', '#E2A83D', 3500, 'visualOracle');
       return;
     }
-    RPGACE.sb.select('content_productions', 'id=eq.' + productionId + '&select=creative_docs,status&limit=1')
+    // PC-6 (Oct 17 2026): just stores the text under creative_docs[docSlug]
+    // on the beat; the old status jumps (Scripted/Posted) and the
+    // DIRECTOR_CHOSEN / EDL_JSON parsing went with the retired video tools.
+    RPGACE.sb.select('content_productions', 'id=eq.' + productionId + '&select=creative_docs&limit=1')
       .then(function(rows) {
         var existing = (rows && rows[0] && rows[0].creative_docs) || {};
-        var currentStatus = rows && rows[0] && rows[0].status;
         existing[docSlug] = text;
-        var updates = { creative_docs: existing, updated_at: new Date().toISOString() };
-        // Aug 5 (Engineer pass) - real UX fix Alex asked for: the status
-        // box should update automatically once the real Visual Treatment
-        // doc genuinely saves, not via a separate manual "Mark" click.
-        // Only auto-advance forward (Idea -> Scripted), never backward
-        // over a later real stage the ConID has already reached.
-        if (docSlug === 'visual_treatment' && currentStatus === 'Idea') {
-          updates.status = 'Scripted';
-        }
-        // A7 (Aug 23 2026) — the OBS-raw path's own equivalent of the line
-        // above: 'obs_script' is Oracle's returned meme script + ffmpeg cut
-        // list, and its arrival is what really moves an obs_raw ConID from
-        // "1. Footage Logged" to "2. Meme Script Ready". Same forward-only
-        // guard, same shape, deliberately a SEPARATE slug from
-        // 'visual_treatment' so it never trips the DIRECTOR_CHOSEN /
-        // style_profiles trailer parsing below (an OBS script has no
-        // cinematic director pick to save, and firing that path would
-        // produce a false "no director found" warning every time).
-        if (docSlug === 'obs_script' && currentStatus === 'Idea') {
-          updates.status = 'Scripted';
-        }
-        // Aug 5 (Engineer pass, Phase G) - same forward-only pattern for
-        // captions reaching "4. Captions Ready" (the MUSIC_VIDEO_STATUS_
-        // LABELS display override on 'Posted'). Guards against every
-        // status before it, matching the real manual "-> Mark [Status]"
-        // sequence (Idea/Scripted/Filmed/Edited) so this never clobbers
-        // an already-Posted/Analysed ConID. posted_at set the same way
-        // the manual advance button already sets it.
-        if (docSlug === 'captions' && ['Idea', 'Scripted', 'Filmed', 'Edited'].indexOf(currentStatus) !== -1) {
-          updates.status = 'Posted';
-          updates.posted_at = new Date().toISOString();
-        }
-        return RPGACE.sb.secureWrite('content_productions', 'update', updates, 'id=eq.' + productionId);
+        return RPGACE.sb.secureWrite('content_productions', 'update', { creative_docs: existing, updated_at: new Date().toISOString() }, 'id=eq.' + productionId);
       })
-      .then(function() { RPGACE.utils.toast('💾 Saved ' + docSlug.replace(/_/g, ' ') + ' to Content Pipeline', '#9B6EC8', 2500); })
+      .then(function() { RPGACE.utils.toast('💾 Saved ' + docSlug.replace(/_/g, ' ') + ' on the beat', '#9B6EC8', 2500); })
       .catch(function(e) {
-        console.warn('[visualOracle] save creative_docs:', e.message);
-        RPGACE.utils.toast('⚠️ Failed to save ' + docSlug.replace(/_/g, ' ') + ' to Content Pipeline: ' + e.message, '#CC4A4A', 4000);
+        RPGACE.utils.toast('⚠️ Failed to save ' + docSlug.replace(/_/g, ' ') + ': ' + e.message, '#CC4A4A', 4000, 'visualOracle');
       });
-
-    var lookupVideoJob = function() {
-      if (videoJobId) return Promise.resolve(videoJobId);
-      return RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + productionId + '&select=id&order=created_at.desc&limit=1')
-        .then(function(rows) { return rows && rows[0] ? rows[0].id : null; });
-    };
-
-    if (docSlug === 'director_match' || docSlug === 'visual_treatment') {
-      var dm = text.match(/DIRECTOR_CHOSEN:\s*(.+)/);
-      if (!dm) {
-        console.warn('[visualOracle] no DIRECTOR_CHOSEN trailer found in ' + docSlug + ' response');
-        RPGACE.utils.toast('⚠️ No director pick found in the response — style_profiles not saved', '#E2A83D', 3500);
-        return;
-      }
-      var directorName = dm[1].trim().replace(/\.$/, '');
-      if (!directorName || /^none$/i.test(directorName)) {
-        RPGACE.utils.toast('⚠️ Director pick was empty/"none" — style_profiles not saved', '#E2A83D', 3000);
-        return;
-      }
-      lookupVideoJob().then(function(vjId) {
-        if (!vjId) {
-          RPGACE.utils.toast('⚠️ Director chosen (' + directorName + ') but no linked video_jobs row to attach it to', '#E2A83D', 3500);
-        }
-        RPGACE.sb.select('taxonomy_nodes', "source=eq.f14_filmmaker_library&concept=eq." + encodeURIComponent(directorName) + "&select=concept,definition,colour_palette&limit=1")
-          .then(function(rows) {
-            var d = rows && rows[0];
-            if (!d) console.warn('[visualOracle] director "' + directorName + '" not found in f14_filmmaker_library — saving with null style/palette');
-            return RPGACE.sb.secureWrite('style_profiles', 'insert', {
-              director_name: directorName,
-              visual_style: d ? d.definition : null,
-              colour_palette: d ? d.colour_palette : null,
-              video_job_id: vjId,
-              beat_title: null,
-              source_response: text,
-            });
-          })
-          .then(function(result) {
-            var row = Array.isArray(result) ? result[0] : result;
-            if (row && row.id && vjId) {
-              return RPGACE.sb.secureWrite('video_jobs', 'update', { style_profile_id: row.id }, 'id=eq.' + vjId)
-                .then(function() { RPGACE.utils.toast('🎬 Director match saved: ' + directorName, '#9B6EC8', 3000); });
-            } else if (row && row.id) {
-              RPGACE.utils.toast('🎬 Director match saved: ' + directorName + ' (no video_jobs link)', '#9B6EC8', 3000);
-            } else {
-              console.warn('[visualOracle] style_profiles insert returned no row id:', result);
-              RPGACE.utils.toast('⚠️ style_profiles insert returned no row — check console', '#CC4A4A', 4000);
-            }
-          })
-          .catch(function(e) {
-            console.warn('[visualOracle] style_profiles save:', e.message);
-            RPGACE.utils.toast('⚠️ style_profiles save failed: ' + e.message, '#CC4A4A', 4000);
-          });
-      });
-    }
-
-    if (docSlug === 'storyboard') {
-      var em = text.match(/EDL_JSON:\s*(\[[\s\S]*\])/);
-      if (!em) {
-        console.warn('[visualOracle] no EDL_JSON trailer found in storyboard response');
-        RPGACE.utils.toast('⚠️ No EDL_JSON found in the storyboard response — edl not saved', '#E2A83D', 3500);
-        return;
-      }
-      var edl;
-      try { edl = JSON.parse(em[1]); } catch (e) {
-        RPGACE.utils.toast('⚠️ EDL_JSON failed to parse: ' + e.message, '#CC4A4A', 4000);
-        return;
-      }
-      if (!Array.isArray(edl)) {
-        RPGACE.utils.toast('⚠️ EDL_JSON was not a real array — edl not saved', '#CC4A4A', 3500);
-        return;
-      }
-      lookupVideoJob().then(function(vjId) {
-        if (!vjId) {
-          RPGACE.utils.toast('⚠️ Storyboard EDL generated but no linked video_jobs row to attach it to', '#E2A83D', 3500);
-          return;
-        }
-        RPGACE.sb.secureWrite('video_jobs', 'update', { edl: edl }, 'id=eq.' + vjId)
-          .then(function() { RPGACE.utils.toast('🎞️ Storyboard EDL saved (' + edl.length + ' scenes)', '#9B6EC8', 3000); })
-          .catch(function(e) {
-            console.warn('[visualOracle] edl save:', e.message);
-            RPGACE.utils.toast('⚠️ EDL save failed: ' + e.message, '#CC4A4A', 4000);
-          });
-      });
-    }
   },
 
   },
@@ -8320,11 +7752,9 @@ RPGACE.register('visualOracle', {
   _inject: function() { return this.ui._inject(); },
   _close: function() { return this.ui._close(); },
   open: function() { return this.ui.open(); },
-  _showDirectorPicker: function(callback, prefill, opts) { return this.ui._showDirectorPicker(callback, prefill, opts); },
   _showSaveToPipelinePicker: function(docSlug, text) { return this.ui._showSaveToPipelinePicker(docSlug, text); },
-  _withFilmmakerLibrary: function(callback) { return this.logic._withFilmmakerLibrary(callback); },
   _captureNextResponse: function(callback, onFail) { return this.logic._captureNextResponse(callback, onFail); },
-  _saveDocToProduction: function(docSlug, text, productionId, videoJobId) { return this.logic._saveDocToProduction(docSlug, text, productionId, videoJobId); },
+  _saveDocToProduction: function(docSlug, text, productionId) { return this.logic._saveDocToProduction(docSlug, text, productionId); },
 
 });
 /* ===END:visualOracle=== */
@@ -8394,7 +7824,6 @@ RPGACE.register('contentRepurpose', {
     // July 23 — gated behind researchTabs' 'research:tab-active', key
     // 'workshop', same reasoning as the other research sub-panel fixes.
     RPGACE.hooks.on('research:tab-active', function(key) {
-      if (key === 'workshop') setTimeout(function() { self._injectVideoWorkshopBtn(); }, 400);
     });
   },
 
@@ -8718,18 +8147,9 @@ RPGACE.register('contentRepurpose', {
           overlay.remove();
           RPGACE.utils.sendToOracle(prompt);
 
-          // Hand off to Content Production Live
-          if (RPGACE.modules.contentProductionLive) {
-            RPGACE.modules.contentProductionLive.createEntry({
-              title: titleGuess,
-              idea: oracleTxt,
-              your_context: yourTxt,
-              taxonomy_nodes: checkedPhyla,
-              status: 'Idea'
-            });
-          }
-
-          RPGACE.utils.toast('⚡ Generating outputs + creating ConID entry', '#4CAF82', 3000);
+          // PC-6 (Oct 17 2026): no ConID is created any more (the old
+          // production list is retired) - posts start in Posting.
+          RPGACE.utils.toast('⚡ Generating repurposed outputs', '#4CAF82', 3000);
         });
       };
     };
@@ -8828,21 +8248,8 @@ RPGACE.register('contentRepurpose', {
 
     wrap.appendChild(lbl); wrap.appendChild(btnGrid);
     agentPage.insertBefore(wrap, agentPage.firstChild);
-  },
-
-  _injectVideoWorkshopBtn: function() {
-    if (document.getElementById('vw-repurpose-btn')) return;
-    var self = RPGACE.modules.contentRepurpose;
-    var sections = document.querySelectorAll('.section-title, h2, h3');
-    var vwSection = Array.from(sections).find(function(s){ return s.textContent && s.textContent.includes('VIDEO WORKSHOP'); });
-    if (!vwSection) return;
-    var btn = document.createElement('button');
-    btn.id = 'vw-repurpose-btn';
-    btn.textContent = '🔀 Repurpose for All Platforms';
-    btn.style.cssText = 'margin-top:10px;padding:9px 18px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:6px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;display:block;';
-    btn.onclick = function() { self.openPopup(); };
-    vwSection.parentElement.insertBefore(btn, vwSection.nextSibling);
   }
+
 
   },
 
@@ -8866,7 +8273,6 @@ RPGACE.register('contentRepurpose', {
   openPopup: function() { return this.ui.openPopup(); },
   _restructureQuickBar: function() { return this.ui._restructureQuickBar(); },
   _injectAgentButtons: function() { return this.ui._injectAgentButtons(); },
-  _injectVideoWorkshopBtn: function() { return this.ui._injectVideoWorkshopBtn(); },
 
 });
 /* ===END:contentRepurpose=== */
@@ -12057,7 +11463,7 @@ RPGACE.register('oracleAppGrounding', {
   // bugs"/"Biggest confirmed-not-built items" sections should update this
   // string in the same session - same discipline as every other oversight
   // doc, just condensed for token cost (rule 11).
-  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested by Alex; where a bullet doesn\'t explicitly say hand-tested, assume it hasn\'t been). Never assume this string is automatically current just because it exists - check its own newest dated fact before trusting an old memory of it; last reviewed Oct 16 2026 (Realm picker: every input - a video link sent via Videoworm, Video Finder, share-to-RPGACE or the watchlist digest, a book, screenshots (one pick per batch), a Life Library add, a starred Oracle answer, a saved web lookup - asks which of the 13 realms it is for (RPGACE.realmPicker, up to 4, recent first, Not now skips); the choice is stored in a realms column on intel_jobs, bookworm_books, screenshots and library_items; the old video articles were wiped Oct 15 except 19 production videos + 1 book article, tagged Producer; Not now on the realm picker holds an input - a video is not analysed until realms are picked (intel_jobs status awaiting_realms) - and the picker asks about waiting inputs, oldest first, after sign-in and when Alex returns to the app; Knowledge home shows how many are waiting; Oracle reads each video through the lenses of its chosen realms (realm_lenses.json) with a 1-10 score per realm in intel_reports.realm_scores, the overall score is the best realm score, and audience size or polish no longer lowers it; book chapters are read through the realms picked for the book and each insight is tagged with a realm (bookworm_chapters.insight_realms); each input (once in the Life Library with realms) earns 60 XP split over its realms, first 3 inputs a day (xp_rules input_taken); quests suggested by a video analysis are added one at a time from its summary or Encyclopedia post (pathways module, quest_log quest_kind input_quest, realm in category); the Morning Brief opens with Today\'s realm (realmBrief module): a top realm and a runner-up worked out in code from 9 signals - a realm quiet 4+ days, the day kind from shifts, blocks planned today, a routine missed last time, a trip within a week, an open weekly challenge, a resolution, a recent realm-tagged input, 80% of the weekly spend limit - each shown with its reasons and one thing to do (or a suggestion when the realm has nothing of Alex\'s own yet); there are 29 phyla since Oct 15 2026 (taxonomyTree module): 22-29 are the life realms (Ars Culinaria cooking, Corpus Athleticum training, Ars Vivendi daily life, Cura Domus home, Res Pecuniaria money, Peregrinatio travel, Mens Sana mindset, Societas people), phylum 11 is Learning Methods, Study Skills (a tutorial is shelved by its subject), and each realm\'s phyla are listed in realm_lenses.json (RPGACE.phylumRealms); Phylum Path (phylumPath module) groups the phyla under their realms, shelves name their realm, and jargon terms (jargonEncyclopedia module) show and filter by realm; each realm card shows what that realm knows (accepted jargon + Library items, RPGACE.realmKnowledge); finished chapters and books pay half their XP to Scholar and half to the book\'s realms (xp_award_split, bookworm_books.realms); every Quest Board quest (questEngine module, quest_log) shows its realm icon (old categories career/health mapped to Producer/Athlete, else Life) and a From link to where it came from; each realm card has a Suggest quests button - one Oracle call using that realm\'s accepted jargon and Library titles (skipped when the realm knows nothing yet) gives up to 3 ideas, each added with one tap as an input_quest with the realm as its category (same 5-100 XP, first 3 a day); each realm card also shows its knowledge path (xpSeason module, xp_quest_steps source knowledge, gate <realm>_path): Oracle proposes 3 next milestones from that realm\'s jargon, Library titles, rank and last milestone, Alex accepts one (one live at a time, the others set aside), milestones the app can count finish themselves and the rest are ticked by hand with one Journal line plus proof by realm (Producer a Beat Log beat, Hustler a stems zip or sale, Chef a finished cook plus a dish photo kept private, Creator a ConID, Athlete a gym session, Scholar a book, Explorer a plan, Connector an outreach entry, Steward a money entry, others the line with an optional photo); XP is sized to the realm\'s rank gap (small 10%, medium 20%, large 35%, at least 25, DB function xp_milestone_xp) and every 3 done unlock a title (Practitioner, Adept, Expert, Master, Master 2...); the Sunday review offers keep, drop or make smaller for a milestone untouched 4 weeks; XP reports (xp_reports via xp_save_report), Year Wrapped and the Sunday review (myDay module) also show what was taken in and how many quests were done per realm, plus the quiet realms; completing one pays its realm, Oracle XP rounded to 5 and capped at 100, first 3 a day; every completed quest now pays its realm instead of always Life; the left menu bands all start rolled up, the Oracle band itself opens Oracle, and Close on a pop-up returns to the dashboard; the Life Library and the Encyclopedia ideas/posts filter by realm and each Library item shows and edits its realms; articles and idea cards carry their source realms (encyclopedia.realms, encyclopedia_insights.realms); realm cards and the 13-realm wheel show what was taken in this month per realm; every shipped RPGACE change (a system_updates row) earns 30 Builder XP, up to 5 a day; My Day routines can be edited from their row, from + Add routines (an added idea opens the saved routine) and from the chore list; Knowledge home, see KNOWLEDGE HOME below; Videoworm now shows the real video-queue state - ready, waiting, analysing or stuck - with Retry on failed or stuck jobs; left-nav areas are coloured bands with a realm XP bar each, folding shut; Realm cards: the combined XP card (xpSeason) shows on the dashboard only as a two-page swipe card - overall first, the 13-realm wheel on the second page - and each domain shows a card in the same style for its own realm, with realm tabs where a domain has several; Cooking reorganised, see COOKING JOURNEY in HABITS; Freezes and speed, see FREEZES AND SPEED; Health and body, see HEALTH AND BODY; Plans money, dates + people, see PLAN MONEY under PLANS; Chores, see CHORES under MY DAY; Life Library, see LIFE LIBRARY below; Plans: trips with Oracle + people; My Day week planner, timings + activity templates; Cook Mode, see COOK MODE in HABITS; Screenshot Inbox, see SCREENSHOT INBOX below; Galaxy Map rivers replaced by the 8 app domains; Dashboard landing page + grouped menu, Cooking layout, Knowledge layout, Content & Video layout, Oracle page layout, gym tracker, stay signed in, share-and-return; daily life: fridge photo, watchlist digest; Business producer tools, recall + Bookworm cards, money guardrails, share-to-RPGACE; Encyclopedia posts from analysed videos, see the ENCYCLOPEDIA paragraph below; planned cooks can no longer vanish, see HABITS). ARCHITECTURE: the client is exactly ONE script, rpgace_core.js (index.html loads only rpgace_core.min.js) - main.js was mechanically merged into it Aug 20 2026, living on as a LEGACY SECTION near the top (bootstrap, password gate, page routing, career score, Quest Board). 75 real registered RPGACE.register() modules as of Oct 14 2026 - re-verify this count before quoting it, it has drifted before (a naive grep can double-count a documentation-template example inside a comment). DOMAINS (Oct 11 2026, M1): every module declares one of 8 domains in code (the domain: key, listed in RPGACE.DOMAINS) - Oracle, Content & Video, Knowledge, Habits, Schedule & Journal, Chronicles, Oversight, Platform - the same groups as the left menu. The developer Galaxy Map groups modules by these domains too; the older \'rivers\' grouping is retired. Every module has a real internal ui/logic split (Sep 2026, G53) - zero public-API change, purely structural. RPGACE is a real installable PWA (Android/desktop Add-to-Home-Screen). Chronicles is a full searchable log page with click-through detail plus a personal-visibility-only finance ledger (not bookkeeping-grade). The profile stat card runs on real Supabase-derived data (Output = shipped content, Growth = learning/tree activity, kept as separate lanes). MY DAY (new Oct 12 2026, owned by the myDay module, routines table) replaced the old generic Quest Board template (the hardcoded career/health/lifestyle quests are gone): Alex picks routines from a drafted ideas menu built on RPGACE\'s own tools (morning routine, cleaning split by day, gym, cooking, reading, beats, posting, coding, budget, etc.) or writes his own, and sets each one\'s schedule (every day, certain days, N times a week, one date, or next time he is shopping/in town/at the PC), part of day, optional time, minutes, goal, steps and which tool it opens. The agenda page shows what is due today by morning/afternoon/evening with tick, skip, undo, a timer, sub-step ticks, streaks, missed-earlier-this-week catch-ups and a week done-vs-planned line; Plan my day suggests free times around his shift and today\'s schedule and adds the ones he accepts to the Daily Schedule. CHORES (Oct 14 2026, DT-3 of the Day Templates & Chores plan, owned by the myDay module, routines table, area Chores): room-only chores each repeat every N days counted from the last time he ticked them (routines.every_days; routines.last_done_before holds a last-done date he set before RPGACE tracked it, and a newer tick wins). A missed chore stays on the list marked overdue - it never stacks. My Day shows a Chores section (due and overdue chores, most overdue first) plus a Coming up line; it empties as chores are ticked. He set up the list from a 20-chore starter list (Set up the chore list in + Add routines) and can add his own and change any day count. Chore ticks earn Homekeeper XP. CHORE BLOCK (DT-4, Oct 14 2026, myDay module, chore_blocks table): from the Chores section he picks a day, start time and length; the block fills itself with the most overdue chores (then the next ones due, done early) until their minutes fill the time, skipping any that do not fit; he can tick any chore in or out, and it warns if he goes over. Adding it writes a chore_blocks row and a Daily Schedule entry (0 XP; the chores themselves earn XP). On the day, My Day shows the block with its chores to tick and an N of M done count; chores left undone stay due and come first next time. Cancel block (two taps) removes it and its schedule entry. DAY TEMPLATES (DT-1, Oct 14 2026, myDay module, day_templates table): Plan my day now opens a day template for any date. The day kind comes from his shift: no shift = day off, a closing shift (his close at 00:00) = late, any other shift = early. The first suggestion is the most recent day of the same kind and weekday that he locked in, else what was really on his Daily Schedule for a day like it (8 weeks back), else same kind any weekday, else a fresh fit of what is due. Saved templates (📌, Save as template) are offered too. Routines not due that day drop out, a chore block refills with that day\'s most overdue chores, and routines due but missing are fitted into free gaps (marked also due). Items that overlap the shift or its travel get a warning. He can untick, change times and lengths, remove, or add a routine, a chore block (longest that fits, up to 2 h) or anything else. Lock in puts every kept item on the Daily Schedule (places keep their journey time), plans weekly and N-a-week routines for that day (routine_plans), makes the chore block real (chore_blocks), and records the day (day_templates, source locked) so the next day like it starts from it; locking twice does not double up. NIGHT-BEFORE REMINDER (DT-2, Oct 14 2026, myDay module, shown in the dashboard Due list by dashDeck): from 18:00 the Due list says whether tomorrow is planned (locked in, or already has Daily Schedule items, with the first few listed) or is not planned yet (with its day kind and shift); on a closing shift it waits until the shift ends, so just after midnight it is about the day that has just started. Tapping it opens Plan my day for that date. COOKING AND SHOPPING BLOCKS (DT-5/6, Oct 14 2026, myDay module, chore_blocks rows of kind cooking/shopping with an items checklist): in Plan my day he can add a cooking block (pick saved recipes; its length comes from the cookingOracle scheduler) and a shopping block (pick from what that day cooking is missing, lists made for planned cooks, the newest Cooking shopping list, Wishlist items, next-time-shopping routines, or his own typed items; it goes before the cooking block). Lock in turns a cooking block into a real scheduled planned cook through cookingOracle (grocery list, schedule, Daily Schedule entry) and saves the shopping block with its own Daily Schedule entry (0 XP). On the day My Day shows both as checklists: ticking a Cooking list item marks it bought in Cooking, a Wishlist item asks what was paid and logs it to Chronicles Finance, a next-time routine is ticked; ticking every dish marks the planned cook cooked; Start cooking opens Live Cook Mode; Cancel block (two taps) removes it and its schedule entry (a cooking block also discards its still-scheduled planned cook). Old Cooking lists are not offered. HABIT DESIGN (MD2-9, Oct 14 2026, myDay module, routines.minimum + routines.after_routine_id): a routine can have a minimum (the small version) and a goal; "Did the minimum" logs a quest_log tick with description minimum at half XP and still keeps the streak. Habit stacks: a routine set to come after another waits off the Today list until that one is ticked or skipped (only when that one is due today). Never miss twice: a row warns after one missed due day and says do the minimum after two (skips do not count as misses). Every regular routine shows days since last done as a green/yellow/red dot against its own rhythm. Weekly review: Sunday from 17:00 (Monday is the catch-up), a My Day card and a Due row open a pre-filled look back (kept, slipped, best streaks) with three prompts, saved as one journal row (source weekly_review, review_on = that Monday) that earns the normal journal XP. DAYS SINCE + CUTTING BACK (MD2-8, MD2-11, Oct 14 2026, myDay module): My Day shows a Days since card read from the real tables (gym_sessions, planned_cooks cooked, Learning/scholar ticks in quest_log, beats and posts in content_productions, journal), each green/yellow/red against an aim-every-N-days he can change (myday_settings.tracker_days), plus People from the people table with a Talked today button (writes people.last_spoke, which already earns caught_up XP). Cutting back: private cutback_items (name, baseline, daily target) and cutback_log (one count per item per day); +/- buttons and None today on My Day, a 7-day bar trend and days at or under target, never red or judging. pg_cron xp-cutback-close (00:10 UTC) runs xp_cutback_close(), giving +15 Mind XP (cutback_day) for each logged day at or under target. IDEAS ROUND 2 (MD2-10, Oct 14 2026, myDay.IDEAS): the Add routines menu now also has psychology reading (log book + chapter), a psych exercise, gratitude, screen-time check, a full-body morning stretch, water, protein, call family, birthdays and gifts, networking, sample digging, skills drills, a weekly dig (books, skills, income streams, opportunities), post planning, budget and subscriptions reviews, and interval items (haircut 21 days, toothbrush head 90, dentist 180, kettle, washing machine, backups 14, device updates 30). New areas: Social (pays the Connector realm) and Money (Steward). Nothing goes live until he adds it. ALERTS + ROTA BACKUP (MD2-7, MD2-3, Oct 14 2026): Morning Brief gets up to 5 My Day picks with reasons (myDay.logic.doToday: missed-twice habits with their minimum, red days-since trackers, overdue chores, people to catch up with) and keeps the reasons. Phone alerts: a switch at the bottom of My Day subscribes this phone (push_subscriptions); the Supabase edge function myday-push, run hourly by pg_cron, sends what push_digest() decides: 08:00 London morning summary (shift, chores due, who to catch up with) and Sunday 18:00 weekly review. Tapping opens My Day. Keys live server-side only (app_secrets). On iPhone alerts need RPGACE added to the Home Screen. Rota backup: the Screenshot inbox recognises a rota (kind rota) and its Import shifts route reads the shifts (shiftSync.logic.fromRotaJson, the same parser the Oracle chat rota upload uses), shows them to untick, and saves through shiftSync.replaceDates. REALM BLOCKS (DT-7, Oct 14 2026, myDay module, chore_blocks rows of kind realm with a realm column and an items checklist): in Plan my day he can add a block for any of the 13 XP realms (the realm with the least XP this week is listed first, marked behind this week). Each realm has 4 starter activities he picked himself (myDay.REALM_ACTIVITIES), plus his own routines in that realm, books he is reading outside RPGACE (library_items books not done and not from Bookworm, e.g. The 48 Laws of Power and Nine Minds) and anything he types. No double counting: an activity that already earns XP from the real action (log a beat, gym set, chapter analysed, outreach, plan saved, journal entry) only checks off when ticked; every other activity pays +10 XP into that realm on tick through a quest_log row (quest_kind block, category = realm) that xp_on_change awards as block_tick; unticking removes it. Routines tick as normal routines. Activities with a tool have an Open button. The Day Templates and Chores plan (DT-1 to DT-7) is fully built. TIMINGS + TEMPLATES (Oct 12 2026, myDay module, myday_settings + activity_templates tables): My Day keeps get-ready and travel time clear - around a shift by default 30 min get-ready + 20 min coffee + the journey to work before, and the journey home after, with Alex\'s own margin % added to journeys only (all editable in My Day > Manage > Timings); the Daily Schedule\'s Schedule Task form has an optional activity template picker (name, category, place, journey minutes, get-ready, length) with + New and Delete right there, plus Category and Place/journey fields saved on the rpgace_agendas row; Today shows the rest of the day with travel blocks and free gaps labelled Prep or Leisure. Categories are stored for later metrics; nothing reports on them yet. WEEK PLANNER (Oct 12 2026, myDay module, routine_plans + day_blocks tables): My Day > Plan weeks shows this week up to the last week the Fourth rota covers (plus + Add a week); each day lists his shifts (or off), Daily Schedule items and any time off / trip / event, and each weekly or N-times-a-week routine has 7 day chips (weekly ones start on their usual days, N-a-week ones are suggested on days off then lighter shift days, spread out). A saved week makes the routine due only on its planned days; a planned day that passes undone shows under Planned but not done with Move to a free day or Skip. Time off counts as free; a trip or all-day event blocks the day. From Saturday the dashboard Due list says Plan next week if it is not planned. Plans (below) adds trip blocks when a plan goes on the calendar. KNOWLEDGE REVIEW (new Oct 15 2026, owned by the knowledgeReview module, page /review, the Review entry in the Knowledge menu): pending jargon_encyclopedia terms one at a time with Accept, Reject, Edit (then accept) and Skip, a today/left counter and a link to the full Jargon list; the old Taxonomy & Review and Knowledge Gaps cards open it; placements and gaps appear there only once the phylum tree has rows again. KNOWLEDGE HOME (new Oct 15 2026, owned by the knowledgeHub module, page /knowledge, first entry in the Knowledge menu band; every Knowledge page and the Bookworm picker carry a Back-to-previous-screen and Knowledge-home row; Knowledge screens link on - Library items to Bookworm/Videoworm, screenshots to their Library item, idea cards to their phylum shelf, shelf jargon to the Jargon page, recall cards to their source, and an Explain it back (feynman module) button under Study; the Knowledge menu follows those steps and its Review entry shows how many jargon terms wait): one What\'s next line (continue reading, jargon waiting for review, today\'s recall, screenshots waiting, Library items to check, new this week, unshelved web lookups, phyla with an empty shelf) and the 4 steps in order - Take in (Life Library, Screenshots), Study (Bookworm, Videoworm, MusicWorm), Learned (Encyclopedia ideas, Jargon, with a review badge), Map (Phylum Path) - each with live counts. Every Knowledge screen opened from it can be returned to with Back. LIFE LIBRARY (new Oct 13 2026, owned by the lifeLibrary module; library_items table, private - read only after login through /api/data-write): the Life Library page (/library since Oct 15 2026, second in the Knowledge menu after Knowledge home; the Screenshot Inbox is likewise a page, /screenshots) is where everything Alex takes in is kept - links, videos, books, music, files, courses, notes, quotes and recommendations (picked from his People list, ticked off once checked), each with the date he took it in, ONE phylum shelf (1-21) and free topics. A link saved twice stays one item (YouTube/Instagram/TikTok links are matched by video id). Shelving: a free keyword match on the 21 phyla first; one small Oracle call only when no keyword matches or no topics were typed; the shelf chip can always be changed. Roles (ratified plan Life Library & Knowledge Untangle): Life Library = what he took in; Bookworm = how he studies a source; Encyclopedia = what he learned (idea cards + jargon); Phylum Path = where it fits. Built Oct 13: LL-1 (the library itself, manual adding) and LL-2 (the untangle moves): the 41 Encyclopedia articles from analysed videos plus the Bookworm book are now Library items with their full text (an article item has an Idea cards button); a new Bookworm book creates its Library item automatically; Save-to-bibliography links now save to the Library (the old bibliography page stays as read-only history); the Encyclopedia page (encyclopediaPosts module) shows Ideas | Jargon | Sources tabs - an All ideas list with search, Save and From links that open the source in the Library - and the old article list is folded away at the bottom; Jargon moved under Encyclopedia in the menu. LL-3 (built Oct 13): automatic tree growth is PAUSED while the taxonomy_tree table has no rebuilt rows - owned by the taxonomyTree module (isPaused/checkPaused): video analysis (ciAutoPropose), encyclopedia sync (encSync) and silentPropose stop queueing taxonomy_proposals, Bookworm (bookworm module) skips its tree-placement step and offers Keep instead (the insight still becomes an idea card), and the Taxonomy & Review card says Paused until the phyla are rebuilt; the 65 old pending video proposals were archived (kept, not deleted). It turns back on by itself once a phylum gets its first rebuilt branch. LL-4 (built Oct 13): things now arrive automatically through lifeLibrary.logic.feed (free keyword shelf only, never an Oracle call; unshelved if no keyword matches; deduped by link and by source row): each video analysed from Oct 13 on (intel_reports via syncIntelData - this covers Video Finder Learn and Videoworm uploads), every screenshot Oracle reads (screenshotInbox), reference tracks Alex adds by hand (refCorpus; not the beat-match artist rows), and any Oracle reply he taps the star button on (main chat and the floating overlay; kind answer, his question as the title). LL-5 (built Oct 13, webLookup module): in the main chat Oracle may end a reply with a WEB_QUERY line when a question needs current or outside facts; RPGACE then reuses a Life Library lookup of the same question from the last 30 days, or sends only the search question to /api/search (Gemini), saves the result as a web_lookup library_items row, shows a Searched line with the sources and gives one follow-up answer (at most one search per message; other Oracle calls never get this option). Jargon terms and Bookworm insights have a Find links button that does the same. LL-6 (built Oct 13, lifeLibrary module): the Morning Brief shows one library_items row a day under From your Library (unchecked recommendations first, then the oldest; every kind including web lookups; not repeated for 30 days via resurfaced_at; Done with it sets resurface_off and marks a recommendation checked), and each jargon_encyclopedia term shows Met in links to the Library items and idea cards that mention it. LL-7 (built Oct 13, lifeLibrary module): each Phylum Path phylum shows its shelf above the tree - the library_items on that shelf, the idea cards (encyclopedia_insights) whose source item is on it, and the jargon_encyclopedia terms of that phylum, 5 each with Show all - and each phylum row in the switcher shows counts; the 4 Knowledge pages (Life Library, Bookworm, Encyclopedia, Phylum Path) share a one-line what-this-is header with links to the other three, and the menu lists them in that order. CHRONICLES SECTIONS (LL-8, owned by the chroniclesLog module, items built by careerStatCard): the Chronicles page filters by 8 life sections instead of 14 type chips - All, Beats & content, Recipes cooked (each finished planned_cooks row now names its recipes from the recipes table), Trips & plans (plans rows with status done, read privately after login; dropped plans never show), Learning, Life (quests, gym, journal), Money, App updates. Display only. XP SEASON PASS (XP-1 + XP-2, Oct 13 2026, owned by the xpSeason module; xp_events and xp_rules tables, private, read after login through /api/data-write): there is ONE XP system. The database writes every XP row itself - an xp_on_change trigger on 15 tables (content_productions, planned_cooks, recipes, gym_sessions, bookworm_chapters, bibliography, jargon_encyclopedia, library_items, journal, chronicles_finance, plans, people, smoke_test_items, oracle_dev_suggestions, quest_log) calls xp_award, which reads xp_rules (22 actions, each with a realm and XP) and writes one xp_events row; the app never awards XP itself. 13 realms: Producer, Creator, Hustler, Chef, Athlete, Scholar, Life, Homekeeper, Mind, Steward, Explorer, Connector, Builder. Examples: beat logged 30, beat finished 120, beat released 300 (Producer; the beat card in Content Pipeline has Beat finished / Beat released buttons for this), video posted 300 and treatment 60 (Creator), sale 2 XP per pound min 100 (Hustler), cook finished 60 +10 per extra recipe, recipe saved 25 (Chef), gym 40 (Athlete), chapter 30, book 300, jargon review 3, library item added by hand 3 (Scholar), journal entry he wrote 15 (Life; app-written journal rows earn 0), My Day routines their own 5-25 XP in the realm of their area, expense 5 (Steward), plan made 30, trip done 200 (Explorer), caught up on time 20 (Connector), hand-tested feature 20 and flag to Claude Code 15 (Builder). Auto-made things (idea cards from video analyses, auto-filed screenshots) earn 0. Repeats of capped actions on one day pay 100%, then 50%, then 0; shipping, sales and milestones are never reduced. The pass runs by YEAR (renamed from "season" in XP-4): Year 0: Construction runs from Oct 13 2026 to the end of that year (nothing before it counts); Year 2027 starts on 1 January and every 1 January resets it; a career total never resets. "Season" now means a UK weather season (Spring Mar-May, Summer Jun-Aug, Autumn Sep-Nov, Winter Dec-Feb). Year level: level 1 needs 500 XP, each next level 25 more. Overall rank (Sky ladder): Spark, Ember, Flame, Comet, Star, Nova, Constellation, Galaxy, 5 stars each, evenly spaced, Galaxy 1 at about 72,000 XP. The dashboard profile card shows the Sky rank, year level, a 13-spoke balance wheel of this week\'s XP and Done/Streak/Level/Year XP; each domain popup and page shows a strip with that domain\'s realm(s) and this week against his usual week so far; tapping either opens the Year page (realms, recent XP, reports). A source row deleted in the same week leaves its XP marked pending (the was-this-done question is XP-4, not built). The old row-count career score (careerStatCard), questEngine\'s card painting and the legacy addXP pop-ups are retired. REALM RANKS, TITLES AND BADGES (XP-3, Oct 13 2026, owned by the xpSeason module; xp_ladders, xp_unlock_defs, xp_unlocks and xp_settings tables, private): every realm has 7 ranks with its own names (Producer: Bedroom, Home Studio, Session, Studio A, Main Room, Headliner, Icon; Chef: Kitchen Porter up to Executive Chef; Athlete: Recruit up to Colossus; and so on). A year rank resets on 1 January; a career rank uses the same names, never resets and climbs 4x slower, shown with stars. Some ranks are gated by a real event, not XP alone: Sous Chef (20 cooks), Head Chef (50 cooks, 10 recipes, 3 cuisines - recipes carry a cuisine tag Oracle sets and Alex can change on the recipe card), Closer (first sale), Tycoon (yearly revenue target Alex sets), Gladiator (3 gym sessions a week for 4 weeks), Polymath (books in 8 phyla), Pathfinder (every planned routine kept 6 weeks), Lake (sleep routine 21 of 28 days - cannot be earned until the Mind area exists), Safe (claimed savings goal), Globetrotter (5 countries), Heart (nobody overdue for 3 months). Titles: Released Artist, Catalogue Builder, Consistent Creator. Badges are automatic (first beat released, first video, first sale, first 100 pound month, first cook, first PB, 5-gym week, first book, 100 jargon terms, each new country) or claimed with a link or note (Hit, Placement, 10k views, Cooked for others, First solo trip); badges and titles pay no XP. A gym personal best (heavier than any earlier session on that exercise) pays 30 Athlete XP. The database decides all of this (xp_check_unlocks runs after every award) and dates each unlock; every unlock is also a Chronicles item (Life section). The Trophy cabinet (button on the Year page) lists earned and locked items with progress, claims, the revenue target and past years. WAS-IT-DONE AND REPORTS (XP-4, Oct 13 2026, owned by the xpSeason module; xp_reports table, private; a pg_cron job runs xp_close_periods nightly): a row deleted in the same week its XP was earned shows on the Year page and the profile card as "was it actually done?" - Yes keeps the XP, No removes it, and an unanswered one is kept when the week ends. Each finished week also pays a balance bonus (5+ realms 50 XP, 8+ realms 150, Life realm). Frozen reports are saved per week, month, UK season and year (XP, realms, best day, top actions, unlocks, year-to-date level); later deletes never change a saved report. The Year page lists them; each season and year report is also a Chronicles item. CHALLENGES, RESOLUTIONS, REALM QUESTS (XP-5, Oct 13 2026, owned by the xpSeason module; xp_challenges and xp_quest_steps tables, private): each week Alex picks up to 3 challenges on the Year page (rule-based suggestions for his slowest realms plus 2 from one Oracle call that sees only realm XP totals), each worth 75 XP and counted automatically from the XP log (e.g. gym 3 times, finish 2 cooks); his own free-text ones are ticked by hand. Unfinished ones are just missed at week end, no penalty; the dashboard Due list nudges him to pick, nothing is auto-picked. Season resolutions: 1 to 5 per UK season, set any time in the season, small/medium/big = 500/1,000/1,500 XP, counted automatically or ticked; missed when the season ends. Realm quests: 3 steps of 50 XP towards each rank gate (e.g. Sous Chef: 5, 10, 20 cooks). Completions are Chronicles items and appear in the saved reports. TREATS, THEMES, FLAIR (XP-6, Oct 14 2026, owned by the xpSeason module; xp_treats table, private): on the Year page Alex pins a treat (a Wishlist item or his own words) to a year level, a realm rank, a kept season resolution, or a week with all 3 challenges done; the database marks it earned (a gift icon, a Chronicles item, and an earned tag on the Wishlist item) - nothing is bought, the Wishlist wait still applies. Level-ups are now dated records (xp_unlocks kind level) shown in Chronicles. Themes change only the profile card accent colour and frame (Classic gold, then Ember at level 10, Tide 25, Aurora 50, Crown 75), saved in xp_settings.theme. Flair is quiet: his title and level at the top of the Oracle chat greeting, one toast per batch of level/rank-ups, and one Morning Brief line for level/rank-ups since yesterday. MIND, OUTREACH, BUDGET (XP-7, Oct 14 2026): My Day (myDay module, routines table) has a Mind area; Mind routine ticks pay Mind XP, and one Mind routine can be marked as the sleep routine (routines.is_sleep) - keeping it 21 of the last 28 days unlocks the Lake rank gate. The Business tab of Platform Oracle (producerTools module, outreach_log table, private) logs outreach sent (+10 Hustler XP, capped per day) and collabs done (+150); picking someone from People also counts as catching up with them; Oracle can offer the log_outreach action, which only opens the form filled in. The Year page (xpSeason module) has a weekly spending limit (xp_settings.weekly_spend_limit): a week whose expenses logged in Chronicles stay at or under it, with at least one expense logged, pays +50 Steward XP when the week closes. A Wishlist item (shoppingWishlist module) bought after its 24-hour wait pays +30 Steward XP. YEAR WRAPPED (XP-8, Oct 14 2026, xpSeason module; xp_reports table): when a year closes (Year 0: Construction ends 31 Dec 2026), its saved year report becomes swipe cards - total XP, level, sky rank, top realms, best day and week, most-done actions, titles/badges/ranks unlocked, resolutions kept, treats earned, outreach - ending with one short paragraph Oracle writes once from the year\'s numbers only (saved in xp_reports.wrapped_text, never paid for twice). It pops up once the first time the app opens after the year closes (xp_reports.wrapped_seen_at), and the Due list says it\'s ready. A Year-so-far version (numbers only, no paragraph) opens any time from the Year page. The Trophy cabinet\'s Hall of Seasons lists each year (this year so far first) with XP, level, sky rank, top realm, titles and highest ranks; each opens its Wrapped. In the first two weeks of January the Due list nudges setting the new season\'s resolutions, and warns if last year\'s report didn\'t save. The XP Season Pass plan (XP-1 to XP-8) is fully built. Not yet hand-tested by Alex. PLANS (new Oct 12 2026, owned by the tripPlans module; travel_profile, people, plans, plan_tasks tables, all private - read only after login through /api/data-write): the Plans card (Schedule & Journal menu) has Plans, Ideas, People and Profile tabs. Profile holds Alex\'s home (Derby), nationalities (French and Russian), EU Settled Status in the UK, usual passport, interests, travel limits and insurance. People holds who he wants to keep in touch with (birthday, last spoke, remind every N days); the dashboard Due list shows reach-outs and birthdays in the next 7 days; RPGACE does not draft or send messages. Plan something (or typing plan a trip to ... in Oracle chat) runs up to 3 web searches through /api/search type web (Gemini with Google Search, Tavily built as a backup but switched off for now; only the search question is sent; it needs GEMINI_API_KEY in Vercel and says so when it is missing), then one Oracle call drafts the plan: itinerary, travel legs, tickets and stays with book-by dates and links, documents for the passport he travels on plus UK re-entry with settled status, worst-case packing, an emergency card, a producer angle (record shops, studios, gigs, B-roll spots), food, backup plans and a daily money limit; official links (UK FCDO, France Diplomatie for the French passport, passportindex.org, gov.uk view-and-prove status) are always added. Alex reviews it, can ask Oracle to change it, then saves; saved plans have tickable tasks, a status (idea, planning, booked, done, dropped) and Add to calendar (a trip block plus timed items on the Daily Schedule). RPGACE never books or pays for anything. PLAN MONEY, DATES + PEOPLE (TP-6/TP-7, Oct 14 2026, same tripPlans module): a task\'s book-by date shows on the dashboard Due list from 7 days before, highlighted on the day and when overdue; tapping it opens that plan. Ticking a ticket/stay/travel/food/other task asks what was paid: the amount is saved on the task (plan_tasks.cost_paid) and logged once as a Travel expense in Chronicles Finance (chronicles_finance); packing/document tasks tick straight away. A saved plan shows paid so far against its budget. After a trip ends (up to 30 days) the Due list asks How was it?: the after-trip log writes a journal entry (source trip_log, +15 journal XP) with best bits, next time, real cost vs budget and a recipe to bring home, can mark the plan done, and offers a Cook it at home button that opens Cooking\'s generate form prefilled. Who\'s coming can be changed on a saved plan (plans.people); in the 2 weeks before a trip the Due list names anyone on it Alex hasn\'t spoken to this week, and the People tab shows each person\'s upcoming plans. Still no drafted messages. IDEAS BOARD (TP-5, Oct 13 2026, same tripPlans module): the Ideas tab (or typing what could I do 1-8 Nov? / weekend ideas in Oracle chat, which opens it with the dates filled in) takes dates, an optional budget, a mood/theme, how far (abroad fine / UK only / stay home) and which of 4 kinds to include (UK day trip, abroad, event, at-home project); it runs up to 3 web searches using only his home city, interests and limits (never anyone from People), then one Oracle call returns 5-8 mixed ideas with cost ranges, travel time, why it suits him and links only from the search results. Save (star) stores an idea as a plans row with status idea; Make it a plan opens the plan builder pre-filled. If the search fails the ideas are marked as Oracle\'s own knowledge. Not yet hand-tested by Alex. Ticks write quest_log rows (quest_kind routine); the database turns each completed tick into an xp_events row (5-25 XP, realm from the routine\'s area - see XP SEASON PASS). Accepted Oracle task suggestions become one-off routines due today. The questEngine module\'s Generated-from-your-real-data quests still exist below it. SHIFTS (fixed Oct 12 2026, owned by the shiftSync module, rpgace_shifts table): a rota screenshot sent to Oracle or the Schedule page\'s paste box now saves the shifts to Supabase so every device sees them (before this, imports only lived in one browser and were wiped on the next load); the old hardcoded June-July rota is gone. A weekly GitHub job also logs into Fourth and imports the rota automatically; its last result is in the sync_status table and a failed or stale run shows on the dashboard Due list. Never repeat the old ("zero persistence") claim - false since Aug 24 2026. SECURITY/DATA: the app password and every /api/*.js endpoint are checked server-side (fixed July 24, independently verified live). Since Oct 10 2026 (authGate) a device that logs in with the password stays signed in: it keeps the server-issued secret in local storage, re-checks it with /api/auth on each launch (a rotated secret sends it back to the password screen), and the left-nav drawer has a Sign out on this device button. renderMarkdown() escapes HTML before rendering (XSS fixed July 28). RLS is enabled on every real Supabase table - most are anon-read-only/authenticated-all; a small, deliberate, named set (oracle_fallback_queue, openmontage_jobs, error_log, smoke_test_items, ceo_plan_items) stays anon-writable because a real external writer (a Routine, the browser app itself, or a separate Claude Code session) genuinely needs that access - never suggest restricting those without checking first. There is NO Supabase backup or point-in-time recovery at all - Alex explicitly chose to stay on the Free plan and accept that risk (confirmed Sep 15 2026); do not re-raise this as an open question. ORACLE MECHANISMS: Oracle Control (a curated oracle_actions Supabase table) drives a real confirm-before-execute mechanism - 5 real wired dispatch branches exist now (log_beat, new_quests, draft_email, yt_stats, log_notion), reached both from the floating overlay button on any page and from the dashboard quick-action/Agents-page buttons (both rewired in Sep 2026 to go through this one shared mechanism instead of their own bespoke per-button calls - a real rule-8 dedup). Oracle can also DRAFT a suggested brand-new action from its own self-awareness, but a suggestion only grows the real vocabulary once Alex approves it, and it still then needs a human-coded execution branch before it can do anything - never claim Oracle can execute an arbitrary task on its own. Fish Audio (real voice input/output) is a dormant, gated scaffold - no real API key exists, Oracle cannot actually speak or listen by voice yet. The browser-mic voiceInput module was retired outright Aug 30 2026 (Alex\'s own direct ask, ahead of Fish Audio) - there is currently NO voice-input path in RPGACE at all. Real Anthropic prompt caching is live on every Oracle call (a pure cost optimization, never changes what Oracle can say). A Kimi/Luna free-tier routing option exists in api/oracle.js but is dormant, no real key configured - never claim RPGACE runs on multiple AI models. errorLog automatically resolves a real thrown error back to the one module that caused it, attaches that module\'s real /perspective baseline, and - if that module has a smoke_test_items row - flips it to broken (cascading a linked plan item to purple only if it was genuinely green before) - this only ever catches errors that actually throw or show an error-colored toast, never a silent wrong-output bug with no visible symptom, and Oracle never proactively monitors the app - it only reacts when a real message is sent to it. OVERSIGHT / GALAXY MAP: 13 real oversight docs exist now (Tier a/b explaining+truth docs, this Oracle self-awareness string, smoke_test.html/error_log.html, future_integrations.html/achiever.html, and perspective_map.html - new Sep 2026, a live-query page cross-referencing every real perspective_reports row - plus graphify/Obsidian/the Galaxy Map). The Galaxy Map (reachable from the in-app Oversight popup) is a real 4-stop CONTAINMENT hierarchy - L0 (9 real units: RPGACE Architecture/Orchestrator CC/OpenMontage CC/Graphify CC/External AI/Skills/Alex/Supabase/Oversight Docs) contains L1 (12 live app-code rivers, plus 5 retired Total-systems categories kept as per-actor Infra/Inter breakdowns, not deleted) contains L2 (modules) contains Current/L3 (functions). Older Level-2.5/4/5/6 "rail stops" from earlier in the build are all retired or folded into Current/the Decision Matrix - never describe the map as having numbered levels past L3; cross-cutting facts (Externals/Decisions/Skills/Load/etc) are Dimension pages layered over the hierarchy, not additional rungs. 23 real Galaxy Map pages exist on disk as of late Sep 2026 - re-verify this count too before quoting it, it changes whenever a new page ships (most recently G117, a Generator Toolchain catalog page, Sep 22 2026). Every one of the 58 real registered modules plus all 12 live rivers has a real, evidence-grounded /perspective self-report as of mid-Sep 2026 (the Perspective Full Coverage plan is complete). A standing project-wide PAUSE on new Galaxy Map/Dimension work has been in effect since Sep 15 2026 (real evidence: product debt was sitting untouched under a wave of Galaxy-Map/meta work) - only explicit, narrowly-scoped, Alex-approved exceptions have shipped since - never assume a new Galaxy Map feature is fair game without checking whether Alex explicitly overrode the pause for it that specific time. KNOWN, STILL-OPEN GAPS: the swipe-gesture freeze bug has recurred for real (69 real occurrences logged Aug 27-Sep 20 2026) but still has no root cause found and no stack trace available (the browser\'s own Long Task API exposes no call stack) - never claim it\'s fixed, and don\'t attempt another blind code-only fix pass. reference_tracks.scale/genre are still 0 of 32 populated - "beat matches are always the same" traces directly to this; a backfill popup exists and has not been run. smoke_test.html\'s real hand-confirmed tally sits well under half of its rows - a large amount of shipped work is real and code-verified but genuinely unconfirmed by Alex\'s own hand; only his own hand-tick counts as "confirmed working," never a code-level test pass alone. HABITS/COOKING (cookingOracle + shoppingWishlist, RPGACE\'s newest domain, built Sep 10-22 2026): reached from Cooking in the left menu (Habits group). Generate a recipe via Oracle chat (a real RECIPE_JSON: trailer); a real "Narrow it down" step runs first for a short/ambiguous description. Ingredients render with a live 7-color status system wherever shown - green=plenty, yellow=short (worded as "need N more, have M, T total needed"), red=none, blue=a same-aisle alternative in stock, purple=will run low/restock after this cook, orange=a real curated-or-heuristic substitute exists in stock, brown=a separable/optional component that can be omitted in No-Shop mode. Orange substitutes can be permanently confirmed (a tick, colour never changes) or declared-the-same-item as an existing stock row (a real, standing alias merge reassigning every FK reference) - curated potency ratios exist for a few specific real pairs Alex stated (e.g. tamarind concentrate is about 1/3 the amount of tamarind paste) and a real garlic clove/bulb count-equivalent bridge (8 cloves per bulb, bidirectional) - none of these numbers are invented, only ones Alex explicitly gave. A recipe card supports pantry-aware Oracle-suggested ingredient additions and a real diff-only critique-and-update flow via the floating overlay (Accept/Deny, never the whole recipe re-shown). New Sep 22: clicking Start on a scheduled planned cook opens a real, persistent Live Cook Mode panel inside the Oracle page itself (step timeline, elapsed-time ticker, per-step and recurring reminder timers) - not just a silent flag flip. New Oct 1 2026 (cookingOracle): a scheduled planned cook can also be started (Start cooking now, or Cook now straight from the schedule preview), finished (Cook finished in the Cooking hub or a Finished button in Live Cook Mode - marks planned_cooks cooked, completes its agenda entry and marks the recipes cooked in the journal) and given another recipe (reopens it as a draft) from inside Cooking itself, not only from the Daily Schedule. Planned-cook sessions persist as a real draft from the moment the first recipe joins (never silently lost on close/navigate-away); since Oct 5 2026 (cookingOracle), emptying a session only marks a still-draft planned_cooks row discarded (never a hard delete, never touching a scheduled or cooked cook), and pressing Done on a planned-cook entry in the Daily Schedule now marks that planned_cooks row cooked - before this, two real scheduled cooks were lost with no trace, support a real per-recipe delete, and use a true cross-recipe interleaved scheduler that front-loads prep across every recipe in the session rather than finishing one recipe\'s steps before starting the next. COOKING JOURNEY (new Oct 14 2026, cookingOracle): the Cooking home is laid out as five steps - Recipes, Plan a cook, Shop, Cook, Stock - with a line on top saying what is next (the next scheduled cook, how many things it still needs buying, and the top-up list count), plus New recipe, What can I cook?, Top-up list and Settings. My Recipes lists every saved recipe (recipes table) with search, cuisine, whether everything is in stock, when it was last cooked (journal), and Open / Cook now / + Planned cook / Missing to top-up list. Every Cooking screen has a Back button to the Cooking screen it came from, plus a Cooking home button. Stock now moves by itself, always after Alex confirms: ticking a grocery item bought asks pantry, fridge or freezer and adds the pack to pantry_stock there (it did not work before Oct 14 - the old write always failed); finishing a cook (any finish path) shows what it will take out of pantry_stock, converting ml/cups and g/kg and using a recipe\'s gram estimate, never guessing units it cannot convert; what was taken out is saved on planned_cooks.stock_deducted with a Put it all back undo, and a cook is only ever deducted once; anything that runs out can go onto the standing top-up grocery list (shopping_lists kind topup). Not yet hand-tested by Alex. COOK MODE ENDING (Oct 15 2026, cookingOracle ui._askCookOutcome): the last Done in any Cook Mode asks Actual cook / Just a preview / Not finished yet. Actual cook on a recipe started without a plan writes a planned_cooks row already cooked (Chef XP), a finished Daily Schedule entry from Cook Mode open to Done (logic._recordUnplannedCook), marks journal rows cooked, takes the recipe out of draft cook sessions only (other recipes stay planned) and takes all its ingredients out of pantry_stock at once with a Put it all back undo (ui._applyStockInstant); a planned cook goes through logic._finishCook the same instant way. Just a preview changes nothing and clears the Cook Mode place; Not finished yet keeps the place. Other finish buttons (hub, Daily Schedule Done) still show the tick list. COOK MODE TIMERS (Oct 15 2026, CM-3): only waiting steps (passive_duration_min, e.g. simmer, bake) get a timer - Start N-min timer & move on starts it and goes to the next step; the timer stays in a bar at the bottom of Cook Mode (saved per cook in localStorage) and when it ends shows what to do (the step timer_end line Oracle now writes for new recipes, or Next: the following step for older ones) until Alex taps Done; hands-on steps have no timer anywhere (recipe card, Live Cook panel, Cook Mode). DOING NOW (Oct 16 2026, doingNow module, DN-1): a ▶ Doing now button under the My Day heading starts a running rpgace_agendas entry (source_type doing_now, realms picked on start) with a timer and + note; Stop asks how it went and mood 1-5, with + more details for photo, who with (sets people.last_spoke), where (place), money spent (chronicles_finance expense), what it was for, would do again and effort 1-5 (all in rpgace_agendas.details); ✓ I just did… logs a finished back-dated one. Under it, Try something new shows up to 3 ideas from the quietest realms (xp_events + Doing Now realms, nothing in 3+ days; titles from myDay REALM_ACTIVITIES, no Oracle call); one tap starts one with that realm. After 3 hours running it asks Still doing it? (yes snoozes 1 hour, I stopped at… sets the real end, Discard deletes); 4 hours after the last answer with none it auto-stops at that mark (details.auto_stopped) and My Day offers Fix time. A cooking- or gym-sounding name presets Chef/Athlete and offers Cook Mode for a recipe (cookingOracle) or the gym logger with today\'s workout (gymTracker); an Actual cook or saved session stops the activity and links it, the cook reusing its rpgace_agendas entry. DN-4: something done 3 times in 3 weeks (doingNow, same name, case and punctuation ignored) shows a card on My Day offering to make it a routine - Make it a routine opens the myDay routine editor filled in (days, time, minutes, area from the realm), Not now hides it 30 days, Stop asking stops it; that state lives on the activity\'s activity_templates row (suggest_snoozed_until, suggest_off), and the 2nd time something is done its template is filled so Plan my day knows its usual length. DN-5: a finished Doing Now activity earns 30 XP split over its realms (no realms = Life; xp_rules action doing_now_done, DB trigger xp_on_doing_now on rpgace_agendas), first 3 activities a day only; none while it sits auto-stopped with an unfixed time, and none when it is linked to a cook (details.planned_cook_id) or a gym session, since those earn their own XP - linking one later takes the Doing Now XP back. DN-6: every finished Doing Now activity is a Chronicles entry (careerStatCard feed, label Did: name (time) mood), filed by its first realm that has its own section - Chef under Recipes cooked, Producer under Beats & content, Scholar under Learning, the rest under Life - except cook- or gym-linked ones, which already show as the cook or gym session; the Sunday weekly review (myDay) has a Doing Now this week block (count, total time, top 3 by time, best mood), also saved into the review\'s journal entry. BEATS (Oct 16 2026, plan Beats (Producer) BT-0..8, all built, untested by Alex): the beatsHub module is the Beats home page (menu: Beats under Content & Video, with Idea Bank, Beat Log, My beats and Reference tracks under it) showing Idea -> Make -> Mix -> Log (= finished) -> Release -> Sell with live counts and a what\'s next line. Make/Mix: Start making on an idea (Idea Bank or Beats home) starts a Producer Doing Now session linked to the conid_pot idea (status making); sessions are making or mixing and their time adds up on the idea; stopping a making session asks Ready to mix?; a Producer session from Doing Now asks which beat. Log = finished: Beat Log (beatLog) saves content_productions with finished_at, the drive + folder where the WAV and stems are, a stems checklist, the idea\'s session time, and marks the idea done (beat_logged + beat_finished XP; music_video rows count as Producer); Scan audio works out BPM and key (Major/Minor) on the device from the middle minute, never uploaded; the old beat_audio_jobs laptop helper and the Licence Type field are gone. Release: one or more links in content_productions.release_links (a Beatstars link is the listing, more can be added later; first release pays beat_released). Sell (beatsHub.openSell): licence tiers per beat (content_productions.licence_tiers), Beatstars listing text, Log a sale = a chronicles_finance sale linked by content_production_id (Hustler XP 2 per pound, min 100); the deliverable-zip system is retired. Reference tracks (refCorpus): Look up fills missing Major/Minor, BPM and genre from the web 8 at a time (Gemini), reviewed with Accept/Skip, his own values kept; the old Backfill button is gone. Links: an idea marked done opens its beat, a beat sale in Chronicles opens its beat. POSTING (Oct 17 2026, plan Posting (Creator) PC-0..7, PC-0 built, untested by Alex): the postingHub module is the Posting home page (menu: Posting under Beats; Content Pipeline pop-up has a Posting button) showing Idea -> Plan -> Record -> Edit -> Post -> Results with live counts from the private posts table (one row per post: kind beat video / tutorial / short clip / studio-life, stage, realms, Creator by default) and a what\'s next list closest to posted first; + New post asks a title, a type and realms. Idea Bank ideas are tagged beat or post (conid_pot.kind, post ideas also a type); a Beats / Posts filter splits the list, the tag on a card retags it, Beats only lists beat ideas, and Plan a post on a post idea creates the post (idea marked in_post, never twice). Plan it (or tapping a post title) opens the plan screen: hook, script, shot list (a starting prompt per type), an optional one-call Oracle draft that only fills the boxes, platforms ticked (Instagram, YouTube, TikTok) and one Oracle call writing a caption per ticked platform, all editable and saved on the post; beat videos pick a logged beat and can send the plan + beat to the OpenMontage AI-video queue (openmontage_jobs, status shown on the post); Plan done (hook or script + a platform needed) moves the post to Planned and pays 60 Creator XP once (xp rule treatment_done, now labelled Post planned). Record it starts a Doing Now session Recording: <post> (its realms, Creator by default, post moves to Recording); stopping it adds the minutes to posts.record_mins and asks Recording finished? (start editing now / edit later / not yet); Edit it starts Editing: <post> (minutes to posts.edit_mins); stopping that asks Ready to post? with the finished video\'s file name and place (posts.ready_at, posts.files - names and paths only, nothing is uploaded); a ready post is first in what\'s next; the plan screen also holds the video file and, for beat videos, the beat file (prefilled from Beat Log\'s new WAV file name + drive/folder); a Creator session started in Doing Now asks Which post? Post it on a ready post asks one link per planned platform (+ another platform); YouTube, Instagram, TikTok and DistroKid links are recognised (DistroKid also counts as a beat release place); full links only, no repeats; the first link marks the post posted (posts.links, posted_at) and pays 300 Creator XP once (video_posted), its idea shows posted, and a beat video\'s links are also added to its beat\'s release links (released the first time, 300 Producer XP); more links can be added later from Posting\'s Post step; pasting one of those links into Oracle chat pops up Save this link to a post? (Oracle itself saves nothing); Make a video on a released beat now starts a beat-video post. A weekly target (posts per week, xp_settings.posts_per_week, default 2, 0 = off, Monday-Sunday) shows as e.g. 1 of 2 posts this week on Posting home and My Day; Due nudges: behind from Thursday, a planned post untouched 7+ days, a ready post not posted after 2 days; Results (views, stats) is a later plan; the old video tools are still there until PC-6. ORACLE ENTRIES (Oct 16 2026, module oracleEntry): Oracle cannot save anything or award XP itself; 📓 Save as entry under a reply opens a card that saves a journal entry (journal source oracle_entry with realms; ⭐ big unusual day = +50 XP split over its realms) or a realm mission (a finished Doing Now entry, +30 XP split over its realms). COOK MODE ASK (Oct 15 2026, CM-4): a 💬 Ask button in the Cook Mode header opens a chat panel inside Cook Mode that sends the recipe, current step, its ingredients, running timers and the step list with each question (one callOracle call, 400 tokens, history kept while Cook Mode is open); the floating 🔮 button (oracleControl) is hidden while Cook Mode is open. A step ingredient with amount 0 shows as take out (logic._stepAmountText, CM-5). COOK MODE (new Oct 11 2026, cookingOracle): a recipe card shows a spec line (steps, minutes hands-on, servings) and a Start Cooking button that opens a full-screen, one-step-per-screen view - Step X of Y, the equipment, that step ingredients at the scaled amounts, the instruction, a Done-when cue and the step timer, with Back/Next/Done, phone Back stepping back, and resume where Alex stopped; timers keep running across steps. Live Cook Mode has a Cook Mode button that walks a whole planned cook the same way. New recipes are asked for one action per step with a done cue and equipment, and every ingredient placed in a step; the card warns when an ingredient is in no step. The 8 recipes saved before this have one-action splits written by a Claude Code session (not by Oracle) waiting as proposals (recipes.steps_proposed) - nothing changes until Alex presses Use these steps on a recipe card (old steps are kept in recipes.steps_previous). Not yet hand-tested by Alex. A real Current Stock view (Pantry/Fridge/Freezer/Equipment) and a real have/not-have shopping list (with a real "in basket" state between "need to find" and "bought") both exist, aisle-sorted. shoppingWishlist is a genuinely separate module (general future purchases like batteries/a wok/games, not ingredients) with its own priority-plus-budget-target fit calculator, writing a real Chronicles Finance expense on purchase. Every HABITS feature above is real, shipped, code-verified - but per the standing flag across this whole domain, effectively none of it has been hand-tested by Alex yet. TAXONOMY: real architecture change Sep 25 2026, now in a genuinely empty pre-rebuild state. jargon_encyclopedia is no longer a view over taxonomy_tree - it is a real standalone anchor table (term/phylum_number/explainer/status/taxonomy_node_id), now holding 545 real curated terms across phyla 1-20 (Phylum 1 got a real same-day top-up to 51 terms per Alex\'s own live-review feedback while browsing it; the other 19 phyla still sit at 26 each; none for phylum 21), most status=\'pending\' (a real, growing number are status=\'accepted\' as Alex works through his own review queue) - directly authored by a Claude Code session (source-tagged claude_code_prebuild), never yet generated by the live AI generator that also exists in code but has never actually been run. Jargon Encyclopedia is now a real standalone page (owned by the jargonEncyclopedia module, Sep 26 2026 UI rework) - reached via leftNav\'s Phylum Path subItem or the Taxonomy dashboard card\'s picker popup (dashDeck._openTaxonomy), never a button crammed onto Phylum Path\'s own title anymore. It shows EVERY term regardless of status (pending/accepted/rejected, each with a real status badge and filter chip), with real inline Accept/Edit/Reject actions per pending term (reusing phylumPath._resolvePendingTerm, the one real write path - never a second one). taxonomy_tree itself was first archived in full (671 old branch/leaf rows, a reversible flag) then, same day, actually DELETED to 0 rows at Alex\'s own direct follow-up ask (he judged even the archived structure not worth keeping while jargon gets built out first) - every phylum (1-21) is now a genuinely empty canvas below the phylum level, zero branches, zero leaves, zero fusion links (taxonomy_links is also 0 rows). A full pre-delete snapshot was committed first as the real restore path, since Supabase has no backup/PITR. The old \'Review Archived Terms\'/\'Review Pending Terms\' buttons on the Phylum Path page are gone - the former is genuinely dead (nothing archived left to review) and the latter is superseded by the new Jargon Encyclopedia page above. Never claim any specific phylum currently has real depth, real Orders/Classes, or any structure at all - every earlier claim of that shape (phyla 1-10 depth, Phylum 12\'s real Orders, a structurally-clean tree) describes a state from before this restructure and is not true again until Alex reviews the jargon terms and a real new phylum structure gets built around them. GYM (new Oct 10 2026, owned by the gymTracker module, HABITS module 2 after Cooking - both in the Habits group of the left menu): Gym logs sessions (exercise, sets, reps, kg; gym_sessions + gym_sets tables), shows this week against a 5-session target, personal bests per exercise (heaviest set plus an estimated 1-rep max) and recent sessions with a two-tap delete; Repeat last prefills the previous session, and beating a previous heaviest weight shows a New best toast. Gym sessions appear in Chronicles and the Morning Brief own-words section, and Ask My Data can read gym sets. No sessions exist until Alex logs one. Not yet hand-tested by Alex. FREEZES AND SPEED (Oct 14 2026, perfWatch module, perf_freezes table): any freeze over half a second is saved with what was running (script functions and what triggered them, the last pages and taps, slow network replies, whether the app was still starting); the old repeated App froze alert of about 670ms was the app script loading behind the loading screen (about 690ms at phone speed), so blocks during startup are recorded but no longer alert. Cooking buttons (cookingOracle) share one size scale: 44px main, 36px small, 52px Cook Mode Back/Next and Start Cooking. HEALTH AND BODY (Oct 14 2026, owned by the healthBody module; food_log, body_log and health_settings tables, private - read only after login through /api/data-write): the Health & body card (Habits menu) has Today, Gym plan, Trends and Targets tabs. Food: a meal photo, a nutrition-label photo or typed words go to Oracle, which lists each food with grams; each item is re-checked against the UK food tables (cofid_foods, the same lookup Cooking uses) and those numbers win when they match, otherwise Oracle\'s estimate is kept and labelled; Alex edits and saves to food_log. From your cooks adds one serving of a recipe from a cook finished in the last 3 days (planned_cooks status cooked), per serving from the recipe\'s ingredient grams; it is one tap, not automatic. Only calories and protein are counted, against targets Alex sets. Body: water in glasses, weight with a 7-day average, sleep hours, a 14-day trends table and weight chart (body_log). Gym plan: a Push/Pull/Legs, Upper/Lower or Full body programme rotated over the days Alex picks (health_settings.programme, exercise lists editable); today\'s workout shows last time\'s sets from gym_sets and a nudge (all sets at the top of the rep range = add 2.5kg and drop to the bottom, otherwise same weight, one more rep); Start this workout opens the gymTracker log prefilled. My Day shows a Health today card (calories, protein, water, sleep, today\'s workout). Steps are NOT connected yet: Samsung Health only shares with signed partners and Google Fit\'s API is closing; a Google Health API sync is planned once Alex checks his account has step data there. DAILY LIFE (new Oct 10 2026, owned by the dailyLife module): every Current Stock tab (Pantry/Fridge/Freezer) has an Add-from-a-photo button - Oracle lists the food it sees in the photo, Alex reviews and edits the list, and each ticked row sets that item\'s amount through cookingOracle\'s own stock write (the same one the manual form uses); Oracle never adds stock without that review. Morning Brief has a New-from-your-watchlist button that checks the YouTube creators in intel_watchlist for uploads from the last 7 days (YouTube only - Instagram/TikTok creators cannot be checked) with an Analyse button that queues a video for Content Intelligence, and the brief prompt now includes Alex\'s own open quests, decisions due for a look-back and latest journal note so it can quote them back. Chronicles also shows completed quests and finished planned cooks. Not yet hand-tested by Alex. RECALL (new Oct 10 2026, owned by the recall module): saving an Encyclopedia idea card puts it on a forgetting-curve schedule (encyclopedia_insights.recall_step/recall_due: back after 1, 3, 7, 16 and 35 days); due ideas appear at the top of Morning Brief with Again (back tomorrow) or Got it (next interval; after the last one it counts as learned). A Bookworm chapter with insights has a Cards button that opens its insights as the same Deepstash-style idea cards; saving one writes it to encyclopedia_insights (source_entry_id book:<chapter id>) so book and video ideas share one Saved list and one recall queue. Not yet hand-tested by Alex. MONEY GUARDRAILS (new Oct 10 2026): the shoppingWishlist module asks an optional why-do-you-want-it reason when an item is added (wishlist_items.want_reason) and, for an item added under 24 hours ago, shows a cool-off step (time left plus that reason, Wait or Buy anyway) before the normal what-did-you-pay confirm - it never blocks a purchase. The decisionJournal module adds a Decisions strip on the Journal page: log a decision with the reason at the time and a look-back in 2, 4 or 8 weeks (journal rows, entry_type=decision, review_on); when the date arrives it asks how it turned out and saves the answer (journal.outcome). Not yet hand-tested by Alex. SHARE TO RPGACE (new Oct 10 2026, owned by the shareInbox module): the installed app appears in the Android share sheet (manifest share_target); sharing an Instagram reel, YouTube Short, TikTok or any link queues it into intel_jobs for Content Intelligence analysis, which needs Alex\'s PC analysis server running; after queuing it shows Sent to RPGACE and closes itself so Alex lands back in the app he shared from (if Android refuses the close, it says press Back). iPhone has no share-target support - an iOS Shortcut that opens the app with ?share_url= does the same. Not yet hand-tested by Alex. PATHWAYS (new Oct 10 2026, owned by the pathways module): an Encyclopedia post that came from an analysed video has buttons to turn that video\'s suggested quests into real Quest Board quests (questEngine, duplicates skipped), add its creator to the watchlist (intel_watchlist), and list Jargon Encyclopedia terms that appear in the article; Platform Oracle has an optional About-a-beat picker (beat_audio_jobs / content_productions) that prefixes every command with that beat; the Cooking shopping list has an Add-a-non-food-item-to-your-Wishlist form (shoppingWishlist). Not yet hand-tested by Alex. COOKING LAYOUT (Oct 10 2026, N2 slice 4): every Cooking button comes from one shared token set (cookingOracle BTN_VARIANTS) and now has a 36-44px tap target with 13px+ text; ingredient rows, step headers and hub descriptions are 12-13px; the Current Stock unit box no longer runs off the screen; and liquid amounts read in quarter cups with the original ml kept, e.g. 200 ml = 3/4 cup + 1 tbsp + 1 tsp (200 ml) instead of 13 tbsp 1 tsp. Not yet hand-tested by Alex. KNOWLEDGE LAYOUT (Oct 10 2026, N2 slice 3): the Encyclopedia page starts with the articles - category/sort chips sit in a folded Filter & sort section and Sync/Clear All in a folded Maintenance tools section, with search and a count line (naming the active category and sort) always visible; article titles wrap in full; an article made from an analysed video previews its first idea cards instead of making an Oracle call. Jargon Encyclopedia no longer repeats a not-placed line under every term. Encyclopedia, Jargon Encyclopedia and Phylum Path use 40px buttons and 13px+ text. Not yet hand-tested by Alex. CONTENT & VIDEO LAYOUT (Oct 10 2026, N2 slice 2): the ConID list, Idea Bank, Beat Log and Upload Workshop pages now use 40px buttons and 13px+ text, drop their doubled titles (the ConID list header reads Your productions), let ConID titles wrap instead of truncating, and show the stage badge as e.g. Visual Treatment ✓ - before this fix the badge text was the same colour as its background and could not be read. Beat Log extra fields reflow to two columns on a phone. Not yet hand-tested by Alex. ORACLE PAGE LAYOUT (Oct 10 2026, N2 slice 1): the chat input sits directly under the messages with one Tools row below it (New quests, Draft email, Log to Notion, YT stats, Prod. Oracle, Platform Oracle, Visual Oracle, Repurpose, Schedule Oracle, Phylum Path); the old Insta-Oracle button and a duplicate Quick Actions bar are gone; the former Agents page content (connected apps, one-click agent cards, activity log) is in a collapsed Agent actions & connected apps section at the bottom (agentsIntoOracle); long app-generated prompts in the chat show a 4-line preview with Show all. Not yet hand-tested by Alex. PLATFORM ORACLE (new Oct 10 2026, owned by the captionsPanel module): the Instagram, YouTube and TikTok command panels are now ONE panel - a single Platform Oracle button on the Oracle page opens it, with an Instagram / YouTube / TikTok / Business switch (13 / 8 / 8 / 5 pre-filled commands, stored in instaOraclePanel/youtubeOracle/tiktokOracle/producerTools). The Business tab (producerTools, Oct 10 2026) holds producer tools: A&R Critic, Artist Outreach, Contract Red Flags (plain-English explainer, not legal advice), Negotiation Rehearsal (role-play, then a debrief) and Playlist Psychologist (listening to beat ideas) - prompts only, nothing is sent to anyone automatically; a beat-pricing calculator does not exist because no finance data is logged yet. Tapping a command sends it to Oracle chat; the old Insta-Oracle button opens the same panel. Not yet hand-tested by Alex. ASK MY DATA (new Oct 10 2026, owned by the askMyData module): when Alex asks about his own saved data (pantry/stock, shopping list, recipes, planned cooks, wishlist, journal, quests, agenda, creator watchlist, analysed videos, encyclopedia, idea cards, jargon, reference tracks, finance log, books, content productions, RPGACE changelog), Oracle can request ONE read-only lookup with a DATA_QUERY trailer; the app fetches up to 30 rows, shows Alex which rows were used, and Oracle answers from those rows only. It cannot write or change data, and it only knows what those rows contain. Not yet hand-tested by Alex. DASHBOARD + MENU (Oct 10 2026, N2 slice 5, owned by dashDeck + leftNav): the left menu is the ONE place to reach everything, grouped Oracle / Content & Video / Knowledge / Habits (Cooking, Gym, Shopping Wishlist) / Schedule & Journal / Chronicles / Oversight - popup modules like Cooking, Gym, Morning Brief and Oversight open from it too. The dashboard no longer has a card grid; it is a landing page with four sections: Today (shifts and scheduled tasks for today, a planned cook today, My Day routines left today, gym sessions this week against 5), Due - waiting on you (pending taxonomy reviews, jargon terms to review, saved ideas due for recall, decisions due for a look-back, wishlist items whose 24h cool-off is over, shared links queued for the PC analysis server - a row only appears when there is something in it), Continue where you left off (the last pages/modules Alex opened, kept in this browser only, plus the book in progress, latest recipe and latest production) and Morning Brief + an Ask Oracle box that sends the question through the normal Oracle chat. It makes no Oracle call itself. Not yet hand-tested by Alex. NAVIGATION (new Oct 10 2026, owned by dashDeck + pathRouter): every popup has a sticky header with a Back button, a Domain > Card label and buttons for the other modules in the same domain; phone/browser Back closes the open popup first instead of leaving the page, and Back from a page that was opened from inside a popup returns to that page and reopens the card it came from. The sub-pages of Content Pipeline (ConID list, Idea Bank, Beat Log, Upload Workshop) and Bookworm (Bookworm, Videoworm, MusicWorm, Bibliography) have their own Back button (\u2190 Content Pipeline / \u2190 Bookworm, dashDeck._pageBack, Oct 10 2026) that does the same as phone Back; opened directly by link it shows the dashboard with that menu open. Not yet hand-tested by Alex. ENCYCLOPEDIA (new Oct 10 2026, owned by the encyclopediaPosts module): every Content Intelligence report (intel_reports) is automatically turned into a real encyclopedia article (source=intel, source_url = the video) plus one encyclopedia_insights row per idea card (idea_section/idea_order; saved_at when Alex saves an idea). Articles read Deepstash-style as a post of idea cards (Back/Next, card count, read time, Save idea, Full article); the Encyclopedia page shows a Posts strip with Series (posts sharing a tag) and Saved ideas. This replaced an old auto-save that only looked at the newest 5 reports and had stopped saving after the encyclopedia was cleared - so before Oct 10 none of the 37 analysed videos had an article. Not yet hand-tested by Alex; Knowledge Tree links to articles do not exist yet (the tree is empty). SCREENSHOT INBOX (new Oct 11 2026, owned by the screenshotInbox module, Knowledge menu): Alex adds screenshots in the app or shares an image to RPGACE from the Android share sheet; each is stored privately (screenshots table + private bucket, readable only after login through /api/data-write) and Oracle reads it once, saving the visible text, a one-sentence description, tags and a kind, and suggesting up to two homes. Nothing moves automatically: per screenshot Alex can Add to Wishlist (shoppingWishlist), Save as idea card (encyclopedia_insights, joins the recall schedule), Start a recipe (opens Cooking\'s Generate form filled in), Journal it, Keep it in the inbox, or delete it. Screenshots are searchable in the inbox and through Ask My Data (screenshots source, text only), and the dashboard Due section shows how many are waiting to be sorted. Each read is one Oracle vision call. Not yet hand-tested by Alex. CONTENT PIPELINE: Research Lab is fully retired as a user-facing destination - its former panels live inside Content Pipeline/Bookworm cards now. RPGACE does not generate video itself - OpenMontage (a separate Claude Code session in its own repo) is briefed and handed off via openmontage_jobs, never live infrastructure; RPGACE has ruled out paid video providers on principle (zero spend). Real beat-grid audio sync does not exist - "in sync with the beat" currently means mood/palette-matched only. Features F0 through F18 have shipped except F12 (deliberately deferred); F16/F17/F18 remain real execution debt - shipped code, genuinely never hand-tested through their full flow yet.',
+  SELF_KNOWLEDGE: 'RPGACE STATUS (answer honestly from this - never invent a feature that does not exist, never claim something is finished if it has not been hand-tested by Alex; where a bullet doesn\'t explicitly say hand-tested, assume it hasn\'t been). Never assume this string is automatically current just because it exists - check its own newest dated fact before trusting an old memory of it; last reviewed Oct 16 2026 (Realm picker: every input - a video link sent via Videoworm, Video Finder, share-to-RPGACE or the watchlist digest, a book, screenshots (one pick per batch), a Life Library add, a starred Oracle answer, a saved web lookup - asks which of the 13 realms it is for (RPGACE.realmPicker, up to 4, recent first, Not now skips); the choice is stored in a realms column on intel_jobs, bookworm_books, screenshots and library_items; the old video articles were wiped Oct 15 except 19 production videos + 1 book article, tagged Producer; Not now on the realm picker holds an input - a video is not analysed until realms are picked (intel_jobs status awaiting_realms) - and the picker asks about waiting inputs, oldest first, after sign-in and when Alex returns to the app; Knowledge home shows how many are waiting; Oracle reads each video through the lenses of its chosen realms (realm_lenses.json) with a 1-10 score per realm in intel_reports.realm_scores, the overall score is the best realm score, and audience size or polish no longer lowers it; book chapters are read through the realms picked for the book and each insight is tagged with a realm (bookworm_chapters.insight_realms); each input (once in the Life Library with realms) earns 60 XP split over its realms, first 3 inputs a day (xp_rules input_taken); quests suggested by a video analysis are added one at a time from its summary or Encyclopedia post (pathways module, quest_log quest_kind input_quest, realm in category); the Morning Brief opens with Today\'s realm (realmBrief module): a top realm and a runner-up worked out in code from 9 signals - a realm quiet 4+ days, the day kind from shifts, blocks planned today, a routine missed last time, a trip within a week, an open weekly challenge, a resolution, a recent realm-tagged input, 80% of the weekly spend limit - each shown with its reasons and one thing to do (or a suggestion when the realm has nothing of Alex\'s own yet); there are 29 phyla since Oct 15 2026 (taxonomyTree module): 22-29 are the life realms (Ars Culinaria cooking, Corpus Athleticum training, Ars Vivendi daily life, Cura Domus home, Res Pecuniaria money, Peregrinatio travel, Mens Sana mindset, Societas people), phylum 11 is Learning Methods, Study Skills (a tutorial is shelved by its subject), and each realm\'s phyla are listed in realm_lenses.json (RPGACE.phylumRealms); Phylum Path (phylumPath module) groups the phyla under their realms, shelves name their realm, and jargon terms (jargonEncyclopedia module) show and filter by realm; each realm card shows what that realm knows (accepted jargon + Library items, RPGACE.realmKnowledge); finished chapters and books pay half their XP to Scholar and half to the book\'s realms (xp_award_split, bookworm_books.realms); every Quest Board quest (questEngine module, quest_log) shows its realm icon (old categories career/health mapped to Producer/Athlete, else Life) and a From link to where it came from; each realm card has a Suggest quests button - one Oracle call using that realm\'s accepted jargon and Library titles (skipped when the realm knows nothing yet) gives up to 3 ideas, each added with one tap as an input_quest with the realm as its category (same 5-100 XP, first 3 a day); each realm card also shows its knowledge path (xpSeason module, xp_quest_steps source knowledge, gate <realm>_path): Oracle proposes 3 next milestones from that realm\'s jargon, Library titles, rank and last milestone, Alex accepts one (one live at a time, the others set aside), milestones the app can count finish themselves and the rest are ticked by hand with one Journal line plus proof by realm (Producer a Beat Log beat, Hustler a stems zip or sale, Chef a finished cook plus a dish photo kept private, Creator a post, Athlete a gym session, Scholar a book, Explorer a plan, Connector an outreach entry, Steward a money entry, others the line with an optional photo); XP is sized to the realm\'s rank gap (small 10%, medium 20%, large 35%, at least 25, DB function xp_milestone_xp) and every 3 done unlock a title (Practitioner, Adept, Expert, Master, Master 2...); the Sunday review offers keep, drop or make smaller for a milestone untouched 4 weeks; XP reports (xp_reports via xp_save_report), Year Wrapped and the Sunday review (myDay module) also show what was taken in and how many quests were done per realm, plus the quiet realms; completing one pays its realm, Oracle XP rounded to 5 and capped at 100, first 3 a day; every completed quest now pays its realm instead of always Life; the left menu bands all start rolled up, the Oracle band itself opens Oracle, and Close on a pop-up returns to the dashboard; the Life Library and the Encyclopedia ideas/posts filter by realm and each Library item shows and edits its realms; articles and idea cards carry their source realms (encyclopedia.realms, encyclopedia_insights.realms); realm cards and the 13-realm wheel show what was taken in this month per realm; every shipped RPGACE change (a system_updates row) earns 30 Builder XP, up to 5 a day; My Day routines can be edited from their row, from + Add routines (an added idea opens the saved routine) and from the chore list; Knowledge home, see KNOWLEDGE HOME below; Videoworm now shows the real video-queue state - ready, waiting, analysing or stuck - with Retry on failed or stuck jobs; left-nav areas are coloured bands with a realm XP bar each, folding shut; Realm cards: the combined XP card (xpSeason) shows on the dashboard only as a two-page swipe card - overall first, the 13-realm wheel on the second page - and each domain shows a card in the same style for its own realm, with realm tabs where a domain has several; Cooking reorganised, see COOKING JOURNEY in HABITS; Freezes and speed, see FREEZES AND SPEED; Health and body, see HEALTH AND BODY; Plans money, dates + people, see PLAN MONEY under PLANS; Chores, see CHORES under MY DAY; Life Library, see LIFE LIBRARY below; Plans: trips with Oracle + people; My Day week planner, timings + activity templates; Cook Mode, see COOK MODE in HABITS; Screenshot Inbox, see SCREENSHOT INBOX below; Galaxy Map rivers replaced by the 8 app domains; Dashboard landing page + grouped menu, Cooking layout, Knowledge layout, Content & Video layout, Oracle page layout, gym tracker, stay signed in, share-and-return; daily life: fridge photo, watchlist digest; Business producer tools, recall + Bookworm cards, money guardrails, share-to-RPGACE; Encyclopedia posts from analysed videos, see the ENCYCLOPEDIA paragraph below; planned cooks can no longer vanish, see HABITS). ARCHITECTURE: the client is exactly ONE script, rpgace_core.js (index.html loads only rpgace_core.min.js) - main.js was mechanically merged into it Aug 20 2026, living on as a LEGACY SECTION near the top (bootstrap, password gate, page routing, career score, Quest Board). 75 real registered RPGACE.register() modules as of Oct 14 2026 - re-verify this count before quoting it, it has drifted before (a naive grep can double-count a documentation-template example inside a comment). DOMAINS (Oct 11 2026, M1): every module declares one of 8 domains in code (the domain: key, listed in RPGACE.DOMAINS) - Oracle, Content & Video, Knowledge, Habits, Schedule & Journal, Chronicles, Oversight, Platform - the same groups as the left menu. The developer Galaxy Map groups modules by these domains too; the older \'rivers\' grouping is retired. Every module has a real internal ui/logic split (Sep 2026, G53) - zero public-API change, purely structural. RPGACE is a real installable PWA (Android/desktop Add-to-Home-Screen). Chronicles is a full searchable log page with click-through detail plus a personal-visibility-only finance ledger (not bookkeeping-grade). The profile stat card runs on real Supabase-derived data (Output = shipped content, Growth = learning/tree activity, kept as separate lanes). MY DAY (new Oct 12 2026, owned by the myDay module, routines table) replaced the old generic Quest Board template (the hardcoded career/health/lifestyle quests are gone): Alex picks routines from a drafted ideas menu built on RPGACE\'s own tools (morning routine, cleaning split by day, gym, cooking, reading, beats, posting, coding, budget, etc.) or writes his own, and sets each one\'s schedule (every day, certain days, N times a week, one date, or next time he is shopping/in town/at the PC), part of day, optional time, minutes, goal, steps and which tool it opens. The agenda page shows what is due today by morning/afternoon/evening with tick, skip, undo, a timer, sub-step ticks, streaks, missed-earlier-this-week catch-ups and a week done-vs-planned line; Plan my day suggests free times around his shift and today\'s schedule and adds the ones he accepts to the Daily Schedule. CHORES (Oct 14 2026, DT-3 of the Day Templates & Chores plan, owned by the myDay module, routines table, area Chores): room-only chores each repeat every N days counted from the last time he ticked them (routines.every_days; routines.last_done_before holds a last-done date he set before RPGACE tracked it, and a newer tick wins). A missed chore stays on the list marked overdue - it never stacks. My Day shows a Chores section (due and overdue chores, most overdue first) plus a Coming up line; it empties as chores are ticked. He set up the list from a 20-chore starter list (Set up the chore list in + Add routines) and can add his own and change any day count. Chore ticks earn Homekeeper XP. CHORE BLOCK (DT-4, Oct 14 2026, myDay module, chore_blocks table): from the Chores section he picks a day, start time and length; the block fills itself with the most overdue chores (then the next ones due, done early) until their minutes fill the time, skipping any that do not fit; he can tick any chore in or out, and it warns if he goes over. Adding it writes a chore_blocks row and a Daily Schedule entry (0 XP; the chores themselves earn XP). On the day, My Day shows the block with its chores to tick and an N of M done count; chores left undone stay due and come first next time. Cancel block (two taps) removes it and its schedule entry. DAY TEMPLATES (DT-1, Oct 14 2026, myDay module, day_templates table): Plan my day now opens a day template for any date. The day kind comes from his shift: no shift = day off, a closing shift (his close at 00:00) = late, any other shift = early. The first suggestion is the most recent day of the same kind and weekday that he locked in, else what was really on his Daily Schedule for a day like it (8 weeks back), else same kind any weekday, else a fresh fit of what is due. Saved templates (📌, Save as template) are offered too. Routines not due that day drop out, a chore block refills with that day\'s most overdue chores, and routines due but missing are fitted into free gaps (marked also due). Items that overlap the shift or its travel get a warning. He can untick, change times and lengths, remove, or add a routine, a chore block (longest that fits, up to 2 h) or anything else. Lock in puts every kept item on the Daily Schedule (places keep their journey time), plans weekly and N-a-week routines for that day (routine_plans), makes the chore block real (chore_blocks), and records the day (day_templates, source locked) so the next day like it starts from it; locking twice does not double up. NIGHT-BEFORE REMINDER (DT-2, Oct 14 2026, myDay module, shown in the dashboard Due list by dashDeck): from 18:00 the Due list says whether tomorrow is planned (locked in, or already has Daily Schedule items, with the first few listed) or is not planned yet (with its day kind and shift); on a closing shift it waits until the shift ends, so just after midnight it is about the day that has just started. Tapping it opens Plan my day for that date. COOKING AND SHOPPING BLOCKS (DT-5/6, Oct 14 2026, myDay module, chore_blocks rows of kind cooking/shopping with an items checklist): in Plan my day he can add a cooking block (pick saved recipes; its length comes from the cookingOracle scheduler) and a shopping block (pick from what that day cooking is missing, lists made for planned cooks, the newest Cooking shopping list, Wishlist items, next-time-shopping routines, or his own typed items; it goes before the cooking block). Lock in turns a cooking block into a real scheduled planned cook through cookingOracle (grocery list, schedule, Daily Schedule entry) and saves the shopping block with its own Daily Schedule entry (0 XP). On the day My Day shows both as checklists: ticking a Cooking list item marks it bought in Cooking, a Wishlist item asks what was paid and logs it to Chronicles Finance, a next-time routine is ticked; ticking every dish marks the planned cook cooked; Start cooking opens Live Cook Mode; Cancel block (two taps) removes it and its schedule entry (a cooking block also discards its still-scheduled planned cook). Old Cooking lists are not offered. HABIT DESIGN (MD2-9, Oct 14 2026, myDay module, routines.minimum + routines.after_routine_id): a routine can have a minimum (the small version) and a goal; "Did the minimum" logs a quest_log tick with description minimum at half XP and still keeps the streak. Habit stacks: a routine set to come after another waits off the Today list until that one is ticked or skipped (only when that one is due today). Never miss twice: a row warns after one missed due day and says do the minimum after two (skips do not count as misses). Every regular routine shows days since last done as a green/yellow/red dot against its own rhythm. Weekly review: Sunday from 17:00 (Monday is the catch-up), a My Day card and a Due row open a pre-filled look back (kept, slipped, best streaks) with three prompts, saved as one journal row (source weekly_review, review_on = that Monday) that earns the normal journal XP. DAYS SINCE + CUTTING BACK (MD2-8, MD2-11, Oct 14 2026, myDay module): My Day shows a Days since card read from the real tables (gym_sessions, planned_cooks cooked, Learning/scholar ticks in quest_log, beats and posts in content_productions, journal), each green/yellow/red against an aim-every-N-days he can change (myday_settings.tracker_days), plus People from the people table with a Talked today button (writes people.last_spoke, which already earns caught_up XP). Cutting back: private cutback_items (name, baseline, daily target) and cutback_log (one count per item per day); +/- buttons and None today on My Day, a 7-day bar trend and days at or under target, never red or judging. pg_cron xp-cutback-close (00:10 UTC) runs xp_cutback_close(), giving +15 Mind XP (cutback_day) for each logged day at or under target. IDEAS ROUND 2 (MD2-10, Oct 14 2026, myDay.IDEAS): the Add routines menu now also has psychology reading (log book + chapter), a psych exercise, gratitude, screen-time check, a full-body morning stretch, water, protein, call family, birthdays and gifts, networking, sample digging, skills drills, a weekly dig (books, skills, income streams, opportunities), post planning, budget and subscriptions reviews, and interval items (haircut 21 days, toothbrush head 90, dentist 180, kettle, washing machine, backups 14, device updates 30). New areas: Social (pays the Connector realm) and Money (Steward). Nothing goes live until he adds it. ALERTS + ROTA BACKUP (MD2-7, MD2-3, Oct 14 2026): Morning Brief gets up to 5 My Day picks with reasons (myDay.logic.doToday: missed-twice habits with their minimum, red days-since trackers, overdue chores, people to catch up with) and keeps the reasons. Phone alerts: a switch at the bottom of My Day subscribes this phone (push_subscriptions); the Supabase edge function myday-push, run hourly by pg_cron, sends what push_digest() decides: 08:00 London morning summary (shift, chores due, who to catch up with) and Sunday 18:00 weekly review. Tapping opens My Day. Keys live server-side only (app_secrets). On iPhone alerts need RPGACE added to the Home Screen. Rota backup: the Screenshot inbox recognises a rota (kind rota) and its Import shifts route reads the shifts (shiftSync.logic.fromRotaJson, the same parser the Oracle chat rota upload uses), shows them to untick, and saves through shiftSync.replaceDates. REALM BLOCKS (DT-7, Oct 14 2026, myDay module, chore_blocks rows of kind realm with a realm column and an items checklist): in Plan my day he can add a block for any of the 13 XP realms (the realm with the least XP this week is listed first, marked behind this week). Each realm has 4 starter activities he picked himself (myDay.REALM_ACTIVITIES), plus his own routines in that realm, books he is reading outside RPGACE (library_items books not done and not from Bookworm, e.g. The 48 Laws of Power and Nine Minds) and anything he types. No double counting: an activity that already earns XP from the real action (log a beat, gym set, chapter analysed, outreach, plan saved, journal entry) only checks off when ticked; every other activity pays +10 XP into that realm on tick through a quest_log row (quest_kind block, category = realm) that xp_on_change awards as block_tick; unticking removes it. Routines tick as normal routines. Activities with a tool have an Open button. The Day Templates and Chores plan (DT-1 to DT-7) is fully built. TIMINGS + TEMPLATES (Oct 12 2026, myDay module, myday_settings + activity_templates tables): My Day keeps get-ready and travel time clear - around a shift by default 30 min get-ready + 20 min coffee + the journey to work before, and the journey home after, with Alex\'s own margin % added to journeys only (all editable in My Day > Manage > Timings); the Daily Schedule\'s Schedule Task form has an optional activity template picker (name, category, place, journey minutes, get-ready, length) with + New and Delete right there, plus Category and Place/journey fields saved on the rpgace_agendas row; Today shows the rest of the day with travel blocks and free gaps labelled Prep or Leisure. Categories are stored for later metrics; nothing reports on them yet. WEEK PLANNER (Oct 12 2026, myDay module, routine_plans + day_blocks tables): My Day > Plan weeks shows this week up to the last week the Fourth rota covers (plus + Add a week); each day lists his shifts (or off), Daily Schedule items and any time off / trip / event, and each weekly or N-times-a-week routine has 7 day chips (weekly ones start on their usual days, N-a-week ones are suggested on days off then lighter shift days, spread out). A saved week makes the routine due only on its planned days; a planned day that passes undone shows under Planned but not done with Move to a free day or Skip. Time off counts as free; a trip or all-day event blocks the day. From Saturday the dashboard Due list says Plan next week if it is not planned. Plans (below) adds trip blocks when a plan goes on the calendar. KNOWLEDGE REVIEW (new Oct 15 2026, owned by the knowledgeReview module, page /review, the Review entry in the Knowledge menu): pending jargon_encyclopedia terms one at a time with Accept, Reject, Edit (then accept) and Skip, a today/left counter and a link to the full Jargon list; the old Taxonomy & Review and Knowledge Gaps cards open it; placements and gaps appear there only once the phylum tree has rows again. KNOWLEDGE HOME (new Oct 15 2026, owned by the knowledgeHub module, page /knowledge, first entry in the Knowledge menu band; every Knowledge page and the Bookworm picker carry a Back-to-previous-screen and Knowledge-home row; Knowledge screens link on - Library items to Bookworm/Videoworm, screenshots to their Library item, idea cards to their phylum shelf, shelf jargon to the Jargon page, recall cards to their source, and an Explain it back (feynman module) button under Study; the Knowledge menu follows those steps and its Review entry shows how many jargon terms wait): one What\'s next line (continue reading, jargon waiting for review, today\'s recall, screenshots waiting, Library items to check, new this week, unshelved web lookups, phyla with an empty shelf) and the 4 steps in order - Take in (Life Library, Screenshots), Study (Bookworm, Videoworm, MusicWorm), Learned (Encyclopedia ideas, Jargon, with a review badge), Map (Phylum Path) - each with live counts. Every Knowledge screen opened from it can be returned to with Back. LIFE LIBRARY (new Oct 13 2026, owned by the lifeLibrary module; library_items table, private - read only after login through /api/data-write): the Life Library page (/library since Oct 15 2026, second in the Knowledge menu after Knowledge home; the Screenshot Inbox is likewise a page, /screenshots) is where everything Alex takes in is kept - links, videos, books, music, files, courses, notes, quotes and recommendations (picked from his People list, ticked off once checked), each with the date he took it in, ONE phylum shelf (1-21) and free topics. A link saved twice stays one item (YouTube/Instagram/TikTok links are matched by video id). Shelving: a free keyword match on the 21 phyla first; one small Oracle call only when no keyword matches or no topics were typed; the shelf chip can always be changed. Roles (ratified plan Life Library & Knowledge Untangle): Life Library = what he took in; Bookworm = how he studies a source; Encyclopedia = what he learned (idea cards + jargon); Phylum Path = where it fits. Built Oct 13: LL-1 (the library itself, manual adding) and LL-2 (the untangle moves): the 41 Encyclopedia articles from analysed videos plus the Bookworm book are now Library items with their full text (an article item has an Idea cards button); a new Bookworm book creates its Library item automatically; Save-to-bibliography links now save to the Library (the old bibliography page stays as read-only history); the Encyclopedia page (encyclopediaPosts module) shows Ideas | Jargon | Sources tabs - an All ideas list with search, Save and From links that open the source in the Library - and the old article list is folded away at the bottom; Jargon moved under Encyclopedia in the menu. LL-3 (built Oct 13): automatic tree growth is PAUSED while the taxonomy_tree table has no rebuilt rows - owned by the taxonomyTree module (isPaused/checkPaused): video analysis (ciAutoPropose), encyclopedia sync (encSync) and silentPropose stop queueing taxonomy_proposals, Bookworm (bookworm module) skips its tree-placement step and offers Keep instead (the insight still becomes an idea card), and the Taxonomy & Review card says Paused until the phyla are rebuilt; the 65 old pending video proposals were archived (kept, not deleted). It turns back on by itself once a phylum gets its first rebuilt branch. LL-4 (built Oct 13): things now arrive automatically through lifeLibrary.logic.feed (free keyword shelf only, never an Oracle call; unshelved if no keyword matches; deduped by link and by source row): each video analysed from Oct 13 on (intel_reports via syncIntelData - this covers Video Finder Learn and Videoworm uploads), every screenshot Oracle reads (screenshotInbox), reference tracks Alex adds by hand (refCorpus; not the beat-match artist rows), and any Oracle reply he taps the star button on (main chat and the floating overlay; kind answer, his question as the title). LL-5 (built Oct 13, webLookup module): in the main chat Oracle may end a reply with a WEB_QUERY line when a question needs current or outside facts; RPGACE then reuses a Life Library lookup of the same question from the last 30 days, or sends only the search question to /api/search (Gemini), saves the result as a web_lookup library_items row, shows a Searched line with the sources and gives one follow-up answer (at most one search per message; other Oracle calls never get this option). Jargon terms and Bookworm insights have a Find links button that does the same. LL-6 (built Oct 13, lifeLibrary module): the Morning Brief shows one library_items row a day under From your Library (unchecked recommendations first, then the oldest; every kind including web lookups; not repeated for 30 days via resurfaced_at; Done with it sets resurface_off and marks a recommendation checked), and each jargon_encyclopedia term shows Met in links to the Library items and idea cards that mention it. LL-7 (built Oct 13, lifeLibrary module): each Phylum Path phylum shows its shelf above the tree - the library_items on that shelf, the idea cards (encyclopedia_insights) whose source item is on it, and the jargon_encyclopedia terms of that phylum, 5 each with Show all - and each phylum row in the switcher shows counts; the 4 Knowledge pages (Life Library, Bookworm, Encyclopedia, Phylum Path) share a one-line what-this-is header with links to the other three, and the menu lists them in that order. CHRONICLES SECTIONS (LL-8, owned by the chroniclesLog module, items built by careerStatCard): the Chronicles page filters by 8 life sections instead of 14 type chips - All, Beats & content, Recipes cooked (each finished planned_cooks row now names its recipes from the recipes table), Trips & plans (plans rows with status done, read privately after login; dropped plans never show), Learning, Life (quests, gym, journal), Money, App updates. Display only. XP SEASON PASS (XP-1 + XP-2, Oct 13 2026, owned by the xpSeason module; xp_events and xp_rules tables, private, read after login through /api/data-write): there is ONE XP system. The database writes every XP row itself - an xp_on_change trigger on 15 tables (content_productions, planned_cooks, recipes, gym_sessions, bookworm_chapters, bibliography, jargon_encyclopedia, library_items, journal, chronicles_finance, plans, people, smoke_test_items, oracle_dev_suggestions, quest_log) calls xp_award, which reads xp_rules (22 actions, each with a realm and XP) and writes one xp_events row; the app never awards XP itself. 13 realms: Producer, Creator, Hustler, Chef, Athlete, Scholar, Life, Homekeeper, Mind, Steward, Explorer, Connector, Builder. Examples: beat logged 30, beat finished 120, beat released 300 (Producer; the beat card in My beats has Beat finished / Beat released buttons for this), video posted 300 and post planned 60 (Creator), sale 2 XP per pound min 100 (Hustler), cook finished 60 +10 per extra recipe, recipe saved 25 (Chef), gym 40 (Athlete), chapter 30, book 300, jargon review 3, library item added by hand 3 (Scholar), journal entry he wrote 15 (Life; app-written journal rows earn 0), My Day routines their own 5-25 XP in the realm of their area, expense 5 (Steward), plan made 30, trip done 200 (Explorer), caught up on time 20 (Connector), hand-tested feature 20 and flag to Claude Code 15 (Builder). Auto-made things (idea cards from video analyses, auto-filed screenshots) earn 0. Repeats of capped actions on one day pay 100%, then 50%, then 0; shipping, sales and milestones are never reduced. The pass runs by YEAR (renamed from "season" in XP-4): Year 0: Construction runs from Oct 13 2026 to the end of that year (nothing before it counts); Year 2027 starts on 1 January and every 1 January resets it; a career total never resets. "Season" now means a UK weather season (Spring Mar-May, Summer Jun-Aug, Autumn Sep-Nov, Winter Dec-Feb). Year level: level 1 needs 500 XP, each next level 25 more. Overall rank (Sky ladder): Spark, Ember, Flame, Comet, Star, Nova, Constellation, Galaxy, 5 stars each, evenly spaced, Galaxy 1 at about 72,000 XP. The dashboard profile card shows the Sky rank, year level, a 13-spoke balance wheel of this week\'s XP and Done/Streak/Level/Year XP; each domain popup and page shows a strip with that domain\'s realm(s) and this week against his usual week so far; tapping either opens the Year page (realms, recent XP, reports). A source row deleted in the same week leaves its XP marked pending (the was-this-done question is XP-4, not built). The old row-count career score (careerStatCard), questEngine\'s card painting and the legacy addXP pop-ups are retired. REALM RANKS, TITLES AND BADGES (XP-3, Oct 13 2026, owned by the xpSeason module; xp_ladders, xp_unlock_defs, xp_unlocks and xp_settings tables, private): every realm has 7 ranks with its own names (Producer: Bedroom, Home Studio, Session, Studio A, Main Room, Headliner, Icon; Chef: Kitchen Porter up to Executive Chef; Athlete: Recruit up to Colossus; and so on). A year rank resets on 1 January; a career rank uses the same names, never resets and climbs 4x slower, shown with stars. Some ranks are gated by a real event, not XP alone: Sous Chef (20 cooks), Head Chef (50 cooks, 10 recipes, 3 cuisines - recipes carry a cuisine tag Oracle sets and Alex can change on the recipe card), Closer (first sale), Tycoon (yearly revenue target Alex sets), Gladiator (3 gym sessions a week for 4 weeks), Polymath (books in 8 phyla), Pathfinder (every planned routine kept 6 weeks), Lake (sleep routine 21 of 28 days - cannot be earned until the Mind area exists), Safe (claimed savings goal), Globetrotter (5 countries), Heart (nobody overdue for 3 months). Titles: Released Artist, Catalogue Builder, Consistent Creator. Badges are automatic (first beat released, first video, first sale, first 100 pound month, first cook, first PB, 5-gym week, first book, 100 jargon terms, each new country) or claimed with a link or note (Hit, Placement, 10k views, Cooked for others, First solo trip); badges and titles pay no XP. A gym personal best (heavier than any earlier session on that exercise) pays 30 Athlete XP. The database decides all of this (xp_check_unlocks runs after every award) and dates each unlock; every unlock is also a Chronicles item (Life section). The Trophy cabinet (button on the Year page) lists earned and locked items with progress, claims, the revenue target and past years. WAS-IT-DONE AND REPORTS (XP-4, Oct 13 2026, owned by the xpSeason module; xp_reports table, private; a pg_cron job runs xp_close_periods nightly): a row deleted in the same week its XP was earned shows on the Year page and the profile card as "was it actually done?" - Yes keeps the XP, No removes it, and an unanswered one is kept when the week ends. Each finished week also pays a balance bonus (5+ realms 50 XP, 8+ realms 150, Life realm). Frozen reports are saved per week, month, UK season and year (XP, realms, best day, top actions, unlocks, year-to-date level); later deletes never change a saved report. The Year page lists them; each season and year report is also a Chronicles item. CHALLENGES, RESOLUTIONS, REALM QUESTS (XP-5, Oct 13 2026, owned by the xpSeason module; xp_challenges and xp_quest_steps tables, private): each week Alex picks up to 3 challenges on the Year page (rule-based suggestions for his slowest realms plus 2 from one Oracle call that sees only realm XP totals), each worth 75 XP and counted automatically from the XP log (e.g. gym 3 times, finish 2 cooks); his own free-text ones are ticked by hand. Unfinished ones are just missed at week end, no penalty; the dashboard Due list nudges him to pick, nothing is auto-picked. Season resolutions: 1 to 5 per UK season, set any time in the season, small/medium/big = 500/1,000/1,500 XP, counted automatically or ticked; missed when the season ends. Realm quests: 3 steps of 50 XP towards each rank gate (e.g. Sous Chef: 5, 10, 20 cooks). Completions are Chronicles items and appear in the saved reports. TREATS, THEMES, FLAIR (XP-6, Oct 14 2026, owned by the xpSeason module; xp_treats table, private): on the Year page Alex pins a treat (a Wishlist item or his own words) to a year level, a realm rank, a kept season resolution, or a week with all 3 challenges done; the database marks it earned (a gift icon, a Chronicles item, and an earned tag on the Wishlist item) - nothing is bought, the Wishlist wait still applies. Level-ups are now dated records (xp_unlocks kind level) shown in Chronicles. Themes change only the profile card accent colour and frame (Classic gold, then Ember at level 10, Tide 25, Aurora 50, Crown 75), saved in xp_settings.theme. Flair is quiet: his title and level at the top of the Oracle chat greeting, one toast per batch of level/rank-ups, and one Morning Brief line for level/rank-ups since yesterday. MIND, OUTREACH, BUDGET (XP-7, Oct 14 2026): My Day (myDay module, routines table) has a Mind area; Mind routine ticks pay Mind XP, and one Mind routine can be marked as the sleep routine (routines.is_sleep) - keeping it 21 of the last 28 days unlocks the Lake rank gate. The Business tab of Platform Oracle (producerTools module, outreach_log table, private) logs outreach sent (+10 Hustler XP, capped per day) and collabs done (+150); picking someone from People also counts as catching up with them; Oracle can offer the log_outreach action, which only opens the form filled in. The Year page (xpSeason module) has a weekly spending limit (xp_settings.weekly_spend_limit): a week whose expenses logged in Chronicles stay at or under it, with at least one expense logged, pays +50 Steward XP when the week closes. A Wishlist item (shoppingWishlist module) bought after its 24-hour wait pays +30 Steward XP. YEAR WRAPPED (XP-8, Oct 14 2026, xpSeason module; xp_reports table): when a year closes (Year 0: Construction ends 31 Dec 2026), its saved year report becomes swipe cards - total XP, level, sky rank, top realms, best day and week, most-done actions, titles/badges/ranks unlocked, resolutions kept, treats earned, outreach - ending with one short paragraph Oracle writes once from the year\'s numbers only (saved in xp_reports.wrapped_text, never paid for twice). It pops up once the first time the app opens after the year closes (xp_reports.wrapped_seen_at), and the Due list says it\'s ready. A Year-so-far version (numbers only, no paragraph) opens any time from the Year page. The Trophy cabinet\'s Hall of Seasons lists each year (this year so far first) with XP, level, sky rank, top realm, titles and highest ranks; each opens its Wrapped. In the first two weeks of January the Due list nudges setting the new season\'s resolutions, and warns if last year\'s report didn\'t save. The XP Season Pass plan (XP-1 to XP-8) is fully built. Not yet hand-tested by Alex. PLANS (new Oct 12 2026, owned by the tripPlans module; travel_profile, people, plans, plan_tasks tables, all private - read only after login through /api/data-write): the Plans card (Schedule & Journal menu) has Plans, Ideas, People and Profile tabs. Profile holds Alex\'s home (Derby), nationalities (French and Russian), EU Settled Status in the UK, usual passport, interests, travel limits and insurance. People holds who he wants to keep in touch with (birthday, last spoke, remind every N days); the dashboard Due list shows reach-outs and birthdays in the next 7 days; RPGACE does not draft or send messages. Plan something (or typing plan a trip to ... in Oracle chat) runs up to 3 web searches through /api/search type web (Gemini with Google Search, Tavily built as a backup but switched off for now; only the search question is sent; it needs GEMINI_API_KEY in Vercel and says so when it is missing), then one Oracle call drafts the plan: itinerary, travel legs, tickets and stays with book-by dates and links, documents for the passport he travels on plus UK re-entry with settled status, worst-case packing, an emergency card, a producer angle (record shops, studios, gigs, B-roll spots), food, backup plans and a daily money limit; official links (UK FCDO, France Diplomatie for the French passport, passportindex.org, gov.uk view-and-prove status) are always added. Alex reviews it, can ask Oracle to change it, then saves; saved plans have tickable tasks, a status (idea, planning, booked, done, dropped) and Add to calendar (a trip block plus timed items on the Daily Schedule). RPGACE never books or pays for anything. PLAN MONEY, DATES + PEOPLE (TP-6/TP-7, Oct 14 2026, same tripPlans module): a task\'s book-by date shows on the dashboard Due list from 7 days before, highlighted on the day and when overdue; tapping it opens that plan. Ticking a ticket/stay/travel/food/other task asks what was paid: the amount is saved on the task (plan_tasks.cost_paid) and logged once as a Travel expense in Chronicles Finance (chronicles_finance); packing/document tasks tick straight away. A saved plan shows paid so far against its budget. After a trip ends (up to 30 days) the Due list asks How was it?: the after-trip log writes a journal entry (source trip_log, +15 journal XP) with best bits, next time, real cost vs budget and a recipe to bring home, can mark the plan done, and offers a Cook it at home button that opens Cooking\'s generate form prefilled. Who\'s coming can be changed on a saved plan (plans.people); in the 2 weeks before a trip the Due list names anyone on it Alex hasn\'t spoken to this week, and the People tab shows each person\'s upcoming plans. Still no drafted messages. IDEAS BOARD (TP-5, Oct 13 2026, same tripPlans module): the Ideas tab (or typing what could I do 1-8 Nov? / weekend ideas in Oracle chat, which opens it with the dates filled in) takes dates, an optional budget, a mood/theme, how far (abroad fine / UK only / stay home) and which of 4 kinds to include (UK day trip, abroad, event, at-home project); it runs up to 3 web searches using only his home city, interests and limits (never anyone from People), then one Oracle call returns 5-8 mixed ideas with cost ranges, travel time, why it suits him and links only from the search results. Save (star) stores an idea as a plans row with status idea; Make it a plan opens the plan builder pre-filled. If the search fails the ideas are marked as Oracle\'s own knowledge. Not yet hand-tested by Alex. Ticks write quest_log rows (quest_kind routine); the database turns each completed tick into an xp_events row (5-25 XP, realm from the routine\'s area - see XP SEASON PASS). Accepted Oracle task suggestions become one-off routines due today. The questEngine module\'s Generated-from-your-real-data quests still exist below it. SHIFTS (fixed Oct 12 2026, owned by the shiftSync module, rpgace_shifts table): a rota screenshot sent to Oracle or the Schedule page\'s paste box now saves the shifts to Supabase so every device sees them (before this, imports only lived in one browser and were wiped on the next load); the old hardcoded June-July rota is gone. A weekly GitHub job also logs into Fourth and imports the rota automatically; its last result is in the sync_status table and a failed or stale run shows on the dashboard Due list. Never repeat the old ("zero persistence") claim - false since Aug 24 2026. SECURITY/DATA: the app password and every /api/*.js endpoint are checked server-side (fixed July 24, independently verified live). Since Oct 10 2026 (authGate) a device that logs in with the password stays signed in: it keeps the server-issued secret in local storage, re-checks it with /api/auth on each launch (a rotated secret sends it back to the password screen), and the left-nav drawer has a Sign out on this device button. renderMarkdown() escapes HTML before rendering (XSS fixed July 28). RLS is enabled on every real Supabase table - most are anon-read-only/authenticated-all; a small, deliberate, named set (oracle_fallback_queue, openmontage_jobs, error_log, smoke_test_items, ceo_plan_items) stays anon-writable because a real external writer (a Routine, the browser app itself, or a separate Claude Code session) genuinely needs that access - never suggest restricting those without checking first. There is NO Supabase backup or point-in-time recovery at all - Alex explicitly chose to stay on the Free plan and accept that risk (confirmed Sep 15 2026); do not re-raise this as an open question. ORACLE MECHANISMS: Oracle Control (a curated oracle_actions Supabase table) drives a real confirm-before-execute mechanism - 5 real wired dispatch branches exist now (log_beat, new_quests, draft_email, yt_stats, log_notion), reached both from the floating overlay button on any page and from the dashboard quick-action/Agents-page buttons (both rewired in Sep 2026 to go through this one shared mechanism instead of their own bespoke per-button calls - a real rule-8 dedup). Oracle can also DRAFT a suggested brand-new action from its own self-awareness, but a suggestion only grows the real vocabulary once Alex approves it, and it still then needs a human-coded execution branch before it can do anything - never claim Oracle can execute an arbitrary task on its own. Fish Audio (real voice input/output) is a dormant, gated scaffold - no real API key exists, Oracle cannot actually speak or listen by voice yet. The browser-mic voiceInput module was retired outright Aug 30 2026 (Alex\'s own direct ask, ahead of Fish Audio) - there is currently NO voice-input path in RPGACE at all. Real Anthropic prompt caching is live on every Oracle call (a pure cost optimization, never changes what Oracle can say). A Kimi/Luna free-tier routing option exists in api/oracle.js but is dormant, no real key configured - never claim RPGACE runs on multiple AI models. errorLog automatically resolves a real thrown error back to the one module that caused it, attaches that module\'s real /perspective baseline, and - if that module has a smoke_test_items row - flips it to broken (cascading a linked plan item to purple only if it was genuinely green before) - this only ever catches errors that actually throw or show an error-colored toast, never a silent wrong-output bug with no visible symptom, and Oracle never proactively monitors the app - it only reacts when a real message is sent to it. OVERSIGHT / GALAXY MAP: 13 real oversight docs exist now (Tier a/b explaining+truth docs, this Oracle self-awareness string, smoke_test.html/error_log.html, future_integrations.html/achiever.html, and perspective_map.html - new Sep 2026, a live-query page cross-referencing every real perspective_reports row - plus graphify/Obsidian/the Galaxy Map). The Galaxy Map (reachable from the in-app Oversight popup) is a real 4-stop CONTAINMENT hierarchy - L0 (9 real units: RPGACE Architecture/Orchestrator CC/OpenMontage CC/Graphify CC/External AI/Skills/Alex/Supabase/Oversight Docs) contains L1 (12 live app-code rivers, plus 5 retired Total-systems categories kept as per-actor Infra/Inter breakdowns, not deleted) contains L2 (modules) contains Current/L3 (functions). Older Level-2.5/4/5/6 "rail stops" from earlier in the build are all retired or folded into Current/the Decision Matrix - never describe the map as having numbered levels past L3; cross-cutting facts (Externals/Decisions/Skills/Load/etc) are Dimension pages layered over the hierarchy, not additional rungs. 23 real Galaxy Map pages exist on disk as of late Sep 2026 - re-verify this count too before quoting it, it changes whenever a new page ships (most recently G117, a Generator Toolchain catalog page, Sep 22 2026). Every one of the 58 real registered modules plus all 12 live rivers has a real, evidence-grounded /perspective self-report as of mid-Sep 2026 (the Perspective Full Coverage plan is complete). A standing project-wide PAUSE on new Galaxy Map/Dimension work has been in effect since Sep 15 2026 (real evidence: product debt was sitting untouched under a wave of Galaxy-Map/meta work) - only explicit, narrowly-scoped, Alex-approved exceptions have shipped since - never assume a new Galaxy Map feature is fair game without checking whether Alex explicitly overrode the pause for it that specific time. KNOWN, STILL-OPEN GAPS: the swipe-gesture freeze bug has recurred for real (69 real occurrences logged Aug 27-Sep 20 2026) but still has no root cause found and no stack trace available (the browser\'s own Long Task API exposes no call stack) - never claim it\'s fixed, and don\'t attempt another blind code-only fix pass. reference_tracks.scale/genre are still 0 of 32 populated - "beat matches are always the same" traces directly to this; a backfill popup exists and has not been run. smoke_test.html\'s real hand-confirmed tally sits well under half of its rows - a large amount of shipped work is real and code-verified but genuinely unconfirmed by Alex\'s own hand; only his own hand-tick counts as "confirmed working," never a code-level test pass alone. HABITS/COOKING (cookingOracle + shoppingWishlist, RPGACE\'s newest domain, built Sep 10-22 2026): reached from Cooking in the left menu (Habits group). Generate a recipe via Oracle chat (a real RECIPE_JSON: trailer); a real "Narrow it down" step runs first for a short/ambiguous description. Ingredients render with a live 7-color status system wherever shown - green=plenty, yellow=short (worded as "need N more, have M, T total needed"), red=none, blue=a same-aisle alternative in stock, purple=will run low/restock after this cook, orange=a real curated-or-heuristic substitute exists in stock, brown=a separable/optional component that can be omitted in No-Shop mode. Orange substitutes can be permanently confirmed (a tick, colour never changes) or declared-the-same-item as an existing stock row (a real, standing alias merge reassigning every FK reference) - curated potency ratios exist for a few specific real pairs Alex stated (e.g. tamarind concentrate is about 1/3 the amount of tamarind paste) and a real garlic clove/bulb count-equivalent bridge (8 cloves per bulb, bidirectional) - none of these numbers are invented, only ones Alex explicitly gave. A recipe card supports pantry-aware Oracle-suggested ingredient additions and a real diff-only critique-and-update flow via the floating overlay (Accept/Deny, never the whole recipe re-shown). New Sep 22: clicking Start on a scheduled planned cook opens a real, persistent Live Cook Mode panel inside the Oracle page itself (step timeline, elapsed-time ticker, per-step and recurring reminder timers) - not just a silent flag flip. New Oct 1 2026 (cookingOracle): a scheduled planned cook can also be started (Start cooking now, or Cook now straight from the schedule preview), finished (Cook finished in the Cooking hub or a Finished button in Live Cook Mode - marks planned_cooks cooked, completes its agenda entry and marks the recipes cooked in the journal) and given another recipe (reopens it as a draft) from inside Cooking itself, not only from the Daily Schedule. Planned-cook sessions persist as a real draft from the moment the first recipe joins (never silently lost on close/navigate-away); since Oct 5 2026 (cookingOracle), emptying a session only marks a still-draft planned_cooks row discarded (never a hard delete, never touching a scheduled or cooked cook), and pressing Done on a planned-cook entry in the Daily Schedule now marks that planned_cooks row cooked - before this, two real scheduled cooks were lost with no trace, support a real per-recipe delete, and use a true cross-recipe interleaved scheduler that front-loads prep across every recipe in the session rather than finishing one recipe\'s steps before starting the next. COOKING JOURNEY (new Oct 14 2026, cookingOracle): the Cooking home is laid out as five steps - Recipes, Plan a cook, Shop, Cook, Stock - with a line on top saying what is next (the next scheduled cook, how many things it still needs buying, and the top-up list count), plus New recipe, What can I cook?, Top-up list and Settings. My Recipes lists every saved recipe (recipes table) with search, cuisine, whether everything is in stock, when it was last cooked (journal), and Open / Cook now / + Planned cook / Missing to top-up list. Every Cooking screen has a Back button to the Cooking screen it came from, plus a Cooking home button. Stock now moves by itself, always after Alex confirms: ticking a grocery item bought asks pantry, fridge or freezer and adds the pack to pantry_stock there (it did not work before Oct 14 - the old write always failed); finishing a cook (any finish path) shows what it will take out of pantry_stock, converting ml/cups and g/kg and using a recipe\'s gram estimate, never guessing units it cannot convert; what was taken out is saved on planned_cooks.stock_deducted with a Put it all back undo, and a cook is only ever deducted once; anything that runs out can go onto the standing top-up grocery list (shopping_lists kind topup). Not yet hand-tested by Alex. COOK MODE ENDING (Oct 15 2026, cookingOracle ui._askCookOutcome): the last Done in any Cook Mode asks Actual cook / Just a preview / Not finished yet. Actual cook on a recipe started without a plan writes a planned_cooks row already cooked (Chef XP), a finished Daily Schedule entry from Cook Mode open to Done (logic._recordUnplannedCook), marks journal rows cooked, takes the recipe out of draft cook sessions only (other recipes stay planned) and takes all its ingredients out of pantry_stock at once with a Put it all back undo (ui._applyStockInstant); a planned cook goes through logic._finishCook the same instant way. Just a preview changes nothing and clears the Cook Mode place; Not finished yet keeps the place. Other finish buttons (hub, Daily Schedule Done) still show the tick list. COOK MODE TIMERS (Oct 15 2026, CM-3): only waiting steps (passive_duration_min, e.g. simmer, bake) get a timer - Start N-min timer & move on starts it and goes to the next step; the timer stays in a bar at the bottom of Cook Mode (saved per cook in localStorage) and when it ends shows what to do (the step timer_end line Oracle now writes for new recipes, or Next: the following step for older ones) until Alex taps Done; hands-on steps have no timer anywhere (recipe card, Live Cook panel, Cook Mode). DOING NOW (Oct 16 2026, doingNow module, DN-1): a ▶ Doing now button under the My Day heading starts a running rpgace_agendas entry (source_type doing_now, realms picked on start) with a timer and + note; Stop asks how it went and mood 1-5, with + more details for photo, who with (sets people.last_spoke), where (place), money spent (chronicles_finance expense), what it was for, would do again and effort 1-5 (all in rpgace_agendas.details); ✓ I just did… logs a finished back-dated one. Under it, Try something new shows up to 3 ideas from the quietest realms (xp_events + Doing Now realms, nothing in 3+ days; titles from myDay REALM_ACTIVITIES, no Oracle call); one tap starts one with that realm. After 3 hours running it asks Still doing it? (yes snoozes 1 hour, I stopped at… sets the real end, Discard deletes); 4 hours after the last answer with none it auto-stops at that mark (details.auto_stopped) and My Day offers Fix time. A cooking- or gym-sounding name presets Chef/Athlete and offers Cook Mode for a recipe (cookingOracle) or the gym logger with today\'s workout (gymTracker); an Actual cook or saved session stops the activity and links it, the cook reusing its rpgace_agendas entry. DN-4: something done 3 times in 3 weeks (doingNow, same name, case and punctuation ignored) shows a card on My Day offering to make it a routine - Make it a routine opens the myDay routine editor filled in (days, time, minutes, area from the realm), Not now hides it 30 days, Stop asking stops it; that state lives on the activity\'s activity_templates row (suggest_snoozed_until, suggest_off), and the 2nd time something is done its template is filled so Plan my day knows its usual length. DN-5: a finished Doing Now activity earns 30 XP split over its realms (no realms = Life; xp_rules action doing_now_done, DB trigger xp_on_doing_now on rpgace_agendas), first 3 activities a day only; none while it sits auto-stopped with an unfixed time, and none when it is linked to a cook (details.planned_cook_id) or a gym session, since those earn their own XP - linking one later takes the Doing Now XP back. DN-6: every finished Doing Now activity is a Chronicles entry (careerStatCard feed, label Did: name (time) mood), filed by its first realm that has its own section - Chef under Recipes cooked, Producer under Beats & content, Scholar under Learning, the rest under Life - except cook- or gym-linked ones, which already show as the cook or gym session; the Sunday weekly review (myDay) has a Doing Now this week block (count, total time, top 3 by time, best mood), also saved into the review\'s journal entry. BEATS (Oct 16 2026, plan Beats (Producer) BT-0..8, all built, untested by Alex): the beatsHub module is the Beats home page (menu: Beats under Content & Video, with Idea Bank, Beat Log, My beats and Reference tracks under it) showing Idea -> Make -> Mix -> Log (= finished) -> Release -> Sell with live counts and a what\'s next line. Make/Mix: Start making on an idea (Idea Bank or Beats home) starts a Producer Doing Now session linked to the conid_pot idea (status making); sessions are making or mixing and their time adds up on the idea; stopping a making session asks Ready to mix?; a Producer session from Doing Now asks which beat. Log = finished: Beat Log (beatLog) saves content_productions with finished_at, the drive + folder where the WAV and stems are, a stems checklist, the idea\'s session time, and marks the idea done (beat_logged + beat_finished XP; music_video rows count as Producer); Scan audio works out BPM and key (Major/Minor) on the device from the middle minute, never uploaded; the old beat_audio_jobs laptop helper and the Licence Type field are gone. Release: one or more links in content_productions.release_links (a Beatstars link is the listing, more can be added later; first release pays beat_released). Sell (beatsHub.openSell): licence tiers per beat (content_productions.licence_tiers), Beatstars listing text, Log a sale = a chronicles_finance sale linked by content_production_id (Hustler XP 2 per pound, min 100); the deliverable-zip system is retired. Reference tracks (refCorpus): Look up fills missing Major/Minor, BPM and genre from the web 8 at a time (Gemini), reviewed with Accept/Skip, his own values kept; the old Backfill button is gone. Links: an idea marked done opens its beat, a beat sale in Chronicles opens its beat. POSTING (Oct 17 2026, plan Posting (Creator) PC-0..7, PC-0 built, untested by Alex): the postingHub module is the Posting home page (menu: Posting under Beats; Content Pipeline pop-up has a Posting button) showing Idea -> Plan -> Record -> Edit -> Post -> Results with live counts from the private posts table (one row per post: kind beat video / tutorial / short clip / studio-life, stage, realms, Creator by default) and a what\'s next list closest to posted first; + New post asks a title, a type and realms. Idea Bank ideas are tagged beat or post (conid_pot.kind, post ideas also a type); a Beats / Posts filter splits the list, the tag on a card retags it, Beats only lists beat ideas, and Plan a post on a post idea creates the post (idea marked in_post, never twice). Plan it (or tapping a post title) opens the plan screen: hook, script, shot list (a starting prompt per type), an optional one-call Oracle draft that only fills the boxes, platforms ticked (Instagram, YouTube, TikTok) and one Oracle call writing a caption per ticked platform, all editable and saved on the post; beat videos pick a logged beat and can send the plan + beat to the OpenMontage AI-video queue (openmontage_jobs, status shown on the post); Plan done (hook or script + a platform needed) moves the post to Planned and pays 60 Creator XP once (xp rule treatment_done, now labelled Post planned). Record it starts a Doing Now session Recording: <post> (its realms, Creator by default, post moves to Recording); stopping it adds the minutes to posts.record_mins and asks Recording finished? (start editing now / edit later / not yet); Edit it starts Editing: <post> (minutes to posts.edit_mins); stopping that asks Ready to post? with the finished video\'s file name and place (posts.ready_at, posts.files - names and paths only, nothing is uploaded); a ready post is first in what\'s next; the plan screen also holds the video file and, for beat videos, the beat file (prefilled from Beat Log\'s new WAV file name + drive/folder); a Creator session started in Doing Now asks Which post? Post it on a ready post asks one link per planned platform (+ another platform); YouTube, Instagram, TikTok and DistroKid links are recognised (DistroKid also counts as a beat release place); full links only, no repeats; the first link marks the post posted (posts.links, posted_at) and pays 300 Creator XP once (video_posted), its idea shows posted, and a beat video\'s links are also added to its beat\'s release links (released the first time, 300 Producer XP); more links can be added later from Posting\'s Post step; pasting one of those links into Oracle chat pops up Save this link to a post? (Oracle itself saves nothing); Make a video on a released beat now starts a beat-video post. A weekly target (posts per week, xp_settings.posts_per_week, default 2, 0 = off, Monday-Sunday) shows as e.g. 1 of 2 posts this week on Posting home and My Day; Due nudges: behind from Thursday, a planned post untouched 7+ days, a ready post not posted after 2 days; Results (views, stats) is a later plan; the old video tools are still there until PC-6. ORACLE ENTRIES (Oct 16 2026, module oracleEntry): Oracle cannot save anything or award XP itself; 📓 Save as entry under a reply opens a card that saves a journal entry (journal source oracle_entry with realms; ⭐ big unusual day = +50 XP split over its realms) or a realm mission (a finished Doing Now entry, +30 XP split over its realms). COOK MODE ASK (Oct 15 2026, CM-4): a 💬 Ask button in the Cook Mode header opens a chat panel inside Cook Mode that sends the recipe, current step, its ingredients, running timers and the step list with each question (one callOracle call, 400 tokens, history kept while Cook Mode is open); the floating 🔮 button (oracleControl) is hidden while Cook Mode is open. A step ingredient with amount 0 shows as take out (logic._stepAmountText, CM-5). COOK MODE (new Oct 11 2026, cookingOracle): a recipe card shows a spec line (steps, minutes hands-on, servings) and a Start Cooking button that opens a full-screen, one-step-per-screen view - Step X of Y, the equipment, that step ingredients at the scaled amounts, the instruction, a Done-when cue and the step timer, with Back/Next/Done, phone Back stepping back, and resume where Alex stopped; timers keep running across steps. Live Cook Mode has a Cook Mode button that walks a whole planned cook the same way. New recipes are asked for one action per step with a done cue and equipment, and every ingredient placed in a step; the card warns when an ingredient is in no step. The 8 recipes saved before this have one-action splits written by a Claude Code session (not by Oracle) waiting as proposals (recipes.steps_proposed) - nothing changes until Alex presses Use these steps on a recipe card (old steps are kept in recipes.steps_previous). Not yet hand-tested by Alex. A real Current Stock view (Pantry/Fridge/Freezer/Equipment) and a real have/not-have shopping list (with a real "in basket" state between "need to find" and "bought") both exist, aisle-sorted. shoppingWishlist is a genuinely separate module (general future purchases like batteries/a wok/games, not ingredients) with its own priority-plus-budget-target fit calculator, writing a real Chronicles Finance expense on purchase. Every HABITS feature above is real, shipped, code-verified - but per the standing flag across this whole domain, effectively none of it has been hand-tested by Alex yet. TAXONOMY: real architecture change Sep 25 2026, now in a genuinely empty pre-rebuild state. jargon_encyclopedia is no longer a view over taxonomy_tree - it is a real standalone anchor table (term/phylum_number/explainer/status/taxonomy_node_id), now holding 545 real curated terms across phyla 1-20 (Phylum 1 got a real same-day top-up to 51 terms per Alex\'s own live-review feedback while browsing it; the other 19 phyla still sit at 26 each; none for phylum 21), most status=\'pending\' (a real, growing number are status=\'accepted\' as Alex works through his own review queue) - directly authored by a Claude Code session (source-tagged claude_code_prebuild), never yet generated by the live AI generator that also exists in code but has never actually been run. Jargon Encyclopedia is now a real standalone page (owned by the jargonEncyclopedia module, Sep 26 2026 UI rework) - reached via leftNav\'s Phylum Path subItem or the Taxonomy dashboard card\'s picker popup (dashDeck._openTaxonomy), never a button crammed onto Phylum Path\'s own title anymore. It shows EVERY term regardless of status (pending/accepted/rejected, each with a real status badge and filter chip), with real inline Accept/Edit/Reject actions per pending term (reusing phylumPath._resolvePendingTerm, the one real write path - never a second one). taxonomy_tree itself was first archived in full (671 old branch/leaf rows, a reversible flag) then, same day, actually DELETED to 0 rows at Alex\'s own direct follow-up ask (he judged even the archived structure not worth keeping while jargon gets built out first) - every phylum (1-21) is now a genuinely empty canvas below the phylum level, zero branches, zero leaves, zero fusion links (taxonomy_links is also 0 rows). A full pre-delete snapshot was committed first as the real restore path, since Supabase has no backup/PITR. The old \'Review Archived Terms\'/\'Review Pending Terms\' buttons on the Phylum Path page are gone - the former is genuinely dead (nothing archived left to review) and the latter is superseded by the new Jargon Encyclopedia page above. Never claim any specific phylum currently has real depth, real Orders/Classes, or any structure at all - every earlier claim of that shape (phyla 1-10 depth, Phylum 12\'s real Orders, a structurally-clean tree) describes a state from before this restructure and is not true again until Alex reviews the jargon terms and a real new phylum structure gets built around them. GYM (new Oct 10 2026, owned by the gymTracker module, HABITS module 2 after Cooking - both in the Habits group of the left menu): Gym logs sessions (exercise, sets, reps, kg; gym_sessions + gym_sets tables), shows this week against a 5-session target, personal bests per exercise (heaviest set plus an estimated 1-rep max) and recent sessions with a two-tap delete; Repeat last prefills the previous session, and beating a previous heaviest weight shows a New best toast. Gym sessions appear in Chronicles and the Morning Brief own-words section, and Ask My Data can read gym sets. No sessions exist until Alex logs one. Not yet hand-tested by Alex. FREEZES AND SPEED (Oct 14 2026, perfWatch module, perf_freezes table): any freeze over half a second is saved with what was running (script functions and what triggered them, the last pages and taps, slow network replies, whether the app was still starting); the old repeated App froze alert of about 670ms was the app script loading behind the loading screen (about 690ms at phone speed), so blocks during startup are recorded but no longer alert. Cooking buttons (cookingOracle) share one size scale: 44px main, 36px small, 52px Cook Mode Back/Next and Start Cooking. HEALTH AND BODY (Oct 14 2026, owned by the healthBody module; food_log, body_log and health_settings tables, private - read only after login through /api/data-write): the Health & body card (Habits menu) has Today, Gym plan, Trends and Targets tabs. Food: a meal photo, a nutrition-label photo or typed words go to Oracle, which lists each food with grams; each item is re-checked against the UK food tables (cofid_foods, the same lookup Cooking uses) and those numbers win when they match, otherwise Oracle\'s estimate is kept and labelled; Alex edits and saves to food_log. From your cooks adds one serving of a recipe from a cook finished in the last 3 days (planned_cooks status cooked), per serving from the recipe\'s ingredient grams; it is one tap, not automatic. Only calories and protein are counted, against targets Alex sets. Body: water in glasses, weight with a 7-day average, sleep hours, a 14-day trends table and weight chart (body_log). Gym plan: a Push/Pull/Legs, Upper/Lower or Full body programme rotated over the days Alex picks (health_settings.programme, exercise lists editable); today\'s workout shows last time\'s sets from gym_sets and a nudge (all sets at the top of the rep range = add 2.5kg and drop to the bottom, otherwise same weight, one more rep); Start this workout opens the gymTracker log prefilled. My Day shows a Health today card (calories, protein, water, sleep, today\'s workout). Steps are NOT connected yet: Samsung Health only shares with signed partners and Google Fit\'s API is closing; a Google Health API sync is planned once Alex checks his account has step data there. DAILY LIFE (new Oct 10 2026, owned by the dailyLife module): every Current Stock tab (Pantry/Fridge/Freezer) has an Add-from-a-photo button - Oracle lists the food it sees in the photo, Alex reviews and edits the list, and each ticked row sets that item\'s amount through cookingOracle\'s own stock write (the same one the manual form uses); Oracle never adds stock without that review. Morning Brief has a New-from-your-watchlist button that checks the YouTube creators in intel_watchlist for uploads from the last 7 days (YouTube only - Instagram/TikTok creators cannot be checked) with an Analyse button that queues a video for Content Intelligence, and the brief prompt now includes Alex\'s own open quests, decisions due for a look-back and latest journal note so it can quote them back. Chronicles also shows completed quests and finished planned cooks. Not yet hand-tested by Alex. RECALL (new Oct 10 2026, owned by the recall module): saving an Encyclopedia idea card puts it on a forgetting-curve schedule (encyclopedia_insights.recall_step/recall_due: back after 1, 3, 7, 16 and 35 days); due ideas appear at the top of Morning Brief with Again (back tomorrow) or Got it (next interval; after the last one it counts as learned). A Bookworm chapter with insights has a Cards button that opens its insights as the same Deepstash-style idea cards; saving one writes it to encyclopedia_insights (source_entry_id book:<chapter id>) so book and video ideas share one Saved list and one recall queue. Not yet hand-tested by Alex. MONEY GUARDRAILS (new Oct 10 2026): the shoppingWishlist module asks an optional why-do-you-want-it reason when an item is added (wishlist_items.want_reason) and, for an item added under 24 hours ago, shows a cool-off step (time left plus that reason, Wait or Buy anyway) before the normal what-did-you-pay confirm - it never blocks a purchase. The decisionJournal module adds a Decisions strip on the Journal page: log a decision with the reason at the time and a look-back in 2, 4 or 8 weeks (journal rows, entry_type=decision, review_on); when the date arrives it asks how it turned out and saves the answer (journal.outcome). Not yet hand-tested by Alex. SHARE TO RPGACE (new Oct 10 2026, owned by the shareInbox module): the installed app appears in the Android share sheet (manifest share_target); sharing an Instagram reel, YouTube Short, TikTok or any link queues it into intel_jobs for Content Intelligence analysis, which needs Alex\'s PC analysis server running; after queuing it shows Sent to RPGACE and closes itself so Alex lands back in the app he shared from (if Android refuses the close, it says press Back). iPhone has no share-target support - an iOS Shortcut that opens the app with ?share_url= does the same. Not yet hand-tested by Alex. PATHWAYS (new Oct 10 2026, owned by the pathways module): an Encyclopedia post that came from an analysed video has buttons to turn that video\'s suggested quests into real Quest Board quests (questEngine, duplicates skipped), add its creator to the watchlist (intel_watchlist), and list Jargon Encyclopedia terms that appear in the article; Platform Oracle has an optional About-a-beat picker (beat_audio_jobs / content_productions) that prefixes every command with that beat; the Cooking shopping list has an Add-a-non-food-item-to-your-Wishlist form (shoppingWishlist). Not yet hand-tested by Alex. COOKING LAYOUT (Oct 10 2026, N2 slice 4): every Cooking button comes from one shared token set (cookingOracle BTN_VARIANTS) and now has a 36-44px tap target with 13px+ text; ingredient rows, step headers and hub descriptions are 12-13px; the Current Stock unit box no longer runs off the screen; and liquid amounts read in quarter cups with the original ml kept, e.g. 200 ml = 3/4 cup + 1 tbsp + 1 tsp (200 ml) instead of 13 tbsp 1 tsp. Not yet hand-tested by Alex. KNOWLEDGE LAYOUT (Oct 10 2026, N2 slice 3): the Encyclopedia page starts with the articles - category/sort chips sit in a folded Filter & sort section and Sync/Clear All in a folded Maintenance tools section, with search and a count line (naming the active category and sort) always visible; article titles wrap in full; an article made from an analysed video previews its first idea cards instead of making an Oracle call. Jargon Encyclopedia no longer repeats a not-placed line under every term. Encyclopedia, Jargon Encyclopedia and Phylum Path use 40px buttons and 13px+ text. Not yet hand-tested by Alex. CONTENT & VIDEO LAYOUT (Oct 10 2026, N2 slice 2): the My beats list, Idea Bank and Beat Log pages use 40px buttons and 13px+ text; beat titles wrap instead of truncating. Beat Log extra fields reflow to two columns on a phone. Not yet hand-tested by Alex. ORACLE PAGE LAYOUT (Oct 10 2026, N2 slice 1): the chat input sits directly under the messages with one Tools row below it (New quests, Draft email, Log to Notion, YT stats, Prod. Oracle, Platform Oracle, Visual Oracle, Repurpose, Schedule Oracle, Phylum Path); the old Insta-Oracle button and a duplicate Quick Actions bar are gone; the former Agents page content (connected apps, one-click agent cards, activity log) is in a collapsed Agent actions & connected apps section at the bottom (agentsIntoOracle); long app-generated prompts in the chat show a 4-line preview with Show all. Not yet hand-tested by Alex. PLATFORM ORACLE (new Oct 10 2026, owned by the captionsPanel module): the Instagram, YouTube and TikTok command panels are now ONE panel - a single Platform Oracle button on the Oracle page opens it, with an Instagram / YouTube / TikTok / Business switch (13 / 8 / 8 / 5 pre-filled commands, stored in instaOraclePanel/youtubeOracle/tiktokOracle/producerTools). The Business tab (producerTools, Oct 10 2026) holds producer tools: A&R Critic, Artist Outreach, Contract Red Flags (plain-English explainer, not legal advice), Negotiation Rehearsal (role-play, then a debrief) and Playlist Psychologist (listening to beat ideas) - prompts only, nothing is sent to anyone automatically; a beat-pricing calculator does not exist because no finance data is logged yet. Tapping a command sends it to Oracle chat; the old Insta-Oracle button opens the same panel. Not yet hand-tested by Alex. ASK MY DATA (new Oct 10 2026, owned by the askMyData module): when Alex asks about his own saved data (pantry/stock, shopping list, recipes, planned cooks, wishlist, journal, quests, agenda, creator watchlist, analysed videos, encyclopedia, idea cards, jargon, reference tracks, finance log, books, content productions, RPGACE changelog), Oracle can request ONE read-only lookup with a DATA_QUERY trailer; the app fetches up to 30 rows, shows Alex which rows were used, and Oracle answers from those rows only. It cannot write or change data, and it only knows what those rows contain. Not yet hand-tested by Alex. DASHBOARD + MENU (Oct 10 2026, N2 slice 5, owned by dashDeck + leftNav): the left menu is the ONE place to reach everything, grouped Oracle / Content & Video / Knowledge / Habits (Cooking, Gym, Shopping Wishlist) / Schedule & Journal / Chronicles / Oversight - popup modules like Cooking, Gym, Morning Brief and Oversight open from it too. The dashboard no longer has a card grid; it is a landing page with four sections: Today (shifts and scheduled tasks for today, a planned cook today, My Day routines left today, gym sessions this week against 5), Due - waiting on you (pending taxonomy reviews, jargon terms to review, saved ideas due for recall, decisions due for a look-back, wishlist items whose 24h cool-off is over, shared links queued for the PC analysis server - a row only appears when there is something in it), Continue where you left off (the last pages/modules Alex opened, kept in this browser only, plus the book in progress, latest recipe and latest production) and Morning Brief + an Ask Oracle box that sends the question through the normal Oracle chat. It makes no Oracle call itself. Not yet hand-tested by Alex. NAVIGATION (new Oct 10 2026, owned by dashDeck + pathRouter): every popup has a sticky header with a Back button, a Domain > Card label and buttons for the other modules in the same domain; phone/browser Back closes the open popup first instead of leaving the page, and Back from a page that was opened from inside a popup returns to that page and reopens the card it came from. The sub-pages of Content Pipeline (My beats, Idea Bank, Beat Log) and Bookworm (Bookworm, Videoworm, MusicWorm, Bibliography) have their own Back button (\u2190 Content Pipeline / \u2190 Bookworm, dashDeck._pageBack, Oct 10 2026) that does the same as phone Back; opened directly by link it shows the dashboard with that menu open. Not yet hand-tested by Alex. ENCYCLOPEDIA (new Oct 10 2026, owned by the encyclopediaPosts module): every Content Intelligence report (intel_reports) is automatically turned into a real encyclopedia article (source=intel, source_url = the video) plus one encyclopedia_insights row per idea card (idea_section/idea_order; saved_at when Alex saves an idea). Articles read Deepstash-style as a post of idea cards (Back/Next, card count, read time, Save idea, Full article); the Encyclopedia page shows a Posts strip with Series (posts sharing a tag) and Saved ideas. This replaced an old auto-save that only looked at the newest 5 reports and had stopped saving after the encyclopedia was cleared - so before Oct 10 none of the 37 analysed videos had an article. Not yet hand-tested by Alex; Knowledge Tree links to articles do not exist yet (the tree is empty). SCREENSHOT INBOX (new Oct 11 2026, owned by the screenshotInbox module, Knowledge menu): Alex adds screenshots in the app or shares an image to RPGACE from the Android share sheet; each is stored privately (screenshots table + private bucket, readable only after login through /api/data-write) and Oracle reads it once, saving the visible text, a one-sentence description, tags and a kind, and suggesting up to two homes. Nothing moves automatically: per screenshot Alex can Add to Wishlist (shoppingWishlist), Save as idea card (encyclopedia_insights, joins the recall schedule), Start a recipe (opens Cooking\'s Generate form filled in), Journal it, Keep it in the inbox, or delete it. Screenshots are searchable in the inbox and through Ask My Data (screenshots source, text only), and the dashboard Due section shows how many are waiting to be sorted. Each read is one Oracle vision call. Not yet hand-tested by Alex. CONTENT PIPELINE: Research Lab is fully retired as a user-facing destination - its former panels live inside Content Pipeline/Bookworm cards now. Since Oct 17 2026 (PC-6) the old video tools are retired and their code removed: Visual Treatment + Director Match + the director picker, the music-video and tutorial Production Panels, Upload Workshop, the OBS raw workflow, Activate ConID and the video-job tracker (videoPipeline module); Content Pipeline is now just a pop-up routing to Beats home, Posting, Idea Bank, Beat Log and My beats; Visual Oracle keeps 4 commands (copyright risk, mood board, storyboard, OpenMontage brief); old style_profiles / video_jobs rows stay in the database untouched. RPGACE does not generate video itself - OpenMontage (a separate Claude Code session in its own repo) is briefed and handed off via openmontage_jobs, never live infrastructure; RPGACE has ruled out paid video providers on principle (zero spend). Real beat-grid audio sync does not exist - "in sync with the beat" currently means mood/palette-matched only. Features F0 through F18 have shipped except F12 (deliberately deferred); F16/F17/F18 remain real execution debt - shipped code, genuinely never hand-tested through their full flow yet.',
 
   init: function() {
     var self = this;
@@ -13747,10 +13153,8 @@ RPGACE.register('leftNav', {
         ] },
       // PC-0 (Oct 17 2026): Posting home under Beats.
       { icon: '📣', label: 'Posting', desc: 'Idea → Plan → Record → Edit → Post', page: P.posting },
-      { icon: '🎬', label: 'Content Pipeline', desc: 'Ideas → productions → posts', page: P.contentPipeline,
-        subItems: [
-          { icon: '🔀', label: 'Upload Workshop',  page: P.uploadWorkshop }
-        ] },
+      // PC-6 (Oct 17 2026): the separate Content Pipeline entry (and its
+      // Upload Workshop) is retired; My beats sits under Beats above.
       { heading: 'Knowledge' },
       // KN-6 (Oct 15 2026): the hub's 4 steps in order - Take in (Library,
       // Screenshots) -> Study (Bookworm + its worms) -> Learned (Encyclopedia,
@@ -16786,7 +16190,7 @@ RPGACE.register('dashDeck', {
     { key: 'agenda', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '☀️', name: 'My Day', desc: 'Your routines for today, plan my day around shifts, and today\'s agenda.', go: function() { if (typeof showPage === 'function') showPage(RPGACE.CONFIG.pages.agenda); } },
     { key: 'morningBrief', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '🌅', name: 'Morning Brief', desc: 'Your day in one shot — priorities, pending reviews, today\'s focus.', go: function() { RPGACE.modules.dashDeck._openMorningBrief(); } },
     { key: 'gaps', accent: '--dd-green-rgb', color: 'var(--green)', emoji: '🕳️', name: 'Knowledge Gaps', desc: 'What your library doesn\'t know yet — now part of Review.', go: function() { var m = RPGACE.modules.knowledgeReview; if (m) m.open(); else RPGACE.modules.dashDeck._openGaps(); } }, // KN-3
-    { key: 'pipeline', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '🎬', name: 'Content Pipeline', desc: 'Ideas → productions → posts. Your beat-to-content flow.', go: function() { RPGACE.modules.dashDeck._openPipeline(); } },
+    { key: 'pipeline', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '🎬', name: 'Content Pipeline', desc: 'Beats, posts and the ideas behind them.', go: function() { RPGACE.modules.dashDeck._openPipeline(); } },
     // Aug 6 (Engineer pass, real Video Pipeline → Content Pipeline
     // absorption, Alex's explicit /deduplication ask) — this card is
     // DELETED, not just relabeled. Every real video_jobs row has always
@@ -16974,8 +16378,7 @@ RPGACE.register('dashDeck', {
     'video-finder-panel':    { eyebrow: '🐛 Videoworm: Find Videos',   title: 'Search YouTube and feed URLs into Videoworm', accent: 'var(--purple)', width: '720px' },
     'bookworm-bibliography': { eyebrow: '📚 Bibliography',             title: 'Books you have finished',                    accent: 'var(--purple)', width: '640px' },
     'cp-idea-bank':          { eyebrow: '💡 Idea Bank',                title: 'Every saved content idea',                   accent: 'var(--gold)',   width: '720px' },
-    'beat-log-panel':        { eyebrow: '🥁 Beat Log',                 title: 'Log a beat into the Content Pipeline',       accent: 'var(--gold)',   width: '720px' },
-    'video-workshop-panel':  { eyebrow: '🔀 Upload Workshop',          title: 'Turn a finished video into an upload strategy', accent: 'var(--gold)', width: '760px' }
+    'beat-log-panel':        { eyebrow: '🥁 Beat Log',                 title: 'Log a finished beat',                        accent: 'var(--gold)',   width: '720px' }
   },
 
   // ── PAGE_PANELS / _openPage — Aug 31 2026 (UI11), the real routable-page
@@ -17002,8 +16405,7 @@ RPGACE.register('dashDeck', {
     'bookworm-bibliography': { slug: 'bibliography',     ensure: function() { var m = RPGACE.modules.bookworm; if (m && m._injectBibliographySection) m._injectBibliographySection(); } },
     'cpl-widget':            { slug: 'content-pipeline', ensure: function() { var m = RPGACE.modules.contentProductionLive; if (m && m._injectDashboardWidget) m._injectDashboardWidget(); } },
     'cp-idea-bank':          { slug: 'idea-bank',        ensure: function() { var m = RPGACE.modules.conidPot; if (m && m._injectIdeaBank) m._injectIdeaBank(); } },
-    'beat-log-panel':        { slug: 'beat-log',         ensure: function() { var m = RPGACE.modules.beatLog; if (m && m._inject) m._inject(); } },
-    'video-workshop-panel':  { slug: 'upload-workshop',  ensure: null }
+    'beat-log-panel':        { slug: 'beat-log',         ensure: function() { var m = RPGACE.modules.beatLog; if (m && m._inject) m._inject(); } }
   },
 
 
@@ -18285,110 +17687,22 @@ RPGACE.register('dashDeck', {
     });
     var body = pop.box;
     var GOLD_BTN = 'display:block;width:100%;margin-top:8px;padding:11px;min-height:44px;background:rgba(var(--dd-gold-rgb),.15);border:1px solid var(--gold);border-radius:8px;color:var(--gold);font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    var RESUME_BTN = 'display:block;width:100%;margin-top:6px;padding:11px;min-height:44px;background:rgba(226,168,61,.12);border:1px solid rgba(226,168,61,.45);border-radius:8px;color:#E2A83D;font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;font-family:Rajdhani,sans-serif;';
 
-    var openListBtn = document.createElement('button');
-    // BT-0 (Oct 16 2026): Beats home at the top of the Content Pipeline pop-up.
-    var beatsBtn = document.createElement('button');
-    beatsBtn.textContent = '🥁 Beats home';
-    beatsBtn.id = 'dd-pipe-beats';
-    beatsBtn.style.cssText = GOLD_BTN;
-    beatsBtn.style.marginTop = '0';
-    beatsBtn.onclick = function() { pop.close(); RPGACE.modules.beatsHub.open(); };
-    body.appendChild(beatsBtn);
-    // PC-0 (Oct 17 2026): Posting home next to Beats home.
-    var postBtn = document.createElement('button');
-    postBtn.textContent = '📣 Posting';
-    postBtn.id = 'dd-pipe-posting';
-    postBtn.style.cssText = GOLD_BTN;
-    postBtn.onclick = function() { pop.close(); RPGACE.modules.postingHub.open(); };
-    body.appendChild(postBtn);
-    openListBtn.textContent = '🎬 Open ConID List';
-    openListBtn.style.cssText = GOLD_BTN;
-    openListBtn.onclick = function() { pop.close(); self._openPage('cpl-widget'); };
-    body.appendChild(openListBtn);
-
-    // Real, live-queried Resume — the most recently updated production, or
-    // nothing rendered at all (never a fabricated placeholder).
-    RPGACE.sb.select('content_productions', 'select=id,con_id,title&order=updated_at.desc&limit=1')
-      .then(function(rows) {
-        var row = rows && rows[0];
-        if (!row) return;
-        var rbtn = document.createElement('button');
-        rbtn.textContent = '▶ Resume Production: #' + row.con_id + ' "' + row.title + '"';
-        rbtn.style.cssText = RESUME_BTN;
-        rbtn.onclick = function() {
-          pop.close();
-          self._openPage('cpl-widget', { after: function() {
-            var cpl = RPGACE.modules.contentProductionLive;
-            if (!cpl) return;
-            cpl._activeConID = row.con_id;
-            cpl._activeId = row.id;
-            cpl._openProductionPanel();
-          }});
-        };
-        openListBtn.insertAdjacentElement('afterend', rbtn);
-      })
-      .catch(function(e) { console.warn('[dashDeck] production resume check:', e.message); });
-
-    var openIdeaBtn = document.createElement('button');
-    openIdeaBtn.textContent = '💡 Open Idea Bank';
-    openIdeaBtn.style.cssText = GOLD_BTN;
-    openIdeaBtn.onclick = function() { pop.close(); self._openPage('cp-idea-bank'); };
-    body.appendChild(openIdeaBtn);
-
-    // Real, live-queried Resume — the most recent still-uncommitted idea
-    // (status='potential', same real status the Idea Bank list itself
-    // already filters/queries by), or nothing rendered at all.
-    RPGACE.sb.select('conid_pot', 'status=eq.potential&order=created_at.desc&limit=1&select=id,idea_text')
-      .then(function(rows) {
-        var row = rows && rows[0];
-        if (!row) return;
-        var rbtn = document.createElement('button');
-        var preview = (row.idea_text || '').slice(0, 48);
-        if (row.idea_text && row.idea_text.length > 48) preview += '…';
-        rbtn.textContent = '▶ Resume idea: "' + preview + '"';
-        rbtn.style.cssText = RESUME_BTN;
-        rbtn.onclick = function() { pop.close(); self._openPage('cp-idea-bank'); };
-        openIdeaBtn.insertAdjacentElement('afterend', rbtn);
-      })
-      .catch(function(e) { console.warn('[dashDeck] idea resume check:', e.message); });
-
-    var openBeatLogBtn = document.createElement('button');
-    openBeatLogBtn.textContent = '🥁 Open Beat Log';
-    openBeatLogBtn.style.cssText = GOLD_BTN;
-    openBeatLogBtn.onclick = function() { pop.close(); self._openPage('beat-log-panel'); };
-    body.appendChild(openBeatLogBtn);
-
-    var openWorkshopBtn = document.createElement('button');
-    openWorkshopBtn.textContent = '🔀 Open Upload Workshop';
-    openWorkshopBtn.style.cssText = GOLD_BTN;
-    openWorkshopBtn.onclick = function() { pop.close(); self._openPage('video-workshop-panel'); };
-    body.appendChild(openWorkshopBtn);
-
-    // A7 (Aug 23 2026) — Alex's second real OBS-raw entry point, verbatim:
-    // footage made solo or via Oracle goes either "to Idea Bank (save for
-    // later)" — the gated "🎥 Activate as OBS Raw" connector on an Idea Bank
-    // row — "or straight to Content Pipeline (footage already done)", which
-    // is this button. Same single gated creation path either way
-    // (_openObsRawIntake, potRow null here), never a second copy. Kept as a
-    // real ACTION button (not a nav destination) in the Aug 31 2026 (UI13)
-    // rebuild — removing it would be a real functionality regression UI13
-    // never asked for.
-    var obsBtn = document.createElement('button');
-    obsBtn.textContent = '🎥 New OBS Raw ConID (footage already recorded)';
-    obsBtn.style.cssText = 'display:block;width:100%;margin-top:8px;padding:11px;min-height:44px;background:rgba(226,168,61,.12);border:1px solid rgba(226,168,61,.45);border-radius:8px;color:#E2A83D;font-size:13px;font-weight:700;letter-spacing:1px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    obsBtn.onclick = function() {
-      pop.close();
-      var cpl = RPGACE.modules.contentProductionLive;
-      if (!cpl || !cpl._openObsRawIntake) { RPGACE.utils.toast('Content Pipeline module not available', '#CC4A4A', 2500); return; }
-      cpl._openObsRawIntake(null, null);
+    // PC-6 (Oct 17 2026): the old Production Panel resume, Upload Workshop
+    // and OBS raw buttons are retired; this pop-up just routes to the
+    // Beats / Posting journeys and their three shared screens.
+    var go = function(id, label, run) {
+      var b = document.createElement('button');
+      b.id = id; b.textContent = label; b.style.cssText = GOLD_BTN;
+      b.onclick = function() { pop.close(); run(); };
+      body.appendChild(b);
+      return b;
     };
-    body.appendChild(obsBtn);
-    var foot = document.createElement('div');
-    foot.style.cssText = 'margin-top:12px;font-size:11px;color:var(--muted);line-height:1.5';
-    foot.textContent = '🎥 Video job stage tracking lives inside each beat\'s own Production Panel — open the ConID List above, then open a ConID card.';
-    body.appendChild(foot);
+    go('dd-pipe-beats', '🥁 Beats home', function() { RPGACE.modules.beatsHub.open(); }).style.marginTop = '0';
+    go('dd-pipe-posting', '📣 Posting', function() { RPGACE.modules.postingHub.open(); });
+    go('dd-pipe-ideas', '💡 Idea Bank', function() { self._openPage('cp-idea-bank'); });
+    go('dd-pipe-beatlog', '📝 Beat Log', function() { self._openPage('beat-log-panel'); });
+    go('dd-pipe-mybeats', '🎬 My beats', function() { self._openPage('cpl-widget'); });
   },
 
   // /Engineer pass (July 28, round 2) — this card used to just prefill
@@ -26478,7 +25792,6 @@ RPGACE.register('config', {
         contentPipeline: 'content-pipeline',
         ideaBank:        'idea-bank',
         beatLogPage:     'beat-log',
-        uploadWorkshop:  'upload-workshop',
       },
       mainFns: {
         prodOracle:  'toggleProdOraclePanel',
@@ -28021,70 +27334,6 @@ RPGACE.register('beatLog', {
       });
     },
 
-    // Aug 6 (Engineer pass, real Content Pipeline bugfix) — the old
-    // _waitThenAutoVisualTreatment auto-chain (fired this straight off the
-    // Beat Log response scan, no click involved) is gone; _generateOutputs
-    // now calls this directly from a real "🎬 Generate Visual Treatment
-    // Doc" button click instead. Real, deliberate deletion, not left as
-    // dead code (rule 8) — its docstring's own history (a background-tab
-    // timer-throttling bug, then an event-driven rebuild that turned out to
-    // still race) is preserved in engineer_pass_2026-08-06_10.txt rather
-    // than re-told here.
-    //
-    // 2026-07-28 - now threads cpId/videoJobId through so the generated
-    // document is actually saved (content_pipeline_overseer_spec_backlog_
-    // 2026-07-28.txt) instead of only ever existing as a chat message, and
-    // asks for one extra structured trailer line (DIRECTOR_CHOSEN) so the
-    // director this document picks becomes a real style_profiles row
-    // instead of resurrecting nothing.
-    _autoVisualTreatment: function(form, palette, cpId, videoJobId) {
-      var buildPrompt = function(filmmakerBlock) {
-        return 'Generate a full Visual Treatment Document for my beat.\n' +
-          'Beat title: ' + form.title + '\n' +
-          'Mood: ' + form.mood + ' | Key + scale: ' + form.key + ' ' + form.scale + ' | BPM: ' + form.bpm + '\n' +
-          'Colour palette: ' + palette.name + ' (' + palette.hex + ')\n' +
-          (form.refTrack ? 'Reference: ' + form.refTrack + '\n' : '') +
-          (filmmakerBlock ? '\n' + filmmakerBlock + '\n' : '') +
-          '\nThe document must include: Concept statement (2 sentences), Visual world description (colour palette, lighting, texture), ' +
-          'Camera direction (movement vocabulary, shot types, rhythm), Talent/subject direction if any, Scene breakdown (4 scenes with duration), ' +
-          'OpenMontage production brief (120 words), a COPY-PASTE PROMPT of 500 characters or fewer per scene — the exact text I can paste directly into an AI image/video generation tool\'s own prompt box, which is almost always character-limited (do not assume the full document above fits there; count the characters and cut it down until it genuinely does), and export format recommendations for YouTube, Reels, and Beatstars. ' +
-          'Every director/reference/technical claim you make must be something you can actually stand behind — if you are inferring or pattern-matching rather than citing something real and confirmed, say so plainly next to that claim (e.g. "inferred, not confirmed:") rather than stating it as settled fact.' +
-          (filmmakerBlock ? ' Choose one director from the list above to ground the visual direction — say which one and why. Then on its own final line, output exactly: DIRECTOR_CHOSEN: <exact director name from the list above>.' : '');
-      };
-      var vo = RPGACE.modules.visualOracle;
-      // Aug 6 (Engineer pass, real Content Pipeline bugfix) — armCapture now
-      // runs AFTER sendToOracle confirms the send actually happened, not
-      // before. This was the real root cause of Alex's own hand-test report
-      // (2026-08-06): this auto-chain fires straight off the Beat Log
-      // response scan with no human gate, so a manual click elsewhere (e.g.
-      // "Start Visual Treatment" on the ConID card) landing in the same
-      // narrow window could grab the in-flight slot first, silently
-      // blocking THIS send while the capture below was already armed and
-      // dangling - it then wrongly fired on the manual flow's own reply
-      // once that landed (RPGACE.hooks.fire broadcasts to every registered
-      // listener, confirmed by direct read), which is why no style_profiles
-      // row ever appeared for the auto-triggered director pick.
-      var armCapture = function() {
-        if (vo && vo._captureNextResponse && cpId) {
-          vo._captureNextResponse(function(text) {
-            vo._saveDocToProduction('visual_treatment', text, cpId, videoJobId);
-          });
-        }
-      };
-      var fire = function(block) {
-        var sent = RPGACE.utils.sendToOracle(buildPrompt(block));
-        if (sent) {
-          armCapture();
-        } else {
-          RPGACE.utils.toast('⏳ Auto Visual Treatment was blocked (Oracle still busy) — use the ConID\'s "🎬 Start Visual Treatment" button to run it manually', '#E2A83D', 5000);
-        }
-      };
-      if (vo && typeof vo._withFilmmakerLibrary === 'function') {
-        vo._withFilmmakerLibrary(function(block) { fire(block); });
-      } else {
-        fire('');
-      }
-    },
 
     _saveMatchesToCorpus: function(form, big, emerging, underground, btn) {
       var allArtists = big.concat(emerging).concat(underground);
@@ -28875,23 +28124,8 @@ RPGACE.register('beatLog', {
           }, function(e) { RPGACE.utils.toast('⚠️ Beat logged, but the idea could not be marked done: ' + (e && e.message || e), '#CC4A4A', 4000, 'beatLog'); });
         }
 
-        // 2. Save to Supabase video_jobs, linked to the new Content Pipeline row
-        return RPGACE.sb.secureWrite('video_jobs', 'insert', {
-          title:        form.title,
-          status:       'beat_logged',
-          script:       JSON.stringify(form),
-          edl:          null,
-          raw_path:     form.flPath || null,
-          style_profile_id: null,
-          content_production_id: cpId,
-        }).then(function(vjResult) {
-          var vjRow = Array.isArray(vjResult) ? vjResult[0] : vjResult;
-          var videoJobId = vjRow && vjRow.id ? vjRow.id : null;
-          self.ui._continueAfterLink(form, cpId, videoJobId);
-        }).catch(function(e) {
-          console.warn('[beatLog] video_jobs save:', e.message);
-          self.ui._continueAfterLink(form, cpId, null);
-        });
+        // PC-6 (Oct 17 2026): no video_jobs row any more (the old video pipeline is retired).
+        self.ui._continueAfterLink(form, cpId, null);
       }).catch(function(e) {
         console.warn('[beatLog] Content Pipeline entry:', e.message);
         RPGACE.utils.toast('⚠️ The beat could not be saved: ' + (e && e.message || e), '#CC4A4A', 5000, 'beatLog');
@@ -29139,7 +28373,7 @@ RPGACE.register('beatLog', {
             RPGACE.utils.toast('⏳ Oracle was busy — try again in a moment', '#E2A83D', 3000);
             return;
           }
-          sendBtn.textContent = '✅ Sent — jotting it down + opening Content Pipeline once it replies...';
+          sendBtn.textContent = '✅ Sent — the reply is saved on the beat';
           // Aug 6 (item 2) — Alex's real ask: "pressing log beat... should
           // all be jotted down and send me back to content pipeline, where
           // all the live production phases should be shown." Reuses the
@@ -29153,37 +28387,13 @@ RPGACE.register('beatLog', {
           // from the reply Alex is reading.
           if (cpId && RPGACE.modules.visualOracle) {
             RPGACE.modules.visualOracle._captureNextResponse(function(text) {
-              RPGACE.modules.visualOracle._saveDocToProduction('beat_log_response', text, cpId, videoJobId);
-              RPGACE.sb.select('content_productions', 'id=eq.' + cpId + '&select=con_id&limit=1')
-                .catch(function() { return []; })
-                .then(function(rows) {
-                  var cpl = RPGACE.modules.contentProductionLive;
-                  if (!cpl) return;
-                  cpl._activeConID = rows && rows[0] ? rows[0].con_id : cpl._activeConID;
-                  cpl._activeId = cpId;
-                  cpl._openProductionPanel();
-                });
+              RPGACE.modules.visualOracle._saveDocToProduction('beat_log_response', text, cpId);
             });
           }
         }, 300);
       };
       gateRow.appendChild(sendBtn);
 
-      // F18: now a real second gated step instead of an auto-chain off the
-      // first response — decoupled entirely, so it can be run independently
-      // whenever Alex is ready, not forced into a fixed sequence.
-      if (form.visualTreatment) {
-        var vtBtn = document.createElement('button');
-        vtBtn.textContent = '🎬 Generate Visual Treatment Doc';
-        vtBtn.style.cssText = 'width:100%;padding:10px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.3);border-radius:6px;color:#9B6EC8;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-        vtBtn.onclick = function() {
-          vtBtn.disabled = true;
-          vtBtn.textContent = '⏳ Generating...';
-          if (typeof showPage === 'function') showPage('advisor');
-          setTimeout(function() { self.logic._autoVisualTreatment(form, palette, cpId, videoJobId); }, 300);
-        };
-        gateRow.appendChild(vtBtn);
-      }
 
       output.appendChild(gateRow);
     },
@@ -29267,7 +28477,6 @@ RPGACE.register('beatLog', {
   // RPGACE.modules.beatLog, never as a detached function reference.
   _getMoodTags: function(mood, bpm) { return this.logic._getMoodTags(mood, bpm); },
   _addNewArtistsToTaxonomy: function(artists, mood) { return this.logic._addNewArtistsToTaxonomy(artists, mood); },
-  _autoVisualTreatment: function(form, palette, cpId, videoJobId) { return this.logic._autoVisualTreatment(form, palette, cpId, videoJobId); },
   _saveMatchesToCorpus: function(form, big, emerging, underground, btn) { return this.logic._saveMatchesToCorpus(form, big, emerging, underground, btn); },
   _inject: function() { return this.ui._inject(); },
   _parseFilename: function(filename, filepath) { return this.ui._parseFilename(filename, filepath); },
@@ -30087,17 +29296,11 @@ RPGACE.register('contentProductionLive', {
   //     picker, and build prompt strings — none constructs DOM here.
   // ══════════════════════════════════════════════════════════════════
 
-  _activeConID: null,
-  _oracleSession: [],
 
-  // Aug 5 (Engineer pass, Phase F) — real freeze flag mirroring
-  // ENABLED_PHYLA's own shape (phylumPath module): was false until Alex
-  // made his real Tier-3 paid-video-provider decision. FLIPPED TRUE Aug 30
-  // 2026 — Alex confirmed a real OpenArt subscription, resolving the spend
-  // fork. "Generate Video" now actually writes the real payload to
-  // openmontage_jobs instead of only showing it.
-  OPENMONTAGE_HANDOFF_ENABLED: true,
-
+  // PC-6 (Oct 17 2026): the hand-off flag, Oracle bar, Production Panels,
+  // OBS raw intake and video-job tracker are retired ("start fresh"); this
+  // module is now only the My beats list (Beats' release / sell / links)
+  // and the Beatstars listing text. Posts live in postingHub.
   init: function() {
     var self = this;
     RPGACE.registerBootTask(function() { return self._injectDashboardWidget(); });
@@ -30105,150 +29308,12 @@ RPGACE.register('contentProductionLive', {
       if (name === RPGACE.CONFIG.pages.dashboard) {
         self._injectDashboardWidget();
       }
-      if (name === RPGACE.CONFIG.pages.oracle) {
-        setTimeout(function() { self._injectOracleBar(); }, 600);
-      }
     });
   },
 
-  // ── Create a new ConID entry ──────────────────────────────────
-  // 2026-07-31 — Alex's own explicit 4-step mental model for music_video
-  // ConIDs (log beat / visual treatment / video generation / captions).
-  // Display-label override only, keyed off the same real `status` enum
-  // every content_type shares — no schema change, no ripple to Content
-  // Repurpose/Idea Bank's own use of this column.
-  MUSIC_VIDEO_STATUS_LABELS: {
-    'Idea': '1. Beat Logged', 'Scripted': '2. Visual Treatment',
-    'Filmed': '3. Video Generation', 'Edited': '3. Video Generation',
-    'Posted': '4. Captions Ready', 'Analysed': '4. Captions Ready',
-  },
 
-  // Aug 6 (Engineer pass, 2nd real hand-test round, item 10) — Alex's own
-  // catch: the status badge showed the UPCOMING stage's name, which read
-  // ambiguously. He wants it to show what was just DONE, "tick" phrasing
-  // ("log beat - tick", "visual treatment: tick"). Sibling table to
-  // MUSIC_VIDEO_STATUS_LABELS above, same status keys, different phrasing.
-  MUSIC_VIDEO_BADGE_LABELS: {
-    'Idea': 'Log Beat: tick', 'Scripted': 'Visual Treatment: tick',
-    'Filmed': 'Video Generation: tick', 'Edited': 'Video Generation: tick',
-    'Posted': 'Captions: tick', 'Analysed': 'Captions: tick',
-  },
 
-  // Aug 6 (Engineer pass, items 5/7/13) — real fix for the recurring
-  // "duplicate stage" complaint. Root cause, confirmed by direct code
-  // read: the ConID card used to render a FIXED set of buttons (a
-  // generic "-> Mark [next status]" advance chip AND a permanently-shown
-  // "Start Visual Treatment" button AND a Video Pipeline link) regardless
-  // of real current progress — never a race condition, just every
-  // applicable-looking button always rendering at once. These two tables
-  // replace that with ONE stage-aware primary action + ONE redo-the-
-  // last-completed-stage action, keyed off the real status column. No
-  // schema change — same pattern as the two label tables above.
-  MUSIC_VIDEO_PRIMARY_ACTION: {
-    'Idea':     { label: '🎬 Start Visual Treatment', fn: '_generateVisualTreatment' },
-    'Scripted': { label: '🎥 Generate Video',          fn: '_generateVideo' },
-    'Filmed':   { label: '📝 Generate Captions',        fn: '_generateCaptions' },
-    'Edited':   { label: '📝 Generate Captions',        fn: '_generateCaptions' },
-    // 'Posted'/'Analysed': no further primary action — last real stage.
-  },
-  // Redo targets the stage that led INTO the current status, i.e. the
-  // most recently completed real action — not every prior stage at once
-  // (that would just reintroduce the same clutter under a new name).
-  // revertTo is the status _revertToStage should roll back to before
-  // fn re-runs, when the caller's "revert progress" checkbox is on.
-  MUSIC_VIDEO_REDO_ACTION: {
-    'Scripted': { label: '↩ Redo Visual Treatment', fn: '_generateVisualTreatment', revertTo: 'Idea' },
-    'Filmed':   { label: '↩ Redo Video Generation',  fn: '_generateVideo',          revertTo: 'Scripted' },
-    'Edited':   { label: '↩ Redo Video Generation',  fn: '_generateVideo',          revertTo: 'Scripted' },
-    'Posted':   { label: '↩ Redo Captions',          fn: '_generateCaptions',       revertTo: 'Filmed' },
-    'Analysed': { label: '↩ Redo Captions',          fn: '_generateCaptions',       revertTo: 'Filmed' },
-    // 'Idea': nothing completed yet, no redo target.
-  },
-  // Undo (item 12) shares this exact map with the revert-checkbox path —
-  // one source of truth for "what stage comes before this one," never a
-  // second hand-maintained copy (rule 8).
-  MUSIC_VIDEO_PREV_STAGE: {
-    'Scripted': 'Idea', 'Filmed': 'Scripted', 'Edited': 'Scripted',
-    'Posted': 'Filmed', 'Analysed': 'Filmed',
-  },
-  // What each stage's real action actually writes, so reverting past it
-  // can honestly clear the output it produced (item 3/12's "delete the
-  // outputs that stage made" requirement) rather than just changing the
-  // status label while stale docs linger. Deliberately scoped to
-  // content_productions.creative_docs only — NOT a cascading delete
-  // across style_profiles/video_jobs/openmontage_jobs. This project has
-  // no Supabase backup/PITR (standing CLAUDE.md fact); a blind cross-
-  // table delete here would be real, unrecoverable data loss for a UI
-  // convenience feature. Those rows are simply superseded on redo, not
-  // deleted — an honest, named scope-down, not a silent gap.
-  STAGE_DOC_KEYS: {
-    'Idea':     ['visual_treatment', 'director_blend', 'script', 'director_match', 'captions'],
-    'Scripted': ['captions'],
-    'Filmed':   ['captions'],
-  },
 
-  // ══════════════════════════════════════════════════════════════════
-  // A7 (Aug 23 2026) — OBS-raw workflow, the third real content_type.
-  // ══════════════════════════════════════════════════════════════════
-  // Alex's own spec: "the obs raw to video pipeline workflow should
-  // include all the components from beat to music video workflow, with
-  // tweaks that make sense." So this deliberately MIRRORS the
-  // MUSIC_VIDEO_* tables above stage-for-stage (4 real display stages on
-  // the same shared `status` enum, display-label override only, zero
-  // schema change) rather than inventing a different shape — the real
-  // differences are only where the work genuinely differs:
-  //
-  //   music_video:  1. Beat Logged    2. Visual Treatment  3. Video Generation  4. Captions
-  //   obs_raw:      1. Footage Logged 2. Meme Script       3. Cut & Assembled   4. Captions
-  //
-  // Stage 2 uses the YouTube Meme Director (one real f14_filmmaker_library
-  // row, NOT the cinematic 3-director blend — see _generateObsScript).
-  // Stage 3 is an honest MANUAL acknowledgment that Alex has actually run
-  // the ffmpeg cuts himself — RPGACE does not run ffmpeg, and faking a
-  // render step here would be exactly the kind of hollow progress rule 7
-  // forbids. Same precedent as _viewOpenMontageJob's own real "Mark ConID
-  // as Filmed" button. Stage 4 reuses _generateCaptions/_viewCaptions
-  // unchanged (rule 8) — captions for a finished OBS video are the same
-  // real job as captions for a finished music video.
-  OBS_RAW_STATUS_LABELS: {
-    'Idea': '1. Footage Logged', 'Scripted': '2. Meme Script Ready',
-    'Filmed': '3. Cut & Assembled', 'Edited': '3. Cut & Assembled',
-    'Posted': '4. Captions Ready', 'Analysed': '4. Captions Ready',
-  },
-  OBS_RAW_BADGE_LABELS: {
-    'Idea': 'Footage Logged: tick', 'Scripted': 'Meme Script: tick',
-    'Filmed': 'Cut & Assembled: tick', 'Edited': 'Cut & Assembled: tick',
-    'Posted': 'Captions: tick', 'Analysed': 'Captions: tick',
-  },
-  OBS_RAW_PRIMARY_ACTION: {
-    'Idea':     { label: '🎞 Build Meme Script',            fn: '_generateObsScript' },
-    'Scripted': { label: '✂️ Mark Cut Done (ffmpeg)',        fn: '_markObsCutDone' },
-    'Filmed':   { label: '📝 Generate Captions',            fn: '_generateCaptions' },
-    'Edited':   { label: '📝 Generate Captions',            fn: '_generateCaptions' },
-    // 'Posted'/'Analysed': no further primary action — last real stage.
-  },
-  OBS_RAW_REDO_ACTION: {
-    'Scripted': { label: '↩ Redo Meme Script',   fn: '_generateObsScript', revertTo: 'Idea' },
-    'Filmed':   { label: '↩ Redo Cut Confirm',   fn: '_markObsCutDone',    revertTo: 'Scripted' },
-    'Edited':   { label: '↩ Redo Cut Confirm',   fn: '_markObsCutDone',    revertTo: 'Scripted' },
-    'Posted':   { label: '↩ Redo Captions',      fn: '_generateCaptions',  revertTo: 'Filmed' },
-    'Analysed': { label: '↩ Redo Captions',      fn: '_generateCaptions',  revertTo: 'Filmed' },
-  },
-  OBS_RAW_PREV_STAGE: {
-    'Scripted': 'Idea', 'Filmed': 'Scripted', 'Edited': 'Scripted',
-    'Posted': 'Filmed', 'Analysed': 'Filmed',
-  },
-  // Same deliberate scope as STAGE_DOC_KEYS above: creative_docs keys only,
-  // never a cross-table cascade (no Supabase backup exists). Deliberately
-  // does NOT clear raw_footage_path on a revert to 'Idea' — the real OBS
-  // footage submission is the gate that let this ConID exist at all (see
-  // _openObsRawIntake), so wiping it would strand the row in a state it
-  // could never legitimately have been created in.
-  OBS_RAW_STAGE_DOC_KEYS: {
-    'Idea':     ['obs_script_prompt', 'obs_script', 'director_blend', 'obs_cut_note', 'captions'],
-    'Scripted': ['obs_cut_note', 'captions'],
-    'Filmed':   ['captions'],
-  },
 
   // ============================================================
   // logic — business logic/data: builds no DOM of its own. May call a
@@ -30258,125 +29323,9 @@ RPGACE.register('contentProductionLive', {
   // ============================================================
   logic: {
 
-    // One accessor instead of a three-way `if` repeated at every one of the
-    // real call sites below (rule 8). Returns null for 'tutorial', which is
-    // exactly what the existing code already means by "not the stage-aware
-    // path" — so tutorial's own generic advance button keeps working
-    // byte-identically, and a future 4th content_type only has to add a
-    // table set plus one line here.
-    _flowFor: function(contentType) {
-      var self = RPGACE.modules.contentProductionLive;
-      if (contentType === 'music_video') {
-        return { labels: self.MUSIC_VIDEO_STATUS_LABELS, badges: self.MUSIC_VIDEO_BADGE_LABELS,
-                 primary: self.MUSIC_VIDEO_PRIMARY_ACTION, redo: self.MUSIC_VIDEO_REDO_ACTION,
-                 prev: self.MUSIC_VIDEO_PREV_STAGE, docKeys: self.STAGE_DOC_KEYS };
-      }
-      if (contentType === 'obs_raw') {
-        return { labels: self.OBS_RAW_STATUS_LABELS, badges: self.OBS_RAW_BADGE_LABELS,
-                 primary: self.OBS_RAW_PRIMARY_ACTION, redo: self.OBS_RAW_REDO_ACTION,
-                 prev: self.OBS_RAW_PREV_STAGE, docKeys: self.OBS_RAW_STAGE_DOC_KEYS };
-      }
-      return null;
-    },
 
-    // Shared revert helper — used by both the redo-checkbox path (edit vs.
-    // revert-and-redo) and the standalone Undo button (item 3 + item 12,
-    // one real function instead of two, rule 8).
-    // A7: `flow` param added so an obs_raw revert clears ITS own real
-    // creative_docs keys, not music_video's. Defaults to the music_video
-    // set, so both pre-existing call sites are unchanged if they pass
-    // nothing — but both now pass the real flow explicitly.
-    _revertToStage: function(row, targetStatus, callback, flow) {
-      var self = RPGACE.modules.contentProductionLive;
-      var keyTable = (flow && flow.docKeys) || self.STAGE_DOC_KEYS;
-      var clearKeys = keyTable[targetStatus] || [];
-      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
-        .then(function(rows) {
-          var docs = (rows && rows[0] && rows[0].creative_docs) || {};
-          clearKeys.forEach(function(k) { delete docs[k]; });
-          var updates = { status: targetStatus, creative_docs: docs, updated_at: new Date().toISOString() };
-          if (targetStatus === 'Idea' || targetStatus === 'Scripted' || targetStatus === 'Filmed') {
-            updates.posted_at = null;
-          }
-          return RPGACE.sb.secureWrite('content_productions', 'update', updates, 'id=eq.' + row.id);
-        })
-        .then(function() {
-          RPGACE.utils.toast('↩ ConID #' + row.con_id + ' reverted to "' + targetStatus + '" — outputs from later stages cleared', '#E2A83D', 3500);
-          self._refreshWidget();
-          if (callback) callback();
-        })
-        .catch(function(e) {
-          RPGACE.utils.toast('⚠️ Revert failed: ' + e.message, '#CC4A4A', 4000);
-        });
-    },
 
-    // Item 12 — standalone Undo: reverts to the previous stage and clears
-    // that stage's outputs, without re-launching any action (unlike the
-    // redo-checkbox path, which reverts THEN re-runs). Reuses
-    // MUSIC_VIDEO_PREV_STAGE + _revertToStage — no separate logic.
-    // A7: reads the real flow for THIS row's own content_type rather than
-    // music_video's table unconditionally — an obs_raw Undo used to be
-    // impossible to reach at all (obs_raw never took this branch), and
-    // hardcoding the music_video table here would have cleared the wrong
-    // creative_docs keys the moment it did.
-    _undoLastStage: function(row) {
-      var self = RPGACE.modules.contentProductionLive;
-      var flow = self._flowFor(row.content_type);
-      if (!flow) return;
-      var target = flow.prev[row.status];
-      if (!target) {
-        RPGACE.utils.toast('Nothing to undo — ConID #' + row.con_id + ' is already at its first stage', 'rgba(226,226,236,0.4)', 2500);
-        return;
-      }
-      if (!confirm('Undo ConID #' + row.con_id + '\'s last completed stage?\n\nThis reverts its status back to "' + target + '" and deletes the creative-doc output that stage produced. This cannot be undone.')) return;
-      self._revertToStage(row, target, null, flow);
-    },
 
-    // A7 (Aug 23 2026) — three OPTIONAL pass-through fields added
-    // (content_type / raw_footage_path / creative_docs). Every pre-existing
-    // caller (contentRepurpose's generate handler, conidPot's "⚡ Activate
-    // ConID") passes none of them and is byte-identical: content_type falls
-    // through to the column's own 'tutorial' DEFAULT exactly as before, and
-    // the other two stay unset. Returns the promise so a caller that needs
-    // to know the insert really landed (the OBS-raw intake gate) can chain
-    // off it instead of guessing — previously the promise was swallowed
-    // here and nothing downstream could tell success from failure.
-    createEntry: function(data) {
-      var self = RPGACE.modules.contentProductionLive;
-      var payload = {
-        title:          data.title || 'Untitled Content Idea',
-        idea:           data.idea || '',
-        taxonomy_nodes: data.taxonomy_nodes || [],
-        platform_outputs: data.platform_outputs || {},
-        status:         data.status || 'Idea',
-      };
-      if (data.content_type) payload.content_type = data.content_type;
-      if (data.raw_footage_path) payload.raw_footage_path = data.raw_footage_path;
-      if (data.creative_docs) payload.creative_docs = data.creative_docs;
-      return RPGACE.sb.secureWrite('content_productions', 'insert', payload).then(function(result) {
-        var entry = Array.isArray(result) ? result[0] : result;
-        if (entry && entry.con_id) {
-          self._activeConID = entry.con_id;
-          self._activeId = entry.id;
-          RPGACE.utils.toast('📋 ConID #' + entry.con_id + ' created: ' + data.title, '#4CAF82', 4000);
-          self._refreshWidget();
-          self._injectOracleBar();
-        }
-        return entry;
-      }).catch(function(e) {
-        // Deliberately RESOLVES to null rather than re-throwing: the two
-        // pre-existing callers don't attach a .catch, so re-throwing here
-        // would turn every real insert failure into an unhandled rejection
-        // (which errorLog's own window.onunhandledrejection hook would then
-        // log as a crash). A caller that cares checks the resolved value.
-        // The toast is new and deliberate — this path used to console.warn
-        // only, so a genuinely failed ConID creation was invisible to Alex
-        // (rule 7, fail loud).
-        console.warn('[contentProductionLive] createEntry error:', e.message);
-        RPGACE.utils.toast('⚠️ Could not create ConID: ' + e.message, '#CC4A4A', 4500);
-        return null;
-      });
-    },
 
     // ── Update an existing entry ──────────────────────────────────
     updateEntry: function(id, updates) {
@@ -30394,16 +29343,14 @@ RPGACE.register('contentProductionLive', {
       var self = RPGACE.modules.contentProductionLive;
       RPGACE.utils.toast('🎧 Pulling beat data + generating listing...', '#C9A84C', 3000);
 
-      RPGACE.sb.select('video_jobs', 'status=eq.beat_logged&title=ilike.*' + encodeURIComponent(row.title.split(' ')[0]) + '*&order=id.desc&limit=1')
+      // PC-6: the beat's facts come from its own Beat Log save (creative_docs.beat_meta).
+      RPGACE.sb.select('content_productions', 'select=creative_docs&id=eq.' + row.id + '&limit=1')
         .catch(function(e) {
           console.warn('[contentProductionLive] beatstars listing lookup error:', e.message);
           return [];
         })
-        .then(function(jobs) {
-          var beat = null;
-          if (jobs && jobs[0] && jobs[0].script) {
-            try { beat = JSON.parse(jobs[0].script); } catch (e) { beat = null; }
-          }
+        .then(function(rows) {
+          var beat = rows && rows[0] && rows[0].creative_docs ? rows[0].creative_docs.beat_meta || null : null;
 
           var licenceTerms = {
             'lease': 'Lease — MP3/WAV, non-exclusive, up to 10,000 streams/sales, credit required, seller retains ownership and may resell.',
@@ -30433,438 +29380,23 @@ RPGACE.register('contentProductionLive', {
             RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
           }
           if (typeof showPage === 'function') showPage('advisor');
-          setTimeout(function() {
-            self._activeConID = row.con_id;
-            self._activeId = row.id;
-            self._injectOracleBar();
-            RPGACE.utils.sendToOracle(prompt);
-          }, 500);
+          setTimeout(function() { RPGACE.utils.sendToOracle(prompt); }, 500);
         });
     },
 
-    // ── Visual Treatment Doc, triggered directly from a ConID card ──
-    // 2026-07-31. Real gap Alex named: visualOracle's "Visual Treatment Doc"
-    // command already exists but only lived on the global Visual Oracle
-    // panel, decoupled from any specific ConID/beat — using it meant
-    // hand-typing the beat's own data into bracketed placeholders and then
-    // manually picking which ConID to save the result to. This reuses
-    // visualOracle.CMDS[1]'s real prompt text (never re-typed here — dedup,
-    // rule 8) and _saveDocToProduction's real trailer-parsing, but skips the
-    // manual save picker entirely since we already know the exact target row.
-    // Aug 5 (Engineer pass, Phase E) — optional `prefill` param added,
-    // forwarded straight to _showDirectorPicker, so contentProductionLive's
-    // own "Redo Visual Treatment" retroactive button can reopen this exact
-    // flow pre-filled with a previously-saved director blend. Purely
-    // additive - the ConID-card call site that passes nothing behaves
-    // exactly as before.
-    _generateVisualTreatment: function(row, prefill) {
-      var self = RPGACE.modules.contentProductionLive;
-      var vo = RPGACE.modules.visualOracle;
-      if (!vo) { RPGACE.utils.toast('Visual Oracle module not available', '#CC4A4A', 2500); return; }
 
-      // 2026-07-31 — real UX fix Alex asked for directly: show the real
-      // director dropdown + taxonomy summary + inspiration box FIRST, before
-      // anything else fires. Filling this placeholder here (rather than
-      // leaving it for fillGaps) means fillGaps sees zero remaining gaps
-      // once every other beat field is also filled below, so it skips its
-      // own generic "Step X of Y" textbox entirely for this whole command.
-      vo._showDirectorPicker(function(directorText, directorMeta) {
-        // Aug 5 (Engineer pass, Phase E) - save the STRUCTURED director
-        // choice too (not just the rendered text), so a later "Redo Visual
-        // Treatment" retroactive click can pre-fill the real picker instead
-        // of regex-parsing it back out of prose (rule 8 - one real data
-        // path). Fire-and-forget, same as the other creative_docs saves.
-        if (directorMeta) vo._saveDocToProduction('director_blend', directorMeta, row.id);
-        RPGACE.utils.toast('🎬 Pulling beat data + generating Visual Treatment Doc...', '#9B6EC8', 3000);
-
-        RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
-          .catch(function(e) { console.warn('[contentProductionLive] visual treatment beat lookup:', e.message); return []; })
-          .then(function(jobs) {
-            var vjId = jobs && jobs[0] ? jobs[0].id : null;
-            var beat = null;
-            if (jobs && jobs[0] && jobs[0].script) {
-              try { beat = JSON.parse(jobs[0].script); } catch (e) { beat = null; }
-            }
-            var template = vo.CMDS[1][1];
-            var prompt = template
-              .replace('[TYPE BEAT TITLE]', row.title || '[TYPE BEAT TITLE]')
-              .replace('[TYPE GENRE]', (beat && beat.genre) || '[TYPE GENRE]')
-              .replace('[TYPE MOOD]', (beat && beat.mood) || '[TYPE MOOD]')
-              .replace('[TYPE KEY AND SCALE]', (beat && beat.key) ? (beat.key + ' ' + (beat.scale || '')) : '[TYPE KEY AND SCALE]')
-              .replace('[TYPE BPM]', (beat && beat.bpm) || '[TYPE BPM]')
-              .replace('[TYPE A FILMMAKER NAME OR VISUAL STYLE]', directorText);
-
-            self._prepOracleBarFor(row, function() {
-              RPGACE.utils.fillGaps(prompt, function(filled) {
-                // Aug 5 (Engineer pass, Phase D, Alex-confirmed "save both,
-                // separately" data model) - the exact outbound prompt is
-                // captured verbatim right here, the moment fillGaps'
-                // "Send to Oracle" click actually fires (this IS the real
-                // "step 4 Continue" moment item 5 describes). Saved as
-                // creative_docs.script - a DIFFERENT field from video_jobs'
-                // own pre-existing 'script' column (which holds beat
-                // metadata JSON, see the JSON.parse above - a real, already-
-                // existing naming collision on the word "script" across two
-                // different tables, not something this pass introduces or
-                // fixes; noted here so a future reader doesn't conflate the
-                // two). Reuses _saveDocToProduction directly (rule 8 dedup)
-                // rather than a new merge-write helper.
-                vo._saveDocToProduction('script', filled, row.id, vjId);
-                self._sendFilledPromptToOracle(row, vjId, filled);
-              });
-            });
-          });
-      }, prefill);
-    },
-
-    // ── Shared Oracle-send tail (Aug 5, Engineer pass, Phase E) ──────────
-    // Extracted out of _generateVisualTreatment so _retroRegenerateScript
-    // (Phase 3's real retroactive button - resends an already-saved script
-    // with no fillGaps step at all) can reuse the exact same real send/
-    // capture path instead of a second hand-rolled copy (rule 8 dedup).
-    _prepOracleBarFor: function(row, callback) {
-      var self = RPGACE.modules.contentProductionLive;
-      if (RPGACE.modules.dashDeck && RPGACE.modules.dashDeck.closeWidgetPopup) {
-        RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
-      }
-      if (typeof showPage === 'function') showPage('advisor');
-      setTimeout(function() {
-        self._activeConID = row.con_id;
-        self._activeId = row.id;
-        self._injectOracleBar();
-        callback();
-      }, 500);
-    },
 
     // BT-8 (Oct 16 2026): the Phase H deliverable-zip helpers (_fileAppliesToTier,
     // _uploadDeliverableFiles, _removeDeliverableFile, _generateBundle) are
     // retired with the server zip action - Alex: "no file zips". Selling is
     // beatsHub.ui.openSell (tiers + logged sales).
 
-    // ⚠️ FLAGGED, NOT FIXED (G53 split, Aug 2026) — the 8-line comment block
-    // immediately below is PRE-EXISTING and ORPHANED: it describes
-    // `_retroVisualTreatment` (which actually sits ~4 functions further
-    // down, its own definition carrying no header comment), not
-    // `_generateObsScript`, which is what it currently heads. Confirmed by
-    // reading both functions and by `git log` predating this split — it was
-    // already sitting here before this pass, so it is left byte-identical
-    // and in place rather than silently moved, per this split's own
-    // "pure structural refactor, flag don't fix" scope. Both functions land
-    // in `logic`, so their relative order is unchanged by the split and the
-    // orphan is no more misleading now than it was before.
-    // ── Phase 2 retroactive button (Aug 5, Engineer pass, Phase E) ───────
-    // Real edit-in-place: reads back the STRUCTURED director choice this
-    // module already saves (creative_docs.director_blend, added above -
-    // no regex-parsing of rendered prose needed) and reopens the exact
-    // same picker + Visual Treatment flow pre-filled with it, per
-    // /interrogation's confirmed "edit in place" answer. Gracefully
-    // degrades to a fresh, unprefilled flow for any ConID logged before
-    // this field existed.
-    // ══════════════════════════════════════════════════════════════════
-    // A7 — the OBS-raw scripting phase (Aug 23 2026)
-    // ══════════════════════════════════════════════════════════════════
-    // The one place the OBS-raw workflow genuinely DIVERGES from the beat→
-    // music-video workflow, per Alex's own spec: "the scripting phase for
-    // this path should NOT include the Director phylum. Instead: a real
-    // YouTube Meme Director... classic youtube meme additions in unexpected
-    // places, or effects for comic effect or attention retention."
-    //
-    // Structurally this is _generateVisualTreatment's exact shape (picker →
-    // save the structured choice → build prompt → _prepOracleBarFor →
-    // _sendFilledPromptToOracle), reusing every one of those real helpers
-    // rather than a second hand-rolled copy (rule 8). Three real
-    // differences, each traceable to something Alex actually asked for:
-    //
-    //  1. The picker is opened with opts {only:['YouTube Meme Director'],
-    //     rows:1} — one real f14_filmmaker_library row, not the cinematic
-    //     3-director blend. The free-text inspiration box stays, because
-    //     that IS still genuinely variable per video.
-    //  2. The prompt folds in ALL THREE social-media Oracles' own real
-    //     command text (via _findOracleCmdText, the same mechanism
-    //     _generateCaptions already uses) AND contentRepurpose's own real
-    //     platform-output instructions (via its newly-shared
-    //     platformOutputInstructions()) — "the scripting will also include
-    //     all social media oracles and repurpose to make one script."
-    //  3. One explicit, prominent editing constraint — Alex's own "one
-    //     vital rule": the long-form video must be assemblable with ffmpeg
-    //     cuts alone, minimal OpenMontage/OpenArt stitching.
-    //
-    // ONE Oracle call, deliberately — the cut list is part of the same
-    // script ("make ONE script"), not a second premium round-trip (rule 11).
-    _generateObsScript: function(row, prefill) {
-      var self = RPGACE.modules.contentProductionLive;
-      var vo = RPGACE.modules.visualOracle;
-      if (!vo) { RPGACE.utils.toast('Visual Oracle module not available', '#CC4A4A', 2500); return; }
 
-      vo._showDirectorPicker(function(styleText, styleMeta) {
-        if (styleMeta) vo._saveDocToProduction('director_blend', styleMeta, row.id);
-        RPGACE.utils.toast('🎞 Building the meme script + ffmpeg cut plan...', '#E2A83D', 3000);
 
-        // Real full-record read, same discipline as _generateCaptions: the
-        // script has to describe THIS footage, so the real footage path and
-        // the real idea text ride along, never a generic placeholder.
-        RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=title,idea,raw_footage_path,creative_docs&limit=1')
-          .catch(function() { return []; })
-          .then(function(rows) {
-            var full = (rows && rows[0]) || row;
-            var cr = RPGACE.modules.contentRepurpose;
 
-            var instaMind  = self._findOracleCmdText('instaOraclePanel', 'Audience Mind Reader');
-            var instaHooks = self._findOracleCmdText('instaOraclePanel', '50 Viral Hooks');
-            var ytMind     = self._findOracleCmdText('youtubeOracle', 'Audience Mind Reader');
-            var ytHooks    = self._findOracleCmdText('youtubeOracle', 'Viral Hook Generator 50');
-            var ttMind     = self._findOracleCmdText('tiktokOracle', 'Audience Mind Reader');
-            var ttHooks    = self._findOracleCmdText('tiktokOracle', 'Viral Hook Generator 50');
-            var expertise = [];
-            if (instaMind || instaHooks) expertise.push('INSTAGRAM EXPERTISE (Insta-Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' + [instaMind, instaHooks].filter(Boolean).join('\n\n'));
-            if (ytMind || ytHooks)       expertise.push('YOUTUBE EXPERTISE (YouTube Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' + [ytMind, ytHooks].filter(Boolean).join('\n\n'));
-            if (ttMind || ttHooks)       expertise.push('TIKTOK EXPERTISE (TikTok Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' + [ttMind, ttHooks].filter(Boolean).join('\n\n'));
 
-            var prompt =
-              'Write ONE long-form YouTube video script for @AceSanyaBeats (FL Studio, UK hip hop, aspiring producers 18-35), built directly on top of raw OBS screen-recording footage that ALREADY EXISTS. You are not planning a shoot — the footage is recorded; you are planning how it gets cut and what gets layered on top of it.\n\n' +
-              'VIDEO: ' + (full.title || row.title || 'Untitled') + '\n' +
-              'RAW OBS FOOTAGE: ' + (full.raw_footage_path || '(path not recorded)') + '\n' +
-              (full.idea ? 'WHAT THE FOOTAGE COVERS:\n' + full.idea + '\n' : '') + '\n' +
-              styleText + '\n\n' +
-              (expertise.length ? expertise.join('\n\n') + '\n\n' : '') +
-              '════ THE ONE VITAL EDITING RULE — THIS OVERRIDES EVERYTHING BELOW ════\n' +
-              'The finished long-form video must be assemblable using ffmpeg CUTS ONLY. That means:\n' +
-              '• Every edit you specify is a straight cut at a timestamp in the raw footage — never a crossfade, speed ramp, motion track, or any transition needing a real NLE.\n' +
-              '• Give the cut plan as an ordered list of KEEP segments with approximate in/out timecodes and the reason each one earns its place, so it maps 1:1 onto ffmpeg trim + concat.\n' +
-              '• Anything that is NOT already in the raw footage (a meme cutaway, a reaction insert, a generated shot) must be listed SEPARATELY as a discrete standalone clip with its own duration and the exact cut point it drops into — so it is a single extra input file to concat, never a composited layer.\n' +
-              '• Keep those external inserts to the MINIMUM that still lands the joke or holds attention. Every insert is real manual work in OpenMontage/OpenArt, so justify each one.\n' +
-              '• Text overlays and captions are fine to specify as burn-in instructions, but list them separately from the cut plan so they can be skipped without breaking the edit.\n\n' +
-              'Produce, in this order:\n\n' +
-              '1. 🎬 LONG-FORM SCRIPT — the hook (first 10 seconds), then the real sections in order, with what is said/shown in each. Written against the actual footage, not a generic outline.\n\n' +
-              '2. ✂️ FFMPEG CUT PLAN — the ordered KEEP-segment list described in the vital rule above, with approximate timecodes.\n\n' +
-              '3. 😂 MEME / COMIC INSERT LIST — each insert: what it is, where it drops in (cut point), how long, and whether it is stock/meme footage, a still, or something that genuinely needs OpenMontage/OpenArt generation. Put them in unexpected places, per the direction above — not one predictable insert per section.\n\n' +
-              '4. 📌 BURN-IN TEXT / CAPTION OVERLAYS — separate list, timecoded.\n\n' +
-              'Then, repurpose the SAME video into platform outputs:\n\n' +
-              (cr && cr.platformOutputInstructions ? cr.platformOutputInstructions() : '') +
-              'Be specific to FL Studio and UK hip hop throughout, and stay anchored to what is genuinely in this footage — no invented moments the recording does not contain.';
 
-            self._prepOracleBarFor(row, function() {
-              // The outbound prompt is saved verbatim under its own slug so
-              // Phase 3's editor can show and re-send it, exactly like
-              // music_video's creative_docs.script — a SEPARATE key, since
-              // an OBS meme script and a beat's Visual Treatment Doc are
-              // genuinely different documents that can both exist on one
-              // ConID's history if its type is ever changed.
-              vo._saveDocToProduction('obs_script_prompt', prompt, row.id);
-              self._sendFilledPromptToOracle(row, null, prompt, 'obs_script');
-            });
-          });
-      }, prefill, {
-        only: ['YouTube Meme Director'],
-        rows: 1,
-        title: 'YouTube Meme Direction',
-        intro: 'This is the OBS-raw path — it uses the YouTube Meme Director instead of the cinematic director blend. Add your own angle for THIS video below; it rides alongside the meme direction, not instead of it.',
-        styleLabel: 'MEME DIRECTION (YouTube Meme Director, Phylum 13 filmmaker library)',
-        inspLabel: 'CREATIVE INSPIRATION (Alex\'s own free-text, for this specific video)',
-      });
-    },
 
-    // A7 — reopen the meme-direction picker pre-filled with what was saved
-    // last time. Exact mirror of _retroVisualTreatment (rule 8, same shape,
-    // same creative_docs.director_blend field) for the OBS-raw path.
-    _retroObsScript: function(row) {
-      var self = RPGACE.modules.contentProductionLive;
-      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
-        .catch(function() { return []; })
-        .then(function(rows) {
-          var meta = rows && rows[0] && rows[0].creative_docs && rows[0].creative_docs.director_blend;
-          var prefill = meta ? { names: meta.names || [], inspiration: meta.inspiration || '' } : null;
-          self._generateObsScript(row, prefill);
-        });
-    },
-
-    // A7 — Stage 3. An honest MANUAL acknowledgment, not a fake render:
-    // RPGACE does not run ffmpeg, and the cut plan Oracle produced is
-    // something Alex executes on his own machine. Same real precedent as
-    // _viewOpenMontageJob's own "✅ Mark ConID as Filmed" button (Aug 6),
-    // which exists for exactly this reason — an external, un-pollable step
-    // that only the human can truthfully confirm happened.
-    _markObsCutDone: function(row) {
-      var self = RPGACE.modules.contentProductionLive;
-      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs,status&limit=1')
-        .catch(function() { return []; })
-        .then(function(rows) {
-          var cur = (rows && rows[0]) || {};
-          var docs = cur.creative_docs || {};
-          if (!docs.obs_script) {
-            RPGACE.utils.toast('⚠️ No meme script yet — build the script first, there is no cut plan to have followed', '#E2A83D', 4000);
-            return;
-          }
-          var note = prompt('Mark ConID #' + row.con_id + ' as cut and assembled?\n\nOptional note — the edited file path, or anything you changed from the cut plan:', docs.obs_cut_note || '');
-          if (note === null) return;
-          docs.obs_cut_note = note;
-          var updates = { creative_docs: docs, updated_at: new Date().toISOString() };
-          // Forward-only, same guard shape as _saveDocToProduction's own
-          // auto-advances — never drags an already-Posted ConID backwards.
-          if (['Idea', 'Scripted'].indexOf(cur.status) !== -1) updates.status = 'Filmed';
-          RPGACE.sb.secureWrite('content_productions', 'update', updates, 'id=eq.' + row.id)
-            .then(function() {
-              RPGACE.utils.toast('✂️ ConID #' + row.con_id + ' marked cut & assembled', '#4CAF82', 3000);
-              self._refreshWidget();
-            })
-            .catch(function(e) { RPGACE.utils.toast('⚠️ Could not save: ' + e.message, '#CC4A4A', 4000); });
-        });
-    },
-
-    _retroVisualTreatment: function(row) {
-      var self = RPGACE.modules.contentProductionLive;
-      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
-        .catch(function() { return []; })
-        .then(function(rows) {
-          var meta = rows && rows[0] && rows[0].creative_docs && rows[0].creative_docs.director_blend;
-          var prefill = meta ? { names: meta.names || [], inspiration: meta.inspiration || '' } : null;
-          self._generateVisualTreatment(row, prefill);
-        });
-    },
-
-    // ── Phase 3 retroactive button (Aug 5, Engineer pass, Phase E) ───────
-    // Resends whatever is CURRENTLY saved in creative_docs.script (any
-    // manual edits made in Phase 3's own editor included) straight to
-    // Oracle again - genuinely distinct from Phase 2's "start over with a
-    // new director pick" retro button. The saved text has no [BRACKET]
-    // placeholders left in it (it's already the fully-filled prompt), so
-    // this skips fillGaps entirely and reuses the same real send/capture
-    // tail as _generateVisualTreatment (rule 8 dedup).
-    _retroRegenerateScript: function(row) {
-      var self = RPGACE.modules.contentProductionLive;
-      var vo = RPGACE.modules.visualOracle;
-      if (!vo) { RPGACE.utils.toast('Visual Oracle module not available', '#CC4A4A', 2500); return; }
-      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
-        .catch(function() { return []; })
-        .then(function(rows) {
-          var script = rows && rows[0] && rows[0].creative_docs && rows[0].creative_docs.script;
-          if (!script) {
-            RPGACE.utils.toast('⚠️ No saved script yet — use Phase 2\'s Start Visual Treatment first', '#E2A83D', 3500);
-            return;
-          }
-          RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
-            .catch(function() { return []; })
-            .then(function(jobs) {
-              var vjId = jobs && jobs[0] ? jobs[0].id : null;
-              self._prepOracleBarFor(row, function() {
-                self._sendFilledPromptToOracle(row, vjId, script);
-                RPGACE.utils.toast('🔁 Resending saved script to Oracle...', '#4CAF82', 2500);
-              });
-            });
-        });
-    },
-
-    // ── Phase F: video generation handoff (Aug 5, Engineer pass) ─────────
-    // Real, shared payload builder (rule 8 dedup - one real construction
-    // path, reused by both _generateVideo and _simulateOpenMontageResponse
-    // rather than 2 hand-rolled copies). Packages exactly what the Phase D/
-    // E retroactive-button work already saves: beat metadata (video_jobs.
-    // script JSON, falling back to creative_docs.beat_meta), the Visual
-    // Treatment Doc, and the outbound script prompt - into the real
-    // openmontage_jobs row shape (confirmed via live schema read: id,
-    // content_production_id, video_job_id, title, brief, beat_meta jsonb,
-    // status, output_note, requested_by, created_at, updated_at,
-    // source_audio_url, revision_notes).
-    _buildVideoPipelinePayload: function(row, callback) {
-      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
-        .catch(function() { return []; })
-        .then(function(rows) {
-          var docs = (rows && rows[0] && rows[0].creative_docs) || {};
-          RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
-            .catch(function() { return []; })
-            .then(function(jobs) {
-              var vj = jobs && jobs[0];
-              var beatMeta = null;
-              if (vj && vj.script) { try { beatMeta = JSON.parse(vj.script); } catch (e) { beatMeta = null; } }
-              if (!beatMeta && docs.beat_meta) beatMeta = docs.beat_meta;
-              var briefParts = [];
-              // Aug 30 2026 — Alex confirmed a real OpenArt subscription,
-              // reversing the standing "no paid providers" note for this one
-              // provider specifically. RPGACE never calls OpenArt directly
-              // (real provider orchestration happens in the separate
-              // OpenMontage CC session/repo) — this is the real signal
-              // channel OpenMontage CC actually reads (the brief text),
-              // NOT a new column (a `provider_hint` field was tried here
-              // first and broke the insert with a real 400 - openmontage_jobs
-              // has no such column; PostgREST rejects any field that isn't a
-              // real column. Reverted to keep the payload matching the
-              // actual live schema exactly.)
-              // Sep 16 2026 — real correction (GMR-1): OpenArt turned out to
-              // have zero real integration in OpenMontage's own tooling
-              // despite the active subscription (no tool file, no registered
-              // provider — confirmed via the separate OpenMontage CC session
-              // the same night). A real fal.ai key was set up there instead
-              // as the actual working provider. The note now reflects that,
-              // not the stale Aug 30 OpenArt-only signal.
-              briefParts.push('PROVIDER NOTE: Alex has a real, active OpenArt subscription (confirmed Aug 30 2026), but as of Sep 2026 fal.ai is the provider actually wired into OpenMontage\'s own tooling - prefer fal.ai for this job unless OpenArt gets real tool integration later.');
-              if (docs.visual_treatment) briefParts.push('VISUAL TREATMENT DOC:\n' + docs.visual_treatment);
-              if (docs.script) briefParts.push('ORACLE PROMPT USED:\n' + docs.script);
-              var payload = {
-                content_production_id: row.id,
-                video_job_id: vj ? vj.id : null,
-                title: row.title || null,
-                brief: briefParts.length ? briefParts.join('\n\n---\n\n') : null,
-                beat_meta: beatMeta || {},
-                status: 'queued',
-                requested_by: 'rpgace_claude_code',
-              };
-              callback(payload, vj ? vj.id : null);
-            });
-        });
-    },
-
-    // Test-only tool (clearly labeled in its own button text): fakes a
-    // COMPLETE openmontage_jobs row and bumps the linked video_jobs row to
-    // 'rendered' with an obviously-fake path, so the rest of the pipeline
-    // (this Phase's own "View Kling Project" button, the Video Pipeline
-    // widget) can be exercised and validated for real without any actual
-    // provider call or spend. Runs regardless of OPENMONTAGE_HANDOFF_ENABLED
-    // - it never talks to a real provider either way, so the freeze flag
-    // doesn't apply to it.
-    _simulateOpenMontageResponse: function(row) {
-      var self = RPGACE.modules.contentProductionLive;
-      self._buildVideoPipelinePayload(row, function(payload, vjId) {
-        var simulated = {
-          content_production_id: payload.content_production_id,
-          video_job_id: payload.video_job_id,
-          title: payload.title,
-          brief: payload.brief,
-          beat_meta: payload.beat_meta,
-          status: 'complete',
-          requested_by: payload.requested_by,
-          output_note: '[SIMULATED — Aug 5 Phase F test tool] Fake completed render for safe workflow validation. No real video was generated, no cost incurred, no real provider was called.',
-        };
-        RPGACE.sb.insert('openmontage_jobs', simulated)
-          .then(function(r) {
-            if (!r.ok) throw new Error('insert returned ' + r.status);
-            RPGACE.utils.toast('🧪 Simulated a completed OpenMontage job (test only — no real render)', '#9B6EC8', 3500);
-            if (vjId) {
-              return RPGACE.sb.secureWrite('video_jobs', 'update', { status: 'rendered', raw_path: '[SIMULATED] /fake/path/simulated_render.mp4' }, 'id=eq.' + vjId);
-            }
-          })
-          // Aug 6 (Engineer pass, 2nd real hand-test round, item 13a) — real
-          // gap Alex's screenshots surfaced: neither this nor the real
-          // _generateVideo path ever advanced content_productions.status,
-          // so "Video Generation: tick" never became true and the next
-          // stage's real button (Generate Captions) never appeared. This
-          // path fakes a COMPLETE render (test tool, clearly labeled), so
-          // advancing status here is honest — a genuinely queued-but-not-
-          // finished real job (via _generateVideo) deliberately does NOT
-          // get this treatment, see _viewOpenMontageJob's own real "mark
-          // complete" button below for that case (rule 7 — no fake
-          // progress for a job that hasn't actually finished).
-          .then(function() {
-            return RPGACE.sb.select('content_productions', 'id=eq.' + payload.content_production_id + '&select=status&limit=1');
-          })
-          .then(function(rows) {
-            var cur = rows && rows[0] && rows[0].status;
-            if (['Idea', 'Scripted'].indexOf(cur) !== -1) {
-              return RPGACE.sb.secureWrite('content_productions', 'update', { status: 'Filmed', updated_at: new Date().toISOString() }, 'id=eq.' + payload.content_production_id);
-            }
-          })
-          .catch(function(e) { RPGACE.utils.toast('⚠️ Simulate failed: ' + e.message, '#CC4A4A', 3500); });
-      });
-    },
 
     // Aug 5 (Engineer pass, Phase G curveball) — real reuse, not a retyped
     // paraphrase: pulls a named command's exact prompt text straight out of
@@ -30880,109 +29412,6 @@ RPGACE.register('contentProductionLive', {
       return found ? found[1] : null;
     },
 
-    // ── Phase G: Generate Captions (Aug 5, Engineer pass) ────────────────
-    // Real trigger built from the FULL ConID record (beat metadata, Visual
-    // Treatment Doc, outbound script, video job status/path) per item 12's
-    // explicit "using the full ConID record for accurate captions" - one
-    // real fetch of content_productions + one of video_jobs, no duplicate
-    // lookups. Reuses the same 3-platform caption shape (Instagram Reels/
-    // YouTube Shorts/TikTok) contentRepurpose's own "4 platform formats"
-    // generator already uses elsewhere for a different real purpose
-    // (repurposing a raw Oracle idea, not an existing beat's finished
-    // record) - same voice, not a forced shared function, since the real
-    // inputs genuinely differ. Explicitly stops at saving captions - no
-    // Composio auto-posting, per /interrogation's confirmed scope.
-    //
-    // Curveball (same session, real fork put to Alex directly): Insta-
-    // Oracle and YouTube Oracle become real participants via their OWN
-    // real expertise borrowed into this ONE combined call (Alex's chosen
-    // option over 3 separate round-trips) - their actual Audience Mind
-    // Reader / viral-hook-generator command TEXT rides alongside the beat
-    // record as real grounding, not a fresh generic instruction imitating
-    // what those panels already say better.
-    // A7 (Aug 23 2026) — genuinely reused by the OBS-raw path (rule 8:
-    // captions for a finished OBS video are the same real job as captions
-    // for a finished music video, so this is one function, not two). Two
-    // real, minimal branches added so the prompt describes what the video
-    // actually IS: an obs_raw ConID has no beat metadata and no
-    // visual_treatment doc, it has a meme script and a real OBS recording.
-    // Everything else — the 3-Oracle expertise grounding, the 3-platform
-    // output shape, _prepOracleBarFor/_sendFilledPromptToOracle, the
-    // 'captions' auto-advance — is byte-identical for both types.
-    _generateCaptions: function(row) {
-      var self = RPGACE.modules.contentProductionLive;
-      var isObs = row.content_type === 'obs_raw';
-      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
-        .catch(function() { return []; })
-        .then(function(rows) {
-          var docs = (rows && rows[0] && rows[0].creative_docs) || {};
-          RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
-            .catch(function() { return []; })
-            .then(function(jobs) {
-              var vj = jobs && jobs[0];
-              var vjId = vj ? vj.id : null;
-              var beatMeta = null;
-              if (vj && vj.script) { try { beatMeta = JSON.parse(vj.script); } catch (e) { beatMeta = null; } }
-              if (!beatMeta && docs.beat_meta) beatMeta = docs.beat_meta;
-
-              var contextParts = [];
-              if (isObs) {
-                contextParts.push('VIDEO: ' + (row.title || 'Untitled') + ' — a long-form YouTube video cut from raw OBS screen-recording footage.');
-                if (docs.obs_script) contextParts.push('MEME SCRIPT + CUT PLAN (what the finished video actually is):\n' + docs.obs_script);
-                if (docs.obs_cut_note) contextParts.push('EDIT NOTE: ' + docs.obs_cut_note);
-              } else {
-                contextParts.push('BEAT: ' + (row.title || 'Untitled') +
-                  (beatMeta ? ' (' + [beatMeta.genre, beatMeta.mood, beatMeta.key ? (beatMeta.key + ' ' + (beatMeta.scale || '')) : null, beatMeta.bpm ? (beatMeta.bpm + ' BPM') : null].filter(Boolean).join(', ') + ')' : ''));
-                if (docs.visual_treatment) contextParts.push('VISUAL TREATMENT DOC:\n' + docs.visual_treatment);
-                if (docs.script) contextParts.push('DIRECTION SENT TO ORACLE:\n' + docs.script);
-                if (vj && vj.status) contextParts.push('VIDEO STATUS: ' + vj.status + (vj.raw_path ? ' (' + vj.raw_path + ')' : ''));
-              }
-
-              var instaMind = self._findOracleCmdText('instaOraclePanel', 'Audience Mind Reader');
-              var instaHooks = self._findOracleCmdText('instaOraclePanel', '50 Viral Hooks');
-              var ytMind = self._findOracleCmdText('youtubeOracle', 'Audience Mind Reader');
-              var ytHooks = self._findOracleCmdText('youtubeOracle', 'Viral Hook Generator 50');
-              // Aug 5 (Engineer pass, Phase G curveball 2) - tiktokOracle
-              // joins the same real grounding pattern as Insta/YouTube,
-              // reusing its own real Audience Mind Reader/Viral Hook
-              // Generator commands rather than a new TikTok-flavoured
-              // paraphrase.
-              var ttMind = self._findOracleCmdText('tiktokOracle', 'Audience Mind Reader');
-              var ttHooks = self._findOracleCmdText('tiktokOracle', 'Viral Hook Generator 50');
-              var expertiseParts = [];
-              if (instaMind || instaHooks) {
-                expertiseParts.push('INSTAGRAM EXPERTISE (Insta-Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' +
-                  [instaMind, instaHooks].filter(Boolean).join('\n\n'));
-              }
-              if (ytMind || ytHooks) {
-                expertiseParts.push('YOUTUBE EXPERTISE (YouTube Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' +
-                  [ytMind, ytHooks].filter(Boolean).join('\n\n'));
-              }
-              if (ttMind || ttHooks) {
-                expertiseParts.push('TIKTOK EXPERTISE (TikTok Oracle\'s own real analysis prompts, reused as grounding — apply this exact audience-psychology and hook reasoning, do not follow these as separate literal instructions):\n' +
-                  [ttMind, ttHooks].filter(Boolean).join('\n\n'));
-              }
-
-              var prompt = (isObs
-                  ? 'Generate short-form captions for @AceSanyaBeats\' long-form YouTube video, using the FULL real record below — stay specific to what actually happens in this video, no generic filler.\n\n'
-                  : 'Generate short-form captions for @AceSanyaBeats\' music video, using the FULL real record below — stay specific to this exact beat and its visual treatment, no generic filler.\n\n') +
-                contextParts.join('\n\n') +
-                (expertiseParts.length ? '\n\n' + expertiseParts.join('\n\n') : '') + '\n\n' +
-                'Generate ALL THREE, each with a different opening line — no copy-paste between platforms:\n\n' +
-                '1. 📸 INSTAGRAM REELS CAPTION\nHook (stops scroll in 2 seconds) + value + CTA. Under 150 words. Line breaks. 3-5 hashtags. Draw on the INSTAGRAM EXPERTISE above.\n\n' +
-                '2. 🎬 YOUTUBE SHORTS\nTitle (under 100 chars) + description (2-3 sentences) + 5-8 tags. Draw on the YOUTUBE EXPERTISE above.\n\n' +
-                '3. 🎵 TIKTOK CAPTION\nDifferent angle to Instagram — completion-rate and rewatch-driven, not follower-driven. Casual, direct. Under 100 words. 1-2 trending hooks. Hashtags. Draw on the TIKTOK EXPERTISE above.\n\n' +
-                (isObs
-                  ? 'Be specific to FL Studio and UK hip hop production throughout — reference the actual moments, jokes, or teaching beats from the script above, not a generic "new video out" caption. Each caption should also work as a standalone clip pulled straight out of this long-form video.'
-                  : 'Be specific to UK hip hop / drill production throughout — reference the actual mood, visual style, or story from the record above, not a generic beat-drop caption.');
-
-              self._prepOracleBarFor(row, function() {
-                self._sendFilledPromptToOracle(row, vjId, prompt, 'captions');
-                RPGACE.utils.toast('📝 Generating platform captions (Insta-Oracle + YouTube Oracle + TikTok Oracle grounded) from the full ConID record...', '#4A8CCC', 3500);
-              });
-            });
-        });
-    },
 
   },
 
@@ -30994,184 +29423,8 @@ RPGACE.register('contentProductionLive', {
   // ============================================================
   ui: {
 
-    // ══════════════════════════════════════════════════════════════════
-    // A7 — the OBS-raw intake gate (Aug 23 2026)
-    // ══════════════════════════════════════════════════════════════════
-    // Alex's own hard requirement, verbatim: "if saved for later, the saved
-    // idea can only convert if I actually submit raw obs footage (this is a
-    // must requirement to convert potconid to conid if it is going down the
-    // obs raw workflow)."
-    //
-    // The real pre-existing potConID→conID conversion is conidPot's own
-    // "⚡ Activate ConID" connector button (_refreshIdeaBank), which calls
-    // contentProductionLive.createEntry() and then flips the conid_pot row
-    // to status='activated'. There was no gate of any kind on it — one
-    // click, always converts. This function is that gate, and it is the ONE
-    // real creation path for an obs_raw ConID (rule 8): the same function
-    // serves BOTH of Alex's stated entry points —
-    //   (a) "saved for later" — called from an Idea Bank row, `potRow` set,
-    //       so the conid_pot row is marked activated only AFTER the footage
-    //       has genuinely been submitted and the ConID really inserted;
-    //   (b) "straight to Content Pipeline (footage already done)" — called
-    //       from the Content Pipeline popup with potRow null, no Idea Bank
-    //       row involved at all.
-    //
-    // The gate is enforced structurally, not by a warning: the Create button
-    // is disabled until the path field holds real non-whitespace text, and
-    // the handler re-checks before writing. Reuses the existing
-    // content_productions.raw_footage_path column (already real, already
-    // written by the tutorial Production Panel's Phase 2 input and by
-    // _showPostDetails) rather than inventing a second footage field.
-    _openObsRawIntake: function(potRow, onCreated) {
-      var self = RPGACE.modules.contentProductionLive;
-      var pop = RPGACE.modules.dashDeck._popup({
-        dim: '0.92', scroll: true, width: '520px', bg: '#0f0f1a', borderColor: 'rgba(226,168,61,0.3)',
-        eyebrow: 'OBS Raw → Content Pipeline', title: 'Submit raw OBS footage', noDefaultClose: true,
-      });
-      var overlay = pop.overlay, box = pop.box;
 
-      var note = document.createElement('div');
-      note.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.45);line-height:1.6;margin-bottom:14px;';
-      note.textContent = potRow
-        ? 'This idea can only become a real ConID on the OBS-raw path once the raw footage actually exists. Paste the real path to the recording — the ConID is not created until you do.'
-        : 'Footage already recorded? Paste its real path and this creates the ConID directly, skipping the Idea Bank.';
-      box.appendChild(note);
 
-      function field(labelText, placeholder, value, multiline) {
-        var lbl = document.createElement('div');
-        lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;';
-        lbl.textContent = labelText;
-        var inp = document.createElement(multiline ? 'textarea' : 'input');
-        if (!multiline) inp.type = 'text';
-        inp.placeholder = placeholder;
-        inp.value = value || '';
-        inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.12);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:14px;' +
-          (multiline ? 'resize:vertical;min-height:70px;' : '');
-        box.appendChild(lbl); box.appendChild(inp);
-        return inp;
-      }
-
-      var titleInp = field('Video title', 'e.g. I remade a UK drill beat in 10 minutes', potRow ? potRow.title : '');
-      var pathInp  = field('Raw OBS footage path (required)', 'E:\\OBS\\raw_2026-08-23.mkv', '');
-      var ideaInp  = field('What the video is about', 'Angle, sections, what actually happens in the footage...', potRow ? (potRow.idea_text || '') : '', true);
-
-      var gateMsg = document.createElement('div');
-      gateMsg.style.cssText = 'font-size:11px;color:rgba(226,84,84,0.75);line-height:1.5;margin-bottom:12px;';
-      gateMsg.textContent = '⚠️ No footage path yet — an OBS-raw ConID cannot be created without one.';
-      box.appendChild(gateMsg);
-
-      var btnRow = document.createElement('div');
-      btnRow.style.cssText = 'display:flex;gap:8px;';
-      var createBtn = document.createElement('button');
-      createBtn.textContent = '🎥 Create OBS Raw ConID';
-      createBtn.disabled = true;
-      var cancelBtn = document.createElement('button');
-      cancelBtn.textContent = 'Cancel';
-      cancelBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-      cancelBtn.onclick = function() { overlay.remove(); };
-
-      function paint() {
-        var ok = !!pathInp.value.trim();
-        createBtn.disabled = !ok;
-        createBtn.style.cssText = 'flex:1;padding:10px;border-radius:6px;font-size:12px;font-weight:700;font-family:Rajdhani,sans-serif;' + (ok
-          ? 'background:rgba(226,168,61,0.14);border:1px solid rgba(226,168,61,0.4);color:#E2A83D;cursor:pointer;'
-          : 'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.07);color:rgba(226,226,236,0.2);cursor:not-allowed;');
-        gateMsg.style.display = ok ? 'none' : 'block';
-      }
-      pathInp.addEventListener('input', paint);
-      paint();
-
-      createBtn.onclick = function() {
-        var path = pathInp.value.trim();
-        // Re-checked here, not only via the disabled attribute — the gate is
-        // Alex's own stated hard requirement, so it does not rely on the
-        // button state alone being trustworthy.
-        if (!path) { RPGACE.utils.toast('⚠️ Raw OBS footage path is required', '#CC4A4A', 3000); return; }
-        var title = titleInp.value.trim() || (potRow && potRow.title) || 'Untitled OBS Video';
-        createBtn.disabled = true;
-        createBtn.textContent = '⏳ Creating...';
-        self.createEntry({
-          title: title,
-          idea: ideaInp.value.trim(),
-          taxonomy_nodes: (potRow && potRow.phyla_detected) || [],
-          status: 'Idea',
-          content_type: 'obs_raw',
-          raw_footage_path: path,
-        }).then(function(entry) {
-          if (!entry) { createBtn.disabled = false; createBtn.textContent = '🎥 Create OBS Raw ConID'; return; }
-          overlay.remove();
-          RPGACE.utils.toast('🎥 OBS-raw ConID #' + entry.con_id + ' created — footage logged', '#E2A83D', 4000);
-          // Only NOW is the potConID genuinely converted. If the insert had
-          // failed, the Idea Bank row is deliberately left untouched so the
-          // idea isn't silently lost (the old ungated path flipped it to
-          // 'activated' without ever checking the insert succeeded).
-          if (potRow && potRow.id) {
-            RPGACE.sb.secureWrite('conid_pot', 'update', { status: 'activated', con_id: entry.con_id }, 'id=eq.' + potRow.id)
-              .catch(function(e) { console.warn('[contentProductionLive] conid_pot activate:', e.message); });
-          }
-          if (onCreated) onCreated(entry);
-        });
-      };
-
-      btnRow.appendChild(createBtn); btnRow.appendChild(cancelBtn);
-      box.appendChild(btnRow);
-    },
-
-    // Aug 5 (Engineer pass, Phase G) — optional docSlug param added
-    // (defaults to 'visual_treatment', every existing caller's real
-    // behavior unchanged) so _generateCaptions can reuse this exact same
-    // real send/capture tail for a different creative_docs key, instead of
-    // a second hand-rolled copy (rule 8 dedup).
-    // Aug 6 (Engineer pass, real Content Pipeline bugfix) — send FIRST, only
-    // arm the capture if it actually went through. Previously armed
-    // unconditionally before sending, which left a dangling capture (ready
-    // to wrongly consume a LATER, unrelated reply per RPGACE.hooks.fire's
-    // broadcast-to-all-listeners semantics) whenever the in-flight guard
-    // silently blocked this exact send - e.g. this flow firing while a
-    // still-in-flight Beat Log auto-chain hadn't cleared yet. Real root
-    // cause of Alex's own hand-test report (2026-08-06): a missing
-    // style_profiles row + "duplicated stages" in Content Pipeline.
-    _sendFilledPromptToOracle: function(row, vjId, filled, docSlug) {
-      docSlug = docSlug || 'visual_treatment';
-      var vo = RPGACE.modules.visualOracle;
-      var input = document.querySelector('#chat-input');
-      if (!input) return;
-      input.value = filled;
-      input.dispatchEvent(new Event('input', {bubbles:true}));
-      var sent = (typeof sendChat === 'function') ? (sendChat() !== false) : true;
-      if (sent && vo && vo._captureNextResponse) {
-        vo._captureNextResponse(function(text) {
-          vo._saveDocToProduction(docSlug, text, row.id, vjId);
-        });
-      } else if (!sent) {
-        RPGACE.utils.toast('⏳ Oracle was still busy — click again in a moment (nothing was lost, this attempt just didn\'t send)', '#E2A83D', 4000);
-      }
-    },
-
-    // A7 — read-only view of the saved meme script + cut plan, mirroring
-    // _viewCaptions' own honest "none yet" behaviour rather than fabricating
-    // placeholder content.
-    _viewObsScript: function(row) {
-      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
-        .catch(function() { return []; })
-        .then(function(rows) {
-          var docs = (rows && rows[0] && rows[0].creative_docs) || {};
-          var pop = RPGACE.modules.dashDeck._popup({
-            dim: '0.92', scroll: true, width: '520px', bg: '#0f0f1a', borderColor: 'rgba(226,168,61,0.3)',
-            title: 'Meme Script + FFmpeg Cut Plan',
-          });
-          var body = document.createElement('div');
-          body.style.cssText = 'font-size:12px;color:#D4DAF5;line-height:1.6;white-space:pre-wrap;';
-          body.textContent = docs.obs_script || 'No meme script generated yet for this ConID — use Build Meme Script first.';
-          pop.box.appendChild(body);
-          if (docs.obs_cut_note) {
-            var n = document.createElement('div');
-            n.style.cssText = 'margin-top:14px;padding:10px;background:rgba(76,175,130,0.05);border:1px solid rgba(76,175,130,0.2);border-radius:6px;font-size:11px;color:rgba(226,226,236,0.7);line-height:1.5;white-space:pre-wrap;';
-            n.textContent = '✂️ Your cut note: ' + docs.obs_cut_note;
-            pop.box.appendChild(n);
-          }
-        });
-    },
 
     // ── Dashboard widget — ConID tracker ─────────────────────────
     _injectDashboardWidget: function() {
@@ -31207,7 +29460,7 @@ RPGACE.register('contentProductionLive', {
       eyebrow.style.display = 'none';
       var titleText = document.createElement('div');
       titleText.style.cssText = 'font-size:15px;font-weight:700;color:var(--text);';
-      titleText.textContent = 'Your productions';
+      titleText.textContent = 'My beats';
       titleEl.appendChild(eyebrow); titleEl.appendChild(titleText);
 
       var refreshBtn = document.createElement('button');
@@ -31253,28 +29506,21 @@ RPGACE.register('contentProductionLive', {
       // Video Pipeline "↩ Beat Log" button) - bulk-fetch which productions
       // have a linked video_jobs row, once, rather than an N+1 query per
       // row (rule 8/11 - one extra request total, not one per card).
+      // PC-6: beats only (posts live in Posting).
       Promise.all([
-        RPGACE.sb.select('content_productions', 'order=updated_at.desc&limit=20'),
-        RPGACE.sb.select('video_jobs', 'select=content_production_id&content_production_id=not.is.null'),
+        RPGACE.sb.select('content_productions', 'content_type=eq.music_video&order=updated_at.desc&limit=40'),
       ])
         .then(function(results) {
           var rows = results[0] || [];
-          var linkedIds = {};
-          (results[1] || []).forEach(function(vj) { if (vj.content_production_id) linkedIds[vj.content_production_id] = true; });
           list.innerHTML = '';
 
           if (rows.length === 0) {
-            list.innerHTML = '<div style="color:rgba(226,226,236,0.2);font-size:11px;padding:8px 0;">No content ideas yet. Use 🔀 Repurpose in Oracle to create your first ConID.</div>';
+            list.innerHTML = '<div style="color:rgba(226,226,236,0.2);font-size:11px;padding:8px 0;">No beats logged yet — log one in Beat Log.</div>';
             return;
           }
 
           rows.forEach(function(row) {
-            var hasVideoJob = !!linkedIds[row.id];
-            var statusColors = {
-              'Idea': '#4A8CCC', 'Scripted': '#C9A84C', 'Filmed': '#9B6EC8',
-              'Edited': '#CC4A4A', 'Posted': '#4CAF82', 'Analysed': '#2ABFB0'
-            };
-            var color = statusColors[row.status] || '#4A8CCC';
+            var color = row.released_at ? '#4CAF82' : '#C9A84C';
 
             var item = document.createElement('div');
             item.style.cssText = 'padding:10px 12px;border:1px solid rgba(255,255,255,0.05);border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,0.02);';
@@ -31291,15 +29537,6 @@ RPGACE.register('contentProductionLive', {
             titleSpan.style.cssText = 'font-size:15px;font-weight:600;color:#D4DAF5;flex:1 1 140px;min-width:0;overflow-wrap:anywhere;';
             titleSpan.textContent = row.title;
 
-            // A7 (Aug 23 2026) — this used to be a bare
-            // `row.content_type === 'music_video'` boolean, so a third
-            // content_type would have silently fallen into the tutorial
-            // branch below (generic "→ Mark [next]" chip, no stage-aware
-            // action, no redo, no undo). `flow` is now the real per-type
-            // table set (null for tutorial, which is exactly what the old
-            // `false` meant), so obs_raw gets its own real stage-aware
-            // buttons and CANNOT inherit tutorial's or music_video's.
-            var flow = self._flowFor(row.content_type);
 
             var statusBadge = document.createElement('span');
             // Oct 10 2026 (N2): the old rgb()->rgba() string trick did nothing
@@ -31307,22 +29544,11 @@ RPGACE.register('contentProductionLive', {
             // solid colour as its text - the label was invisible. color-mix
             // tints any colour format. "X: tick" renders as "X ✓".
             statusBadge.style.cssText = 'font-size:12px;font-weight:700;color:' + color + ';background:color-mix(in srgb,' + color + ' 14%,transparent);border:1px solid color-mix(in srgb,' + color + ' 40%,transparent);border-radius:10px;padding:3px 9px;flex-shrink:0;';
-            statusBadge.textContent = String(flow ? (flow.badges[row.status] || row.status) : row.status).replace(/:\s*tick$/i, ' ✓');
+            statusBadge.textContent = row.released_at ? 'Released ✓' : row.finished_at ? 'Finished ✓' : 'In progress';
 
             topRow.appendChild(idBadge); topRow.appendChild(titleSpan); topRow.appendChild(statusBadge);
             item.appendChild(topRow);
 
-            // Status progress bar
-            var statuses = ['Idea','Scripted','Filmed','Edited','Posted','Analysed'];
-            var statusIdx = statuses.indexOf(row.status);
-            var progressWrap = document.createElement('div');
-            progressWrap.style.cssText = 'display:flex;gap:3px;margin-bottom:8px;';
-            statuses.forEach(function(s, i) {
-              var dot = document.createElement('div');
-              dot.style.cssText = 'flex:1;height:3px;border-radius:2px;background:' + (i <= statusIdx ? color : 'rgba(255,255,255,0.08)') + ';';
-              progressWrap.appendChild(dot);
-            });
-            item.appendChild(progressWrap);
 
             // Aug 6 (Engineer pass, 2nd real hand-test round, item 8) —
             // "⇄ Swap ConID" removed entirely. Alex's own words: "i think
@@ -31362,117 +29588,6 @@ RPGACE.register('contentProductionLive', {
             // Action buttons row
             var actions = document.createElement('div');
             actions.style.cssText = 'display:flex;align-items:center;gap:6px;flex-wrap:wrap;';
-
-            // Aug 6 (Engineer pass, 2nd real hand-test round, items 5/7/13) —
-            // real fix for the recurring "duplicate stage" bug Alex hit
-            // twice. music_video ConIDs now get ONE stage-aware primary
-            // action button (label + handler keyed off real status via
-            // MUSIC_VIDEO_PRIMARY_ACTION) instead of the old fixed
-            // "-> Mark [next]" chip PLUS a permanently-shown "Start Visual
-            // Treatment" button rendering at the same time regardless of
-            // real progress — that fixed-set rendering was the actual root
-            // cause, confirmed by direct code read, not a race condition.
-            // Tutorial ConIDs keep the original generic advance button
-            // unchanged (their workflow was never the one Alex complained
-            // about).
-            if (flow) {
-              var primary = flow.primary[row.status];
-              if (primary) {
-                var primaryBtn = document.createElement('button');
-                primaryBtn.textContent = primary.label;
-                primaryBtn.style.cssText = 'padding:4px 10px;background:rgba(155,89,182,0.12);border:1px solid rgba(155,89,182,0.35);border-radius:5px;color:#9B6EC8;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-                primaryBtn.onclick = function() { self[primary.fn](row); };
-                actions.appendChild(primaryBtn);
-              }
-
-              // Item 3 — redo button for the most-recently-completed stage,
-              // paired with a real "revert progress" checkbox. Unchecked
-              // (default) = edit-in-place only, status untouched — same
-              // behaviour Alex already confirmed working on ConID #11
-              // ("everything stays as is with how conid 11 changes worked
-              // just now"). Checked = _revertToStage runs first, clearing
-              // that stage's real outputs, THEN the action re-runs.
-              var redo = flow.redo[row.status];
-              if (redo) {
-                var redoWrap = document.createElement('span');
-                redoWrap.style.cssText = 'display:inline-flex;align-items:center;gap:4px;';
-                var redoBtn = document.createElement('button');
-                redoBtn.textContent = redo.label;
-                redoBtn.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-                var revertCb = document.createElement('input');
-                revertCb.type = 'checkbox';
-                revertCb.id = 'cpl-revert-' + row.id;
-                revertCb.title = 'Revert progress to this stage first (clears this stage\'s real outputs, later stages need redoing). Leave unchecked to just edit in place — status stays as-is.';
-                revertCb.style.cssText = 'cursor:pointer;margin:0;';
-                var revertLbl = document.createElement('label');
-                revertLbl.htmlFor = revertCb.id;
-                revertLbl.textContent = 'revert';
-                revertLbl.title = revertCb.title;
-                revertLbl.style.cssText = 'font-size:10px;color:rgba(226,226,236,0.35);cursor:pointer;';
-                redoBtn.onclick = function() {
-                  if (revertCb.checked) {
-                    self._revertToStage(row, redo.revertTo, function() { self[redo.fn](row); }, flow);
-                  } else {
-                    self[redo.fn](row);
-                  }
-                };
-                redoWrap.appendChild(redoBtn); redoWrap.appendChild(revertCb); redoWrap.appendChild(revertLbl);
-                actions.appendChild(redoWrap);
-              }
-
-              // Item 12 — standalone Undo (reverts without re-running the
-              // action; see _undoLastStage above for the real scope).
-              if (flow.prev[row.status]) {
-                var undoBtn = document.createElement('button');
-                undoBtn.textContent = '🔙 Undo';
-                undoBtn.title = 'Revert to the previous stage and delete the output it produced.';
-                undoBtn.style.cssText = 'padding:4px 10px;background:rgba(226,84,84,0.05);border:1px solid rgba(226,84,84,0.15);border-radius:5px;color:rgba(226,84,84,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-                undoBtn.onclick = function() { self._undoLastStage(row); };
-                actions.appendChild(undoBtn);
-              }
-            } else if (statusIdx < statuses.length - 1) {
-              var nextStatus = statuses[statusIdx + 1];
-              var advBtn = document.createElement('button');
-              advBtn.textContent = '→ Mark ' + nextStatus;
-              advBtn.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-              advBtn.onclick = function() {
-                var updates = { status: nextStatus };
-                if (nextStatus === 'Posted') updates.posted_at = new Date().toISOString();
-                if (nextStatus === 'Analysed') updates.analysed_at = new Date().toISOString();
-                self.updateEntry(row.id, updates).then(function() {
-                  self._refreshWidget();
-                  RPGACE.utils.toast('ConID #' + row.con_id + ' → ' + nextStatus, color, 2000);
-                });
-              };
-              actions.appendChild(advBtn);
-            }
-
-            // Posted — show URL input questionnaire
-            if (row.status === 'Posted' || row.status === 'Analysed') {
-              if (row.youtube_url) {
-                var ytLink = document.createElement('a');
-                ytLink.href = row.youtube_url; ytLink.target = '_blank';
-                ytLink.textContent = '▶ YouTube';
-                ytLink.style.cssText = 'padding:4px 10px;background:rgba(226,84,84,0.08);border:1px solid rgba(226,84,84,0.2);border-radius:5px;color:#CC4A4A;font-size:11px;text-decoration:none;';
-                actions.appendChild(ytLink);
-              }
-              if (row.instagram_url) {
-                var igLink = document.createElement('a');
-                igLink.href = row.instagram_url; igLink.target = '_blank';
-                igLink.textContent = '📸 Instagram';
-                igLink.style.cssText = 'padding:4px 10px;background:rgba(193,53,132,0.08);border:1px solid rgba(193,53,132,0.2);border-radius:5px;color:#E1306C;font-size:11px;text-decoration:none;';
-                actions.appendChild(igLink);
-              }
-            }
-
-            // Post details button (when status hits Posted)
-            if (row.status === 'Filmed' || row.status === 'Edited') {
-              var postBtn = document.createElement('button');
-              postBtn.textContent = '📋 Add post details';
-              postBtn.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.08);border:1px solid rgba(61,170,110,0.2);border-radius:5px;color:#4CAF82;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-              postBtn.onclick = function() { self._showPostDetails(row); };
-              actions.appendChild(postBtn);
-            }
 
             // Oct 13 2026 (XP-1, Alex: "Add two ticks to the beat card"):
             // the pipeline had no "beat finished" / "beat released" step, so
@@ -31519,50 +29634,6 @@ RPGACE.register('contentProductionLive', {
               }
             }
 
-            // Open in Oracle button
-            var oracleBtn = document.createElement('button');
-            oracleBtn.textContent = '💬 Oracle session';
-            oracleBtn.style.cssText = 'padding:4px 10px;background:rgba(74,144,226,0.06);border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-            oracleBtn.onclick = function() {
-              self._activeConID = row.con_id;
-              self._activeId = row.id;
-              // Close the hosting dashDeck popup first — showPage('advisor')
-              // would otherwise swap the page UNDER the still-open overlay.
-              // No-op when opened outside the popup.
-              if (RPGACE.modules.dashDeck && RPGACE.modules.dashDeck.closeWidgetPopup) {
-                RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
-              }
-              if (typeof showPage === 'function') showPage('advisor');
-              setTimeout(function() {
-                self._injectOracleBar();
-                RPGACE.utils.sendToOracle('I am working on ConID #' + row.con_id + ': "' + row.title + '". Status: ' + row.status + '. Idea: ' + (row.idea || '').slice(0, 300) + '\n\nHelp me with the next step in the content production process.');
-              }, 500);
-            };
-            actions.appendChild(oracleBtn);
-
-            // Aug 6 (Engineer pass, 2nd real hand-test round, item 7) —
-            // renamed + demoted to a muted secondary link. Alex's real
-            // complaint wasn't that this capability shouldn't exist, it's
-            // that it (and Beatstars Listing, right below) rendered as a
-            // same-weight button next to the real primary action at every
-            // stage, including the very first one — before this pass,
-            // hasVideoJob was true from the moment Log Beat ran (the linked
-            // video_jobs row is created in the same insert), so this button
-            // showed even on a fresh ConID. Still opens the full multi-phase
-            // Production Panel (script editing, Phase breakdown) — that
-            // capability isn't removed, just no longer competing visually
-            // with the one real next-action button.
-            var vpBtn = document.createElement('button');
-            vpBtn.textContent = '⚙ Full Production Panel';
-            vpBtn.style.cssText = 'padding:3px 8px;background:none;border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:rgba(74,144,226,0.55);font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-            vpBtn.onclick = function() {
-              if (RPGACE.modules.dashDeck) RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
-              self._activeConID = row.con_id;
-              self._activeId = row.id;
-              self._openProductionPanel();
-            };
-            actions.appendChild(vpBtn);
-
             // BT-8 (Oct 16 2026): one 💰 Sell button on every beat (was a
             // licence-gated toggle with Beatstars listing + zip deliverables;
             // zips retired). Opens Beats' Sell pop-up: tiers, listing text,
@@ -31605,7 +29676,6 @@ RPGACE.register('contentProductionLive', {
             delBtn.style.cssText = 'padding:4px 10px;background:rgba(226,84,84,0.06);border:1px solid rgba(226,84,84,0.2);border-radius:5px;color:rgba(226,84,84,0.7);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
             delBtn.onclick = function() {
               var msg = 'Delete ConID #' + row.con_id + ' ("' + row.title + '")?';
-              if (hasVideoJob) msg += '\n\nThis will also delete its linked Video Pipeline job (and any OpenMontage job record) — that cannot be undone.';
               if (!confirm(msg)) return;
               RPGACE.sb.secureWrite('video_jobs', 'delete', null, 'content_production_id=eq.' + row.id)
                 .catch(function(e) { throw new Error('linked video job: ' + e.message); })
@@ -31618,7 +29688,7 @@ RPGACE.register('contentProductionLive', {
                     .catch(function(e) { throw new Error('ConID row: ' + e.message); });
                 })
                 .then(function() {
-                  RPGACE.utils.toast('🗑 Deleted ConID #' + row.con_id + (hasVideoJob ? ' + linked jobs' : ''), 'rgba(226,226,236,0.5)', 2500);
+                  RPGACE.utils.toast('🗑 Deleted ConID #' + row.con_id + '', 'rgba(226,226,236,0.5)', 2500);
                   self._refreshWidget();
                 })
                 .catch(function(e) {
@@ -31635,812 +29705,16 @@ RPGACE.register('contentProductionLive', {
         });
     },
 
-    // ── Post details questionnaire ────────────────────────────────
-    _showPostDetails: function(row) {
-      var self = RPGACE.modules.contentProductionLive;
-      var pop = RPGACE.modules.dashDeck._popup({
-        dim: '0.9', scroll: true, width: '520px', bg: '#0f0f1a', borderColor: 'rgba(61,170,110,0.25)',
-        title: 'ConID #' + row.con_id + ' — Post Details', noDefaultClose: true,
-      });
-      var overlay = pop.overlay, box = pop.box;
 
-      var fields = [
-        { id: 'pd-yt',    label: 'YouTube URL', placeholder: 'https://youtube.com/watch?v=...' },
-        { id: 'pd-ig',    label: 'Instagram URL', placeholder: 'https://instagram.com/p/...' },
-        { id: 'pd-tiktok',label: 'TikTok URL', placeholder: 'https://tiktok.com/@acesanyabeats/...' },
-        { id: 'pd-raw',   label: 'Raw footage path (E: drive)', placeholder: 'E:\\Videos\\edison_tutorial_raw.mp4' },
-        { id: 'pd-notes', label: 'Post notes / performance observations', placeholder: 'e.g. Posted Sunday 6pm, got 200 views in first hour...' },
-      ];
 
-      fields.forEach(function(f) {
-        var lbl = document.createElement('div');
-        lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
-        lbl.textContent = f.label + ':';
-        var inp = document.createElement('input');
-        inp.id = f.id; inp.type = 'text'; inp.placeholder = f.placeholder;
-        inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
-        box.appendChild(lbl); box.appendChild(inp);
-      });
 
-      // F15: licence + price, if this ConID has a beat attached to it (not
-      // every post is a beat sale, so both are optional and null if left
-      // blank) - precondition for F16's Beatstars auto-listing, which reads
-      // these two columns straight off content_productions.
-      var licLbl = document.createElement('div');
-      licLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
-      licLbl.textContent = 'Licence type (if selling this beat):';
-      var licSelect = document.createElement('select');
-      licSelect.id = 'pd-licence';
-      licSelect.style.cssText = 'width:100%;background:#1a1a24;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
-      [['', '— not a beat sale —'], ['lease', 'Lease'], ['non-exclusive', 'Non-Exclusive'], ['exclusive', 'Exclusive']].forEach(function(o) {
-        var opt = document.createElement('option');
-        opt.value = o[0]; opt.textContent = o[1];
-        opt.style.color = '#D4DAF5'; opt.style.background = '#1a1a24';
-        licSelect.appendChild(opt);
-      });
-      box.appendChild(licLbl); box.appendChild(licSelect);
 
-      var priceLbl = document.createElement('div');
-      priceLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
-      priceLbl.textContent = 'Price (GBP):';
-      var priceInp = document.createElement('input');
-      priceInp.id = 'pd-price'; priceInp.type = 'number'; priceInp.min = '0'; priceInp.step = '0.01'; priceInp.placeholder = 'e.g. 29.99';
-      priceInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
-      box.appendChild(priceLbl); box.appendChild(priceInp);
 
-      var btnRow = document.createElement('div');
-      btnRow.style.cssText = 'display:flex;gap:8px;margin-top:16px;';
-      var saveBtn = document.createElement('button');
-      saveBtn.textContent = '💾 Save + Mark Posted';
-      saveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-      saveBtn.onclick = function() {
-        var g = function(id) { var el=document.getElementById(id); return el?el.value.trim():''; };
-        var priceVal = g('pd-price');
-        var updates = {
-          status: 'Posted',
-          posted_at: new Date().toISOString(),
-          youtube_url: g('pd-yt') || null,
-          instagram_url: g('pd-ig') || null,
-          tiktok_url: g('pd-tiktok') || null,
-          raw_footage_path: g('pd-raw') || null,
-          notes: g('pd-notes') || null,
-          licence_type: g('pd-licence') || null,
-          price: priceVal ? parseFloat(priceVal) : null,
-        };
-        self.updateEntry(row.id, updates).then(function() {
-          overlay.remove();
-          self._refreshWidget();
-          RPGACE.utils.toast('✅ ConID #' + row.con_id + ' marked Posted', '#4CAF82', 3000);
-          // Auto-post to Instagram if URL not provided
-          if (!updates.instagram_url && updates.status === 'Posted') {
-            RPGACE.utils.toast('💡 Tip: Instagram auto-post available via Composio', '#9B6EC8', 4000);
-          }
-        });
-      };
-      var cancelBtn = document.createElement('button');
-      cancelBtn.textContent = 'Cancel';
-      cancelBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-      cancelBtn.onclick = function() { overlay.remove(); };
-      btnRow.appendChild(saveBtn); btnRow.appendChild(cancelBtn);
-      box.appendChild(btnRow);
-    },
 
-    // ── Oracle bar — shows active ConID in Oracle tab ─────────────
-    _injectOracleBar: function() {
-      var self = RPGACE.modules.contentProductionLive;
-      if (!self._activeConID) return;
-      if (document.getElementById('cpl-oracle-bar')) return;
-      var chatBox = document.getElementById('chat-msgs') || document.getElementById('chat-box') || document.querySelector('[id*="chat"]');
-      if (!chatBox) return;
 
-      var bar = document.createElement('div');
-      bar.id = 'cpl-oracle-bar';
-      bar.style.cssText = 'background:rgba(61,170,110,0.06);border:1px solid rgba(61,170,110,0.2);border-radius:8px;padding:8px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;';
 
-      var left = document.createElement('div');
-      left.style.cssText = 'font-size:11px;color:rgba(61,170,110,0.8);';
-      left.textContent = '📋 Active: ConID #' + self._activeConID + ' — Oracle session being recorded';
 
-      var optionBBtn = document.createElement('button');
-      optionBBtn.textContent = '🎬 Switch to Production Panel';
-      optionBBtn.style.cssText = 'padding:4px 12px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.3);border-radius:5px;color:#4CAF82;font-size:11px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-      optionBBtn.onclick = function() { self._openProductionPanel(); };
 
-      var endBtn = document.createElement('button');
-      endBtn.textContent = 'End session';
-      endBtn.style.cssText = 'padding:4px 10px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.3);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-left:6px;';
-      endBtn.onclick = function() { self._endSession(); };
-
-      left.appendChild(document.createElement('br'));
-      bar.appendChild(left);
-      var btnWrap = document.createElement('div');
-      btnWrap.style.cssText = 'display:flex;gap:6px;flex-shrink:0;';
-      btnWrap.appendChild(optionBBtn); btnWrap.appendChild(endBtn);
-      bar.appendChild(btnWrap);
-      chatBox.parentElement.insertBefore(bar, chatBox);
-    },
-
-    // ── Option B: Production Panel ────────────────────────────────
-    _openProductionPanel: function() {
-      if (document.getElementById('cpl-prod-panel')) return;
-      var self = RPGACE.modules.contentProductionLive;
-      var panel = document.createElement('div');
-      panel.id = 'cpl-prod-panel';
-      panel.style.cssText = 'position:fixed;top:0;right:0;width:min(420px,100vw);height:100vh;background:#0c0c16;border-left:1px solid rgba(61,170,110,0.15);z-index:9998;display:flex;flex-direction:column;box-shadow:-16px 0 48px rgba(0,0,0,0.5);font-family:Rajdhani,sans-serif;';
-
-      var hdr = document.createElement('div');
-      hdr.style.cssText = 'background:rgba(61,170,110,0.06);border-bottom:1px solid rgba(61,170,110,0.12);padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;';
-      var htxt = document.createElement('div');
-      var lb = document.createElement('div');
-      lb.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:3px;color:rgba(61,170,110,0.65);margin-bottom:3px;';
-      lb.textContent = 'CONTENT PRODUCTION LIVE · ConID #' + self._activeConID;
-      var sub = document.createElement('div');
-      sub.style.cssText = 'font-size:12px;font-weight:700;color:#D4DAF5;';
-      sub.textContent = 'Production Panel';
-      htxt.appendChild(lb); htxt.appendChild(sub);
-      var closeHdr = document.createElement('button');
-      closeHdr.textContent = '×';
-      closeHdr.style.cssText = 'background:none;border:none;color:rgba(226,226,236,0.3);cursor:pointer;font-size:20px;';
-      closeHdr.onclick = function() {
-        RPGACE.ui.slideOutPanel(panel, 'right');
-      };
-      hdr.appendChild(htxt); hdr.appendChild(closeHdr);
-      panel.appendChild(hdr);
-
-      var body = document.createElement('div');
-      body.style.cssText = 'flex:1;overflow-y:auto;padding:16px;';
-
-      // Engineer pass 2026-07-30 (real "2 workflows" resolution) — this
-      // panel's 3 phases were built for a talking-head/OBS-tutorial
-      // recording (confirmed from its own original copy: "hook," "key
-      // teaching points," "film section by section," raw footage path) -
-      // a real, different content shape from a beat-driven production,
-      // where the real next steps are reference-matching/mood-palette/
-      // director-match/script, never "go film something." Fetches the
-      // real content_type once per open rather than guessing/threading a
-      // new field through every _activeId-setting call site.
-      var loadingRow = document.createElement('div');
-      loadingRow.style.cssText = 'color:rgba(226,226,236,0.3);font-size:11px;';
-      loadingRow.textContent = 'Loading...';
-      body.appendChild(loadingRow);
-      panel.appendChild(body);
-      RPGACE.ui.slideInPanel(panel, {edge:'right'});
-
-      // Aug 5 (Engineer pass, Phase D — content_video_pipeline_unification_
-      // spec_2026-08-05.txt item 5): music_video's real select widened to
-      // id/con_id/title so the new 4-phase branch below has a real row to
-      // hand to _generateVisualTreatment and the retroactive-button stubs,
-      // not just a content_type string.
-      RPGACE.sb.select('content_productions', 'id=eq.' + self._activeId + '&select=id,con_id,title,content_type&limit=1')
-        .then(function(rows) {
-          var row = rows && rows[0];
-          var contentType = (row && row.content_type) || 'tutorial';
-          body.innerHTML = '';
-
-          // music_video gets a real 4-phase model (more granular than the
-          // 3-phase tutorial shape below, which is byte-identical to before -
-          // Phase A's own "tutorial copy untouched" precedent). Phase 3
-          // (Script Editing) is genuinely new, not folded into Phase 2 -
-          // Alex confirmed directly this session that BOTH the outbound
-          // Oracle prompt and Oracle's returned Visual Treatment Doc get
-          // saved separately (creative_docs.script / .visual_treatment) and
-          // are each independently editable here.
-          // A7 (Aug 23 2026) — this was a two-way ternary whose `else` was
-          // the tutorial branch, so a third content_type would have silently
-          // rendered tutorial's 3 phases (including its "film your video
-          // section by section" copy and its raw-footage-path input) for an
-          // OBS-raw ConID whose footage is by definition already recorded.
-          // Now an explicit three-way lookup keyed on the real content_type,
-          // with tutorial as the honest default for anything unrecognised —
-          // the same default the column itself carries.
-          var PHASES_BY_TYPE = {
-            music_video: [
-              { icon: '🎯', title: 'Phase 1 — Reference + Style', desc: 'Your closest-matching artists/instrumentals and Phylum 12 mood/palette are being worked out via Beat Log — check the Oracle conversation for the real matches and colour palette.' },
-              { icon: '🎬', title: 'Phase 2 — Direction + Script', desc: 'Pick a director blend (up to 3, Phylum 13) and generate a real Visual Treatment Doc for this beat.' },
-              { icon: '📝', title: 'Phase 3 — Script Editing', desc: 'Review and edit the exact prompt sent to Oracle and the Visual Treatment Doc it returned — both saved to this ConID, both independently editable.' },
-              { icon: '🎥', title: 'Phase 4 — Video Pipeline', desc: 'Track real file paths and exports as everything above feeds into video generation.' },
-            ],
-            obs_raw: [
-              { icon: '🎞', title: 'Phase 1 — Raw OBS Footage', desc: 'The recording this ConID is built on. It already existed before the ConID did — submitting it is what allowed this ConID to be created at all.' },
-              { icon: '😂', title: 'Phase 2 — Meme Direction + Script', desc: 'One Oracle pass builds the long-form script, the ffmpeg cut plan, the meme/comic insert list, and the platform repurposing — grounded in the YouTube Meme Director plus Insta/YouTube/TikTok Oracle expertise.' },
-              { icon: '✂️', title: 'Phase 3 — Cut + Assemble', desc: 'Edit the script and cut plan here, run the cuts yourself in ffmpeg, then mark it done. RPGACE does not run ffmpeg — this stage records what you actually did.' },
-              { icon: '📣', title: 'Phase 4 — Captions + Publish', desc: 'Generate the three platform captions from the finished video record, then paste URLs once posted.' },
-            ],
-            tutorial: [
-              { icon: '📝', title: 'Phase 1 — Pre-Production', desc: 'Your script outline, hook, and key teaching points are in the Oracle conversation. Review them, then click Ready to Film when prepared.' },
-              { icon: '🎬', title: 'Phase 2 — Production', desc: 'Film your video section by section. Keep the Oracle bar open to reference your notes. Paste your raw footage path when done filming.' },
-              { icon: '✂️', title: 'Phase 3 — Post-Production', desc: 'Your platform captions are in Oracle. Copy them for each platform. Paste URLs once posted. System will pull stats on next Morning Brief.' },
-            ],
-          };
-          var phases = PHASES_BY_TYPE[contentType] || PHASES_BY_TYPE.tutorial;
-
-          phases.forEach(function(ph, i) {
-            var phaseCard = document.createElement('div');
-            phaseCard.style.cssText = 'background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.06);border-radius:8px;padding:14px;margin-bottom:10px;';
-            var phTitle = document.createElement('div');
-            phTitle.style.cssText = 'font-size:13px;font-weight:700;color:#D4DAF5;margin-bottom:6px;';
-            phTitle.textContent = ph.icon + ' ' + ph.title;
-            var phDesc = document.createElement('div');
-            phDesc.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.45);line-height:1.6;margin-bottom:10px;';
-            phDesc.textContent = ph.desc;
-            phaseCard.appendChild(phTitle); phaseCard.appendChild(phDesc);
-
-            if (i === 1 && contentType === 'tutorial') {
-              // Phase 2 — raw footage path input (tutorial workflow only;
-              // a beat-driven production's real paths live on its linked
-              // video_jobs row instead, reachable via the Video Pipeline
-              // card).
-              var pathInp = document.createElement('input');
-              pathInp.type = 'text';
-              pathInp.placeholder = 'E:\\Videos\\raw_footage.mp4';
-              pathInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:5px;color:#D4DAF5;font-size:11px;padding:6px 8px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:6px;';
-              var savePathBtn = document.createElement('button');
-              savePathBtn.textContent = 'Save footage path';
-              savePathBtn.style.cssText = 'padding:5px 12px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.25);border-radius:5px;color:#4CAF82;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-              savePathBtn.onclick = function() {
-                if (self._activeId && pathInp.value.trim()) {
-                  self.updateEntry(self._activeId, { raw_footage_path: pathInp.value.trim() })
-                    .then(function() { RPGACE.utils.toast('📁 Footage path saved', '#4CAF82', 2000); });
-                }
-              };
-              phaseCard.appendChild(pathInp); phaseCard.appendChild(savePathBtn);
-            } else if (contentType === 'obs_raw' && row) {
-              // ── A7 (Aug 23 2026) — the OBS-raw Production Panel ────────
-              // Deliberately the SAME four-phase shape as music_video below
-              // (Alex: "should include all the components from beat to music
-              // video workflow, with tweaks that make sense"), reusing
-              // _buildRetroActionButton / _buildScriptEditor /
-              // _generateCaptions / _viewCaptions unchanged. The real
-              // divergences: Phase 1 is footage rather than beat metadata,
-              // Phase 2 is the meme script rather than a Visual Treatment,
-              // and there is NO video-generation phase at all — the footage
-              // already exists, so an OpenMontage/Kling handoff would be
-              // meaningless here (any generated meme insert the script calls
-              // for is listed as a discrete manual clip, see the prompt).
-              if (i === 0) {
-                var obsPathWrap = document.createElement('div');
-                var obsPathInp = document.createElement('input');
-                obsPathInp.type = 'text';
-                obsPathInp.placeholder = 'E:\\OBS\\raw_2026-08-23.mkv';
-                obsPathInp.value = '';
-                obsPathInp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:5px;color:#D4DAF5;font-size:11px;padding:6px 8px;outline:none;font-family:Rajdhani,sans-serif;margin-bottom:6px;';
-                // Real current value, read live rather than assumed — the
-                // panel's own select is deliberately narrow (id/con_id/
-                // title/content_type), so this fetches the one extra column
-                // it actually needs instead of widening that shared query.
-                RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=raw_footage_path&limit=1')
-                  .then(function(r) { if (r && r[0] && r[0].raw_footage_path) obsPathInp.value = r[0].raw_footage_path; })
-                  .catch(function() {});
-                var obsSaveBtn = document.createElement('button');
-                obsSaveBtn.textContent = 'Update footage path';
-                obsSaveBtn.style.cssText = 'padding:5px 12px;background:rgba(226,168,61,0.1);border:1px solid rgba(226,168,61,0.3);border-radius:5px;color:#E2A83D;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-                obsSaveBtn.onclick = function() {
-                  var v = obsPathInp.value.trim();
-                  // The footage gate applies for the life of the ConID, not
-                  // only at creation: clearing this field would leave an
-                  // obs_raw ConID that could never legitimately have been
-                  // created (see _openObsRawIntake).
-                  if (!v) { RPGACE.utils.toast('⚠️ An OBS-raw ConID must keep a real footage path', '#CC4A4A', 3500); return; }
-                  self.updateEntry(row.id, { raw_footage_path: v })
-                    .then(function() { RPGACE.utils.toast('📁 Footage path updated', '#4CAF82', 2000); })
-                    .catch(function(e) { RPGACE.utils.toast('⚠️ Save failed: ' + e.message, '#CC4A4A', 3500); });
-                };
-                obsPathWrap.appendChild(obsPathInp); obsPathWrap.appendChild(obsSaveBtn);
-                phaseCard.appendChild(obsPathWrap);
-              } else if (i === 1) {
-                var obsGenBtn = document.createElement('button');
-                obsGenBtn.textContent = '🎞 Build Meme Script (fresh direction)';
-                obsGenBtn.style.cssText = 'padding:5px 12px;background:rgba(226,168,61,0.1);border:1px solid rgba(226,168,61,0.3);border-radius:5px;color:#E2A83D;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;';
-                obsGenBtn.onclick = function() {
-                  RPGACE.ui.slideOutPanel(panel, 'right');
-                  self._generateObsScript(row);
-                };
-                phaseCard.appendChild(obsGenBtn);
-                phaseCard.appendChild(self._buildRetroActionButton('↩ Reopen Last Direction (pre-filled)', '#E2A83D', 'rgba(226,168,61,0.35)', function() {
-                  RPGACE.ui.slideOutPanel(panel, 'right');
-                  self._retroObsScript(row);
-                }));
-              } else if (i === 2) {
-                // Same real editor as music_video's Phase 3, pointed at the
-                // OBS-raw path's own creative_docs keys via its new optional
-                // `fields` param (rule 8 — one editor, not a second copy).
-                self._buildScriptEditor(phaseCard, row.id, [
-                  { label: 'Outbound Prompt (sent to Oracle)', slug: 'obs_script_prompt', placeholder: 'Not generated yet — use Phase 2\'s Build Meme Script first.' },
-                  { label: 'Meme Script + FFmpeg Cut Plan (Oracle\'s reply)', slug: 'obs_script', placeholder: 'Not generated yet.' },
-                  { label: 'Your Edit Note (what you actually cut)', slug: 'obs_cut_note', placeholder: 'Filled in when you mark the cut done — editable here too.' },
-                ]);
-                var cutBtn = document.createElement('button');
-                cutBtn.textContent = '✂️ Mark Cut Done (ffmpeg)';
-                cutBtn.style.cssText = 'padding:5px 12px;background:rgba(76,175,130,0.1);border:1px solid rgba(76,175,130,0.3);border-radius:5px;color:#4CAF82;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;';
-                cutBtn.onclick = function() { self._markObsCutDone(row); };
-                phaseCard.appendChild(cutBtn);
-                phaseCard.appendChild(self._buildRetroActionButton('👁 View Script + Cut Plan', '#E2A83D', 'rgba(226,168,61,0.35)', function() {
-                  self._viewObsScript(row);
-                }));
-              } else if (i === 3) {
-                var obsCapBtn = document.createElement('button');
-                obsCapBtn.textContent = '📝 Generate Captions';
-                obsCapBtn.style.cssText = 'padding:5px 12px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.25);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;';
-                obsCapBtn.onclick = function() {
-                  RPGACE.ui.slideOutPanel(panel, 'right');
-                  self._generateCaptions(row);
-                };
-                phaseCard.appendChild(obsCapBtn);
-                phaseCard.appendChild(self._buildRetroActionButton('👁 View Captions', '#4A8CCC', 'rgba(74,144,226,0.3)', function() {
-                  self._viewCaptions(row);
-                }));
-                phaseCard.appendChild(document.createElement('br'));
-                phaseCard.appendChild(self._buildRetroActionButton('📋 Add post details / URLs', '#4CAF82', 'rgba(61,170,110,0.3)', function() {
-                  RPGACE.ui.slideOutPanel(panel, 'right');
-                  self._showPostDetails(row);
-                }));
-              }
-            } else if (contentType === 'music_video' && row) {
-              if (i === 0) {
-                // Phase 1 — Reference + Style: content unchanged. Real
-                // edit-in-place retroactive button (Aug 5, Phase E) -
-                // reopens Beat Log pre-filled with this ConID's saved data.
-                phaseCard.appendChild(self._buildRetroActionButton('↩ Return to Beat Log (edit in place)', '#C9A84C', 'rgba(201,168,76,0.3)', function() {
-                  RPGACE.ui.slideOutPanel(panel, 'right');
-                  if (RPGACE.modules.beatLog && RPGACE.modules.beatLog._openRetroactive) RPGACE.modules.beatLog._openRetroactive(row);
-                }));
-              } else if (i === 1) {
-                // Phase 2 — real trigger into the already-existing
-                // _generateVisualTreatment flow (dedup: reuses the exact
-                // function the ConID-card button calls, not a second
-                // hand-rolled copy). Real retroactive button (Aug 5, Phase
-                // E) reopens the same flow pre-filled with the previously
-                // saved director blend.
-                // Aug 6 (Engineer pass, real Content Pipeline bugfix) —
-                // relabeled per Alex's own "duplicated stages" report:
-                // showing "Start Visual Treatment" next to "Redo Visual
-                // Treatment" read as two copies of the same action. Now
-                // named for what's actually different — a fresh director
-                // pick vs. reopening the LAST saved one pre-selected.
-                var vtBtn2 = document.createElement('button');
-                vtBtn2.textContent = '🎬 New Visual Treatment (fresh director pick)';
-                vtBtn2.style.cssText = 'padding:5px 12px;background:rgba(155,89,182,0.1);border:1px solid rgba(155,89,182,0.25);border-radius:5px;color:#9B6EC8;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;';
-                vtBtn2.onclick = function() {
-                  RPGACE.ui.slideOutPanel(panel, 'right');
-                  self._generateVisualTreatment(row);
-                };
-                phaseCard.appendChild(vtBtn2);
-                phaseCard.appendChild(self._buildRetroActionButton('↩ Reopen Last Visual Treatment (pre-filled)', '#9B6EC8', 'rgba(155,89,182,0.3)', function() {
-                  RPGACE.ui.slideOutPanel(panel, 'right');
-                  self._retroVisualTreatment(row);
-                }));
-              } else if (i === 2) {
-                // Phase 3 — NEW real Script Editing surface (Alex-confirmed
-                // this session): both creative_docs.script (the exact
-                // outbound Oracle prompt) and creative_docs.visual_treatment
-                // (Oracle's reply) shown independently editable. Real
-                // retroactive button (Aug 5, Phase E) resends whatever is
-                // currently saved straight to Oracle again.
-                self._buildScriptEditor(phaseCard, row.id);
-                phaseCard.appendChild(self._buildRetroActionButton('↩ Regenerate (resend saved script)', '#4CAF82', 'rgba(61,170,110,0.3)', function() {
-                  RPGACE.ui.slideOutPanel(panel, 'right');
-                  self._retroRegenerateScript(row);
-                }));
-              } else if (i === 3) {
-                // Aug 6 (Engineer pass, real Video Pipeline absorption) —
-                // real inline video-job status (stage progress + "Mark
-                // next stage" + "Paths + exports") replaces the old
-                // "Open Video Pipeline" link-out to a now-deleted separate
-                // card. Real dedup, not a rename: reuses videoPipeline's
-                // own STAGES/STAGE_LABELS/_showDetails/_computeAuto
-                // AdvancedStatus rather than a second hand-rolled copy.
-                self._buildVideoJobStatus(phaseCard, row);
-
-                // Aug 5 (Engineer pass, Phase F) — real Generate Video
-                // trigger. Gated behind OPENMONTAGE_HANDOFF_ENABLED (false
-                // by default) - see _generateVideo for the honest
-                // preview-not-fake-success behaviour while it's off.
-                var genVidBtn = document.createElement('button');
-                genVidBtn.textContent = '🎬 Generate Video';
-                genVidBtn.style.cssText = 'padding:5px 12px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.25);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;margin-bottom:6px;';
-                genVidBtn.onclick = function() { self._generateVideo(row); };
-                phaseCard.appendChild(genVidBtn);
-
-                // Test-only tool, deliberately labeled - fakes a completed
-                // job so the rest of the pipeline (Video Pipeline widget,
-                // this Phase's own "View Kling Project" retro button below)
-                // can be validated for real without any Kling spend.
-                var simBtn = document.createElement('button');
-                simBtn.textContent = '🧪 Simulate Response (test only)';
-                simBtn.style.cssText = 'padding:5px 12px;background:none;border:1px dashed rgba(155,89,182,0.35);border-radius:5px;color:#9B6EC8;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:6px;';
-                simBtn.onclick = function() { self._simulateOpenMontageResponse(row); };
-                phaseCard.appendChild(simBtn);
-                phaseCard.appendChild(document.createElement('br'));
-
-                // Aug 5 (Engineer pass, Phase F) — genuinely real now, not a
-                // stub: Phase F stores a real openmontage_jobs reference
-                // (via either Generate Video or Simulate Response), so this
-                // button can finally show real job data instead of an
-                // honest "not built yet" toast.
-                phaseCard.appendChild(self._buildRetroActionButton('↩ View Kling Project', '#4A8CCC', 'rgba(74,144,226,0.3)', function() {
-                  self._viewOpenMontageJob(row);
-                }));
-                phaseCard.appendChild(document.createElement('br'));
-
-                // Aug 5 (Engineer pass, Phase G) — real Generate Captions
-                // trigger, item 12's "Captions Generating" stage. NOT hard-
-                // gated on all-scenes-accepted (item 11's review workflow
-                // isn't built) - the real content this needs already exists
-                // once Phase 2/3 have run, and blocking a working feature on
-                // an unbuilt one would be a worse default than letting Alex
-                // use it whenever he judges the video ready. Explicitly
-                // stops at saving captions - no Composio auto-posting, per
-                // /interrogation's confirmed scope.
-                var capBtn = document.createElement('button');
-                capBtn.textContent = '📝 Generate Captions';
-                capBtn.style.cssText = 'padding:5px 12px;background:rgba(74,144,226,0.1);border:1px solid rgba(74,144,226,0.25);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-right:6px;margin-top:6px;';
-                capBtn.onclick = function() {
-                  RPGACE.ui.slideOutPanel(panel, 'right');
-                  self._generateCaptions(row);
-                };
-                phaseCard.appendChild(capBtn);
-                phaseCard.appendChild(self._buildRetroActionButton('👁 View Captions', '#4A8CCC', 'rgba(74,144,226,0.3)', function() {
-                  self._viewCaptions(row);
-                }));
-              }
-            }
-
-            body.appendChild(phaseCard);
-          });
-
-          // Switch back to Oracle button
-          var backBtn = document.createElement('button');
-          backBtn.textContent = '← Back to Oracle (Option A)';
-          backBtn.style.cssText = 'width:100%;padding:10px;background:rgba(74,144,226,0.08);border:1px solid rgba(74,144,226,0.2);border-radius:6px;color:#4A8CCC;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;margin-top:8px;';
-          backBtn.onclick = function() {
-            RPGACE.ui.slideOutPanel(panel, 'right');
-          };
-          body.appendChild(backBtn);
-        })
-        .catch(function() {
-          body.innerHTML = '';
-          var err = document.createElement('div');
-          err.style.cssText = 'color:#CC4A4A;font-size:12px;';
-          err.textContent = 'Could not load this production\'s details.';
-          body.appendChild(err);
-        });
-    },
-
-    // ── Phase D retroactive-button stub — NOW ONLY the Phase 4 button ────
-    // Real, honest placeholder (rule 7 - never fake a not-yet-built
-    // feature). Phases 1-3's retroactive buttons became real edit-in-place
-    // actions in the Aug 5 Phase E pass below (_buildRetroActionButton) -
-    // this stub now covers exactly ONE remaining case, Phase 4's "View
-    // Kling Project" button, which is genuinely blocked on Phase F (video
-    // generation handoff hasn't shipped, so no real Kling project
-    // reference exists anywhere in the schema yet to pull up).
-    _buildRetroButton: function(label, row) {
-      var btn = document.createElement('button');
-      btn.textContent = label;
-      btn.style.cssText = 'padding:5px 12px;background:none;border:1px solid rgba(226,226,236,0.15);border-radius:5px;color:rgba(226,226,236,0.45);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-      btn.onclick = function() {
-        RPGACE.utils.toast('🔧 "' + label.replace('↩ ', '') + '" — needs Phase F (video generation handoff) to exist first for ConID #' + (row.con_id || row.id), '#E2A83D', 4000);
-      };
-      return btn;
-    },
-
-    // ── Phase E real-action button style (Aug 5, Engineer pass) ──────────
-    // Shared by the 3 retroactive buttons that now do real work (rule 8
-    // dedup - one builder, not 3 hand-rolled copies), each tinted to match
-    // its phase's existing accent colour.
-    _buildRetroActionButton: function(label, colorCss, borderCss, onclick) {
-      var btn = document.createElement('button');
-      btn.textContent = label;
-      btn.style.cssText = 'padding:5px 12px;background:none;border:1px solid ' + borderCss + ';border-radius:5px;color:' + colorCss + ';font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-      btn.onclick = onclick;
-      return btn;
-    },
-
-    // ── Phase D Script Editing surface (Aug 5, Engineer pass) ────────────
-    // Real editable view of both creative_docs.script (the exact outbound
-    // Oracle prompt, saved the moment _generateVisualTreatment's fillGaps
-    // flow completes) and creative_docs.visual_treatment (Oracle's reply,
-    // already saved by _saveDocToProduction elsewhere). Both save paths
-    // reuse visualOracle._saveDocToProduction directly rather than a new
-    // hand-rolled merge-write (rule 8 dedup) - it already does the real
-    // read-merge-write-into-creative_docs shape this needs.
-    // A7 (Aug 23 2026) — OPTIONAL third param `fields`:
-    // [{label, slug, placeholder}, ...]. Omitted (every pre-existing
-    // caller) = the original two music_video fields, byte-identical. The
-    // OBS-raw Production Panel passes its own three creative_docs keys so
-    // it reuses this exact editor — including its real save path through
-    // visualOracle._saveDocToProduction — instead of a second hand-rolled
-    // copy of the same load/edit/save markup (rule 8).
-    _buildScriptEditor: function(container, productionId, fields) {
-      var loading = document.createElement('div');
-      loading.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);';
-      loading.textContent = 'Loading saved script + doc...';
-      container.appendChild(loading);
-
-      RPGACE.sb.select('content_productions', 'id=eq.' + productionId + '&select=creative_docs&limit=1')
-        .then(function(rows) {
-          loading.remove();
-          var docs = (rows && rows[0] && rows[0].creative_docs) || {};
-
-          function buildField(labelText, docSlug, placeholder) {
-            var lbl = document.createElement('div');
-            lbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:4px;';
-            lbl.textContent = labelText;
-            var ta = document.createElement('textarea');
-            ta.value = docs[docSlug] || '';
-            ta.placeholder = placeholder;
-            ta.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:5px;color:#D4DAF5;font-size:11px;padding:8px;outline:none;font-family:Rajdhani,sans-serif;resize:vertical;min-height:70px;margin-bottom:6px;';
-            var saveBtn = document.createElement('button');
-            saveBtn.textContent = 'Save ' + labelText;
-            saveBtn.style.cssText = 'padding:4px 10px;background:rgba(61,170,110,0.1);border:1px solid rgba(61,170,110,0.25);border-radius:5px;color:#4CAF82;font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;margin-bottom:14px;';
-            saveBtn.onclick = function() {
-              var vo = RPGACE.modules.visualOracle;
-              if (!vo || !vo._saveDocToProduction) { RPGACE.utils.toast('Visual Oracle module not available', '#CC4A4A', 2500); return; }
-              vo._saveDocToProduction(docSlug, ta.value, productionId);
-            };
-            container.appendChild(lbl); container.appendChild(ta); container.appendChild(saveBtn);
-          }
-
-          // Aug 6 (Engineer pass, 2nd real hand-test round, item 9) — Alex's
-          // real gap: he wrote free-text creative inspiration into the
-          // director picker (Phase 2), then couldn't find it again when he
-          // reopened a ConID's Visual Treatment to copy what he'd written.
-          // It WAS being saved (creative_docs.director_blend.inspiration,
-          // real structured data — see _showDirectorPicker/_generateVisualTreatment
-          // above), just never rendered anywhere. Read-only here (it's an
-          // input to Phase 2's picker, not itself an editable script field —
-          // editing it means reopening the picker via the retro button).
-          var blend = docs.director_blend;
-          if (blend && (blend.inspiration || (blend.names && blend.names.length))) {
-            var blLbl = document.createElement('div');
-            blLbl.style.cssText = 'font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:4px;';
-            blLbl.textContent = 'Director Blend + Your Inspiration Notes';
-            var blBox = document.createElement('div');
-            blBox.style.cssText = 'font-size:11px;color:#D4DAF5;background:rgba(155,89,182,0.05);border:1px solid rgba(155,89,182,0.15);border-radius:5px;padding:8px;margin-bottom:14px;line-height:1.5;';
-            blBox.innerHTML = (blend.names && blend.names.length ? '<strong>Directors:</strong> ' + blend.names.join(', ').replace(/</g, '&lt;') + '<br>' : '') +
-              (blend.inspiration ? '<strong>Your notes:</strong> ' + blend.inspiration.replace(/</g, '&lt;') : '<span style="color:rgba(226,226,236,0.3);">No free-text inspiration notes were added.</span>');
-            container.appendChild(blLbl); container.appendChild(blBox);
-          }
-
-          var specs = (fields && fields.length) ? fields : [
-            { label: 'Outbound Prompt (sent to Oracle)', slug: 'script', placeholder: 'Not generated yet — use Phase 2\'s Start Visual Treatment first.' },
-            { label: 'Visual Treatment Doc (Oracle\'s reply)', slug: 'visual_treatment', placeholder: 'Not generated yet.' },
-          ];
-          specs.forEach(function(f) { buildField(f.label, f.slug, f.placeholder || ''); });
-        })
-        .catch(function() {
-          loading.textContent = 'Could not load saved script/doc.';
-          loading.style.color = '#CC4A4A';
-        });
-    },
-
-    // ── Phase 4 real video-job status (Aug 6, Engineer pass, real Video
-    // Pipeline → Content Pipeline absorption) — replaces the old link-out
-    // to a separate "Video Pipeline" card (now deleted) with the real
-    // stage tracker inline, for THIS ConID's own linked video_jobs row.
-    // Reuses videoPipeline's own STAGES/STAGE_LABELS/_showDetails/
-    // _computeAutoAdvancedStatus directly (rule 8 dedup) rather than a
-    // second hand-rolled copy of the same stage/paths/exports logic.
-    _buildVideoJobStatus: function(phaseCard, row) {
-      // ⚠️ FLAGGED, NOT FIXED (G53 split, Aug 2026): `self` is PRE-EXISTING
-      // dead code here — this function declared `var self = this;` but never
-      // referenced `self` even once (verified by direct scan of its whole
-      // body, before and after the split). It is re-pointed at the module
-      // rather than deleted, purely to keep this a byte-for-byte move; the
-      // reviewing session can drop the line as a separate, clearly-scoped
-      // change. Every real call this function makes goes to `vp`
-      // (RPGACE.modules.videoPipeline), not to this module.
-      var self = RPGACE.modules.contentProductionLive;
-      var wrap = document.createElement('div');
-      wrap.style.cssText = 'margin-bottom:10px;';
-      var loading = document.createElement('div');
-      loading.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.3);';
-      loading.textContent = 'Loading video job status...';
-      wrap.appendChild(loading);
-      phaseCard.appendChild(wrap);
-
-      var render = function() {
-        RPGACE.sb.select('video_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
-          .catch(function() { return []; })
-          .then(function(jobs) {
-            wrap.innerHTML = '';
-            var vj = jobs && jobs[0];
-            if (!vj) {
-              var none = document.createElement('div');
-              none.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.35);';
-              none.textContent = 'No linked video job found for this ConID yet.';
-              wrap.appendChild(none);
-              return;
-            }
-            var vp = RPGACE.modules.videoPipeline;
-            var statusColors = { beat_logged: '#C9A84C', in_production: '#4A8CCC', edited: '#9B6EC8', rendered: '#CC4A4A', exported: '#4CAF82' };
-            var stageIdx = vp.STAGES.indexOf(vj.status);
-            if (stageIdx === -1) stageIdx = 0;
-            var color = statusColors[vj.status] || '#4A8CCC';
-
-            var topRow = document.createElement('div');
-            topRow.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;';
-            var statusBadge = document.createElement('span');
-            statusBadge.style.cssText = 'font-size:11px;font-weight:700;color:' + color + ';';
-            statusBadge.textContent = vp.STAGE_LABELS[vj.status] || vj.status;
-            topRow.appendChild(statusBadge);
-            wrap.appendChild(topRow);
-
-            var progressWrap = document.createElement('div');
-            progressWrap.style.cssText = 'display:flex;gap:3px;margin-bottom:8px;';
-            vp.STAGES.forEach(function(s, i) {
-              var dot = document.createElement('div');
-              dot.style.cssText = 'flex:1;height:3px;border-radius:2px;background:' + (i <= stageIdx ? color : 'rgba(255,255,255,0.08)') + ';';
-              progressWrap.appendChild(dot);
-            });
-            wrap.appendChild(progressWrap);
-
-            var actions = document.createElement('div');
-            actions.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px;';
-            if (stageIdx < vp.STAGES.length - 1) {
-              var nextStage = vp.STAGES[stageIdx + 1];
-              var advBtn = document.createElement('button');
-              advBtn.textContent = '→ Mark ' + vp.STAGE_LABELS[nextStage];
-              advBtn.style.cssText = 'padding:4px 10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:5px;color:rgba(226,226,236,0.6);font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-              advBtn.onclick = function() {
-                vp.updateEntry(vj.id, { status: nextStage }).then(function() {
-                  RPGACE.utils.toast(vj.title + ' → ' + vp.STAGE_LABELS[nextStage], color, 2000);
-                  render();
-                });
-              };
-              actions.appendChild(advBtn);
-            }
-            var detailsBtn = document.createElement('button');
-            detailsBtn.textContent = '📋 Paths + exports';
-            detailsBtn.style.cssText = 'padding:4px 10px;background:rgba(74,144,226,0.06);border:1px solid rgba(74,144,226,0.15);border-radius:5px;color:#4A8CCC;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-            detailsBtn.onclick = function() { vp._showDetails(vj, render); };
-            actions.appendChild(detailsBtn);
-            wrap.appendChild(actions);
-          })
-          .catch(function(e) {
-            wrap.innerHTML = '';
-            var err = document.createElement('div');
-            err.style.cssText = 'font-size:11px;color:#CC4A4A;';
-            err.textContent = 'Could not load video job: ' + e.message;
-            wrap.appendChild(err);
-          });
-      };
-      render();
-    },
-
-    // Real "Generate Video" action, gated behind OPENMONTAGE_HANDOFF_ENABLED.
-    // While off (the real default - Alex hasn't chosen a paid provider yet,
-    // Tier 3 spend fork), this does NOT fake success and does NOT silently
-    // no-op (rule 7) - it builds the real payload and shows it verbatim, so
-    // the feature is honestly inspectable before it's ever flipped on.
-    // openmontage_jobs deliberately uses the plain anon-key RPGACE.sb.insert
-    // (NOT secureWrite) - confirmed against api/data-write.js's own
-    // ALLOWED_TABLES list, which does not include it, matching the standing
-    // landmine that this table must never be swept into an RLS-restriction
-    // batch without breaking the separate OpenMontage session's writes.
-    _generateVideo: function(row) {
-      var self = RPGACE.modules.contentProductionLive;
-      self._buildVideoPipelinePayload(row, function(payload) {
-        if (!self.OPENMONTAGE_HANDOFF_ENABLED) {
-          var pop = RPGACE.modules.dashDeck._popup({
-            dim: '0.92', scroll: true, width: '460px', bg: '#0f0f1a', borderColor: 'rgba(74,144,226,0.25)',
-            title: 'Generate Video — handoff currently OFF',
-          });
-          var body = document.createElement('div');
-          body.style.cssText = 'font-size:12px;color:#D4DAF5;line-height:1.6;';
-          body.innerHTML = '<div style="margin-bottom:12px;color:#E2A83D;">OpenMontage handoff is OFF (<code>OPENMONTAGE_HANDOFF_ENABLED = false</code>) — Alex hasn\'t chosen a paid video provider yet, a real Tier-3 spend decision. Nothing was sent. This is exactly the real payload that WOULD be sent once this is flipped on:</div>' +
-            '<pre style="white-space:pre-wrap;font-size:11px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:6px;padding:10px;max-height:320px;overflow-y:auto;">' + JSON.stringify(payload, null, 2).replace(/</g, '&lt;') + '</pre>';
-          pop.box.appendChild(body);
-          return;
-        }
-        RPGACE.sb.insert('openmontage_jobs', payload)
-          .then(function(r) {
-            if (!r.ok) throw new Error('insert returned ' + r.status);
-            RPGACE.utils.toast('🎬 Video generation job queued to OpenMontage', '#4A8CCC', 3000);
-          })
-          .catch(function(e) {
-            RPGACE.utils.toast('⚠️ Failed to queue OpenMontage job: ' + e.message, '#CC4A4A', 4000);
-          });
-      });
-    },
-
-    // Real reader for Phase 4's "View Kling Project" button (genuinely real
-    // as of this pass, not the honest stub Phase D/E left it as) - shows
-    // whatever real openmontage_jobs row exists for this ConID, or an
-    // honest "none yet" message rather than fabricating one.
-    _viewOpenMontageJob: function(row) {
-      var self = RPGACE.modules.contentProductionLive;
-      RPGACE.sb.select('openmontage_jobs', 'content_production_id=eq.' + row.id + '&order=created_at.desc&limit=1')
-        .catch(function() { return []; })
-        .then(function(rows) {
-          var job = rows && rows[0];
-          var pop = RPGACE.modules.dashDeck._popup({
-            dim: '0.92', scroll: true, width: '440px', bg: '#0f0f1a', borderColor: 'rgba(74,144,226,0.25)',
-            title: 'OpenMontage Job',
-          });
-          var body = document.createElement('div');
-          body.style.cssText = 'font-size:12px;color:#D4DAF5;line-height:1.6;';
-          if (!job) {
-            body.textContent = 'No OpenMontage job exists yet for this ConID — use Generate Video (or Simulate Response, for testing) first.';
-          } else {
-            body.innerHTML = '<div style="margin-bottom:8px;"><strong>Status:</strong> ' + (job.status || '').replace(/</g, '&lt;') + '</div>' +
-              '<div style="margin-bottom:8px;"><strong>Title:</strong> ' + (job.title || '').replace(/</g, '&lt;') + '</div>' +
-              (job.output_note ? '<div style="margin-bottom:8px;"><strong>Output note:</strong> ' + job.output_note.replace(/</g, '&lt;') + '</div>' : '') +
-              '<div style="font-size:11px;color:rgba(226,226,236,0.4);">Job id: ' + job.id + '</div>';
-          }
-          // Aug 6 (Engineer pass, item 13a) — real, non-fake completion
-          // path: unlike Simulate Response, a genuine OpenMontage job
-          // completes asynchronously and RPGACE has no live push/webhook
-          // for that write-back (openmontage_jobs is polled, not pushed —
-          // see CLAUDE.md's own external-handoff-lane note). So a real
-          // 'complete' job needs one honest manual acknowledgment click
-          // to advance content_productions.status, rather than either
-          // faking it early (rule 7) or leaving "Video Generation: tick"
-          // permanently unreachable for real (non-simulated) jobs.
-          if (job && job.status === 'complete' && ['Idea', 'Scripted'].indexOf(row.status) !== -1) {
-            var markBtn = document.createElement('button');
-            markBtn.textContent = '✅ Mark ConID as Filmed';
-            markBtn.style.cssText = 'margin-top:6px;padding:8px 14px;background:rgba(61,170,110,0.12);border:1px solid rgba(61,170,110,0.35);border-radius:6px;color:#4CAF82;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-            markBtn.onclick = function() {
-              RPGACE.sb.secureWrite('content_productions', 'update', { status: 'Filmed', updated_at: new Date().toISOString() }, 'id=eq.' + row.id)
-                .then(function() {
-                  RPGACE.utils.toast('✅ ConID #' + row.con_id + ' marked Filmed — video generation complete', '#4CAF82', 3000);
-                  pop.overlay.remove();
-                  self._refreshWidget();
-                })
-                .catch(function(e) { RPGACE.utils.toast('⚠️ Failed: ' + e.message, '#CC4A4A', 3500); });
-            };
-            body.appendChild(markBtn);
-          }
-          pop.box.appendChild(body);
-        });
-    },
-
-    // Real reader for the saved captions - honest "none yet" message
-    // rather than fabricating placeholder text.
-    _viewCaptions: function(row) {
-      RPGACE.sb.select('content_productions', 'id=eq.' + row.id + '&select=creative_docs&limit=1')
-        .catch(function() { return []; })
-        .then(function(rows) {
-          var captions = rows && rows[0] && rows[0].creative_docs && rows[0].creative_docs.captions;
-          var pop = RPGACE.modules.dashDeck._popup({
-            dim: '0.92', scroll: true, width: '460px', bg: '#0f0f1a', borderColor: 'rgba(74,144,226,0.25)',
-            title: 'Platform Captions',
-          });
-          var body = document.createElement('div');
-          body.style.cssText = 'font-size:12px;color:#D4DAF5;line-height:1.6;white-space:pre-wrap;';
-          body.textContent = captions || 'No captions generated yet for this ConID — use Generate Captions first.';
-          pop.box.appendChild(body);
-        });
-    },
-
-    // ── End session — compile to journal ─────────────────────────
-    _endSession: function() {
-      var self = RPGACE.modules.contentProductionLive;
-      var bar = document.getElementById('cpl-oracle-bar');
-      if (bar) bar.remove();
-
-      // Compile Oracle conversation to journal and update entry
-      var chatBox = document.getElementById('chat-msgs') || document.getElementById('chat-box') || document.querySelector('[id*="chat"]');
-      var sessionText = chatBox ? chatBox.innerText.slice(-3000) : '';
-
-      if (self._activeId && sessionText) {
-        self.updateEntry(self._activeId, { oracle_session: sessionText });
-      }
-
-      if (typeof saveToJournal === 'function' && self._activeConID) {
-        saveToJournal(
-          'Content Production Session — ConID #' + self._activeConID,
-          'Session ended. Oracle conversation captured.\n\n' + sessionText.slice(0, 2000),
-          'contentProductionLive'
-        );
-      }
-
-      RPGACE.utils.toast('✅ Session ended · Saved to Journal · ConID #' + self._activeConID, '#4CAF82', 4000);
-      self._activeConID = null;
-      self._activeId = null;
-      self._refreshWidget();
-    },
 
   },
 
@@ -32463,332 +29737,15 @@ RPGACE.register('contentProductionLive', {
   // scope DATA fields _activeConID and _activeId, which 2 of those sites
   // assign directly — data, so they stay at module scope and are NOT
   // pass-throughs.
-  _flowFor: function(contentType) { return this.logic._flowFor(contentType); },
-  _revertToStage: function(row, targetStatus, callback, flow) { return this.logic._revertToStage(row, targetStatus, callback, flow); },
-  _undoLastStage: function(row) { return this.logic._undoLastStage(row); },
-  createEntry: function(data) { return this.logic.createEntry(data); },
-  _openObsRawIntake: function(potRow, onCreated) { return this.ui._openObsRawIntake(potRow, onCreated); },
   updateEntry: function(id, updates) { return this.logic.updateEntry(id, updates); },
   _generateBeatstarsListing: function(row) { return this.logic._generateBeatstarsListing(row); },
-  _generateVisualTreatment: function(row, prefill) { return this.logic._generateVisualTreatment(row, prefill); },
-  _prepOracleBarFor: function(row, callback) { return this.logic._prepOracleBarFor(row, callback); },
-  _sendFilledPromptToOracle: function(row, vjId, filled, docSlug) { return this.ui._sendFilledPromptToOracle(row, vjId, filled, docSlug); },
-  _generateObsScript: function(row, prefill) { return this.logic._generateObsScript(row, prefill); },
-  _retroObsScript: function(row) { return this.logic._retroObsScript(row); },
-  _markObsCutDone: function(row) { return this.logic._markObsCutDone(row); },
-  _viewObsScript: function(row) { return this.ui._viewObsScript(row); },
-  _retroVisualTreatment: function(row) { return this.logic._retroVisualTreatment(row); },
-  _retroRegenerateScript: function(row) { return this.logic._retroRegenerateScript(row); },
   _injectDashboardWidget: function() { return this.ui._injectDashboardWidget(); },
   _refreshWidget: function() { return this.ui._refreshWidget(); },
-  _showPostDetails: function(row) { return this.ui._showPostDetails(row); },
-  _injectOracleBar: function() { return this.ui._injectOracleBar(); },
-  _openProductionPanel: function() { return this.ui._openProductionPanel(); },
-  _buildRetroButton: function(label, row) { return this.ui._buildRetroButton(label, row); },
-  _buildRetroActionButton: function(label, colorCss, borderCss, onclick) { return this.ui._buildRetroActionButton(label, colorCss, borderCss, onclick); },
-  _buildScriptEditor: function(container, productionId, fields) { return this.ui._buildScriptEditor(container, productionId, fields); },
-  _buildVideoJobStatus: function(phaseCard, row) { return this.ui._buildVideoJobStatus(phaseCard, row); },
-  _buildVideoPipelinePayload: function(row, callback) { return this.logic._buildVideoPipelinePayload(row, callback); },
-  _generateVideo: function(row) { return this.ui._generateVideo(row); },
-  _simulateOpenMontageResponse: function(row) { return this.logic._simulateOpenMontageResponse(row); },
-  _viewOpenMontageJob: function(row) { return this.ui._viewOpenMontageJob(row); },
   _findOracleCmdText: function(moduleName, cmdName) { return this.logic._findOracleCmdText(moduleName, cmdName); },
-  _generateCaptions: function(row) { return this.logic._generateCaptions(row); },
-  _viewCaptions: function(row) { return this.ui._viewCaptions(row); },
-  _endSession: function() { return this.ui._endSession(); },
 
 });
 /* ===END:contentProductionLive=== */
 
-/* ===MODULE:videoPipeline=== */
-// F17: Video Pipeline tracker. Original spec assumed "EDL review, approve &
-// render, connects to local_server.py job queue" — confirmed July 13 that
-// local_server.py has no render/EDL endpoints (only /reports,
-// /push-to-supabase, /watchlist for Content Intelligence) and no render
-// engine exists anywhere in this codebase. Rescoped per user direction to a
-// status tracker only, no actual rendering — same widget/progress-dot
-// pattern as contentProductionLive's ConID tracker, over the video_jobs
-// table (which beatLog already wrote to, but which never actually existed
-// in Supabase until this session — every beatLog save has been silently
-// failing; table created alongside this module).
-RPGACE.register('videoPipeline', {
-  domain: 'content',
-
-  // Engineer pass 2026-07-30 (real "2 workflows" resolution) — every
-  // real video_jobs row is created by beatLog._submit and ONLY by
-  // beatLog._submit (confirmed via grep - no other module inserts into
-  // this table), meaning this whole pipeline is ALWAYS beat-driven.
-  // 'raw_footage' as the second stage was a real mislabel: the real
-  // next step after logging a beat is reference-matching/mood-palette/
-  // director-match/script, never "go film something" - Alex's own
-  // direct catch. Renamed to 'in_production', a stage that genuinely
-  // fits every real video_jobs row rather than falsely implying camera
-  // footage. No data migration needed - both real existing rows were
-  // still at 'beat_logged', never 'raw_footage'.
-  //
-  // Aug 6 (Engineer pass, real Video Pipeline → Content Pipeline
-  // absorption, Alex's explicit /deduplication ask: "get rid of video
-  // pipeline, i want it to be completely absorbed by content pipeline
-  // as it is a step in content pipeline"). Real evidence backing the
-  // merge: every real video_jobs row has always been created by
-  // beatLog._submit and ONLY by beatLog._submit (confirmed via grep,
-  // same finding this module's own July 30 STAGES comment already
-  // recorded) — there has never been a real standalone (non-beat-
-  // linked) video job in production. The separate dashDeck "📹 Video
-  // Pipeline" card, its own widget/popup, and its "+ New" standalone-
-  // job form are DELETED (real dedup, not a rename) — a parallel place
-  // to do the same task Content Pipeline's own Production Panel Phase 4
-  // now does inline (see contentProductionLive._buildVideoJobStatus).
-  // This module keeps ONLY the real reusable pieces Phase 4 calls
-  // directly: the stage constants, the write helper, the paths+exports
-  // editor, and the auto-advance calculator — no UI surface of its own
-  // anymore. `_showDetails` now takes an explicit onSaved callback
-  // instead of a hardcoded self._refreshWidget() call, since there is
-  // no longer a standalone widget to refresh.
-  //
-  // G53 pilot (Aug 26 2026) — real /interrogation-confirmed shape:
-  // "one module, two internal namespaces" (ui.*/logic.*), thin
-  // top-level pass-throughs preserving the exact existing public API
-  // (contentProductionLive's own `vp.STAGES`/`vp.updateEntry()`/
-  // `vp._showDetails()` calls, confirmed via grep as this module's ONLY
-  // real external caller, keep working byte-identically). Shared
-  // constants (STAGES/STAGE_LABELS/EXPORT_TARGETS) stay at module-scope
-  // — both ui and logic reach them via RPGACE.modules.videoPipeline.*,
-  // never bare `this`/`self`, since a function moved into `ui`/`logic`
-  // is invoked with `this` bound to THAT sub-object, not the module —
-  // the one real risk this whole split has to get right, function by
-  // function. A real, safe cleanup made in passing: the July 30 and
-  // Aug 6 comments above used to sit on top of two byte-identical
-  // duplicate STAGES/STAGE_LABELS/EXPORT_TARGETS declarations (the 2nd
-  // silently shadowing the 1st, itself harmless) — merged into one.
-  STAGES: ['beat_logged', 'in_production', 'edited', 'rendered', 'exported'],
-  STAGE_LABELS: { beat_logged: 'Beat Logged', in_production: 'In Production', edited: 'Edited', rendered: 'Rendered', exported: 'Exported' },
-  EXPORT_TARGETS: ['youtube', 'instagram', 'tiktok', 'beatstars'],
-
-  // ============================================================
-  // logic — business logic/data: no DOM, pure computation + writes.
-  // ============================================================
-  logic: {
-
-    updateEntry: function(id, updates) {
-      updates.updated_at = new Date().toISOString();
-      return RPGACE.sb.secureWrite('video_jobs', 'update', updates, 'id=eq.' + id);
-    },
-
-    // Engineer pass 2026-07-30 (Slice A item 4). Real judgment call, made
-    // and documented rather than left undecided: the first populated
-    // export_paths entry advances status straight to 'exported' - NOT all
-    // 4 targets. Reasoning: most productions only ever post to one or two
-    // platforms (a non-sale video never gets a Beatstars listing at all,
-    // per F16's own licence_type gate), so requiring all 4 would mean many
-    // real videos could never reach 'exported' even once genuinely done.
-    // Never moves status backward - takes the further of the current
-    // stage and whatever the new data supports.
-    _computeAutoAdvancedStatus: function(currentStatus, updates) {
-      var mod = RPGACE.modules.videoPipeline;
-      var computed = 'beat_logged';
-      if (updates.raw_path) computed = 'in_production';
-      if (updates.edited_path) computed = 'edited';
-      if (updates.rendered_path) computed = 'rendered';
-      if (updates.export_paths && Object.keys(updates.export_paths).length > 0) computed = 'exported';
-      var curIdx = mod.STAGES.indexOf(currentStatus);
-      var newIdx = mod.STAGES.indexOf(computed);
-      if (curIdx === -1) curIdx = 0;
-      return newIdx > curIdx ? computed : currentStatus;
-    },
-
-  },
-
-  // ============================================================
-  // ui — rendering/DOM: builds the popup, wires buttons, delegates
-  // every non-display decision to logic.* rather than deciding itself.
-  // ============================================================
-  ui: {
-
-    // Per-stage paths + the "4 exports" (YouTube/Instagram/TikTok/Beatstars) —
-    // no rendering happens here, these are just where the human puts the
-    // real file path or URL once that step is done outside RPGACE.
-    _showDetails: function(row, onSaved) {
-      var mod = RPGACE.modules.videoPipeline;
-      var pop = RPGACE.modules.dashDeck._popup({
-        dim: '0.9', scroll: true, width: '480px', bg: '#0f0f1a', borderColor: 'rgba(74,144,226,0.25)',
-        title: row.title, noDefaultClose: true,
-      });
-      var overlay = pop.overlay, box = pop.box;
-
-      // 2026-07-31 — real, honest handoff surface (Alex asked for Video
-      // Pipeline to "take the script and keywords and phrases and context
-      // off visual treatment" to build the actual video). No video-rendering
-      // engine exists inside RPGACE (OpenMontage is a separate operated tool
-      // per the July 24 Aintergration verdict, never embedded) and real
-      // beat-grid sync isn't built yet (Slice C, already planned) — so this
-      // does NOT generate a video. It surfaces the real ingredients that DO
-      // already exist (this job's own script/EDL, plus the linked ConID's
-      // saved creative_docs) together in one place, so whatever's real is
-      // visible and ready to hand off manually, rather than scattered across
-      // separate Oracle conversations Alex has to remember.
-      var handoffWrap = document.createElement('div');
-      handoffWrap.style.cssText = 'margin-bottom:10px;';
-      var handoffLbl = document.createElement('div');
-      handoffLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:8px;';
-      handoffLbl.textContent = '📄 Script + Treatment';
-      handoffWrap.appendChild(handoffLbl);
-
-      var beat = null;
-      if (row.script) { try { beat = JSON.parse(row.script); } catch (e) { beat = null; } }
-      if (beat) {
-        var beatLine = document.createElement('div');
-        beatLine.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.55);margin-bottom:6px;line-height:1.5;';
-        beatLine.textContent = 'Beat: ' + (beat.title || row.title) + (beat.key ? ' · ' + beat.key + ' ' + (beat.scale || '') : '') + (beat.bpm ? ' · ' + beat.bpm + ' BPM' : '') + (beat.mood ? ' · ' + beat.mood : '');
-        handoffWrap.appendChild(beatLine);
-      }
-      if (row.edl && Array.isArray(row.edl) && row.edl.length > 0) {
-        var edlLine = document.createElement('div');
-        edlLine.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.55);margin-bottom:6px;';
-        edlLine.textContent = '🎞️ Storyboard EDL saved: ' + row.edl.length + ' scenes';
-        handoffWrap.appendChild(edlLine);
-      }
-      var docsHolder = document.createElement('div');
-      docsHolder.id = 'vp-docs-holder';
-      docsHolder.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.4);';
-      docsHolder.textContent = row.content_production_id ? 'Loading saved creative docs...' : 'No linked Content Pipeline ConID — nothing to show here yet.';
-      handoffWrap.appendChild(docsHolder);
-      box.appendChild(handoffWrap);
-
-      if (row.content_production_id) {
-        RPGACE.sb.select('content_productions', 'id=eq.' + row.content_production_id + '&select=creative_docs&limit=1')
-          .then(function(rows) {
-            var docs = (rows && rows[0] && rows[0].creative_docs) || {};
-            var keys = Object.keys(docs);
-            docsHolder.innerHTML = '';
-            if (keys.length === 0) {
-              docsHolder.textContent = 'No creative docs saved on the linked ConID yet.';
-              return;
-            }
-            keys.forEach(function(k) {
-              var row2 = document.createElement('div');
-              row2.style.cssText = 'display:flex;align-items:center;gap:8px;margin-bottom:4px;';
-              var lbl2 = document.createElement('span');
-              lbl2.textContent = '✓ ' + k.replace(/_/g, ' ');
-              lbl2.style.cssText = 'color:rgba(155,89,182,0.8);';
-              var viewBtn = document.createElement('button');
-              viewBtn.textContent = 'View';
-              viewBtn.style.cssText = 'padding:2px 8px;background:none;border:1px solid rgba(255,255,255,0.1);border-radius:4px;color:rgba(226,226,236,0.5);font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-              // Reuses the shared popup helper (July 30 consolidation) rather
-              // than a native alert() — keeps this one viewer on the same
-              // pattern as every other popup in the app.
-              viewBtn.onclick = function() {
-                var docPop = RPGACE.modules.dashDeck._popup({
-                  dim: '0.9', scroll: true, width: '460px', bg: '#0f0f1a', borderColor: 'rgba(155,89,182,0.25)',
-                  title: k.replace(/_/g, ' '),
-                });
-                var pre = document.createElement('div');
-                pre.style.cssText = 'font-size:12px;color:#D4DAF5;white-space:pre-wrap;line-height:1.6;';
-                pre.textContent = docs[k];
-                docPop.box.appendChild(pre);
-              };
-              row2.appendChild(lbl2); row2.appendChild(viewBtn);
-              docsHolder.appendChild(row2);
-            });
-          })
-          .catch(function(e) { docsHolder.textContent = 'Load error: ' + e.message; });
-      }
-
-      var pathFields = [
-        { id: 'vp-raw', label: 'Raw footage path', value: row.raw_path },
-        { id: 'vp-edited', label: 'Edited file path', value: row.edited_path },
-        { id: 'vp-rendered', label: 'Rendered file path', value: row.rendered_path },
-        { id: 'vp-notes', label: 'Notes', value: row.notes },
-      ];
-      pathFields.forEach(function(f) {
-        var lbl = document.createElement('div');
-        lbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:5px;margin-top:12px;';
-        lbl.textContent = f.label;
-        var inp = document.createElement('input');
-        inp.id = f.id; inp.type = 'text'; inp.value = f.value || '';
-        inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
-        box.appendChild(lbl); box.appendChild(inp);
-      });
-
-      var exportLbl = document.createElement('div');
-      exportLbl.style.cssText = 'font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:rgba(226,226,236,0.35);margin-bottom:8px;margin-top:16px;';
-      exportLbl.textContent = 'Export URLs / paths (4)';
-      box.appendChild(exportLbl);
-
-      var exportPaths = row.export_paths || {};
-      mod.EXPORT_TARGETS.forEach(function(t) {
-        var lbl = document.createElement('div');
-        lbl.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.4);margin-bottom:4px;margin-top:8px;text-transform:capitalize;';
-        lbl.textContent = t;
-        var inp = document.createElement('input');
-        inp.id = 'vp-export-' + t; inp.type = 'text'; inp.value = exportPaths[t] || '';
-        inp.placeholder = 'URL or file path';
-        inp.style.cssText = 'width:100%;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:#D4DAF5;font-size:12px;padding:8px 10px;outline:none;font-family:Rajdhani,sans-serif;';
-        box.appendChild(lbl); box.appendChild(inp);
-      });
-
-      var btnRow = document.createElement('div');
-      btnRow.style.cssText = 'display:flex;gap:8px;margin-top:16px;';
-      var saveBtn = document.createElement('button');
-      saveBtn.textContent = '💾 Save';
-      saveBtn.style.cssText = 'flex:1;padding:10px;background:rgba(74,144,226,0.12);border:1px solid rgba(74,144,226,0.35);border-radius:6px;color:#4A8CCC;font-size:12px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-      saveBtn.onclick = function() {
-        var g = function(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; };
-        var newExportPaths = {};
-        mod.EXPORT_TARGETS.forEach(function(t) {
-          var v = g('vp-export-' + t);
-          if (v) newExportPaths[t] = v;
-        });
-        var updates = {
-          raw_path: g('vp-raw') || null,
-          edited_path: g('vp-edited') || null,
-          rendered_path: g('vp-rendered') || null,
-          notes: g('vp-notes') || null,
-          export_paths: newExportPaths,
-        };
-        // Engineer pass 2026-07-30 (Slice A item 4) - real Council-of-5
-        // finding: both real video_jobs rows sat stuck at stage 1 because
-        // advancing required a separate manual "Mark [stage]" click on top
-        // of actually filling in a path here. Auto-advances status to the
-        // furthest stage the newly-saved data supports, never backward
-        // (max of current stage and computed stage) - filling in a field
-        // out of order (e.g. rendered_path before edited_path) still only
-        // advances, never skips silently past a stage the data doesn't
-        // support yet.
-        var newStatus = mod.logic._computeAutoAdvancedStatus(row.status, updates);
-        if (newStatus !== row.status) updates.status = newStatus;
-        mod.logic.updateEntry(row.id, updates).then(function() {
-          overlay.remove();
-          if (onSaved) onSaved();
-          RPGACE.utils.toast(newStatus !== row.status
-            ? '✅ Video job updated — auto-advanced to ' + (mod.STAGE_LABELS[newStatus] || newStatus)
-            : '✅ Video job updated', '#4CAF82', 2500);
-        });
-      };
-      var cancelBtn = document.createElement('button');
-      cancelBtn.textContent = 'Cancel';
-      cancelBtn.style.cssText = 'padding:10px 16px;background:none;border:1px solid rgba(255,255,255,0.08);border-radius:6px;color:rgba(226,226,236,0.3);font-size:12px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-      cancelBtn.onclick = function() { overlay.remove(); };
-      btnRow.appendChild(saveBtn); btnRow.appendChild(cancelBtn);
-      box.appendChild(btnRow);
-    },
-
-  },
-
-  // Thin top-level pass-throughs — preserve the exact existing public
-  // API (rule 8/9: contentProductionLive's own `vp.updateEntry(...)`/
-  // `vp._showDetails(...)` calls, confirmed the only real external
-  // caller, keep working byte-identically with zero change on their
-  // side). `this` here is always the module object itself, since every
-  // real call site invokes these as `RPGACE.modules.videoPipeline.
-  // methodName(...)` (a property access on the module) — never a
-  // detached function reference.
-  updateEntry: function(id, updates) { return this.logic.updateEntry(id, updates); },
-  _showDetails: function(row, onSaved) { return this.ui._showDetails(row, onSaved); },
-  _computeAutoAdvancedStatus: function(currentStatus, updates) { return this.logic._computeAutoAdvancedStatus(currentStatus, updates); },
-
-});
-/* ===END:videoPipeline=== */
 
 /* ===MODULE:conidPot=== */
 RPGACE.register('conidPot', {
@@ -33610,31 +30567,6 @@ RPGACE.register('conidPot', {
                 agendas.push({ id: 'cp_' + Date.now(), date: today, hour: 14, title: 'Content: ' + row.title.slice(0,40), description: 'Film and post: ' + row.title, category: 'content', estimated_mins: 60, xp: 80 });
                 RPGACE.DB.set('sched', agendas);
                 RPGACE.utils.toast('📅 Added to agenda: ' + row.title.slice(0,30), '#C9A84C', 2500);
-              }},
-              { label: '⚡ Activate ConID', color: '#9B6EC8', action: function() {
-                if (RPGACE.modules.contentProductionLive) {
-                  RPGACE.modules.contentProductionLive.createEntry({ title: row.title, idea: row.idea_text, taxonomy_nodes: row.phyla_detected || [], status: 'Idea' });
-                  // Update pot status to activated
-                  RPGACE.sb.secureWrite('conid_pot', 'update', { status: 'activated' }, 'id=eq.' + row.id)
-                    .then(function() { self._refreshIdeaBank(filter || 'All'); });
-                }
-              }},
-              // A7 (Aug 23 2026) — the OBS-raw conversion, deliberately a
-              // SEPARATE button rather than a change to "⚡ Activate ConID"
-              // above (which stays byte-identical: same ungated one-click
-              // conversion it has always been, producing the same default
-              // 'tutorial' content_type). Alex's own hard requirement is
-              // specific to this path: "the saved idea can only convert if I
-              // actually submit raw obs footage (this is a must requirement
-              // to convert potconid to conid if it is going down the obs raw
-              // workflow)" — so the gate lives on the OBS button only, and
-              // is enforced inside _openObsRawIntake, which is also the one
-              // real creation path the Content Pipeline's own direct-entry
-              // button uses (rule 8, one gate, two entry points).
-              { label: '🎥 Activate as OBS Raw', color: '#E2A83D', action: function() {
-                var cpl = RPGACE.modules.contentProductionLive;
-                if (!cpl || !cpl._openObsRawIntake) { RPGACE.utils.toast('Content Pipeline module not available', '#CC4A4A', 2500); return; }
-                cpl._openObsRawIntake(row, function() { self._refreshIdeaBank(filter || 'All'); });
               }},
               { label: '🗑', color: 'rgba(226,84,84,0.6)', action: function() {
                 if (confirm('Delete "' + row.title + '"?')) {
@@ -34809,7 +31741,6 @@ RPGACE.register('questEngine', {
   // the moment one real timed completion lands, the running average
   // starts moving off them and never returns.
   DEFAULT_ESTIMATES: {
-    obs_raw_edit:     45,
     knowledge_gap:    25,
     taxonomy_review:  20,
     needs_input:      15,
@@ -34821,11 +31752,6 @@ RPGACE.register('questEngine', {
   // what steps are needed to complete quest, calculate total of average
   // time for step execution."
   WORKFLOWS: {
-    obs_raw_edit: { label: 'OBS raw -> cut video', steps: [
-      { key: 'obs_review_footage', label: 'Review the raw footage',        estimate: 10 },
-      { key: 'obs_script_or_cut',  label: 'Run the ConID stage action',    estimate: 25 },
-      { key: 'obs_confirm_stage',  label: 'Confirm the stage in RPGACE',   estimate: 5 },
-    ] },
     knowledge_gap: { label: 'Close a knowledge gap', steps: [
       { key: 'gap_study',   label: 'Study the concept',                   estimate: 15 },
       { key: 'gap_feynman', label: 'Feynman it back / log the insight',   estimate: 8 },
@@ -34869,7 +31795,8 @@ RPGACE.register('questEngine', {
       desc: 'trickle-down/up finding(s) flagged by /cartographer' },
   ],
 
-  TRIGGERS: ['_scanObsRaw', '_scanKnowledgeGaps', '_scanTaxonomyReview', '_scanNeedsInput'],
+  // PC-6 (Oct 17 2026): _scanObsRaw retired with the OBS raw workflow.
+  TRIGGERS: ['_scanKnowledgeGaps', '_scanTaxonomyReview', '_scanNeedsInput'],
 
   _boardStarts: null,
 
@@ -35047,46 +31974,6 @@ RPGACE.register('questEngine', {
     // quest content; a trigger with no matching data produces no quests,
     // and says so.
 
-    // (a) A beat with raw OBS footage finished and editable. Real basis:
-    //     A7's `content_productions.content_type='obs_raw'` flow, whose own
-    //     OBS_RAW_PRIMARY_ACTION lookup table (contentProductionLive) is
-    //     reused here rather than re-deriving what the next real action is
-    //     (rule 8). A row only exists at all because _openObsRawIntake
-    //     gated it behind a real footage submission.
-    _scanObsRaw: function() {
-      // PRE-EXISTING, FLAGGED NOT FIXED (found while reading every function
-      // for the G53 ui/logic split, Aug 2026): this `self` handle is DEAD —
-      // nothing in this function's body ever reads it (the body reaches
-      // RPGACE.sb and RPGACE.modules.contentProductionLive directly). It was
-      // already an unused `var self = this;` before the split and is kept,
-      // converted, rather than deleted, so this function stays a pure move
-      // like the other 26. Harmless — an unused local — but real: a future
-      // reader should not take its presence as evidence that this function
-      // depends on module state, because it does not.
-      var self = RPGACE.modules.questEngine;
-      return RPGACE.sb.select('content_productions',
-        'select=id,con_id,title,status,raw_footage_path&content_type=eq.obs_raw' +
-        '&status=in.(Idea,Scripted,Filmed,Edited)&order=updated_at.desc&limit=20')
-        .then(function(rows) {
-          var cpl = RPGACE.modules.contentProductionLive;
-          var flow = (cpl && cpl._flowFor) ? cpl._flowFor('obs_raw') : null;
-          return (rows || []).map(function(r) {
-            var action = (flow && flow.primary && flow.primary[r.status]) || null;
-            if (!action) return null;   // last real stage - nothing left to do
-            return {
-              kind: 'obs_raw_edit',
-              workflow: 'obs_raw_edit',
-              key: 'obs_raw_edit:' + r.status,
-              name: action.label.replace(/^[^A-Za-z]+/, '') + ' — ConID #' + r.con_id,
-              description: '"' + (r.title || 'Untitled') + '" has real OBS footage logged and is sitting at "' +
-                           r.status + '". Next real stage action: ' + action.label + '.',
-              category: 'career', questType: 'generated', xp: 120,
-              sourceTable: 'content_productions', sourceRef: r.id,
-            };
-          }).filter(Boolean);
-        })
-        .catch(function(e) { console.warn('[questEngine] obs_raw scan:', e.message); return []; });
-    },
 
     // (b) Closing knowledge gaps. Real basis: `taxonomy_nodes` rows with
     //     applied_in_beat=false and gap_score>0 - the exact same definition
@@ -35795,7 +32682,6 @@ RPGACE.register('questEngine', {
   samplesFor: function(scope, key) { return this.logic.samplesFor(scope, key); },
   workflowEstimate: function(workflowKey) { return this.logic.workflowEstimate(workflowKey); },
   recordDuration: function(scope, key, label, firstEstimate, actualMinutes) { return this.logic.recordDuration(scope, key, label, firstEstimate, actualMinutes); },
-  _scanObsRaw: function() { return this.logic._scanObsRaw(); },
   _scanKnowledgeGaps: function() { return this.logic._scanKnowledgeGaps(); },
   _scanTaxonomyReview: function() { return this.logic._scanTaxonomyReview(); },
   _scanNeedsInput: function() { return this.logic._scanNeedsInput(); },
@@ -38324,7 +35210,7 @@ RPGACE.register('xpSeason', {
     oversight: ['builder'],
   },
   PAGE_REALMS: {
-    'content-pipeline': ['producer', 'creator', 'hustler'], 'idea-bank': ['producer', 'creator'], 'beat-log': ['producer'], 'upload-workshop': ['creator', 'hustler'],
+    'content-pipeline': ['producer', 'creator', 'hustler'], 'idea-bank': ['producer', 'creator'], 'beat-log': ['producer'],
     'bookworm': ['scholar'], 'videoworm': ['scholar'], 'musicworm': ['scholar'], 'bibliography': ['scholar'], 'encyclopedia': ['scholar'],
     'phylumpath': ['scholar'], 'jargon-encyclopedia': ['scholar'], 'knowledge': ['scholar'], 'library': ['scholar'], 'screenshots': ['scholar'], 'review': ['scholar'],
     'quests': ['life', 'homekeeper', 'mind'], 'schedule': ['life', 'homekeeper'], 'journal': ['life'],
@@ -38697,7 +35583,8 @@ RPGACE.register('xpSeason', {
       // BT-8 (Oct 16 2026): zips retired - a logged sale (Beats' Log a sale) is the proof.
       zip_or_sale: { icon: '💰', label: 'a logged sale', table: 'chronicles_finance', select: 'select=id,item,amount,entry_date&type=eq.sale&order=created_at.desc&limit=20', name: function(r) { return 'Sale: ' + (r.item || '') + (r.amount != null ? ' £' + r.amount : ''); } },
       cook_photo: { icon: '🍳', label: 'a finished cook + a photo of the dish', table: 'planned_cooks', select: 'select=id,scheduled_at,created_at&status=eq.cooked&order=created_at.desc&limit=20', name: function(r) { return 'Cook ' + String(r.scheduled_at || r.created_at || '').slice(0, 10); }, photo: 'required' },
-      video: { icon: '🎬', label: 'a posted video / ConID', table: 'content_productions', select: 'select=id,con_id,title,status&order=updated_at.desc&limit=20', name: function(r) { return (r.con_id ? '#' + r.con_id + ' ' : '') + (r.title || ''); } },
+      // PC-6 (Oct 17 2026): a posted post (Posting) is the Creator proof.
+      video: { icon: '🎬', label: 'a posted post', table: 'posts', private: true, select: 'select=id,title,posted_at&stage=eq.posted&order=posted_at.desc&limit=20', name: function(r) { return r.title || ''; } },
       gym: { icon: '🏋️', label: 'a logged gym session', table: 'gym_sessions', select: 'select=id,performed_on,duration_min&order=performed_on.desc&limit=20', name: function(r) { return 'Gym ' + r.performed_on + (r.duration_min ? ' · ' + r.duration_min + ' min' : ''); } },
       reading: { icon: '📖', label: 'a book you read', table: 'bookworm_books', select: 'select=id,title,status&order=created_at.desc&limit=20', name: function(r) { return r.title; } },
       trip: { icon: '🧳', label: 'a trip or plan', table: 'plans', private: true, select: 'select=id,title,status&order=updated_at.desc&limit=20', name: function(r) { return r.title; } },
@@ -44965,12 +41852,6 @@ RPGACE.register('mockOracle', {
       '',
       'This is a synthetic stand-in reply while real Anthropic credits are unavailable. It exists to exercise real button/DOM/Supabase wiring end-to-end, not to represent real output quality — never treat this text as a genuine Oracle answer.',
     ];
-    if (promptText.indexOf('director_chosen') !== -1) {
-      lines.push('', 'DIRECTOR_CHOSEN: Christopher Nolan');
-    }
-    if (promptText.indexOf('edl_json') !== -1) {
-      lines.push('', 'EDL_JSON: [{"scene":1,"start":0,"end":4,"desc":"[MOCK] establishing shot — wiring test only"}]');
-    }
     var full = lines.join('\n');
 
     return new Promise(function (resolve) {
@@ -45909,7 +42790,6 @@ RPGACE.register('errorLog', {
   "_askPaid": "tripPlans",
   "_autoPropose": "encSync",
   "_autoRun": "morningBrief",
-  "_autoVisualTreatment": "beatLog",
   "_b64ToBytes": "myDay",
   "_bindDelegation": "videoSummary",
   "_boot": "questEngine",
@@ -45921,11 +42801,6 @@ RPGACE.register('errorLog', {
   "_buildItems": "careerStatCard",
   "_buildOutJargonEncyclopedia": "phylumPath",
   "_buildRegisteredContext": "oracleControl",
-  "_buildRetroActionButton": "contentProductionLive",
-  "_buildRetroButton": "contentProductionLive",
-  "_buildScriptEditor": "contentProductionLive",
-  "_buildVideoJobStatus": "contentProductionLive",
-  "_buildVideoPipelinePayload": "contentProductionLive",
   "_bulkImport": "refCorpus",
   "_bulletGroupHtml": "videoSummary",
   "_byDate": "shiftSync",
@@ -45953,7 +42828,6 @@ RPGACE.register('errorLog', {
   "_clip": "dailyLife",
   "_coerce": "videoSummary",
   "_completeChapter": "bookworm",
-  "_computeAutoAdvancedStatus": "videoPipeline",
   "_computeBudgetFit": "shoppingWishlist",
   "_condenseIfLarge": "phylumPath",
   "_conf": "videoSummary",
@@ -45980,7 +42854,6 @@ RPGACE.register('errorLog', {
   "_dispatch": "ciAutoPropose",
   "_drawOutreachList": "producerTools",
   "_editPhylumPathProposal": "taxonomyReviewQueue",
-  "_endSession": "contentProductionLive",
   "_ensureEpubJs": "bookworm",
   "_ensureHolder": "dashDeck",
   "_ensurePdfJs": "bookworm",
@@ -46007,7 +42880,6 @@ RPGACE.register('errorLog', {
   "_findOracleCmdText": "contentProductionLive",
   "_firstUpload": "shiftSync",
   "_flag": "oracleDevBridge",
-  "_flowFor": "contentProductionLive",
   "_fmtDate": "intelDelete",
   "_fmtEstimate": "questEngine",
   "_footerHtml": "videoSummary",
@@ -46017,16 +42889,12 @@ RPGACE.register('errorLog', {
   "_generateArticle": "phylumPath",
   "_generateArticleText": "phylumPath",
   "_generateBeatstarsListing": "contentProductionLive",
-  "_generateCaptions": "contentProductionLive",
   "_generateCurriculumBreakdown": "phylumPath",
   "_generateCurriculumTree": "phylumPath",
   "_generateInsightContent": "phylumPath",
   "_generateJargonTermsBatch": "phylumPath",
   "_generateLinkArticle": "phylumPath",
-  "_generateObsScript": "contentProductionLive",
   "_generateOutputs": "beatLog",
-  "_generateVideo": "contentProductionLive",
-  "_generateVisualTreatment": "contentProductionLive",
   "_getForm": "beatLog",
   "_getGmail": "morningBrief",
   "_getKnowledgeGaps": "morningBrief",
@@ -46059,7 +42927,6 @@ RPGACE.register('errorLog', {
   "_injectMasterToggle": "intelDelete",
   "_injectNavTab": "phylumPath",
   "_injectOne": "encTaxonomyLink",
-  "_injectOracleBar": "contentProductionLive",
   "_injectOverlayButton": "oracleControl",
   "_injectSaveBtn": "conidPot",
   "_injectScoutButton": "mockOracle",
@@ -46068,7 +42935,6 @@ RPGACE.register('errorLog', {
   "_injectTabs": "encyclopediaPosts",
   "_injectTaxBadges": "encyclopediaQoL",
   "_injectUI": "taxonomySync",
-  "_injectVideoWorkshopBtn": "contentRepurpose",
   "_injectWatchlist": "intelDelete",
   "_inp": "healthBody",
   "_insertNewSteps": "phylumPath",
@@ -46106,7 +42972,6 @@ RPGACE.register('errorLog', {
   "_makeChip": "journalQoL",
   "_markBookComplete": "bookworm",
   "_markBought": "shoppingWishlist",
-  "_markObsCutDone": "contentProductionLive",
   "_maybeRefresh": "videoSummary",
   "_mirrorReplyToOverlay": "oracleControl",
   "_mkBtn": "intelDelete",
@@ -46133,13 +42998,11 @@ RPGACE.register('errorLog', {
   "_openGaps": "dashDeck",
   "_openManualEntry": "taxonomyTree",
   "_openMorningBrief": "dashDeck",
-  "_openObsRawIntake": "contentProductionLive",
   "_openOversight": "dashDeck",
   "_openPage": "dashDeck",
   "_openPanelById": "dashDeck",
   "_openPanelPopup": "dashDeck",
   "_openPipeline": "dashDeck",
-  "_openProductionPanel": "contentProductionLive",
   "_openQueue": "taxonomyReviewQueue",
   "_openResearch": "dashDeck",
   "_openRetroactive": "beatLog",
@@ -46173,7 +43036,6 @@ RPGACE.register('errorLog', {
   "_placementsHtml": "videoSummary",
   "_popup": "dashDeck",
   "_prefillForm": "beatLog",
-  "_prepOracleBarFor": "contentProductionLive",
   "_pretriageArchivedBatch": "phylumPath",
   "_proposalShortName": "careerStatCard",
   "_proposalsFor": "videoSummary",
@@ -46237,10 +43099,6 @@ RPGACE.register('errorLog', {
   "_resumeFromFallback": "bookworm",
   "_resumePolling": "intelDelete",
   "_resumeSilentProposeFromFallback": "taxonomyTree",
-  "_retroObsScript": "contentProductionLive",
-  "_retroRegenerateScript": "contentProductionLive",
-  "_retroVisualTreatment": "contentProductionLive",
-  "_revertToStage": "contentProductionLive",
   "_rewordInsight": "bookworm",
   "_rmLocal": "intelDelete",
   "_runBoot": "questEngine",
@@ -46263,12 +43121,10 @@ RPGACE.register('errorLog', {
   "_sbInsert": "intelDelete",
   "_scanKnowledgeGaps": "questEngine",
   "_scanNeedsInput": "questEngine",
-  "_scanObsRaw": "questEngine",
   "_scanTaxonomyReview": "questEngine",
   "_searchArtists": "beatLog",
   "_sel": "lifeLibrary",
   "_send": "quickActions",
-  "_sendFilledPromptToOracle": "contentProductionLive",
   "_sendFromOverlay": "oracleControl",
   "_setLoading": "feynman",
   "_setPhase": "feynman",
@@ -46283,8 +43139,6 @@ RPGACE.register('errorLog', {
   "_showCompleteActions": "feynman",
   "_showCoolOff": "shoppingWishlist",
   "_showDetail": "careerStatCard",
-  "_showDetails": "videoPipeline",
-  "_showDirectorPicker": "visualOracle",
   "_showDoNowChoice": "feynman",
   "_showEditPopup": "jargonEncyclopedia",
   "_showEncPopup": "intelDelete",
@@ -46299,7 +43153,6 @@ RPGACE.register('errorLog', {
   "_showOracleOffer": "feynman",
   "_showPendingTermsReviewQueue": "phylumPath",
   "_showPlacementConfirm": "phylumPath",
-  "_showPostDetails": "contentProductionLive",
   "_showProposalPopup": "taxonomyTree",
   "_showReader": "bookworm",
   "_showRows": "askMyData",
@@ -46310,7 +43163,6 @@ RPGACE.register('errorLog', {
   "_signature": "errorLog",
   "_silentProposeViaPhylumPath": "taxonomyTree",
   "_similarity": "conidPot",
-  "_simulateOpenMontageResponse": "contentProductionLive",
   "_sourceMetaForProposal": "taxonomyReviewQueue",
   "_startBook": "bookworm",
   "_startBookFromEPUB": "bookworm",
@@ -46344,19 +43196,14 @@ RPGACE.register('errorLog', {
   "_treatForm": "xpSeason",
   "_treatsSection": "xpSeason",
   "_typing": "askMyData",
-  "_undoLastStage": "contentProductionLive",
   "_updateBriefRotationLabel": "conidPot",
   "_updateItem": "shoppingWishlist",
   "_updateTaxonomyNode": "feynman",
   "_usage": "myDay",
   "_verdictHtml": "videoSummary",
-  "_viewCaptions": "contentProductionLive",
-  "_viewObsScript": "contentProductionLive",
-  "_viewOpenMontageJob": "contentProductionLive",
   "_wireAgendaCards": "feynman",
   "_wireEncyclopediaButtons": "feynman",
   "_wireOracleDetection": "feynman",
-  "_withFilmmakerLibrary": "visualOracle",
   "_wrapStartDoNow": "feynman",
   "_write": "myDay",
   "_writeStats": "intelDedup",
@@ -46468,7 +43315,6 @@ RPGACE.register('errorLog', {
   "costText": "tripPlans",
   "count": "screenshotInbox",
   "create": "postingHub",
-  "createEntry": "contentProductionLive",
   "creators": "dailyLife",
   "crumb": "perfWatch",
   "currentTitle": "xpSeason",
@@ -47024,6 +43870,7 @@ RPGACE.register('errorLog', {
   "ukDate": "oracleEntry",
   "ukSeason": "xpSeason",
   "undo": "myDay",
+  "updateEntry": "contentProductionLive",
   "updateGapScore": "taxonomySync",
   "updatePerson": "tripPlans",
   "upload": "screenshotInbox",

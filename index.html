@@ -343,91 +343,6 @@
       <div class="video-results" id="video-results"></div>
     </div>
 
-    <!-- PANEL 3: Upload Workshop (renamed from "Video Workshop" Aug 15 2026,
-         A5 Phase 1 — Alex's own exact wording; "3 —" step-numbering dropped
-         since this panel moved into Content Pipeline, no longer a Research
-         Lab tab position. Reached via dashDeck._openPipeline()'s own
-         "🔀 Open Upload Workshop" button now, not researchTabs. Starts
-         display:none — this is static markup (never JS-injected), so
-         unlike the panels that simply don't exist until asked for, this one
-         needs an explicit default-hidden state; Aug 23 2026 (UI2)
-         dashDeck._openPanelPopup clears it back to the CSS default
-         (display:flex) when it MOVES this node into its own popup. -->
-    <div class="learn-panel learn-full" id="video-workshop-panel" style="display:none">
-      <h3>🎬 UPLOAD WORKSHOP</h3>
-      <p style="font-size:12px;color:var(--muted);margin-bottom:12px">Paste the transcript of your final video. AI builds a complete upload strategy — titles, thumbnails, short clips, description, tags and chapters — ready to publish.</p>
-
-      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap;align-items:center">
-        <span style="font-size:12px;color:var(--muted)">Content type:</span>
-        <select id="vw-type" style="background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:12px;font-family:'Rajdhani',sans-serif">
-          <option value="beat_tutorial">Beat Tutorial</option>
-          <option value="vlog">Production Vlog</option>
-          <option value="review">Plugin/Gear Review</option>
-          <option value="challenge">Challenge Video</option>
-          <option value="shorts">YouTube Shorts</option>
-        </select>
-        <span style="font-size:12px;color:var(--muted)">Duration:</span>
-        <select id="vw-duration" style="background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 10px;font-size:12px;font-family:'Rajdhani',sans-serif">
-          <option value="short">Under 5 mins</option>
-          <option value="medium" selected>5-15 mins</option>
-          <option value="long">15+ mins</option>
-        </select>
-      </div>
-
-      <textarea class="pipeline-textarea" id="vw-transcript" placeholder="Paste your video transcript here...
-
-Get your transcript by:
-• Running the Whisper script: python rpgace_process.py your_video.mp4
-• Copying from YouTube auto-captions (click ... under a video → Open transcript)
-• Pasting spoken content manually for short videos
-
-The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip moments · full YouTube description · 15 tags · chapter timestamps" style="min-height:160px"></textarea>
-
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button class="learn-btn green" onclick="runVideoWorkshop()" id="vw-run-btn">⚡ Generate Upload Strategy</button>
-        <button class="learn-btn" onclick="document.getElementById('vw-transcript').value=''" style="border-color:var(--muted);color:var(--muted)">Clear</button>
-      </div>
-      <div class="learn-status" id="vw-status" style="margin-top:8px"></div>
-
-      <div id="vw-output" style="display:none;margin-top:16px">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-          <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px">
-            <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:10px">📝 TITLES (click to copy)</div>
-            <div id="vw-titles" style="font-size:13px;line-height:2"></div>
-          </div>
-          <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px">
-            <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:10px">🖼 THUMBNAIL CONCEPTS</div>
-            <div id="vw-thumbnails" style="font-size:12px;line-height:1.8;color:var(--text)"></div>
-          </div>
-        </div>
-        <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px">
-          <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:10px">✂️ SHORT CLIPS (TikTok/Reels/Shorts)</div>
-          <div id="vw-clips" style="font-size:12px;line-height:2;color:var(--text)"></div>
-        </div>
-        <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px">
-          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-            <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px">📄 YOUTUBE DESCRIPTION</div>
-            <button onclick="copyDescription()" style="background:none;border:1px solid var(--border);color:var(--text);border-radius:4px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif">Copy</button>
-          </div>
-          <div id="vw-description" style="font-size:12px;line-height:1.8;color:var(--text);white-space:pre-wrap"></div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-          <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px">
-            <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:10px">🏷 TAGS</div>
-            <div id="vw-tags" style="font-size:12px;line-height:1.8;color:var(--muted)"></div>
-          </div>
-          <div style="background:var(--panel2);border:1px solid var(--border);border-radius:8px;padding:14px">
-            <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:10px">📋 CHAPTERS</div>
-            <div id="vw-chapters" style="font-size:12px;line-height:1.8;color:var(--text)"></div>
-          </div>
-        </div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="learn-btn purple" onclick="saveWorkshopToEncyclopedia()">📖 Save to Encyclopedia</button>
-          <button class="learn-btn" style="border-color:var(--blue);color:var(--blue);background:rgba(74,144,226,.08)" onclick="saveWorkshopToNotion()">📓 Save to Notion</button>
-        </div>
-      </div>
-    </div>
-
   </div>
 </div>
 
@@ -466,7 +381,7 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
 
 <div class="page" id="page-content-pipeline">
   <button class="learn-btn" onclick="RPGACE.modules.dashDeck._pageBack('pipeline')" style="margin-bottom:14px">← Content Pipeline</button>
-  <div class="section-title">🎬 Content Pipeline</div>
+  <div class="section-title">🎬 My beats</div>
 </div>
 
 <div class="page" id="page-idea-bank">
@@ -477,11 +392,6 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
 <div class="page" id="page-beat-log">
   <button class="learn-btn" onclick="RPGACE.modules.dashDeck._pageBack('pipeline')" style="margin-bottom:14px">← Content Pipeline</button>
   <div class="section-title">🥁 Beat Log</div>
-</div>
-
-<div class="page" id="page-upload-workshop">
-  <button class="learn-btn" onclick="RPGACE.modules.dashDeck._pageBack('pipeline')" style="margin-bottom:14px">← Content Pipeline</button>
-  <div class="section-title">🔀 Upload Workshop</div>
 </div>
 
 <!-- POPUPS -->
@@ -533,7 +443,7 @@ The AI will generate: 5 title options · 2 thumbnail concepts · 5 short clip mo
      here. The original rpgace_core.js remains the real, edited,
      fully-commented source - always edit that, never the .min.js file
      directly. -->
-<script src="rpgace_core.min.js?v=20261017f"></script>
+<script src="rpgace_core.min.js?v=20261017g"></script>
 
 <div class="page" id="page-encyclopedia">
   <div class="section-title">📖 Knowledge Encyclopedia ✦</div>

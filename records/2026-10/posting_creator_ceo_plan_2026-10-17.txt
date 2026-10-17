@@ -86,3 +86,11 @@ BUILD LOG
 - PC-5 (Oct 17): "Go with PC-5, a, results and stats would be awesome". xp_settings.posts_per_week (0-14), weekStatus/weekLine,
   renderWeek + ⚙️, myDayLine, loadDue/due -> dashDeck Due (r[16]). pc5_test 14/14; myday 39, due, pc0, pc4 still pass.
   NOTE: Alex wants Results + stats -> offer as the next plan after PC-7.
+- PC-6 (Oct 17): "Go with PC-6, a" (delete outright). Removed from contentProductionLive (28 members + 12 stage tables,
+  ~1,950 lines), videoPipeline module (289 lines), visualOracle Director Match/Visual Treatment/director picker/filmmaker
+  library + DIRECTOR_CHOSEN/EDL_JSON save branches, beatLog _autoVisualTreatment + VT button + video_jobs insert, Idea Bank
+  Activate ConID + OBS raw, questEngine _scanObsRaw, Upload Workshop (index.html panel + page, runVideoWorkshop & saves,
+  menu, PAGE_PANELS, pages.uploadWorkshop), Content Pipeline menu item, contentRepurpose ConID hand-off + workshop button,
+  mock-Oracle trailers. Also: pop-up rebuilt (5 buttons), My beats = beats only, xp MS_PROOF.video -> posts, xp_check_unlocks
+  posted_at reads -> posts (DB, in place), REALM_OF_TABLE content_productions -> producer, METHOD_MODULE_MAP regenerated.
+  No data deleted. pc6_test 17/17.
