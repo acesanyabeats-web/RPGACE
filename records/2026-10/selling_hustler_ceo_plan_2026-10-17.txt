@@ -87,3 +87,7 @@ agreed sale if no pushback"
   sh0_test 24/24; pc6 + kn0 tests updated (Selling button, 10 areas).
 - SH-1 (Oct 17): "do it" (name only required; optional People link, never auto-created; warn + delete their pitches).
   cleanArtist/contactLinks/searchArtists/loadArtist/saveArtist/deleteArtist + editArtist/openArtists/openArtist. sh1_test 26/26.
+- SH-2 (Oct 17): "build, but what do you mean by this? - with each artist's name dropped in" -> explained {name} placeholder;
+  built with the 3 recommended choices (one message per pitch, sent only on Mark sent, each send = outreach via producerTools.addOutreach).
+  cleanPitch/fillName/draftPrompt/loadPitches/pitchSummary/loadPitch/savePitch/deletePitch/newSendRows/addSends/removeSend/sentUpdate/
+  markSent/openLink + editPitch/openPitches/openPitch/pickArtists/copyAndOpen/askSent. sh2_test 32/32.
