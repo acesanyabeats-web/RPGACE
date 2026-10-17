@@ -91,3 +91,12 @@ agreed sale if no pushback"
   built with the 3 recommended choices (one message per pitch, sent only on Mark sent, each send = outreach via producerTools.addOutreach).
   cleanPitch/fillName/draftPrompt/loadPitches/pitchSummary/loadPitch/savePitch/deletePitch/newSendRows/addSends/removeSend/sentUpdate/
   markSent/openLink + editPitch/openPitches/openPitch/pickArtists/copyAndOpen/askSent. sh2_test 32/32.
+SH-3 GO (Oct 17, verbatim): "yes fanstastic stuff, we should also make a follow-up mechanism too when no replies to maximise the
+number of people that will pass each stage, this way we play the numbers game and then funnel game in one sweep"
+-> SH-3 grows: a follow-up cadence (follow-up 1 after 5 days, 2 after 7 more, then suggest No reply), a short {name} follow-up
+   message per pitch (one Oracle draft), a Follow-up sweep screen that works through every due follow-up in one go, and a funnel
+   line (sent -> replied -> agreed -> paid with %). Plus the 4 brief choices (5-day wait, ask which beat on Paid, collab = collab_done,
+   back a step).
+- SH-3 (Oct 17): built as above. Additive: pitch_sends.history/follow_ups/last_follow_up_at, pitches.follow_up_message.
+  beatsHub.logic.logSale now returns the saved row (id); captionsPanel.logic.sendPrompt split out of run (shared). sh3_test 31/31;
+  sh0 updated (follow-up wording/icon), sh1/sh2/bt8/bt7/pc5/myday pass.
