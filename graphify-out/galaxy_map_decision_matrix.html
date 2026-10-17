@@ -95,7 +95,7 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>Which of 3 real paths every single Oracle call in the app takes, app-wide, until toggled again.</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>Real: every window.callOracle() call in main.js checks getMode() first. 'dummy' short-circuits to a synthetic labeled reply, zero API cost. 'fallback' queues the real prompt into oracle_fallback_queue instead of calling the live API. 'real' calls the live Anthropic API as normal.</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>A visible top-right toggle switch (red/green/gold) whose state persists in localStorage and is checked on literally every real Oracle send in the app.</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 42532-42544)</div><pre>    if (self.MODES.indexOf(mode) === -1) return;
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 43735-43747)</div><pre>    if (self.MODES.indexOf(mode) === -1) return;
     try { localStorage.setItem(self.MODE_KEY, mode); } catch (e) {}
     if (mode === 'dummy') {
       RPGACE.utils.toast('🧪 Dummy Oracle ON — every Oracle reply from now on is fake, wiring-test only. No real API calls, no real cost.', '#E2A83D', 5000);
@@ -126,7 +126,7 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>Whether Alex goes to the pending-placement review queue, the Phylum Path tree, or the Jargon Encyclopedia.</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>Nothing is decided by code any more: the picker shows the live pending-placement count (dashDeck._pendingReviewCount, set by _refreshGlance) under the Review button so Alex can see if review is worth it.</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>Review -&gt; taxonomyReviewQueue._openCard(); Browse -&gt; the Phylum Path page; Jargon -&gt; the Jargon Encyclopedia page.</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 17243-17304)</div><pre>      safe(sb.select('taxonomy_links', 'status=eq.pending&amp;select=id')),
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 17267-17328)</div><pre>      safe(sb.select('taxonomy_links', 'status=eq.pending&amp;select=id')),
       safe(sb.select('jargon_encyclopedia', 'status=eq.pending&amp;select=id')),
       rc &amp;&amp; rc.logic &amp;&amp; rc.logic.loadDue ? safe(rc.logic.loadDue()) : Promise.resolve(null),
       safe(sb.select('journal', 'select=id&amp;entry_type=eq.decision&amp;outcome=is.null&amp;review_on=lte.' + today)),
@@ -206,7 +206,7 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>Where a new insight/leaf attaches in the taxonomy tree — an existing node (by number) or a brand-new path from the phylum root — and whether it belongs in this phylum at all.</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>The full numbered, indented tree for that phylum (real Supabase read), plus 5 named checks (pedagogical clarity, non-redundancy, practical applicability, structural fit, expansion headroom) folded into one prompt.</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>A real, structured JSON verdict — fits (bool), attachTo (node number or null), newSteps, explainers, a one-sentence justification citing which check(s) drove it, and a self-scored 1-10 confidence — fed into _resolvePlacementDecision() and, past a human checkpoint, an actual taxonomy_tree write.</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 21282-21321)</div><pre>    // justification + reword loop). Everything now routes here — the
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 21313-21352)</div><pre>    // justification + reword loop). Everything now routes here — the
     // best-logged version, generalized — one prompt, one call, one place
     // to fix. The audit's confirmed failure modes are addressed as
     // EXPLICIT RULES in the prompt below, each tied to a real observed
@@ -264,7 +264,7 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>What happens when Oracle judges an insight to be a near-duplicate of something already in the tree (returns zero newSteps).</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>attachNode's own node_type — a real 'leaf' means there's a real existing article to extend; anything else means there's nowhere real to attach the insight without a new step.</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>Existing leaf: regenerate that leaf's own article via _generateInsightContent() (the real 'extend' behavior, logged to taxonomy_decision_log) — a real dedup-extend, not a silent drop. No attach point: Promise.reject('Oracle returned no new steps to place this insight').</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 21575-21747)</div><pre>    // time) to record the real, incremental bidirectional link A6 asks for
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 21606-21778)</div><pre>    // time) to record the real, incremental bidirectional link A6 asks for
     // ("each insight... is tied back to its source bibliography link") —
     // no new schema, no new table. Genuinely dormant today: no current real
     // caller has a bibliography.id to pass (A7's OBS-raw scripting phase is
@@ -455,7 +455,7 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>Whether a real window.callOracle() send gets RPGACE's own SELF_KNOWLEDGE/anatomy grounding block injected into the system prompt before it goes out.</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>The user's own last message text, scanned against 2 real keyword lists (TRIGGER_KEYWORDS for general app-knowledge grounding, ANATOMY_KEYWORDS for module-architecture grounding) — or a forced override via forceGroundNext() for a command that always needs it (Prod Oracle's "5thDimension").</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>Neither list matches -&gt; the original call goes out unmodified (falls through to orig.apply, zero cost added). Either matches -&gt; a real grounding block is built and appended to the system prompt, forwarding all 4 real arguments (including the streaming onChunk callback) so a grounded call never silently downgrades from streaming to blocking.</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 12059-12105)</div><pre>        var lastUser = null;
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 12075-12121)</div><pre>        var lastUser = null;
         for (var i = messages.length - 1; i &gt;= 0; i--) {
           if (messages[i].role === 'user') { lastUser = String(messages[i].content || ''); break; }
         }
@@ -520,7 +520,7 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>Which ONE real action button shows on a music_video ConID card — the real fix for the Aug 6 "duplicate stage" complaint, where every ConID used to render a FIXED set of buttons regardless of real progress.</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>The ConID row's own real content_productions.status column value ('Idea'/'Scripted'/'Filmed'/'Edited'/'Posted'/'Analysed').</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>A single real MUSIC_VIDEO_PRIMARY_ACTION[row.status] lookup returns exactly one {label, fn} pair to render — 'Posted'/'Analysed' correctly render nothing further (real last-stage), never a guessed extra button.</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 31135-31559)</div><pre>        holder = document.createElement('div');
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 31204-31593)</div><pre>        holder = document.createElement('div');
         holder.id = 'dd-stash-holder';
         holder.style.display = 'none';
         page.appendChild(holder);
@@ -565,6 +565,7 @@
 
             var item = document.createElement('div');
             item.style.cssText = 'padding:10px 12px;border:1px solid rgba(255,255,255,0.05);border-radius:8px;margin-bottom:8px;background:rgba(255,255,255,0.02);';
+            item.dataset.cpId = row.id; // BT-7: Beats cross-links find a beat's card by this
 
             var topRow = document.createElement('div');
             topRow.style.cssText = 'display:flex;align-items:center;flex-wrap:wrap;gap:6px 8px;margin-bottom:6px;';
@@ -780,30 +781,28 @@
                   }).catch(function(e) { finBtn.disabled = false; RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500, 'contentProductionLive'); });
                 };
                 actions.appendChild(finBtn);
-              } else if (!row.released_at) {
-                var relBtn = document.createElement('button');
-                relBtn.className = 'cpl-beat-released';
-                relBtn.textContent = '🚀 Beat released';
-                relBtn.style.cssText = tickCss;
-                relBtn.onclick = function() {
-                  var link = window.prompt('Where is it out? Paste a link (optional), then OK.', '');
-                  if (link === null) return;
-                  link = String(link || '').trim();
-                  var upd = { released_at: new Date().toISOString() };
-                  if (/^https?:\/\//.test(link)) upd.release_url = link;
-                  relBtn.disabled = true;
-                  self.updateEntry(row.id, upd).then(function() {
-                    self._refreshWidget();
-                    RPGACE.utils.toast('🚀 Beat released: ' + (row.title || 'ConID #' + row.con_id), color, 2200);
-                  }).catch(function(e) { relBtn.disabled = false; RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500, 'contentProductionLive'); });
-                };
-                actions.appendChild(relBtn);
-              } else if (row.release_url &amp;&amp; /^https?:\/\//.test(row.release_url)) {
-                var relLink = document.createElement('a');
-                relLink.href = row.release_url; relLink.target = '_blank'; relLink.rel = 'noopener noreferrer';
-                relLink.textContent = '🚀 Released';
-                relLink.style.cssText = tickCss + 'text-decoration:none;';
-                actions.appendChild(relLink);
+              } else {
+                // BT-5 (Oct 16 2026): release = one or more links via Beats'
+                // release pop-up (links can be added later); was a prompt.
+                var bh5 = RPGACE.modules.beatsHub;
+                if (bh5) {
+                  bh5.logic.linksOf(row).forEach(function(l) {
+                    var la = document.createElement('a');
+                    la.href = l.url; la.target = '_blank'; la.rel = 'noopener noreferrer'; la.className = 'cpl-release-link';
+                    la.textContent = '🔗 ' + (l.place || 'Link');
+                    la.style.cssText = tickCss + 'text-decoration:none;';
+                    actions.appendChild(la);
+                  });
+                  var relBtn = document.createElement('button');
+                  relBtn.className = row.released_at ? 'cpl-beat-addlink' : 'cpl-beat-released';
+                  relBtn.textContent = row.released_at ? '+ link' : '🚀 Beat released';
+                  relBtn.style.cssText = tickCss;
+                  relBtn.onclick = function() {
+                    if (RPGACE.modules.dashDeck) RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
+                    bh5.ui.openRelease(row, function() { self._refreshWidget(); });
+                  };
+                  actions.appendChild(relBtn);
+                }
               }
             }
 
@@ -851,54 +850,20 @@
             };
             actions.appendChild(vpBtn);
 
-            // Aug 6 (item 7) — "Sell This Beat" now folded behind a small
-            // toggle instead of rendering Beatstars Listing + Manage
-            // Deliverables inline at every stage (Alex's real complaint:
-            // "there should also be no video pipeline button and generate
-            // beatstars listings" cluttering the early-stage view). Real
-            // /debate verdict on moving Phase H earlier in the pipeline
-            // (whether monetisation should be a parallel track rather than
-            // a late linear phase) is a bigger architecture question logged
-            // separately, not resolved here — this is the honest interim
-            // fix: keep the real capability reachable, stop it competing
-            // with the primary action row. Still gated on licence_type (a
-            // beat sale, not just content).
-            if (row.licence_type) {
-              var sellWrap = document.createElement('span');
-              sellWrap.style.cssText = 'display:inline-flex;';
-              var sellToggle = document.createElement('button');
-              sellToggle.textContent = '💰 Sell This Beat ▾';
-              sellToggle.style.cssText = 'padding:3px 8px;background:none;border:1px solid rgba(201,168,76,0.2);border-radius:5px;color:rgba(201,168,76,0.6);font-size:10px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-              var sellPanel = document.createElement('div');
-              sellPanel.style.cssText = 'display:none;gap:6px;margin-top:4px;flex-basis:100%;';
-              sellToggle.onclick = function() {
-                sellPanel.style.display = sellPanel.style.display === 'none' ? 'flex' : 'none';
+            // BT-8 (Oct 16 2026): one 💰 Sell button on every beat (was a
+            // licence-gated toggle with Beatstars listing + zip deliverables;
+            // zips retired). Opens Beats' Sell pop-up: tiers, listing text,
+            // Log a sale, this beat's sales.
+            if (row.content_type === 'music_video' &amp;&amp; RPGACE.modules.beatsHub) {
+              var sellBtn = document.createElement('button');
+              sellBtn.className = 'cpl-beat-sell';
+              sellBtn.textContent = '💰 Sell';
+              sellBtn.style.cssText = 'padding:4px 10px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:5px;color:#C9A84C;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;min-height:32px;';
+              sellBtn.onclick = function() {
+                if (RPGACE.modules.dashDeck) RPGACE.modules.dashDeck.closeWidgetPopup('cpl-widget');
+                RPGACE.modules.beatsHub.ui.openSell(row, function() { self._refreshWidget(); });
               };
-              var bsBtn = document.createElement('button');
-              // 2026-07-31 — Alex's own direct catch: "Beatstars Listing" read
-              // as a status label, not an action. Renamed to remove the
-              // ambiguity; behaviour unchanged.
-              bsBtn.textContent = '🎧 Generate Beatstars Listing';
-              bsBtn.style.cssText = 'padding:4px 10px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:5px;color:#C9A84C;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-              bsBtn.onclick = function() { self._generateBeatstarsListing(row); };
-              sellPanel.appendChild(bsBtn);
-
-              // Phase H (Aug 5, Engineer pass 09) — real file handling, same
-              // gate as the Beatstars button (this ConID is a beat sale).
-              // Alex's confirmed scope: auto-prepare a downloadable bundle
-              // per licence tier (server-side zip), NOT a real BeatStars API
-              // push (doesn't exist — reconfirmed live, Aug 2026) or browser
-              // automation (deliberately deferred, see
-              // beat_deliverables_autoport_backlog_2026-08-05.txt).
-              var dmBtn = document.createElement('button');
-              dmBtn.textContent = '📦 Manage Deliverables';
-              dmBtn.style.cssText = 'padding:4px 10px;background:rgba(201,168,76,0.08);border:1px solid rgba(201,168,76,0.25);border-radius:5px;color:#C9A84C;font-size:11px;cursor:pointer;font-family:Rajdhani,sans-serif;';
-              dmBtn.onclick = function() { self._showDeliverablesManager(row); };
-              sellPanel.appendChild(dmBtn);
-
-              sellWrap.appendChild(sellToggle);
-              actions.appendChild(sellWrap);
-              actions.appendChild(sellPanel);
+              actions.appendChild(sellBtn);
             }
 
             // 2026-07-31 — Alex's real ask: "a delete for each conID should
@@ -963,7 +928,7 @@
   <div class="dblock"><div class="dlabel">What's decided</div><p>Which taxonomy phylum a newly-discovered Last.fm artist (via _addNewArtistsToTaxonomy) gets written into.</p></div>
   <div class="dblock"><div class="dlabel">What changes (real input to the decision)</div><p>Nothing dynamic — this is a fixed literal, the real near-miss CLAUDE.md rule 13 was written about: the Aug 11 phylum renumber (11&lt;-&gt;12) needed a SECOND, separate grep for this raw literal because no adjacent "Phylum 12" text existed nearby to catch it in the first display-text-only pass.</p></div>
   <div class="dblock"><div class="dlabel">Real result</div><p>Every new artist row from this path lands in Phylum 11 (Fons Educationis, post-renumber) — a real, silent-miss risk if this literal is ever forgotten in a future renumber.</p></div>
-  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 27872-27879)</div><pre>          .then(function(rows) {
+  <div class="dblock"><div class="dlabel">Real code (rpgace_core.js, lines 27981-27988)</div><pre>          .then(function(rows) {
             if (rows &amp;&amp; rows.length &gt; 0) return; // already exists
             RPGACE.sb.secureWrite('taxonomy_nodes', 'insert', {
               concept:       a.name,
