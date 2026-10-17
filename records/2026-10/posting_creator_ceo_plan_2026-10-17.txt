@@ -83,3 +83,6 @@ BUILD LOG
   savePost (idea posted, beat-video links -> beatsHub.logic.release), DistroKid in beatsHub PLACES/placeOf, chat wrap
   (_postingLinkPatched) + offerLinkSave, fromBeat (BT-5 Make a video), xp_on_change posted_at -> video_posted (verified once
   in a rolled-back block). pc4_test 22/22; bt5 test updated (Make a video -> post plan).
+- PC-5 (Oct 17): "Go with PC-5, a, results and stats would be awesome". xp_settings.posts_per_week (0-14), weekStatus/weekLine,
+  renderWeek + ⚙️, myDayLine, loadDue/due -> dashDeck Due (r[16]). pc5_test 14/14; myday 39, due, pc0, pc4 still pass.
+  NOTE: Alex wants Results + stats -> offer as the next plan after PC-7.
