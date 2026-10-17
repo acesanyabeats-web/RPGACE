@@ -1,0 +1,68 @@
+POSTING (CREATOR) — area plan 5 of the "area regen series" (Cooking was the pattern, Beats was plan 4)
+Oct 17 2026. Status: COMPILED, awaiting Alex's ratification (CEO Loop 1 Step 6).
+
+PROMPT SCOPE (verbatim)
+- "Do Posting (Creator) next"
+
+INTERROGATION ANSWERS (verbatim picks, 2 rounds)
+Round 1
+1. Post types: Beat videos, Tutorials/breakdowns, Short clips, Studio/life posts (all 4).
+2. Journey: Idea → Plan → Record → Edit → Post → Results.
+3. Making the video: "Both" -> plan and track every post myself, plus an AI hand-off option for beat videos.
+4. Results: "2 later on" -> YouTube numbers automatic, other platforms typed in; built LATER, not this plan.
+Round 2
+5. Platforms: "One post, several platforms" (one post row, a link per platform).
+6. Ideas: "Same Idea Bank, tagged beat / post".
+7. Rhythm: "Weekly target + Due nudges".
+8. Old video tools: "Start fresh, retire them" -> Visual Treatment + director picker, the 4-phase
+   music-video panel, the 3-phase tutorial panel, Upload Workshop, the OBS raw workflow.
+
+EVIDENCE (live, this pass)
+- content_productions: 0 rows (wiped). It now holds BEATS (BT-0..8: stems, idea_id, making/mixing mins,
+  release_links, licence_tiers; realmOf maps music_video -> producer). Nothing has ever been posted with a link.
+- conid_pot (Idea Bank): 3 rows; columns id, title, idea_text, source, status, phyla_detected, gap_score_avg,
+  starred, con_id, merged_from, last_surfaced. No kind / post-type column yet.
+- xp_rules (creator): treatment_done 60 ("Visual treatment done"), video_posted 300 ("Video posted"). None earned.
+- Video-side modules today: visualOracle (~L7607, Visual Treatment + director picker), contentRepurpose (~L8329),
+  videoSummary (~L18759), videoPipeline (~L32482), contentProductionLive (phase panels), tiktokOracle (~L6492) and
+  captionsPanel (~L6649). 37 code lines mention Upload Workshop / obs_raw.
+- BT-5's "🎬 Make a video" on a released beat opens contentProductionLive._openProductionPanel (old panel) -
+  must be repointed to the new Posting flow.
+- Keep and reuse: captionsPanel / tiktokOracle (captions per platform), Doing Now (record/edit sessions, same as
+  BT-2 making/mixing), areaNav (Back/🏠), realmPicker, openmontage_jobs (AI hand-off for beat videos).
+
+DESIGN CHOICE (recommended, flag at ratification)
+- A new private table `posts` (one row per post: kind beat_video|tutorial|clip|studio_life, title, idea_id,
+  beat_id -> content_productions, stage, plan jsonb {hook, script, shots}, captions jsonb per platform,
+  platforms[], links jsonb per platform, record_mins, edit_mins, planned_at, posted_at, realms).
+  Why not reuse content_productions: it is now the beat record; mixing posts into it would make every beat
+  query filter by type again (the old tutorial/music_video split is what made the old screens confusing).
+  A beat video points AT its beat instead.
+
+PLAN ITEMS (each briefed to Alex before it is built, rule 18)
+PC-0  Posting home: /posting page (postingHub) with the journey Idea → Plan → Record → Edit → Post → Results
+      (Results shown as "coming later"), counts per step and a "what's next" list; Back/🏠 row on every
+      Posting screen; Content band in the left menu gets Posting; Content Pipeline pop-up points here.
+      New `posts` table (additive).
+PC-1  Ideas: Idea Bank ideas get a kind (beat / post) and, for posts, a post type; filter chips; "▶ Plan a
+      post" on a post idea creates the post. Beats screens only list beat ideas, Posting only post ideas.
+PC-2  Plan: per post type a short plan - hook, script / talking points, shot list - typed, with an optional
+      one-shot Oracle draft you review (Accept / Edit); captions per platform from captionsPanel; for beat
+      videos an "🤖 AI video hand-off" that writes the brief to openmontage_jobs. Planned = +60 XP
+      (treatment_done relabelled "Post planned").
+PC-3  Record + Edit: "▶ Record" / "▶ Edit" start Doing Now sessions (Creator) linked to the post; time adds
+      up on the post (same pattern as BT-2 making/mixing).
+PC-4  Post: tick platforms, paste a link per platform, mark posted (+300 XP video_posted via trigger on
+      posts.posted_at); the beat's "🎬 Make a video" (BT-5) now starts a beat-video post for that beat.
+PC-5  Weekly target: posts-per-week setting, a progress line on Posting home and My Day, Due nudges when the
+      week is behind or a planned post has sat too long.
+PC-6  Retire the old video tools: Visual Treatment + director picker, music-video 4-phase panel, tutorial
+      3-phase panel, Upload Workshop, OBS raw workflow - UI and code removed, menu/links repointed, data
+      tables left in place (no destructive SQL). captionsPanel/tiktokOracle stay.
+PC-7  Cross-links, menu order, full tests, docs, SELF_KNOWLEDGE, Galaxy regen, plan done.
+
+LEFT OUT (on purpose)
+- Results / stats (YouTube API automatic + typed numbers) -> later plan, per answer 4.
+- Generating video inside RPGACE (still briefs and hands off).
+- Real beat-grid sync.
+- Auto-posting to any platform (links are pasted by hand).
