@@ -126,3 +126,9 @@ number of people that will pass each stage, this way we play the numbers game an
   (Trophy cabinet input now monthly); beatsHub.logic.INCOME_KINDS/incomeKindOf + saleRow income_kind/item; sellingHub.logic PAY_KIND/targetOf/
   money/moneyLine/kindLine/pitchRates/rateLine/loadMoneyDue + ui.renderMoney/editTarget/logIncome/myDayLine; MS_PROOF zip_or_sale -> sale,
   beat proof needs stems_folder. sh5_test 23/23; bt8 + xp3 updated; sh0-4, xp7, pc7, myday pass.
+- SH-5b GO (Oct 17, verbatim): "yes, but with 1 make them accessible from both hustler and steward since both have a stake to the same page"
+  -> one shared Money page (money in + money out), reached from Selling home (Hustler) and from Steward's side; tax export not now.
+- SH-5b (Oct 17): built. Additive: private subscriptions table; chronicles_finance.business/receipt_id/subscription_id. api/data-write:
+  subscriptions allowlisted + private read; screenshots upload source 'receipt' (tag receipt, kept), list receipt filter, receipts and
+  proofs excluded from the inbox. moneyHub module (page money, AREAS.money, menu under Selling + Habits, Selling + Wishlist buttons, Due
+  renewals via sellingHub.logic.loadDue -> go). shoppingWishlist _markBought business/receipt. sh5b_test 26/26; kn0 updated (11 areas).

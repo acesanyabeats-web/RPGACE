@@ -97,6 +97,7 @@ const ALLOWED_TABLES = new Set([
   'food_log', 'body_log', 'health_settings', // Oct 14 2026 Health & body (HB-1..3): locked (authenticated_all only), read via action 'read'
   'posts', // Oct 17 2026 PC-0 Posting (Creator): locked (authenticated_all only), read via action 'read'
   'artists', 'pitches', 'pitch_sends', // Oct 17 2026 SH-0 Selling (Hustler): locked (authenticated_all only), read via action 'read'
+  'subscriptions', // Oct 17 2026 SH-5b Money out: locked (authenticated_all only), read via action 'read'
   'perf_freezes', // Oct 14 2026 freeze recorder (perfWatch): locked (authenticated_all only), write-only from the app
   'push_subscriptions', // Oct 14 2026 MD2-7 phone alerts: locked (authenticated_all only); the myday-push edge function reads it with the service role
   'xp_ladders', 'xp_unlock_defs', 'xp_unlocks', 'xp_settings', // XP-3: ranks, badges/titles, claims, revenue target
@@ -205,7 +206,7 @@ const ALLOWED_TABLES = new Set([
 // Every access is this action, behind requireAuth() with the service-role
 // key - one more action on this file (rule 8: no 13th
 // api file). Ops: upload | update | list | count | delete.
-const PRIVATE_READ_TABLES = new Set(['travel_profile', 'people', 'plans', 'plan_tasks', 'library_items', 'xp_events', 'xp_rules', 'xp_ladders', 'xp_unlock_defs', 'xp_unlocks', 'xp_settings', 'xp_reports', 'xp_challenges', 'xp_quest_steps', 'xp_treats', 'outreach_log', 'cutback_items', 'cutback_log', 'food_log', 'body_log', 'health_settings', 'posts', 'artists', 'pitches', 'pitch_sends']);
+const PRIVATE_READ_TABLES = new Set(['travel_profile', 'people', 'plans', 'plan_tasks', 'library_items', 'xp_events', 'xp_rules', 'xp_ladders', 'xp_unlock_defs', 'xp_unlocks', 'xp_settings', 'xp_reports', 'xp_challenges', 'xp_quest_steps', 'xp_treats', 'outreach_log', 'cutback_items', 'cutback_log', 'food_log', 'body_log', 'health_settings', 'posts', 'artists', 'pitches', 'pitch_sends', 'subscriptions']);
 const SHOTS_BUCKET = 'screenshots';
 const SHOT_PATCH_FIELDS = ['extracted_text', 'description', 'tags', 'kind', 'suggestions', 'status', 'routed_to', 'read_at', 'realms'];
 // Realm Inputs RI-2: the 13 xpSeason realm keys a screenshot may carry (max 4).
@@ -250,8 +251,9 @@ async function handleScreenshots(body, res, serviceKey) {
       headers: { 'Content-Type': 'application/json', Prefer: 'return=representation' },
       // RC-4: a milestone proof photo stays private and out of the inbox
       // (tag milestone_proof, status kept - never read, never fed to the Library).
-      body: JSON.stringify(body.source === 'proof'
-        ? { storage_path: path, mime: mediaType, source: 'upload', status: 'kept', tags: ['milestone_proof'], realms: cleanRealms(body.realms) }
+      // SH-5b: a receipt photo is kept the same private way (tag receipt).
+      body: JSON.stringify(body.source === 'proof' || body.source === 'receipt'
+        ? { storage_path: path, mime: mediaType, source: 'upload', status: 'kept', tags: [body.source === 'receipt' ? 'receipt' : 'milestone_proof'], realms: cleanRealms(body.realms) }
         : { storage_path: path, mime: mediaType, source: body.source === 'share' ? 'share' : 'upload', realms: cleanRealms(body.realms) }),
     });
     const rows = await ins.json().catch(() => null);
@@ -280,7 +282,8 @@ async function handleScreenshots(body, res, serviceKey) {
     if (body.status) q += '&status=in.(' + String(body.status).split(',').map(encodeURIComponent).join(',') + ')';
     if (body.id) q += '&id=eq.' + encodeURIComponent(body.id);
     // RC-4: proof photos only show when asked for (a milestone's own view).
-    q += body.proof ? '&tags=cs.%7Bmilestone_proof%7D' : '&tags=not.cs.%7Bmilestone_proof%7D';
+    // SH-5b: receipts likewise only when asked for (Money page).
+    q += body.proof ? '&tags=cs.%7Bmilestone_proof%7D' : body.receipt ? '&tags=cs.%7Breceipt%7D' : '&tags=not.ov.%7Bmilestone_proof,receipt%7D';
     const r = await sbFetch(q, serviceKey);
     const rows = await r.json().catch(() => null);
     if (!r.ok || !Array.isArray(rows)) return res.status(502).json({ error: 'List failed', detail: rows });
@@ -293,7 +296,7 @@ async function handleScreenshots(body, res, serviceKey) {
   // Realm Inputs RI-3: screenshots saved with "Not now" on the realm picker
   // (realms = {}), oldest first.
   if (op === 'held') {
-    const r = await sbFetch('/rest/v1/screenshots?select=id,description,created_at&realms=eq.%7B%7D&tags=not.cs.%7Bmilestone_proof%7D&order=created_at.asc&limit=50', serviceKey);
+    const r = await sbFetch('/rest/v1/screenshots?select=id,description,created_at&realms=eq.%7B%7D&tags=not.ov.%7Bmilestone_proof,receipt%7D&order=created_at.asc&limit=50', serviceKey);
     const rows = await r.json().catch(() => null);
     if (!r.ok || !Array.isArray(rows)) return res.status(502).json({ error: 'Held list failed', detail: rows });
     return res.status(200).json({ data: rows });
