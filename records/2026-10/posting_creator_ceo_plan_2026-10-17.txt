@@ -70,3 +70,5 @@ LEFT OUT (on purpose)
 BUILD LOG
 - PC-0 (Oct 17): "Yes" to option (a), type picker in New post only. Built postingHub + posts table (authenticated_all,
   data-write allowlist + PRIVATE_READ_TABLES), AREAS.posting, menu after Beats, #dd-pipe-posting. pc0_test 20/20.
+- PC-1 (Oct 17): "Go with PC-1, option a". conid_pot.kind/post_type (+CHECKs), kindChooser/kindTag/fromIdea/retagUpdate,
+  Beats/Posts filters, Plan a post -> status in_post, Beats reads kind=neq.post, Idea Bank via Posting gets Posting row. pc1_test 21/21.
