@@ -21,3 +21,34 @@ ALSO DONE THIS TURN (Alex: "Save the entries please for me")
 - rpgace_agendas sa_1792263330231shk "Shakespeare, Karaoke & The Voice They Never Knew", realm mission
   (doing_now, just_did + mission), 15 Oct 19:00-22:00 BST (180 min, a guess), realms connector/mind/creator
   -> doing_now_done 10 x3.
+
+INTERROGATION ANSWERS (verbatim picks, Oct 17)
+1. Shape: "Journey home (Recommended)".
+2. Unused bits: "I want blocks like chores for all domains so I can focus on a realm at a time in block, that'll be
+   plan my week, then the day before I plan out the blocks to fill my time".
+3. vs Schedule: "Plan my day and week right into the schedule to make it cohesive yet separate".
+4. Daily use (all four): "Quicker ticking, Shift-aware day, Evening review, Morning Brief + My Day as one".
+
+EVIDENCE ADDED
+- Realm blocks already exist (DT-7, Oct 14): chore_blocks.kind (chore/cooking/shopping/realm) + chore_blocks.realm,
+  myDay.REALM_ACTIVITIES, +10 per tick via quest_log kind 'block'. So "blocks for all domains" extends a built
+  mechanism rather than starting fresh (rule 8). 0 chore_blocks rows exist, so no data migration.
+
+DRAFT PLAN (each step briefed before it is built, rule 18)
+MD-0  My Day home: Morning -> Plan week -> Plan tomorrow -> Do -> Review, counts + what's next, Back/🏠 row, menu.
+MD-1  Plan my week: a week grid around the synced rota (early / late / off); place realm blocks (any realm:
+      Producer, Creator, Hustler, Chef, Homekeeper chores, Scholar, Athlete, Steward, Connector, Mind...) into free
+      time; each block is written into the Schedule calendar too (one write path), shown there as a block.
+MD-2  Plan tomorrow (the day before): fill each of tomorrow's blocks with real items from that realm's own lists
+      (chores due, Beats next step, posts ready, pitches to follow up, planned cook, reading, gym), routines slotted
+      around them; the night-before Due row opens it.
+MD-3  Do (today): one timeline - blocks with their items, routines; one-tap tick; Start a block = Doing Now session
+      for that realm; quick tick from the dashboard card and from a phone alert.
+MD-4  Morning: Morning Brief and My Day as one opening screen - today's blocks, routines, shift, brief items.
+MD-5  Evening review: what got done, move unfinished items to tomorrow's blocks, a line for the journal; feeds the
+      Sunday review.
+MD-6  Fold the old screens (day templates, separate chore-block screen, week planner, activity timings) into
+      MD-1/MD-2; tables and rows kept, nothing deleted.
+MD-7  Cross-links with Schedule (calendar shows blocks, a block opens My Day), tests, phone check, docs,
+      SELF_KNOWLEDGE, Galaxy regen, plan done.
+LEFT OUT: the Schedule page's own redesign (next plan); Gym/Health (paused).
