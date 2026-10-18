@@ -147,3 +147,11 @@ MD-5 Morning: Morning Brief + My Day as one opening screen.
 MD-6 Evening review: done, move unfinished to tomorrow, journal line, feeds Sunday review.
 MD-7 Fold old screens (day templates, chore-block screen, week planner, activity timings), Schedule cross-links,
      tests, phone check, docs, SELF_KNOWLEDGE, Galaxy regen, plan done.
+
+ADDED Oct 18 (verbatim): "i want to add routines to evening routine block, ill have specific tasks, i want it similar
+to morning block too"
+-> MD-1 bookends: 🌅 Morning and 🌙 Night blocks each hold their own list of tasks Alex adds (+ Add task: pick an
+   existing routine or type a new one, which saves as a routine with part of day morning / night), reorder, remove;
+   block length = total of its tasks (each task's minutes editable); same editor for both. Evidence: today only
+   2 routines are morning (Morning routine 30 min, Air the room 15) and none are evening/night - the Night block
+   starts empty for Alex to fill.
