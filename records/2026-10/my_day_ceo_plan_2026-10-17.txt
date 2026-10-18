@@ -155,3 +155,4 @@ to morning block too"
    block length = total of its tasks (each task's minutes editable); same editor for both. Evidence: today only
    2 routines are morning (Morning routine 30 min, Air the room 15) and none are evening/night - the Night block
    starts empty for Alex to fill.
+- MD-0 BUILT (Oct 18, Alex "yes"): AREAS.myday + Back/home row, header with shift, 5-step strip (homeModel/renderHome/goStep), What's next, Do - today straight under; Plan day = today until 3pm then tomorrow; weekly review card -> What's next row (same ids). md0 22/22, 9 My Day tests + kn0 pass.
