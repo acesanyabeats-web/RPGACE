@@ -156,3 +156,12 @@ to morning block too"
    2 routines are morning (Morning routine 30 min, Air the room 15) and none are evening/night - the Night block
    starts empty for Alex to fill.
 - MD-0 BUILT (Oct 18, Alex "yes"): AREAS.myday + Back/home row, header with shift, 5-step strip (homeModel/renderHome/goStep), What's next, Do - today straight under; Plan day = today until 3pm then tomorrow; weekly review card -> What's next row (same ids). md0 22/22, 9 My Day tests + kn0 pass.
+- MD-0 LIVE: ce03376 READY on production (Oct 18).
+
+NEW IDEA Oct 18 (verbatim): "i think chronicles could fill out a block, since ill be doing missions similar until i
+switch to the next so communicating into schedule as back track would be awesome"
+-> reading: what actually happened (Doing Now sessions, realm missions, ticks, posts, cooks - the Chronicles feed)
+   is written back onto the Schedule as "Did" blocks: consecutive activities in the same realm merge into one block
+   until the realm changes. Planned vs did then shows side by side. Placement TBD with Alex at MD-1 brief.
+MD-1 EVIDENCE (pg_constraint, Oct 18): chore_blocks.kind CHECK = chores/cooking/shopping/realm; status CHECK =
+planned/cancelled; mins 10-480; routines.part_of_day CHECK = morning/afternoon/evening/any (no 'night').
