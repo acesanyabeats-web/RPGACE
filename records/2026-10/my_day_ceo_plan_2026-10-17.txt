@@ -216,3 +216,16 @@ manuals for to get the most out of all software."
 - MD-5 BUILT (Oct 20): myDay.ui.openMorning (shift, alarm state, Morning card, frog, today's blocks, Plan today, Open My Day,
   brief below via new shared dashDeck.ui._fillBrief); auto-open via ui._maybeMorning on login/visibility (logic.morningDue,
   myday_morning_seen); dashboard Morning Brief card + 🌅 step open it. md5 15/15.
+- MD-6 GO (Oct 20, verbatim): "go MD-6, your picks" -> auto-open 30 min before bed (or once home from a late shift if
+  later), +10 Mind once a day. BUILT + LIVE 7a0121f READY: ui.openEvening/_maybeEvening, logic.eveningModel/eveningAct/
+  saveEvening (journal source evening_review, one per review_on), trigger xp_on_evening, weekly review lists evenings. md6 22/22.
+- MD-7 brief (Oct 20): fold old screens, Schedule links incl. Morning/Night on the calendar; open choice: keep the routine
+  list as a link (recommended). GO (Oct 20, verbatim): "Go ahead".
+- MD-7 EVIDENCE: day templates already live in Plan my day's source picker (DT-1); the week planner IS Plan week (MD-2);
+  only real duplicate left = the separate Chore block screen (ui.openChoreBlock) next to Plan my day's own + Chore block.
+- MD-7 BUILT: Chores 🧹 -> openPlan(today,{add:'chores'}); ✎ Chores -> ui.pickChores (hand-pick kept); openChoreBlock deleted
+  (code only); Manage = routines first, timings+templates folded (#myday-settings-fold); renderDailyGrid draws bookends
+  (logic.calendarBookends, not stored) + ☀️ My Day on bookend rows and realm/chore/shopping block entries
+  (ui.openFromSchedule: today -> open + highlight via _applyFlash after render; other day -> openPlan). Phone check caught
+  the Schedule row buttons squeezed into the 56px grid column (and the new button overlapping Done) - action rows now span
+  the full row. md7 9/9; dt4 rewritten for the new route 24/24.
