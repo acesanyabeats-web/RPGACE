@@ -10,7 +10,7 @@ from datetime import datetime, timedelta, timezone
 
 # Bump this whenever rpgace_intel.py's analysis changes. The app labels any
 # report made by an older version.
-ANALYSER_VERSION = "2026-10-20.3"
+ANALYSER_VERSION = "2026-10-20.4"
 
 STUCK_HOURS = 2
 STUCK_RESET = {"status": "queued", "progress": "Reset: stuck in processing for over 2 h", "started_at": None}

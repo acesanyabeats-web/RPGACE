@@ -419,7 +419,8 @@ def condense_transcript(timed: str, meta: dict) -> str:
     return timed
 
 
-def generate_oracle_insights(meta: dict, transcript: str, visual_analysis: str, realms=None) -> dict:
+def generate_oracle_insights(meta: dict, transcript: str, visual_analysis: str, realms=None,
+                             full_transcript: str = None) -> dict:
     """VW-2 (Oct 20 2026): one call writes a section per picked realm (what it
     teaches, key points with their quote and time, one thing to try, 3 quest
     ideas) plus a "how it's made" block only for Creator/Producer/Hustler.
@@ -460,7 +461,8 @@ Rules:
   amounts, times, names. Specific beats general - "proof 45 min at 27C" not "proofing matters".
 - Every point must come from the video. Its "quote" is the exact words copied from the transcript line that says it
   (copy, never paraphrase), and "at" is that line's [m:ss] time without brackets. No quote, no point - do not add
-  general knowledge the video does not say.
+  general knowledge the video does not say. Something only shown on screen (never said) is not a point: every
+  quote is checked word for word against the transcript and points without a real quote are thrown out.
 - If a realm gets little or nothing from this video, say so: score 1-2, "teaches": "nothing for this realm",
   empty "points", and no padding. Fewer, real points beat many vague ones.
 - A point that serves two picked realms is written ONCE, under the realm it serves best, with the other realm key
@@ -495,7 +497,8 @@ Return this exact JSON structure:
     # VW-2: up to 4 realm sections with quotes - 6000 is a ceiling billed on
     # what is written; the whole transcript makes this call longer (3 min).
     raw = call_claude([{"role": "user", "content": prompt}], "", 6000, timeout=180)
-    return parse_insights(raw, realms)
+    # VW-3: quotes are checked against the whole original transcript
+    return parse_insights(raw, realms, full_transcript if full_transcript is not None else transcript)
 
 
 NOTHING = "nothing for this realm"
@@ -514,7 +517,67 @@ def _clean_point(p, realms) -> dict:
             "at": at, "also": also}
 
 
-def parse_insights(raw: str, realms: list) -> dict:
+# ── VW-3: PROOF IN CODE ───────────────────────────────────────────────────────
+# Alex: "drop any point with no quote". Every point's quote is looked for in the
+# ORIGINAL full transcript (never the condensed one). Not found = point dropped.
+# Small differences (punctuation, a word Whisper heard differently) still match.
+# The time comes from the line the quote was found in, not from the model.
+MIN_QUOTE_WORDS = 4
+QUOTE_MATCH = 0.85
+
+
+def _norm_words(text: str) -> list:
+    return re.sub(r"[^\w\s']", " ", (text or "").lower()).replace("'", "").split()
+
+
+def transcript_words(timed: str) -> tuple:
+    """(words, times): every word of the timed transcript with its line's [m:ss]."""
+    words, times = [], []
+    for line in (timed or "").splitlines():
+        m = re.match(r"\s*\[(\d+:\d{2}(?::\d{2})?)\]\s*(.*)", line)
+        at, text = (m.group(1), m.group(2)) if m else ("", line)
+        for w in _norm_words(text):
+            words.append(w)
+            times.append(at)
+    return words, times
+
+
+def find_quote(quote: str, words: list, times: list):
+    """Where the quote is said: (time, ratio), or None. Exact match first, then
+    the best same-length stretch of the transcript sharing most of its words."""
+    from difflib import SequenceMatcher
+    q = _norm_words(quote)
+    n = len(q)
+    if n < MIN_QUOTE_WORDS or not words:
+        return None
+    for i in range(len(words) - n + 1):
+        if words[i] == q[0] and words[i:i + n] == q:
+            return times[i], 1.0
+    joined, qset, best = " ".join(q), set(q), None
+    for i in range(max(1, len(words) - n + 1)):
+        win = words[i:i + n]
+        if len(qset.intersection(win)) * 2 < n:
+            continue
+        r = SequenceMatcher(None, joined, " ".join(win)).ratio()
+        if r >= QUOTE_MATCH and (best is None or r > best[1]):
+            best = (times[i], r)
+    return best
+
+
+def verify_points(points: list, words: list, times: list) -> tuple:
+    """(kept, dropped_count). Kept points take the transcript's own time."""
+    kept, dropped = [], 0
+    for p in points:
+        hit = find_quote(p.get("quote", ""), words, times)
+        if not hit:
+            dropped += 1
+            continue
+        p["at"] = hit[0]
+        kept.append(p)
+    return kept, dropped
+
+
+def parse_insights(raw: str, realms: list, source: str = None) -> dict:
     """Fence-tolerant JSON parse + clean-up done in code, never trusted to the
     model: unknown realms dropped, scores clamped 1-10, 3-7 points (fewer for a
     thin video), 3 quests, a point listed under two realms kept once (under the
@@ -529,6 +592,7 @@ def parse_insights(raw: str, realms: list) -> dict:
     ins = json.loads(raw[start:end])
 
     src = ins.get("realms") if isinstance(ins.get("realms"), dict) else (ins.get("realm_scores") or {})
+    words, times = transcript_words(source) if source is not None else ([], [])
     sections = {}
     for k in realms:
         v = src.get(k)
@@ -540,6 +604,11 @@ def parse_insights(raw: str, realms: list) -> dict:
             continue
         pts = [x for x in (_clean_point(p, realms) for p in (v.get("points") or [])) if x][:7]
         teaches = str(v.get("teaches") or "").strip()[:500]
+        dropped = 0
+        if source is not None:
+            pts, dropped = verify_points(pts, words, times)
+            if not pts:
+                teaches = NOTHING   # what it "teaches" had no proof left
         if not pts and not teaches:
             teaches = NOTHING
         qs = []
@@ -553,7 +622,8 @@ def parse_insights(raw: str, realms: list) -> dict:
                            "type": "daily" if q.get("type") == "daily" else "weekly",
                            "category": k, "action": str(q.get("action") or "")[:400]})
         sections[k] = {"score": sc, "why": str(v.get("why") or "")[:300], "teaches": teaches,
-                       "points": pts, "action": str(v.get("action") or "")[:400], "quests": qs}
+                       "points": pts, "action": str(v.get("action") or "")[:400], "quests": qs,
+                       "dropped": dropped}
 
     # one point, one place: same text under two realms -> keep it under the
     # higher score, tag it with the other realm
@@ -582,7 +652,10 @@ def parse_insights(raw: str, realms: list) -> dict:
         made = {"summary": str(made.get("summary") or "")[:500],
                 "points": [x for x in (_clean_point(p, realms) for p in (made.get("points") or [])) if x][:5],
                 "steal": [str(s)[:300] for s in (made.get("steal") or []) if str(s).strip()][:5],
-                "avoid": [str(s)[:300] for s in (made.get("avoid") or []) if str(s).strip()][:4]}
+                "avoid": [str(s)[:300] for s in (made.get("avoid") or []) if str(s).strip()][:4],
+                "dropped": 0}
+        if source is not None:
+            made["points"], made["dropped"] = verify_points(made["points"], words, times)
     else:
         made = None
 
@@ -592,6 +665,7 @@ def parse_insights(raw: str, realms: list) -> dict:
         "realm_sections": sections,
         "how_made": made,
         "realms": realms,
+        "quotes_checked": source is not None,
         "verdict_summary": str(ins.get("verdict_summary") or "")[:300],
         "watchlist_reason": ins.get("watchlist_reason") or None,
         # long-standing keys, filled from the sections (readers unchanged)
@@ -709,6 +783,8 @@ def format_output(meta: dict, insights: dict) -> str:
         if sec.get("teaches"):
             out += [f"  {sec['teaches']}", ""]
         out += [f"  • {point_line(p, lenses)}" for p in sec.get("points", [])]
+        if sec.get("dropped"):
+            out.append(f"  ({sec['dropped']} more thrown out: their quote isn't in the video)")
         if sec.get("action"):
             out += ["", f"  ▶ Try this: {sec['action']}"]
         if sec.get("quests"):
@@ -767,7 +843,8 @@ def process_url(url: str, realms=None):
             visual_analysis = analyse_frames(frames, meta, realms) if frames else "No frames extracted."
 
             # 6 — Oracle insights on the whole (condensed if long) timed transcript
-            insights = generate_oracle_insights(meta, condense_transcript(timed, meta), visual_analysis, realms)
+            insights = generate_oracle_insights(meta, condense_transcript(timed, meta), visual_analysis, realms,
+                                                full_transcript=timed)
 
             # 7 — Delete video (frames are in temp dir, auto-deleted)
             if video_file and video_file.exists():

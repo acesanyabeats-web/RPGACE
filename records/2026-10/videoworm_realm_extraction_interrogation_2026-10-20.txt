@@ -124,3 +124,11 @@ BUILD LOG
   creator/producer/hustler; parse_insights cleans in code + one-point-one-place dedup + empty realm -> 'nothing for this realm'
   (+ where shared points went); stores insights.realm_sections/how_made; old keys derived (app readers unchanged); format_output
   and realm_section rewritten per realm; max_tokens 6000; ANALYSER_VERSION 2026-10-20.3. 17 checks (mocked) + VW-1's 17 re-run.
+- VW-3 GO (Oct 20, verbatim): "go vw-3" (on-screen-only points question unanswered -> my recommendation: drop them).
+- VW-3 BUILT: transcript_words/find_quote/verify_points; quotes checked against the ORIGINAL full timed transcript (>=4 words, exact
+  else difflib >=0.85 on a same-length window sharing >=half its words); unmatched points dropped (realms + how_made), at = the
+  matched line's time, dropped counts shown; ANALYSER_VERSION 2026-10-20.4. 14 checks + VW-1/VW-2 re-run.
+- Same message: Alex asked to install the Ponytail plugin (DietrichGebert/ponytail) for this project from now on. Plugin files read
+  (marketplace.json, plugin.json, hooks: local node scripts only, webhook empty by default). Adding extraKnownMarketplaces +
+  enabledPlugins to .claude/settings.json was blocked by the auto-mode classifier (Unauthorized Persistence) - not worked around;
+  steps handed to Alex instead.
