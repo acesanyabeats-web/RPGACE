@@ -1,0 +1,32 @@
+STUDY: AWS AI PRACTITIONER PRACTICE INSIDE RPGACE — brief, Alex's answers, build log (Oct 20 2026)
+
+WHERE IT CAME FROM
+Alex's exit plan (private page, month 4 = AWS Certified AI Practitioner exam). Asked: "are you able to
+prepare me for this?" then "yes please, it would be nice if it was part of rpgace internal knowledge and
+analogies". Brief given (rule 18), Alex answered: "approved" (all recommended picks):
+  1. General Study page, AWS first (not AWS-only)
+  2. Gentle 10 min a day from now (not wait for month 4)
+  3. +2 Scholar XP per correct answer, max 30 a day
+  4. Build Study before MD-6
+LEFT OUT (stated in the brief): real exam questions (not public, against AWS rules), hands-on AWS labs,
+an Oracle tutor mode, other certificates' banks (structure only).
+
+FACTS CHECKED (web search, Oct 20 2026): AIF-C01 guide version 1.1 (Apr 30 2026); weights unchanged
+20/24/28/14/14; 1.1 adds agentic AI, MCP, multi-agent, AgentCore, Strands Agents, Kiro, Amazon Q,
+SageMaker JumpStart, token pricing, context engineering, distillation, LLM-as-a-judge, hallucination
+detection, async/serverless inference. 65 questions (50 scored), 90 min, 700/1000, compensatory scoring.
+Direct fetches of docs.aws.amazon.com were blocked from the session; search summaries only.
+
+BUILT
+- Tables: study_courses, study_lessons, study_questions, study_sessions, study_attempts (anon_read_only +
+  authenticated_all; 3 writable through /api/data-write). xp_rules study_round + trigger xp_on_study.
+- Bank: study/aws-aif-c01/ (index.json, lessons.json 18, q_d1a..q_d5b 300 questions: 60/72/84/42/42,
+  56 tagged service). Source of truth; studyHub.logic.syncBank adds missing stems on open.
+  scripts/study_bank_sql.py turns the files into SQL if a restore is needed.
+- studyHub module: /study page, lessons popup with RPGACE analogy + Open buttons, Quick 10 / topic 15 /
+  mock 65 (13/16/18/9/9, 90-min timer) / flash 15 / redo, shuffled options, recall schedule, results.
+- Wiring: Knowledge menu + home (Study step button, Redo due line), Recall strip Redo line, My Day Scholar
+  activity 'study' (replaced 'Fill a knowledge gap'), Chronicles Learning section (type study).
+- Tests: study_test 26/26; kn0-6, ll6, ll8, dt7 (updated for the swap), md0/1/3, ln pass.
+STATUS: built, untested by Alex. Supabase holds 30 questions + 18 lessons now; the rest sync on first
+signed-in open.

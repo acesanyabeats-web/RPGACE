@@ -1,0 +1,19 @@
+{
+ "course": "aws-aif-c01",
+ "version": 1,
+ "lessons": "lessons.json",
+ "questions": [
+  "q_d1a.json",
+  "q_d1b.json",
+  "q_d2a.json",
+  "q_d2b.json",
+  "q_d2c.json",
+  "q_d3a.json",
+  "q_d3b.json",
+  "q_d3c.json",
+  "q_d4a.json",
+  "q_d4b.json",
+  "q_d5a.json",
+  "q_d5b.json"
+ ]
+}
