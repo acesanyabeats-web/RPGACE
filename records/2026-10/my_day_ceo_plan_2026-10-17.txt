@@ -201,3 +201,11 @@ is ticked (his first glass of water).
   Found in test: a 60-min Pomodoro ended on a break - leftover <= break length now goes on the last round. md4 23/23.
 - Oct 20 (mid-MD-4), Alex: "i want to factory reset this computer... everything on this laptop to do with RPGACE total systems
   and ai to move to external hard drive E" -> records/2026-10/laptop_backup_to_E.ps1 (scan, unpushed-git check, copy, verify).
+- MD-4 LIVE: 4ebbdfd (Oct 20). dn_test "Doing Now card under heading" fails before and after MD-4 - stale since MD-0 moved
+  the card into Do - today (test expectation, not a bug).
+NEW IDEA Oct 20 (verbatim): "everything will be wiped, ill redownload applications based on what i have in my emails to
+redownload plugins and drum kit purchased, this will then be logged as producer tool kit, which will then be handy to have
+manuals for to get the most out of all software."
+-> logged, NOT built: a Producer Toolkit (software, plugins, drum kits, licences, where bought, download link, manual link),
+   filled from purchase emails; manuals feed Bookworm/Life Library. Needs its own brief + interrogation (Gmail source,
+   where it lives - Producer area / Beats plan) before any build.

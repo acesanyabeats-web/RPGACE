@@ -17,13 +17,19 @@ $cands = @(
   "$H\.kaggle",                         # Kaggle token
   "$H\.cache\huggingface",              # downloaded AI models (can be very big)
   "$env:APPDATA\Claude",                # Claude desktop app data
-  "$env:APPDATA\obsidian"               # Obsidian settings
+  "$env:APPDATA\obsidian",              # Obsidian settings
+  # Your own music - apps redownload, these do not:
+  "$H\Documents\Image-Line",             # FL Studio projects, patterns, presets, recordings
+  "$H\Documents\Xfer",                   # Serum user presets/wavetables
+  "$H\Documents\Splice",                 # Splice downloaded samples
+  "$H\Music",                            # bounces / stems
+  "$H\Desktop"                           # anything left on the desktop
 )
 $files = @("$H\.claude.json", "$H\.gitconfig")
 
 # Anything else with these names, 4 folders deep under your user folder and the C:\ root
 Write-Host "`nSearching for other RPGACE / OpenMontage / AI folders..." -ForegroundColor Cyan
-$names = 'rpgace','openmontage','graphify','obsidian','kaggle','ltx','hunyuan','comfyui','claude'
+$names = 'rpgace','openmontage','graphify','obsidian','kaggle','ltx','hunyuan','comfyui','claude','drum kit','drumkit','samples','beats','stems','presets'
 $found = foreach ($root in @($H, 'C:\')) {
   Get-ChildItem $root -Directory -Recurse -Depth 3 -ErrorAction SilentlyContinue |
     Where-Object { $n = $_.Name.ToLower(); ($names | Where-Object { $n -like "*$_*" }) -and $_.FullName -notmatch '\\(node_modules|\.git|AppData\\Local\\Temp|Windows|Program Files)' }
