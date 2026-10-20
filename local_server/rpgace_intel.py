@@ -27,6 +27,13 @@ import urllib.error
 from pathlib import Path
 from datetime import datetime
 
+# VW-0: which analyser made a report (shared with both runners).
+try:
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    from intel_common import ANALYSER_VERSION
+except Exception:  # an old copy of intel_common.py, or none
+    ANALYSER_VERSION = "unknown"
+
 # ── CONFIG ────────────────────────────────────────────────────────────────────
 HOME          = Path.home() / "RPGACE"
 INTEL_DIR     = HOME / "intel"
@@ -269,7 +276,11 @@ Be specific. This analysis feeds into production learning insights."""
 # lives in ONE file at the repo root, realm_lenses.json, read here and by the app.
 REALM_KEYS = ["producer", "creator", "hustler", "chef", "athlete", "scholar", "life",
               "homekeeper", "mind", "steward", "explorer", "connector", "builder"]
-REALM_LENS_FILE = Path(__file__).resolve().parent.parent / "realm_lenses.json"
+# VW-0: on the laptop the file sits next to this one (%USERPROFILE%\RPGACE,
+# downloaded by start_server.bat); in the repo it is one folder up.
+_HERE = Path(__file__).resolve().parent
+REALM_LENS_FILE = next((p for p in (_HERE / "realm_lenses.json", _HERE.parent / "realm_lenses.json") if p.exists()),
+                       _HERE.parent / "realm_lenses.json")
 DEFAULT_REALMS = ["producer"]  # links sent before the picker existed
 
 
@@ -621,7 +632,8 @@ def process_url(url: str, realms=None):
                     "added_to_watchlist": bool(insights.get("add_to_watchlist")),
                     # RI-4: the realms it was read through + a score per realm
                     "realms":            insights.get("realms") or [],
-                    "realm_scores":      insights.get("realm_scores") or {}
+                    "realm_scores":      insights.get("realm_scores") or {},
+                    "analyser_version":  ANALYSER_VERSION
                 })
                 log(f"Intel report pushed to Supabase (status {status})", GREEN)
 

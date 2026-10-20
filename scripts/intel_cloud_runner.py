@@ -46,11 +46,25 @@ def sb(method, path, body=None, prefer=None):
         return json.loads(txt) if txt.strip() else []
 
 
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "local_server"))
+import intel_common  # VW-0: version, stuck-job reset, claim body (no HOME side effects)
+
+
 def claim(job_id):
     """Take the job only if it is still queued (the laptop may have it)."""
     rows = sb("PATCH", f"intel_jobs?id=eq.{job_id}&status=eq.queued",
-              {"status": "processing", "progress": "Cloud runner: starting"}, prefer="return=representation")
+              intel_common.claim_body("cloud", "Cloud runner: starting"), prefer="return=representation")
     return bool(rows)
+
+
+def reset_stuck():
+    """VW-0: a job left 'processing' for over 2 h (a runner died) goes back in the queue."""
+    try:
+        rows = sb("PATCH", intel_common.stuck_query(), intel_common.STUCK_RESET, prefer="return=representation")
+        if rows:
+            print(f"Put {len(rows)} stuck job(s) back in the queue.")
+    except Exception as e:
+        print(f"::warning::Could not reset stuck jobs: {e}")
 
 
 def finish(job_id, ok, reason=""):
@@ -69,6 +83,8 @@ def main():
         # Exit clean (a red run every 10 min would email Alex each time).
         print("::warning::No INTEL_ANTHROPIC_KEY secret set - leaving the queue for the laptop.")
         return 0
+    reset_stuck()
+    print(f"Analyser version {intel_common.ANALYSER_VERSION}")
     # YouTube answers data-centre addresses with "Sign in to confirm you're not
     # a bot" (Oct 11 run #2). Without cookies the cloud leaves YouTube links
     # queued for the laptop instead of failing them; with a YT_COOKIES secret

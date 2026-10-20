@@ -141,7 +141,11 @@ class Handler(BaseHTTPRequestHandler):
         p = self.path.split("?")[0].rstrip("/")
 
         if p == "/health":
-            self.send_json({"status": "ok", "version": 3})
+            try:
+                import intel_common; av = intel_common.ANALYSER_VERSION
+            except Exception:
+                av = "unknown (intel_common.py missing - run start_server.bat)"
+            self.send_json({"status": "ok", "version": 3, "analyser_version": av})
 
         elif p == "/reports":
             # Serve local JSON files — these always exist even if Supabase failed
@@ -271,16 +275,29 @@ ACTIVE = set()
 
 def process_job(job):
     jid = job["id"]; url = job["url"]
-    log(f"Processing: {url[:60]}")
+    # VW-0: take the job only if it is still queued (the cloud runner may
+    # have it), and record when it started so a stuck one can be reset.
     try:
-        # Update status
+        import intel_common
+        body = intel_common.claim_body("laptop")
+    except Exception:
+        body = {"status": "processing", "progress": "Starting..."}
+    try:
         req = urllib.request.Request(
-            f"{SB_URL}/rest/v1/intel_jobs?id=eq.{jid}",
-            data=json.dumps({"status":"processing","progress":"Starting..."}).encode(),
-            headers={**SB_HEADERS,"Prefer":"return=minimal"}, method="PATCH"
+            f"{SB_URL}/rest/v1/intel_jobs?id=eq.{jid}&status=eq.queued",
+            data=json.dumps(body).encode(),
+            headers={**SB_HEADERS,"Prefer":"return=representation"}, method="PATCH"
         )
-        urllib.request.urlopen(req, timeout=10, context=SSL_CTX)
-    except: pass
+        with urllib.request.urlopen(req, timeout=10, context=SSL_CTX) as r:
+            if not json.loads(r.read().decode() or "[]"):
+                log(f"Already taken: {url[:60]}")
+                ACTIVE.discard(jid)
+                return
+    except Exception as e:
+        log(f"Could not claim job: {e}")
+        ACTIVE.discard(jid)
+        return
+    log(f"Processing: {url[:60]}")
 
     sys.path.insert(0, str(HOME))
     try:
@@ -331,9 +348,25 @@ def process_job(job):
     finally:
         ACTIVE.discard(jid)
 
+def reset_stuck():
+    """VW-0: put jobs stuck in 'processing' for over 2 h back in the queue."""
+    try:
+        import intel_common
+        req = urllib.request.Request(f"{SB_URL}/rest/v1/{intel_common.stuck_query()}",
+            data=json.dumps(intel_common.STUCK_RESET).encode(),
+            headers={**SB_HEADERS, "Prefer": "return=representation"}, method="PATCH")
+        with urllib.request.urlopen(req, timeout=10, context=SSL_CTX) as r:
+            n = len(json.loads(r.read().decode() or "[]"))
+            if n: log(f"Put {n} stuck job(s) back in the queue")
+    except Exception:
+        pass
+
 def poll_loop():
     log("Polling Supabase for jobs...")
+    last_reset = 0
     while True:
+        if time.time() - last_reset > 600:
+            reset_stuck(); last_reset = time.time()
         try:
             jobs = sb_get("intel_jobs", "status=eq.queued&order=created_at.asc&limit=3")
             for job in jobs:

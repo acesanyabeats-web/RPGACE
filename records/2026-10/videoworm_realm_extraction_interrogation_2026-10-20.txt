@@ -92,3 +92,17 @@ VW-5 Where it goes: idea cards per realm (savable to Recall -> Morning Brief), L
      shelf, realm Knows line / weekly realm report counts.
 VW-6 Re-run the recent 7 with realms; replace their reports, cards and Library items.
 VW-7 Tests, docs, SELF_KNOWLEDGE, Galaxy regen, deploy.
+
+BUILD LOG
+- GO (Oct 20, verbatim): "It worked, now do vw" (after fixing his laptop's audio-driver boot issue).
+- VW-0 EVIDENCE: laptop drift had TWO causes - (1) README says the PC copies were replaced Oct 11 by curl, realms landed
+  Oct 15, so the laptop ran pre-realm code; (2) rpgace_intel.REALM_LENS_FILE = parent.parent/realm_lenses.json, which on
+  the laptop is C:\Users\acesa\realm_lenses.json (never there) -> load_lenses() = {} even with fresh code. Reproduced:
+  old layout 0 lenses, fixed 13.
+- VW-0 BUILT: local_server/intel_common.py (ANALYSER_VERSION 2026-10-20.1, claim_body, stuck_query/STUCK_RESET 2h);
+  both runners claim with status=eq.queued (the laptop used to PATCH by id only - could double-take) + started_at +
+  taken_by; reset stuck (cloud each run, laptop every 10 min); start_server.bat downloads 4 files before every start
+  (compile-checked, keeps old on failure; does not self-update); REALM_LENS_FILE checks own folder first; report
+  analyser_version; /health shows it; videoSummary labels older reports (newest seen, no 2nd constant in the app).
+  DB: intel_reports.analyser_version, intel_jobs.started_at/taken_by (additive).
+- Alex's steps (rule 10, with checks): one-time download of start_server.bat; spare account cookies -> YT_COOKIES.
