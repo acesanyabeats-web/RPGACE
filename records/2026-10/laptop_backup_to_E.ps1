@@ -2,7 +2,10 @@
 # Run in PowerShell:  powershell -ExecutionPolicy Bypass -File .\laptop_backup_to_E.ps1
 # 1) finds everything RPGACE / AI on this laptop and shows sizes
 # 2) warns about git work not pushed to GitHub (that would be lost)
-# 3) asks before copying, copies with robocopy, then checks file counts + sizes match
+# 3) skips what RPGACE already has: git folders fully pushed to GitHub (link saved instead),
+#    old non-git RPGACE copies, and script files that are already in the repo
+# 4) asks before copying, copies with robocopy, then checks file counts + sizes match
+# Nothing on the laptop is deleted - the factory reset does that.
 $ErrorActionPreference = 'Continue'
 $dest = 'E:\RPGACE_backup_' + (Get-Date -Format 'yyyy-MM-dd')
 $H = $env:USERPROFILE
@@ -18,6 +21,7 @@ $cands = @(
   "$H\.cache\huggingface",              # downloaded AI models (can be very big)
   "$env:APPDATA\Claude",                # Claude desktop app data
   "$env:APPDATA\obsidian",              # Obsidian settings
+  "$env:APPDATA\Bitwarden",             # Bitwarden desktop data (encrypted). ALSO do File > Export vault (see the end)
   # Your own music - apps redownload, these do not:
   "$H\Documents\Image-Line",             # FL Studio projects, patterns, presets, recordings
   "$H\Documents\Xfer",                   # Serum user presets/wavetables
@@ -29,7 +33,7 @@ $files = @("$H\.claude.json", "$H\.gitconfig")
 
 # Anything else with these names, 4 folders deep under your user folder and the C:\ root
 Write-Host "`nSearching for other RPGACE / OpenMontage / AI folders..." -ForegroundColor Cyan
-$names = 'rpgace','openmontage','graphify','obsidian','kaggle','ltx','hunyuan','comfyui','claude','drum kit','drumkit','samples','beats','stems','presets'
+$names = 'rpgace','bitwarden','openmontage','graphify','obsidian','kaggle','ltx','hunyuan','comfyui','claude','drum kit','drumkit','samples','beats','stems','presets'
 $found = foreach ($root in @($H, 'C:\')) {
   Get-ChildItem $root -Directory -Recurse -Depth 3 -ErrorAction SilentlyContinue |
     Where-Object { $n = $_.Name.ToLower(); ($names | Where-Object { $n -like "*$_*" }) -and $_.FullName -notmatch '\\(node_modules|\.git|AppData\\Local\\Temp|Windows|Program Files)' }
@@ -38,6 +42,32 @@ $all = @($cands | Where-Object { Test-Path $_ }) + @($found | ForEach-Object { $
 # keep only top-most folders (drop ones inside another listed folder)
 $all = $all | Sort-Object -Unique
 $all = $all | Where-Object { $p = $_; -not ($all | Where-Object { $_ -ne $p -and $p.StartsWith($_ + '\') }) }
+
+# --- Skip what RPGACE already has ---------------------------------------
+$skipped = @(); $repoLinks = @(); $keep = @()
+foreach ($p in $all) {
+  if (Test-Path (Join-Path $p '.git')) {
+    Push-Location $p
+    $dirty = git status --porcelain 2>$null; $ahead = git log --branches --not --remotes --oneline 2>$null; $url = git remote get-url origin 2>$null
+    Pop-Location
+    if (-not $dirty -and -not $ahead -and $url) { $repoLinks += "$p  ->  $url"; $skipped += "$p  (all on GitHub: $url)"; continue }
+  } elseif ((Split-Path $p -Leaf) -match '(?i)rpgace' -and $p -ne "$H\RPGACE") { $skipped += "$p  (old RPGACE copy, not a git repo)"; continue }
+  $keep += $p
+}
+$all = $keep
+# Script files already in the repo (same content) are not copied from $H\RPGACE
+$repo = "$H\Downloads\rpgace-vercel-v4"; $dupFiles = @()
+if ((Test-Path "$H\RPGACE") -and (Test-Path $repo)) {
+  $repoHashes = @{}
+  Get-ChildItem $repo -Recurse -File -Force -ErrorAction SilentlyContinue | Where-Object { $_.FullName -notmatch '\\\.git\\' } |
+    ForEach-Object { $repoHashes[(Get-FileHash $_.FullName -Algorithm MD5).Hash] = 1 }
+  Get-ChildItem "$H\RPGACE" -Recurse -File -Force -ErrorAction SilentlyContinue | ForEach-Object {
+    if ($repoHashes[(Get-FileHash $_.FullName -Algorithm MD5).Hash]) { $dupFiles += $_.FullName }
+  }
+}
+Write-Host "`n=== Skipped (RPGACE already has it) ===" -ForegroundColor Cyan
+$skipped | ForEach-Object { "  $_" }
+if ($dupFiles.Count) { "  $($dupFiles.Count) files in $H\RPGACE that are already in the repo" }
 
 Write-Host "`n=== What will be copied ===" -ForegroundColor Cyan
 $total = 0
@@ -69,9 +99,11 @@ $ans = Read-Host "`nType YES to copy all of the above to $dest"
 if ($ans -ne 'YES') { "Nothing copied."; exit 0 }
 New-Item -ItemType Directory -Force $dest | Out-Null
 $log = "$dest\_backup_log.txt"
+$repoLinks | Set-Content "$dest\_git_repos_on_github.txt"
 foreach ($p in $all) {
   $target = Join-Path $dest ($p -replace '^[A-Za-z]:\\', '' )
-  robocopy $p $target /E /COPY:DAT /DCOPY:T /R:1 /W:1 /XJ /NP /NFL /NDL /LOG+:$log | Out-Null
+  $xf = @(); if ($p -eq "$H\RPGACE" -and $dupFiles.Count) { $xf = @('/XF') + $dupFiles }
+  robocopy $p $target /E /COPY:DAT /DCOPY:T /R:1 /W:1 /XJ /NP /NFL /NDL /LOG+:$log @xf | Out-Null
   if ($LASTEXITCODE -ge 8) { Write-Host "COPY ERRORS in $p - see $log" -ForegroundColor Red }
 }
 foreach ($f in $files) { if (Test-Path $f) { $t = Join-Path $dest ($f -replace '^[A-Za-z]:\\', ''); New-Item -ItemType Directory -Force (Split-Path $t) | Out-Null; Copy-Item $f $t -Force } }
@@ -80,10 +112,11 @@ Write-Host "`n=== Check: source vs E: ===" -ForegroundColor Cyan
 $bad = 0
 foreach ($p in $all) {
   $target = Join-Path $dest ($p -replace '^[A-Za-z]:\\', '' )
-  $a = Get-ChildItem $p -Recurse -File -Force -ErrorAction SilentlyContinue | Measure-Object Length -Sum
+  $a = Get-ChildItem $p -Recurse -File -Force -ErrorAction SilentlyContinue | Where-Object { $dupFiles -notcontains $_.FullName } | Measure-Object Length -Sum
   $b = Get-ChildItem $target -Recurse -File -Force -ErrorAction SilentlyContinue | Measure-Object Length -Sum
   $ok = ($a.Count -eq $b.Count) -and ($a.Sum -eq $b.Sum)
   if (-not $ok) { $bad++ }
   '{0}  {1} files / {2:N1} MB  ->  {3} files / {4:N1} MB  {5}' -f ($(if ($ok) {'OK  '} else {'DIFF'})), $a.Count, ($a.Sum/1MB), $b.Count, ($b.Sum/1MB), $p
 }
 if ($bad -eq 0) { Write-Host "`nALL MATCH - backup complete: $dest" -ForegroundColor Green } else { Write-Host "`n$bad folder(s) differ - do NOT reset yet; send me this output." -ForegroundColor Red }
+Write-Host "`nBITWARDEN: the copy above is the app's encrypted local data. Also open Bitwarden > File > Export vault > .json (Encrypted) and save it into $dest - that is the file you can import again." -ForegroundColor Yellow
