@@ -871,7 +871,7 @@ flowchart LR
   ofs -->|other day| plan[ui.openPlan date]
   chores[Chores 🧹 Chore block] --> plan2[ui.openPlan today, add chores] --> pick[ui.pickChores ✎ Chores]
 ```
-Truth table: bookends on the calendar, ☀️ My Day links, chore block folded into Plan my day with a hand-pick, Day settings folded in Manage — BUILT (headless-verified, md7 9/9, dt4 24/24). The old separate Chore block screen (`ui.openChoreBlock`) — REMOVED (code only; no data). Did blocks (MD-8) — NOT built.
+Shift clash check (Oct 20): `logic.clashWith` shared by Plan my day, the calendar's ⚠ flag and the + Add task form (warn → Use nearest free / Save anyway) — BUILT (clash test 8/8). Truth table: bookends on the calendar, ☀️ My Day links, chore block folded into Plan my day with a hand-pick, Day settings folded in Manage — BUILT (headless-verified, md7 9/9, dt4 24/24). The old separate Chore block screen (`ui.openChoreBlock`) — REMOVED (code only; no data). Did blocks (MD-8) — NOT built.
 
 ## 15s. Evening review (Oct 20 2026, "My Day" MD-6) — built, untested by Alex
 

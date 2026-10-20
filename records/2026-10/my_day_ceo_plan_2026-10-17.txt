@@ -229,3 +229,7 @@ manuals for to get the most out of all software."
   (ui.openFromSchedule: today -> open + highlight via _applyFlash after render; other day -> openPlan). Phone check caught
   the Schedule row buttons squeezed into the 56px grid column (and the new button overlapping Done) - action rows now span
   the full row. md7 9/9; dt4 rewritten for the new route 24/24.
+- Oct 20, between MD-7 and MD-8 (verbatim): "How can I be at the dentist when I'm on the bar? Wtf?" -> the Dentist was my
+  own test data in the MD-7 screenshot, but it exposed a real gap: Schedule's + Add task skipped the overlap check.
+  "yes fix that first, then MD-8" -> logic.clashWith (one check: Plan my day ⚠, calendar ⚠ flag, add-form warning with
+  Use nearest free / Save anyway via logic.freeFor). clash test 8/8.
