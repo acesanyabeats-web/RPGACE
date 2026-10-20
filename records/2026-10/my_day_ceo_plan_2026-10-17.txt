@@ -185,3 +185,10 @@ is ticked (his first glass of water).
   REALM_METHOD_DEFAULTS (producer deep90, creator/hustler pomodoro, scholar deep50, builder deep90, else timebox),
   myday_settings.realm_methods, chore_blocks.method; week_templates (save/apply, realm+chore blocks only). Migration
   records/2026-10/md2_pending_migration.sql cancelled by the connector 1x - code fails loud until it lands. md2 27/27.
+- MD-2 LIVE: 7c32669 READY. Schema applied Oct 20 after Alex set connector permissions ("all allows done"): apply_migration
+  still cancelled; execute_sql works one statement at a time (multi-statement calls cancelled).
+- MD-3 GO (Oct 20, verbatim): "yes go MD-3, all allows done"
+- MD-3 BUILT (Oct 20): myday_settings.plan_style (none/frog/135); ui.plannedBlocks in openPlan; ui.planBlock (top 3 + Show more +
+  own, minutes vs block length) via logic.blockOptions/rankOptions (dedup by key + name - a real Gym session duplicate caught in
+  test) -> saveBlockItems (chore_blocks.items + agenda description); frog = items[].frog (setFrog/frogOf, Do shows "do this
+  first"); 1-3-5 = count135/sizeOf (big 60+, medium 20+). md3 20/20.
