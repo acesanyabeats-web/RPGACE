@@ -165,3 +165,15 @@ switch to the next so communicating into schedule as back track would be awesome
    until the realm changes. Planned vs did then shows side by side. Placement TBD with Alex at MD-1 brief.
 MD-1 EVIDENCE (pg_constraint, Oct 18): chore_blocks.kind CHECK = chores/cooking/shopping/realm; status CHECK =
 planned/cancelled; mins 10-480; routines.part_of_day CHECK = morning/afternoon/evening/any (no 'night').
+MD-1 GO (Oct 18, verbatim): "yes and make alarm go off at set time, with alarm every 5 minutes until i do my first
+glass of water, and yes it is what i meant" -> defaults wake 08:00 / bed 23:00; back-track = MD-8 (after MD-6);
+MD-1 adds a wake alarm: rings at wake time (Morning block start), repeats every 5 min until the FIRST Morning task
+is ticked (his first glass of water).
+- MD-1 BUILT (Oct 20): migration md1_timeline_bookends_alarm (myday_settings wake/bed/buffer/morning_tasks/night_tasks/
+  alarm cols; myday_alarms; push_alarm() first in push_digest; myday-push cron every minute); logic.segments = one busy
+  engine (timeline/suggestSlots/clashes/busySched); bookends + editors; guard (fixed -> refuse + nearest free; push with
+  10-min gap; >30 min -> askShorten -> back; Undo) on all 4 block saves; wake alarm (push requireInteraction + in-app
+  banner/beep, stops at first Morning tick or 2 h). Real bug caught by the guard: Plan my day put a shopping block on top
+  of the Morning block - now first free time, cook moved after. Old tests updated where daily morning/evening routines
+  moved into the bookends (myday, dt1, dt2). md1 29/29; md0/myday/md2a/md2c/md25/dt1-4/dt56 pass.
+  Limits told to Alex: web push won't ring through Silent/DND, up to ~1 min late; bookends not on Schedule calendar (MD-7).

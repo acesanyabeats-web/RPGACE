@@ -104,10 +104,12 @@ self.addEventListener('fetch', function (event) {
 self.addEventListener('push', function (event) {
   var d = {};
   try { d = event.data ? event.data.json() : {}; } catch (e) { d = { body: event.data ? event.data.text() : '' }; }
-  event.waitUntil(self.registration.showNotification(d.title || 'RPGACE', {
-    body: d.body || '', icon: '/icons/icon-192.png', badge: '/icons/icon-192.png',
-    tag: d.kind ? 'rpgace-' + d.kind : undefined, data: { url: d.url || '/' }
-  }));
+  // MD-1 (Oct 18 2026): the wake alarm stays on screen, buzzes and re-alerts
+  // each time it repeats (every 5 min until the first Morning task is ticked).
+  var opts = { body: d.body || '', icon: '/icons/icon-192.png', badge: '/icons/icon-192.png',
+    tag: d.kind ? 'rpgace-' + d.kind : undefined, data: { url: d.url || '/' } };
+  if (d.alarm) { opts.requireInteraction = true; opts.renotify = true; opts.vibrate = [400, 200, 400, 200, 800]; }
+  event.waitUntil(self.registration.showNotification(d.title || 'RPGACE', opts));
 });
 
 self.addEventListener('notificationclick', function (event) {
