@@ -106,3 +106,9 @@ BUILD LOG
   analyser_version; /health shows it; videoSummary labels older reports (newest seen, no 2nd constant in the app).
   DB: intel_reports.analyser_version, intel_jobs.started_at/taken_by (additive).
 - Alex's steps (rule 10, with checks): one-time download of start_server.bat; spare account cookies -> YT_COOKIES.
+- AVG (Oct 20): Behavior Shield flagged the curl version of start_server.bat as IDP.Generic and queued it for quarantine
+  (download-and-run pattern). Alex picked Git ("do it" to the Git recommendation). start_server.bat now lives in a sparse
+  clone %USERPROFILE%\RPGACE-code (local_server/ + root files), cd's to its own folder, runs git pull --ff-only (warns and
+  continues if Git is missing/pull fails), prints the analyser version, runs local_server.py. local_server.py imports
+  rpgace_intel from its own folder (HOME only as a fallback). intel.bat uses %~dp0. Tested with a simulated sparse clone +
+  a stale rpgace_intel.py in HOME: the clone's copy loads, 13 realm lenses.

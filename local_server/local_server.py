@@ -144,7 +144,7 @@ class Handler(BaseHTTPRequestHandler):
             try:
                 import intel_common; av = intel_common.ANALYSER_VERSION
             except Exception:
-                av = "unknown (intel_common.py missing - run start_server.bat)"
+                av = "unknown (intel_common.py missing - run start_server.bat from the RPGACE-code folder)"
             self.send_json({"status": "ok", "version": 3, "analyser_version": av})
 
         elif p == "/reports":
@@ -299,7 +299,11 @@ def process_job(job):
         return
     log(f"Processing: {url[:60]}")
 
-    sys.path.insert(0, str(HOME))
+    # Load the analyser from this script's own folder (the Git copy), never an old
+    # copy left in %USERPROFILE%\RPGACE. HOME stays a fallback only.
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    if str(HOME) not in sys.path:
+        sys.path.append(str(HOME))
     try:
         import rpgace_intel as intel
         key_file = HOME / ".anthropic_key"

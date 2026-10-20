@@ -864,14 +864,14 @@ Truth table: Posting home with 6 steps (Idea → Plan → Record → Edit → Po
 
 ```mermaid
 flowchart LR
-  gh[(GitHub main: local_server/*.py, intel_common.py, realm_lenses.json)] -->|start_server.bat downloads before every start| lap[laptop local_server.py]
+  gh[(GitHub main: local_server/*.py, intel_common.py, realm_lenses.json)] -->|start_server.bat: git pull before every start| lap[laptop local_server.py]
   gh -->|Actions every 10 min| cloud[intel_cloud_runner.py]
   lap & cloud -->|claim_body: status=eq.queued only, started_at, taken_by| jobs[(intel_jobs)]
   lap & cloud -->|stuck_query > 2 h → queued| jobs
   lap & cloud --> ri[rpgace_intel.process_url] -->|analyser_version| rep[(intel_reports)]
   rep --> vs[videoSummary: ⚠ older analyser label]
 ```
-Truth table: shared version/claim/stuck helpers, one-runner-per-job claim, laptop self-update, realm file found on the laptop, version on every new report, older-report label — BUILT (Python tests + headless label test). Needs Alex: one-time download of the new start_server.bat; spare-account cookies in the YT_COOKIES secret. VW-1..VW-7 — NOT built yet.
+Truth table: shared version/claim/stuck helpers, one-runner-per-job claim, laptop self-update, realm file found on the laptop, version on every new report, older-report label — BUILT (Python tests + headless label test). Needs Alex: one-time Git install + sparse clone to %USERPROFILE%\\RPGACE-code, start from there; spare-account cookies in the YT_COOKIES secret. VW-1..VW-7 — NOT built yet.
 
 ## 15u. Did blocks — planned vs did (Oct 20 2026, "My Day" MD-8) — built, untested by Alex
 

@@ -79,11 +79,11 @@
       Step 1 of the "Videoworm realm extraction" plan. Your go: "now do vw".
       <ul>
         <li><b>Why your videos came back as music advice</b>, two real causes found: (1) your laptop ran its own copy of the analyser, downloaded once on Oct 11, before realms existed (Oct 15); (2) even a fresh copy looked for the realm list one folder above <code>RPGACE</code>, where it never was, so it read every video as "no realms picked". Proven with a test: old folder layout = 0 realms, fixed = all 13.</li>
-        <li><b>The laptop now updates itself</b>: start_server.bat downloads the latest analyser, its helper and the realm list from GitHub every time you start it (if a download fails or a file is broken, it keeps the copy it has), and shows the analyser version.</li>
+        <li><b>The laptop now updates itself</b>: it runs from a Git copy of RPGACE (<code>RPGACE-code</code>) and start_server.bat does <code>git pull</code> before every start (if Git is missing or the pull fails it says so and runs the copy it has), then shows the analyser version. The first version downloaded the files with curl and ran them; AVG blocked that as IDP.Generic (it looks like malware behaviour), so it was swapped for Git, which antivirus treats as normal. Your data and API key stay in <code>RPGACE</code>.</li>
         <li><b>Every report says which analyser made it</b>; Videoworm marks reports from an older one ("⚠ Made by an older analyser — re-run it…").</li>
         <li><b>No more stuck jobs</b>: a video stuck "processing" for over 2 hours goes back in the queue (your two from Oct 15/16 will be picked up), and the laptop and cloud can no longer both grab the same video.</li>
       </ul>
-      Two things only you can do (steps sent in chat): download the new start_server.bat once, and put a spare account's cookies in the YT_COOKIES secret so the cloud can read YouTube/Instagram. Next: VW-1 (read the whole video, not the first 500 words and 4 minutes). Untested by your hand.
+      Two things only you can do (steps sent in chat): install Git and make the Git copy once, and put a spare account's cookies in the YT_COOKIES secret so the cloud can read YouTube/Instagram. Next: VW-1 (read the whole video, not the first 500 words and 4 minutes). Untested by your hand.
     </div>
 </div>
 

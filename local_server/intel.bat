@@ -1,7 +1,7 @@
 @echo off
-title RPGACE — Content Intelligence
+title RPGACE - Content Intelligence
 color 0A
-cd /d "%USERPROFILE%\RPGACE"
+cd /d "%~dp0"
 echo.
 echo  RPGACE Content Intelligence
 echo  Paste a URL to analyse any video.
