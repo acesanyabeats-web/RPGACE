@@ -54,3 +54,11 @@ OP-1 BUILT (Oct 21 2026) — Alex: "go", then "strict too" (strict topic censori
   any failure), sanitizeTopic() (strict: names incl. people table, Derby/UK, numbers, money, dates/days/months, emails,
   links, first-person words; >=2 words or empty; 80-char cap).
 - Chat unchanged in OP-1. Tests: 21 headless checks pass; screenshot Ask-my-data routing re-run passes.
+
+OP-2 BUILT (Oct 21 2026) — Alex: "go" (brief recommended saving web results to the Library; no objection).
+- oracleProfessor.logic.gather(plan): in parallel, askMyData.fetchSource per planned source (compactRows), chosen
+  SELF_KNOWLEDGE sections, and webLookup.logic.lookup(sanitizeTopic(topic), {noPicker:true}) (Library first, else
+  /api/search type web with body {type:'web', query:<censored topic>} only). Each piece has its own catch + 20s
+  withTimeout; failures listed in errors[]. Web answer capped 3000 chars. webLookup.lookup gained opts.noPicker.
+- sanitizeTopic now trims dangling edge words (in/for/of/the...) left after removals.
+- Tests: op2 11/11, op1 21/21 re-run. Chat unchanged.
