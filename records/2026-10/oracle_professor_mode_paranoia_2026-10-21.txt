@@ -1,0 +1,37 @@
+ORACLE PROFESSOR MODE - /paranoia (right-sized) + /interrogation, Oct 20-21 2026
+
+ALEX'S ASK (verbatim): "i want oracle to have the same context as you, but i want it to get context and then access data
+that is in RPGACE total systems (all domains and externals by querying what would be needed to answer as best as possible
+like a professor in his niche of 300iq with the /paranoia and /free-for-all-debate and /scope and /interrogation of all
+scrutiny to come up with the best answer possible, use the same skillsets used above to access how to implement this revamp
+of oracles core logic. i want it to be as cheap as possible too, can get free ai models with different tasks that they are
+efficient at using /omnitrix with oracle as orchestrator, cheaper models get the evidence, oracle then does professor
+scrutiny. make this as cheap and efficient as possible"
+(Same message: "it looks good for now on the builder one, these can be put up as coding time with you when a good idea occurs.")
+
+RIGHT-SIZED (rule 11, /paranoia guardrail): real evidence pass + a short free-for-all (5 angles: cost, quality, privacy,
+speed, reuse) + interrogation; no full 6-step ceremony.
+
+EVIDENCE (live code / Vercel, Oct 20 2026)
+- Every Oracle answer = one Sonnet 4.6 call via api/oracle.js (prompt caching on the system prompt).
+- Context comes from keyword gates in ONE callOracle wrap (oracleAppGrounding): SELF_KNOWLEDGE (~93k chars, ~23k tokens)
+  pasted whole when a trigger word matches; anatomy table; oracleControl actions; cooking; askMyData (20 sources, ONE
+  DATA_QUERY per turn, second call); webLookup (WEB_QUERY -> /api/search, Gemini 2.5 Flash).
+- Vercel env: Gemini_API_Key present (production). No OpenAI/Moonshot/Groq/OpenRouter keys. api/: 11 functions + _context
+  (cap 12) -> anything new folds into api/oracle.js (Kimi/Luna scaffold there is unused; neither is free).
+- Oracle cannot read the repo. Nearest "Claude Code context" in Supabase: perspective_reports (per-module self reports),
+  oracle_module_anatomy, system_updates, SELF_KNOWLEDGE.
+- Gemini API free tier: Google may use submitted content to improve its products (paid tier does not).
+
+PROPOSED SHAPE: plan (cheap model, small map of RPGACE ~3k tokens) -> gather (plain code, parallel, all domains, extends
+askMyData/webLookup) -> condense (cheap model, keeps numbers/quotes) -> professor (one streamed call, answers with
+claim/evidence/counter-case/confidence/unknowns, asks Alex instead of guessing).
+
+INTERROGATION ROUND 1 (Alex's answers, verbatim)
+1. Privacy - what may go to Gemini: "Public stuff only (Recommended)".
+2. When to go deep: "just sensor my data, keep the topic on point without revealling anything about me, only for
+   information without my data input, get context of what im looking for, bibliography per say, then claude handles my
+   data"  -> read as a privacy rule for Gemini (topic-only, censored, outside knowledge / sources), not a "when" answer.
+3. Professor model: "Opus for deep answers".
+4. Answer shape: "1 but as many bullet points as possible to make it concise and cheaper to run, less words but more
+   meaningful words and stats and facts etc. is a lot more useful".
