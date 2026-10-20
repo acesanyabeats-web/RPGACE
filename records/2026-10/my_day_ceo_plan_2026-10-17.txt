@@ -192,3 +192,12 @@ is ticked (his first glass of water).
   own, minutes vs block length) via logic.blockOptions/rankOptions (dedup by key + name - a real Gym session duplicate caught in
   test) -> saveBlockItems (chore_blocks.items + agenda description); frog = items[].frog (setFrog/frogOf, Do shows "do this
   first"); 1-3-5 = count135/sizeOf (big 60+, medium 20+). md3 20/20.
+- MD-3 LIVE: 1c1c56e READY (Oct 20).
+- MD-4 GO (Oct 20, verbatim): "yes go MD-4"
+- MD-4 BUILT (Oct 20): push_alarm() gained a one-off focus:% branch (single CREATE OR REPLACE via execute_sql); myDay.logic
+  focusPhases/focusAt/focusAlerts (pure), startFocus/pauseFocus/resumeFocus/stopFocus, run in localStorage myday_focus, Doing Now
+  entry, myday_alarms focus rows, BLOCK_BONUS_XP 15 (quest_log block_done); ui._focusTick bar + ▶ Start in lifeBlockCard.
+  Design change from the brief: timer runs on the real clock while the app is closed (not paused) - phone pushes cover it.
+  Found in test: a 60-min Pomodoro ended on a break - leftover <= break length now goes on the last round. md4 23/23.
+- Oct 20 (mid-MD-4), Alex: "i want to factory reset this computer... everything on this laptop to do with RPGACE total systems
+  and ai to move to external hard drive E" -> records/2026-10/laptop_backup_to_E.ps1 (scan, unpushed-git check, copy, verify).
