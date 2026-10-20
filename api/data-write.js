@@ -90,6 +90,7 @@ const ALLOWED_TABLES = new Set([
   'sync_status', // Oct 12 2026 MD2-2: created anon_read_only/authenticated_all; the Fourth cloud runner reports its last run here
   'activity_templates', // Oct 12 2026 MD2-4: schedule activity templates (place, journey, get-ready, category); anon_read_only from creation
   'myday_settings', // Oct 12 2026 MD2-4: single-row get-ready/margin/shift travel settings; anon_read_only from creation
+  'week_templates', // Oct 20 2026 MD-2: saved week layouts (realm + chore blocks by weekday)
   'myday_alarms', // Oct 18 2026 MD-1: wake alarm per day (anon_read_only from creation); sent by push_alarm() via the myday-push cron
   'travel_profile', 'people', 'plans', 'plan_tasks', // Oct 12 2026 Trips & Plans: locked tables (no anon policy), read via action 'read'
   'library_items', // Oct 13 2026 LL-1 Life Library: locked like people (authenticated_all only), read via action 'read'

@@ -73,6 +73,23 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-20-plan-week-timeline" style="margin-bottom:30px;">
+    <div class="card-title">🗓 Oct 20 — Plan week: drag blocks on a day timeline (MD-2)</div>
+    <div class="card-body">
+      Step 3 of the "My Day" plan. Your words: "make it so end point are adjacent blocks, if none, morning routine, on right night routine", "Default per realm, change any time", "Saved week templates".
+      <ul>
+        <li><b>Plan weeks</b> now opens with a timeline for one day of that week (tap a day along the top). Shift, travel, Schedule items and your 🌅/🌙 blocks are grey; your blocks are gold.</li>
+        <li><b>Drag</b> a block to move it, or drag its top/bottom bar to change its length — 5-minute steps. It stops at the next block (with the 10-minute gap) or, if there's nothing next to it, at the end of Morning / start of Night. Every drop has an ↩ Undo.</li>
+        <li><b>Tap</b> a block for exact start and minutes, its method, or 🗑 Remove (tap twice).</li>
+        <li><b>+ Realm block</b>: pick any of the 13 realms and its activities; it lands at the first free time that day.</li>
+        <li><b>Methods</b>: Pomodoro 25/5, Deep work 50/10, Deep work 90, Time-box, Just tick it. Each realm has a default (⚙️ at the bottom of the timeline; Producer starts on Deep work 90); any block can be changed. The timers themselves come in MD-4.</li>
+        <li><b>Saved weeks</b>: 💾 Save this week keeps its realm and chore blocks by weekday; 📌 Use a saved week puts them onto the week you're looking at, skipping days that have passed and anything that clashes (it lists what it skipped). Cooking and shopping blocks aren't saved in a week — they hang off that week's real cook and list.</li>
+        <li><b>Not live yet, honestly</b>: changing a method, the realm defaults and saved weeks need a database update that the Supabase connector hasn't let through (the approval keeps getting cancelled). Until it runs, those say "not saved"; dragging, + Realm block, tap-to-edit and Remove all work now.</li>
+      </ul>
+      Tests: new md2 test 27/27 (including real mouse drags); older My Day tests pass. Untested by your hand.
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-20-my-day-timeline" style="margin-bottom:30px;">
     <div class="card-title">🌅 Oct 20 — My Day: Morning &amp; Night blocks, no overlaps, wake alarm (MD-1)</div>
     <div class="card-body">

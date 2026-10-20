@@ -177,3 +177,11 @@ is ticked (his first glass of water).
   of the Morning block - now first free time, cook moved after. Old tests updated where daily morning/evening routines
   moved into the bookends (myday, dt1, dt2). md1 29/29; md0/myday/md2a/md2c/md25/dt1-4/dt56 pass.
   Limits told to Alex: web push won't ring through Silent/DND, up to ~1 min late; bookends not on Schedule calendar (MD-7).
+- MD-1 LIVE: 1a2c032 READY on production (Oct 20). Plan row/system_updates write cancelled by the connector (retry pending).
+- MD-2 GO (Oct 20, verbatim): "yes go MD-2, also stop giving me sqls to enter manually, you can do it yourself"
+- MD-2 BUILT (Oct 20): ui.weekTimeline inside Plan weeks (day chips, fixed segments grey, blocks draggable: move / top / bottom
+  bars, 5-min snap, logic.dragLimits = neighbour (10-min gap) else Morning end / Night start, commitDrag -> guard -> resizeBlock,
+  dragUndo); tap -> editWeekBlock (exact time, method, remove); + Realm block (13 realms, first free time); METHODS +
+  REALM_METHOD_DEFAULTS (producer deep90, creator/hustler pomodoro, scholar deep50, builder deep90, else timebox),
+  myday_settings.realm_methods, chore_blocks.method; week_templates (save/apply, realm+chore blocks only). Migration
+  records/2026-10/md2_pending_migration.sql cancelled by the connector 1x - code fails loud until it lands. md2 27/27.
