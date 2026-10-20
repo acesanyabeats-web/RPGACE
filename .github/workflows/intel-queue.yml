@@ -28,6 +28,20 @@ jobs:
         env:
           HAS_YT: ${{ secrets.YT_COOKIES != '' }}
         run: |
+          # VW-0 (Oct 20 2026): first put jobs stuck in 'processing' for over
+          # 2 h back in the queue, using the same rule as both runners
+          # (local_server/intel_common.py, fetched alone - no checkout needed).
+          curl -fsSL "https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}/local_server/intel_common.py" -o /tmp/intel_common.py && \
+          python3 - <<'PY' || echo "::warning::stuck-job reset skipped"
+          import sys, json, urllib.request
+          sys.path.insert(0, "/tmp"); import intel_common as ic
+          k = "sb_publishable_0Z8C5X-FOLrw95VYKxZVCw_4golMyXf"
+          req = urllib.request.Request("https://gripopghczmrbrhqtqbm.supabase.co/rest/v1/" + ic.stuck_query(), method="PATCH",
+              data=json.dumps(ic.STUCK_RESET).encode(), headers={"apikey": k, "Authorization": "Bearer " + k,
+              "Content-Type": "application/json", "Prefer": "return=representation"})
+          with urllib.request.urlopen(req, timeout=20) as r:
+              print("stuck jobs re-queued:", len(json.loads(r.read() or b"[]")))
+          PY
           # Without YouTube cookies the cloud can't take YouTube links (bot
           # check), so they don't count - they wait for the laptop.
           f=""; [ "$HAS_YT" = "true" ] || f="&url=not.ilike.*youtu*"
