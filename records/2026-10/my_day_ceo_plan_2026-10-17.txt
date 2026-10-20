@@ -233,3 +233,12 @@ manuals for to get the most out of all software."
   own test data in the MD-7 screenshot, but it exposed a real gap: Schedule's + Add task skipped the overlap check.
   "yes fix that first, then MD-8" -> logic.clashWith (one check: Plan my day ⚠, calendar ⚠ flag, add-form warning with
   Use nearest free / Save anyway via logic.freeFor). clash test 8/8.
+- MD-8 GO (Oct 20, verbatim): "yes fix that first, then MD-8" (brief picks: drawn not stored, 30-min merge gap).
+- MD-8 EVIDENCE: xp_events already holds earned_at + realm for every real action (routine_tick, jargon_reviewed,
+  cook_finished, input_taken, doing_now_done...); Doing Now rows carry started_at/ended_at/realms. One source, no new table.
+- MD-8 BUILT: logic.didItems/mergeDid/plannedVsDid/loadDid/vsLine; ui.didSection under renderDailyGrid (today + past);
+  evening review ⚖ Planned vs did + journal line. DID_SKIP: balance_bonus, cutback_day, big_day, doing_now_done,
+  build_shipped (Claude Code's own ships), level_up, treat_earned. Phone check: Doing Now/done entries no longer get a
+  clash flag; evening Tomorrow/Drop kept together. md8 11/11.
+- PLAN STATE: MD-0..MD-8 all built (yellow until Alex hand-tests). CLAUDE.md Current-state is at 99,065 of 99,896 chars:
+  the My Day bullet should be collapsed next time it's touched.
