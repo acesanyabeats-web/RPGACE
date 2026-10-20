@@ -119,3 +119,8 @@ BUILD LOG
   times over the whole video (60-min cap); analyse_frames reads times from file names; frames_prompt realm-aware (DAW/editing
   only for creator/producer/hustler); visual analysis 600 -> 4000 chars; main call timeout 180s; ANALYSER_VERSION 2026-10-20.2.
   Tests: 17 checks with call_claude mocked + real ffmpeg 5-min test video -> 8 frames 0:18..4:41.
+- VW-2 GO (Oct 20, verbatim): "go" (brief offered: switch the laptop text report now (recommended) or at VW-4 -> taken as now).
+- VW-2 BUILT: prompt returns realms{score,why,teaches,points[{text,quote,at,also}],action,quests x3} + how_made only for
+  creator/producer/hustler; parse_insights cleans in code + one-point-one-place dedup + empty realm -> 'nothing for this realm'
+  (+ where shared points went); stores insights.realm_sections/how_made; old keys derived (app readers unchanged); format_output
+  and realm_section rewritten per realm; max_tokens 6000; ANALYSER_VERSION 2026-10-20.3. 17 checks (mocked) + VW-1's 17 re-run.

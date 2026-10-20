@@ -420,39 +420,59 @@ def condense_transcript(timed: str, meta: dict) -> str:
 
 
 def generate_oracle_insights(meta: dict, transcript: str, visual_analysis: str, realms=None) -> dict:
-    """Send everything to Claude for realm-lens insights + a score per realm.
+    """VW-2 (Oct 20 2026): one call writes a section per picked realm (what it
+    teaches, key points with their quote and time, one thing to try, 3 quest
+    ideas) plus a "how it's made" block only for Creator/Producer/Hustler.
     One call whatever the number of realms (Alex: one call per input, never
-    one per realm). The reply keeps its long-standing keys so every reader in
-    the app keeps working; realm_scores and quests[].realm are the new parts."""
+    one per realm). parse_insights() then fills the long-standing keys
+    (key_learnings, production_techniques, what_to_steal, quests...) from these
+    sections in code, so every reader in the app keeps working."""
 
     realms = clean_realms(realms)
     lenses = load_lenses()
     names = ", ".join((lenses.get(k) or {}).get("name") or k.title() for k in realms)
     duration_mins = int((meta.get("duration") or 0) // 60)
-    views = meta.get("view_count") or 0
-    likes = meta.get("like_count") or 0
-    realm_entry = ", ".join(f'"{k}": {{"score": <1-10>, "why": "<one line>", "points": ["<key point>", "<key point>"]}}' for k in realms)
+    made = [k for k in realms if k in MADE_REALMS]
+    point = '{"text": "<the point, with the real numbers/steps/names>", "quote": "<the exact words from the transcript that say it>", "at": "<m:ss of that line>", "also": ["<another picked realm key it also serves, or leave empty>"]}'
+    quest = '{"name": "<short quest name>", "xp": <10-100>, "type": "daily|weekly", "action": "<the specific thing to do>"}'
+    realm_entry = ",\n    ".join(
+        f'"{k}": {{"score": <1-10>, "why": "<one line>", "teaches": "<2 lines: what it teaches for this realm, or exactly: nothing for this realm>", '
+        f'"points": [{point}, ...3 to 7], "action": "<one thing to try>", "quests": [{quest}, {quest}, {quest}]}}'
+        for k in realms)
+    made_part = ""
+    made_rule = "Do NOT write anything about how the video is made, edited, hooked or marketed."
+    if made:
+        made_part = (',\n  "how_made": {"summary": "<2 lines: how this video/content is made and why it works>", '
+                     f'"points": [{point}, ...up to 5], "steal": ["<a specific idea to reuse in Alex\'s own content>", "..."], '
+                     '"avoid": ["<something not to copy>", "..."]}')
+        made_rule = ("Only the \"how_made\" block may talk about how the video is made (hook, editing, format, "
+                     "on-screen tools, why it performs) - keep that out of the realm sections.")
 
-    prompt = f"""You are the RPGACE Oracle, Alex's AI coach. Alex (@AceSanyaBeats) is a UK music producer and content creator
-building a disciplined life across 13 realms. He sent this {meta['platform']} content for these realms: {names}.
+    prompt = f"""You are the RPGACE Oracle. Alex sent this {meta['platform']} video to learn from it in these realms: {names}.
+Alex is a UK music producer, but judge each realm ONLY by its own lens, never by music or content-creation value
+unless that realm is about music or content.
 
-Read it ONLY through these realm lenses:
+Realm lenses:
 {lens_block(realms, lenses)}
 
-Score each realm 1-10 by how much this is worth to Alex in that realm (use its "score means").
-Judge the value of what it teaches or shows. Do NOT mark it down for a small audience, low view count
-or low production polish. Write every list below through the lenses above: for a non-music realm,
-"production_techniques" holds the techniques or practices it teaches in that realm, not music ones.
+Rules:
+- For each realm, say what the video actually TEACHES in that realm: the real protocol, recipe, steps, numbers,
+  amounts, times, names. Specific beats general - "proof 45 min at 27C" not "proofing matters".
+- Every point must come from the video. Its "quote" is the exact words copied from the transcript line that says it
+  (copy, never paraphrase), and "at" is that line's [m:ss] time without brackets. No quote, no point - do not add
+  general knowledge the video does not say.
+- If a realm gets little or nothing from this video, say so: score 1-2, "teaches": "nothing for this realm",
+  empty "points", and no padding. Fewer, real points beat many vague ones.
+- A point that serves two picked realms is written ONCE, under the realm it serves best, with the other realm key
+  in "also".
+- Score each realm 1-10 by how much this is worth to Alex in that realm (its "score means"). Do not mark it down
+  for a small audience or low polish.
+- {made_rule}
+- "action": one concrete thing to try this week. "quests": 3 different quest ideas for that realm.
 
 Return ONLY valid JSON (no fences, no explanation).
 
-VIDEO METADATA:
-Title: {meta['title']}
-Creator: {meta['uploader']}
-Platform: {meta['platform']}
-Duration: {duration_mins} minutes
-Views: {views:,}
-Likes: {likes:,}
+VIDEO: "{meta['title']}" by {meta['uploader']} ({meta['platform']}, {duration_mins} min)
 Description: {meta['description'][:300]}
 
 VISUAL ANALYSIS (frames spread over the whole video, each starting with its time):
@@ -463,41 +483,44 @@ TRANSCRIPT (the whole video; each line starts with its [m:ss] time; long videos 
 
 Return this exact JSON structure:
 {{
-  "realm_scores": {{{realm_entry}}},
-  "verdict_score": <the highest realm score>,
-  "verdict_summary": "<one punchy sentence verdict>",
-  "add_to_watchlist": <true if the highest realm score >= {SCORE_THRESHOLD} else false>,
-  "watchlist_reason": "<why worth revisiting or null>",
-  "production_techniques": ["<specific technique or practice>", "<...>", "<...>"],
-  "content_strategy_insights": ["<what made this content work>", "<insight>", "<insight>"],
-  "what_to_steal": ["<specific idea Alex can apply>", "<idea>", "<idea>"],
-  "what_to_avoid": ["<something to skip>", "<thing>"],
-  "quests": [
-    {{"name": "<quest name>", "realm": "<one of: {', '.join(realms)}>", "xp": <50-200>, "type": "daily|weekly", "category": "career|health|lifestyle", "action": "<specific thing Alex should do>"}},
-    {{"name": "<quest name>", "realm": "<one of: {', '.join(realms)}>", "xp": <50-200>, "type": "daily|weekly", "category": "career|health|lifestyle", "action": "<specific thing Alex should do>"}}
-  ],
-  "encyclopedia_entry": {{
-    "title": "<title for the encyclopedia entry>",
-    "summary": "<2 sentence summary>",
-    "key_learnings": ["<learning>", "<learning>", "<learning>", "<learning>", "<learning>"],
-    "tags": ["<tag>", "<tag>", "<tag>"]
-  }}
+  "realms": {{
+    {realm_entry}
+  }},
+  "verdict_summary": "<one honest sentence: what this video is worth to Alex>",
+  "watchlist_reason": "<why worth revisiting, or null>",
+  "encyclopedia_entry": {{"title": "<title for the article>", "summary": "<2 sentences>", "tags": ["<tag>", "<tag>", "<tag>"]}}{made_part}
 }}"""
 
     log("Generating Oracle insights (" + names + ")...", GOLD)
-    # Oct 15 2026 (RI-4): 1500 was already the size of an average reply, so
-    # realm sections would have cut replies off (= invalid JSON = failed job).
-    # max_tokens is a ceiling billed on what is written, so a flat 4000 only
-    # removes that failure.
-    # VW-1: the whole transcript makes this call longer - allow 3 minutes.
-    raw = call_claude([{"role": "user", "content": prompt}], "", 4000, timeout=180)
+    # VW-2: up to 4 realm sections with quotes - 6000 is a ceiling billed on
+    # what is written; the whole transcript makes this call longer (3 min).
+    raw = call_claude([{"role": "user", "content": prompt}], "", 6000, timeout=180)
     return parse_insights(raw, realms)
 
 
+NOTHING = "nothing for this realm"
+
+
+def _clean_point(p, realms) -> dict:
+    if isinstance(p, str):
+        p = {"text": p}
+    if not isinstance(p, dict) or not str(p.get("text") or "").strip():
+        return None
+    at = str(p.get("at") or "").strip().strip("[]")
+    if not re.fullmatch(r"\d+:\d{2}(:\d{2})?", at):
+        at = ""
+    also = [k for k in (p.get("also") or []) if k in realms] if isinstance(p.get("also"), list) else []
+    return {"text": str(p["text"]).strip()[:400], "quote": str(p.get("quote") or "").strip()[:400],
+            "at": at, "also": also}
+
+
 def parse_insights(raw: str, realms: list) -> dict:
-    """Fence-tolerant JSON parse + realm clean-up done in code, never trusted
-    to the model: unknown realms dropped, scores clamped 1-10, the overall
-    score is the best realm score, every quest carries one of the realms."""
+    """Fence-tolerant JSON parse + clean-up done in code, never trusted to the
+    model: unknown realms dropped, scores clamped 1-10, 3-7 points (fewer for a
+    thin video), 3 quests, a point listed under two realms kept once (under the
+    higher-scoring one, tagged with the other), "how_made" kept only for
+    Creator/Producer/Hustler. Then the long-standing keys are filled from the
+    realm sections so the app's ~30 readers keep working (VW-2)."""
     raw = raw.replace("```json", "").replace("```", "").strip()
     start = raw.find("{")
     end = raw.rfind("}") + 1
@@ -505,44 +528,132 @@ def parse_insights(raw: str, realms: list) -> dict:
         raise RuntimeError("Claude returned non-JSON: " + raw[:200])
     ins = json.loads(raw[start:end])
 
-    scores = {}
-    for k, v in (ins.get("realm_scores") or {}).items():
-        if k not in realms or not isinstance(v, dict):
+    src = ins.get("realms") if isinstance(ins.get("realms"), dict) else (ins.get("realm_scores") or {})
+    sections = {}
+    for k in realms:
+        v = src.get(k)
+        if not isinstance(v, dict):
             continue
         try:
             sc = max(1, min(10, int(round(float(v.get("score", 0))))))
         except (TypeError, ValueError):
             continue
-        pts = [str(x) for x in (v.get("points") or []) if str(x).strip()][:3]
-        scores[k] = {"score": sc, "why": str(v.get("why") or "")[:300], "points": pts}
-    ins["realm_scores"] = scores
-    ins["realms"] = realms
-    if scores:
-        ins["verdict_score"] = max(x["score"] for x in scores.values())
-        ins["add_to_watchlist"] = ins["verdict_score"] >= SCORE_THRESHOLD
-    try:
-        ins["verdict_score"] = int(ins.get("verdict_score") or 0)
-    except (TypeError, ValueError):
-        ins["verdict_score"] = 0
-    for q in ins.get("quests") or []:
-        if isinstance(q, dict) and q.get("realm") not in realms:
-            q["realm"] = realms[0]
-    return ins
+        pts = [x for x in (_clean_point(p, realms) for p in (v.get("points") or [])) if x][:7]
+        teaches = str(v.get("teaches") or "").strip()[:500]
+        if not pts and not teaches:
+            teaches = NOTHING
+        qs = []
+        for q in (v.get("quests") or [])[:3]:
+            if isinstance(q, dict) and str(q.get("name") or "").strip():
+                try:
+                    xp = int(q.get("xp") or 50)
+                except (TypeError, ValueError):
+                    xp = 50
+                qs.append({"name": str(q["name"])[:120], "realm": k, "xp": max(10, min(100, xp)),
+                           "type": "daily" if q.get("type") == "daily" else "weekly",
+                           "category": k, "action": str(q.get("action") or "")[:400]})
+        sections[k] = {"score": sc, "why": str(v.get("why") or "")[:300], "teaches": teaches,
+                       "points": pts, "action": str(v.get("action") or "")[:400], "quests": qs}
+
+    # one point, one place: same text under two realms -> keep it under the
+    # higher score, tag it with the other realm
+    seen = {}
+    for k in sorted(sections, key=lambda r: -sections[r]["score"]):
+        keep = []
+        for p in sections[k]["points"]:
+            key = re.sub(r"\W+", " ", p["text"].lower()).strip()
+            if key in seen:
+                first = seen[key]
+                if k not in first["also"]:
+                    first["also"].append(k)
+                continue
+            seen[key] = p
+            p["also"] = [r for r in p["also"] if r != k]
+            keep.append(p)
+        sections[k]["points"] = keep
+    # a realm left empty after that says where its shared points went
+    for k, sec in sections.items():
+        if not sec["points"] and not sec["teaches"]:
+            homes = [r for r, o in sections.items() if r != k and any(k in p["also"] for p in o["points"])]
+            sec["teaches"] = NOTHING + (" beyond the points shared under " + ", ".join(h.title() for h in homes) if homes else "")
+
+    made = ins.get("how_made") if isinstance(ins.get("how_made"), dict) else None
+    if made and any(k in MADE_REALMS for k in realms):
+        made = {"summary": str(made.get("summary") or "")[:500],
+                "points": [x for x in (_clean_point(p, realms) for p in (made.get("points") or [])) if x][:5],
+                "steal": [str(s)[:300] for s in (made.get("steal") or []) if str(s).strip()][:5],
+                "avoid": [str(s)[:300] for s in (made.get("avoid") or []) if str(s).strip()][:4]}
+    else:
+        made = None
+
+    enc = ins.get("encyclopedia_entry") if isinstance(ins.get("encyclopedia_entry"), dict) else {}
+    all_points = [p for k in realms if k in sections for p in sections[k]["points"]]
+    out = {
+        "realm_sections": sections,
+        "how_made": made,
+        "realms": realms,
+        "verdict_summary": str(ins.get("verdict_summary") or "")[:300],
+        "watchlist_reason": ins.get("watchlist_reason") or None,
+        # long-standing keys, filled from the sections (readers unchanged)
+        "realm_scores": {k: {"score": s["score"], "why": s["why"], "points": [p["text"] for p in s["points"][:3]]}
+                         for k, s in sections.items()},
+        "production_techniques": [p["text"] for p in (made or {}).get("points", [])],
+        "content_strategy_insights": [made["summary"]] if made and made["summary"] else [],
+        "what_to_steal": (made or {}).get("steal", []),
+        "what_to_avoid": (made or {}).get("avoid", []),
+        "quests": [q for k in realms if k in sections for q in sections[k]["quests"]],
+        "encyclopedia_entry": {
+            "title": str(enc.get("title") or "")[:200],
+            "summary": str(enc.get("summary") or "")[:600],
+            "key_learnings": [p["text"] for p in all_points],
+            "tags": [str(t) for t in (enc.get("tags") or [])][:6],
+        },
+    }
+    out["verdict_score"] = max((s["score"] for s in sections.values()), default=0)
+    out["add_to_watchlist"] = out["verdict_score"] >= SCORE_THRESHOLD
+    return out
+
+
+def realm_label(k: str, lenses: dict) -> str:
+    l = lenses.get(k) or {}
+    return ((l.get("icon") + " ") if l.get("icon") else "") + (l.get("name") or k.title())
+
+
+def point_line(p: dict, lenses: dict) -> str:
+    also = (" (also " + ", ".join(realm_label(r, lenses) for r in p["also"]) + ")") if p.get("also") else ""
+    quote = f' — "{p["quote"]}"' if p.get("quote") else ""
+    at = f' [{p["at"]}]' if p.get("at") else ""
+    return f"{p['text']}{also}{quote}{at}"
 
 
 def realm_section(insights: dict, lenses: dict = None) -> str:
-    """Markdown block for the Encyclopedia article: one line per realm."""
-    scores = insights.get("realm_scores") or {}
-    if not scores:
+    """Markdown for the Encyclopedia article: one section per realm (VW-2)."""
+    sections = insights.get("realm_sections") or {}
+    if not sections:
         return ""
     lenses = lenses if lenses is not None else load_lenses()
-    out = ["### Through your realms"]
-    for k, v in scores.items():
-        l = lenses.get(k) or {}
-        label = ((l.get("icon") + " ") if l.get("icon") else "") + (l.get("name") or k.title())
-        out.append(f"- {label}: {v['score']}/10 - {v.get('why','')}")
-        out.extend(f"  - {p}" for p in v.get("points", []))
-    return "\n".join(out) + "\n\n"
+    out = []
+    for k, s in sections.items():
+        out.append(f"### {realm_label(k, lenses)} — {s['score']}/10")
+        if s.get("why"):
+            out.append(f"_{s['why']}_\n")
+        if s.get("teaches"):
+            out.append(s["teaches"] + "\n")
+        out.extend(f"- {point_line(p, lenses)}" for p in s.get("points", []))
+        if s.get("action"):
+            out.append(f"\n**Try this:** {s['action']}")
+        out.append("")
+    made = insights.get("how_made")
+    if made:
+        out.append("### How it's made")
+        if made.get("summary"):
+            out.append(made["summary"] + "\n")
+        out.extend(f"- {point_line(p, lenses)}" for p in made.get("points", []))
+        out.extend(f"- Reuse: {s}" for s in made.get("steal", []))
+        out.extend(f"- Don't copy: {s}" for s in made.get("avoid", []))
+        out.append("")
+    return "\n".join(out) + "\n"
+
 
 # ── WATCHLIST ─────────────────────────────────────────────────────────────────
 def add_to_watchlist(url: str, meta: dict, insights: dict):
@@ -581,61 +692,43 @@ def save_insight(url: str, meta: dict, insights: dict, transcript: str):
     save_json(INSIGHTS_FILE, all_insights)
 
 def format_output(meta: dict, insights: dict) -> str:
-    """Format insights as readable text for console + file output."""
+    """The report printed in the laptop window and saved to strategy/ (VW-2:
+    one section per picked realm, "how it's made" only when it was asked for)."""
+    lenses = load_lenses()
     score = insights.get("verdict_score", 0)
-    score_bar = "█" * score + "░" * (10-score)
+    score_bar = "█" * score + "░" * (10 - score)
     watchlist = "✅ ADDED TO WATCHLIST" if insights.get("add_to_watchlist") else ""
-
     enc = insights.get("encyclopedia_entry", {})
-    quests = insights.get("quests", [])
-
-    out = f"""
-╔══════════════════════════════════════════════════════════════╗
-║  RPGACE ORACLE — Content Intelligence Report               ║
-╚══════════════════════════════════════════════════════════════╝
-
-📹  {meta['title'][:60]}
-👤  {meta['uploader']} · {meta['platform']}
-🔗  {meta['url'][:60]}
-
-ORACLE VERDICT: {score}/10  [{score_bar}]  {watchlist}
-{chr(10).join(f"  {k}: {v['score']}/10 - {v.get('why','')}" for k, v in (insights.get('realm_scores') or {}).items())}
-"{insights.get('verdict_summary','')}"
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-🎛  PRODUCTION TECHNIQUES SPOTTED:
-{chr(10).join(f'  • {t}' for t in insights.get('production_techniques',[]))}
-
-📊  CONTENT STRATEGY INSIGHTS:
-{chr(10).join(f'  • {i}' for i in insights.get('content_strategy_insights',[]))}
-
-🔥  WHAT TO STEAL (apply to @AceSanyaBeats):
-{chr(10).join(f'  → {w}' for w in insights.get('what_to_steal',[]))}
-
-⚠️   WHAT TO AVOID:
-{chr(10).join(f'  ✗ {w}' for w in insights.get('what_to_avoid',[]))}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-📖  ENCYCLOPEDIA ENTRY — "{enc.get('title','')}"
-{enc.get('summary','')}
-
-Key Learnings:
-{chr(10).join(f'  [{i+1}] {l}' for i,l in enumerate(enc.get('key_learnings',[])))}
-
-Tags: {', '.join(enc.get('tags',[]))}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-⚡  QUESTS UNLOCKED:
-{chr(10).join(f"  QUEST: {q['name']} | XP: {q['xp']} | {q['type'].upper()} | {q['category'].upper()}" + chr(10) + f"  → {q['action']}" for q in quests)}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Generated: {datetime.now().strftime('%d %b %Y %H:%M')}
-Video deleted after analysis · Insights preserved in encyclopedia
-"""
-    return out
+    rule = "━" * 62
+    out = ["", "╔" + "═" * 62 + "╗", "║  RPGACE ORACLE — Videoworm report" + " " * 28 + "║", "╚" + "═" * 62 + "╝", "",
+           f"📹  {meta['title'][:60]}", f"👤  {meta['uploader']} · {meta['platform']}", f"🔗  {meta['url'][:60]}", "",
+           f"VERDICT: {score}/10  [{score_bar}]  {watchlist}", f'"{insights.get("verdict_summary", "")}"', ""]
+    for k, sec in (insights.get("realm_sections") or {}).items():
+        why = f" — {sec['why']}" if sec.get("why") else ""
+        out += [rule, f"{realm_label(k, lenses).upper()}  {sec['score']}/10{why}", ""]
+        if sec.get("teaches"):
+            out += [f"  {sec['teaches']}", ""]
+        out += [f"  • {point_line(p, lenses)}" for p in sec.get("points", [])]
+        if sec.get("action"):
+            out += ["", f"  ▶ Try this: {sec['action']}"]
+        if sec.get("quests"):
+            out += ["", "  Quest ideas (add one in the app):"]
+            out += [f"    {i+1}. {q['name']} ({q['xp']} XP, {q['type']}) — {q['action']}" for i, q in enumerate(sec["quests"])]
+        out.append("")
+    made = insights.get("how_made")
+    if made:
+        out += [rule, "🎬  HOW IT'S MADE", ""]
+        if made.get("summary"):
+            out += [f"  {made['summary']}", ""]
+        out += [f"  • {point_line(p, lenses)}" for p in made.get("points", [])]
+        out += [f"  → Reuse: {s_}" for s_ in made.get("steal", [])]
+        out += [f"  ✗ Don't copy: {s_}" for s_ in made.get("avoid", [])]
+        out.append("")
+    out += [rule, f"📖  {enc.get('title', '')}", enc.get("summary", ""), "",
+            f"Tags: {', '.join(enc.get('tags', []))}", rule,
+            f"Analyser {ANALYSER_VERSION} · {datetime.now().strftime('%d %b %Y %H:%M')}",
+            "Video deleted after analysis · Insights saved to Videoworm and the Encyclopedia", ""]
+    return "\n".join(out)
 
 # ── MAIN PIPELINE ─────────────────────────────────────────────────────────────
 def process_url(url: str, realms=None):
@@ -746,7 +839,8 @@ def process_url(url: str, realms=None):
                 # Push encyclopedia entry
                 enc = insights.get("encyclopedia_entry", {})
                 if enc.get("title"):
-                    content = f"## {enc['title']}\n\n**Source:** {meta.get('title','')} by {meta.get('uploader','')} ({meta.get('platform','')})\n**Score:** {score}/10\n\n### Summary\n{enc.get('summary','')}\n\n" + realm_section(insights) + "### Key Learnings\n" + "\n".join(f"- {l}" for l in enc.get("key_learnings",[])) + ("\n\n### Production Techniques\n" if "producer" in (insights.get("realms") or ["producer"]) else "\n\n### Techniques & Practices\n") + "\n".join(f"- {t}" for t in insights.get("production_techniques",[])) + f"\n\n### What To Apply\n" + "\n".join(f"→ {s}" for s in insights.get("what_to_steal",[])) + f"\n\n### Tags\n{', '.join(enc.get('tags',[]))}"
+                    content = (f"## {enc['title']}\n\n**Source:** {meta.get('title','')} by {meta.get('uploader','')} ({meta.get('platform','')})\n**Score:** {score}/10\n\n### Summary\n{enc.get('summary','')}\n\n"
+                               + realm_section(insights) + f"### Tags\n{', '.join(enc.get('tags',[]))}")
                     from datetime import datetime as dt
                     date_str = dt.now().strftime("%d %b %Y")
                     sb_post("encyclopedia", {
