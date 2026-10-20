@@ -870,6 +870,21 @@ def process_url(url: str, realms=None):
                     with urllib.request.urlopen(req, timeout=20, context=ssl_ctx) as r:
                         return r.status
 
+                # VW-6: a re-run replaces the video's old report (intel_reports
+                # is anon-writable). The app then sees a report newer than the
+                # article and rebuilds the article + idea cards
+                # (encyclopediaPosts._replaceOld).
+                if meta.get("url"):
+                    try:  # never let the clear-out block saving the new report
+                        from urllib.parse import quote
+                        req = urllib.request.Request(
+                            f"{SB_URL}/rest/v1/intel_reports?url=eq.{quote(meta['url'], safe='')}",
+                            headers=SB_HEADERS, method="DELETE")
+                        with urllib.request.urlopen(req, timeout=20, context=ssl_ctx) as r:
+                            log(f"Old report for this video cleared (status {r.status})", DIM)
+                    except Exception as de:
+                        log(f"Couldn't clear the old report ({de}) - saving the new one anyway", RED)
+
                 # Push intel report
                 status = sb_post("intel_reports", {
                     "url":               meta.get("url",""),

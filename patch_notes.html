@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-20-videoworm-rerun-replaces" style="margin-bottom:30px;">
+    <div class="card-title">📼 Oct 20 — Re-running a video replaces its old version (VW-6)</div>
+    <div class="card-body">
+      Step 7 of the "Videoworm realm extraction" plan. Your go: "Go and yes to cinnamon", then "1".
+      <ul>
+        <li><b>Why it changed shape</b>: the plan was to clear the 9 old versions with a database delete, but this session's database connector refuses every delete (three different ways tried, nothing changed; your Always allow setting was already on — I was wrong to point at it). So a re-run now cleans up after itself instead.</li>
+        <li><b>The analyser</b> deletes the video's old report before saving the new one.</li>
+        <li><b>The app</b> sees a report newer than the video's article and replaces the article and its idea cards. If you've saved (☆) any card from it, the old article is kept.</li>
+        <li><b>The Library item</b> stays (so no extra XP) and moves to the new best-realm shelf.</li>
+        <li>Works for any future re-run too. A snapshot of the 9 old versions is in records/2026-10/vw6_rerun_snapshot_2026-10-20.json.</li>
+      </ul>
+      Analyser 2026-10-20.5. Tested with 6 headless checks; the actual re-run of the 9 starts once your laptop runs the new version.
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-20-videoworm-points-flow" style="margin-bottom:30px;">
     <div class="card-title">📼 Oct 20 — Video points become realm idea cards, Library shelf and Knows line (VW-5)</div>
     <div class="card-body">

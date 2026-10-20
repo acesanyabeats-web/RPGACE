@@ -150,3 +150,9 @@ BUILD LOG
   Library items (re-shelve after, so input XP isn't paid twice).
 - VW-6 BLOCKED: the combined transaction timed out (verified: nothing changed); single DELETE statements came back
   {status: cancelled} twice - the connector's own approval for destructive SQL. Stopped (rule 4), asked Alex.
+- Alex (verbatim): "Everything is on always allow, stop hallucinating" - correct: a single DELETE by id and an apply_migration
+  were also cancelled, so it is the connector refusing DELETE from this session, not his setting.
+- Options given: 1) re-run replaces old (analyser + app clean up), 2) paste SQL. Alex: "1".
+- VW-6 BUILT: analyser DELETE intel_reports by url before insert (own try); encyclopediaPosts newer-report check +
+  _replaceOld (kept if a card is saved) + pass-through; feedVideos re-shelve via update (no double XP - xp_on_input pays on
+  update only for a held {} item); ANALYSER_VERSION 2026-10-20.5. 6 headless checks + regressions.
