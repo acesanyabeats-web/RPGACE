@@ -13,6 +13,7 @@ Usage:
 """
 
 import os
+import re
 import sys
 import json
 import time
@@ -42,8 +43,16 @@ INSIGHTS_FILE = INTEL_DIR / "insights.json"
 RPGACE_URL    = "https://rpgace.vercel.app"  # your live app
 
 WHISPER_MODEL = "small"   # tiny=fastest, small=good balance, medium=best quality
-FRAME_INTERVAL= 30
+FRAME_INTERVAL= 30        # unused since VW-1 (frames now spread over the whole video)
 MAX_FRAMES    = 8
+# VW-1 (Oct 20 2026): the whole transcript goes to the analysis. Only a long one
+# (over CONDENSE_OVER words) is condensed first, by the cheap model, and only by
+# DROPPING filler lines - kept lines stay word for word with their [m:ss] time,
+# so quotes can later be checked against what was really said.
+CONDENSE_OVER  = 6000     # words
+CONDENSE_CHUNK = 2500     # words per cheap-model call
+TRANSCRIPT_CAP = 90000    # chars, applied AFTER condensing, with a visible marker
+MECHANICAL_MODEL = "claude-haiku-4-5-20251001"
 SCORE_THRESHOLD = 7
 
 ANTHROPIC_KEY = os.environ.get("ANTHROPIC_API_KEY", "")
@@ -154,8 +163,26 @@ def download_video(url: str, out_dir: Path) -> Path:
     return video_file
 
 # ── WHISPER ───────────────────────────────────────────────────────────────────
-def transcribe_audio(video_path: Path) -> str:
-    """Transcribe audio track with Whisper."""
+def fmt_time(sec) -> str:
+    sec = int(max(0, sec or 0))
+    h, rem = divmod(sec, 3600)
+    m, s_ = divmod(rem, 60)
+    return f"{h}:{m:02d}:{s_:02d}" if h else f"{m}:{s_:02d}"
+
+
+def mark_segments(segments) -> str:
+    """Whisper segments -> one line per segment, '[m:ss] text' (VW-1)."""
+    lines = []
+    for seg in segments or []:
+        text = (seg.get("text") or "").strip()
+        if text:
+            lines.append(f"[{fmt_time(seg.get('start'))}] {text}")
+    return "\n".join(lines)
+
+
+def transcribe_audio(video_path: Path) -> tuple:
+    """Transcribe audio track with Whisper.
+    Returns (plain text, timed text with one '[m:ss] ...' line per segment)."""
     log(f"Transcribing audio (Whisper {WHISPER_MODEL})...", CYAN)
     try:
         import whisper
@@ -172,8 +199,9 @@ def transcribe_audio(video_path: Path) -> str:
     model = whisper.load_model(WHISPER_MODEL)
     result = model.transcribe(str(video_path), language="en", verbose=False)
     transcript = result["text"].strip()
+    timed = mark_segments(result.get("segments")) or transcript
     log(f"Transcript: {len(transcript.split())} words", GREEN)
-    return transcript
+    return transcript, timed
 
 # ── FRAME EXTRACTION ──────────────────────────────────────────────────────────
 def extract_frames(video_path: Path, duration: int, out_dir: Path) -> list:
@@ -185,11 +213,9 @@ def extract_frames(video_path: Path, duration: int, out_dir: Path) -> list:
         log("FFmpeg not available — skipping frame extraction", RED)
         return []
 
-    log(f"Extracting frames every {FRAME_INTERVAL}s...", CYAN)
     frames = []
-    timestamps = list(range(0, min(duration, FRAME_INTERVAL*MAX_FRAMES), FRAME_INTERVAL))
-    if not timestamps:
-        timestamps = [int(duration * 0.25), int(duration * 0.5), int(duration * 0.75)]
+    timestamps = frame_times(duration)
+    log(f"Extracting {len(timestamps)} frames across the whole video...", CYAN)
 
     for i, t in enumerate(timestamps[:MAX_FRAMES]):
         frame_path = out_dir / f"frame_{i:02d}_{t:04d}s.jpg"
@@ -204,19 +230,30 @@ def extract_frames(video_path: Path, duration: int, out_dir: Path) -> list:
     log(f"Extracted {len(frames)} frames", GREEN)
     return frames
 
+def frame_times(duration) -> list:
+    """VW-1: MAX_FRAMES moments spread evenly over the whole video (the middle of
+    each equal slice), not the first 4 minutes. Capped at 60 min like the rest."""
+    d = min(int(duration or 0), 3600)
+    if d <= 0:
+        return []
+    n = max(1, min(MAX_FRAMES, d // 2))   # very short clips: one frame per ~2s
+    return sorted({int(d * (i + 0.5) / n) for i in range(n)})
+
+
 def encode_frame(frame_path: Path) -> str:
     """Base64 encode an image frame."""
     import base64
     return base64.b64encode(frame_path.read_bytes()).decode("utf-8")
 
 # ── CLAUDE API ────────────────────────────────────────────────────────────────
-def call_claude(messages: list, system: str = "", max_tokens: int = 2000) -> str:
+def call_claude(messages: list, system: str = "", max_tokens: int = 2000,
+                model: str = "claude-sonnet-4-6", timeout: int = 60) -> str:
     """Call Anthropic Claude API directly."""
     if not ANTHROPIC_KEY:
         raise RuntimeError("ANTHROPIC_API_KEY not set. Add it to your environment variables.")
 
     payload = {
-        "model": "claude-sonnet-4-6",
+        "model": model,
         "max_tokens": max_tokens,
         "messages": messages
     }
@@ -234,15 +271,41 @@ def call_claude(messages: list, system: str = "", max_tokens: int = 2000) -> str
         }
     )
     try:
-        with urllib.request.urlopen(req, timeout=60) as resp:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
             result = json.loads(resp.read().decode("utf-8"))
             return result["content"][0]["text"]
     except urllib.error.HTTPError as e:
         body = e.read().decode("utf-8")
         raise RuntimeError(f"Claude API error {e.code}: {body[:200]}")
 
-def analyse_frames(frames: list, meta: dict) -> str:
-    """Send frames to Claude Vision for visual analysis."""
+MADE_REALMS = ("creator", "producer", "hustler")   # realms that also want "how it's made"
+
+
+def frames_prompt(meta: dict, times: list, realms: list, lenses: dict) -> str:
+    """VW-1: the frame question follows the picked realms. Editing/thumbnail/DAW
+    questions only for Creator/Producer/Hustler; every realm gets 'what is being
+    shown or done' with the time of each frame."""
+    names = ", ".join((lenses.get(k) or {}).get("name") or k.title() for k in realms)
+    stamps = ", ".join(f"frame {i+1} = {fmt_time(t)}" for i, t in enumerate(times))
+    looks = "\n".join(f"- {(lenses.get(k) or {}).get('name') or k.title()}: {(lenses.get(k) or {}).get('looks_for', '')}"
+                       for k in realms)
+    made = ""
+    if any(k in MADE_REALMS for k in realms):
+        made = ("\nAlso, because the realms include making content or music: how it's made - "
+                "editing style, text on screen, the opening hook, and any software, plugins, gear "
+                "or tools clearly visible (only what you can actually see).")
+    return f"""These are frames from a {meta['platform']} video titled "{meta['title']}" by {meta['uploader']}.
+They are spread over the whole video ({stamps}).
+Alex sent it for these realms: {names}. What each realm looks for:
+{looks}
+
+For each frame, say in one or two lines what is being shown or done that matters to those realms
+(ingredients, amounts, movements, equipment, steps, numbers or text on screen), starting the line with its time.
+Only describe what is visible - never guess at what is not shown.{made}"""
+
+
+def analyse_frames(frames: list, meta: dict, realms=None) -> str:
+    """Send frames to Claude Vision for visual analysis (realm-aware, VW-1)."""
     if not frames:
         return "No frames extracted."
 
@@ -253,22 +316,17 @@ def analyse_frames(frames: list, meta: dict) -> str:
             "type": "image",
             "source": {"type": "base64", "media_type": "image/jpeg", "data": encode_frame(frame)}
         })
-    content.append({
-        "type": "text",
-        "text": f"""These are frames from a {meta['platform']} video titled "{meta['title']}" by {meta['uploader']}.
-
-Analyse the visual content and describe:
-1. What is shown on screen (DAW, plugins, equipment, face cam, text overlays)
-2. Production techniques visible (chord progressions shown, sample packs, mixer layout)
-3. Thumbnail strategy — what visual hook is used
-4. Editing style — cuts, text animations, colour grading
-5. Any specific plugin names, sample packs or tools clearly visible
-
-Be specific. This analysis feeds into production learning insights."""
-    })
+    realms = clean_realms(realms)
+    # each frame's own time, from its file name (frame_00_0123s.jpg), so a
+    # frame ffmpeg failed to write can't shift the times of the rest
+    times = []
+    for f in frames[:MAX_FRAMES]:
+        m = re.search(r"_(\d+)s\.jpg$", Path(f).name)
+        times.append(int(m.group(1)) if m else 0)
+    content.append({"type": "text", "text": frames_prompt(meta, times, realms, load_lenses())})
 
     return call_claude([{"role": "user", "content": content}],
-                      "You are a music production visual analyst. Be precise and specific.", 800)
+                      "You describe video frames precisely and only report what is visible.", 1000)
 
 # ── REALM LENSES (Realm Inputs RI-4, Oct 15 2026) ─────────────────────────────
 # Alex picks up to 4 of his 13 realms for every link he sends (intel_jobs.realms).
@@ -314,6 +372,53 @@ def lens_block(realms: list, lenses: dict) -> str:
     return "\n".join(lines)
 
 
+def _keep_lines(lines: list, meta: dict) -> list:
+    """One cheap-model call: which numbered lines carry real substance.
+    Returns the kept lines, word for word. Fails open (keeps all)."""
+    numbered = "\n".join(f"{i+1}| {l}" for i, l in enumerate(lines))
+    prompt = (f"Below is part of the transcript of \"{meta.get('title','')}\", one numbered line each.\n"
+              "Reply with ONLY the numbers of the lines to KEEP, comma-separated. Keep every line that "
+              "has a technique, step, instruction, ingredient, amount, number, time, name, claim, story "
+              "point or quotable sentence. Drop only filler: greetings, sponsor reads, 'like and "
+              "subscribe', repeats, ums and chit-chat. When unsure, keep it.\n\n" + numbered)
+    try:
+        raw = call_claude([{"role": "user", "content": prompt}], "", 800, MECHANICAL_MODEL, 90)
+        keep = {int(n) for n in re.findall(r"\d+", raw) if 0 < int(n) <= len(lines)}
+        if not keep:
+            return lines
+        return [l for i, l in enumerate(lines) if (i + 1) in keep]
+    except Exception as e:
+        log(f"Condense step failed, keeping that part whole ({e})", DIM)
+        return lines
+
+
+def condense_transcript(timed: str, meta: dict) -> str:
+    """VW-1: whole transcript, trimmed of filler only when long. Extractive:
+    the cheap model picks line numbers, the kept lines are copied untouched
+    (with their [m:ss]). Then an honest cap with a visible marker."""
+    if len(timed.split()) > CONDENSE_OVER:
+        lines = [l for l in timed.splitlines() if l.strip()]
+        chunks, cur, words = [], [], 0
+        for l in lines:
+            cur.append(l); words += len(l.split())
+            if words >= CONDENSE_CHUNK:
+                chunks.append(cur); cur, words = [], 0
+        if cur:
+            chunks.append(cur)
+        log(f"Long transcript - trimming filler in {len(chunks)} parts...", CYAN)
+        kept = []
+        for c in chunks:
+            kept.extend(_keep_lines(c, meta))
+        before = len(timed.split())
+        timed = "\n".join(kept)
+        log(f"Transcript trimmed {before} -> {len(timed.split())} words", GREEN)
+    if len(timed) > TRANSCRIPT_CAP:
+        cut = timed[:TRANSCRIPT_CAP]
+        cut = cut[:cut.rfind("\n")] if "\n" in cut else cut
+        timed = cut + "\n[... transcript continues - cut here for length ...]"
+    return timed
+
+
 def generate_oracle_insights(meta: dict, transcript: str, visual_analysis: str, realms=None) -> dict:
     """Send everything to Claude for realm-lens insights + a score per realm.
     One call whatever the number of realms (Alex: one call per input, never
@@ -350,11 +455,11 @@ Views: {views:,}
 Likes: {likes:,}
 Description: {meta['description'][:300]}
 
-VISUAL ANALYSIS:
-{visual_analysis[:600]}
+VISUAL ANALYSIS (frames spread over the whole video, each starting with its time):
+{visual_analysis[:4000]}
 
-TRANSCRIPT (first 3000 words):
-{transcript[:3000]}
+TRANSCRIPT (the whole video; each line starts with its [m:ss] time; long videos have filler lines removed):
+{transcript}
 
 Return this exact JSON structure:
 {{
@@ -384,7 +489,8 @@ Return this exact JSON structure:
     # realm sections would have cut replies off (= invalid JSON = failed job).
     # max_tokens is a ceiling billed on what is written, so a flat 4000 only
     # removes that failure.
-    raw = call_claude([{"role": "user", "content": prompt}], "", 4000)
+    # VW-1: the whole transcript makes this call longer - allow 3 minutes.
+    raw = call_claude([{"role": "user", "content": prompt}], "", 4000, timeout=180)
     return parse_insights(raw, realms)
 
 
@@ -555,20 +661,20 @@ def process_url(url: str, realms=None):
             video_file = download_video(url, tmp_path)
 
             # 3 — Transcribe audio
-            transcript = transcribe_audio(video_file)
+            transcript, timed = transcribe_audio(video_file)
 
-            # Save transcript to transcripts folder
+            # Save transcript to transcripts folder (timed version, VW-1)
             ts_file = HOME/"transcripts"/f"{meta['id']}_{datetime.now().strftime('%Y%m%d_%H%M')}.txt"
-            ts_file.write_text(transcript, encoding="utf-8")
+            ts_file.write_text(timed, encoding="utf-8")
 
-            # 4 — Extract frames
+            # 4 — Extract frames (spread over the whole video)
             frames = extract_frames(video_file, int(duration), tmp_path)
 
-            # 5 — Visual analysis
-            visual_analysis = analyse_frames(frames, meta) if frames else "No frames extracted."
+            # 5 — Visual analysis (follows the picked realms)
+            visual_analysis = analyse_frames(frames, meta, realms) if frames else "No frames extracted."
 
-            # 6 — Oracle insights
-            insights = generate_oracle_insights(meta, transcript, visual_analysis, realms)
+            # 6 — Oracle insights on the whole (condensed if long) timed transcript
+            insights = generate_oracle_insights(meta, condense_transcript(timed, meta), visual_analysis, realms)
 
             # 7 — Delete video (frames are in temp dir, auto-deleted)
             if video_file and video_file.exists():

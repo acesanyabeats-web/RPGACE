@@ -73,6 +73,20 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-20-videoworm-reads-all" style="margin-bottom:30px;">
+    <div class="card-title">📼 Oct 20 — Videoworm reads the whole video (VW-1)</div>
+    <div class="card-body">
+      Step 2 of the "Videoworm realm extraction" plan. Your go: "go ahead with vw-1".
+      <ul>
+        <li><b>The whole transcript</b>, not the first ~500 words. Each line now carries its time in the video (<code>[1:15] roll the dough...</code>), so later steps can quote it and you can jump to that moment.</li>
+        <li><b>Long videos</b> (over ~6000 words) get filler lines dropped first by the cheap model (greetings, sponsor reads, "like and subscribe"). It only picks which lines to keep; it never rewrites them, so every kept line is word for word what was said. If that step fails, everything is kept.</li>
+        <li><b>Frames from the whole video</b>: 8 moments spread evenly from start to end, not the first 4 minutes.</li>
+        <li><b>The frame question follows your realms</b>: Chef asks about ingredients, amounts and steps on screen; Athlete about movements and equipment. DAW, plugins, editing and thumbnails only come in when Creator, Producer or Hustler is picked.</li>
+      </ul>
+      Analyser version is now 2026-10-20.2; your laptop picks it up on the next start (git pull). What it does NOT change yet: the report still has the old boxes (content strategy, what to steal) — that's VW-2, and the "only keep points with a quote" check is VW-3. Tested with 17 checks (AI mocked) and a real frame-extraction run; untested on a real video by your hand.
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-20-videoworm-one-analyser" style="margin-bottom:30px;">
     <div class="card-title">📼 Oct 20 — Videoworm: one analyser, laptop and cloud (VW-0)</div>
     <div class="card-body">

@@ -871,7 +871,7 @@ flowchart LR
   lap & cloud --> ri[rpgace_intel.process_url] -->|analyser_version| rep[(intel_reports)]
   rep --> vs[videoSummary: ⚠ older analyser label]
 ```
-Truth table: shared version/claim/stuck helpers, one-runner-per-job claim, laptop self-update, realm file found on the laptop, version on every new report, older-report label — BUILT (Python tests + headless label test). Needs Alex: one-time Git install + sparse clone to %USERPROFILE%\\RPGACE-code, start from there; spare-account cookies in the YT_COOKIES secret. VW-1..VW-7 — NOT built yet.
+Truth table: shared version/claim/stuck helpers, one-runner-per-job claim, laptop self-update, realm file found on the laptop, version on every new report, older-report label — BUILT (Python tests + headless label test). Needs Alex: one-time Git install + sparse clone to %USERPROFILE%\\RPGACE-code, start from there; spare-account cookies in the YT_COOKIES secret. VW-1 (read all of it): Whisper segments → `[m:ss]` lines (`mark_segments`), whole timed transcript to the main call (`condense_transcript`: over 6000 words the cheap model (`MECHANICAL_MODEL`) picks line numbers to keep per 2500-word part, kept lines copied word for word, fails open; then a 90k-char cap with a visible marker), 8 frames spread over the whole video (`frame_times`, 60-min cap), frame prompt follows the picked realms (`frames_prompt`; DAW/editing/thumbnail only for Creator/Producer/Hustler), visual analysis up to 4000 chars, main call timeout 180 s; `ANALYSER_VERSION` 2026-10-20.2 — BUILT (17 Python checks with Claude mocked + a real ffmpeg frame run). VW-2..VW-7 — NOT built yet.
 
 ## 15u. Did blocks — planned vs did (Oct 20 2026, "My Day" MD-8) — built, untested by Alex
 

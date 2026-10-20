@@ -112,3 +112,10 @@ BUILD LOG
   continues if Git is missing/pull fails), prints the analyser version, runs local_server.py. local_server.py imports
   rpgace_intel from its own folder (HOME only as a fallback). intel.bat uses %~dp0. Tested with a simulated sparse clone +
   a stale rpgace_intel.py in HOME: the clone's copy loads, 13 realm lenses.
+- VW-1 GO (Oct 20, verbatim): "go ahead with vw-1" (after his "this is horrible" paste of the Jose.elcook cinnamon-roll
+  report - made by analyser 2026-10-20.1, laptop, chef realm; i.e. VW-0's Git starter works, the bad content is VW-1..3's job).
+- VW-1 BUILT: transcribe_audio -> (plain, timed); mark_segments [m:ss]; condense_transcript (>6000 words: MECHANICAL_MODEL returns
+  line numbers to KEEP per 2500-word chunk, lines copied verbatim, fail open; 90k-char cap w/ marker); frame_times = 8 mid-slice
+  times over the whole video (60-min cap); analyse_frames reads times from file names; frames_prompt realm-aware (DAW/editing
+  only for creator/producer/hustler); visual analysis 600 -> 4000 chars; main call timeout 180s; ANALYSER_VERSION 2026-10-20.2.
+  Tests: 17 checks with call_claude mocked + real ffmpeg 5-min test video -> 8 frames 0:18..4:41.
