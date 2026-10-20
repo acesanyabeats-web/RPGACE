@@ -209,3 +209,10 @@ manuals for to get the most out of all software."
 -> logged, NOT built: a Producer Toolkit (software, plugins, drum kits, licences, where bought, download link, manual link),
    filled from purchase emails; manuals feed Bookworm/Life Library. Needs its own brief + interrogation (Gmail source,
    where it lives - Producer area / Beats plan) before any build.
+- Oct 20, Alex on the backup: "also move bitwarden there, and remove all excess files that are not currently in rpgace (rpgace
+  v4 folders etc)" -> script adds %APPDATA%\Bitwarden + Export-vault reminder; skips fully-pushed git folders (link saved),
+  old non-git RPGACE copies, and RPGACE-folder files identical to repo files. Nothing deleted on the laptop.
+- MD-5 GO (Oct 20, verbatim): "yes go MD-5"
+- MD-5 BUILT (Oct 20): myDay.ui.openMorning (shift, alarm state, Morning card, frog, today's blocks, Plan today, Open My Day,
+  brief below via new shared dashDeck.ui._fillBrief); auto-open via ui._maybeMorning on login/visibility (logic.morningDue,
+  myday_morning_seen); dashboard Morning Brief card + 🌅 step open it. md5 15/15.
