@@ -700,33 +700,7 @@ def point_line(p: dict, lenses: dict) -> str:
     return f"{p['text']}{also}{quote}{at}"
 
 
-def realm_section(insights: dict, lenses: dict = None) -> str:
-    """Markdown for the Encyclopedia article: one section per realm (VW-2)."""
-    sections = insights.get("realm_sections") or {}
-    if not sections:
-        return ""
-    lenses = lenses if lenses is not None else load_lenses()
-    out = []
-    for k, s in sections.items():
-        out.append(f"### {realm_label(k, lenses)} — {s['score']}/10")
-        if s.get("why"):
-            out.append(f"_{s['why']}_\n")
-        if s.get("teaches"):
-            out.append(s["teaches"] + "\n")
-        out.extend(f"- {point_line(p, lenses)}" for p in s.get("points", []))
-        if s.get("action"):
-            out.append(f"\n**Try this:** {s['action']}")
-        out.append("")
-    made = insights.get("how_made")
-    if made:
-        out.append("### How it's made")
-        if made.get("summary"):
-            out.append(made["summary"] + "\n")
-        out.extend(f"- {point_line(p, lenses)}" for p in made.get("points", []))
-        out.extend(f"- Reuse: {s}" for s in made.get("steal", []))
-        out.extend(f"- Don't copy: {s}" for s in made.get("avoid", []))
-        out.append("")
-    return "\n".join(out) + "\n"
+# (VW-5: the Encyclopedia article is built by the app - encyclopediaPosts.realmIdeas)
 
 
 # ── WATCHLIST ─────────────────────────────────────────────────────────────────
@@ -913,29 +887,13 @@ def process_url(url: str, realms=None):
                 })
                 log(f"Intel report pushed to Supabase (status {status})", GREEN)
 
-                # Push encyclopedia entry
+                # VW-5 (Oct 20 2026): no direct Encyclopedia write from here any
+                # more. encyclopedia has been app-write-only since the July 24 RLS
+                # flip, so this anon-key POST always failed - and the failure
+                # jumped past the watchlist push below. The app's
+                # encyclopediaPosts.ensureArticles is the one pipeline (rule 8):
+                # it builds the article AND its idea cards from this report.
                 enc = insights.get("encyclopedia_entry", {})
-                if enc.get("title"):
-                    content = (f"## {enc['title']}\n\n**Source:** {meta.get('title','')} by {meta.get('uploader','')} ({meta.get('platform','')})\n**Score:** {score}/10\n\n### Summary\n{enc.get('summary','')}\n\n"
-                               + realm_section(insights) + f"### Tags\n{', '.join(enc.get('tags',[]))}")
-                    from datetime import datetime as dt
-                    date_str = dt.now().strftime("%d %b %Y")
-                    sb_post("encyclopedia", {
-                        "title":   enc["title"],
-                        "date":    date_str,
-                        "content": content,
-                        "source":  "intel",
-                        # Aug 27 2026 - real, adjacent gap fixed while already
-                        # touching this exact push path: without a real
-                        # source_url, RPGACE's own deleteEncEntry/
-                        # clearEncyclopedia can't log this entry into the
-                        # reanalysis pool if it's later deleted for a bad
-                        # extraction (they check for source_url before doing so).
-                        "source_url": meta.get("url","") or None,
-                        # RI-5: filed under the realms it was read through
-                        "realms": insights.get("realms") or []
-                    })
-                    log(f"Encyclopedia entry pushed: {enc['title'][:50]}", GREEN)
 
                 # Push watchlist if high score
                 if insights.get("add_to_watchlist"):

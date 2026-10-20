@@ -137,3 +137,10 @@ BUILD LOG
 - VW-4 BUILT: pathways.ui.realmSections / questCard, pathways.logic.timeUrl / questIndexes; videoSummary _proseHtml mount +
   _mountRealms; articleActions 'By realm' fold for new-style reports (RI-7 list kept for old). SELF_KNOWLEDGE VW-0 sentence
   updated (git pull) + VW-1..4 sentence. 18 headless checks + phone screenshot.
+- VW-5 GO (Oct 20, verbatim): "go" (cards = points + Try this, my pick; how-made cards when the block exists).
+- VW-5 FINDING: rpgace_intel's anon-key POST to encyclopedia has failed since the July 24 RLS flip (app-write-only); the
+  except jumped past the intel_watchlist push. Articles were still made by the app (cinnamon article created_at has JS ms
+  precision, 66s after the report). Removed the python push (+ unused realm_section).
+- VW-5 BUILT: encyclopediaPosts.realmIdeas/cardLabel + SECTIONS point/try/made, per-card realms; lifeLibrary topRealm/
+  shelveByRealm + clean keeps shelf_by realm (CHECK widened, migration library_items_shelf_by_realm); realmKnowledge points +
+  Knows text. Weekly realm report count NOT built. 11 headless checks + Python 16/14/17.
