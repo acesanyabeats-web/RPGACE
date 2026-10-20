@@ -1,0 +1,94 @@
+VIDEOWORM: REALM-BASED EXTRACTION — /scope + /paranoia findings and /interrogation answers (Oct 20 2026)
+
+ALEX'S ASK (verbatim): "get around to how videoworm analyses videos, if you look the insights are pretty
+terrible in representing the videos, we need some rule changes. /scope and /paranoia to assess current
+state, then /interrogation me into oblivion and /free-for-all-debate to make needed changes to make
+extraction by realms done."
+
+EVIDENCE (live Supabase + repo code, Oct 20 2026)
+- intel_reports 26 rows; only 1 has realm_scores. intel_jobs 32, every job has realms picked.
+- 6 of the last 7 reports were made by the LAPTOP ("Done", not "Done (cloud)"); report.realms is null on
+  all of them -> the laptop runs its own older copy of rpgace_intel.py from C:\Users\acesa\RPGACE that
+  ignores realms. Example: "How Training Tendons Makes You Stronger" (realms athlete+mind) came back as
+  music-content advice (anime avatar, interactive hook, series bible); nothing about the tendon protocol.
+- The repo's local_server/rpgace_intel.py (used by the cloud runner) does read realm lenses, but:
+  * the prompt opens "Alex is a UK music producer and content creator" and keeps the old fixed boxes
+    production_techniques / content_strategy_insights / what_to_steal / what_to_avoid (craft-of-the-video
+    framing even for Athlete/Chef/Mind);
+  * analyse_frames() always asks about DAWs, plugins, sample packs, thumbnail strategy;
+  * transcript is cut to transcript[:3000] CHARACTERS (labelled "first 3000 words") = ~500 words;
+    visual analysis cut to 600 chars; frames every 30s, max 8 = first 4 minutes only;
+  * no quotes/timestamps tying insights to the transcript;
+  * 2-4 quests per video, nearly all category "career".
+- Cloud: Instagram redirects to login, YouTube blocked without cookies (YT_COOKIES secret not set);
+  2 jobs stuck "processing" since Oct 15/16.
+
+ROUND 1 ANSWERS (Alex, Oct 20 2026)
+1. Focus: "Depends on realm" - what it TEACHES for every realm; HOW IT'S MADE only for
+   Creator/Producer/Hustler.
+2. Where: "Both" - cloud handles everything it can; laptop (reinstalled from the repo) picks up the rest.
+3. Depth: "All of it, condensed" - whole transcript, long ones trimmed of filler by the cheap model keeping
+   every technique/number/quote; frames across the whole video.
+4. Old ones: "Re-run the recent 7" (Oct 18-20 jobs with realms) with the new rules, replacing their
+   reports, cards and Library entries.
+
+ROUND 2 ANSWERS
+5. Shape: "Summary + key points + 1 action" per picked realm (2-line what it teaches, 3-7 key points with
+   the real protocol/numbers, one thing to try); Creator/Producer/Hustler also get a "how it's made" block.
+6. Proof: "Yes, drop any point with no quote" - every key point quotes its transcript line (+ timestamp
+   when available); points without a quote are thrown out in code.
+7. Quests (Alex's own words): "1 but with re-roll and 3 suggestions" -> read as: per realm, 3 suggested
+   quests written in the same call, one shown at a time, 🎲 re-roll steps to the next (no extra AI call),
+   Add creates it; nothing auto-created. (Stated back to Alex as this reading.)
+8. Cookies: "A spare account" for YouTube/Instagram cookies in the GitHub secret.
+
+ROUND 3 ANSWERS
+9. Empty realm: "Say 'nothing for this realm'" (score 1), never invent points.
+10. Overlap: "Once, tagged both" - shown under its best realm, tagged with the other.
+11. Where key points go (all four picked): idea cards per realm (savable to Recall), Life Library item,
+    Morning Brief resurfacing, realm report (Knows line / weekly realm report).
+12. Score: keep the 1-10 per realm with a one-line why; watchlist uses the top score.
+
+/FREE-FOR-ALL-DEBATE (concise, rule 11) — 6 problems, 5 competitors (angles), each picked 2
+Problems: P1 two copies of the analyser (laptop drift) · P2 prompt/lens + output shape · P3 input depth
+(transcript, frames) · P4 trust (quotes) · P5 downstream (cards, Library, Brief, realm report, quests) ·
+P6 cloud access, stuck jobs, re-running the 7.
+Competitors: A "one source of truth" (P1,P6) · B "substance first" (P2,P3) · C "sceptic/verifier" (P4,P3) ·
+D "cost guard" (P3,P2) · E "nothing breaks" (P5,P1).
+
+Clashes and how they resolved:
+- P2/P3, B vs D: B wanted a facts pass then a realm pass (2 big calls); D held Alex's standing rule "one
+  call per input, never one per realm". Merged: the cheap model condenses only long transcripts, then ONE
+  Sonnet call writes every realm section.
+- P3/P4, C vs B: condensing rewrites wording, so quotes would never match the video. Merged: the condense
+  step is EXTRACTIVE (keeps whole sentences and their [m:ss] markers word for word, only drops filler),
+  and quotes are checked against the ORIGINAL full transcript, not the condensed one.
+- P4, C vs D: timestamps need Whisper segment times in the prompt (~5% more input tokens). Accepted:
+  cheap, and it is what makes "tap the time to check" possible.
+- P1, A vs E: A wanted the laptop to refuse to run when out of date; E wanted nothing to break. Merged:
+  the laptop starter pulls the repo before every start (no separate copy any more), every report stores
+  analyser_version, and the app labels any report made by an older analyser.
+- P5, E: ~40 places in rpgace_core.js read key_learnings / what_to_steal / production_techniques /
+  encyclopedia_entry. Agreed: keep those keys, filled in code from the new realm sections, so nothing
+  downstream breaks; new UI reads the new realm_sections field.
+- P6, A: the runner resets jobs stuck in "processing" for over 2 hours back to queued.
+No unresolved fork left for Alex except build order (My Day MD-6.. first, or Videoworm first).
+
+COUNCIL OF 5 PLAN (VW-0..VW-7) — brief given to Alex, waiting for his go (rule 18)
+VW-0 One analyser: laptop starter pulls the repo then runs it; analyser_version on every report; app labels
+     old-version reports; runner un-sticks jobs >2h; Alex makes the spare account + YT_COOKIES secret
+     (verification steps handed over, rule 10).
+VW-1 Read all of it: Whisper segments with [m:ss] markers; whole transcript; extractive condense (cheap
+     model) only when long; 8 frames spread over the whole video; frame prompt follows the picked realms.
+VW-2 New rules + shape: per picked realm {score 1-10, why, summary, 3-7 points {text, quote, at, also},
+     one action, 3 quest suggestions}; "how it's made" only for Creator/Producer/Hustler; "nothing for this
+     realm" allowed; one Sonnet call; old keys filled in code.
+VW-3 Proof in code: drop any point whose quote is not in the original transcript; time from the nearest
+     marker; a point in two realms kept once under its best realm, tagged with the other.
+VW-4 What you see: Videoworm report + Encyclopedia article show realm sections (score/why, summary,
+     points with a tappable time that opens the video there, action, quest card with 🎲 re-roll + Add).
+     No quests created automatically.
+VW-5 Where it goes: idea cards per realm (savable to Recall -> Morning Brief), Library item on the realm
+     shelf, realm Knows line / weekly realm report counts.
+VW-6 Re-run the recent 7 with realms; replace their reports, cards and Library items.
+VW-7 Tests, docs, SELF_KNOWLEDGE, Galaxy regen, deploy.
