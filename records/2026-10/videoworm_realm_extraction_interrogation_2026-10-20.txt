@@ -132,3 +132,8 @@ BUILD LOG
   (marketplace.json, plugin.json, hooks: local node scripts only, webhook empty by default). Adding extraKnownMarketplaces +
   enabledPlugins to .claude/settings.json was blocked by the auto-mode classifier (Unauthorized Persistence) - not worked around;
   steps handed to Alex instead.
+- Ponytail: Alex added extraKnownMarketplaces + enabledPlugins himself (commit 3ef83cd, "i did it all"); settings JSON validated.
+- VW-4 GO (Oct 20, verbatim): "i did it all do vw-4" (old boxes for new-style reports: my pick, hidden).
+- VW-4 BUILT: pathways.ui.realmSections / questCard, pathways.logic.timeUrl / questIndexes; videoSummary _proseHtml mount +
+  _mountRealms; articleActions 'By realm' fold for new-style reports (RI-7 list kept for old). SELF_KNOWLEDGE VW-0 sentence
+  updated (git pull) + VW-1..4 sentence. 18 headless checks + phone screenshot.
