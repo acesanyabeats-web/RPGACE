@@ -42,3 +42,15 @@ CONFIRM-BACK + ROUND 2 (verbatim): "1. auto 2. sure. finish vw plans please"
 - When: automatic (keyword check + Haiku planner decide; small talk = one quick Sonnet call).
 - Opus: claude-opus-5-5, cost line shown per deep answer; falls back to Sonnet loudly if the key can't use it.
 - Plan OP-1..OP-5 (map+planner, gather, condense, professor, wiring+cost line). Brief OP-1 before building (rule 18).
+
+OP-1 BUILT (Oct 21 2026) — Alex: "go", then "strict too" (strict topic censoring).
+- askMyData: one read path fetchSource() (private tables via tripPlans.logic.read -> /api/data-write read, screenshots via
+  their inbox, rest anon); +11 SOURCES (routines, blocks, xp, plans, food, body, posts, people, outreach, subs, modules).
+  Columns checked against information_schema; routines/chore_blocks/perspective_reports anon_read_only (pg_policies).
+- New module oracleProfessor (domain oracle): skSections() (SELF_KNOWLEDGE in ~2500-char pieces at sentence ends, 38
+  sections, titled by nearest CAPITAL HEADER + first words), buildMap() (<6000 chars), needsPlan() (free small-talk check),
+  plan() = one Haiku call (MECHANICAL_MODEL, approved by Alex for planning in this plan, max_tokens 400) -> cleanPlan()
+  (real keys only, max 4 sources / 4 sections, deep boolean, search words cleaned), fallbackPlan() (free keyword plan on
+  any failure), sanitizeTopic() (strict: names incl. people table, Derby/UK, numbers, money, dates/days/months, emails,
+  links, first-person words; >=2 words or empty; 80-char cap).
+- Chat unchanged in OP-1. Tests: 21 headless checks pass; screenshot Ask-my-data routing re-run passes.
