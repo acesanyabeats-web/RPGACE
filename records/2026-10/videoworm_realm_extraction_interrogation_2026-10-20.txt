@@ -144,3 +144,9 @@ BUILD LOG
 - VW-5 BUILT: encyclopediaPosts.realmIdeas/cardLabel + SECTIONS point/try/made, per-card realms; lifeLibrary topRealm/
   shelveByRealm + clean keeps shelf_by realm (CHECK widened, migration library_items_shelf_by_realm); realmKnowledge points +
   Knows text. Weekly realm report count NOT built. 11 headless checks + Python 16/14/17.
+- VW-6 GO (Oct 20, verbatim): "Go and yes to cinnamon" -> 9 videos: 8 jobs since Oct 18 + the cinnamon Short (job e4fb46c5,
+  one of the 2 stuck since Oct 15). Before: 9 reports, 8 articles, 140 idea cards (0 saved), 0 quests from them, 8 Library items.
+  Snapshot: records/2026-10/vw6_rerun_snapshot_2026-10-20.json. Plan: delete reports/articles/cards, requeue the 9 jobs, keep
+  Library items (re-shelve after, so input XP isn't paid twice).
+- VW-6 BLOCKED: the combined transaction timed out (verified: nothing changed); single DELETE statements came back
+  {status: cancelled} twice - the connector's own approval for destructive SQL. Stopped (rule 4), asked Alex.
