@@ -35,3 +35,10 @@ INTERROGATION ROUND 1 (Alex's answers, verbatim)
 3. Professor model: "Opus for deep answers".
 4. Answer shape: "1 but as many bullet points as possible to make it concise and cheaper to run, less words but more
    meaningful words and stats and facts etc. is a lot more useful".
+
+CONFIRM-BACK + ROUND 2 (verbatim): "1. auto 2. sure. finish vw plans please"
+- Privacy as read back: Gemini only gets a censored topic query (outside knowledge / sources); everything touching Alex's data
+  (planner reads the raw question, condenser, professor) stays on Claude (Haiku plan/condense, Opus professor).
+- When: automatic (keyword check + Haiku planner decide; small talk = one quick Sonnet call).
+- Opus: claude-opus-5-5, cost line shown per deep answer; falls back to Sonnet loudly if the key can't use it.
+- Plan OP-1..OP-5 (map+planner, gather, condense, professor, wiring+cost line). Brief OP-1 before building (rule 18).

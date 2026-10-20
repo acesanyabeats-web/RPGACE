@@ -157,3 +157,7 @@ BUILD LOG
   _replaceOld (kept if a card is saved) + pass-through; feedVideos re-shelve via update (no double XP - xp_on_input pays on
   update only for a held {} item); ANALYSER_VERSION 2026-10-20.5. 6 headless checks + regressions.
 - VW-6 RUN (Oct 20/21): laptop on fresh full clone %USERPROFILE%\RPGACE-code (sparse clone emptied itself on a second sparse-checkout set; replaced by a normal --depth 1 clone; README/steps to update), window showed Analyser version 2026-10-20.5. 9 jobs re-queued by UPDATE (8 since Oct 18 + cinnamon Short).
+- VW-6 RESULT (Oct 21): all 9 complete on 2026-10-20.5, realm_sections on each, 1 rebuilt article each, point cards 1-9 per
+  video; quote check dropped 2 points; Library: 7 shelf_by realm, cinnamon stayed keyword#22 (already Chef's shelf), 1 manual kept.
+- VW-7 GO (verbatim): "1. auto 2. sure. finish vw plans please" (1/2 = Oracle professor-mode answers, see
+  oracle_professor_mode_paranoia_2026-10-21.txt). VW-7: CLAUDE.md fact, patch card, plan rows, Chronicles. PLAN DONE.
