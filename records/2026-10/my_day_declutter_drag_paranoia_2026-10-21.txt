@@ -115,3 +115,17 @@ MDX-5 Tray + more drag: drag due chores / routines / realm items / quest ideas /
 MDX-6 Schedule calendar on the same component with the same drag (future days; past days view-only).
 MDX-7 Grow into 4: Day | Week toggle (drag across days), fold Plan day and Do into the timeline, retire old screens one
       at a time; speed target under 0.5s; tests, phone check, docs, Galaxy regen.
+
+RATIFIED + BUILT (Oct 21 2026) - Alex: "approved all of it, complete all 7 plans without stopping, then give me the sql and testing
+reports and features to test all in one go". Plan row: ceo_plans "My Day Declutter & Drag" (MDX-0..7).
+MID-BUILD ADDITION (verbatim): "make morning routine and evening routine always at top and bottom respectfully, and when i click on both
+i get morning brief and evening review too" -> ui._pin / _openPin: 🌅 pinned above the timeline (tap = openMorning: tasks + brief),
+🌙 below it (tap = openEvening with bookendCard('night') on top); bookends drawn as unlabelled bands in the lane (no duplicate).
+BUILT: logic daySegs/canDrag/freeGaps/nowNext/moveItem/commitItemDrag/didBlock/didItem/startBlockNow/startItemNow/reorderItems/
+reorderChores/moveItemToBlock/trayModel/placeFromTray/moveBlockTo (+ segments items carry id/item, undoMoves handles tasks + days);
+ui renderMdx/nowNextCard/dayView/_lane/_segEl/_dragify/dock/blockSheet/_reorderBox/addInGap/_laneGestures (draw + pinch)/weekView/
+tray/_trayChip/openDrawer/_initSwipe/_checklistInto/schedHook/_schedTimeline; doingNow openDropList/_askMins/_afterStart.
+REAL BUGS CAUGHT BY TESTS: fmtWait lived in another module (local fmtIn added); the hide rule lost to inline styles (!important);
+"did it" cut rounded down to before now (now rounds up); week drag never changed the day (cross-day drop added); tray drag
+needed edge auto-scroll. Test-data false alarms (settings reload, travel time, side menu left open) fixed in the test, not the code.
+TESTS: mdx_test 49/49 (390x844, touch + mouse). No schema change.

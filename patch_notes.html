@@ -73,6 +73,49 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-21-my-day-drag" style="margin-bottom:30px;">
+    <div class="card-title">☀️ Oct 21 — My Day rebuilt: one draggable timeline, a clean home, a shortcut list (MDX-0..7)</div>
+    <div class="card-body">
+      Your words: "i dont like how clunky it is. the system doesnt have the drag feature i wanted", then "approved all of it, complete all 7 plans without stopping", plus mid-build: "make morning routine and evening routine always at top and bottom … when i click on both i get morning brief and evening review too".
+      <ul>
+        <li><b>The home is now</b>: ☰, Now + Next, ▶ Doing now / ✓ I just did, today's timeline, and the tray. It used to show 39 buttons with no data at all; with a normal day it now shows about 19.</li>
+        <li><b>🌅 Morning routine is always pinned at the top, 🌙 Night routine at the bottom.</b> Tap 🌅 for your morning tasks plus the Morning Brief. Tap 🌙 for your night tasks plus the evening review.</li>
+        <li><b>Drag</b> (works on today, any future day and the Daily Schedule):
+          <ul>
+            <li>Hold a block about 0.3 seconds to pick it up (a quick swipe still scrolls), then move it.</li>
+            <li>Pull its top or bottom edge to resize.</li>
+            <li>It snaps to 5 minutes with a small buzz, stops 10 minutes before the next block and at shifts and travel, saves straight away, and shows ↩ Undo.</li>
+            <li>While you drag, a 📅 Tomorrow / 📥 Unplan bar appears at the bottom.</li>
+            <li>Swipe a block right for done, left for tomorrow.</li>
+            <li>Two-finger pinch or − / + to zoom.</li>
+            <li>Hold and drag on empty time to draw a new block.</li>
+          </ul></li>
+        <li><b>Tap a block</b>:
+          <ul>
+            <li>If it has a live feature (focus timer, cook), ▶ starts it.</li>
+            <li>Otherwise it asks <b>"Did you do it?"</b>. Yes ticks its tasks and ends the block now, so the rest of the time is free; Not yet; or 📅 Tomorrow.</li>
+            <li>A later block offers <b>▶ Start now</b>: it moves to now and later blocks shift along.</li>
+            <li>You can also reorder tasks (drag ⠿ or ▲▼) or move a task to another block.</li>
+          </ul></li>
+        <li><b>Free gaps</b> show as "45 min free +". Tap one for a realm block, a chore block, or something that fits.</li>
+        <li><b>Tray</b>: routines due, chores due, ideas and recipes. Hold and drag one onto the day, or tap it to put it in the first free slot. ✓ ticks a routine.</li>
+        <li><b>▶ Doing now ▾ / ✓ I just did ▾</b> open a list: realm → its ideas, your routines, books, things you did lately. "✏️ Something else" is still there.</li>
+        <li><b>☰ or a swipe right inside the page</b> (not from the very edge; on an iPhone that means Back) opens the shortcut list: Morning, Plan a day, Plan the week, Evening and Weekly review, today's full checklist, chores, routines, time off, trackers, health/posting/selling, alerts, Realms & quests (the cards that used to clutter the page), and ↩ Classic My Day.</li>
+        <li><b>Day | Week</b>: ‹ › moves through days, and future days get 📋 Plan this day. Week shows 7 columns; hold a block and drag it to another day.</li>
+        <li><b>Daily Schedule</b>: now 🧭 Timeline (drag) by default, with ▦ Grid to switch back.</li>
+      </ul>
+      <b>Not changed</b>: the logic underneath (push rule, bookends, shorten, focus timers, chores, XP). Only what you see and touch was rebuilt.<br>
+      <b>How to check it</b>: open My Day.
+      <ol>
+        <li>You see 🌅 at the top, the timeline, and 🌙 at the bottom.</li>
+        <li>Hold a block, drag it down, and let go. The time on it changes and ↩ Undo appears.</li>
+        <li>Tap a block with no timer. It asks "Did you do it?".</li>
+        <li>Tap ☰. The list opens.</li>
+      </ol>
+      Tests: 49 headless checks at phone size, including touch hold-to-drag, a quick swipe not moving anything, and an edge swipe going to the side menu, not the list.
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-21-cc-done" style="margin-bottom:30px;">
     <div class="card-title">🤖 Oct 21 — Orchestrator CC Analysis plan built (CC-5): what it actually saves</div>
     <div class="card-body">
