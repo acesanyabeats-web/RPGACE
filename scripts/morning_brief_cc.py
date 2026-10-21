@@ -51,7 +51,7 @@ RULES = """Write the brief as plain text, under 220 words, direct, no greeting, 
   ⚔️ TOP 3 TODAY - the three most important things, from the agenda/planned blocks/waiting items
   📅 SHIFTS & WINDOW - today's shift (or "no shift - full creative day"), the free window around it, tomorrow's shift if any
   📥 WAITING ON YOU - real counts/titles (taxonomy reviews, jargon terms, chapters in progress)
-  🎛️ BEAT FOCUS - one specific thing to try in a session today, grounded in one real recent insight (name its source)
+  🎛️ BEAT FOCUS - one specific thing to try in a session today, grounded in one real recent_producer_insights entry (name its source); leave the section out if there are none - never use cooking or other non-music tips
   🎬 CONTENT IDEA - one idea worth filming, from the Idea Bank or a recent video analysis
   ▶ one sharp action line, max 15 words
 DO NOT include (the app already shows these live next to the brief - repeating them is duplication): today's realm pick, saved ideas due for recall, the library pick, XP/level lines, Alex's own words/decisions, the My Day task list, the inbox, YouTube stats. Never invent data; if something is empty, leave the section out. Entries with "_error" mean that source couldn't be read - say so briefly, never guess."""
@@ -95,7 +95,9 @@ def gather(now=None):
         "taxonomy_proposals_pending": len(get("taxonomy_proposals?status=eq.pending&select=id&limit=200")),
         "jargon_terms_pending": len(get("jargon_encyclopedia?status=eq.pending&select=id&limit=1000")),
     }
-    insights = get("encyclopedia_insights?status=neq.rejected&select=insight_text,source_entry_title,realms&order=created_at.desc&limit=8")
+    # Oct 21 2026 (Alex: "yes 100% do it"): Beat Focus came from a pork-knuckle
+    # recipe tip, so only Producer-realm insights feed it.
+    insights = get("encyclopedia_insights?status=neq.rejected&realms=cs.%7Bproducer%7D&select=insight_text,source_entry_title,realms&order=created_at.desc&limit=8")
     ideas = get("conid_pot?status=neq.archived&select=title,starred,kind&order=starred.desc,created_at.desc&limit=6")
     videos = get("intel_reports?select=title,creator,score,created_at&order=created_at.desc&limit=3")
     return {
@@ -106,7 +108,7 @@ def gather(now=None):
         "planned_blocks_today": blocks,
         "agenda_today_open": agenda,
         "waiting_on_alex": dict(reviews, chapters_in_progress=[c.get("chapter_title") for c in chapters if c.get("chapter_title")]),
-        "recent_insights": insights,
+        "recent_producer_insights": insights,
         "idea_bank": ideas,
         "latest_video_analyses": videos,
     }
