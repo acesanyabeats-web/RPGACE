@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-21-oracle-condense" style="margin-bottom:30px;">
+    <div class="card-title">🔮 Oct 21 — Oracle Professor Mode step 3: condense (OP-3)</div>
+    <div class="card-body">
+      Step 3 of 5. Your go: "go" (3,000-character line kept).
+      <ul>
+        <li><b>What it does</b>: turns the gathered evidence into a short bullet brief before the expensive model reads it — one fact per line, every number, date, amount, quote and link kept exactly, each line tagged with where it came from (e.g. [Food log], [app notes 4], [web 1]). Capped at about 1,500 characters.</li>
+        <li><b>Small evidence skips it</b>: under 3,000 characters goes straight through, no extra call.</li>
+        <li><b>Rows are written compactly</b> ("name: oats · protein_g: 12") instead of raw data code, which costs fewer tokens either way.</li>
+        <li><b>Never silent</b>: if the condense call fails or returns no bullets, the raw evidence is used (trimmed with a marker if huge) and the reason is kept for the answer to mention. Missing sources stay in as [missing] lines.</li>
+        <li><b>Still nothing in chat</b> — OP-4 (Opus answer) and OP-5 (switch on + cost line) next.</li>
+      </ul>
+      Tests: 12 new headless checks + OP-1 (21) and OP-2 (11) re-run. Untested by your hand — nothing visible yet.
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-21-oracle-gather" style="margin-bottom:30px;">
     <div class="card-title">🔮 Oct 21 — Oracle Professor Mode step 2: gather (OP-2)</div>
     <div class="card-body">

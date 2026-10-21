@@ -65,3 +65,13 @@ OP-2 BUILT (Oct 21 2026) — Alex: "go" (brief recommended saving web results to
 - OP-2 plan row: three UPDATEs of ceo_plan_items (OP-2 -> yellow) timed out at the connector (60s) and never applied;
   pg_stat_activity showed no lock or running query. OP-2 still reads red in ceo_plan_items — set it yellow when the
   connector allows (evidence: commit bfa7efd, 11 headless checks). system_updates row 6313dbe8 did insert.
+
+OP-3 BUILT (Oct 21 2026) — Alex: "go, and im at my laptop so give me the failures to paste in".
+- oracleProfessor.logic.evidenceText(ev): tagged blocks ([<source label>] rows as "k: v · k: v" lines, [app notes N],
+  [web] + [web N] title — url, [missing] errors). logic.condense(question, ev): <=3000 chars passes as-is (no call);
+  else one Haiku call (MECHANICAL_MODEL, max_tokens 700, input capped 24000 with a [missing] trimmed marker) asking for
+  "- " lines ending in their source tag, <=1500 chars; non-bullet lines dropped; empty/failed -> raw fallback (6000 cap
+  + [trimmed] marker) with note "condense skipped (<why>)". Not phylumPath._condenseIfLarge (question-blind, no tags).
+- Tests: op3 12/12, op2 11/11, op1 21/21.
+- Paste-in SQL for Alex: records/2026-10/paste_sql_2026-10-21.sql (OP-2 plan row, Oct 14 error_log rationale, 6 smoke
+  rows). Checked live first: RI-0 and the MD-2 migration had already applied, so they are not in it.
