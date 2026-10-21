@@ -102,7 +102,7 @@
         <li><b>▶ Doing now ▾ / ✓ I just did ▾</b> open a list: realm → its ideas, your routines, books, things you did lately. "✏️ Something else" is still there.</li>
         <li><b>☰ or a swipe right inside the page</b> (not from the very edge; on an iPhone that means Back) opens the shortcut list: Morning, Plan a day, Plan the week, Evening and Weekly review, today's full checklist, chores, routines, time off, trackers, health/posting/selling, alerts, Realms & quests (the cards that used to clutter the page), and ↩ Classic My Day.</li>
         <li><b>Day | Week</b>: ‹ › moves through days, and future days get 📋 Plan this day. Week shows 7 columns; hold a block and drag it to another day.</li>
-        <li><b>Daily Schedule</b>: now 🧭 Timeline (drag) by default, with ▦ Grid to switch back.</li>
+        <li><b>Daily Schedule</b>: now 🧭 Timeline (drag) by default, with ▦ Grid to switch back. The timeline shows the same "⚠ Clashes with your shift / journey" warning the grid does (found by re-running the older tests; added before shipping).</li>
       </ul>
       <b>Not changed</b>: the logic underneath (push rule, bookends, shorten, focus timers, chores, XP). Only what you see and touch was rebuilt.<br>
       <b>How to check it</b>: open My Day.
@@ -112,7 +112,7 @@
         <li>Tap a block with no timer. It asks "Did you do it?".</li>
         <li>Tap ☰. The list opens.</li>
       </ol>
-      Tests: 49 headless checks at phone size, including touch hold-to-drag, a quick swipe not moving anything, and an edge swipe going to the side menu, not the list.
+      Tests: 49 headless checks at phone size, including touch hold-to-drag, a quick swipe not moving anything, and an edge swipe going to the side menu, not the list. The older My Day, chores and day-template tests (about 400 checks) pass with ↩ Classic My Day on; the few that fail there failed the same way before this change.
     </div>
 </div>
 

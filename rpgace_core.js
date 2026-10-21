@@ -61916,7 +61916,7 @@ RPGACE.register('myDay', {
         'background:rgba(224,168,76,0.22);border:1px solid rgba(224,168,76,0.7);box-shadow:0 1px 3px rgba(0,0,0,.25)}' +
         '.mdx-b[data-kind=chores]{background:rgba(80,190,170,0.18);border-color:rgba(80,190,170,0.7)}.mdx-b[data-kind=cooking]{background:rgba(230,140,60,0.2);border-color:rgba(230,140,60,0.7)}' +
         '.mdx-b[data-kind=item]{background:rgba(90,140,220,0.18);border-color:rgba(90,140,220,0.65)}.mdx-b.done{opacity:.55}.mdx-b.drag{box-shadow:0 8px 24px rgba(0,0,0,.45);z-index:5}' +
-        '.mdx-b b{display:block;font-size:14px;line-height:1.25}.mdx-b small{display:block;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}' +
+        '.mdx-b b{display:block;font-size:14px;line-height:1.25}.mdx-b small{display:block;font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}.mdx-b small.sched-clash-flag{color:#e0a84c;font-weight:700}.mdx-b.mdx-clash{outline:2px solid #e0a84c}' +
         '.mdx-h{position:absolute;left:0;right:0;height:16px;display:flex;justify-content:center;align-items:center;touch-action:none;cursor:ns-resize}.mdx-h span{width:36px;height:4px;border-radius:2px;background:var(--gold);opacity:.8}' +
         '.mdx-gap{position:absolute;left:6px;right:6px;border:1px dashed rgba(255,255,255,0.14);border-radius:10px;background:none;color:var(--muted);font-size:13px;cursor:pointer;font-family:inherit;text-align:left;padding:2px 10px}' +
         '.mdx-now{position:absolute;left:-8px;right:0;height:2px;background:#e5484d;pointer-events:none;z-index:4}.mdx-now:before{content:"";position:absolute;left:-2px;top:-4px;width:10px;height:10px;border-radius:50%;background:#e5484d}' +
@@ -62179,8 +62179,13 @@ RPGACE.register('myDay', {
       el.className = 'mdx-b'; el.dataset.kind = b ? (b.kind || 'chores') : 'item'; el.dataset.id = b ? b.id : 'a:' + x.id;
       if (x && x.completed) el.classList.add('done');
       el.style.top = y(g.from) + 'px'; el.style.height = Math.max(30, y(g.to) - y(g.from)) + 'px';
+      // Same ⚠ the Schedule grid shows when an entry lands on the shift or its travel.
+      var flagged = (x && !x.completed && x.source_type !== 'doing_now') || (b && b.status !== 'done');
       var paint = function(f, m) {
-        el.innerHTML = '<b>' + esc(g.label) + '</b><small>' + L.fmtMin(f) + '–' + L.fmtMin(f + m) + (U._segLabel(g) ? ' · ' + esc(U._segLabel(g)) : '') + '</small>';
+        var c = flagged ? L.clashWith(isoDate, f, m) : null;
+        el.classList.toggle('mdx-clash', !!c);
+        el.innerHTML = '<b>' + esc(g.label) + '</b><small>' + L.fmtMin(f) + '–' + L.fmtMin(f + m) + (U._segLabel(g) ? ' · ' + esc(U._segLabel(g)) : '') + '</small>'
+          + (c ? '<small class="sched-clash-flag">⚠ Clashes with ' + (c.kind === 'shift' ? 'your shift' : 'your ' + esc(String(c.label || '').toLowerCase())) + ' (' + L.fmtMin(c.from) + '–' + L.fmtMin(c.to) + ')</small>' : '');
       };
       paint(g.from, g.to - g.from);
       var can = L.canDrag(g, isoDate, today) && !o.compactLocked;
