@@ -75,3 +75,20 @@ OP-3 BUILT (Oct 21 2026) — Alex: "go, and im at my laptop so give me the failu
 - Tests: op3 12/12, op2 11/11, op1 21/21.
 - Paste-in SQL for Alex: records/2026-10/paste_sql_2026-10-21.sql (OP-2 plan row, Oct 14 error_log rationale, 6 smoke
   rows). Checked live first: RI-0 and the MD-2 migration had already applied, so they are not in it.
+
+OP-4 BUILT (Oct 21 2026) — Alex: "go for op-4, sounds good" (prof: test prefix agreed).
+- api/oracle.js stream branch: optional body.effort -> output_config.effort (low..max only).
+- Shared global readOracleStream(res, onChunk) (legacy section, after callOracle): text deltas only (thinking deltas
+  carry no text), plus usage {input, output, cache_read, cache_write}, model, stop. callOracle's stream branch uses it
+  (rule 8) and now also returns usage/model.
+- oracleProfessor.logic.answer: direct /api/oracle stream, PROF_SYSTEM (dense bullets; Answer/Counter-case/
+  Confidence/Unknowns; source tags; one-line "HOW I KNOW: a | b"), claude-opus-5-5, maxTokens 8000 (Opus 5.5 always
+  thinks; thinking counts toward max_tokens), effort medium; model-access error -> claude-sonnet-4-6 with fellBack +
+  reason; other errors thrown; Dummy mode -> mockOracle._fakeReply; Fallback Scout -> clear error. Not via
+  window.callOracle (no model choice; grounding wraps would paste SELF_KNOWLEDGE whole).
+- logic.ask = plan -> gather -> condense -> answer; logic.splitHowIKnow. ui.patchChat: "prof:" sendChat wrap,
+  order-safe against scheduleOracle's busy-flag guard (returns run's promise); ui.run streams into a bubble marked
+  phylaScanned so trailer scanners skip it; ui.howIKnow fold-out. History gets q + answer.
+- Tests: op4 16/16, op4b (wrap order) 3/3, op3/op2/op1 re-run.
+- Prices used for estimates (claude-api skill table, cached 2026-10-06): Opus 5.5 $4 in / $20 out per MTok;
+  Sonnet 4.6 $3 / $15; Haiku 4.5 $1 / $5.

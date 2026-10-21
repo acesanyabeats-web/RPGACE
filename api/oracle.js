@@ -274,7 +274,7 @@ export default async function handler(req, res) {
     const apiKey = process.env.ANTHROPIC_API_KEY;
     if (!apiKey) throw new Error('ANTHROPIC_API_KEY not configured');
     const body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
-    const { messages, system, maxTokens, max_tokens, model, stream, provider, action, text, voiceId, format, audioBase64, language, name } = body;
+    const { messages, system, maxTokens, max_tokens, model, stream, provider, action, text, voiceId, format, audioBase64, language, name, effort } = body;
     const tokens = maxTokens || max_tokens || 1000;
     const useModel = model || MODEL;
     const hasImages = messages && messages.some(m =>
@@ -331,7 +331,10 @@ export default async function handler(req, res) {
       const upstream = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
-        body: JSON.stringify({ model: useModel, max_tokens: tokens, system: cacheableSystem(system || ''), messages, stream: true })
+        // OP-4 (Oct 21 2026): optional effort for models that take it
+        // (oracleProfessor sends 'medium' to Opus); omitted = model default.
+        body: JSON.stringify(Object.assign({ model: useModel, max_tokens: tokens, system: cacheableSystem(system || ''), messages, stream: true },
+          /^(low|medium|high|xhigh|max)$/.test(effort || '') ? { output_config: { effort: effort } } : {}))
       });
       if (!upstream.ok || !upstream.body) {
         const errText = await upstream.text().catch(() => '');
