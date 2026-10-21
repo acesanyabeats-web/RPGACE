@@ -1,0 +1,117 @@
+MY DAY — DECLUTTER + DRAG (Oct 21 2026) — /scope + /impeccable + /debloat -> /paranoia + /free-for-all-debate
+
+ALEX, VERBATIM
+- "then we go through my day, i dont like how clunky it is. the system soesnt have the drag feature i wanted"
+- Drag where: "explain 1 and 4, feel like 1 is yes 4 is no but not sure, Today's timeline, Schedule calendar"
+- Drag does: "think of more, Move + resize blocks, Drag ideas onto the day, Reorder tasks in a block, Tap empty time to add"
+- Clunky: "use /impeccable and /scope and /debloat as toolkits for /paranoia and /debate-free-for-all to come up with more
+  scenarios, Too many screens, Popups on popups, Too many buttons, Slow / laggy"
+- "i feel like it can be decluttered with a right swipe list with shortcuts to needed features, thats on way of decluttering and /debloat"
+
+WHAT HE ASKED FOR ON OCT 18 vs WHAT EXISTS (records/2026-10/my_day_ceo_plan_2026-10-17.txt)
+- Asked: drag on a timeline, edges stop at neighbouring blocks / Morning / Night bookends, even across midnight.
+- Built (MD-2): drag ONLY inside Plan week -> pick a day chip -> drag block / top / bottom bar (5-min snap, logic.dragLimits,
+  commitDrag -> guard -> resizeBlock, dragUndo); tap -> editWeekBlock. Nowhere else: not the My Day home, not Plan my day,
+  not Do, not the Schedule calendar. That is why "the drag feature" feels missing.
+
+/SCOPE — EVIDENCE (headless Chromium, 390x844 phone, mocked data = EMPTY, so real counts are higher)
+- My Day lives on page-quests and shares it with other modules (xpSeason realm strip life/homekeeper/mind, quest
+  suggest/generate, "Taken in / Knows" lines, trackers, Doing Now).
+- 39 visible buttons with no data at all; 7 under 40px tall; page 2455px tall (~3 phone screens); ~2.5s to settle.
+  Buttons seen: Doing now, I just did, 3 idea chips, 5 step tiles (Morning/Plan week/Plan day/Do/Review), Plan, Tasks,
+  Add routines, Manage, 6x "Open"+"⚙" tracker pairs, cut-back setup, 3 realm tabs, Taken in, Knows, Suggest quests,
+  Propose milestone, Generate, Refresh, Rescan.
+- myDay module: 5,888 lines / 421 KB (~10% of rpgace_core.js), 14 open* screens, 23 popup/tool openers, 249 inline
+  style strings, 104 innerHTML templates, 12 separate renderers that each draw blocks their own way (renderTimeline,
+  weekTimeline, plannedBlocks, openBlocks, bookendCard, lifeBlockCard, choreBlockCard, didSection, openMorning, openPlan,
+  openEvening, renderChores).
+
+/IMPECCABLE (rendered My Day snapshot + style.css): 7 anti-patterns — 4x 11px body text, thick coloured side-stripe on
+  cards (border-left 4px + radius), zero-offset gold text glow, style.css:398 side-tab.
+
+/DEBLOAT — what is genuinely duplicated (safe to merge, rule 8)
+- 12 block renderers -> ONE timeline component (day + week), used by My Day home, Plan, Do, Schedule.
+- 249 inline styles -> a small CSS class set (also fixes the 11px text + side-stripe in one place).
+- 23 popups -> one bottom-sheet pattern (edit in place; a sheet only for "pick what this block is").
+- KEEP untouched (working, tested logic): segments, guard, push rule, bookends, dragLimits, clampDrag, commitDrag,
+  resizeBlock, focus timer engine, chores, evening/morning models. The rebuild is UI only.
+
+EXPLAIN 1 vs 4 (his question)
+- 1 "Today's timeline": the My Day home becomes a vertical day timeline (like a calendar day view) you drag on. Plan week /
+  Plan day / Do still exist as steps.
+- 4 "One timeline everywhere": no separate Plan week / Plan day / Do screens at all - one timeline with Day | Week toggle;
+  today = doing (tick, timer), future days = planning. Fewer screens, bigger change.
+- Honest read: his "too many screens" answer points toward 4; his gut says 1. Middle path: build 1 as ONE shared timeline
+  component (debloat), then retire the old screens one at a time as the new view covers what they did - ends at 4 without
+  a big-bang rewrite, each step reversible.
+
+FREE-FOR-ALL DEBATE (5 competitors, 2 problems each)
+1 Calendar purist: (a) the day timeline IS the home - Now line, blocks, gaps labelled "45 min free +"; (b) Schedule calendar
+  uses the same component so drag works the same in both places.
+2 Declutterer (Alex's swipe list): (a) home shows only Now / Next / today's timeline; everything else (Plan week, Review,
+  trackers, cut-backs, templates, alerts, manage routines, realm quests) moves into a shortcut list opened by a swipe;
+  (b) the realm strip + quest generator + "Taken in/Knows" belong to XP/Knowledge pages, not My Day.
+3 Phone ergonomics (paranoia): (a) drag fights page scroll -> pick up with a long-press (~300ms) + haptic tick, then drag;
+  quick swipe still scrolls; (b) SWIPE CONFLICTS: iPhone's left-edge swipe = Back, and leftNav already has its own swipe
+  gesture (the landmine area). A swipe list must start away from the screen edge, or open from a visible handle/button too.
+4 Speed: (a) one component + CSS classes, render only today's blocks first, sheets built on demand -> target under 0.5s;
+  (b) optimistic drag (block moves instantly, saves in background, snaps back + toast if the save fails).
+5 Skeptic / why not: (a) MD-1..8 logic works and is tested - a UI rebuild must not touch it; (b) page-quests is shared with
+  other modules - moving their cards touches XP/Knowledge too, so do it as a separate, small step.
+
+MORE DRAG IDEAS ("think of more")
+- Long-press a block -> pick up and move; pull top/bottom edge -> resize (5-min snap, stops at neighbour/bookend).
+- Tray of things to place (due chores, routines due today, realm items, quest ideas, a recipe to cook with its real
+  duration) -> drag onto an empty slot to schedule it.
+- Drag tasks up/down inside a block, or into another block.
+- Tap an empty gap -> new block filling that gap; drag on empty space -> draw a block of that length.
+- Swipe a block right = done, left = move to tomorrow (with Undo).
+- Drop a block on a "Tomorrow" / "Unplanned" dock at the bottom to bump it.
+- Pinch to zoom the timeline (15-min detail <-> whole day).
+- Shifts are locked: dragging into one stops at its edge and says why.
+- Too-long item dropped into a short gap -> the existing "shorten X?" push rule.
+- Haptic tick on each 5-min snap; Undo bar after every drag (exists).
+
+PARANOIA SCENARIOS (each must have an answer before build)
+S1 Late shift ends 23:00, drag Producer block to 23:15 -> stops at the Night bookend (crosses midnight correctly).
+S2 Drag onto a shift -> blocked at the shift edge, reason shown.
+S3 Scrolling on the phone accidentally moves a block -> long-press pickup + Undo.
+S4 Drag a block that has a focus timer running -> timer keeps going; block end moves; alerts re-queued.
+S5 Drag in the Schedule calendar on a past day -> not allowed (view only).
+S6 Phone + laptop edit the same block -> last save wins; the other view refreshes on focus.
+S7 Save fails / slow network -> block snaps back, toast says why.
+S8 Drop a 90-min item into a 40-min gap -> "shorten <next block>?" (existing push rule).
+S9 Chore / cooking / shopping block dragged -> its items and planned cook move with it.
+S10 Right-swipe list vs iPhone back-swipe vs leftNav swipe -> swipe starts inside the page, plus a visible handle.
+S11 Bookends: dragging Morning/Night changes wake/bed for that day only, not the saved settings (ask?).
+S12 Accessibility: every drag action also reachable by tap (tap block -> exact times sheet), for when drag is fiddly.
+
+INTERROGATION ANSWERS (Oct 21, verbatim)
+- Timeline: "1 now, grows into 4 (Rec.)"
+- Swipe list: "Swipe + handle (Rec.)"
+- Home: "the log buttons should have a drop list with thing i can do, first by realm, then by tasks available, do sub categories
+  if possible, also make blocks clickable, if it doesnt have a live feature, ask if i done it or not, if so cut block off so it is
+  free, i can then click on next block to ask start now? then it drags to current time so blocks stay true, Now + Next, Today's
+  timeline, Tray to drag from, Doing now / I just did"
+- Other cards: "Into the shortcut list (Rec.)"
+
+DRAFT PLAN "My Day Declutter & Drag" (MDX-0..7) - for Alex to ratify; each step briefed before building (rule 18)
+MDX-0 One timeline component: vertical day view, Now line, blocks + shifts + bookends drawn one way (CSS classes, 14px+
+      text, no side-stripe/glow), gaps labelled "45 min free +". Replaces the home's renderTimeline. Logic layer untouched.
+MDX-1 Declutter the home: Now + Next card, today's timeline, tray, Doing now / I just did. Everything else -> shortcut list
+      (swipe right from inside the page + a ☰ handle; never the screen edge): Plan week, Review, Morning, routines,
+      trackers, cut-backs, templates, alerts, manage + the other areas' cards (realm tabs, Suggest/Generate/Propose,
+      Taken in / Knows).
+MDX-2 Drag on today: long-press to pick up, move, pull edges to resize, 5-min snap + haptic tick, stops at neighbours /
+      bookends / shifts, saves instantly in the background (snaps back + toast if it fails), Undo bar.
+MDX-3 Clickable blocks: live feature (focus timer / cook / gym) -> start it; otherwise "Did you do it?" -> Yes = block cut
+      off at now (rest of the time freed, ticked + XP) / No = keep or move to tomorrow. Tap the next block -> "Start now?"
+      -> it moves to start now, same length, later blocks pushed by the existing push rule so the day stays true.
+MDX-4 Log drop list: Doing now / I just did -> realm -> available tasks -> sub-categories (realm items, routines, chores,
+      quest ideas), instead of the 3 idea chips.
+MDX-5 Tray + more drag: drag due chores / routines / realm items / quest ideas / a recipe (real duration) onto a gap;
+      tap or draw on empty time to add; drag tasks up/down within and between blocks; swipe a block right = done,
+      left = tomorrow (Undo).
+MDX-6 Schedule calendar on the same component with the same drag (future days; past days view-only).
+MDX-7 Grow into 4: Day | Week toggle (drag across days), fold Plan day and Do into the timeline, retire old screens one
+      at a time; speed target under 0.5s; tests, phone check, docs, Galaxy regen.
