@@ -2,3 +2,8 @@
 update ceo_plan_items set status='yellow', evidence='Built Oct 21: oracleProfessor.logic.answer/ask + prof: chat prefix + How I know fold-out; Opus 5.5 effort medium, Sonnet 4.6 on model-access error; shared readOracleStream with usage. 19 headless checks. Untested by Alex.', last_checked_at=now() where item_code='OP-4' and plan_id=(select id from ceo_plans where name='Oracle Professor Mode');
 -- CHECK: should show OP-1..3 yellow, OP-4 yellow, OP-5 red
 select item_code, status from ceo_plan_items where plan_id=(select id from ceo_plans where name='Oracle Professor Mode') order by item_code;
+
+-- OP-5 (added after OP-4): plan complete
+update ceo_plan_items set status='yellow', evidence='Built Oct 21: automatic routing (ownedElsewhere pass-through, free/Haiku route, deep -> professor, quick -> picked sections only via oracleAppGrounding._buildBlock(sections)), quick: prefix, cost line. 15 headless checks. Untested by Alex.', last_checked_at=now() where item_code='OP-5' and plan_id=(select id from ceo_plans where name='Oracle Professor Mode');
+-- CHECK again: all five OP rows should now be yellow
+select item_code, status from ceo_plan_items where plan_id=(select id from ceo_plans where name='Oracle Professor Mode') order by item_code;

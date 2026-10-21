@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-21-oracle-routing" style="margin-bottom:30px;">
+    <div class="card-title">🎓 Oct 21 — Oracle Professor Mode done: automatic routing + cost line (OP-5)</div>
+    <div class="card-body">
+      Last step. Your go: "go on op-5" (the paste-everything switch-off was my recommendation; you didn't object, so it's on — easy to reverse).
+      <ul>
+        <li><b>No prefix needed now</b>: every Oracle message is routed. Greetings and short messages use a free keyword check; longer ones get one cheap Haiku plan (≈0.2p). Deep questions go to the professor; everything else gets a normal reply.</li>
+        <li><b>Normal replies got cheaper</b>: they now carry only the 2–4 app-note sections the plan picked, never the whole 93,000 characters (that paste was the ≈7p case).</li>
+        <li><b>Cost line</b> under every professor answer, e.g. "≈ 5.3p · Opus 1,200 in / 2,100 out · condensed 9,400 → 1,200" — Opus from its real token counts, the Haiku steps estimated.</li>
+        <li><b>Force it</b>: <code>prof:</code> = professor, <code>quick:</code> = normal reply.</li>
+        <li><b>Left alone</b>: messages another feature already owns go straight to it, never routed — prefixes (schedule oracle:, bookworm:…), links, trip/idea requests, recipe requests and Oracle actions like "log the beat".</li>
+      </ul>
+      <b>How to check it</b>: ask a long "compare / should I / plan" question with no prefix — it should come back as 🎓 professor with a ≈ cost line; ask "what's the XP season pass?" — a normal ✦ Oracle reply. Tests: 15 new headless checks, OP-1..4 re-run. One unrelated old test failure noted (Screenshot inbox read-prompt check fails on code from before this plan too). Untested by your hand.
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-21-oracle-professor-answer" style="margin-bottom:30px;">
     <div class="card-title">🎓 Oct 21 — Oracle Professor Mode step 4: the professor answer, try it with "prof:" (OP-4)</div>
     <div class="card-body">

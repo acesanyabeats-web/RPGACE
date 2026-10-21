@@ -92,3 +92,26 @@ OP-4 BUILT (Oct 21 2026) — Alex: "go for op-4, sounds good" (prof: test prefix
 - Tests: op4 16/16, op4b (wrap order) 3/3, op3/op2/op1 re-run.
 - Prices used for estimates (claude-api skill table, cached 2026-10-06): Opus 5.5 $4 in / $20 out per MTok;
   Sonnet 4.6 $3 / $15; Haiku 4.5 $1 / $5.
+
+OP-5 BUILT (Oct 21 2026) — Alex: "...and go on op-5". Paste-everything choice: not answered explicitly; built with the
+recommendation (routed turns never get the full SELF_KNOWLEDGE; un-routed calls keep the old behaviour). Reversible:
+oracleProfessor.AUTO=false restores everything.
+- oracleProfessor sendChat wrap: quick: (free fallbackPlan sections, prefix stripped) | prof: | auto: ownedElsewhere()
+  passes through (word: prefixes, links, tripPlans TRIGGER/IDEA_TRIGGER, cookingOracle.matchesRecipeGenTrigger,
+  oracleControl.matchesAnyTrigger); else logic.route (needsPlan; <40 chars -> fallbackPlan, never deep; else Haiku
+  plan) -> deep: ui.run(val, plan) reusing the plan | quick: giveSections(plan.sections) then the normal send.
+- oracleAppGrounding wrap: takeSections() one-shot (15s) after the persona check; picked sections count as a match;
+  _buildBlock(sections): array -> sectionsText (only those, "none needed" note when empty), null -> full digest.
+- Cost: logic.cost (PRICES USD/MTok, GBP_PER_USD 0.79 approx; Opus from stream usage; Haiku plan/condense estimated
+  from chars/4); ui.costLine under each professor answer.
+- Tests: op5 15/15; op1..op4b re-run green. shot_test "Oracle gets the image + read prompt" fails on pre-OP-4 code too
+  (expects /screenshots/ in the vision system prompt) — unrelated, left for its own fix.
+
+COST RECALC (Oct 21, Alex asked "recalculate the cost with analysis etc"). Real last-30-day usage: 10 video analyses,
+11 intel jobs, 4 recipes, 10 journal rows, 3 weekly challenges, 0 food logs / screenshots / bookworm chapters / web
+lookups. Per item (Sonnet 4.6 $3/$15): video analysis ~11-16p (8-frame vision ~4p + insights ~8-10p + Haiku condense
+on long videos ~2-3p; a 1h video ~25p); recipe ~5p; Morning Brief / weekly challenge ~2-3p; food photo ~2p.
+
+NEXT IDEA LOGGED (Alex, verbatim): "i want analysis to fallback on orchestrator CC most of the time, it would be cool as
+a toggle, so orchestrator can analyze, then push it into RPGACE where needed". Not built. Precedent: Fallback Scout
+(oracle_fallback_queue + Fallback Drain Routine). Shape to confirm with Alex before building (rule 5/18).
