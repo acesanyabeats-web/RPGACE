@@ -1,0 +1,38 @@
+ORCHESTRATOR CC ANALYSIS TOGGLE — spec + interrogation (Oct 21 2026)
+
+ALEX'S ASK (verbatim): "imma be honest i want analysis to fallback on orchestrator CC most of the time, it would be cool
+as a toggle, so orchestrator can analyze, then push it into RPGACE where needed"
+
+INTERROGATION (AskUserQuestion, answers verbatim):
+1. Which analysis goes to Orchestrator CC when the toggle is on? -> "Everything background"
+   (videos, book chapters, Morning Brief, weekly challenges; brief arrives on the CC schedule, not on demand)
+2. How often should Orchestrator CC pick up waiting jobs? -> "Every 2 hours (Recommended)"
+3. If CC hasn't done a job in time? -> "API after 12 hours (Recommended)"
+
+EVIDENCE (live, Oct 21):
+- Two Claude Code scheduled tasks already run on Alex's plan (no API spend), fresh session each fire, no MCP, curl +
+  publishable key: "RPGACE Morning Brief" 06:00 daily (writes journal source morning-routine) and "RPGACE Fallback
+  Drain" 00:00 daily (answers oracle_fallback_queue prompts; Bookworm/taxonomy resume from answers already).
+- Videos: intel_jobs queue, analysed by .github/workflows/intel-queue.yml (every 10 min) + laptop local_server,
+  via local_server/rpgace_intel.py (Sonnet frames + insights, Haiku condense). intel_reports is anon_all.
+- In-app background calls: bookworm logic._analyzeChapter (+ background continuation), xpSeason Monday challenge
+  pick (1 Oracle call), xpSeason Year Wrapped paragraph, dashDeck in-app Morning Brief.
+- Repo is public: a fresh CC session can git clone it to reuse realm_lenses.json + rpgace_intel.py parse/verify code.
+- Last 30 days: 10 videos (~£1.50 API), 4 recipes, ~10 briefs/journal, 3 challenges.
+
+PLAN (proposed, each step briefed before build, rule 18):
+CC-0 Toggle + shared settings: one switch "Background analysis: Orchestrator CC / API" (default CC), read by the app
+     and by the cloud runner; a status line wherever a job waits ("waiting for Orchestrator · next pick-up ~1h").
+CC-1 Videos: with the toggle on, the runner still fetches transcript + frames, stores them (frames to a storage
+     bucket), sets intel_jobs status 'awaiting_cc'; the CC task clones the repo, runs the SAME prompt/parse/quote-check
+     code, writes intel_reports through the same path, so articles/cards/Library pick it up unchanged.
+CC-2 Book chapters, weekly challenge pick, Year Wrapped paragraph: queue their exact prompts into
+     oracle_fallback_queue (reuse — it already has prompt/answer/resume); the app resumes from the answer as it
+     already does for Bookworm.
+CC-3 Morning Brief: with the toggle on, the in-app brief shows the 06:00 CC brief from the journal instead of calling
+     the API.
+CC-4 One scheduled task every 2 hours ("RPGACE Orchestrator Analysis") draining both queues (replaces the daily
+     Fallback Drain schedule); 12-hour API fallback: runner/app re-run on the API anything waiting > 12h.
+CC-5 Tests, docs, cost check (analysis API spend -> ~£0 when CC keeps up).
+CAVEATS stated to Alex: uses his Claude plan's usage (shared with dev sessions); results arrive on the 2h schedule;
+oracle_fallback_queue / intel_jobs stay anon-writable (existing landmine — never RLS-restrict them).
