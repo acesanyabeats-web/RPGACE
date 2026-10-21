@@ -1,0 +1,16 @@
+Cooking side list — Oct 21 2026
+
+Alex, verbatim: "Also redesign the pages in cooking with right screen feature, I need this for most pages to make the page more practical"
+
+Questions asked and his answers:
+- Which side-screen pattern? -> "My Day swipe list (Rec.)" (one shared list, opened by ☰ or a swipe right)
+- Which pages first? -> "Cooking now, others later (Rec.)"
+
+Built:
+- RPGACE.sideList (shared; My Day's drawer refactored onto it, ids/classes unchanged)
+- cookingOracle: ☰ + swipe on every wrapped screen; list = "This page" extras + "Cooking" screens
+- Moved off pages: hub extras row; generator Settings/Pantry; stock links + add forms (folded behind one ➕ button); grocery list 📦 Stock + Wishlist add
+- Kept on pages: each screen's main job (hub journey cards, generate form, stock list + tabs + filter, list items + Done shopping, recipe list)
+
+Not done (his "others later"): the same treatment for other areas.
+Tests: side_test 28/28; mdx 49/49, kit 24/24, cr 38/38 (2 checks updated for moved links), cookui 13/13, cm/cm1/cm3/cm4 pass.

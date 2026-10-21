@@ -73,6 +73,31 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-21-cooking-side-list" style="margin-bottom:30px;">
+    <div class="card-title">☰ Oct 21 — Cooking pages keep one job; everything else is in the side list</div>
+    <div class="card-body">
+      Your words: "redesign the pages in cooking with right screen feature, I need this for most pages to make the page more practical". Your answers: use the My Day swipe list, Cooking now and other areas later.
+      <ul>
+        <li><b>☰ on every Cooking screen</b> (top left of the bar), or swipe right inside the screen. A swipe that starts at the very edge is left to your phone's Back gesture.</li>
+        <li><b>The list has two parts</b>:
+          <ul>
+            <li><b>This page</b>: the screen's own extras, which keep you on the screen.</li>
+            <li><b>Cooking</b>: every other Cooking screen (home, new recipe, recipes, plan a cook, grocery list, top-up list, stock, equipment, what can I cook, settings). Tapping one closes this screen first.</li>
+          </ul></li>
+        <li><b>What moved off the pages</b>:
+          <ul>
+            <li>Cooking home: the New recipe / What can I cook / Top-up / Settings row.</li>
+            <li>Recipe generator: Habits Settings and Pantry.</li>
+            <li>Stock: the add form is folded behind one "➕ Add / adjust … stock" button (also in ☰, with 📷 Add from a photo). The What can I cook / Top-up links moved to ☰. The Equipment tab works the same way.</li>
+            <li>Grocery list: the 📦 Stock button and the Wishlist add moved to ☰. ✅ Done shopping stays on the page.</li>
+          </ul></li>
+        <li><b>One list for the whole app</b>: <code>RPGACE.sideList</code> now draws both My Day's list and Cooking's, so other areas can use it next.</li>
+        <li><b>Result at phone width</b>: the stock page went from 29 controls (1077px tall) to 24 (859px); the generator lost 2 extra buttons.</li>
+        <li><b>Tested</b>: 28 new headless checks (☰ on each screen, swipe, edge swipe ignored, folded forms, This page items, navigation); My Day, kitchen measures, Cook Mode and Cooking reorganisation tests still pass. <b>Untested by your hand.</b></li>
+      </ul>
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-21-kitchen-measures" style="margin-bottom:30px;">
     <div class="card-title">🧺 Oct 21 — Grocery list empties, stock grouped by type, amounts in your own measures</div>
     <div class="card-body">
