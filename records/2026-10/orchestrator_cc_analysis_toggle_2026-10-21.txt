@@ -91,3 +91,11 @@ Paranoia pass (right-sized, rule 11 - evidence + risks inline, no sub-agents):
 - Schedule: CRON_TZ=Europe/London 39 5 * * * (ready before 6am; jittered off :00 per scheduler guidance).
 - App: morningBrief._generate -> todayBrief -> _showCCBrief | _showNoBrief (🤖) | _generateApi (💳 / button).
 - Tests: 8 script checks, 5 app checks.
+
+CC-5 (Oct 21 2026) - Alex: "do it"
+- Real 30-day counts: intel_reports 10, bookworm chapters 0, xp_challenges source=oracle 2.
+- Estimated API saving on CC: videos 11-16p each (~£1.10-1.60/mo), in-app brief ~1p/day (~30-40p/mo), challenges/Wrapped pennies
+  => ~£1.50-2/month at current use; Oracle chat/professor (the bulk of API spend) is untouched by this plan.
+- Cost moved to the Claude plan: 12 video/prompt task runs a day (near-free when idle) + 1 brief run.
+- Live verification deferred to a send_later check after the 05:39 brief (no runs had happened at build time).
+- All CC-0..5 yellow until Alex sees real runs.
