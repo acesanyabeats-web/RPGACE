@@ -71,3 +71,10 @@ COUNCIL OF 5 (on the draft):
 - Maintainability: 3 new shared helpers replace per-page copies (rule 8); cookingOracle's _foldForm moves into the shared one.
 - Alex's goals: AC-* directly answers "correct the timeline and keep me in check"; SL-* answers "make the page more practical".
 - Why NOT: hiding things behind ☰ can make features harder to find; AC-5 adds a daily question — kept to one card, skippable.
+
+STEP 6 — Alex's review (verbatim):
+- Approve: "Approve with changes"
+- Change: "Expand ac 3 onto what I'm doing too, and if it has a live doing page bring it up"
+  -> AC-3 now: ▶ Doing now AND ✓ I just did ask what + when + how long (Doing now: started when, default now, + expected length). An action with a live page opens it straight away (no "open it?" step): Cook Mode (recipe), gym logger (gym), focus timer (planned block), Study session (studying), Bookworm (current book). Beat/post sessions keep their which-beat/which-post question (BT-2/PC-3).
+- Order: not answered -> default used: SL-0, AC-1..5, SL-1..5 (Alex may change).
+RATIFIED Oct 21 2026 (ceo_plans basis=ratified). This record is the /drift baseline for Loop 2.
