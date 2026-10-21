@@ -10,6 +10,16 @@ paying the API for a second one.
 
   python3 scripts/morning_brief_cc.py gather       today's inputs as JSON (or "ALREADY WRITTEN")
   python3 scripts/morning_brief_cc.py save <file>  save the written brief to journal, checked
+  python3 scripts/morning_brief_cc.py rules        how the brief is written (one copy, used by both writers)
+  python3 scripts/morning_brief_cc.py fallback     API backup: writes it if CC hasn't, brief_fallback_mins after 05:39 UK
+
+Backup (Oct 21 2026, Alex: "if ever failed, then 5 min timer on api to pick
+up the job"): the first CC run failed on his plan's usage limit and no brief
+was saved. .github/workflows/morning-brief-fallback.yml runs `fallback` every
+5 minutes in the morning; once it is BRIEF_TIME + brief_fallback_mins
+(app_settings.background_analysis, default 5) and there is still no brief,
+it writes one with the API from the same data and rules and saves it the
+same checked way (title ends "(API)").
 
 What the brief covers, and what it deliberately leaves out (the app already
 shows those live, from code, next to the brief - repeating them was the
@@ -33,6 +43,18 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "local_server"))
 import intel_common as ic  # noqa: E402
 
 SOURCE = "morning-routine"
+BRIEF_TIME = (5, 39)          # UK time the scheduled CC task runs
+FALLBACK_UNTIL = 13           # after 1pm UK the backup stops trying (the app's own window)
+API_TAG = " (API)"
+
+RULES = """Write the brief as plain text, under 220 words, direct, no greeting, RPG-toned like Oracle, UK English. Sections, in this order, each only if it has real data:
+  ⚔️ TOP 3 TODAY - the three most important things, from the agenda/planned blocks/waiting items
+  📅 SHIFTS & WINDOW - today's shift (or "no shift - full creative day"), the free window around it, tomorrow's shift if any
+  📥 WAITING ON YOU - real counts/titles (taxonomy reviews, jargon terms, chapters in progress)
+  🎛️ BEAT FOCUS - one specific thing to try in a session today, grounded in one real recent insight (name its source)
+  🎬 CONTENT IDEA - one idea worth filming, from the Idea Bank or a recent video analysis
+  ▶ one sharp action line, max 15 words
+DO NOT include (the app already shows these live next to the brief - repeating them is duplication): today's realm pick, saved ideas due for recall, the library pick, XP/level lines, Alex's own words/decisions, the My Day task list, the inbox, YouTube stats. Never invent data; if something is empty, leave the section out. Entries with "_error" mean that source couldn't be read - say so briefly, never guess."""
 try:
     from zoneinfo import ZoneInfo
     UK = ZoneInfo("Europe/London")
@@ -90,7 +112,45 @@ def gather(now=None):
     }
 
 
-def save(text, now=None):
+def fallback_due(now=None, mins=None):
+    """(due, reason) for the API backup, from UK local time."""
+    uk = (now or datetime.now(timezone.utc)).astimezone(UK)
+    if mins is None:
+        try:
+            mins = int(float(ic.read_settings().get("brief_fallback_mins") or 5))
+        except Exception:
+            mins = 5
+    start = uk.replace(hour=BRIEF_TIME[0], minute=BRIEF_TIME[1], second=0, microsecond=0) + timedelta(minutes=mins)
+    if uk < start:
+        return False, f"not yet - the backup starts at {start.strftime('%H:%M')} UK"
+    if uk.hour >= FALLBACK_UNTIL:
+        return False, "too late in the day - the app offers Write it now instead"
+    return True, f"due since {start.strftime('%H:%M')} UK"
+
+
+def fallback(now=None, mins=None, write=None):
+    """API backup: write and save the brief if CC hasn't. Returns (ok, message)."""
+    day = uk_today(now)
+    if existing_brief(day):
+        return True, "Today's brief is already saved - nothing to do."
+    due, why = fallback_due(now, mins)
+    if not due:
+        return True, why
+    data = gather(now)
+    prompt = "Today's RPGACE data for Alex (@AceSanyaBeats), as JSON:\n" + json.dumps(data, ensure_ascii=False, default=str) + \
+             "\n\n" + RULES + "\n\nReply with the brief text only."
+    if write is None:
+        from rpgace_intel import call_claude  # stdlib only; same API helper the video runner uses
+        write = lambda pr: call_claude([{"role": "user", "content": pr}], max_tokens=900, timeout=90)
+    try:
+        text = write(prompt)
+    except Exception as e:
+        return False, f"API write failed: {str(e)[:200]}"
+    ok, msg = save(text, now, api=True)
+    return ok, ("API backup (" + why + "): " + msg)
+
+
+def save(text, now=None, api=False):
     """Insert the brief once; returns (ok, message)."""
     text = (text or "").strip()
     if len(text) < 40:
@@ -99,7 +159,7 @@ def save(text, now=None):
     if existing_brief(day):
         return True, "Today's brief is already saved - not saved twice."
     rows = ic.http("POST", "/rest/v1/journal",
-                   {"title": f"Morning Brief — {day.strftime('%A %d %B %Y')}", "date": day.isoformat(),
+                   {"title": f"Morning Brief — {day.strftime('%A %d %B %Y')}" + (API_TAG if api else ""), "date": day.isoformat(),
                     "content": text[:6000], "source": SOURCE},
                    headers={"Prefer": "return=representation"})
     if not (isinstance(rows, list) and rows and rows[0].get("id")):
@@ -109,9 +169,16 @@ def save(text, now=None):
 
 
 def main(argv):
-    if len(argv) < 2 or argv[1] not in ("gather", "save"):
+    if len(argv) < 2 or argv[1] not in ("gather", "save", "rules", "fallback"):
         print(__doc__)
         return 2
+    if argv[1] == "rules":
+        print(RULES)
+        return 0
+    if argv[1] == "fallback":
+        ok, msg = fallback()
+        print(msg)
+        return 0 if ok else 1
     if argv[1] == "gather":
         if existing_brief(uk_today()):
             print("ALREADY WRITTEN")

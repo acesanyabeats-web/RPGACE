@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-21-brief-backup" style="margin-bottom:30px;">
+    <div class="card-title">🌅 Oct 21 — Morning Brief backup: the API writes it 5 minutes after Orchestrator CC misses</div>
+    <div class="card-body">
+      What happened: the first scheduled Orchestrator CC brief (05:39) and the 04:05 video run both failed because your Claude plan's usage limit was reached, so no brief was saved. Your words: "So do morning brief today, but if ever failed, then 5 min timer on api to pick up the job, make the timer set it".
+      <ul>
+        <li>Today's brief was re-run on your plan once the limit reset.</li>
+        <li><b>New backup</b>: a GitHub check runs every 5 minutes from 05:00 to 13:00 UK. From 05:44 (05:39 + the timer), if there's still no brief it writes one with the API from the same data and the same rules, and saves it the same checked way. It never writes a second one.</li>
+        <li>The timer is a setting, <code>brief_fallback_mins</code> = 5, stored with the other background-analysis settings.</li>
+        <li>Morning Brief says "Written … by the API (Orchestrator CC missed it)" when the backup wrote it. While nothing has arrived, it says when the backup will step in. ✍️ Write it now stays as before.</li>
+        <li>The writing rules now live in one place (<code>morning_brief_cc.py rules</code>), used by both the scheduled task and the backup.</li>
+      </ul>
+      Honest limit: GitHub runs scheduled checks late at busy times, sometimes 5–15 minutes, so "5 minutes" means 05:44 at the earliest. Tests: 10 checks (BST and GMT timing, the setting, no double write, an API error and an empty answer save nothing), with fake time and a fake API. The real backup hasn't run yet.
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-21-my-day-drag" style="margin-bottom:30px;">
     <div class="card-title">☀️ Oct 21 — My Day rebuilt: one draggable timeline, a clean home, a shortcut list (MDX-0..7)</div>
     <div class="card-body">
