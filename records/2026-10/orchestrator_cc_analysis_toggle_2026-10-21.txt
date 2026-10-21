@@ -76,3 +76,18 @@ CC-2 BUILT (Oct 21 2026) - Alex: "do it"
 - phylumPath._checkFallbackAnswers dispatches cc rows to orchestratorCC.resumeRow and calls sweepStale
 - worker: jobs/job/answer; scheduled task prompt updated (10 prompts per run beside 5 videos)
 - Tests: 14 app checks (fake db), 1 API-path check with the real _afterExtract, 6 worker checks, CC-1 suites re-run.
+
+CC-3 BUILT (Oct 21 2026) - Alex (answering my 3-option question): "make it at one time at 6am, deduplicate and /paranoia this to get best results"
+Paranoia pass (right-sized, rule 11 - evidence + risks inline, no sub-agents):
+- EVIDENCE: journal has ZERO source='morning-routine' rows - the 06:00 task "SUCCEEDED" daily but its curl save never landed
+  (a rolled-back test insert as role anon works, so the failure was the session's hand-written curl). Fix: scripts/morning_brief_cc.py save
+  inserts with return=representation and re-reads.
+- EVIDENCE: the app panel already renders realmBrief, recall, lifeLibrary, xpSeason, dailyLife beside the brief (dashDeck._fillBrief), and myDay
+  has its own Good-morning screen; the old API prompt repeated realm pick, do-today and own words -> excluded from the AI brief (dedup).
+- EVIDENCE: only Gmail + YouTube need the app secret (Composio via /api); shifts/blocks/routines/agendas/reviews/insights/ideas are anon-readable.
+- RISK REJECTED: storing RPGACE_API_SECRET (or a read token) in the CC environment - stored secret + prompt-injection path via email subjects
+  into a session holding it. Inbox/YouTube stay live app lines (code, no AI).
+- DROPPED: knowledge-gap section (tree empty since Sep 25, it only ever said "sync your encyclopedia").
+- Schedule: CRON_TZ=Europe/London 39 5 * * * (ready before 6am; jittered off :00 per scheduler guidance).
+- App: morningBrief._generate -> todayBrief -> _showCCBrief | _showNoBrief (🤖) | _generateApi (💳 / button).
+- Tests: 8 script checks, 5 app checks.

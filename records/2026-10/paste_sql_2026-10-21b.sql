@@ -19,3 +19,6 @@ update ceo_plan_items set status='yellow', evidence='Built Oct 21: scheduled tas
 
 -- CC-2
 update ceo_plan_items set status='yellow', evidence='Built Oct 21: orchestratorCC.logic.queue/resumeRow/sweepStale over oracle_fallback_queue (context.cc); Bookworm chapter extraction (whole chapter, cc_queued_at), weekly challenge ideas, Year Wrapped paragraph; worker jobs/job/answer; CC task answers 10 per run. 14+1+6 headless checks. Untested live.', last_checked_at=now() where item_code='CC-2' and plan_id=(select id from ceo_plans where name='Orchestrator CC Analysis');
+
+-- CC-3
+update ceo_plan_items set status='yellow', evidence='Built Oct 21: one Morning Brief - task trig_015uRjGVrdmiwc5zxq47mMA6 at 05:39 UK runs scripts/morning_brief_cc.py gather/save (one checked journal row); morningBrief shows it + live inbox/YouTube, API only when missing. Found: old task never saved a row. 8+5 headless checks. Untested live.', last_checked_at=now() where item_code='CC-3' and plan_id=(select id from ceo_plans where name='Orchestrator CC Analysis');
