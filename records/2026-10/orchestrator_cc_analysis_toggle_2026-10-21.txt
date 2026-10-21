@@ -54,3 +54,12 @@ CC-1 BUILT (Oct 21 2026) - Alex: "it works. continue" (public-key writes, as rec
 - PULLED FORWARD FROM CC-4: the 12h fallback (workflow first step + both runners). Reason: no CC task exists yet and this
   session cannot reach Supabase to run the worker by hand, so without it a video would wait forever.
 - Tests: 25 worker checks (fake Supabase), 3 runner paths, 5 app checks. Untested live (no Supabase egress here).
+
+CC-4 BUILT (Oct 21 2026) - Alex: "do it and i want the fallback sooner"
+- scheduled task trig_01Sqkyndoq1Wn53xg15d5TCC "RPGACE Orchestrator CC video analysis", cron 5 */2 * * * (UTC), fresh session,
+  env env_012ep33Ec5knvd4c8KUPtFW4, no connectors, notifications off; max 5 videos per run (my recommendation, he said "do it")
+- app_settings.background_analysis: fallback_hours 12 -> 3 (his "sooner"; my pick of the number - 3h = one missed 2h pick-up),
+  anchor_minute 0 -> 5 (matches the task's :05, so the app countdown is right)
+- smoke test fired once by hand at build time (session cse_01MLNrgLpMmpU34J8Tcog2ac)
+- CORRECTION same turn: Alex "no keep it at 12 hours" -> fallback_hours set back to 12 (app_settings + DEFAULTS + docs).
+  Only anchor_minute 5 and the task itself remain from this step.

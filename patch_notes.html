@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-21-cc-task" style="margin-bottom:30px;">
+    <div class="card-title">🤖 Oct 21 — The 2-hourly Orchestrator CC task is on (CC-4)</div>
+    <div class="card-body">
+      Your words: "do it" (5 per run). The fallback stays at 12 hours ("no keep it at 12 hours").
+      <ul>
+        <li><b>New scheduled task "RPGACE Orchestrator CC video analysis"</b>: every 2 hours at :05 (UK time: 1:05, 3:05… during winter time). It starts a fresh session, gets the code, and runs <code>scripts/intel_cc_worker.py list</code>. If nothing is waiting it says "Nothing waiting." and stops. Otherwise it analyses up to <b>5 videos</b> (oldest first) on your Claude plan, saves them and releases anything it can't finish.</li>
+        <li><b>Fallback: still 12 hours</b>: a 🤖 video only goes to the API if the task has missed it for 12 hours. The number is in the same database row as the switch.</li>
+        <li>The Videoworm "next pick-up" countdown now uses :05 to match the task.</li>
+        <li>No push or email from the task (12 runs a day would be noise). Its runs show in your list of scheduled tasks.</li>
+      </ul>
+      <b>Uses your Claude plan, not the API</b>: a small amount per run even when nothing's waiting, and more per video.<br>
+      <b>How to check it</b>: with 🤖 on, send a short TikTok/Instagram link. Videoworm shows 🤖 waiting within about 10 minutes, then ✓ after the next :05 pick-up on an even hour (UTC). Smoke test: fired once by hand on build.
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-21-cc-videos" style="margin-bottom:30px;">
     <div class="card-title">🤖 Oct 21 — Videos can be analysed by Orchestrator CC on your Claude plan (CC-1)</div>
     <div class="card-body">
