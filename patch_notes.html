@@ -73,6 +73,26 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-21-actions" style="margin-bottom:30px;">
+    <div class="card-title">⭐ Oct 21 — Routines are now Actions, and they lead the ▾ lists (AC-1)</div>
+    <div class="card-body">
+      Your words: "routines is not a feature I want anymore right now, change it to action". Your answer: "Rename + Actions feed the ▾ list". Step 2 of 11.
+      <ul>
+        <li><b>Renamed on screen</b>: My Day, Plan my day, Plan week, the side list, the menu, XP and the Doing now lists now say Actions (+ Add actions, Manage actions, Edit action, Make it an Action…). Your own names, like "Morning routine", and the 🌅/🌙 Morning and Night blocks are unchanged.</li>
+        <li><b>▶ Doing now ▾ / ✓ I just did ▾</b> now start with <b>⭐ Your Actions</b>:
+          <ul>
+            <li>due today, most overdue first (e.g. "Bins out · 13 days overdue");</li>
+            <li>then what you did lately (last 3 weeks, up to 5);</li>
+            <li>then "All your Actions (n)", folded, each with "due in N days" where it counts down.</li>
+          </ul>
+          The realm tree and ✏️ Something else stay below.</li>
+        <li><b>Not changed yet</b>: picking an Action logs it as Doing now / I just did, like the realm list already did. It doesn't tick the Action (so a countdown like "bins every 21 days" isn't reset from here). Doing that would pay XP twice without a database change, so it's flagged for the timeline steps.</li>
+        <li><b>Data</b>: nothing moved; the table is still called routines.</li>
+        <li><b>Tested</b>: 7 new headless checks (order, overdue, lately, folded rest, past one-offs and paused Actions hidden, picking asks minutes with the estimate, menu wording); My Day, Doing Now and side-list tests pass (the dn/dn4 failures are older and unchanged). <b>Untested by your hand.</b></li>
+      </ul>
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-21-side-list-everywhere" style="margin-bottom:30px;">
     <div class="card-title">☰ Oct 21 — Every area page has the side list (SL-0)</div>
     <div class="card-body">
