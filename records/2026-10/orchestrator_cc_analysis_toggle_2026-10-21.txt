@@ -63,3 +63,16 @@ CC-4 BUILT (Oct 21 2026) - Alex: "do it and i want the fallback sooner"
 - smoke test fired once by hand at build time (session cse_01MLNrgLpMmpU34J8Tcog2ac)
 - CORRECTION same turn: Alex "no keep it at 12 hours" -> fallback_hours set back to 12 (app_settings + DEFAULTS + docs).
   Only anchor_minute 5 and the task itself remain from this step.
+
+CC-2 BUILT (Oct 21 2026) - Alex: "do it"
+- Found first: the knowledge tree is paused (LL-3), so a chapter's only real API cost is the extraction (+ Haiku condense);
+  placement makes zero calls. CC gets the whole chapter (60,000-char cap, honest cut marker) instead of the 12,000 condensed cut.
+- orchestratorCC.logic: types/registerType/handles/openRow/queue/parseAnswer/resumeRow/runApi/sweepStale
+- oracle_fallback_queue reused (rule 8) - context.cc=true; status 'api_fallback' when the 12h fallback takes a row
+- bookworm: _extractPrompt + _afterExtract split out of _analyzeChapter (shared by API + CC), _ccApply/_ccApi,
+  bookworm_chapters.cc_queued_at (new column), waiting screen shows the CC line (no stall/Resume), _resumeChapterAnalysis guards it
+- xpSeason: oracleSuggestions -> queue (picker says so), ccApplyChallenges (current week only, skips if Oracle ideas exist),
+  saveOracleSuggestions; ensureWrappedText -> queue, saveWrappedText
+- phylumPath._checkFallbackAnswers dispatches cc rows to orchestratorCC.resumeRow and calls sweepStale
+- worker: jobs/job/answer; scheduled task prompt updated (10 prompts per run beside 5 videos)
+- Tests: 14 app checks (fake db), 1 API-path check with the real _afterExtract, 6 worker checks, CC-1 suites re-run.

@@ -16,3 +16,6 @@ update ceo_plan_items set status='yellow', evidence='Built Oct 21: cc mode in bo
 
 -- CC-4
 update ceo_plan_items set status='yellow', evidence='Built Oct 21: scheduled task trig_01Sqkyndoq1Wn53xg15d5TCC (5 */2 * * * UTC, fresh session, max 5 videos per run) drives scripts/intel_cc_worker.py; fallback stays 12h (Alex); anchor_minute 5. Smoke run finished clean in 26s. Untested on a real video.', last_checked_at=now() where item_code='CC-4' and plan_id=(select id from ceo_plans where name='Orchestrator CC Analysis');
+
+-- CC-2
+update ceo_plan_items set status='yellow', evidence='Built Oct 21: orchestratorCC.logic.queue/resumeRow/sweepStale over oracle_fallback_queue (context.cc); Bookworm chapter extraction (whole chapter, cc_queued_at), weekly challenge ideas, Year Wrapped paragraph; worker jobs/job/answer; CC task answers 10 per run. 14+1+6 headless checks. Untested live.', last_checked_at=now() where item_code='CC-2' and plan_id=(select id from ceo_plans where name='Orchestrator CC Analysis');

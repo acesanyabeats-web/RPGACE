@@ -19,6 +19,18 @@ CC-4, or by hand) then runs:
   python3 scripts/intel_cc_worker.py finish <job_id>   quote-check + save the report
   python3 scripts/intel_cc_worker.py release <job_id>  put it back if it couldn't finish
 
+CC-2 (Oct 21 2026): the app's other background prompts (book chapter
+insights, weekly challenge ideas, the Year Wrapped paragraph) wait in
+oracle_fallback_queue (status pending) on the 🤖 switch:
+
+  python3 scripts/intel_cc_worker.py jobs              pending prompts
+  python3 scripts/intel_cc_worker.py job <id>          write /tmp/intel_cc/q_<id>/PROMPT.md
+      ... the session answers it in answer.txt (JSON only when the task says so) ...
+  python3 scripts/intel_cc_worker.py answer <id>       send the answer back
+
+The app picks answered rows up itself (phylumPath._checkFallbackAnswers ->
+orchestratorCC.logic.resumeRow) and runs the rest of its normal pipeline.
+
 finish runs rpgace_intel.parse_insights (every quote checked word for word
 against the whole transcript, VW-3) and rpgace_intel.push_report - the exact
 code the API path uses (rule 8), so a CC report looks the same in the app.
@@ -161,6 +173,66 @@ def cmd_finish(jid):
     return 0
 
 
+QUEUE = "/rest/v1/oracle_fallback_queue"
+JSON_TIERS = ("extractor", "ground_worker_json")
+
+
+def cmd_jobs():
+    rows = ic.http("GET", QUEUE + "?status=eq.pending&order=created_at.asc&select=id,tier,created_at,context&limit=50")
+    if not rows:
+        print("No prompts waiting.")
+        return 0
+    print(f"{len(rows)} prompt(s) waiting:")
+    for r in rows:
+        c = r.get("context") or {}
+        print(f"  {r['id']}  {r.get('tier')}  {c.get('type') or '-'}  since {r.get('created_at')}")
+    return 0
+
+
+def cmd_job(qid):
+    rows = ic.http("GET", QUEUE + f"?id=eq.{qid}&select=id,tier,prompt,status,context,max_tokens")
+    if not rows or rows[0]["status"] != "pending":
+        print("Not a pending prompt.")
+        return 1
+    r = rows[0]
+    d = WORK / f"q_{qid}"
+    d.mkdir(parents=True, exist_ok=True)
+    want = ("Reply with ONLY valid JSON exactly as the prompt asks - no code fences, no notes."
+            if r.get("tier") in JSON_TIERS else "Reply with plain text only.")
+    (d / "PROMPT.md").write_text(
+        f"# RPGACE background prompt {qid} ({(r.get('context') or {}).get('type') or r.get('tier')})\n\n"
+        f"Answer the prompt below yourself, as the RPGACE Oracle would. {want}\n"
+        f"Keep it within about {r.get('max_tokens') or 1000} tokens. Write the answer to `answer.txt` in this folder, then run:\n"
+        f"`python3 scripts/intel_cc_worker.py answer {qid}`\n\n---\n\n{r['prompt']}\n", encoding="utf-8")
+    (d / "row.json").write_text(json.dumps({"tier": r.get("tier")}), encoding="utf-8")
+    print(f"Ready: {d}/PROMPT.md")
+    return 0
+
+
+def cmd_answer(qid):
+    d = WORK / f"q_{qid}"
+    f = d / "answer.txt"
+    if not f.exists():
+        print(f"No {f} yet.")
+        return 1
+    text = f.read_text(encoding="utf-8").strip()
+    tier = json.loads((d / "row.json").read_text()).get("tier") if (d / "row.json").exists() else None
+    if tier in JSON_TIERS:
+        m = re.search(r"\{[\s\S]*\}", text.replace("```json", "").replace("```", ""))
+        try:
+            json.loads(m.group(0) if m else "")
+        except Exception as e:
+            print(f"answer.txt isn't valid JSON ({e}) - fix it and run answer again.")
+            return 1
+        text = m.group(0)
+    from datetime import datetime, timezone
+    rows = ic.http("PATCH", QUEUE + f"?id=eq.{qid}&status=eq.pending",
+                   {"answer": text, "status": "answered", "answered_at": datetime.now(timezone.utc).isoformat()},
+                   headers={"Prefer": "return=representation"})
+    print("Answered - the app picks it up next time it's open." if rows else "Already answered or taken by the API.")
+    return 0
+
+
 def cmd_release(jid):
     ic.http("PATCH", f"/rest/v1/intel_jobs?id=eq.{jid}&taken_by=eq.{WHO}",
             {"status": ic.AWAITING_CC, "progress": ic.CC_WAIT_NOTE, "started_at": None},
@@ -170,15 +242,18 @@ def cmd_release(jid):
 
 
 def main(argv):
-    if len(argv) < 2 or argv[1] not in ("list", "fetch", "finish", "release"):
+    if len(argv) < 2 or argv[1] not in ("list", "fetch", "finish", "release", "jobs", "job", "answer"):
         print(__doc__)
         return 2
     if argv[1] == "list":
         return cmd_list()
+    if argv[1] == "jobs":
+        return cmd_jobs()
     if len(argv) < 3:
         print(f"Usage: {argv[0]} {argv[1]} <job_id>")
         return 2
-    return {"fetch": cmd_fetch, "finish": cmd_finish, "release": cmd_release}[argv[1]](argv[2])
+    return {"fetch": cmd_fetch, "finish": cmd_finish, "release": cmd_release,
+            "job": cmd_job, "answer": cmd_answer}[argv[1]](argv[2])
 
 
 if __name__ == "__main__":

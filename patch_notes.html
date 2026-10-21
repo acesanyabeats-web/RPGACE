@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-21-cc-chapters" style="margin-bottom:30px;">
+    <div class="card-title">🤖 Oct 21 — Book chapters, weekly challenge ideas and Year Wrapped go to Orchestrator CC too (CC-2)</div>
+    <div class="card-body">
+      Your go: "do it". With the switch on 🤖:
+      <ul>
+        <li><b>Book chapters</b>: "I've read this — show insights" sends the <b>whole chapter</b> (up to 60,000 characters; it used to be trimmed to 12,000) to Orchestrator CC instead of the API. The waiting screen shows <b>🤖 Waiting for Orchestrator · next pick-up ~…</b> with no "Resume" button, because nothing is stuck. When the answer comes back, the rest runs exactly as before: realm tags, then your insight-by-insight review.</li>
+        <li><b>Weekly challenges</b>: the picker still shows the rule-based picks straight away. Oracle's 2 ideas say "🤖 being written by Orchestrator CC" and appear next time you open it, but only while it's still that week.</li>
+        <li><b>Year Wrapped</b>: the paragraph is written by Orchestrator CC and shows next time Wrapped opens. The numbers show straight away.</li>
+        <li><b>Safety nets</b>: anything still waiting after 12 hours runs on the API by itself while the app is open. An answer that comes back broken also goes to the API instead of failing.</li>
+        <li>The 2-hourly task now also answers these (up to 10 per run) alongside videos (up to 5).</li>
+      </ul>
+      <b>How to check it</b>: with 🤖 on, open a Bookworm chapter and tap "✓ I've Read This". You should get a green "sent to Orchestrator CC" toast, and the chapter's waiting screen should show the 🤖 line. After the next :05 pick-up on an even hour (UTC), reopen the app; a toast should say the insights are ready. Tests: 14 app checks plus a 💳 path check, and 6 worker checks.
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-21-cc-task" style="margin-bottom:30px;">
     <div class="card-title">🤖 Oct 21 — The 2-hourly Orchestrator CC task is on (CC-4)</div>
     <div class="card-body">
