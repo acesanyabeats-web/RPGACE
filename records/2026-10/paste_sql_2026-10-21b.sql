@@ -7,3 +7,6 @@ select item_code, status from ceo_plan_items where plan_id=(select id from ceo_p
 update ceo_plan_items set status='yellow', evidence='Built Oct 21: automatic routing (ownedElsewhere pass-through, free/Haiku route, deep -> professor, quick -> picked sections only via oracleAppGrounding._buildBlock(sections)), quick: prefix, cost line. 15 headless checks. Untested by Alex.', last_checked_at=now() where item_code='OP-5' and plan_id=(select id from ceo_plans where name='Oracle Professor Mode');
 -- CHECK again: all five OP rows should now be yellow
 select item_code, status from ceo_plan_items where plan_id=(select id from ceo_plans where name='Oracle Professor Mode') order by item_code;
+
+-- CC-0 (Orchestrator CC Analysis plan)
+update ceo_plan_items set status='yellow', evidence='Built Oct 21: app_settings background_analysis + orchestratorCC switch row in dev-status cluster + nextPickup/waiting helpers. 8 headless checks. Nothing routed yet. Untested by Alex.', last_checked_at=now() where item_code='CC-0' and plan_id=(select id from ceo_plans where name='Orchestrator CC Analysis');

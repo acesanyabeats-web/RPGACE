@@ -36,3 +36,10 @@ CC-4 One scheduled task every 2 hours ("RPGACE Orchestrator Analysis") draining 
 CC-5 Tests, docs, cost check (analysis API spend -> ~£0 when CC keeps up).
 CAVEATS stated to Alex: uses his Claude plan's usage (shared with dev sessions); results arrive on the 2h schedule;
 oracle_fallback_queue / intel_jobs stay anon-writable (existing landmine — never RLS-restrict them).
+
+
+CC-0 BUILT (Oct 21 2026)
+- app_settings table (anon read-only, authenticated all), row background_analysis = {"mode":"cc","every_hours":2,"fallback_hours":12,"anchor_minute":0}
+- app_settings added to api/data-write.js ALLOWED_TABLES
+- orchestratorCC module: load/settings/mode/isCC/setMode/nextPickup/fmtWait/waiting + ui.inject/render/waitingLine; switch row in the dev-status cluster
+- 8 headless checks pass. Nothing routed yet. Untested by Alex.

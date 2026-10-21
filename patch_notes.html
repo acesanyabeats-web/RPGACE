@@ -73,6 +73,19 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-21-analysis-switch" style="margin-bottom:30px;">
+    <div class="card-title">🤖 Oct 21 — Background analysis switch: Orchestrator CC or API (CC-0)</div>
+    <div class="card-body">
+      Step 1 of the new plan "Orchestrator CC Analysis". Your words: "i want analysis to fallback on orchestrator CC most of the time, it would be cool as a toggle".
+      <ul>
+        <li><b>One switch</b> under Oracle Mode (tap ⚙ on the top bar): <b>🤖 Background analysis: Orchestrator CC</b> or <b>💳 API</b>. Tap to flip. It's saved in the database (new <code>app_settings</code> table, row <code>background_analysis</code>), so the app and the future cloud task read the same answer.</li>
+        <li><b>Default: Orchestrator CC</b>, every 2 hours; anything still waiting after 12 hours goes to the API. Both numbers live in the same row.</li>
+        <li><b>Nothing routes through it yet</b>: videos, chapters, Morning Brief, challenges and Wrapped still use the API until CC-1..4 are built.</li>
+      </ul>
+      <b>How to check it</b>: tap ⚙, find the 🤖 row, tap it — it turns to 💳 API with a toast. Reload: it should still say 💳. Tap again to put it back to 🤖. Tests: 8 headless checks (load, flip + save, next pick-up time, waiting text, 12-hour fallback).
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-21-oracle-routing" style="margin-bottom:30px;">
     <div class="card-title">🎓 Oct 21 — Oracle Professor Mode done: automatic routing + cost line (OP-5)</div>
     <div class="card-body">

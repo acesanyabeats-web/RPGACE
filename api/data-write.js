@@ -41,6 +41,7 @@ async function sbFetch(path, serviceKey, opts) {
 // anon read-only AND every existing call site has been migrated to this
 // endpoint - never the other way around.
 const ALLOWED_TABLES = new Set([
+  'app_settings',   // Oct 21 2026 (CC-0): background-analysis switch; anon read-only
   'bookworm_books',
   'bookworm_chapters',
   'bibliography',
