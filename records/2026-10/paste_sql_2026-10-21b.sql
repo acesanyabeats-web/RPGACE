@@ -10,3 +10,6 @@ select item_code, status from ceo_plan_items where plan_id=(select id from ceo_p
 
 -- CC-0 (Orchestrator CC Analysis plan)
 update ceo_plan_items set status='yellow', evidence='Built Oct 21: app_settings background_analysis + orchestratorCC switch row in dev-status cluster + nextPickup/waiting helpers. 8 headless checks. Nothing routed yet. Untested by Alex.', last_checked_at=now() where item_code='CC-0' and plan_id=(select id from ceo_plans where name='Orchestrator CC Analysis');
+
+-- CC-1
+update ceo_plan_items set status='yellow', evidence='Built Oct 21: cc mode in both runners (prepare_for_cc -> awaiting_cc, bucket intel-cc), scripts/intel_cc_worker.py list/fetch/finish/release with shared parse_insights + push_report, Videoworm waiting line, 12h fallback (use_api) pulled forward from CC-4. 25+3+5 headless checks. Untested live.', last_checked_at=now() where item_code='CC-1' and plan_id=(select id from ceo_plans where name='Orchestrator CC Analysis');

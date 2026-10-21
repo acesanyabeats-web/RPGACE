@@ -43,3 +43,14 @@ CC-0 BUILT (Oct 21 2026)
 - app_settings added to api/data-write.js ALLOWED_TABLES
 - orchestratorCC module: load/settings/mode/isCC/setMode/nextPickup/fmtWait/waiting + ui.inject/render/waitingLine; switch row in the dev-status cluster
 - 8 headless checks pass. Nothing routed yet. Untested by Alex.
+
+CC-1 BUILT (Oct 21 2026) - Alex: "it works. continue" (public-key writes, as recommended)
+- intel_jobs.awaiting_since + intel_jobs.use_api columns; private bucket intel-cc (anon policy, same as beat-audio)
+- intel_common: http/read_settings/read_mode, bucket helpers, awaiting_body, fallback_requeue, clear_job_files
+- rpgace_intel: insights_prompt (shared prompt), push_report (shared save), prepare_for_cc (free half, zero API calls)
+- runners (cloud + laptop): cc mode -> prepare_for_cc -> awaiting_cc; use_api jobs always API
+- scripts/intel_cc_worker.py list/fetch/finish/release
+- app: Videoworm shows the 🤖 waiting line; awaiting_cc counts as "already sent"; polling stops for it
+- PULLED FORWARD FROM CC-4: the 12h fallback (workflow first step + both runners). Reason: no CC task exists yet and this
+  session cannot reach Supabase to run the worker by hand, so without it a video would wait forever.
+- Tests: 25 worker checks (fake Supabase), 3 runner paths, 5 app checks. Untested live (no Supabase egress here).

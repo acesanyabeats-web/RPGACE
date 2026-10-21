@@ -79,11 +79,21 @@ YT_WAIT_NOTE = "Waiting for the laptop: YouTube blocks cloud servers"
 
 
 def main():
-    if not os.environ.get("ANTHROPIC_API_KEY"):
+    # CC-1: the app's 🤖/💳 switch. 'cc' = this runner only does the free part
+    # (download, transcript, frames) and Orchestrator CC writes the analysis.
+    mode = intel_common.read_mode()
+    print(f"Background analysis: {mode}")
+    if mode == "api" and not os.environ.get("ANTHROPIC_API_KEY"):
         # Exit clean (a red run every 10 min would email Alex each time).
         print("::warning::No INTEL_ANTHROPIC_KEY secret set - leaving the queue for the laptop.")
         return 0
     reset_stuck()
+    try:  # CC-1/CC-4: too long waiting for Orchestrator CC -> back in the queue for the API
+        n = intel_common.fallback_requeue()
+        if n:
+            print(f"{n} job(s) waited too long for Orchestrator CC - the API takes them.")
+    except Exception as e:
+        print(f"::warning::Could not check the CC fallback: {e}")
     print(f"Analyser version {intel_common.ANALYSER_VERSION}")
     # YouTube answers data-centre addresses with "Sign in to confirm you're not
     # a bot" (Oct 11 run #2). Without cookies the cloud leaves YouTube links
@@ -97,7 +107,7 @@ def main():
     started = time.time()
 
     def next_job(skip):
-        q = "intel_jobs?status=eq.queued&order=created_at.asc&select=id,url,realms&limit=5" + yt_filter
+        q = "intel_jobs?status=eq.queued&order=created_at.asc&select=id,url,realms,use_api&limit=5" + yt_filter
         for j in sb("GET", q):
             if j["id"] not in skip:
                 return j
@@ -151,16 +161,29 @@ def main():
         intel.log = quiet_log
 
         sink = io.StringIO()
+        cc = False
         try:
             with contextlib.redirect_stdout(sink), contextlib.redirect_stderr(sink):
                 # RI-4: read it through the realms Alex picked (None = Producer).
-                result = intel.process_url(job["url"], job.get("realms"))
+                cc = mode == "cc" and not job.get("use_api")
+                if cc:
+                    result = intel.prepare_for_cc(job["url"], job.get("realms"), jid)
+                else:
+                    result = intel.process_url(job["url"], job.get("realms"))
         except Exception as e:  # process_url catches its own errors; belt and braces
             result, last["msg"] = None, f"Runner error: {e}"
         ok = bool(result)
-        finish(jid, ok, last["msg"])
+        if ok and cc:
+            sb("PATCH", f"intel_jobs?id=eq.{jid}", intel_common.awaiting_body(), prefer="return=minimal")
+        else:
+            finish(jid, ok, last["msg"])
+            if ok and job.get("use_api"):
+                try:
+                    intel_common.clear_job_files(jid)
+                except Exception:
+                    pass
         done += 1
-        print(f"{jid[:8]}: {'complete' if ok else 'error - ' + last['msg'][:160]}")
+        print(f"{jid[:8]}: {(intel_common.AWAITING_CC if cc else 'complete') if ok else 'error - ' + last['msg'][:160]}")
         if not ok:
             print(f"::warning::{jid[:8]} failed - reason saved on its intel_jobs row")
         job = next_job(tried)

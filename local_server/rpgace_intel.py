@@ -419,17 +419,10 @@ def condense_transcript(timed: str, meta: dict) -> str:
     return timed
 
 
-def generate_oracle_insights(meta: dict, transcript: str, visual_analysis: str, realms=None,
-                             full_transcript: str = None) -> dict:
-    """VW-2 (Oct 20 2026): one call writes a section per picked realm (what it
-    teaches, key points with their quote and time, one thing to try, 3 quest
-    ideas) plus a "how it's made" block only for Creator/Producer/Hustler.
-    One call whatever the number of realms (Alex: one call per input, never
-    one per realm). parse_insights() then fills the long-standing keys
-    (key_learnings, production_techniques, what_to_steal, quests...) from these
-    sections in code, so every reader in the app keeps working."""
-
-    realms = clean_realms(realms)
+def insights_prompt(meta: dict, transcript: str, visual_analysis: str, realms: list) -> str:
+    """The one analysis prompt (CC-1: shared by the API call below and by
+    Orchestrator CC's TASK.md, so both write the same JSON). realms must
+    already be clean_realms()'d."""
     lenses = load_lenses()
     names = ", ".join((lenses.get(k) or {}).get("name") or k.title() for k in realms)
     duration_mins = int((meta.get("duration") or 0) // 60)
@@ -492,7 +485,21 @@ Return this exact JSON structure:
   "watchlist_reason": "<why worth revisiting, or null>",
   "encyclopedia_entry": {{"title": "<title for the article>", "summary": "<2 sentences>", "tags": ["<tag>", "<tag>", "<tag>"]}}{made_part}
 }}"""
+    return prompt
 
+
+def generate_oracle_insights(meta: dict, transcript: str, visual_analysis: str, realms=None,
+                             full_transcript: str = None) -> dict:
+    """VW-2 (Oct 20 2026): one call writes a section per picked realm (what it
+    teaches, key points with their quote and time, one thing to try, 3 quest
+    ideas) plus a "how it's made" block only for Creator/Producer/Hustler.
+    One call whatever the number of realms (Alex: one call per input, never
+    one per realm). parse_insights() then fills the long-standing keys
+    (key_learnings, production_techniques, what_to_steal, quests...) from these
+    sections in code, so every reader in the app keeps working."""
+    realms = clean_realms(realms)
+    prompt = insights_prompt(meta, transcript, visual_analysis, realms)
+    names = ", ".join((load_lenses().get(k) or {}).get("name") or k.title() for k in realms)
     log("Generating Oracle insights (" + names + ")...", GOLD)
     # VW-2: up to 4 realm sections with quotes - 6000 is a ceiling billed on
     # what is written; the whole transcript makes this call longer (3 min).
@@ -780,6 +787,66 @@ def format_output(meta: dict, insights: dict) -> str:
             "Video deleted after analysis · Insights saved to Videoworm and the Encyclopedia", ""]
     return "\n".join(out)
 
+def push_report(meta: dict, insights: dict, transcript: str) -> bool:
+    """Save a finished analysis: replace the video's old intel_reports row
+    (VW-6, intel_reports is anon-writable; the app then rebuilds the article
+    and idea cards via encyclopediaPosts), then add it to intel_watchlist when
+    it scored high. No Encyclopedia write here (VW-5: the app's
+    encyclopediaPosts.ensureArticles is the one pipeline). CC-1 (Oct 21 2026):
+    shared by process_url and Orchestrator CC's worker. Returns True when the
+    report row saved."""
+    import intel_common as ic
+    from urllib.parse import quote
+    score = insights.get("verdict_score", 0)
+    log("Pushing to Supabase...", CYAN)
+    if meta.get("url"):
+        try:  # never let the clear-out block saving the new report
+            ic.http("DELETE", "/rest/v1/intel_reports?url=eq." + quote(meta["url"], safe=""),
+                    headers={"Prefer": "return=minimal"})
+            log("Old report for this video cleared", DIM)
+        except Exception as de:
+            log(f"Couldn't clear the old report ({de}) - saving the new one anyway", RED)
+    try:
+        ic.http("POST", "/rest/v1/intel_reports", {
+            "url":               meta.get("url", ""),
+            "title":             meta.get("title", ""),
+            "creator":           meta.get("uploader", ""),
+            "platform":          meta.get("platform", ""),
+            "score":             score,
+            "insights":          insights,
+            "transcript_snippet": transcript[:500],
+            "added_to_watchlist": bool(insights.get("add_to_watchlist")),
+            # RI-4: the realms it was read through + a score per realm
+            "realms":            insights.get("realms") or [],
+            "realm_scores":      insights.get("realm_scores") or {},
+            "analyser_version":  ANALYSER_VERSION
+        }, headers={"Prefer": "return=minimal"})
+        log("Intel report pushed to Supabase", GREEN)
+    except urllib.error.HTTPError as he:
+        log(f"Supabase HTTP error {he.code}: {he.read().decode('utf-8')[:300]}", RED)
+        return False
+    except Exception as se:
+        log(f"Supabase push error: {se}", RED)
+        log("Report saved locally — use Manual Import in RPGACE as fallback", DIM)
+        return False
+    if insights.get("add_to_watchlist"):
+        enc = insights.get("encyclopedia_entry", {})
+        try:
+            ic.http("POST", "/rest/v1/intel_watchlist", {
+                "url":    meta.get("url", ""),
+                "title":  meta.get("title", ""),
+                "creator": meta.get("uploader", ""),
+                "platform": meta.get("platform", ""),
+                "score":  score,
+                "reason": insights.get("watchlist_reason", ""),
+                "tags":   enc.get("tags", [])
+            }, headers={"Prefer": "resolution=merge-duplicates,return=minimal"})
+            log("Watchlist pushed", GREEN)
+        except Exception as we:
+            log(f"Watchlist push error: {we}", DIM)
+    return True
+
+
 # ── MAIN PIPELINE ─────────────────────────────────────────────────────────────
 def process_url(url: str, realms=None):
     """Full pipeline: download → transcribe → analyse → report → delete.
@@ -833,111 +900,9 @@ def process_url(url: str, realms=None):
             # 9 — Save insight record locally
             save_insight(url, meta, insights, transcript)
 
-            # 10 — Push to Supabase directly (inline — no separate module)
-            score = insights.get("verdict_score", 0)
-            log("Pushing to Supabase...", CYAN)
-            try:
-                import urllib.request, urllib.error, ssl
-                SB_URL = "https://gripopghczmrbrhqtqbm.supabase.co"
-                SB_KEY = "sb_publishable_0Z8C5X-FOLrw95VYKxZVCw_4golMyXf"
-                SB_HEADERS = {
-                    "apikey": SB_KEY,
-                    "Authorization": f"Bearer {SB_KEY}",
-                    "Content-Type": "application/json",
-                    "Prefer": "return=minimal"
-                }
-                # Aug 27 2026 fix: the old "Windows SSL fix" here disabled
-                # cert verification entirely (ssl.CERT_NONE) - confirmed via
-                # its own comment to be a workaround for Windows Python's
-                # missing system cert store, not a deliberate tradeoff. The
-                # real fix is certifi's own bundled CA root store (auto-
-                # installed on first run, same pattern already used for
-                # yt-dlp/whisper below), not disabling verification.
-                try:
-                    import certifi
-                except ImportError:
-                    log("Installing certifi (for real TLS certificate verification)...", CYAN)
-                    subprocess.run([sys.executable, "-m", "pip", "install", "certifi", "--quiet"])
-                    import certifi
-                ssl_ctx = ssl.create_default_context(cafile=certifi.where())
-
-                def sb_post(table, data):
-                    payload = json.dumps(data, ensure_ascii=False, default=str).encode("utf-8")
-                    req = urllib.request.Request(
-                        f"{SB_URL}/rest/v1/{table}",
-                        data=payload, headers=SB_HEADERS, method="POST"
-                    )
-                    with urllib.request.urlopen(req, timeout=20, context=ssl_ctx) as r:
-                        return r.status
-
-                # VW-6: a re-run replaces the video's old report (intel_reports
-                # is anon-writable). The app then sees a report newer than the
-                # article and rebuilds the article + idea cards
-                # (encyclopediaPosts._replaceOld).
-                if meta.get("url"):
-                    try:  # never let the clear-out block saving the new report
-                        from urllib.parse import quote
-                        req = urllib.request.Request(
-                            f"{SB_URL}/rest/v1/intel_reports?url=eq.{quote(meta['url'], safe='')}",
-                            headers=SB_HEADERS, method="DELETE")
-                        with urllib.request.urlopen(req, timeout=20, context=ssl_ctx) as r:
-                            log(f"Old report for this video cleared (status {r.status})", DIM)
-                    except Exception as de:
-                        log(f"Couldn't clear the old report ({de}) - saving the new one anyway", RED)
-
-                # Push intel report
-                status = sb_post("intel_reports", {
-                    "url":               meta.get("url",""),
-                    "title":             meta.get("title",""),
-                    "creator":           meta.get("uploader",""),
-                    "platform":          meta.get("platform",""),
-                    "score":             score,
-                    "insights":          insights,
-                    "transcript_snippet": transcript[:500],
-                    "added_to_watchlist": bool(insights.get("add_to_watchlist")),
-                    # RI-4: the realms it was read through + a score per realm
-                    "realms":            insights.get("realms") or [],
-                    "realm_scores":      insights.get("realm_scores") or {},
-                    "analyser_version":  ANALYSER_VERSION
-                })
-                log(f"Intel report pushed to Supabase (status {status})", GREEN)
-
-                # VW-5 (Oct 20 2026): no direct Encyclopedia write from here any
-                # more. encyclopedia has been app-write-only since the July 24 RLS
-                # flip, so this anon-key POST always failed - and the failure
-                # jumped past the watchlist push below. The app's
-                # encyclopediaPosts.ensureArticles is the one pipeline (rule 8):
-                # it builds the article AND its idea cards from this report.
-                enc = insights.get("encyclopedia_entry", {})
-
-                # Push watchlist if high score
-                if insights.get("add_to_watchlist"):
-                    try:
-                        wl_headers = {**SB_HEADERS, "Prefer": "resolution=merge-duplicates,return=minimal"}
-                        wl_data = json.dumps({
-                            "url":    meta.get("url",""),
-                            "title":  meta.get("title",""),
-                            "creator": meta.get("uploader",""),
-                            "platform": meta.get("platform",""),
-                            "score":  score,
-                            "reason": insights.get("watchlist_reason",""),
-                            "tags":   enc.get("tags",[])
-                        }, ensure_ascii=False).encode("utf-8")
-                        req = urllib.request.Request(
-                            f"{SB_URL}/rest/v1/intel_watchlist",
-                            data=wl_data, headers=wl_headers, method="POST"
-                        )
-                        with urllib.request.urlopen(req, timeout=20) as r:
-                            log(f"Watchlist pushed (status {r.status})", GREEN)
-                    except Exception as we:
-                        log(f"Watchlist push error: {we}", DIM)
-
-            except urllib.error.HTTPError as he:
-                body = he.read().decode("utf-8")
-                log(f"Supabase HTTP error {he.code}: {body[:300]}", RED)
-            except Exception as se:
-                log(f"Supabase push error: {se}", RED)
-                log("Report saved locally — use Manual Import in RPGACE as fallback", DIM)
+            # 10 — Push to Supabase (CC-1: one shared function, also used by
+            # Orchestrator CC's scripts/intel_cc_worker.py)
+            push_report(meta, insights, transcript)
 
             # 11 — Watchlist locally
             if insights.get("add_to_watchlist"):
@@ -978,6 +943,45 @@ def process_url(url: str, realms=None):
                 log("Video cleaned up after error", DIM)
             log(f"Error: {e}", RED)
             return None
+
+
+def prepare_for_cc(url: str, realms, job_id: str) -> bool:
+    """CC-1 (Oct 21 2026): the free half of process_url for Orchestrator CC -
+    metadata, download, Whisper transcript, frames - with zero API calls. The
+    files go to the intel-cc bucket under <job_id>/ (meta.json,
+    transcript.txt = the whole timed transcript, plain.txt, frames/*.jpg);
+    scripts/intel_cc_worker.py hands them to the CC session, which writes the
+    analysis on the Claude plan. Returns True once everything is uploaded."""
+    import intel_common as ic
+    with tempfile.TemporaryDirectory(prefix="rpgace_intel_") as tmp:
+        tmp_path = Path(tmp)
+        video_file = None
+        try:
+            meta = get_metadata(url)
+            duration = meta.get("duration") or 0
+            video_file = download_video(url, tmp_path)
+            transcript, timed = transcribe_audio(video_file)
+            frames = extract_frames(video_file, int(duration), tmp_path)
+            if video_file and video_file.exists():
+                video_file.unlink()
+                log("Video deleted ✓", DIM)
+            log(f"Uploading transcript + {len(frames)} frames for Orchestrator CC...", CYAN)
+            meta = dict(meta, realms=clean_realms(realms), job_id=job_id,
+                        analyser_version=ANALYSER_VERSION, prepared_at=datetime.now().isoformat())
+            ic.put_file(f"{job_id}/meta.json", json.dumps(meta, ensure_ascii=False).encode("utf-8"),
+                        "application/json")
+            ic.put_file(f"{job_id}/transcript.txt", timed.encode("utf-8"), "text/plain; charset=utf-8")
+            ic.put_file(f"{job_id}/plain.txt", transcript.encode("utf-8"), "text/plain; charset=utf-8")
+            for f in frames[:MAX_FRAMES]:
+                ic.put_file(f"{job_id}/frames/{Path(f).name}", Path(f).read_bytes(), "image/jpeg")
+            log("Ready for Orchestrator CC", GREEN)
+            return True
+        except Exception as e:
+            if video_file and video_file.exists():
+                video_file.unlink()
+            log(f"Error: {e}", RED)
+            return False
+
 
 def show_watchlist():
     """Display the current watchlist."""

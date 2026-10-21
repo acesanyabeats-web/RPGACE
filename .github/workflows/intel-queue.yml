@@ -41,6 +41,9 @@ jobs:
               "Content-Type": "application/json", "Prefer": "return=representation"})
           with urllib.request.urlopen(req, timeout=20) as r:
               print("stuck jobs re-queued:", len(json.loads(r.read() or b"[]")))
+          # CC-1 (Oct 21 2026): jobs waiting for Orchestrator CC longer than
+          # fallback_hours (12) go back in the queue for the API.
+          print("waited too long for CC, re-queued for the API:", ic.fallback_requeue())
           PY
           # Without YouTube cookies the cloud can't take YouTube links (bot
           # check), so they don't count - they wait for the laptop.

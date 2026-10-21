@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-21-cc-videos" style="margin-bottom:30px;">
+    <div class="card-title">🤖 Oct 21 — Videos can be analysed by Orchestrator CC on your Claude plan (CC-1)</div>
+    <div class="card-body">
+      Step 2 of "Orchestrator CC Analysis". Your go: "it works. continue" (writes use the public key, as recommended).
+      <ul>
+        <li><b>With the switch on 🤖</b>, the cloud runner and the laptop only do the free part: download, transcript and 8 frames. They upload these to a private storage folder and the job shows <b>🤖 Waiting for Orchestrator · next pick-up ~…</b> in Videoworm. No API call is made.</li>
+        <li><b>Orchestrator CC</b> runs <code>scripts/intel_cc_worker.py</code>: it takes the job, reads the frames and the whole transcript, writes the analysis with the same prompt, and saves it. Every quote is checked word for word against the transcript, the same as now, so the report looks the same in the app.</li>
+        <li><b>12-hour safety net</b> (brought forward from CC-4): a video waiting longer than 12 hours goes back in the queue and the API does it. Without this, videos would wait forever, because the 2-hourly CC task doesn't exist yet.</li>
+        <li><b>With the switch on 💳</b>, nothing changes.</li>
+      </ul>
+      <b>Honest gap until CC-4</b>: nothing picks up 🤖 videos yet except the 12-hour fallback, and this session can't reach the database to run the pick-up by hand. Send a video now and it arrives in about 12 hours by API. Flip to 💳 if you need it sooner. CC-4 (the 2-hourly task) is next.<br>
+      <b>How to check it</b>: with 🤖 on, send a short TikTok/Instagram link. Within about 10 minutes Videoworm should show the 🤖 waiting line instead of ✓. Tests: 25 worker checks against a fake database, 3 runner paths, 5 app checks.
+    </div>
+</div>
+
 <div class="card" id="card-2026-10-21-analysis-switch" style="margin-bottom:30px;">
     <div class="card-title">🤖 Oct 21 — Background analysis switch: Orchestrator CC or API (CC-0)</div>
     <div class="card-body">

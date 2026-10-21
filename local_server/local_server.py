@@ -324,10 +324,30 @@ def process_job(job):
             print(f"    {msg}")
         intel.log = pl
 
-        result = intel.process_url(url, job.get("realms"))  # RI-4: picked realms (None = Producer)
+        # CC-1 (Oct 21 2026): the app's 🤖/💳 switch. 'cc' = only the free part
+        # here (download, transcript, frames); Orchestrator CC writes the analysis.
+        try:
+            import intel_common
+            mode = intel_common.read_mode()
+        except Exception:
+            mode = "api"
+        cc = mode == "cc" and not job.get("use_api")  # use_api: waited too long for CC
+        if cc:
+            result = intel.prepare_for_cc(url, job.get("realms"), jid)
+        else:
+            result = intel.process_url(url, job.get("realms"))  # RI-4: picked realms (None = Producer)
         intel.log = orig_log
 
         status = "complete" if result else "error"
+        if result and cc:
+            req = urllib.request.Request(
+                f"{SB_URL}/rest/v1/intel_jobs?id=eq.{jid}",
+                data=json.dumps(intel_common.awaiting_body()).encode(),
+                headers={**SB_HEADERS,"Prefer":"return=minimal"}, method="PATCH"
+            )
+            urllib.request.urlopen(req, timeout=10, context=SSL_CTX)
+            log("Waiting for Orchestrator CC")
+            return
         # Oct 11 2026: on failure keep the pipeline's last message (the real
         # reason, e.g. "Metadata failed: ...") in `error` instead of losing it
         # under "Done" - all 4 Oct 10-11 jobs failed with no reason recorded.
@@ -362,6 +382,12 @@ def reset_stuck():
         with urllib.request.urlopen(req, timeout=10, context=SSL_CTX) as r:
             n = len(json.loads(r.read().decode() or "[]"))
             if n: log(f"Put {n} stuck job(s) back in the queue")
+    except Exception:
+        pass
+    try:  # CC-1: waited too long for Orchestrator CC -> the API takes it
+        import intel_common
+        n = intel_common.fallback_requeue()
+        if n: log(f"{n} job(s) waited too long for Orchestrator CC - the API takes them")
     except Exception:
         pass
 
