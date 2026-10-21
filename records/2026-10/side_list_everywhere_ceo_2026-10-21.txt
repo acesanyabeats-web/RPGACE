@@ -1,0 +1,73 @@
+Side list everywhere — CEO Loop 1 record (Oct 21 2026)
+
+Alex, verbatim: "Let's make a right swipeable screen for other pages too. /paranoia and /free-for-all-debate each domain one by one using /interrogation into oblivion and /scope as toolkits to gather information each domain at a time, then /CEO"
+
+Advisor cast (this plan): /scope (headless survey of every left-menu page at 400px), /free-for-all-debate per domain, /paranoia-weight scrutiny on the material calls only (scale guardrail: UI declutter, no data/schema risk), /interrogation per domain, Council of 5 report.
+
+EVIDENCE (survey, mocked empty data, 400px): every area page/popup carries the xpSeason realm card (4 buttons) at the top; popups carry sibling-card chips in the nav row (dashDeck._popup); areaNav.bar is the one Back/🏠 row for area pages; 5 pages have no bar: Dashboard, Oracle, Schedule, Journal, Chronicles. Cooking + My Day already have ☰ (RPGACE.sideList).
+
+ROUND 0 — shared (answers verbatim):
+- Mechanism: "One shared hook (Rec.)" — ☰ + swipe added once in areaNav.bar + dashDeck popup nav; 'this area' group from the left-menu groups; pages add their own 'This page' extras.
+- Realm card: "Keep as it is" — full card stays at the top of every page.
+- Sibling chips on popups: "Move into ☰ (Rec.)".
+- List scope: "This area only (Rec.)" — left menu stays the way to other areas.
+
+ROUND 1 — Content & Video (answers verbatim):
+- Reference tracks: "Fold + tools to ☰ (Rec.)" — one '➕ Add a track' button opens the 11-field form; Bulk import / Refresh / Look up missing into ☰ This page.
+- Long pages: "☰ 'On this page' jumps (Rec.)" — ☰ lists a page's sections, tap scrolls there; applies to any long page in any area (Selling: Beats for sale · Artist outreach · Money).
+- Beats home: "Tools to ☰, steps keep one button (Rec.)" — Playlist Psychologist / Reference tracks into ☰ Tools; duplicate step buttons (My beats ×2, Start making ×2) removed.
+- Money: "Links to ☰, keep switch (Rec.)" — Wishlist/Selling cross-links into ☰; Hustler/Steward switch stays.
+- Open check (not a decision): Idea Bank + Beat Log rendered nothing under the realm card in the headless survey (empty mocked data); confirm with real data during the build before touching them.
+
+ROUND 2 — Knowledge (answers verbatim):
+- Encyclopedia sync buttons, 1st answer: "We should /paranoia and /debate-free-for-all on whether any of these are even needed". Evidence: ⚡ Sync (×2, syncAndPush) = laptop push + re-read, redundant (syncIntelData auto-runs every 30s; cloud analyser writes intel_reports directly since Oct 20); 🌿 Sync Taxonomy (taxonomySync._runSync) copies encyclopedia titles into taxonomy_nodes (51 director rows + artist lookups read by beatLog/config/contentRepurpose), last write Aug 23, taxonomy paused; 🗑 Clear All deletes all 35 encyclopedia rows behind one confirm(), no backup. Final answer: "Delete all 4 (Rec.)" (per-card delete stays).
+- Encyclopedia filters: "One 'Filter & sort' row (Rec.)".
+- Videoworm: "Insights stays, rest to ☰ (Rec.)" — Watchlist, Sync, How it works, Manual Import into ☰.
+- Phylum Path: "1 but also dedup Aws with taxonomy and bring best of both worlds into it. /Paranoia and /drift and /scope it all" — generators into ☰ + realm jumps in ☰ On this page.
+- Study (AWS) ↔ taxonomy evidence: study_courses 1 / study_lessons 18 / study_questions 300 / study_attempts 12; taxonomy_tree 0 rows; jargon_encyclopedia 545 (153 accepted, phyla 1-5 only); AWS fits Phylum 20 Technologia (Builder). Drift MATERIAL: two learning structures, no link.
+- Merge shape, verbatim: "Phylum maps out the knowledge, the study extracts needed info from parts to make lessons, I can also choose areas to mesh together, in music mixing techniques that no one thought of and learning from a new perspective could bring innovation and inspiration, so keeping it separate would bring huge benefits in the future. /Paranoia and /debate-free-for-all with /scope /drift and /interrogation, then /CEO too"
+- Jargon: "AWS terms join Jargon,Terms feed lessons".
+- Timing: "Its own plan, after ☰ (Rec.)" -> queued as a separate plan ("Learning: map + lessons + mesh"), its own Loop 1 with the cast above, after this plan's build.
+
+ROUND 3 — Habits (answers verbatim):
+- Sibling chips (3 rows on every Habits popup): covered by Round 0 (into ☰). Cooking keeps its own custom ☰ list; the shared hook must not add a 2nd ☰ where one exists.
+- Gym: lean already, ☰ only.
+- Calorie target: "Targets tab only (Rec.)".
+- Quick logs: "Include cigarettes and coffee too in 1" — one compact Quick log row on Health & body Today: 💧 +1 glass · ⚖️ Weight · 😴 Sleep · 🚬 Cigarettes · ☕ Coffee. Evidence: cutback_items already holds "Cigarettes" and "Coffee / energy drinks" (2 cutback_log rows each, My Day MD2 trackers) -> 🚬/☕ write through myDay's existing cut-back log path, no new table (rule 8). Water/weight/sleep keep healthBody's body_log path.
+- Wishlist: "Fold form, budget to ☰ (Rec.)" — '➕ Add an item' opens the form; budget target setting into ☰ (the 'what fits' line stays); 💷 Money link into ☰.
+
+ROUND 4 — Schedule & Journal (answers verbatim):
+- Rota buttons: "Both into ☰ (Rec.)" (⬆ Import Shifts, + Update Rota — rota-sync.yml imports Fourth every Monday).
+- Journal: "Delete Clear All, Refresh to ☰ (Rec.)".
+- Journal chips: "Plain names + 1 filter row (Rec.)".
+- No-bar pages: "1 but also make doing now and I just did have a drop down list of already possible stuff for me to do, also routines is not a feature I want anymore right now, change it to action, making templates would not work for me when I want to plan different days. Make doing now and just did have effect over schedule and change the timeline by asking what I've done and all details to create block, any blocks missed get a question why (like morning routine not even done, I woke up at 12pm, went straight to remove my stitches. These buttons are needed to correct the timeline and keep me in check when I go of course. /Paranoia /debate-free-for-all this with /interrogation /scope /drift this, then /CEO further" -> shared bar (☰ + ← Back + 🏠) added to Schedule, Journal, Chronicles, Oracle, Dashboard.
+- Evidence (live): routines 19 (17 active; mostly chores/to-dos on countdowns, 1 daily Morning routine); day_templates 2, week_templates 0; chore_blocks 7, 0 ever done; doing_now rows 2 (both I just did). Doing Now rows land as separate timeline items beside the planned block (segments(), canDrag excludes them); bookends stay at wake_time; no "why missed" anywhere (evening review = Tomorrow/Drop/Skip only); ▾ drop list exists (MDX-4, realm-first). Drift MATERIAL: timeline shows the plan, not the real day.
+- Actions: "Rename + Actions feed the ▾ list (Rec.)" — Routines -> Actions everywhere; Actions (due + recent first) top the Doing now / I just did ▾ list; countdowns stay as 'due' hints.
+- Templates: "Delete them" — day/week templates removed (code + the 2 day_templates rows). Tier-3 data delete: show Alex the exact rows at build time before deleting (no backup).
+- Overlap: "1 but ask if I want to move missed block further down in case it is just timing" — on overlap ask once "Did this replace your <block>?": Yes = block marked replaced, timeline shows what you did; No = offer "Move <block> later" (next free gap, existing logic.guard push) or keep both.
+- Missed why: "Both" — 'What happened?' card next time My Day opens listing every block that passed with nothing logged, plus anything still unanswered at the evening review.
+- Quick reasons: "Woke up late,Something came up,Chose to rest / skip,Forgot / ran out of time" + type your own. Woke up late asks the real wake time and moves the Morning block and the rest of the day after it; Something came up asks what and logs it as what you did instead.
+- Then: "Later today / Tomorrow / Drop (Rec.)".
+- I just did: "What + when + how long (Rec.)" — pick an Action (or type), start time (default: just finished now), length, then the existing optional details.
+- Reasons saved (journal, evening_review-style) and shown in the Sunday review.
+
+ROUND 5 — Oracle / Chronicles / Oversight / Dashboard (answers verbatim):
+- Oracle tools: "Into ☰ + 1 Tools chip (Rec.)" — 8 tool buttons + 8 ⚡ Execute agent actions into ☰; '🧰 Tools' chip beside the input opens the same list.
+- Chronicles: "One filter row (Rec.)"; + Log Sale / Expense stays.
+- Dashboard: "No ☰ on Dashboard".
+- Oversight: lean, ☰ only (no question needed).
+
+EXTRA EVIDENCE before drafting: chore_blocks_status_check = planned|cancelled only (AC-4/5 need replaced/missed/moved -> widen the CHECK, a schema change flagged at build); no code writes chore_blocks 'done' (myDay line ~62686 checks status !== 'done', a dead branch); quest_log has 0 block ticks -> blocks have never been recorded done anywhere.
+
+DRAFTED PLAN (ceo_plans "Side List Everywhere + Real-Day Timeline", basis provisional until Alex approves):
+SL-0 shared hook + helpers · SL-1 Content & Video · SL-2 Knowledge · SL-3 Habits · SL-4 Schedule & Journal pages · SL-5 Oracle/Chronicles/Oversight · AC-1 Routines->Actions + ▾ list · AC-2 delete templates · AC-3 I just did what/when/how long · AC-4 overlap replace/move · AC-5 missed-block 'What happened?'.
+Each item ships alone: brief first (rule 18), build, headless tests at 400px, docs, deploy READY.
+
+DRIFT CHECK (draft vs every answer above): every answer maps to an item; Round 0 realm card = no change (recorded, nothing to build); Learning merge = separate plan (Alex: after ☰); Idea Bank/Beat Log = a check inside SL-1, not a redesign. VERDICT on track, BASIS provisional, no MATERIAL/CAPTURED gaps.
+
+COUNCIL OF 5 (on the draft):
+- Risk: SL-0 touches every page's bar — one shared change, one test pass across all 30 screens (the survey script) before ship. AC-4/5 change the timeline's meaning; the CHECK widen is the only schema change.
+- Cost: SL items are small UI moves; AC-4/5 are the real work.
+- Maintainability: 3 new shared helpers replace per-page copies (rule 8); cookingOracle's _foldForm moves into the shared one.
+- Alex's goals: AC-* directly answers "correct the timeline and keep me in check"; SL-* answers "make the page more practical".
+- Why NOT: hiding things behind ☰ can make features harder to find; AC-5 adds a daily question — kept to one card, skippable.
