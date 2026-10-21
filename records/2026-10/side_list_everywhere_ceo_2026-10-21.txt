@@ -78,3 +78,13 @@ STEP 6 — Alex's review (verbatim):
   -> AC-3 now: ▶ Doing now AND ✓ I just did ask what + when + how long (Doing now: started when, default now, + expected length). An action with a live page opens it straight away (no "open it?" step): Cook Mode (recipe), gym logger (gym), focus timer (planned block), Study session (studying), Bookworm (current book). Beat/post sessions keep their which-beat/which-post question (BT-2/PC-3).
 - Order: not answered -> default used: SL-0, AC-1..5, SL-1..5 (Alex may change).
 RATIFIED Oct 21 2026 (ceo_plans basis=ratified). This record is the /drift baseline for Loop 2.
+
+== AC-2 build (Oct 21 2026) ==
+Brief accepted with "Go". Evidence: day_templates had 2 rows, both source='locked' (lock-in records,
+Tue 20 Oct + Wed 21 Oct, no name); 0 saved templates; week_templates 0 rows. No FK/trigger/view/function
+references either table. Alex's answers (AskUserQuestion): "Delete both (Rec.)" and "Drop the tables".
+Connector cancelled the migration -> records/2026-10/paste_sql_2026-10-21e.sql.
+Code: removed learnedSource, savedTemplates, itemFromSched, save/removeDayTemplate, weekBlocks,
+templateFromWeek, save/applyWeekTemplate, the Plan my day source picker + Save as template, the Plan week
+saved-week select + Save this week, the lock-in day record, and both tables from the data-write allowlist.
+Plan my day = buildDay(date, []); nightBeforeStatus planned = Schedule entries or dayBlocks(date).

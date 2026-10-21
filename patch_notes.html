@@ -73,6 +73,20 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-21-no-templates" style="margin-bottom:30px;">
+    <div class="card-title">🗑 Oct 21 — Day and week templates deleted; Plan my day opens on what's due (AC-2)</div>
+    <div class="card-body">
+      Your words: "making templates would not work for me when I want to plan different days". Your answers: "Delete them", then "Delete both" and "Drop the tables". Step 3 of 11.
+      <ul>
+        <li><b>What the rows were</b>: you had 0 saved templates. The 2 rows were lock-in records the app wrote itself (Tue 20 Oct and Wed 21 Oct). Your Schedule entries for those days live elsewhere and are untouched.</li>
+        <li><b>Plan my day</b>: no more "Like last Tuesday" / 📌 template picker, no Save as template. It opens on what's due that day, fitted around your shift. Untick, move, add, 🔒 Lock in, same as before.</li>
+        <li><b>Plan week</b>: "Use a saved week" and "💾 Save this week" are gone; the drag timeline stays.</li>
+        <li><b>Lock in</b> no longer keeps a day record. The night-before reminder now treats a day as planned when it has something on the Schedule or a block placed.</li>
+        <li><b>Database</b>: the connector cancelled the delete + drop, so it's in <code>records/2026-10/paste_sql_2026-10-21e.sql</code> for you to paste. Nothing references either table (checked: no keys, triggers, views or functions), and the app has stopped reading them, so it works whether or not you've run it yet.</li>
+        <li><b>Tested</b>: 12 new headless checks (no template reads, picker and buttons gone, opens on what's due, Lock in writes no record, night-before planned/unplanned, Plan week timeline still there); My Day, side list and Actions tests pass. The old DT-1/DT-2/MD-2 template tests are retired with the feature; md3's 🐸 check fails the same on the old code. <b>Untested by your hand.</b></li>
+      </ul>
+    </div>
+  </div>
 <div class="card" id="card-2026-10-21-actions" style="margin-bottom:30px;">
     <div class="card-title">⭐ Oct 21 — Routines are now Actions, and they lead the ▾ lists (AC-1)</div>
     <div class="card-body">

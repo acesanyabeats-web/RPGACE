@@ -86,12 +86,10 @@ const ALLOWED_TABLES = new Set([
   'quest_log',
   'routines', // Oct 12 2026 My Day routines (anon_read_only from creation)
   'chore_blocks', // Oct 14 2026 DT-4 chore blocks (anon_read_only from creation)
-  'day_templates', // Oct 14 2026 DT-1 day templates + locked-day records (anon_read_only from creation)
   'rpgace_shifts', // Oct 12 2026 MD2-1: RLS flipped to anon_read_only/authenticated_all same day; shiftSync + the Fourth cloud runner write here
   'sync_status', // Oct 12 2026 MD2-2: created anon_read_only/authenticated_all; the Fourth cloud runner reports its last run here
   'activity_templates', // Oct 12 2026 MD2-4: schedule activity templates (place, journey, get-ready, category); anon_read_only from creation
   'myday_settings', // Oct 12 2026 MD2-4: single-row get-ready/margin/shift travel settings; anon_read_only from creation
-  'week_templates', // Oct 20 2026 MD-2: saved week layouts (realm + chore blocks by weekday)
   'study_questions', 'study_sessions', 'study_attempts', // Oct 20 2026: Study (exam practice) - recall schedule, rounds, answers
   'myday_alarms', // Oct 18 2026 MD-1: wake alarm per day (anon_read_only from creation); sent by push_alarm() via the myday-push cron
   'travel_profile', 'people', 'plans', 'plan_tasks', // Oct 12 2026 Trips & Plans: locked tables (no anon policy), read via action 'read'
