@@ -1,0 +1,24 @@
+KITCHEN: GROCERY "DONE", STOCK GROUPING, EQUIPMENT MEASURES (Oct 21 2026)
+
+ALEX, VERBATIM
+"I just updated stock, grocery list won't empty need a button, the stock page isn't practical, I need it grouped by type of
+item (cooking/baking/both; spice, fruit, veg etc) I need equipment to be taken into account (eg. I have cup measurers, so give
+it in those , 2 tablespoons is half of 1/4 cup, I can weight things etc)"
+Beat Focus limited to Producer insights: "yes 100% do it" (done, commit 8155a2f).
+
+EVIDENCE
+- shopping_lists: 8 open lists (Sep 16 - Oct 15), 0 items ever bought=true; nothing in the code ever closes a list.
+- pantry_stock: pantry 58, freezer 3, fridge 1 - one flat list per place.
+- kitchen_equipment: 1, 1/2, 1/3, 1/4 cup measurers, 2-cup glass jug, scales; NO measuring spoons.
+- logic._AISLE_GROUPS/_classifyAisle already sorts the grocery list - reuse it for stock type (one classifier).
+
+ANSWERS (AskUserQuestion)
+- Unticked items on Done shopping: "Move to next list (Rec.)"
+- 7 older lists: "Close them all (Rec.)" (close only, stock untouched - he updated stock by hand today)
+- Measures: "Grams for solids (Rec.)" - grams on the scales when a weight is known, liquids + small amounts in his cup measures.
+
+BUILT (Oct 21 2026): logic._finishShopping + ui._confirmDoneShopping; Shop step skips status=done; 8 old lists closed (not 7 -
+one more Sep 16 list existed beyond the first count); ingredients.food_type + use (additive migration), 62 items tagged by hand;
+logic.STOCK_TYPES/stockType/stockUse/setStockTags + ui._editStockTags + grouped stock tab with All/Cooking/Baking filter;
+logic._kit/_parseKit/_noteGrams/_gramsFor/_isLiquid/_kitVolume inside the one formatter _fmtMeasurement.
+TESTS: kit_test 24/24; cm1/cm3/cm4/cm/cookui/cr 136/136.
