@@ -118,3 +118,23 @@ CD-8 Verify + log: coverage check, link-rot, galaxy regen (galaxy_map_skills rea
      skill files), patch_notes card, system_updates, plan rows.
 
 Status: compiled, awaiting Alex's approval (Loop 1 Step 6).
+
+7. APPROVAL + EXECUTION
+Alex: "Do all" (approved as written, all items in one run; rule 18 brief given once).
+Results:
+- CLAUDE.md 291,431 -> ~17.8KB. Topic files docs/claude/{habits,myday,knowledge,content,
+  oracle,landmines,security,oversight,open_forks}.md ~70KB total. Plain links, no @-imports.
+- Old file appended verbatim to CLAUDE_archive.md (headings demoted one level).
+- Coverage: 1,337 identifiers frozen; 0 lost; 915 in live docs; 422 reviewed archived-only
+  (docs/claude/archived_only.txt): retired code (main.js, PIPELINE, voiceInput, ConID tools),
+  old SHAs/row ids, Galaxy build internals, finished-plan record files, generic syntax.
+- scripts/check_claude_md_size.py replaces check_current_state_bloat.py (limits 24KB core,
+  12KB per topic file; dead patch_notes links fail).
+- Skills: 26 authored SKILL.md + CEO/galaxy_development_framework.md rewritten; ~380KB ->
+  ~200KB across .claude/skills (third-party skills untouched). Source of truth flipped to
+  the skill files. Stale facts fixed: Engineer G1/G2 (main.js, two script tags), CEO
+  status vocab (compiled/absorbed, blue/purple), Regeneration (tree empty), fableomnitrix
+  now dispatches subagent_type "fable-readonly" (it appears in this session's agent list).
+- Deviation named (rule 17): executed directly by this session with check scripts as the
+  truth check, not a separate /Engineer dispatch per item.
+- Not done: SELF_KNOWLEDGE untouched (dev-only change, Oracle doesn't describe CLAUDE.md).
