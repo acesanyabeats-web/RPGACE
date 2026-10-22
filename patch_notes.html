@@ -73,6 +73,22 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-22-domain-spine-externals" style="margin-bottom:30px;">
+    <div class="card-title">🏛️ Oct 22 — The 8 domains become the one spine: Oracle's self-description, topic files, external AIs and map dimensions (ED-1..ED-5)</div>
+    <div class="card-body">
+      Your words: "does this make RPGACE total systems more efficient in terms of 1) claude plan usage 2) context picking when developing certain domain ... 3) make galaxy map easier to map out 4) claude api in RPGACE app more efficient with token usage ... then we map out all external ais into domains, and disolve dimensions where needed to keep real ones outside of RPGACE app". Your answers: keep External AIs (Externals + Connectors merged), the Claude Code side, Supabase and the PC pipeline as pages; fold the in-app ones into domain pages; show live and dormant externals, each marked; and fix both Oracle's self-description and the topic files. Then "go on all ed plans".
+      <ul>
+        <li><b>Oracle's self-description (ED-1)</b>: it had grown from 11K to 99K characters in a month. It is now 27K, split into a short core plus one block per domain, and Oracle is sent the core plus only the blocks a question needs (about 4-10K characters instead of the whole 99K). A size limit in <code>scripts/check_self_knowledge_staleness.py</code> stops it growing back silently. This is the one change that saves money inside the app.</li>
+        <li><b>Topic files per domain (ED-2)</b>: <code>docs/claude/</code> now has one file per app domain (oracle, content, knowledge, habits, schedule, chronicles, platform, oversight), each opening with its module list. <code>/CEO</code> planning loads only the files for the domains a plan touches.</li>
+        <li><b>External AIs mapped to domains (ED-3)</b>: 21 externals, up from 16 — Gemini (web search, key pending), Tavily (switched off), Fish Audio (voice, waiting for a key), Supadata (YouTube stats) and Google Health (planned) were missing. Every one now names the domains it serves; Claude's list is worked out from the code (it is called from all 8 domains, not just Oracle). Each is tagged live, dormant, off or planned. Externals and Connectors are one page with four views (web, by domain, cards, call sites), and each domain on the Domains page lists its externals.</li>
+        <li><b>In-app dimensions folded into domains (ED-4)</b>: Oracle calls, human gates, the decision catalog, your menu path, the branch ledger, load triggers and loops now sit inside each domain on <code>galaxy_map_domain.html</code>, one folding section each plus a bubble summary. The 8 old pages (including the Dimensions Matrix) redirect there and open the exact entry an old link pointed to. The sidebar now lists only the 8 dimensions outside the app. Nothing was dropped: the counts match the old pages (22 Oracle call sites, 9 gates, 6 logic points, 3 text inputs, 4,947 branch points, 14 menu paths).</li>
+        <li><b>Checks</b>: map pipeline run twice with identical output, all anchors fresh, every redirected link tested in a headless browser (lands on its entry, no errors). One unclosed <code>&lt;details&gt;</code> on the Current page was already there before this change.</li>
+        <li><b>Not done</b>: the plan rows, one smoke-test row and two perspective reports could not be written — Supabase writes timed out this session while reads worked. The SQL is in <code>records/2026-10/paste_sql_2026-10-22_domain_spine.sql</code> with a check query.</li>
+        <li>Untested by you: the External AIs page, the Domains page's new sections and Oracle's smaller self-description in real chat.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-10-22-claude-md-debloat" style="margin-bottom:30px;">
     <div class="card-title">🧹 Oct 22 — CLAUDE.md slimmed down and split by topic (CD-0..CD-8)</div>
     <div class="card-body">

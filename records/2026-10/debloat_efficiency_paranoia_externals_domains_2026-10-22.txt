@@ -120,3 +120,30 @@ ED-5 Verify + log: pipeline twice (idempotent), verify_anchors, edge coverage, t
      headless console check, link check across docs and Supabase rows, patch notes,
      system_updates, interconnection/system_flow/ai_tooling maps, SELF_KNOWLEDGE.
 Order: ED-1 -> ED-2 -> ED-3 -> ED-4 -> ED-5. Status: compiled, awaiting approval.
+
+7. EXECUTION (Oct 22 2026, Alex: "go on all ed plans")
+- ED-1 f6cabdc/383617f: SELF_KNOWLEDGE 99,132 -> 26,635 chars, [[CORE]] + 8 [[DOMAIN]] blocks; oracleProfessor
+  skParts/skSections/coreText; every grounded call sends core + picked sections (~4-10K), never the full digest;
+  size gate (total 34K / core 2.6K / block 6.5K) in check_self_knowledge_staleness.py. Yellow.
+- ED-2 99a0feb: docs/claude one file per RPGACE.DOMAINS key + landmines/security/open_forks; myday.md split into
+  schedule.md + chronicles.md, platform.md split out of oracle.md; module list atop each; CEO Loop 1 Step 0 loads
+  only the plan's domain files. Coverage 0 lost, size PASS. Green.
+- ED-3 f9c4c23: EXTERNAL_CONNECTORS 16 -> 21 (Google Gemini, Tavily, Fish Audio, Supadata, Google Health API);
+  every external mapped in EXTERNAL_RIVER_LINKS; Anthropic domains computed from code (compute_anthropic_domains:
+  all 8 domains, 32 modules); EXTERNAL_STATE tags; Unsplash domain note fixed; Externals + Connectors merged
+  (galaxy_map_externals.html views Web/By domain/Cards/Call sites; connectors.html redirect keeps #hash);
+  domain page lists each domain's externals. Yellow.
+- ED-4 e43a7c0: scripts/galaxy_map_domain_dims.py renders 7 in-app dimensions per domain on
+  galaxy_map_domain.html from the old pages' own data functions; counts match the sources (22 Oracle call sites,
+  9 gates, 6 logic + 3 text inputs, 14 menu paths, 4,947 branch points, 118 load triggers, loop rows);
+  8 old pages are redirects (main() writes the redirect; build_legacy_page() kept, not called);
+  DIMENSION_PAGES keeps 8 outside-the-app pages; hub marks MERGED. Yellow.
+- ED-5: pipeline twice byte-identical; verify_anchors fresh; edge evidence 97.0%; headless checks on every
+  redirect case; docs updated (patch_notes card, interconnection_map, ai_tooling_and_rules_map connector table,
+  docs/claude/oversight.md, galaxy_development_framework.md, SELF_KNOWLEDGE OVERSIGHT block).
+- Deviation, named: Supabase writes timed out all session after ED-2 (reads worked). Plan rows ED-3..ED-5,
+  the G39 smoke row repoint, two perspective findings and the system_updates row are in
+  records/2026-10/paste_sql_2026-10-22_domain_spine.sql with a check query, for Alex.
+- Deviation, named: /Engineer Stage 5 was run as this session's own re-verification (counts re-derived from the
+  source functions, headless tests), not a separate /Engineer invocation (rule 17).
+- Pre-existing, not fixed: galaxy_map_current.html has one unclosed <details>.

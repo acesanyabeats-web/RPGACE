@@ -46,6 +46,7 @@ Alex, Aug 13 2026: *"everything that we have done since galaxy map is now part o
 - **R28** Every "when to trigger" rule needs a cheap standing check that it was followed. The checks `check_module_domains.py`, `verify_anchors.py` and `verify_edge_evidence_coverage.py` sit in the session-start table.
 
 ## Open, not built
-- **G26 decisions hierarchy**: Phase 1 is built (`galaxy_map_decisions.html`, 10 human gates, anchor-verified, linked from Current and Decision Matrix). Phase 2 (`smoke_test.html`/`colourgradient` integration) is not built.
+- **G26 decisions hierarchy**: Phase 1 is built (human gates, anchor-verified; since ED-4 they render inside each domain on `galaxy_map_domain.html`, the old `galaxy_map_decisions.html` redirects). Phase 2 (`smoke_test.html`/`colourgradient` integration) is not built.
+- **ED-4 (Oct 22 2026)**: in-app dimensions live inside their domain (`scripts/galaxy_map_domain_dims.py`); a Dimension page is kept only for something outside the RPGACE app. A new in-app view goes into `galaxy_map_domain_dims.DIMS`, not a new page.
 - **G27/G28**: externals touching both UI and backend, and skills as actors — later passes.
 - **Taxonomy convergence**: Alex, *"the galaxy development framework will also be a blueprint that combines with taxonomy development later on when i get to it so it becomes a more coherent system."* A future `/CEO` pass.
