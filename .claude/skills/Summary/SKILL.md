@@ -1,27 +1,27 @@
 ---
 name: Summary
-description: Produces a rigorous, evidence-checked summary of what actually happened across a stretch of work (a session, a multi-step task, a run of several rounds), specifically to restore Alex's context when he's lost track of what was done, decided, or is still open. Combines GODMODE+scope evidence-gathering, a real /5thDimension-style built-vs-reported reconciliation, a /debate on how to present findings, and two Council of 5 passes (one on the debate's quality, one for final recommendations). Use this skill whenever Alex says "/Summary", asks "what happened", "catch me up", "where are we", or otherwise signals he's lost the thread and needs a real, verified recap rather than a recalled-from-memory one. Also invoked as a sub-step by the `Bedtime` sibling skill at session close. Scale the depth to the size of what's being summarized — a single afternoon's small fix does not need the full heavy sequence; a whole multi-round session does.
+description: An evidence-checked recap of what actually happened across a stretch of work (a session, a multi-step task, several rounds), to restore Alex's context — GODMODE+/scope evidence, a built-vs-reported reconciliation, a /debate on where findings belong, and Council of 5 for quality and recommendations. Use when Alex says "/Summary", "what happened", "catch me up", "where are we", or has lost the thread. Also called by /Bedtime. Scale the depth to the size of what's being summarised.
 ---
 
-# /Summary — a real, evidence-checked recap when context needs restoring
+# /Summary — a verified recap
 
-Alex named this July 24, specifically for the moment he's lost track of what actually happened across a run of work and needs to be caught up — not a recollection from chat scrollback (which he may not have open, or may not trust), but a genuinely re-verified account. Built from the same named protocols as everything else in this project, in a fixed sequence, same "not a new kind of reasoning" design as `/5thDimension` and `/Routine`.
+Named by Alex July 24 for when he's lost track. The answer must be re-verified from evidence, not recalled from scrollback.
 
-## The procedure, in order
-
-**Step 1 — GODMODE + `/scope` evidence pass.** Reconstruct what actually happened from real sources, not memory: `git log` for the real commit history across the span being summarized, real Supabase state (`system_updates` rows, `session_memory` — Aug 11, full-text-searchable session-level context including rejected alternatives and explicitly-referenced attachments that never made it into a patch_notes.html card, and any tables touched), and the actual six oversight docs' current content. **When the span being summarized touched a real `/CEO`-tracked plan (added Aug 13 — query `ceo_plan_items`/`ceo_reports` directly for that plan)** — its `evidence` column is often a more precise, already-written account of what actually happened for that item than reconstructing it fresh from commit messages, and its `status`/`last_verdict` fields are the real, current source for "what's done vs. still open" rather than guessed from the diff alone. If something in this session's own recollection doesn't match the real evidence, the evidence wins — say so plainly rather than quietly picking whichever is more flattering. **Also check whether any shipped work this pass corresponds to an existing `ceo_plan_items`/`future_integrations.html` row still carrying a stale status** (Aug 22, CEO SKILL.md R23 / `update-logging-system` artifact 19) — a real fix can be logged perfectly in every file-based doc and still leave its own plan-tracking row stale, since the two updates don't share muscle memory; fix any found in this same pass, don't defer it. **Also run the `update-logging-system` skill's own Cross-Doc Drift Check here** (Aug 23 2026, DD6 — this extends and names what Step 2's reconciliation was already half-doing, rather than adding a separate pass): for each real subject this span changed, check whether any OTHER oversight doc still asserts the old thing, grade it with `/drift`'s vocabulary, and route it to the brown/achiever or purple/`error_log` mechanism that owns that outcome. Targeted to what actually changed — never a pairwise sweep of all 12 docs (rule 11). **Also run the `impeccable` sibling skill here** (July 25, Alex-confirmed) — a real design-quality scan as part of the evidence pass, not a separate ceremony. Only log a new `system_updates` row (category `design-scan`) if the result actually changed since the last logged scan; this is what lets RPGACE's own Oracle surface current design state and recent Claude Code activity via `oracleAppGrounding`'s live facts.
-
-**Step 2 — `/5thDimension`-style reconciliation (Phase 1-2 only, not the full 6-phase run unless the scope genuinely warrants it).** Produce a clean "what's actually built/decided/done" vs. "what's been reported so far" comparison. Most of the time these should already match (this session generated both), but this step exists specifically to catch drift before it compounds.
-
-**Step 3 — `/debate` on presentation.** A real debate — not just a formatting choice — on how the findings should be distributed: which of the six oversight docs (or Chronicles/`system_updates`) each real finding belongs in, per each doc's own established format (patch_notes.html's dated cards, interconnection_map.md's architecture paragraphs, CLAUDE.md's Current State bullets, etc. — see CLAUDE.md's own "Context/logging efficiency rules"). Real tension worth surfacing when it exists: terseness (rule 11, tokens are a design constraint) vs. completeness (nothing real gets silently dropped). Use `/scope` and `/Omnitrix` (Fable optional — see Guardrails) to execute the writing once the debate settles where things go.
-
-**Step 4 — Council of 5 on the debate's quality.** Did the debate surface a real tension, or just perform one? Is the resulting plan proportionate to what actually happened, not padded or under-scoped?
-
-**Step 5 — Council of 5 for recommendations.** The actual output Alex sees: a clean, concise recap of what happened, what's done, what's still open, and what (if anything) needs his input next — the thing that actually answers "catch me up."
+## Steps
+1. **Evidence** (GODMODE + `/scope`):
+   - `git log` for the span; `system_updates`; `session_memory` (rejected alternatives, attachments); touched tables.
+   - For a `/CEO` plan, its `ceo_plan_items`/`ceo_reports` (`evidence`, `status`) are often the most precise account.
+   - Fix any plan row or `future_integrations.html` card still stale for shipped work (`update-logging-system` artifact 19).
+   - Run the Cross-Doc Drift Check for each subject changed, targeted.
+   - Run `impeccable`; log a `design-scan` `system_updates` row only if the result changed.
+   - Where memory and evidence disagree, evidence wins — say so.
+2. **Reconcile** built vs reported (`/5thDimension` Phases 1-2 only, unless the span is huge).
+3. **`/debate` on presentation**: which finding goes in which doc (per the `update-logging-system` map), terseness vs completeness. Then write it.
+4. **Council of 5 on the debate**: was the tension real, and is the plan proportionate?
+5. **Council of 5 recap for Alex**: what happened, what's done, what's open, what needs him — in plain words.
 
 ## Guardrails
-
-- **Scale to the real size of the thing being summarized.** A `/Summary` for one small fix is Step 1 + a two-sentence recap — running the full 5-step sequence on a one-line change is the exact kind of disproportionate ceremony CLAUDE.md's own Judgment Funnel exists to prevent. Reserve the full sequence for a genuinely large span (a full session, several rounds, a multi-day thread).
-- Fable is optional at every step here, same as `/Routine`'s own default — Sonnet-direct is the default per Omnitrix's own rebalance; dispatch Fable only if a step's evidence-gathering is genuinely large enough to earn the cost, and only after checking whether that's actually warranted.
-- This skill never invents an answer to a real open question it surfaces — if Step 1's evidence reveals something only Alex can decide, say so and ask, don't guess a default (same standing rule as everywhere else in this project).
-- Output goes to Alex directly in chat first (this is a context-recovery tool — he needs the answer, not a pointer to a file) — a durable written record is Step 3's job when the findings are substantial enough to need one (matching CLAUDE.md rule 5's convention), not a mandatory output of every `/Summary` run.
+- Scale it: a small fix gets Step 1 plus two sentences.
+- Fable is optional and rarely worth it here.
+- Never invent an answer to an open question; ask Alex.
+- Answer in chat first. A `records/` file only when the findings are substantial.

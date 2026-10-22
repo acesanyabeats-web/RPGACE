@@ -52,7 +52,7 @@ same discipline as every other RPGACE protocol's own reporting standard.
 Alex's own explicit ask: *"make it a RPGACE total systems skill too, so i
 can always ask any extranal ai or oracle ai or orchestrator CC and other
 CCs to close this gap, very valuable."* Real, honest scope given the
-standing Total-systems constraint (CLAUDE.md's own "Total" section):
+standing Total-systems constraint (`docs/claude/content.md`, "Total"):
 OpenMontage CC / Graphify CC / any future Total-system member cannot literally
 invoke a `.claude/skills/` file that isn't in their own repo — the same
 constraint that already means `/Engineer`/`/GODMODE`/`/scope` don't

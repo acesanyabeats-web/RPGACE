@@ -67,7 +67,7 @@ case just because it was named more recently.
   dozen named competitors and multi-round transcripts — a concise pass
   that genuinely applies steps 1-4 is enough. Don't manufacture extra
   competitors or extra rounds just to look thorough; that wastes exactly
-  the token budget this project's own rules (CLAUDE.md rule 11) treat as
+  the token budget this project's own rules (CLAUDE.md Building guide 11) treat as
   a real design constraint.
 - Same honesty rule as `/debate`: a real disagreement stays visible in the
   final plan (as an explicit fork for Alex, if Council of 5 can't resolve

@@ -1,205 +1,41 @@
 ---
 name: perspective
-description: RPGACE's evidence-grounded self-report method — writes a real, first-person "here's who I am, who I actually talk to, and what my correct output looks like" account for any real Total-system ACTOR (a galaxy, a harness node, an AI provider, a connector, a module, or — scoped rollout — an individual feature/button), reconstructed from real code/Supabase/doc evidence, never live AI-to-AI dialogue (Claude Code sessions cannot reach each other directly — confirmed via ListAgents). A river is NOT an actor and never gets a first-person report (Aug 13 correction — a river is a grouping label, not a caller); a river-level pass instead compiles a real, evidence-grounded SYNTHESIS of the actual reports already written for the real callers grouped inside it. Cross-reading multiple reports surfaces real relationship/topology gaps a top-down map misses (proven twice: 3 galaxy-level findings, 3 node-level findings, both real MATERIAL/CAPTURED/MINOR grade). Each report also writes a real `expected_behavior` baseline to the `perspective_reports` Supabase table — the same baseline `error_log`'s `expected_baseline`/`linked_perspective_id` and `/colourgradient`'s purple-regression check both read, so "what correct looks like" is asserted once and reused, never re-derived per consumer (rule 8). Use this skill whenever Alex says "/perspective", whenever a new Total-system galaxy/node/connector/river is added or changes shape, whenever `/colourgradient` needs a real prior-baseline to grade a purple regression against, or whenever `error_log` needs a real "what should this have looked like" reference for a rationale. Do NOT use this for ordinary code review or a single bug's root-cause (that's `commit-archaeologist`/`/Engineer`'s Truth Check) — `/perspective` answers "what does this element believe its own job and relationships are," not "why did this one thing break."
+description: RPGACE's evidence-grounded self-report method — a first-person "who I am, who I actually talk to, what my correct output looks like" account for one real actor (an L0 unit, a harness node, an AI provider, a connector, a module, or a feature), reconstructed from real code/Supabase evidence, never live AI-to-AI dialogue. Domains (formerly rivers) are not actors and get a third-person synthesis of their modules' reports instead. Each report writes an expected_behavior baseline to perspective_reports, which error_log (linked_perspective_id/expected_baseline) and /colourgradient's purple check reuse. Use when Alex says "/perspective", when an actor is added or changes shape, when /colourgradient needs a prior baseline, or when error_log needs a "what should this have done" reference. Not for code review or a single bug's root cause (commit-archaeologist / /Engineer).
 ---
 
-# /perspective — real self-reports as a shared behavioral baseline
+# /perspective — self-reports as a shared baseline
 
-> **Oct 11 2026 (M1): "river" now means one of the 8 app domains.** Each module declares `domain:` in `rpgace_core.js` (`RPGACE.DOMAINS`); `graphify_river_group.py` derives `RIVER_MODULES`/`RIVER_FLOWS` from those keys and real cross-module calls; `scripts/check_module_domains.py` is the check; Level 1 is `galaxy_map_domain.html`. See `system_map_spec.md` §1-current. Domain-level reports are `scope_level='domain'`, third-person syntheses exactly like river ones were (domains are not actors).
+Named by Alex Aug 13 2026 after two pilots (galaxy level, node level — `records/2026-08/galaxy_interviews_pilot_2026-08-13.txt`) each found real topology gaps the top-down map had missed. His bar was "if it works again, then make /perspective". He wants it to eventually cover "everything I have control over in RPGACE total system", and to give `error_log` a basis for judging what "done correctly" means.
 
-Named and defined by Alex Aug 13 2026, after two real pilots (galaxy-level,
-then node-level — see `records/2026-08/galaxy_interviews_pilot_2026-08-13.txt`)
-both found genuine relationship/topology gaps the top-down Galaxy Map build
-had missed. His own bar for building this as a real skill: "if it works
-again, then make /perspective" — it worked twice, so it's built. Same turn,
-he extended the ask: this should eventually cover "everything I have control
-over in RPGACE total system," and its baselines should give `error_log` a
-real basis for judging what "done correctly" looks like, so drift from his
-actual intent gets caught and logged, not just drift from a topology map.
-
-## What this actually is — read this before running it
-
-**Not live AI-to-AI conversation.** Checked directly via `ListAgents` before
-the first pilot: "No reachable agents." A `/perspective` report is a real,
-evidence-grounded RECONSTRUCTION — written in first person, from the actual
-element's own real code/Supabase/doc evidence — never presented as if two
-sessions were actually talking. State this limitation plainly in every
-report; don't let the first-person voice imply live dialogue that didn't
-happen.
-
-**Why first person still earns its keep.** The pilots' real finding was that
-writing "as" an element (rather than writing an EXTERNAL description of it)
-forces you to actually go check what that element's own evidence says about
-its relationships, instead of restating what the top-down map already
-assumed — that's what caught the duplicate Graphify CC node and the FFmpeg
-topology bug that a normal review pass had already missed twice.
+**Not live dialogue.** Sessions can't reach each other (`ListAgents` shows none). A report is a reconstruction from evidence; say so in every report. First person still earns its keep: writing as the element forces you to check its own evidence instead of restating the map — that's how the duplicate Graphify CC node and the FFmpeg topology bug were caught.
 
 ## Procedure
+1. **One element, one report.** Scopes: `galaxy`/`l0_unit`, `node`, `module`, `feature`, plus synthesis scopes `domain` (formerly `river`), `level` and `dimension_kind`. Domains aren't actors — never write "I am the Cooking domain"; compile a third-person synthesis citing the module reports inside it (write any that are missing first).
+2. **Evidence first**: grep the call sites, read the module, query the tables it reads and writes (rule 1). A baseline built from memory poisons `error_log` and `/colourgradient` downstream.
+3. **Write four parts**:
+   1. Who I am / what I actually do (from the code).
+   2. Who I talk to and how — every edge with its channel (table, direct call, `hooks.fire`), cited by file:line or query.
+   3. `expected_behavior` — one concrete paragraph, precise enough that fresh evidence gives a clean yes or no.
+   4. Findings that contradict the map or docs, graded MINOR/MATERIAL/CAPTURED.
+   Put cross-references in `evidence.cross_refs` (`scripts/gmp_b_consistency_check.py` compares them to `RIVER_FLOWS`).
+4. **Persist** to `perspective_reports` (`scope_level`, `scope_id`, `scope_label`, `self_report`, `expected_behavior`, `evidence` jsonb, `findings` jsonb, `status`). Replacing one: set the old row `status='superseded'` and `superseded_by` = the new id. Never leave two active baselines.
+5. **Route findings**:
+   - Map/topology MATERIAL or CAPTURED → fix the generator data, or write a `system_map_flags` row.
+   - "Used to work, now doesn't" (the detector side of purple):
+     1. Make an `error_code` `PERSPECTIVE-<SCOPE_ID upper, hyphens>-<NN>` — query `error_log` for the highest existing NN first.
+     2. Write the `error_log` row: `error_code`, `linked_perspective_id`, `expected_baseline` (copied verbatim), `rationale` (cited fresh evidence), `backtrack_note` (likely upstream cause — it doubles as the "how to fix" text on the purple card).
+     3. If that scope's `ceo_plan_items` row was green, flip it purple with the same evidence.
+     This is judgment work a session does. The G109 client cascade (`errorLog._capture`) only attaches baselines and flips rows automatically; it never diagnoses. An Oracle "🧪 Flag to Orchestrator CC" (`oracle_dev_suggestions`) becomes an error only after a session confirms it.
+   - Anything smaller → tell Alex in chat.
 
-**Step 1 — Pin the real scope.** One element, one report. Valid ACTOR
-scope levels, real and growing (see Step 6 for the honest rollout
-state): `galaxy` (RPGACE Architecture / Orchestrator CC / OpenMontage
-CC / Graphify CC), `node` (Oracle, Self-Awareness, Human Gate, the 3 AI
-providers, the 10 connectors), `module` (an `RPGACE.register()` module
-or main.js function cluster), `feature` (one real button/flow a user
-actually clicks). Never write a report for an abstraction with no real
-evidence trail — if you can't cite code/Supabase for it, it isn't in
-scope yet.
+## Coverage
+Every registered module, live domain, L0 unit, level and dimension kind has an active report (built Sep 15-16 and Oct 11 2026). Older `river` reports are superseded by domain reports. Feature-level rows (`mainjs_function`/`onclick_feature`/`decision`) are unverified scaffold, kept apart on `perspective_map.html`. New modules get a report when they're built or next touched — never a blind sweep of everything at once.
 
-**`river` is a special, non-actor scope (system_map_spec.md §1a)** — a
-river is the real GROUP a caller lives inside, not itself a caller.
-Never write a first-person "I am River XI" report; it would reify a
-grouping label as if it had agency, exactly what Alex's Aug 13
-correction flags. A river-level `/perspective` pass instead means:
-gather the real `module`-level reports for everything grouped inside
-that river (writing any that don't exist yet), then compile one real,
-third-person SYNTHESIS — "here is what the real callers grouped under
-this river actually do and relate to, in one place" — citing each
-underlying module report rather than speaking as the river itself.
-
-**Step 2 — Gather real evidence before writing a word.** Grep the actual
-call sites, read the actual module, query the actual Supabase table this
-element writes to/reads from. Same non-negotiable rule 1 as everywhere else
-— a `/perspective` report built from memory or from another doc's claim
-about the element is worthless and will pass a false baseline downstream to
-`error_log`/`/colourgradient`.
-
-**Step 3 — Write the report, first person, 4 real parts:**
-1. **Who I am / what I actually do** — grounded in the real code that
-   defines it, not the marketing description.
-2. **Who I actually talk to, and how** — every real edge: what calls me,
-   what I call, what channel (a Supabase table, a direct function call, a
-   `hooks.fire`), cited by file:line or a live query result.
-3. **`expected_behavior`** — one real, concrete paragraph: what correct
-   output/behavior looks like when this element is working as intended.
-   This is the field the rest of Total Systems reuses — write it precisely
-   enough that a future session (or `/colourgradient`) could compare fresh
-   evidence against it and get a clean yes/no.
-4. **Real findings surfaced while writing it** — anything that contradicts
-   what the current map/docs claim (a missing edge, a stale dispatch, a
-   duplicate node, a wrong topology assumption). Grade MINOR/MATERIAL/
-   CAPTURED, same vocabulary as `/drift`.
-
-**Step 4 — Persist to `perspective_reports`.** One row per report
-(`scope_level`, `scope_id`, `scope_label`, `self_report`, `expected_behavior`,
-`evidence` jsonb, `findings` jsonb). Writing a NEW report for an
-already-covered scope: set the old row's `status='superseded'` and
-`superseded_by` to the new row's id — never leave two active baselines for
-the same element (rule 8, same discipline `taxonomy_tree`'s dedup already
-enforces).
-
-**Step 5 — Route real findings, don't just log them.**
-- **MATERIAL/CAPTURED findings on the live map/topology** → fix `galaxy_map.py`
-  directly (same as both pilots did) and/or write a `system_map_flags` row,
-  same as `/cartographer`'s own routing.
-- **A finding that's really "this used to work, evidence now says it
-  doesn't"** → this is exactly `/colourgradient`'s new 🟣 purple case, and
-  the real, named tie-together Alex asked for (Aug 13, same day 2nd pass):
-  a fresh `/perspective` re-check (or a `/paranoia` pass that happens to
-  touch a scope with an existing baseline) is the real DETECTOR; `error_log`
-  is the real RECORD; `/colourgradient` purple is the real STATUS SIGNAL.
-  None of the three re-derive what the others already hold (rule 8). The
-  concrete steps, every time a real mismatch is confirmed:
-  1. Generate a real, stable `error_code` — `PERSPECTIVE-<SCOPE_ID upper,
-     hyphens for spaces>-<NN>`, `NN` a 2-digit sequence number (query
-     `error_log` for the highest existing `NN` on that `scope_id` prefix
-     first — never guess a number that might collide). This is what makes
-     "even the smallest function or step" genuinely trackable, per Alex's
-     own words — a real, citable name for a specific broken thing, not a
-     vague description.
-  2. Write the real `error_log` row: `error_code`, `linked_perspective_id`,
-     `expected_baseline` (copied verbatim from the perspective report),
-     `rationale` (what the fresh evidence actually shows, cited), and
-     `backtrack_note` (what likely broke it, traced upstream — a real
-     diagnosis, never a guess dressed as one).
-  3. If a `ceo_plan_items` row exists for that scope and was genuinely
-     `green` at its last check, flip it to `purple` with the same real
-     evidence — this is what makes it show up in `future_integrations.html`'s
-     purple section, which per its own design also states "how to possibly
-     fix it" (draw that straight from `backtrack_note` — one real diagnosis,
-     shown in both places, never written twice independently).
-  4. This is JUDGMENT work — same explicit boundary `error_log.html`'s own
-     doc already states for its mechanical-vs-judgment split. There is no
-     background job doing steps 1-3 automatically; a session (Orchestrator
-     CC) runs them for real, the same way this session has written every
-     `perspective_reports`/`error_log` row so far.
-- **Oracle-side flagging (in-app, not this session) uses the renamed
-  channel**: `oracleDevBridge`'s "🧪 Flag to Orchestrator CC" button (Aug 13
-  rename — Total Systems now has 3 real Claude Code sessions, so "Claude
-  Code" alone had gone ambiguous; this channel has only ever been read by
-  THIS session, per CLAUDE.md's own session-start check) is the real
-  backdrain path when Oracle-from-within notices something — it lands in
-  `oracle_dev_suggestions`, reviewed at the next session start, same as
-  always. It does NOT auto-generate an `error_code`/purple flip on its
-  own; a flagged suggestion becomes a real error_log/purple entry only
-  once a session actually investigates it and confirms a mismatch (same
-  judgment boundary as point 4 above) — flagging is not the same claim as
-  diagnosing.
-- **Anything smaller** — report to Alex directly in chat, same as the
-  pilots did; don't force every MINOR finding into a Supabase row.
-
-**Step 6 — Real, honest scope of "everything I have control over."** Alex's
-own extension (Aug 13) asks this to eventually cover every real button/
-feature, "even the smallest," not just the 4-galaxy/13-node Total-system
-inventory the pilots covered. That is real, large, multi-session work —
-CLAUDE.md's own rule against building blind applies here exactly as it does
-everywhere else:
-- **Tier A — DONE.** Galaxy-level (4) + node-level (13: Oracle, Self-
-  Awareness, Human Gate, 3 providers, 10 connectors, Supabase) reports,
-  from the two pilots — write these into `perspective_reports` retroactively
-  the first time this skill runs for real (they exist today only as prose
-  in the pilot record, not as real rows — fix that before extending
-  further, rule 8: don't build a NEW baseline layer while the FIRST one
-  still exists only in a `.txt` file).
-- **Tier B — real next step, not started.** The 16 rivers — a bounded,
-  enumerable set, matches `minotaur_map.html`'s own real structure. Per
-  the non-actor river rule above, this tier is 16 real SYNTHESIS
-  reports over the real module-level reports grouped inside each
-  river, not 16 more first-person self-reports. A natural `/CEO` Loop 2
-  plan item once Tier A's rows are real.
-- **Tier C/D — genuinely future, explicitly not scoped in detail here.**
-  Module-level and individual-feature-level reports could number in the
-  hundreds (52 registered rpgace_core.js modules alone, 240+ main.js
-  functions, 93 `onclick` handlers in index.html). Don't attempt this as
-  one pass. The real, honest plan: extend coverage opportunistically —
-  whenever a module/feature is already being touched for a real reason
-  (a bug fix, a new build), write its `/perspective` report as part of that
-  same session's work, same "opportunistic tagging" discipline
-  `/cartographer`'s Consumer/Developer visibility rule already uses — never
-  a dedicated blind sweep of everything at once.
-
-## How this feeds `error_log` (the real "basis" Alex asked for)
-
-`error_log.linked_perspective_id` + `error_log.expected_baseline` (both
-added same migration as `perspective_reports`) let a real error row cite
-the actual expected-behavior baseline it's judged against, instead of a
-freeform `rationale` alone. When writing a new `error_log` row for an
-element that already has an active `perspective_reports` row: set
-`linked_perspective_id` to it and copy its `expected_behavior` verbatim
-into `expected_baseline` (denormalized on purpose — `error_log.html`
-renders standalone against the anon key and shouldn't need a second live
-join just to show the baseline it's comparing against). If no
-`perspective_reports` row exists yet for that element, don't invent one
-under pressure to fill the field — leave both null and note the real gap
-(this is exactly Tier C/D's "not built yet" honesty, not a shortcut to
-skip).
+## Feeding error_log
+When writing an `error_log` row for an element that has an active report, set `linked_perspective_id` and copy `expected_behavior` into `expected_baseline` (denormalised on purpose so `error_log.html` renders without a join). With no report, leave both null and note the gap; don't invent a baseline under pressure.
 
 ## Guardrails
-
-- **A `/perspective` report is not proof of nothing wrong** — it's a real
-  baseline for FUTURE comparison. Writing one doesn't itself constitute a
-  `/drift` check; it's the material a later `/drift`/`/colourgradient` pass
-  reads.
-- **Never let scope creep turn one report into a whole-system audit** — one
-  element, one report, per Step 1. If writing it reveals 5 more elements
-  that also need reports, log them as a real follow-up list, don't chase
-  them mid-report (same discipline `/scope` already applies to itself).
-- **Supersede, never silently overwrite** — Step 4's `status='superseded'`
-  chain is what lets a future session see that an element's understood
-  behavior actually changed over time, which is itself real Total-system
-  history worth keeping (same reasoning as `error_log`'s own permanent
-  resolved-history rule).
-- **This skill was itself built under `/paranoia`+`/CEO` supervision with
-  `/drift` checking it against the two real pilots' own proven shape** — any
-  future change to this skill should be checked the same way, not assumed
-  safe because the file compiles.
+- A report is a baseline for later comparison, not proof that nothing is wrong.
+- One element per report. If writing it reveals more elements that need reports, list them as follow-ups.
+- Supersede, never overwrite.
+- Check changes to this skill against the pilots' proven shape.

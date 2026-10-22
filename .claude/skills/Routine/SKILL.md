@@ -1,37 +1,35 @@
 ---
 name: Routine
-description: RPGACE's session-start ritual for deciding what today's real work should be. Runs a structured two-team debate (GODMODE+Council-of-5 evidence pass produces Team 1's Top 10 backlog items; Team 2 builds the real case for whichever left-out items deserve priority instead) through /Debate, reconciles the result through /5thDimension, then Council of 5 locks in a final Top 10 for the day. Named and defined by Alex July 23. Use this skill automatically at the start of every session that works on RPGACE, before diving into any specific task Alex names in the same message — it is the standing session-opener, not a one-off he has to ask for by re-typing the whole procedure each time. If Alex opens a session with an explicit different task already named, still run this skill first (it's cheap relative to a full day's work) unless he explicitly says to skip it.
+description: RPGACE's session-start ritual for deciding today's real work. Team 1 (GODMODE + Council of 5 over live evidence) proposes a Top 10; Team 2 builds the honest case for left-out items; /debate between them; /5thDimension (no Fable) reconciles against what's built and Alex's goals; Council of 5 locks the final Top 10 plus a named drop list. Use at the start of every RPGACE session before diving into a named task, unless Alex says to skip it.
 ---
 
-# /Routine — the daily Top 10, decided by real debate instead of by whoever spoke first
+# /Routine — today's Top 10, decided by debate
 
-Alex named this July 23 specifically so the "what should today actually be" question stops depending on him re-typing the same long instruction every session. It packages five already-existing protocols (GODMODE, Council of 5, Omnitrix, `/scope`, `/debate`, `/5thDimension`) into one fixed sequence — same "not a new kind of reasoning, just a fixed sequence of the existing ones" design as `/5thDimension` itself.
+Named by Alex July 23, so "what should today be" doesn't depend on him re-typing the procedure. It's a fixed sequence of existing protocols (GODMODE, Council of 5 and Omnitrix from the `omnitrix` skill; `scope`, `debate`, `5thDimension`).
 
-**Source of truth**: CLAUDE.md's `## Invokable frameworks` section defines GODMODE/Council of 5/Omnitrix/Aintergration; `scope`, `debate`, and `5thDimension` are sibling skills in this repo's `.claude/skills/` directory. If this file and CLAUDE.md ever disagree, CLAUDE.md wins and this file is stale.
+Run it at session start after CLAUDE.md's session-start checks, unless Alex says skip. It's cheap compared with the day it decides.
 
-## When to run it
-
-At the start of every RPGACE session, same standing-check status as the existing `oracle_dev_suggestions` pull (CLAUDE.md's "Session-start check" section) — a real, load-bearing step, not a suggestion to skip when busy. Run it before starting on whatever specific task prompted the session, unless Alex explicitly says to skip it that session. It is cheap (evidence-gathering + one debate + one reconciliation pass) relative to the day of work it's deciding.
-
-## The procedure, in order
-
-**Step 1 — Team 1's Top 10.** GODMODE evidence-gathering pass over the real current backlog: git log, live code state (`rpgace_core.js`/`main.js`/`api/*`), the seven oversight docs (read each one individually, not just skimmed — `ai_tooling_and_rules_map.md` included, added July 31), Chronicles/`system_updates`, `session_memory` (Aug 11 — full-text search or a recent-rows scan for prior context/open threads/attachments relevant to whatever's being resumed; CLAUDE.md's own real Supabase-backed answer to the claude-mem Aintergration ask), any open spec-backlog `.txt` files, and Alex's own most recent messages for anything he raised but wasn't yet built. **Aug 26 2026 (G109) — also check for real auto-flip activity**: a real `error_log` row that carries `linked_perspective_id`/a cascade-derived `smoke_test_items` flip to `broken` since the last session, and any `ceo_plan_items` row that has genuinely gone `purple` (the automatic error→perspective-baseline→smoke_test-broken→plan-purple loop `errorLog._capture` now runs live client-side — see CLAUDE.md's own `error_log` session-start-check section) — this is real, self-reported regression evidence, exactly as load-bearing as anything a human flagged, and should rank near the top of Team 1's list precisely because it's evidence the app itself surfaced, not a guess. **When a real `/CEO`-tracked plan exists (added Aug 13 — the Galaxy Development Framework is the live example), also query `ceo_plan_items` directly for that plan's own current status** — a red/yellow item there is real backlog exactly as load-bearing as anything in a `.txt` file, and its `evidence` column often names the specific real prerequisite (e.g. "needs a main.js-aware detection extension") that should shape how Team 1 frames the item, not just that it's unbuilt. **After a genuine multi-day usage gap (a full week or longer since the last session), this evidence pass should be deeper than the routine daily version**: read all seven docs for real content, not headers — the goal is rebuilding full context of current build state, real capabilities, code interlinks (per `interconnection_map.md`), and AI intercommunication (per `ai_tooling_and_rules_map.md`'s skill/tooling catalog) well enough that whatever gets proposed next is actually simpler to implement, not just plausible-sounding from a skim. **Also check real RPGACE-side activity that Claude Code did NOT originate** — recent `journal` entries, `chronicles_finance` rows, `content_productions` shipped, and `taxonomy_proposals`/`taxonomy_links` Alex approved or rejected himself in the review queue — added July 24 (Alex-confirmed, journal/Chronicles/oversight cross-feed idea) specifically because `system_updates` alone only ever shows Claude Code's own work, never what Alex did directly in the live app between sessions. This is the reverse half of keeping Alex/RPGACE/Oracle/Claude Code on one shared timeline. Council of 5 turns all of this into Team 1's real, evidence-based Top 10 — things to implement or test *today*, ranked, each with a one-line real reason it's in the list (not a generic priority label).
-
-**Step 2 — Team 2's counter-case.** A genuine second pass over the SAME evidence, specifically hunting for real backlog items Team 1 left out, and building the strongest honest case for why one or more of them should outrank something Team 1 included. This must be a real case (cost, risk, staleness, something Alex asked for twice, a cheap old item nobody picked up) — never a manufactured objection invented just to have one. If a full honest pass finds nothing worth arguing, say so plainly rather than padding the list.
-
-**Step 3 — /Debate.** Run the `debate` skill between Team 1 and Team 2's real positions. Both teams get: GODMODE (harder evidence-gathering mid-round if a claim is contested), Omnitrix **without Fable** as the default (Fable is reserved for cases Omnitrix's own rebalance already names — large exhaustive multi-file audits or explicit background parallelism — not a default research step here; if Fable is at zero usage credits and a team still wants to invoke it, that's allowed but not required, per Alex's own aside), and `/scope` for organized evidence. Real attack rounds, real defense rounds, Council of 5 cleans up both cases per `/debate`'s own procedure — never agreement-then-merge.
-
-**Step 4 — /5thDimension reconciliation, without Fable.** Feed the debate's output through `5thDimension`'s procedure (skip its own Fable-dispatch suggestion in Phase 1-2's evidence gathering — do it inline instead, same "without Fable" default as Step 3) to check the reconciled list against what's actually built vs. reported, and against Alex's real stated goals (the governing 48-hour rule, current Tier-1/2/3 judgment funnel, anything he's said explicitly this session) — not just technical tidiness.
-
-**Step 5 — Final Council of 5 lock-in.** One last Council of 5 pass produces the actual final Top 10 for the day, plus an explicit, honestly-reasoned list of anything real that got dropped (never silently — name what was left out and why, same discipline as every other RPGACE backlog-trimming pass this project does).
+## Steps
+1. **Team 1's Top 10** — GODMODE evidence over:
+   - git log; live code (`rpgace_core.js`, `api/*`, `local_server/`);
+   - the oversight docs and `docs/claude/open_forks.md`; `system_updates`; `session_memory`;
+   - active `ceo_plans`/`ceo_plan_items` (red/yellow items are backlog, and their `evidence` often names the prerequisite);
+   - open `records/` specs; Alex's recent messages.
+   Also check:
+   - **Self-reported regressions** — new `error_log` rows with `linked_perspective_id`, `smoke_test_items` flipped to `broken`, plan items gone purple. Rank these high.
+   - **What Alex did in the app** — recent `journal`, `chronicles_finance`, `posts`, `content_productions`, review-queue decisions, `xp_events` — because `system_updates` only shows Claude Code's work.
+   After a gap of a week or more, read the docs properly rather than skimming them.
+   Council of 5 ranks ten items, each with a one-line reason.
+2. **Team 2** — the strongest honest case for left-out items (cost, risk, staleness, asked for twice, a cheap old item). If there's nothing real, say so.
+3. **`/debate`** between the teams: GODMODE, Omnitrix without Fable (allowed but not required), `/scope`. Real attack and defence; Council of 5 cleans up both cases.
+4. **`/5thDimension` without Fable** — reconcile against built vs reported, the 48-hour rule, the funnel and what Alex said this session.
+5. **Council of 5 lock-in** — the final Top 10 plus an honest list of what was dropped and why.
 
 ## Output
-
-A concise Top 10 presented to Alex in chat (not just a pointer to a file — he needs to be able to act on it immediately), plus the full debate/reasoning trail saved to a dated `.txt` file at the repo root (pattern: `daily_priorities_debate_YYYY-MM-DD.txt`) per the project's "verbatim record in a committed file, chat memory is not durable storage" convention. Commit and push both the record file and any doc updates the run itself decided on, same standing rules as any other RPGACE work (merge to `main` before calling anything ready, log to `patch_notes.html`/`system_updates` if the run itself produces a real decision worth remembering later).
+The Top 10 in chat (actionable now), plus the full trail in `records/YYYY-MM/daily_priorities_debate_YYYY-MM-DD.txt`. Commit and push it.
 
 ## Guardrails
-
-- This is a planning pass, not a build pass. Running `/Routine` produces a task list; it does not itself implement anything. Move straight into executing item 1 once the list is locked, per Alex's own framing ("get the most productive day in RPGACE history") — don't stall on ceremony once the list exists.
-- If Alex answers a blocking question for item 1 (or any item) in the same message that triggers `/Routine`, act on that answer directly rather than re-asking — the skill decides priority, it doesn't override an answer Alex already gave.
-- Don't run this twice in one session unless Alex explicitly asks for a re-plan (e.g., new information genuinely changes the picture) — it's a session-opener, not a per-task ritual.
-- Same honesty rule as `/debate` and `/5thDimension`: Team 2's case and the final drop-list must be real, not theater. A `/Routine` run that always rubber-stamps Team 1's first draft, or always finds the same "why not" objection regardless of the actual backlog, isn't doing its job.
+- A planning pass. Start item 1 straight after, briefing Alex first if it's a plan step (rule 18).
+- If Alex already answered something in the same message, act on it.
+- Once per session unless he asks for a re-plan.
+- No theatre: Team 2 and the drop list must be real.

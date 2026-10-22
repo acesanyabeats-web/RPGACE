@@ -389,3 +389,39 @@ zoom_href
 ~/.claude-mem/
 ~/.claude/skills/dummy/SKILL.md
 ~/.claude/skills/omnitrix/SKILL.md
+# Added after the CD-7 skill-file pass (Oct 22 2026): generic syntax examples, retired script names, superseded record ids.
+## Invokable frameworks
+--accent
+--blue
+--code-only
+.claude/skills/cartographer/SKILL.md
+.claude/skills/drift/SKILL.md
+.claude/skills/fableomnitrix/SKILL.md
+/* ===END:x=== */
+/deduplication
+405
+8481e7c9-25da-4e92-bb59-d33d6be1fe60
+:root
+<link>
+<script src>
+<style>
+Agent type 'fable-readonly' not found
+CEO SKILL.md
+GMP-A
+RPGACE.register('name', {...})
+alex_critique_and_massive_expansion_spec_2026-08-10.txt
+anon_all
+conid_pot
+galaxy_map.py
+galaxy_map_generator_toolchain.html
+git commit
+git log --oneline
+graphify-out/obsidian_vault.html
+main.min.js
+node --check main.js
+onclick="fnName(...)"
+patch_notes.html#<id>
+pg_policy
+python3 scripts/check_current_state_bloat.py
+rewrites
+scripts/check_current_state_bloat.py

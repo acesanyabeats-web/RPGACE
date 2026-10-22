@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-22-claude-md-debloat" style="margin-bottom:30px;">
+    <div class="card-title">🧹 Oct 22 — CLAUDE.md slimmed down and split by topic (CD-0..CD-8)</div>
+    <div class="card-body">
+      Your words: "/debloat Claude me I bet there is a lot of rubbish to deduplicate and rewrite". Your answers: split by topic, still-true detail to topic files and history to the archive, one session-start table, plain-tense rewrite, models list fixed, whole-file size check, and the same pass on the skill files. Then "Do all".
+      <ul>
+        <li><b>CLAUDE.md</b> (loaded every session) went from 291KB to about 18KB. It now holds only the rules, the one-line warnings, a ship checklist, the session-start table and an index of topic files.</li>
+        <li><b>Topic files</b> in <code>docs/claude/</code> hold the current facts per area: habits, my day, knowledge, content, oracle, landmines, security, oversight, open items. About 70KB in total, read only when that area is touched.</li>
+        <li><b>Nothing lost</b>: the whole old file is the last section of <code>CLAUDE_archive.md</code>, word for word. A new check, <code>scripts/check_debloat_coverage.py</code>, froze all 1,337 names, files, tables and links from the old file; every one is either in the live docs or on a reviewed history-only list.</li>
+        <li><b>Fixed while rewriting</b>: the models list now matches the code (adds Opus 5.5 for Oracle Professor, Gemini for web search); stale <code>main.js</code>, "Engineer CC" and <code>manual.html</code> mentions were removed; live counts that kept going stale are replaced by the queries that produce them.</li>
+        <li><b>Size check</b>: <code>scripts/check_claude_md_size.py</code> replaces the old one-section check and also catches dead patch-note links.</li>
+        <li><b>Skill files</b>: all 26 RPGACE-written skills and the Galaxy rules file were rewritten to procedure plus your own quoted words (about 380KB down to about 200KB). Each skill is now the source of truth for its own protocol. Stale steps were fixed (Engineer's gate still checked <code>main.js</code> and "two script tags"). <code>/fableomnitrix</code> now uses the read-only Fable agent, which resolves this session.</li>
+        <li>Untested in a real fresh session: the first new session will be the real test that the shorter file plus topic files is enough.</li>
+      </ul>
+    </div>
+  </div>
 <div class="card" id="card-2026-10-22-what-happened" style="margin-bottom:30px;">
     <div class="card-title">❓ Oct 22 — "What happened?" for blocks that went by with nothing logged (AC-5)</div>
     <div class="card-body">

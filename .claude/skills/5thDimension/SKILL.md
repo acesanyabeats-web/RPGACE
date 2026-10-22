@@ -1,35 +1,24 @@
 ---
 name: 5thDimension
-description: RPGACE's meta-protocol for reconciling what's ACTUALLY built (real code/git/Supabase evidence) against what's REPORTED as done (the six oversight docs + Chronicles/system_updates), then turning that reconciled picture into a prioritized, step-by-step interconnection/rewiring plan debated against a genuine counter-case for why NOT to rewire (or a leaner alternative) - all filtered through Council of 5 for quality and Alex's own interrogated input, so development stays anchored to his actual goals instead of drifting session to session. Use this skill whenever the user says "/5thDimension", asks for a full built-vs-reported audit of RPGACE, or asks how to "interconnect" or "rewire" existing RPGACE infrastructure more efficiently. This is the heaviest protocol in the project - reserve it for genuinely large, whole-project questions, never for a single bug fix or feature (those stay on the normal Omnitrix Judgment Funnel in the `omnitrix` skill).
+description: RPGACE's whole-project protocol — reconciles what's actually built (code/git/Supabase) against what's reported done (oversight docs, docs/claude topic files, Chronicles), then debates a prioritised interconnection/rewiring plan against an honest counter-case (don't rewire, or a leaner option), with Council of 5 and Alex's interrogated input keeping it anchored to his goals. Use when Alex says "/5thDimension", asks for a full built-vs-reported audit, or asks how to interconnect or rewire existing infrastructure. Heaviest protocol after /paranoia — never for a single bug or feature (those stay on the omnitrix Judgment Funnel).
 ---
 
-# /5thDimension — built vs. reported, then how to rewire it well
+# /5thDimension — built vs reported, then how to rewire it
 
-Every other protocol in this project (GODMODE, Council of 5, Omnitrix, Aintergration, `/scope`, `/debate`) answers a bounded question about one task. This one exists for the opposite case: when Alex wants the WHOLE picture — what RPGACE actually is right now, versus what the docs and Chronicles say it is, versus what it could be if wired together better — without either side of that gap being guessed at. It is built entirely out of the other named protocols, run in a fixed sequence, not a new kind of reasoning of its own. Named `/5thDimension` per Alex's own request (July 23), specifically to fight context drift: development that quietly stops tracking his actual goals because no one pass ever stepped back far enough to check.
+Named by Alex July 23 to fight context drift — development that quietly stops tracking his goals because no pass steps back far enough. It's a fixed sequence of other protocols (`omnitrix`, `scope`, `debate`), not a new kind of reasoning.
 
-**Source of truth**: `CLAUDE.md`'s `## Invokable frameworks` section defines GODMODE/Council of 5/Omnitrix/Aintergration; `scope` and `debate` (sibling skills in this same directory) define the other two building blocks this protocol sequences. If this file and CLAUDE.md ever disagree, CLAUDE.md wins and this file is stale.
+## Phases
+1. **What's actually built** — `/scope` + GODMODE over the code: git log, `rpgace_core.js`, `index.html`, `api/*`, Supabase (`list_tables`, `execute_sql`, `get_advisors`), and the Galaxy Map data (regenerate it first if code changed; `graphify update .` is free). Council of 5 writes Side A module by module, with file/line references.
+2. **What's reported done** — the same rigour over the oversight docs (`docs/claude/oversight.md` lists them), the topic files, `system_updates` and `ceo_plan_items`. Council of 5 writes Side B.
+3. **Reconcile** — `/debate` A against B wherever they might differ. Settle disputes with a query or a line read. Council of 5 reviews the transcript.
+4. **Rewiring debate** — the reconciled picture backs a prioritised step-by-step plan; the other side is a genuine reason not to rewire, or a leaner option. No strawmen.
+5. **Alex's input** — real forks become `/interrogation` questions; Aintergration only if a third-party tool is involved. Council of 5 folds in his answers.
+6. **Check the run** — did the evidence hold, was the tension real, did the plan stay on his goals rather than tidiness?
 
-## The procedure, in order
-
-**Phase 1 — What's actually built.** A real `/scope`-style GODMODE evidence pass over the CODE itself: `git log`, the live contents of `rpgace_core.js`/`main.js`/`index.html`, real Supabase state (`list_tables`, `execute_sql`, `get_advisors`). **Also run `graphify . --update --code-only --no-viz` here (Aug 6 addition, per `update-logging-system`'s artifact type 10 — same free rebuild, referenced not duplicated) before treating the graph as evidence** — a stale graphify index would itself become a false "what's built" source, exactly the drift this whole protocol exists to catch. Real, confirmed limit worth carrying into this phase: graphify still cannot answer "what does module X do" for anything using RPGACE's own `RPGACE.register('name', {...})` convention (a structural extractor gap, not fixed by the rebuild) — treat its doc-content answers as real evidence, its silence on RPGACE's own module names as uninformative, never as "this doesn't exist." Council of 5 turns this into a clean "Side A: what's actually built" — module by module, with real file/line references, not summarized from memory.
-
-**Phase 2 — What's reported as done.** The same GODMODE rigor, aimed instead at the real oversight docs (`patch_notes.html`, `interconnection_map.md`, `taxonomy_map.html`, `system_flow_map.md`, `minotaur_map.html`, `ai_tooling_and_rules_map.md`, `perspective_map.html` — `manual.html` retired Sep 23 2026, its content absorbed into `interconnection_map.md`/`system_flow_map.md`) plus Chronicles/`system_updates`. Council of 5 turns this into "Side B: what's reported as done."
-
-**Phase 3 — Reconcile the drift.** Run `/debate` with Side A attacking Side B's claims (and vice versa) wherever they might not match — a doc claiming something is "shipped" that the code doesn't support, or code that exists but was never logged anywhere. GODMODE + `/scope` settle any factual dispute raised mid-debate (query Supabase, read the actual line) rather than leaving it as an unresolved assertion. Council of 5 reviews the debate transcript for quality before it becomes an input to Phase 4 — same cleanup role it plays inside `/debate` itself.
-
-**Phase 4 — The rewiring debate.** The reconciled, fact-checked picture from Phase 3 becomes ONE side of a second, genuinely different debate: a prioritized, step-by-step plan for interconnecting/rewiring existing RPGACE infrastructure more usefully. The OTHER side is a real, honest counter-case — plausible reasons NOT to rewire, or a leaner/cheaper alternative that gets most of the value for less disruption. Neither side is a strawman; both must survive real interrogation, same as any `/debate` round.
-
-**Phase 5 — Get Alex's actual input.** GODMODE + Omnitrix + `/scope` + Aintergration (if any third-party tool is relevant to the rewiring options) + a real interrogation pass — not a rubber-stamp confirmation, actual open questions where the rewiring plan has a real fork only Alex can resolve. Council of 5 incorporates his answers into the plan.
-
-**Phase 6 — Check the run itself.** A final Council of 5 pass across every framework this run actually used — did GODMODE's evidence hold up, did the debate surface real tension or just perform one, did the rewiring plan stay anchored to Alex's stated goals rather than draining into technical tidiness for its own sake. This is the step that keeps `/5thDimension` honest about its own output, not just RPGACE's.
-
-## What "everything built off this" means
-
-Any real change that comes out of running `/5thDimension` follows the same standing rules as any other RPGACE work — merge to `main` before calling it ready, log to `patch_notes.html` + `system_updates`/Chronicles in the same session, human checkpoint on anything destructive. `/5thDimension` does not grant a shortcut around any of that; it's a bigger evidence-and-debate front end, not a different execution path.
+Anything built afterwards follows the normal rules: brief first, `/Engineer`, merge and deploy check, same-session logging.
 
 ## Guardrails
-
-- This is the heaviest, most expensive protocol available — reserve it for genuinely whole-project questions ("what's built vs. what's claimed, and how should it all connect"), never dispatch it for a single bug or feature. A task that fits Tier 1/2 of the normal Judgment Funnel (see the `omnitrix` skill) should stay there.
-- Phase 1/2's evidence-gathering is real work, not a vibe check — if it can't cite an actual commit, file/line, or Supabase row, it doesn't belong in either side.
-- Phase 4's counter-case must be a genuine "why not," not a token objection invented to look balanced — if a full pass truly finds no real case against rewiring, say that plainly rather than manufacturing one (same honesty rule `/debate` itself follows).
-- Given the real size of this protocol, the evidence-gathering phases (1-2) are natural candidates for a background Fable dispatch per Omnitrix's own rebalance ("large, exhaustive, multi-file/multi-session audits... a dedicated fresh context window has a real edge") rather than run inline — use judgment on when that's worth the quota.
+- Whole-project questions only.
+- Every claim on either side cites a commit, file/line or row.
+- If there's no real case against rewiring, say so.
+- Phases 1-2 can go to a background Fable dispatch when the audit is huge enough to earn it.

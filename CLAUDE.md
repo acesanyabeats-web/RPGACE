@@ -1,7 +1,7 @@
 # RPGACE — CLAUDE.md
 Loaded at the start of every session. It holds the rules and an index. Current facts live in `docs/claude/*.md` (open the one for the area you're touching); history and the reasons behind rules live in `CLAUDE_archive.md` (never read it for current state); the story of every change lives in `patch_notes.html`.
 
-Split from a 291KB file on Oct 22 2026 (plan "CLAUDE.md Debloat", record `records/2026-10/claude_md_debloat_ceo_2026-10-22.txt`; the full old file is the last section of `CLAUDE_archive.md`). Keep it this way: rules here, facts in topic files, stories in patch notes. Write present tense, one fact per line.
+Split from a 291KB file on Oct 22 2026 (plan "CLAUDE.md Debloat", record `records/2026-10/claude_md_debloat_ceo_2026-10-22.txt`; the full old file is the last section of `CLAUDE_archive.md`; [story](patch_notes.html#card-2026-10-22-claude-md-debloat)). Keep it this way: rules here, facts in topic files, stories in patch notes. Write present tense, one fact per line.
 
 ## Topic index — read the file before touching the area
 | Area | File |
