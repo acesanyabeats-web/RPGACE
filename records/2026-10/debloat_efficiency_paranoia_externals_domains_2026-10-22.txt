@@ -1,0 +1,122 @@
+/paranoia + /free-for-all-debate + /scope + /drift — did the CLAUDE.md debloat make
+RPGACE Total systems more efficient? Then: external AIs into domains, dissolve dimensions.
+Oct 22 2026
+
+PROMPT (verbatim, Alex): "does this make RPGACE total systems more efficient in terms of
+1) claude plan usage 2) context picking when developing certain domain (take only needed
+context for plan of /CEO) 3) make galaxy map easier to map out 4) claude api in RPGACE app
+more efficient with token usage. /paranoia and /free-for-all-debate with /scope and /drift .
+then we map out all external ais into domains, and disolve dimensions where needed to keep
+real ones outside of RPGACE app"
+
+1. EVIDENCE (measured this pass)
+- CLAUDE.md: 291,431 -> 17,818 chars (~73K -> ~4.5K tokens), loaded at every session start
+  and carried in context every turn.
+- Skill descriptions (listed to the model every turn): 28,159 -> 18,547 chars (~7K -> ~4.6K tokens).
+- Authored skill bodies (loaded when a skill runs): 347,787 -> 124,544 chars.
+- Topic files are read on demand: 1.5-8KB each (~0.4-2K tokens).
+- 8 app domains (RPGACE.DOMAINS): oracle 17 modules, content 10, knowledge 25, habits 6,
+  schedule 14, chronicles 3, oversight 3, platform 8. Topic files do NOT line up 1:1:
+  myday.md = schedule + xpSeason (chronicles); content.md holds moneyHub (habits);
+  oracle.md mixes oracle + platform; no chronicles/platform/oversight-domain file.
+- The CEO skill doesn't say "read only the domain's topic file".
+- Galaxy Map generators: untouched by the debloat (only the rules file shrank 47K -> ~9K).
+- App: never reads CLAUDE.md or skills. oracleAppGrounding.SELF_KNOWLEDGE (the app's own
+  self-description sent to Claude) has grown to 99,014 chars (~25K tokens):
+  Sep 23 trim 11,205 -> 44,471 -> 72,616 -> 94,320 -> 99,132 now.
+  Normal chat is routed by oracleProfessor (AUTO: true), which sends only picked
+  ~2,500-char sections. The full digest still goes on 7 forceGroundNext() paths and on
+  keyword-triggered non-routed calls. System prompts use cache_control (repeat calls
+  within ~5 min cost ~10%).
+- External registry (graphify_river_group.py): EXTERNAL_CONNECTORS has 16 entries;
+  EXTERNAL_RIVER_LINKS maps 12 of them to domains (river numbers = domains 1-8).
+  Missing from the registry entirely: Gemini (api/search.js web: webLookup=oracle,
+  tripPlans=schedule), Tavily (built, off), Fish Audio (dormant, api/oracle.js), Supadata
+  (api/orchestrate.js, _context.js), Google Health API (planned). Unmapped to domains:
+  Unsplash, Wikipedia, n8n, OpenArt. Stale: Unsplash note says cookingOracle is
+  "Content & Video" (it is habits); Anthropic is mapped only to Oracle, but Claude is
+  called from every domain (Cooking, Health photo reading, Bookworm, Videoworm, Study...).
+- Dimension pages: 17. Outside the app: Orchestrator CC, OpenMontage CC, Skills, Supabase,
+  Local Analysis Pipeline, Oversight Sync, Generator Toolchain, Connectors, Externals.
+  Inside the app: Oracle (duplicates the Oracle domain), Decisions (human gates),
+  Decision Matrix, Alex's Decision Path, Branch Ledger (level6), Load, Loops,
+  Dimensions Matrix. Externals and Connectors are two pages about one subject.
+
+2. DRIFT
+(a) Q1-Q2 vs the debloat plan: VERDICT on track, BASIS ratified. Q2 has a MINOR gap:
+    topic files aren't domain-aligned and /CEO doesn't use them.
+(b) SELF_KNOWLEDGE vs its Sep 23 trim (ratified: "fixed 66,332 -> 11,205 chars"):
+    VERDICT drifted, MATERIAL — it re-grew 9x in a month; each ship appends a paragraph.
+    The staleness/contradiction checks never measure size.
+(c) External registry vs code: MINOR (5 missing, 4 unmapped, 2 stale).
+
+3. ANSWERS
+1) Claude plan usage: YES, measurably. ~65-70K fewer tokens at every session start and in
+   every turn's context; ~2.5K fewer per turn from skill descriptions; skills cost ~1/3 when
+   invoked. Fewer compactions in long sessions. Caveat: a topic file read adds 0.5-2K back.
+2) Domain context picking for /CEO: PARTLY. The split exists but by "area", not by the 8
+   domains, and /CEO doesn't use it yet. Fix is small: one topic file per domain + a CEO
+   Loop 1 rule "read CLAUDE.md + docs/claude/<domain>.md + landmines only".
+3) Galaxy Map: NO direct change. Only its rules file got cheaper to read. The externals ->
+   domains + dimension dissolve step below is what makes the map simpler.
+4) Claude API in the app: NO change — the app never reads these files. The real lever is
+   SELF_KNOWLEDGE (99K chars). Same fix shape as CLAUDE.md: section it by domain (the
+   Professor already picks sections), trim story, stop the full dump on the 7 forced paths,
+   add a size gate to the existing checks.
+
+4. /free-for-all-debate (5 competitors, 2 problems each)
+A Token accountant (Q1, Q4): Q1 savings are real and permanent; the bigger untouched cost is
+  SELF_KNOWLEDGE riding in app calls. Trim it before anything else.
+B Domain purist (Q2, Q3): make the 8 domains the one spine: topic files, SELF_KNOWLEDGE
+  sections, Galaxy pages and externals all keyed by domain. One key, no translation tables.
+C App skeptic (Q4, honesty): say plainly the debloat did nothing for the app; don't let
+  "efficiency" claims blur dev-side and app-side.
+D Mapmaker (Q3, dissolve): the registry already maps externals to domains; finish it and
+  show each external on its domain page. Merge Externals + Connectors into one "External
+  AIs" page. Dissolve in-app dimensions into domain/module pages; keep only dimensions
+  that live outside the app.
+E Why-not (risk, 48h rule): Galaxy work has a standing pause and a P3 GATE awaiting your
+  hand-test; dissolving pages breaks anchors (77+ #view-map links), smoke rows and
+  perspective reports; none of it ships a beat or video. Counter: infrastructure is exempt,
+  and fewer pages = less to maintain.
+Council of 5 verdict: do it, in this order: (1) SELF_KNOWLEDGE by domain + size gate
+(only item that saves real money in the app), (2) topic files per domain + CEO rule,
+(3) externals complete and mapped, (4) dissolve in-app dimensions into domain pages with
+redirect stubs so no link breaks. The dissolve list needs Alex's answers.
+
+5. INTERROGATION — asked in chat (answers to be appended).
+Answers (all recommended options):
+- Keep as own pages: External AIs (merge Externals + Connectors); Claude Code side
+  (Orchestrator CC, OpenMontage CC, Skills, Generator Toolchain, Oversight Sync);
+  Supabase + Local PC pipeline.
+- In-app dimensions (Oracle, Human Gates, Decision Matrix, Your Decision Path, Branch
+  Ledger, Load, Loops, Dimensions Matrix): fold into domain pages; old pages become
+  redirect stubs.
+- Externals on the map: live + dormant, each tagged live/dormant/planned-with-code.
+- Include both fixes: SELF_KNOWLEDGE by domain + size gate; topic files per domain + /CEO rule.
+- Galaxy Map pause: overridden for this plan by Alex's direct ask.
+
+6. PLAN — "Domain Spine & Externals" ED-1..ED-5
+ED-1 SELF_KNOWLEDGE by domain: rewrite the 99K digest as 8 domain sections + a short
+     core, present tense, owning module/table named (Building guide 13); oracleProfessor
+     section picker uses the domain sections; the 7 forceGroundNext paths send core +
+     relevant domain sections, never the whole thing; add a size limit to
+     check_self_knowledge_staleness.py (or a sibling check) and to Bedtime 1c.
+ED-2 Topic files per domain: docs/claude/{oracle,content,knowledge,habits,schedule,
+     chronicles,oversight,platform}.md + cross-cutting landmines/security/open_forks;
+     CLAUDE.md index updated; CEO Loop 1 rule "load CLAUDE.md + the plan's domain file(s)
+     + landmines only"; coverage check re-run.
+ED-3 Externals: EXTERNAL_CONNECTORS/EXTERNAL_RIVER_LINKS complete (add Gemini, Tavily,
+     Fish Audio, Supadata; map Unsplash, Wikipedia, n8n, OpenArt; fix Unsplash domain and
+     Anthropic's all-domain reach, computed from code), each tagged live/dormant;
+     Externals + Connectors merged into one "External AIs" page; each domain page lists
+     its externals.
+ED-4 Dissolve in-app dimensions into domain pages: Oracle calls, human gates, decision
+     catalog, Alex's click path, branch ledger, load triggers and loops become sections on
+     galaxy_map_domain.html per domain (data first, bubbles follow — R22); old pages become
+     redirect stubs; DIMENSION_PAGES/hub/sidebar updated; smoke_test_items and
+     perspective_reports for those pages repointed/superseded.
+ED-5 Verify + log: pipeline twice (idempotent), verify_anchors, edge coverage, tag balance,
+     headless console check, link check across docs and Supabase rows, patch notes,
+     system_updates, interconnection/system_flow/ai_tooling maps, SELF_KNOWLEDGE.
+Order: ED-1 -> ED-2 -> ED-3 -> ED-4 -> ED-5. Status: compiled, awaiting approval.
