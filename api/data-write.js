@@ -86,6 +86,7 @@ const ALLOWED_TABLES = new Set([
   'quest_log',
   'routines', // Oct 12 2026 My Day routines (anon_read_only from creation)
   'chore_blocks', // Oct 14 2026 DT-4 chore blocks (anon_read_only from creation)
+  'day_misses', // Oct 22 2026 AC-5 "What happened?" answers for missed blocks (anon_read_only from creation)
   'rpgace_shifts', // Oct 12 2026 MD2-1: RLS flipped to anon_read_only/authenticated_all same day; shiftSync + the Fourth cloud runner write here
   'sync_status', // Oct 12 2026 MD2-2: created anon_read_only/authenticated_all; the Fourth cloud runner reports its last run here
   'activity_templates', // Oct 12 2026 MD2-4: schedule activity templates (place, journey, get-ready, category); anon_read_only from creation

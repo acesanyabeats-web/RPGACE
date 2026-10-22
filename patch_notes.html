@@ -73,6 +73,27 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-22-what-happened" style="margin-bottom:30px;">
+    <div class="card-title">❓ Oct 22 — "What happened?" for blocks that went by with nothing logged (AC-5)</div>
+    <div class="card-body">
+      Your words: "any blocks missed get a question why (like morning routine not even done, I woke up at 12pm, went straight to remove my stitches)". Your answers: "Both", the four reasons, "Later today / Tomorrow / Drop", and today-only for the wake time. Step 6 of 11.
+      <ul>
+        <li><b>What counts as missed</b>: a block (or the 🌅 Morning block) whose time has passed, with nothing logged inside it (no Doing now, I just did or tick) and no answer yet.</li>
+        <li><b>When it asks</b>: when My Day opens (once per set of missed blocks, so it doesn't nag), and in the evening review as "❓ What happened? — Tell me".</li>
+        <li><b>Reasons</b>:
+          <ul>
+            <li><b>Woke up late</b> asks when you got up, starts today's Morning block then (today only; your usual wake time stays) and moves blocks that now sit inside it to after it, with ↩ Undo.</li>
+            <li><b>Something came up</b> asks what, and logs it as an I just did for that time.</li>
+            <li><b>Chose to rest / skip</b>, <b>Forgot / ran out of time</b>, or <b>Something else</b> (type it).</li>
+            <li><b>✓ I did do it</b> logs it instead, for when you just forgot to log it.</li>
+          </ul></li>
+        <li><b>Then</b> (blocks): ⏭ Later today (next free gap), 📅 Tomorrow (same time, or the next free gap that day), ✕ Drop (kept as "missed").</li>
+        <li><b>Sunday review</b>: a "❓ Why blocks got missed" line, e.g. "Woke up late ×2, Something came up ×1".</li>
+        <li><b>Database</b>: new <code>day_misses</code> table (your answers), <code>myday_settings.wake_override</code> (today's wake time), and blocks can be "missed". Nothing deleted.</li>
+        <li><b>Tested</b>: 16 new headless checks (what counts as missed, each reason, Drop, Tomorrow, woke-late shift + Undo, today-only wake, Sunday line). <b>Untested by your hand.</b></li>
+      </ul>
+    </div>
+  </div>
 <div class="card" id="card-2026-10-22-replaced-blocks" style="margin-bottom:30px;">
     <div class="card-title">🔁 Oct 22 — "Did this replace your block?" when what you did covers a planned block (AC-4)</div>
     <div class="card-body">

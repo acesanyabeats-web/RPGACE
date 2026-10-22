@@ -102,3 +102,11 @@ half the block or 30 min, whichever is smaller). DB: chore_blocks_status_check w
 new column replaced_by text (apply_migration ac4_chore_blocks_replaced, succeeded). Code: myDay.logic.replaceBlock /
 _retireBlock (shared with cancel), blockLive, overlapsFor, nextFreeAfter, moveBlockAfter; doingNow.ui._checkBlocks /
 _askReplaced before the stop card or live page. CLAUDE.md: older My Day items moved to CLAUDE_archive.md (size limit).
+
+== AC-5 build (Oct 22 2026) ==
+Alex: "Yes with recommendation" -> wake-time change is today only (myday_settings.wake_override {date,time}).
+DB (apply_migration ac5_day_misses, succeeded): myday_settings.wake_override jsonb; chore_blocks status adds 'missed';
+new table day_misses (day, kind block|morning, block_id fk set null, label, reason, note, action later|tomorrow|drop|none),
+anon_read_only/authenticated_all, in data-write ALLOWED_TABLES. Code: myDay.logic stFor/loadMisses/missedItems/saveMiss/
+missAction/wokeLate/missLine, ui.openMissed/_maybeMissed; evening review section; Sunday review line.
+Bug caught in test: the card could act on a stale block copy after a reload -> missAction now resolves the live block by id.
