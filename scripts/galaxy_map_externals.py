@@ -34,7 +34,8 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).parent))
 from graphify_river_group import EXTERNAL_CONNECTORS  # noqa: E402
-from graphify_river_group import EXTERNAL_RIVER_LINKS, RIVER_MODULES, RIVER_NAME  # noqa: E402
+from graphify_river_group import EXTERNAL_RIVER_LINKS, RIVER_MODULES, RIVER_NAME, STATE_ICON, LINKS_BY_RIVER, DOMAIN_ORDER, DOMAIN_NUM  # noqa: E402
+import galaxy_map_connectors as _conn  # noqa: E402
 from graphify_river_group import inject_level_rail  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
 from graphify_river_group import (domain_label,   # noqa: E402
@@ -222,6 +223,27 @@ CLASSIFICATION = {
         'ui_out': 'Indirect — real transcripts feed into a Content Intelligence report shown in-app, but Whisper itself runs via a manual local Python script outside RPGACE\'s own UI entirely.',
         'note': 'Real and historically confirmed working (patch_notes.html, July 7), but current live status is genuinely unconfirmed this session.',
     },
+    # ED-3 (Oct 22 2026)
+    'Unsplash': {
+        'ui_in': 'Opening a recipe card in Cooking asks /api/search type recipe-image for a photo.',
+        'ui_out': 'The photo shows on the recipe card (falls back to Wikipedia while no key is set).',
+    },
+    'Wikipedia REST API': {
+        'ui_in': 'Same recipe-card photo lookup, as the fallback.',
+        'ui_out': 'The photo shows on the recipe card when a matching article exists.',
+    },
+    'Google Gemini': {
+        'ui_in': 'An Oracle reply ending in WEB_QUERY:, Plans/Ideas web search, and refCorpus lookups call /api/search type web.',
+        'ui_out': 'Answers and source links show in Oracle chat (a "Searched" line) and on the Plans page.',
+        'note': 'No GEMINI_API_KEY yet, so it currently returns a setup message.',
+    },
+    'Tavily': {'ui_in': None, 'ui_out': None, 'note': 'Switched off on purpose; no key.'},
+    'Fish Audio': {'ui_in': None, 'ui_out': None, 'note': 'Scaffold only, waiting for a key.'},
+    'Supadata': {
+        'ui_in': 'The yt_stats Oracle action and the Morning Brief fetch YouTube channel stats through Composio.',
+        'ui_out': 'Channel stats show in Oracle chat and in the Morning Brief.',
+    },
+    'Google Health API': {'ui_in': None, 'ui_out': None, 'note': 'Planned (HB-4); no code yet.'},
 }
 
 
@@ -293,7 +315,7 @@ def build_connector_card(conn):
     if c.get('note'):
         rows.append(f'<div class="dblock"><div class="dlabel">Honest note</div><p>{esc(c["note"])}</p></div>')
     return f'''<div class="ccard">
-  <div class="chead2"><h3>{esc(conn['name'])}</h3><span class="cstatus cstatus-{esc(conn['status']).replace(' ', '-').replace('/', '-')}">{esc(conn['status'])}</span></div>
+  <div class="chead2"><h3>{esc(conn['name'])}</h3><span class="cstatus cstatus-{esc(conn['status']).replace(' ', '-').replace('/', '-')}">{esc(conn['status'])}</span><span class="state">{STATE_ICON[conn['state']]}</span></div>
   <div class="dblock"><div class="dlabel">Real connection point</div><p><code>{esc(conn['via'])}</code></p></div>
   <div class="dblock"><div class="dlabel">Bridges to</div><p>{esc(conn['bridges_to'])}</p></div>
   {build_destination_block(conn)}
@@ -370,9 +392,9 @@ TEMPLATE = """<!DOCTYPE html>
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RPGACE — Galaxy Map (Externals — UI + Backend Dimension)</title>
+<title>RPGACE — Galaxy Map (External AIs)</title>
 <style>
-  :root {{ --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; --blue:#4A90E2; }}
+  :root {{ --bg:#050508; --gold:#C9A84C; --text:#E2E2EC; --dim:#8a8a9a; --blue:#4A90E2; --accent:#3DAA6E; }}
   *{{box-sizing:border-box;margin:0;padding:0}}
   body{{background:radial-gradient(ellipse at 50% 30%, #0d1a1e 0%, #050508 70%);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif}}
   .hero{{padding:36px 24px 16px;text-align:center}}
@@ -410,19 +432,33 @@ TEMPLATE = """<!DOCTYPE html>
   .webnote{{font-size:11px;color:var(--dim);line-height:1.6;margin-bottom:16px}}
   .ext-web-row{{margin-bottom:28px}}
   .ext-web-row h3{{font-family:Georgia,serif;font-size:14px;color:#fff;margin-bottom:6px;text-align:center}}
+  .state{{font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;background:rgba(255,255,255,0.06);margin-left:6px;white-space:nowrap}}
+  .dom-row{{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:12px 16px;margin-bottom:12px}}
+  .dom-row h3{{font-family:Georgia,serif;font-size:14px;color:#fff;margin-bottom:6px}}
+  .dom-row li{{font-size:11px;color:#c8c8d8;line-height:1.6;margin-left:16px}}
+{conn_css}
 {infra_dd_css}
 {dim_css}
 </style>
 </head>
 <body>
 <div class="hero">
-  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · Externals (G27)</div>
-  <h1>🔀 External AI &amp; Repos — The UI + Backend Dimension</h1>
-  <p>All {n_conns} real external connectors, grouped by whether each one genuinely touches both a real UI trigger/output AND real backend processing — Alex's own real "parallel universe" framing. A connector counts as touching UI on EITHER a real trigger or a real displayed output (or both).</p>
+  <div class="eyebrow">RPGACE Total Systems · Galaxy Map · External AIs</div>
+  <h1>🔀 External AIs &amp; Services — outside the RPGACE app</h1>
+  <p>All {n_conns} external services RPGACE reaches, each tagged {state_key}. <b>Web</b> groups them by whether they touch both a UI trigger/output and backend processing; <b>By domain</b> shows which of the 8 app domains each one serves; <b>Cards</b> has the full facts; <b>Call sites</b> shows the exact functions that call Composio, Jina AI and Last.fm (Externals and Connectors were one subject on two pages until Oct 22 2026).</p>
 </div>
 <div class="toggle-row">
   <div class="toggle-btn active" data-view="web">🌐 Web</div>
+  <div class="toggle-btn" data-view="domains">🏛️ By domain</div>
   <div class="toggle-btn" data-view="cards">📇 Cards</div>
+  <div class="toggle-btn" data-view="calls">🔌 Call sites</div>
+</div>
+<div class="view" id="view-domains">
+<div class="webwrap">{domains_section}</div>
+</div>
+<div class="view" id="view-calls">
+<div class="conn-tabs">{conn_tabs}</div>
+{conn_sections}
 </div>
 <div class="view" id="view-cards">
 <div class="tabs">{tabs}</div>
@@ -443,9 +479,12 @@ TEMPLATE = """<!DOCTYPE html>
 (function() {{
   var tabs = document.querySelectorAll('.tab');
   var sections = document.querySelectorAll('.gsection');
-  var mtToggles = document.querySelectorAll('.toggle-btn');
+  var mtToggles = document.querySelectorAll('.toggle-row > .toggle-btn');
   var mtViews = document.querySelectorAll('.view');
   function showView(name) {{
+    // #view-map comes from the domain page's reverse links (the old Connectors page's map view).
+    if (name === 'map') name = 'calls';
+    if (!document.getElementById('view-' + name)) name = 'web';
     mtToggles.forEach(function(x) {{ x.classList.toggle('active', x.dataset.view === name); }});
     mtViews.forEach(function(v) {{ v.classList.toggle('active', v.id === 'view-' + name); }});
   }}
@@ -459,25 +498,47 @@ TEMPLATE = """<!DOCTYPE html>
   tabs.forEach(function(t) {{ t.addEventListener('click', function() {{ location.hash = t.dataset.target; }}); }});
   window.addEventListener('hashchange', function() {{
     var h = (location.hash || '').replace('#', '');
-    if (h === 'view-web') {{ showView('web'); return; }}
+    if (h.indexOf('view-') === 0) {{ showView(h.slice(5)); return; }}
+    if (h.indexOf('conn-') === 0) {{ showView('calls'); return; }}
     var id = h || (sections[0] && sections[0].id);
     if (document.getElementById(id)) {{ showView('cards'); show(id); }}
   }});
   var id0 = location.hash.replace('#', '');
-  if (id0 === 'view-web') {{ showView('web'); }}
+  if (id0.indexOf('view-') === 0) {{ showView(id0.slice(5)); }}
+  else if (id0.indexOf('conn-') === 0) {{ showView('calls'); }}
   else {{ show(id0 || (sections[0] && sections[0].id)); }}
 }})();
 </script>
+{conn_js}
 </body>
 </html>
 """
 
 
+def build_domains_section():
+    """ED-3 (Oct 22 2026): which externals serve each of the 8 app domains."""
+    rows = []
+    for d in DOMAIN_ORDER:
+        r = DOMAIN_NUM[d]
+        links = LINKS_BY_RIVER.get(r, [])
+        state = {c['name']: c['state'] for c in EXTERNAL_CONNECTORS}
+        items = ''.join(
+            f'<li><b>{esc(l["name"])}</b><span class="state">{STATE_ICON[state[l["name"]]]}</span> — {esc(l["via"])}</li>'
+            for l in sorted(links, key=lambda l: (['live', 'dormant', 'off', 'planned'].index(state[l['name']]), l['name'])))
+        rows.append(f'<div class="dom-row" id="dom-{d}"><h3><a href="galaxy_map_module.html#river-{r}">{esc(RIVER_NAME[r])}</a> '
+                    f'<span class="gcount">{len(links)} external(s)</span></h3><ul>{items or "<li>None</li>"}</ul></div>')
+    return ''.join(rows)
+
+
 def main():
     tabs = ''.join(f'<div class="tab" data-target="grp-{g["id"]}">{g["label"]}</div>' for g in GROUPS)
     sections = ''.join(build_group_section(g) for g in GROUPS)
+    _ct, _cs, _n_pairs = _conn.build_parts()
     html = TEMPLATE.format(tabs=tabs, sections=sections, n_conns=len(EXTERNAL_CONNECTORS),
                            web_section=build_web_section(),
+                           domains_section=build_domains_section(),
+                           conn_tabs=_ct, conn_sections=_cs, conn_css=_conn.page_css(), conn_js=_conn.page_js(),
+                           state_key=' · '.join(STATE_ICON.values()),
                            dim_index=dimension_index_html(OUT.name),
                            dim_css="", infra_dd_css="")
     OUT.parent.mkdir(parents=True, exist_ok=True)

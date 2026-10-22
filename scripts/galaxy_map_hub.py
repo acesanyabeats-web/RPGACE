@@ -72,6 +72,7 @@ from pathlib import Path
 import sys as _sys_rail
 from pathlib import Path as _Path_rail
 _sys_rail.path.insert(0, str(_Path_rail(__file__).parent))
+from graphify_river_group import EXTERNAL_CONNECTORS  # noqa: E402  (ED-3)
 from graphify_river_group import (  # noqa: E402
     inject_level_rail, LEVEL_RAIL, DIMENSION_PAGES, RIVER_NAME,
 )
@@ -128,10 +129,10 @@ PAGES = [
      'scope': '51 tables, 113+ of 502 functions', 'desc': 'G45 — every real client-side Supabase table touch, by Level/Domain/Module.'},
     {'file': 'galaxy_map_oracle.html', 'label': 'Oracle', 'level': 'Dimension', 'kind': 'infra',
      'scope': '13 modules, 28 real (module,function) call pairs', 'desc': 'G99 — Oracle\'s own real Infra bubble system (promoted from the retired "External AI" L0 grouping): every real function anywhere that calls Oracle, by domain/module.'},
-    {'file': 'galaxy_map_connectors.html', 'label': 'Connectors (6 real L0 units)', 'level': 'Dimension', 'kind': 'infra',
-     'scope': '9 real (module,function) pairs across 3 connectors, 3 honest disclosure-only', 'desc': 'G99 completion — the other 6 real "External AI" constituents (Composio/Jina AI/Last.fm/librosa/n8n/Whisper), each its own real L0 unit; 3 get a genuine Infra drilldown, 3 honestly disclose they have no client-side call site.'},
-    {'file': 'galaxy_map_externals.html', 'label': 'Externals — UI + Backend Dimension', 'level': 'Dimension', 'kind': 'infra',
-     'scope': '13 real external connectors', 'desc': 'G27 — whether each connector genuinely touches real UI AND real backend processing.'},
+    {'file': 'galaxy_map_connectors.html', 'label': 'Connectors (MERGED — redirect)', 'level': 'Dimension', 'kind': 'infra',
+     'scope': 'redirect only', 'desc': 'ED-3 (Oct 22 2026) — merged into External AIs (its Call sites view). This file is a one-line redirect kept so older links and Supabase rows still land.'},
+    {'file': 'galaxy_map_externals.html', 'label': 'External AIs', 'level': 'Dimension', 'kind': 'infra',
+     'scope': f'{len(EXTERNAL_CONNECTORS)} external AIs/services, each tagged live/dormant/off/planned', 'desc': 'ED-3 (Oct 22 2026) — Externals + Connectors on one page: a UI/backend web, which domains each one serves, full cards, and the exact call sites for Composio/Jina AI/Last.fm.'},
     {'file': 'galaxy_map_skill_network.html', 'label': 'Skills — Composition Network + AI/UI/Backend Dimension', 'level': 'Dimension', 'kind': 'inter',
      'scope': '24 skills, 117 real skill-to-skill edges', 'desc': 'G28+G36 merged (Aug 21 2026, /misunderstanding correction) — map view: real /skillName invocation edges + click-to-reveal detail; table view: whether each skill reaches external AI, touches real UI, or touches real backend. One real page, not two.'},
     {'file': 'galaxy_map_orchestrator_cc.html', 'label': 'Orchestrator CC', 'level': 'Dimension', 'kind': 'inter',

@@ -272,11 +272,42 @@ EXTERNAL_CONNECTORS = [
      'note': 'local speech-to-text — historically confirmed working July 7 (Content Intelligence: metadata->download->Whisper->frame extraction->Claude Vision->Oracle report). Current live status genuinely unconfirmed this session, same visibility gap as local_server.py\'s other integrations — do not claim active without asking Alex.'},
     {'name': 'Unsplash', 'status': 'built, not configured', 'tested': False, 'via': 'api/search.js handleRecipeImage(), UNSPLASH_ACCESS_KEY',
      'bridges_to': 'Unsplash\'s own hosted free-tier image-search API',
-     'note': 'H11 (Sep 16 2026) real recipe-photo primary source — code checks for UNSPLASH_ACCESS_KEY and fails open to the Wikipedia fallback below when unset (not yet set as of this build). Oracle\'s Oracle Current is unrelated; this is triggered from Content & Video\'s cookingOracle recipe card.'},
+     'note': 'H11 (Sep 16 2026) real recipe-photo primary source — code checks for UNSPLASH_ACCESS_KEY and fails open to the Wikipedia fallback below when unset (not yet set as of this build). Oracle\'s Oracle Current is unrelated; this is triggered from the Habits domain\'s cookingOracle recipe card.'},
     {'name': 'Wikipedia REST API', 'status': 'live', 'tested': False, 'via': 'api/search.js handleRecipeImage() fallback, en.wikipedia.org/api/rest_v1',
      'bridges_to': 'Wikimedia\'s own hosted, free, keyless REST API',
      'note': 'H11 (Sep 16 2026) real recipe-photo fallback — no key needed, live today, but only finds a photo for well-known named dishes with a matching Wikipedia article.'},
+    # ED-3 (Oct 22 2026): the four externals that had code but no registry row, plus one planned.
+    {'name': 'Google Gemini', 'status': 'built, key pending', 'tested': False, 'via': "api/search.js handleWeb() (type 'web'), GEMINI_API_KEY",
+     'bridges_to': "Google's hosted Gemini API (gemini-2.5-flash with Google Search grounding)",
+     'note': 'the one live web-search provider: webLookup (WEB_QUERY: trailer) and oracleProfessor gather in Oracle, tripPlans in Schedule, refCorpus lookups in Content. Only the search question is sent. Returns a setup message until GEMINI_API_KEY is set.'},
+    {'name': 'Tavily', 'status': 'off', 'tested': False, 'via': 'api/search.js handleWeb() fallback, TAVILY_API_KEY',
+     'bridges_to': "Tavily's hosted search API",
+     'note': 'built as the web-search fallback behind Gemini and switched off on purpose (Oct 12 2026, Alex: "skip tavily for now") — no key set.'},
+    {'name': 'Fish Audio', 'status': 'dormant', 'tested': False, 'via': 'api/oracle.js TTS/ASR scaffold, FISH_AUDIO_API_KEY',
+     'bridges_to': "Fish Audio's hosted TTS/ASR API",
+     'note': 'voice in/out for Oracle, built as a scaffold and dormant until a key exists; the old browser voice input (voiceInput) is retired, so there is no voice path until then.'},
+    {'name': 'Supadata', 'status': 'live', 'tested': True, 'via': 'Composio action SUPADATA_GET_YOUTUBE_CHANNEL (api/_context.js ACCOUNTS, api/orchestrate.js)',
+     'bridges_to': "Supadata's hosted YouTube data API, reached through a Composio connected account",
+     'note': "YouTube channel stats: oracleControl's yt_stats action (Oracle), morningBrief (Schedule) and contentRepurpose (Content)."},
+    {'name': 'Google Health API', 'status': 'planned', 'tested': False, 'via': 'none yet — HB-4',
+     'bridges_to': "Google's Health API (OAuth)",
+     'note': "planned step HB-4 of Health & body; waits on Alex's OAuth Playground check (Samsung Health is partners-only, Google Fit API is closing)."},
 ]
+
+# ED-3 (Oct 22 2026): one state tag per external, shown on the External AIs
+# page and each domain page. live = called today; dormant = code exists,
+# waiting on a key; off = built and switched off on purpose; planned = no code yet.
+EXTERNAL_STATE = {
+    'Anthropic (Claude API)': 'live', 'OpenMontage': 'live', 'Composio': 'live',
+    'Moonshot AI (Kimi)': 'dormant', 'OpenAI (Luna)': 'dormant', 'librosa': 'dormant',
+    'FFmpeg': 'live', 'OpenArt': 'planned', 'fal.ai': 'live', 'Graphify CC': 'live',
+    'Jina AI': 'live', 'Last.fm': 'live', 'n8n': 'dormant', 'Whisper (OpenAI, local)': 'dormant',
+    'Unsplash': 'dormant', 'Wikipedia REST API': 'live', 'Google Gemini': 'dormant',
+    'Tavily': 'off', 'Fish Audio': 'dormant', 'Supadata': 'live', 'Google Health API': 'planned',
+}
+STATE_ICON = {'live': '🟢 live', 'dormant': '💤 dormant', 'off': '⏸️ off', 'planned': '📝 planned'}
+for _c in EXTERNAL_CONNECTORS:
+    _c['state'] = EXTERNAL_STATE[_c['name']]
 
 # Supabase is deliberately its own real category, not folded into
 # EXTERNAL_CONNECTORS above — it's core RPGACE infrastructure (the
@@ -434,7 +465,33 @@ EXTERNAL_RIVER_LINKS = [
     {'name': 'Jina AI', 'rivers': [3, 1], 'via': 'Bookworm URL ingestion (Knowledge) and pasted-URL handling in Oracle chat'},
     {'name': 'Last.fm', 'rivers': [2], 'via': "refCorpus.findMatches()'s fallback for beat matching"},
     {'name': 'Whisper (OpenAI, local)', 'rivers': [3], 'via': 'Content Intelligence transcription on the PC server; live status unconfirmed'},
+    # ED-3 (Oct 22 2026): every external now has at least one domain.
+    {'name': 'Google Gemini', 'rivers': [1, 5, 2], 'via': 'webLookup + oracleProfessor (Oracle), tripPlans (Schedule), refCorpus (Content) via /api/search type web'},
+    {'name': 'Tavily', 'rivers': [1, 5], 'via': "Fallback behind Gemini on the same /api/search web calls (switched off)"},
+    {'name': 'Fish Audio', 'rivers': [1], 'via': 'Oracle voice in/out scaffold in api/oracle.js (dormant)'},
+    {'name': 'Supadata', 'rivers': [1, 5, 2], 'via': "oracleControl yt_stats (Oracle), morningBrief (Schedule), contentRepurpose (Content), through Composio"},
+    {'name': 'Unsplash', 'rivers': [4], 'via': "cookingOracle recipe photos via /api/search type recipe-image (no key yet)"},
+    {'name': 'Wikipedia REST API', 'rivers': [4], 'via': "cookingOracle recipe-photo fallback via /api/search"},
+    {'name': 'n8n', 'rivers': [5], 'via': 'Rota-sync workflow for shiftSync (built, not run unattended)'},
+    {'name': 'OpenArt', 'rivers': [2], 'via': 'Named companion to the OpenMontage handoff; no integration exists'},
+    {'name': 'Google Health API', 'rivers': [4], 'via': 'healthBody HB-4 (planned)'},
 ]
+
+# ED-3 (Oct 22 2026): Claude is called from far more than Oracle. Its domains
+# are computed from code — any module whose functions call Claude through one
+# of these helpers — instead of hand-listed.
+ANTHROPIC_CALL_PATTERNS = ('callOracle(', 'sendToOracle(', 'fillGaps(', '_callGroundWorker', '_callExtractor(',
+                           'oracleVision(', "'/api/oracle'", '_condenseIfLarge(')
+
+
+def compute_anthropic_domains(core_js_path: Path = CORE_JS):
+    """{domain: [module, ...]} for every module whose own code calls Claude."""
+    out = {}
+    for m, d in MODULE_DOMAIN.items():
+        src = '\n'.join(_function_bodies(m, core_js_path).values())
+        if any(p in src for p in ANTHROPIC_CALL_PATTERNS):
+            out.setdefault(d, []).append(m)
+    return out
 LINKS_BY_RIVER = {}
 for _l in EXTERNAL_RIVER_LINKS:
     for _r in _l['rivers']:
@@ -4123,8 +4180,8 @@ DIMENSION_PAGES = [
      'Exhaustive, mechanical if/else/switch branch extraction, listed not narrated.'),
     ('galaxy_map_supabase.html', '💉', 'Supabase', 'infra',
      'Every real client-side Supabase table touch, by level/river/module.'),
-    ('galaxy_map_externals.html', '🔌', 'Externals', 'infra',
-     'Whether each external connector genuinely touches real UI AND real backend.'),
+    ('galaxy_map_externals.html', '🔀', 'External AIs', 'infra',
+     'Every external AI/service outside the app, tagged live/dormant/off/planned, by domain, with call sites.'),
     ('galaxy_map_load.html', '⏳', 'Load Dimension', 'infra',
      'What actually triggers a load: boot task, page nav, or on-demand click.'),
     ('galaxy_map_skill_network.html', '🕸️', 'Skills', 'inter',
@@ -4170,8 +4227,7 @@ DIMENSION_PAGES = [
     # source, rather than patch the symptom in the sidebar.
     ('galaxy_map_oracle.html', '🔮', 'Oracle', 'infra',
      'Every real function anywhere that calls Oracle, by domain/module.'),
-    ('galaxy_map_connectors.html', '🔌', 'Connectors', 'infra',
-     'The 6 real non-Oracle "External AI" constituents, each its own real L0 unit.'),
+    # ED-3 (Oct 22 2026): Connectors merged into External AIs (galaxy_map_externals.html#view-calls).
 ]
 
 DIMENSION_KIND_META = {
@@ -5993,6 +6049,20 @@ def inject_plan_overlay(html, page_scope):
     return html + overlay
 
 
+# ED-3 (Oct 22 2026): Anthropic's domains come from code (compute_anthropic_domains,
+# defined above but needing _function_bodies, so applied here at the end of the module).
+_ANTHROPIC_DOMAINS = compute_anthropic_domains()
+for _l in EXTERNAL_RIVER_LINKS:
+    if _l['name'] == 'Anthropic (Claude API)':
+        _l['rivers'] = [DOMAIN_NUM[d] for d in DOMAIN_ORDER if d in _ANTHROPIC_DOMAINS]
+        _l['via'] = 'Called from code in every domain listed: ' + '; '.join(
+            f"{d} ({', '.join(sorted(_ANTHROPIC_DOMAINS[d]))})" for d in DOMAIN_ORDER if d in _ANTHROPIC_DOMAINS)
+LINKS_BY_RIVER.clear()
+for _l in EXTERNAL_RIVER_LINKS:
+    for _r in _l['rivers']:
+        LINKS_BY_RIVER.setdefault(_r, []).append(_l)
+
+
 if __name__ == '__main__':
     target = Path(sys.argv[1]) if len(sys.argv) > 1 else Path('graphify-out/graph.html')
     graph_json = Path(sys.argv[2]) if len(sys.argv) > 2 else Path('graphify-out/graph.json')
@@ -6012,3 +6082,4 @@ if __name__ == '__main__':
     for r in sorted(counts):
         print(f'  {domain_label(r)}: {counts[r]} nodes')
     print(f'nodesDS mapping patch: {"applied" if patched else "already present (no-op)"}')
+

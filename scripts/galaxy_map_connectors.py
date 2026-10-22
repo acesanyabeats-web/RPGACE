@@ -224,7 +224,7 @@ TEMPLATE = """<!DOCTYPE html>
   var id0 = h0.indexOf('conn-') === 0 ? h0.replace('conn-', '').split('-')[0] : null;
   show(id0 || (tabs[0] && tabs[0].dataset.conn));
 
-  document.querySelectorAll('.toggle-btn').forEach(function(b) {{
+  document.querySelectorAll('.toggle-btn[data-conn]').forEach(function(b) {{
     b.addEventListener('click', function() {{
       var cid = b.dataset.conn;
       document.querySelectorAll('.toggle-btn[data-conn="' + cid + '"]').forEach(function(x) {{
@@ -249,7 +249,10 @@ TEMPLATE = """<!DOCTYPE html>
 """
 
 
-def main():
+def build_parts():
+    """ED-3 (Oct 22 2026): the call-site tabs and panes, now shown inside
+    galaxy_map_externals.html (the one External AIs page). Returns
+    (tabs_html, sections_html, n_drilldown_pairs)."""
     tabs = []
     sections = []
     n_drilldown_pairs = 0
@@ -261,25 +264,55 @@ def main():
     for conn in DISCLOSURE_CONNECTORS:
         tabs.append(f'<div class="conn-tab" data-conn="{CONN_ID[conn]}">{CONN_ICON[conn]} {conn}</div>')
         sections.append(build_disclosure_section(conn))
-
-    html = TEMPLATE.format(tabs=''.join(tabs), sections=''.join(sections),
-                           dim_index=dimension_index_html(OUT.name),
-                           dim_css="", idd_css="")
-    OUT.parent.mkdir(parents=True, exist_ok=True)
-    html = inject_level_rail(html, OUT.name)
-    OUT.write_text(html, encoding='utf-8')
-    print(f"Wrote {OUT} — {len(DRILLDOWN_CONNECTORS)} real connectors with a genuine Infra drilldown "
-          f"({n_drilldown_pairs} real (module,function) pairs), {len(DISCLOSURE_CONNECTORS)} honest "
-          f"disclosure-only (zero real client-side call site found).")
-    # Real, build-time self-consistency gate, same discipline as
-    # galaxy_map_oracle.py — every real pair the detector found must be
-    # drawn by exactly one connector's own drilldown, never silently
-    # dropped or double-counted.
+    # Build-time self-consistency gate: every pair the detector found is drawn exactly once.
     real_pairs = sum(len(v) for k, v in CALLS.items() if k in DRILLDOWN_CONNECTORS)
     if real_pairs != n_drilldown_pairs:
         raise SystemExit(
             f"SELF-CONSISTENCY FAIL: detector found {real_pairs} real pairs across drilldown "
             f"connectors, page built from {n_drilldown_pairs}.")
+    return ''.join(tabs), ''.join(sections), n_drilldown_pairs
+
+
+def page_css():
+    """The connector-specific CSS rules, for embedding in the External AIs page
+    (page-wide rules like body/.hero/.note are left to the host page; the
+    toggle rules are scoped to .conn-pane so they don't fight the host's)."""
+    css = TEMPLATE[TEMPLATE.index('<style>') + 7:TEMPLATE.index('{idd_css}')]
+    css = css.replace('{{', '{').replace('}}', '}')
+    keep = []
+    for line in css.split('\n'):
+        s = line.strip()
+        if not s or s.startswith((':root', '*', 'body', '.hero', 'a{', 'code', '.note')):
+            continue
+        if s.startswith(('.toggle-row', '.toggle-btn')):
+            s = '.conn-pane ' + s
+        if s.startswith('.view'):
+            s = '.conn-pane .view{display:none} .conn-pane .view.active{display:block}'
+        keep.append('  ' + s)
+    return '\n'.join(keep)
+
+
+def page_js():
+    """The tab + table/map toggle script, for the External AIs page."""
+    js = TEMPLATE[TEMPLATE.index('<script>'):TEMPLATE.index('</script>') + 9]
+    return js.replace('{{', '{').replace('}}', '}')
+
+
+def main():
+    # ED-3 (Oct 22 2026): Externals + Connectors merged into one External AIs
+    # page; this file keeps the call-site data/sections and writes a redirect.
+    _tabs, _sections, n_drilldown_pairs = build_parts()
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    OUT.write_text(
+        '<!doctype html>\n<html lang="en"><head><meta charset="utf-8">\n'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">\n'
+        '<title>External AIs</title>\n'
+        '<meta http-equiv="refresh" content="0; url=galaxy_map_externals.html#view-calls">\n'
+        '<script>location.replace("galaxy_map_externals.html"+(location.hash||"#view-calls"));</script>\n'
+        '</head><body><p>Connectors moved into <a href="galaxy_map_externals.html#view-calls">'
+        'External AIs</a>.</p></body></html>\n', encoding='utf-8')
+    print(f"Wrote {OUT} (redirect) — {len(DRILLDOWN_CONNECTORS)} connectors with a call-site drilldown "
+          f"({n_drilldown_pairs} pairs) now shown on galaxy_map_externals.html.")
 
 
 if __name__ == '__main__':

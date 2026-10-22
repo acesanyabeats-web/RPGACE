@@ -358,12 +358,12 @@ UNIT_BUBBLE_SYSTEM = {
     'orchestrator_cc': CC_UNIT_LINK['orchestrator_cc'],
     'openmontage_cc': CC_UNIT_LINK['openmontage_cc'],
     'graphify_cc': CC_UNIT_LINK['graphify_cc'],
-    'composio': 'galaxy_map_connectors.html#conn-composio',
-    'jina': 'galaxy_map_connectors.html#conn-jina',
-    'lastfm': 'galaxy_map_connectors.html#conn-lastfm',
-    'librosa': 'galaxy_map_connectors.html#conn-librosa',
-    'n8n': 'galaxy_map_connectors.html#conn-n8n',
-    'whisper': 'galaxy_map_connectors.html#conn-whisper',
+    'composio': 'galaxy_map_externals.html#conn-composio',
+    'jina': 'galaxy_map_externals.html#conn-jina',
+    'lastfm': 'galaxy_map_externals.html#conn-lastfm',
+    'librosa': 'galaxy_map_externals.html#conn-librosa',
+    'n8n': 'galaxy_map_externals.html#conn-n8n',
+    'whisper': 'galaxy_map_externals.html#conn-whisper',
     'skills': 'galaxy_map_skill_network.html#view-table',
     'alex': 'galaxy_map_decision_matrix.html#view-bubble',
 }
@@ -1002,12 +1002,12 @@ def build_facets():
         'librosa': 'librosa', 'n8n': 'n8n', 'Whisper (OpenAI, local)': 'whisper',
     }
     connector_own_link = {
-        'Composio': 'galaxy_map_connectors.html#conn-composio',
-        'Jina AI': 'galaxy_map_connectors.html#conn-jina',
-        'Last.fm': 'galaxy_map_connectors.html#conn-lastfm',
-        'librosa': 'galaxy_map_connectors.html#conn-librosa',
-        'n8n': 'galaxy_map_connectors.html#conn-n8n',
-        'Whisper (OpenAI, local)': 'galaxy_map_connectors.html#conn-whisper',
+        'Composio': 'galaxy_map_externals.html#conn-composio',
+        'Jina AI': 'galaxy_map_externals.html#conn-jina',
+        'Last.fm': 'galaxy_map_externals.html#conn-lastfm',
+        'librosa': 'galaxy_map_externals.html#conn-librosa',
+        'n8n': 'galaxy_map_externals.html#conn-n8n',
+        'Whisper (OpenAI, local)': 'galaxy_map_externals.html#conn-whisper',
     }
     for name, itype in CONNECTOR_ITYPE.items():
         owner = connector_owner.get(name, 'rpgace_architecture')

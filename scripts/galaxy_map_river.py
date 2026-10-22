@@ -50,6 +50,7 @@ from graphify_river_group import (domain_label,   # noqa: E402
 # set (rule 8, not re-derived differently here) — real evidence backing
 # every river-to-river RIVER_FLOWS edge's own click-to-inspect panel.
 _RIVER_CROSS_CALLS = compute_cross_module_function_calls()
+from graphify_river_group import LINKS_BY_RIVER, EXTERNAL_CONNECTORS, STATE_ICON, DOMAIN_ORDER  # noqa: E402  (ED-3)
 from graphify_river_group import inject_level_rail, inject_plan_overlay  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
 from graphify_river_group import render_bubble_row, INFRA_DRILLDOWN_CSS  # noqa: E402
@@ -87,7 +88,7 @@ _REVERSE_DIMENSIONS = [
     ('galaxy_map_oracle.html', '🔮', 'Oracle', _dim_oracle.DRILL),
     ('galaxy_map_supabase.html', '🗄️', 'Supabase', _dim_supabase.DRILL),
     ('galaxy_map_decisions.html', '🚦', 'Decisions', _dim_decisions.DRILL),
-    ('galaxy_map_connectors.html', '🧩', 'Connectors', _dim_connectors.DRILL),
+    ('galaxy_map_externals.html', '🧩', 'External AIs — call sites', _dim_connectors.DRILL),
     ('galaxy_map_orchestrator_cc.html', '🧭', 'Orchestrator CC',
      _dim_orch_om.DRILL_BY_UNIT['orchestrator_cc']),
     ('galaxy_map_openmontage_cc.html', '🎬', 'OpenMontage CC',
@@ -431,6 +432,14 @@ def build_svg():
                 f'<a href="{href}#view-map">{icon} {label}</a>'
                 for href, icon, label in REVERSE_LINKS[rnum])
             reverse_note = f'<br><span class="meta">🌐 Referenced by: {chips}</span>'
+        # ED-3 (Oct 22 2026): the external AIs/services this domain uses, each tagged.
+        externals_note = ''
+        ext = LINKS_BY_RIVER.get(rnum, [])
+        if not is_archived and ext:
+            _state = {c['name']: c['state'] for c in EXTERNAL_CONNECTORS}
+            chips = ' · '.join(f'{l["name"]} ({STATE_ICON[_state[l["name"]]]})' for l in ext)
+            externals_note = (f'<br><span class="meta">🔀 External AIs: {chips} — '
+                              f'<a href="galaxy_map_externals.html#dom-{DOMAIN_ORDER[rnum - 1]}">details</a></span>')
         target_legend = archived_legend_rows if is_archived else live_legend_rows
         target_legend.append(
             f'<div class="legend-row"><span class="dot" style="background:{color}"></span>'
@@ -440,6 +449,7 @@ def build_svg():
             + oversight_note
             + perspective_note
             + reverse_note
+            + externals_note
             + river_retirement_note_html(rnum, compact=True)
             + '</div>'
         )
