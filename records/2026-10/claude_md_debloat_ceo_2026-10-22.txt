@@ -1,0 +1,120 @@
+CLAUDE.md + skill files debloat — /CEO Loop 1 record (Oct 22 2026)
+===================================================================
+
+PROMPT (verbatim, Alex): "Yes with recommendation, then /debloat Claude me I bet
+there is a lot of rubbish to deduplicate and rewrite. /interrogation into oblivion
+and /scope for toolkit for /paranoia and /free-for-all-debate , then /CEO"
+
+1. EVIDENCE (/scope, measured Oct 22)
+- CLAUDE.md = 291,431 chars, loaded into every session.
+- 17 bullets over 3,000 chars hold 62% of the file. Mostly story ("what was tried,
+  what went wrong"), breaking the file's own July 28/31 rule "state the fact, not
+  the story".
+- Biggest sections (bytes): Galaxy Map / 4 layers 39,031; Known landmines 27,321;
+  Process rules 20,568; Open forks 18,102; /fableomnitrix 14,943; Taxonomy 12,258;
+  Domains plan 10,812; HABITS 10,255; Tier (b) 9,816; Oracle 9,581; Security 8,700.
+- Stale names: main.js x39 (merged into rpgace_core.js Aug 20), "Engineer CC" x7
+  (renamed OpenMontage CC Aug 13), manual.html x9 (retired Sep 23).
+- "real/Real" x996.
+- Verbatim copies of other docs: only ~7KB. The problem is retelling, not copying.
+- "Known working API models" omits claude-opus-5-5 (oracleProfessor uses it).
+- check_current_state_bloat.py measures only the Current-state section (baseline
+  79,917; now 98,570 of 99,896 max) — the other ~190KB is unmeasured.
+- Only one script parses CLAUDE.md structure: check_current_state_bloat.py (section
+  boundaries). 13 skill/script lines cite CLAUDE.md section names by text.
+- CLAUDE_archive.md = 569,895 chars (history; never loaded automatically).
+- Skill files Alex/sessions wrote (17): CEO 38K, update-logging-system 32K,
+  colourgradient 18K, Engineer 18K, fableomnitrix 15K, perspective 15K, omnitrix 14K,
+  debloat 12K, cartographer 11K, drift 10K, paranoia 10K, Bedtime 9K, decompress 9K,
+  Routine 9K, Regeneration 9K, scope 9K, loggingregen 8K, investor 8K, 5thDimension
+  7K, restructure 7K, Summary 7K, misunderstanding 6K, debate 6K, interrogation 5K,
+  free-for-all-debate 5K, impeccable 4K. "real" density up to 146 per file (CEO).
+  Third-party skills (graphify, animation-vocabulary, improve-animations,
+  review-animations, commit-archaeologist) are out of scope — not ours to edit.
+
+2. DRIFT
+VERDICT: drifted. BASIS: ratified (the "one line per fact" rule, July 28/31, and
+DD-1..4 Sep 23). GRADE: MATERIAL — the file costs every session ~75K tokens and
+buries the rules a session must follow under story.
+
+3. INTERROGATION (Alex's answers, verbatim choices)
+Q target size      -> "Split by topic"  (CLAUDE.md becomes an index; each area gets
+                      its own reference .md that sessions open when relevant)
+Q moved content    -> "Reference + archive (Rec.)"  (still-true detail -> per-topic
+                      files; history/story -> CLAUDE_archive.md; nothing deleted)
+Q start checks     -> "One checklist table (Rec.)"
+Q extras           -> "Plain-tense rewrite (Rec.)", "Fix the models list (Rec.)",
+                      "Whole-file size check (Rec.)", "Same pass on skill files"
+
+Understood as: CLAUDE.md shrinks to rules + landmines + a topic index; current
+facts move into per-topic files read on demand; every story goes to the archive
+verbatim; the 10 start-check sections become one table; plain present tense; the
+models list matches the code; the size check covers the whole file; the authored
+skill files get the same treatment.
+
+4. /paranoia (right-sized: risks, each with a guard)
+R1 Topic files don't get read, so a session misses a rule. GUARD: every MUST/NEVER
+   stays in CLAUDE.md as a 1-3 line imperative (landmines + process rules + building
+   guide). Topic files hold facts, never rules. The index says "before touching X,
+   read Y".
+R2 Rewriting drops a fact. GUARD: CD-0 builds a coverage checker first — it lists
+   every backticked identifier, file path, table, patch_notes anchor and number in
+   the old text and fails if any is missing from new CLAUDE.md + topic files +
+   archive. Run after every item.
+R3 @-imports load eagerly and undo the saving. GUARD: topic files are plain links,
+   never "@path" imports.
+R4 Skills and scripts cite CLAUDE.md section names ("## Invokable frameworks",
+   "Building guide", "Known landmines"). GUARD: keep those headings, or update every
+   citing line in the same commit (grep list in CD-6).
+R5 Stale claims carried into topic files. GUARD: rewrite, don't copy; each stale
+   claim found gets fixed and listed in this record (rule 16).
+R6 Skill frontmatter or Alex's verbatim definitions lost. GUARD: frontmatter
+   untouched; Alex's own quoted words stay verbatim; only story/history is cut.
+R7 Cost. One very long pass risks a shallow rewrite. GUARD: 9 items, briefed one at
+   a time (rule 18), each checked by CD-0.
+No Tier-3 action anywhere: no SQL, no deletes outside text moved to the archive.
+
+5. /free-for-all-debate (4 competitors, each took 2 problems)
+A Minimalist (size, read cost): 25KB core, all else on demand. Strong on cost;
+  weak — rules end up off-screen.
+B Safety-first (missed rules, landmines): keep every rule and landmine whole in
+  core, move only domain facts. Strong on safety; core stays ~70KB.
+C Generate it (stale numbers, drift): replace "Live numbers" with the queries that
+  produce them; facts that change weekly shouldn't be hand-typed. Strong — numbers
+  in prose go stale within days (proven: 4 stale counts in this file).
+D Skills as home (duplication, source of truth): framework detail already lives in
+  skill files; flip "CLAUDE.md wins" so the skill file is the source, CLAUDE.md a
+  one-liner. Strong dedup; needs every "CLAUDE.md wins" line updated.
+Council of 5 verdict: hybrid. Rules as short imperatives stay in core (B, trimmed
+to the rule, story out — A). Live numbers become a query list (C). Framework detail
+moves to skill files with the source of truth flipped (D). Domain facts go to topic
+files (Alex's choice). Expected core: ~30-45KB.
+Why NOT do it: a big rewrite of the file every session trusts could lose a landmine
+that saved real data. That is why CD-0 comes first and every item is checked.
+
+6. PLAN — "CLAUDE.md Debloat" CD-0..CD-8
+CD-0 Coverage checker: scripts/check_debloat_coverage.py + a frozen inventory of
+     the old CLAUDE.md (identifiers, paths, tables, anchors, numbers). Fails if any
+     inventory item is in none of: new CLAUDE.md, docs/claude/*.md, CLAUDE_archive.md.
+CD-1 Domain topic files: docs/claude/<area>.md for Habits/Cooking, My Day, Knowledge
+     (Taxonomy, Library, Study), Content & Video, Oracle, Money/Selling, Plans/XP.
+     One present-tense line per fact + patch_notes link. Story -> archive verbatim.
+CD-2 Rules: process rules 1-18, landmines, building guide rewritten as short
+     imperatives in CLAUDE.md; the stories behind them -> archive; long technical
+     detail -> docs/claude/landmines.md.
+CD-3 Oversight + Galaxy Map (39K + Tier a/b) -> docs/claude/oversight.md (what each
+     doc is for, one paragraph each) + archive for the build history.
+CD-4 Frameworks: Omnitrix/Council/GODMODE/Funnel/Aintergration/fableomnitrix detail
+     -> skill files; flip "CLAUDE.md wins" to "skill file is the source"; CLAUDE.md
+     keeps one line each + the Tier 3 / /auto boundary in full.
+CD-5 One session-start checklist table; models list from the code; security note
+     condensed to current facts; Live numbers -> query list.
+CD-6 Assemble: topic index, fix citing skills/scripts, replace
+     check_current_state_bloat.py with a whole-file + per-topic size and link-rot
+     check (new baseline), wire into Bedtime 1c + update-logging-system.
+CD-7 Skill files: the 17+ authored skills — cut story/history, keep procedure,
+     frontmatter and Alex's verbatim definitions; fix stale names.
+CD-8 Verify + log: coverage check, link-rot, galaxy regen (galaxy_map_skills reads
+     skill files), patch_notes card, system_updates, plan rows.
+
+Status: compiled, awaiting Alex's approval (Loop 1 Step 6).
