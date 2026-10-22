@@ -88,3 +88,10 @@ Code: removed learnedSource, savedTemplates, itemFromSched, save/removeDayTempla
 templateFromWeek, save/applyWeekTemplate, the Plan my day source picker + Save as template, the Plan week
 saved-week select + Save this week, the lock-in day record, and both tables from the data-write allowlist.
 Plan my day = buildDay(date, []); nightBeforeStatus planned = Schedule entries or dayBlocks(date).
+
+== AC-3 build (Oct 22 2026) ==
+Alex: "Go, and recommended with no double xp, both go same way to grant xp, but communication to other just tells what to tick off".
+Evidence: xp_on_change pays routine_tick only when quest_log.xp > 0, so the Action tick is written with xp 0 and
+Doing Now's own xp_on_doing_now stays the single XP path - no DB change. Built: _askWhen (both buttons + typed routes),
+expect_mins drives the still-going ask (expect+15, min 30, max 3 h), live pages (cook/gym/study/read/focus block),
+tickAction from justDid/finish/linkFinish. openStart now reuses _afterStart (duplicate removed).
