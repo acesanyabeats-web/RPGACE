@@ -73,6 +73,24 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-22-replaced-blocks" style="margin-bottom:30px;">
+    <div class="card-title">🔁 Oct 22 — "Did this replace your block?" when what you did covers a planned block (AC-4)</div>
+    <div class="card-body">
+      Your words: "Make doing now and I just did have effect over schedule and change the timeline", then "ask if I want to move missed block further down in case it is just timing". Step 5 of 11.
+      <ul>
+        <li><b>When it asks</b>: right after the When step, if what you did (or are doing) covers a planned block, but only when it covers at least half the block or 30 minutes, whichever is smaller. A 10-minute overlap with a 2-hour block doesn't ask.</li>
+        <li><b>Yes, it replaced it</b>: the block is kept as "replaced", linked to what you did, and leaves the day (timeline, Schedule, Plan my day). Its chores stay due.</li>
+        <li><b>No</b>:
+          <ul>
+            <li><b>Move it later</b> puts it at the next free gap after what you did (plus your usual gap), pushing other blocks the usual way, with ↩ Undo.</li>
+            <li><b>Keep both</b> leaves it alone.</li>
+          </ul></li>
+        <li><b>Order</b>: the question comes first, then the live page (Cook Mode, gym, Study…) or the stop card, as before.</li>
+        <li><b>Database</b>: blocks can now be "replaced" (was planned or cancelled only), and a new <code>replaced_by</code> column holds the entry. Nothing was deleted.</li>
+        <li><b>Tested</b>: 14 new headless checks (the overlap rule, Yes, Move it later + Undo, Keep both, Doing now asking before the gym page, no question when nothing overlaps). <b>Untested by your hand.</b></li>
+      </ul>
+    </div>
+  </div>
 <div class="card" id="card-2026-10-22-when-and-live" style="margin-bottom:30px;">
     <div class="card-title">▶ Oct 22 — Doing now and I just did ask when + how long, and open the live page (AC-3)</div>
     <div class="card-body">
