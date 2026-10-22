@@ -65,6 +65,36 @@ def extract_self_knowledge(core_js_text):
     return m.group(1)
 
 
+# ED-1 (Oct 22 2026, plan "Domain Spine & Externals"): SIZE gate. The digest
+# grew from 11,205 chars (Sep 23 trim) to 99,132 in a month because each ship
+# appended a paragraph and nothing measured it. It is now [[CORE]] + one
+# [[DOMAIN]] block per RPGACE.DOMAINS key; oracleProfessor sends only the
+# core + picked sections, but every block still has to stay short.
+SK_DOMAINS = ['ORACLE', 'CONTENT', 'KNOWLEDGE', 'HABITS', 'SCHEDULE', 'CHRONICLES', 'OVERSIGHT', 'PLATFORM']
+SK_MAX_TOTAL = 34000
+SK_MAX_CORE = 2600
+SK_MAX_BLOCK = 6500
+
+
+def size_problems(sk_text):
+    """Returns a list of human-readable size/shape problems (empty = fine)."""
+    probs = []
+    if len(sk_text) > SK_MAX_TOTAL:
+        probs.append(f'total {len(sk_text)} chars > {SK_MAX_TOTAL}')
+    parts = re.split(r'\[\[([A-Z]+)\]\]', sk_text)
+    blocks = {parts[i]: parts[i + 1] for i in range(1, len(parts) - 1, 2)}
+    if 'CORE' not in blocks:
+        probs.append('no [[CORE]] block')
+    elif len(blocks['CORE']) > SK_MAX_CORE:
+        probs.append(f"CORE {len(blocks['CORE'])} chars > {SK_MAX_CORE}")
+    for d in SK_DOMAINS:
+        if d not in blocks:
+            probs.append(f'missing [[{d}]] block')
+        elif len(blocks[d]) > SK_MAX_BLOCK:
+            probs.append(f'{d} {len(blocks[d])} chars > {SK_MAX_BLOCK} - move story out, keep one line per fact')
+    return probs
+
+
 def last_mentioned_date(sk_text):
     """Real, full 'Mon DD YYYY' mentions only -- a bare 'Sep 2026' with no
     day, or a day-only 'Sep 22' with no year, is deliberately NOT counted
@@ -230,7 +260,17 @@ def main():
         print('SELF_KNOWLEDGE CHECK: STALE (no dated fact found at all inside the string)')
         sys.exit(1)
 
+    js = (Path(__file__).resolve().parent.parent / 'rpgace_core.js').read_text()
+    sizes = size_problems(extract_self_knowledge(js) or '')
+    if sizes:
+        print('SELF_KNOWLEDGE SIZE: OVER')
+        for s in sizes:
+            print('  -', s)
+    else:
+        print('SELF_KNOWLEDGE SIZE: ok (core + 8 domain blocks within limits)')
     status = 'STALE' if result['stale'] else 'FRESH'
+    if sizes:
+        result['stale'] = True
     print(f"SELF_KNOWLEDGE CHECK: {status}")
     print(f"  last real date-fact inside SELF_KNOWLEDGE: {result['last_date']}")
     print(f"  days since then: {result['days_stale']} (threshold: >{result['days_threshold']})")
