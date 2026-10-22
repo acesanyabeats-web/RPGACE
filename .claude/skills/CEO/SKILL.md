@@ -13,6 +13,7 @@ It's a fixed sequence of protocols that already exist. The risk it guards agains
 
 ## Loop 1 — PLANNING (builds nothing)
 
+0. **Load only the plan's context.** Read CLAUDE.md, the `docs/claude/<domain>.md` file for each domain the plan touches (one per `RPGACE.DOMAINS` key), and `docs/claude/landmines.md`. Open other topic files only when evidence points there; name the domains in the spec.
 1. **Compile.** Put every idea in scope into one close-to-verbatim spec file in `records/YYYY-MM/` (rule 5). Merge asks that are secretly the same problem. A live-evidence audit (a `/drift` scan of code/Supabase against doc claims) is an equally valid source; then that audit record is the Step 4 baseline.
 2. **`/interrogation`.** Ask Alex about real ambiguity only; never guess at consequential intent; don't question what's already clear.
 3. **Draft with `/paranoia`.** Default advisors: `/Engineer` (sketch concrete implementations), `/aintergration` (third-party tools), `/restructure` (changes to the dev skeleton). A plan may name a different cast; record which ran in the spec. Scale: for about five findings or fewer with two or fewer MATERIAL, use `/drift` plus plain scrutiny, keeping `/paranoia`-level scrutiny for the MATERIAL ones — and say so in the report.

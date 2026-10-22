@@ -1,7 +1,8 @@
-# Knowledge — Taxonomy, Jargon, Library, Study, Bookworm
+# Knowledge domain — Taxonomy, Jargon, Library, Study, Bookworm
 
-Read before touching `phylumPath`, `taxonomyTree`, `lifeLibrary`, `knowledgeHub`, `studyHub`, `bookworm` or any taxonomy table. Every taxonomy write needs a human checkpoint (Building guide rule 4).
+Read before touching any `domain: 'knowledge'` module or any taxonomy table. Every taxonomy write needs a human checkpoint (Building guide rule 4).
 
+Modules (`domain: 'knowledge'`, 25): `feynman`, `pathways`, `encyclopediaPosts`, `recall`, `encSync`, `ciAutoPropose`, `researchTabs`, `intelBatchList`, `taxonomyReviewQueue`, `encTaxonomyLink`, `intelDelete`, `intelDedup`, `taxonomySync`, `knowledgeGap`, `taxonomyTree`, `phylumPath`, `bookworm`, `encyclopediaQoL`, `knowledgeHub`, `studyHub`, `knowledgeReview`, `jargonEncyclopedia`, `lifeLibrary`, `shareInbox`, `screenshotInbox`.
 ## Taxonomy now
 - `taxonomy_tree` has 0 rows (full wipe Sep 25 2026, Alex's ask, to rebuild phyla around reviewed jargon). Restore point: `records/2026-09/taxonomy_tree_snapshot_2026-09-25.json` (671 rows). `taxonomy_links` was emptied with it; `encyclopedia`'s one linked row had `taxonomy_node_id` set NULL. [archive](../../patch_notes.html#card-2026-09-25-taxonomy-jargon-anchor-table-restructure) [build-out](../../patch_notes.html#card-2026-09-25-taxonomy-jargon-encyclopedia-build-out)
 - 21 phyla are hardcoded; nothing below phylum level exists. Next phase (Alex): plan each phylum's structure once enough jargon is reviewed. Phylum numbering: Fons Educationis = 11, Lingua Musicae = 12, Visio Cinematica = 13, Contentum = 14, Venditionis Beatorum = 16, Miscellaneous Ordinanda = 21. [renumber](../../patch_notes.html#card-2026-08-11-same-day-5th-taxonomy-pass-real)
@@ -35,6 +36,6 @@ Read before touching `phylumPath`, `taxonomyTree`, `lifeLibrary`, `knowledgeHub`
 
 ## Bookworm
 - Large chapter text goes through `phylumPath._condenseIfLarge()` before the cap in `_analyzeChapter()`; background analysis `_continueAnalyzingInBackground` with `analysis_complete`. New books via `bookworm._createBookFromExtraction()` (raw fetch, `return=representation`). PDF.js loads at runtime via `_ensurePdfJs()`.
-- Credit-exhaustion auto-resume covers
-- Tables: `bookworm_books`, `bookworm_chapters`, `bibliography` (consolidated into Chronicles), all written through `/api/data-write`. only a cascade's first placement attempt per phylum, not reword/upgrade sub-calls inside `_placeInsightCascade`.
+- Credit-exhaustion auto-resume covers only a cascade's first placement attempt per phylum, not reword/upgrade sub-calls inside `_placeInsightCascade`.
+- Tables: `bookworm_books`, `bookworm_chapters`, `bibliography` (consolidated into Chronicles), all written through `/api/data-write`.
 - Worm family: Videoworm (built, see content.md), MusicWorm (identity exists), Articleworm (not built).

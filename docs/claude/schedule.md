@@ -1,6 +1,8 @@
-# My Day, Doing Now, XP, Plans
+# Schedule domain — My Day, Doing Now, Realms, Plans, briefs, shifts
 
-Read before touching `myDay`, `doingNow`, `xpSeason`, `tripPlans`, realms or schedule code. Present tense; stories in the linked cards; older items in `CLAUDE_archive.md` ("My Day older items").
+Read before touching any `domain: 'schedule'` module. Present tense; stories in the linked cards; older items in `CLAUDE_archive.md` ("My Day older items"). XP lives in `chronicles.md`.
+
+Modules (`domain: 'schedule'`, 14): `agendaReminder`, `scheduleOracle`, `morningBrief`, `realmBrief`, `suppressQuestPopup`, `questEngine`, `shiftSync`, `scheduleFixes`, `journalQoL`, `oracleEntry`, `myDay`, `doingNow`, `tripPlans`, `decisionJournal`.
 
 ## My Day (`myDay`, replaced the Quest Board)
 - Home (MD-0): 5-step strip, `AREAS.myday`. [story](../../patch_notes.html#card-2026-10-18-my-day-home) Overall: [My Day](../../patch_notes.html#card-2026-10-12-my-day)
@@ -23,19 +25,15 @@ Read before touching `myDay`, `doingNow`, `xpSeason`, `tripPlans`, realms or sch
 - Rows in `rpgace_agendas` with `source_type='doing_now'` + `realms`/`details`. 4h cap; repeats → offer a routine; XP via trigger `xp_on_doing_now` (30 XP split across realms, max 3 a day, skips planned_cook/gym links). Chronicles by realm + Sunday review. [DN](../../patch_notes.html#card-2026-10-16-doing-now) [cook/gym](../../patch_notes.html#card-2026-10-16-doing-now-cook-gym) [Chronicles](../../patch_notes.html#card-2026-10-16-doing-now-chronicles)
 - AC-3: Doing now / I just did ask when + how long (`ui._askWhen`); live pages open for cook, gym, study (`studyHub`), reading (Bookworm in-progress book); Actions ticked with 0 XP so XP is never paid twice. [story](../../patch_notes.html#card-2026-10-22-when-and-live)
 
-## XP Season Pass (`xpSeason`)
-- Private `xp_events` ledger written only by DB triggers (`xp_on_change` → `xp_award` → `xp_rules`) on 15 tables + `gym_sets`; 13 realms. `xp_on_change` pays a `quest_log` routine tick only when `xp > 0`.
-- The pass is a Year (Year 0: Construction; Year 2027 from 1 Jan); "season" = UK weather season; DB `season` columns hold the year.
-- Unlocks: `xp_check_unlocks()` → `xp_unlocks` (`xp_ladders`, `xp_unlock_defs`, `xp_settings.progress`), Trophy cabinet. Level-ups are `xp_unlocks` kind `level`.
-- Close: pg_cron `xp-close-periods` (00:05 UTC) → `xp_close_periods()` (keeps unanswered XP, balance bonus, frozen `xp_reports`); same-week deletes ask "was it done?".
-- Challenges: `xp_challenges` (weekly 3 from rules + one Monday Oracle call; resolutions 1-5 per UK season; realm-quest steps `xp_quest_steps`), counted by `xp_update_challenges()`/`xp_quest_check()`.
-- Treats: `xp_treats` + `xp_check_treats()` (+ `wishlist_items.treat_earned_at`); themes `xp_settings.theme`; Mind area + `routines.is_sleep` (Lake 21/28 days, `xp_check_lake()`); private `outreach_log`; `xp_settings.weekly_spend_limit`.
-- UI: dashboard HUD `.char-header` via `xpSeason.ui.hudFor`/`ui.buildHud` (2-page swipe: overall, 13-realm wheel); per-domain `ui.strip` (`CARD_REALMS`/`PAGE_REALMS`). Year Wrapped from frozen year `xp_reports` (+ `wrapped_text`, `wrapped_seen_at`), Hall of Seasons, January nudges `xpSeason.logic.yearDue`.
-- Cards: [1+2](../../patch_notes.html#card-2026-10-13-xp-season-pass) [3](../../patch_notes.html#card-2026-10-13-xp-ranks-trophies) [4](../../patch_notes.html#card-2026-10-13-xp-reports-year) [5](../../patch_notes.html#card-2026-10-13-xp-challenges) [6](../../patch_notes.html#card-2026-10-14-xp-treats-themes) [7](../../patch_notes.html#card-2026-10-14-xp-mind-outreach-budget) [8](../../patch_notes.html#card-2026-10-14-xp-year-wrapped) [swipe card](../../patch_notes.html#card-2026-10-14-xp-swipe-card) [realm cards](../../patch_notes.html#card-2026-10-14-realm-cards)
-
 ## Realms
 - Every input/quest/plan carries chosen realms (`RPGACE.realmPicker`; "Not now" holds); else `RPGACE.realmOf`. Lenses + realm↔phylum map in `realm_lenses.json`; `realmBrief` = Brief realm pick + per-realm report periods. [Realm Inputs](../../patch_notes.html#card-2026-10-15-realm-reports) [RC-0](../../patch_notes.html#card-2026-10-15-realm-phyla) [RC-1](../../patch_notes.html#card-2026-10-15-phylum-path-realms) [RC-2](../../patch_notes.html#card-2026-10-15-knowledge-feeds-realms) [RC-3](../../patch_notes.html#card-2026-10-15-quests-by-realm) [RC-4](../../patch_notes.html#card-2026-10-15-realm-milestones) [RC-5](../../patch_notes.html#card-2026-10-15-realm-connectors-done)
 
 ## Plans (`tripPlans`, TP-1..7)
 - Private `travel_profile`/`people`/`plans`/`plan_tasks`, read via `/api/data-write` action `read`. Starred ideas = `plans` status `idea`. Web search `/api/search` type `web` (Gemini only, key pending; Tavily built but off). [story](../../patch_notes.html#card-2026-10-12-trip-plans)
 - Book-by Due rows 7 days out (`tripPlans.logic.tripDue`, `.dd-ld-hot`); ticking a money task → `plan_tasks.cost_paid` + one `chronicles_finance` Travel expense; after-trip log = `journal` source `trip_log` + `plans.details.trip_log`; who's-coming chips. [story](../../patch_notes.html#card-2026-10-14-plans-money-people)
+
+## Briefs, journal, decisions
+- `morningBrief` builds the Morning Brief from Supabase (`_autoRun()` waits for the login hook); `realmBrief` adds the realm pick and per-realm report periods; the daily Morning Brief Routine writes `journal` with the plain anon key.
+- `oracleEntry` = Oracle "Save as entry" into the journal. [story](../../patch_notes.html#card-2026-10-16-oracle-save-entry)
+- `decisionJournal` (G1) sits beside the Wishlist cool-off. [G1](../../patch_notes.html#card-2026-10-10-money-guardrails)
+- `questEngine` persists quests to Supabase (A9 Phase 1); the old Quest Board was replaced by My Day.

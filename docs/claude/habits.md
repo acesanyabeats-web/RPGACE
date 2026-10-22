@@ -1,6 +1,8 @@
-# Habits — Cooking, Health & body, Gym, Shopping Wishlist
+# Habits domain — Cooking, Health & body, Gym, Wishlist, Money, Daily life
 
-Read this before touching `cookingOracle`, `healthBody`, `gymTracker` or `shoppingWishlist`. Present tense, one fact per line. Stories: `patch_notes.html` cards linked here; old narrative in `CLAUDE_archive.md`. Untested by Alex's own hand across most of this domain.
+Read before touching any `domain: 'habits'` module. Present tense, one fact per line. Stories: `patch_notes.html` cards linked here; old narrative in `CLAUDE_archive.md`. Untested by Alex's own hand across most of this domain.
+
+Modules (`domain: 'habits'`, 6): `moneyHub`, `cookingOracle`, `shoppingWishlist`, `gymTracker`, `healthBody`, `dailyLife`.
 
 ## Cooking (`cookingOracle`)
 - Tables: `recipes`, `ingredients`, `recipe_ingredients`, `ingredient_prices` (+ 4 cost/staleness/frequency views), `habits_config`, `planned_cooks`, `pantry_stock`, `shopping_lists`, `shopping_list_items`. All `anon_read_only`/`authenticated_all`.
@@ -30,3 +32,7 @@ Read this before touching `cookingOracle`, `healthBody`, `gymTracker` or `shoppi
 - General future purchases, separate from Cooking's `shopping_lists`. Tables `wishlist_items`, `wishlist_config` (`budget_target`, row id 1), in `ALLOWED_TABLES`.
 - `logic._computeBudgetFit`: greedy priority-first fill, cheapest tiebreak; unaffordable skipped, unpriced shown but excluded.
 - Marking bought asks the price paid and writes a `chronicles_finance` expense (category Personal). Cool-off: bought after 24h gives +30 XP. `decisionJournal` sits alongside (G1). [G1](../../patch_notes.html#card-2026-10-10-money-guardrails)
+
+## Money and daily life
+- `moneyHub`: the Money page (Hustler + Steward realms), built in Selling SH-5b; selling detail is in `content.md`. [story](../../patch_notes.html#card-2026-10-17-selling-home)
+- `dailyLife` (D1): fridge photo → stock via shared `cookingOracle.logic._upsertStock`, watchlist digest, own-words brief, quests+cooks in Chronicles. [D1](../../patch_notes.html#card-2026-10-10-daily-life)

@@ -2,6 +2,8 @@
 
 What each oversight artifact is for, so a session knows where a fact belongs. Build history of all of this is in `CLAUDE_archive.md`. Rule of thumb: the story goes in `patch_notes.html`, the current fact goes in a topic file, the rule goes in CLAUDE.md.
 
+Modules (`domain: 'oversight'`, 3): `oracleDevBridge`, `docsLinks`, `errorLog`. (`errorLog` feeds `error_log`; `oracleDevBridge` feeds `oracle_dev_suggestions`).
+
 ## Tier (a) — explaining docs, plain language for Alex
 - `patch_notes.html` — one dated card per shipped thing (root cause + fix for bugs, honest "untested" flags). The only place incident narrative lives. Errors' full fix timelines live on `error_log.html`; a resolved error gets a short card here.
 - `minotaur_map.html` — consumer-facing, organised by domain, one worked example each, plus "The AI Itself". Zero code/table names. Update only when a domain or function changes shape.

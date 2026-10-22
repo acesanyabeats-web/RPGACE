@@ -3,17 +3,19 @@ Loaded at the start of every session. It holds the rules and an index. Current f
 
 Split from a 291KB file on Oct 22 2026 (plan "CLAUDE.md Debloat", record `records/2026-10/claude_md_debloat_ceo_2026-10-22.txt`; the full old file is the last section of `CLAUDE_archive.md`; [story](patch_notes.html#card-2026-10-22-claude-md-debloat)). Keep it this way: rules here, facts in topic files, stories in patch notes. Write present tense, one fact per line.
 
-## Topic index — read the file before touching the area
+## Topic index — one file per app domain (`RPGACE.DOMAINS`) plus cross-cutting files; read only the ones you're touching
 | Area | File |
 |---|---|
-| Cooking, Health & body, Gym, Shopping Wishlist | `docs/claude/habits.md` |
-| My Day, Doing Now, XP Season Pass, realms, Plans/trips | `docs/claude/myday.md` |
-| Taxonomy, Jargon, Life Library, Knowledge area, Study, Bookworm | `docs/claude/knowledge.md` |
-| Beats, Posting, Selling, Videoworm, `local_server`, OpenMontage/Total lanes | `docs/claude/content.md` |
-| Oracle chat/grounding/actions, models, navigation/areas, speed, auth | `docs/claude/oracle.md` |
+| Oracle chat/grounding/actions, models (`domain: 'oracle'`) | `docs/claude/oracle.md` |
+| Beats, Posting, Selling, Videoworm, `local_server`, OpenMontage/Total lanes (`content`) | `docs/claude/content.md` |
+| Taxonomy, Jargon, Life Library, Knowledge area, Study, Bookworm (`knowledge`) | `docs/claude/knowledge.md` |
+| Cooking, Health & body, Gym, Wishlist, Money, Daily life (`habits`) | `docs/claude/habits.md` |
+| My Day, Doing Now, realms, Plans/trips, briefs, shifts (`schedule`) | `docs/claude/schedule.md` |
+| XP Season Pass, Chronicles (`chronicles`) | `docs/claude/chronicles.md` |
+| Navigation/areas, boot, speed, auth (`platform`) | `docs/claude/platform.md` |
 | The why behind every landmine below | `docs/claude/landmines.md` |
 | Auth, RLS, secrets | `docs/claude/security.md` |
-| Oversight docs, Galaxy Map, colour vocabulary, records | `docs/claude/oversight.md` |
+| Oversight docs, Galaxy Map, colour vocabulary, records (`oversight`) | `docs/claude/oversight.md` |
 | Open items waiting on Alex | `docs/claude/open_forks.md` |
 | Architecture and data flow | `system_flow_map.md`, `interconnection_map.md` |
 | Skills, rule files, external connectors | `ai_tooling_and_rules_map.md`, `.claude/skills/*/SKILL.md` |

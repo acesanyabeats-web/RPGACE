@@ -1,7 +1,8 @@
-# Content — Beats, Posting, Selling, Videoworm, external lanes
+# Content domain — Beats, Posting, Selling, Videoworm, external lanes
 
-Read before touching beat/post/sell/video code, `intel_*` tables, `local_server/`, or the OpenMontage lane.
+Read before touching any `domain: 'content'` module, `intel_*` tables, `local_server/`, or the OpenMontage lane. `moneyHub` is habits-domain; `producerTools`/`captionsPanel` are oracle-domain.
 
+Modules (`domain: 'content'`, 10): `visualOracle`, `contentRepurpose`, `videoSummary`, `beatLog`, `refCorpus`, `contentProductionLive`, `conidPot`, `beatsHub`, `postingHub`, `sellingHub`.
 ## Beats, Posting, Selling (area regen plans 4-6, all built, yellow until Alex hand-tests)
 - Beats (Producer) BT-0..8, record `records/2026-10/beats_producer_ceo_plan_2026-10-16.txt`. [story](../../patch_notes.html#card-2026-10-16-beats-done) `oracleEntry` Save as entry. [story](../../patch_notes.html#card-2026-10-16-oracle-save-entry)
 - Posting PC-0..7: `postingHub` + `posts` table. [home](../../patch_notes.html#card-2026-10-17-posting-home) [Chronicles](../../patch_notes.html#card-2026-10-17-posting-done)
