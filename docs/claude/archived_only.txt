@@ -1,0 +1,391 @@
+# Identifiers from the pre-Oct-22 CLAUDE.md that are history now and live only in CLAUDE_archive.md.
+# Reviewed Oct 22 2026 (CD-1..CD-6): one-off incident details, retired code (main.js, PIPELINE, voiceInput, ConID tools),
+# old commit SHAs/row ids, Galaxy Map build-pass internals, and record files for finished plans.
+# scripts/check_debloat_coverage.py treats these as intentionally archived. One per line.
+"node --check main.js"
+"node --check rpgace_core.js"
+#unit-openmontage_cc
+#view-map
+'Personal'
+'anchor'
+'lines'
+(function(global){'use strict';...})(window)
+--amber
+--brown
+--orange
+--permission-mode plan
+--red
+.claude/skills/*.md
+.claude/skills/5thDimension/SKILL.md
+.claude/skills/Engineer/SKILL.md
+.claude/skills/Routine/SKILL.md
+.claude/skills/debate/SKILL.md
+.claude/skills/free-for-all-debate/SKILL.md
+.claude/skills/investor/SKILL.md
+.claude/skills/misunderstanding/SKILL.md
+.claude/skills/perspective/SKILL.md
+.claude/skills/restructure/SKILL.md
+.claude/skills/scope/SKILL.md
+.dashed
+.gside-dim
+.gside-level
+.river-flow-next
+.slice(0, N)
+.unit-card
+.unit-node
+14b0a28
+20260806
+20260915b
+20260916a
+31a4763
+401 Unauthorized
+730bc5a
+81bcf07f-bbda-46ea-b684-6b290a2c726c
+96c21d7f-1dfd-49d2-8479-1dacdaed991e
+:3671
+:3777
+<a href>
+<details open>
+<details>
+<title>
+>=500ms
+?on_conflict=title
+ACCOUNTS
+CALLS
+CARDS_BY_RIVER
+CC_UNIT_LINK
+CONNECT tunnel failed, 403
+DEAD_CODE_CANDIDATES
+DECISION_POINTS
+DEV_PROCESS_MARKERS
+DIMENSION_INDEX_CSS
+DRILL
+DRILL_BY_UNIT
+DROP COLUMN
+EDGE_EVIDENCE
+EGRESS_BLOCKED
+ENC_BULLET_CACHE
+EVIDENCE
+FULL_CHOICE_CSS
+GM_TOGGLE_JS
+GROUP BY lower(term) HAVING count(*) > 1
+GROUP BY phylum_number
+Get-Content
+HOW TO TEST
+INFRA_DRILLDOWN_CSS
+LEFT_NAV_CSS
+LEFT_NAV_ZOOM_CAPTION
+LEVEL3_MODULES
+MAIN_JS = Path('main.js')
+METHODOLOGY_DETAILS_CSS
+MOD-<name>
+MODULE_NOT_FOUND
+Mon DD YYYY
+PIPELINE
+Path('main.js')
+PerformanceObserver('longtask')
+Phylum 1[1-4]\b
+REVERSE_LINKS
+RIVER-<n>
+RIVER_RETIRED
+RIVER_RETIRED[17]
+RPGACE.cache.clear('tablename')
+RPGACE.modules.oracleControl
+RPGACE.sb.del
+RPGACE.sb.update
+RPGACE.utils.toast('⚠️ App froze...', '#CC4A4A', 4000, 'perfWatch')
+RPGACE/.claude/skills/omnitrix/SKILL.md
+SUPABASE_L0_UNIT_TOUCHES
+SyntaxError: Unexpected identifier
+TYPE_META
+TYPE_PROMPTS
+UNIT_BUBBLE_SYSTEM
+USING(true)
+WHERE
+WITH CHECK(true)
+WebFetch
+YOUR_REAL_TOKEN
+_REVERSE_DIMENSIONS
+_apiSecret
+_checkFallbackAnswers
+_emit_river_node()
+_openBook
+_openBookworm
+_renderInsightReview
+_river_module_nested_rows
+_river_rows
+_sbGet()
+_writeStats
+acesanyabeats-RPGACE
+action: 'bundle-deliverables'
+action_id
+active=true
+addEventListener
+addToEncyclopedia
+addXP()
+api/bundle-deliverables.js
+api/composio.js
+apply_migration
+basis='ratified'
+beatLog
+beatLog._addNewArtistsToTaxonomy
+beat_logged
+bookworm._refreshWidget()
+bookworm_*
+bookworm_spec_backlog.txt
+build_bubble_map
+build_bubble_map()
+build_dependency_chips()
+build_infra_drilldown()
+build_l0_bubbles()
+build_module_bubbles()
+build_module_decisions_html()
+build_river_bubbles()
+build_river_decisions_html()
+build_river_web_section()
+c2500d8c-1815-4506-b452-de50bd3263f3
+callOracle()
+careerStatCard
+ceo_plan_items.status='purple'
+check_commands
+chore_blocks.status
+chroniclesLog
+ciAutoPropose
+cinematic
+classify_card()
+claude/rpgace-master-steps-uobp98
+completeQuest()
+compress:true, mangle:false
+compute_l0_unit_supabase_inter
+compute_mainjs_window_bridge()
+compute_real_edges()
+compute_river_reverse_links()
+concept_fusion
+config.init()
+conidPot
+conidpot-delete
+console.trace()
+contentProductionLive
+contentProductionLive._buildVideoPipelinePayload
+copyPipelineOutput
+curl
+dashDeck._refreshGlance
+data-from
+data-kind
+data-to
+debugComposio()
+deps
+dimension_membership
+display:none
+docs/package
+documentary-montage
+e71ce5fb-74a9-4209-9659-e5f0f24127ef
+ea8c7b8
+encSync
+encTaxonomyLink
+errorCode: exceeded_serverless_functions_per_deployment
+evidence.cross_refs
+evidence_source
+evidence_text
+executor.js
+explanation_significance
+exported
+fetch(...POST)
+file://
+findMatches()
+first_seen_at
+galaxy_map_*.py
+galaxy_map_alex_path.py
+galaxy_map_connectors.py
+galaxy_map_current.py
+galaxy_map_decision_matrix.html
+galaxy_map_decision_matrix.py
+galaxy_map_decisions.html
+galaxy_map_decisions.py
+galaxy_map_dimensions.html
+galaxy_map_dimensions.py
+galaxy_map_externals.py
+galaxy_map_level5.py
+galaxy_map_level6.py
+galaxy_map_load.py
+galaxy_map_loops.py
+galaxy_map_module.py
+galaxy_map_orchestrator_openmontage.html#unit-orchestrator_cc
+galaxy_map_oversight_sync.py
+galaxy_map_river.py
+galaxy_map_shared.js
+galaxy_map_skill_network.html
+galaxy_map_skill_network.py
+galaxy_map_supabase.html
+galaxy_map_zoom.py
+git checkout
+git checkout main && git merge --ff-only <branch> && git push origin main
+git log -S
+git log origin/main
+git mv
+git push
+githubCommitSha
+graphify clone
+grep -c "^RPGACE\.register('"
+grep -c "^RPGACE\.register('" rpgace_core.js
+hooks.on('rpgace:ready', ...)
+hub.PAGES
+id="..."
+id=7cb846b5-...
+if (color === '#CC4A4A')
+if (row.action_id === '...')
+index.html:393-452
+innerHTML
+item7_process_debate_2026-07-24.txt
+item_name
+jargon_encyclopedia.taxonomy_node_id
+kind='meta'
+last_seen_at
+left_nav_html()
+linear
+list_environments
+location.pathname
+logic:{}
+logic_dimension.html
+main()
+maxTokens:1200
+merge-graphs
+metric_actions
+model:"fable"
+morningBrief._autoRun()
+node --check main.js && node --check rpgace_core.js
+onReady()
+onclick="quickPrompt(...)"
+openmontage_jobs.brief
+openmontage_jobs.content_production_id
+oracleControl._execute()
+orchestrate.js
+patch_notes.html#card-2026-07-28-round-30-real-xss-finding-fixed
+patch_notes.html#card-2026-08-06-same-day-11th-pass-minotaur-restructure
+patch_notes.html#card-2026-08-06-same-day-12th-pass-via-engineer
+patch_notes.html#card-2026-08-06-same-day-13th-pass-115-orphaned
+patch_notes.html#card-2026-08-06-same-day-16th-pass-paranoia-graphify
+patch_notes.html#card-2026-08-06-same-day-17th-pass-paranoia-dedup
+patch_notes.html#card-2026-08-06-same-day-4th-pass-stale-intercommunication-reflection
+patch_notes.html#card-2026-08-06-same-day-5th-pass-live-graphify
+patch_notes.html#card-2026-08-06-same-day-8th-pass-graphify-now
+patch_notes.html#card-2026-08-06-same-day-9th-pass-real-paranoia-shaped
+patch_notes.html#card-2026-08-11-same-day-continued-76-loose-spec
+patch_notes.html#card-2026-08-11-same-day-continued-archive-report-current-capabilities
+patch_notes.html#card-2026-08-11-same-day-continued-ceo-framework-shipped
+patch_notes.html#card-2026-08-11-same-day-continued-external-contributor-audit-closes
+patch_notes.html#card-2026-08-11-same-day-continued-paranoia-ceo-minotaur_map
+patch_notes.html#card-2026-08-11-same-day-continued-real-combined-view
+patch_notes.html#card-2026-08-11-same-day-continued-real-deserved-critique
+patch_notes.html#card-2026-08-15-36th-pass-a5-phase-1-shipped
+patch_notes.html#card-2026-08-22-a5-phase-2-slice-1-2
+patch_notes.html#card-2026-08-24-session-closed-via-bedtime-massive-expansion
+patch_notes.html#card-2026-08-27-maximum-bedtime-before-real-week-long-gap
+patch_notes.html#card-2026-08-30-fable-total-systems-audit-begins-real-ceo
+pathRouter
+perfWatch.init
+perspective_generate_onclick_features.py
+perspective_map.html#report-<level>-<id>
+perspective_report_id
+perspective_reports.self_report
+pg_policies
+phylumPath._loadNodesAndRender
+phylumPath._showArticleConfirm
+phylum_number: 12
+phylum_path
+pick-ui-library
+pipeline-output
+pipelineToGitHub
+pipelineToGmail
+pipelineToNotion
+planned_cooks.status='cooked'
+prodOraclePanel.CMDS
+py_compile
+python3 -m py_compile
+qual:true
+questEngine
+quota_limit_value: 0
+records/2026-07
+records/2026-07/
+records/2026-08/decompress_ceo_grounded_mode_paranoia_2026-08-11.txt
+records/2026-08/massive_expansion_drift_paranoia_colourgradient_2026-08-11.txt
+records/2026-08/oversight_a_to_f_trickledown_audit_paranoia_2026-08-12.txt
+records/2026-09/*.txt
+records/2026-09/ceo_fableomnitrix_council_of_5_report_2026-09-24.txt
+records/2026-09/ceo_galaxy_map_code_drift_scan_2026-09-24.txt
+records/2026-09/dd4_bloat_link_rot_checker_2026-09-23.txt
+records/2026-09/galaxy_map_doc_drift_representative_pass_2026-09-15.txt
+records/2026-09/galaxy_map_full_redesign_fable_report_2026-09-24.txt
+records/2026-09/galaxy_map_full_redesign_interrogation_2026-09-24.txt
+records/2026-09/galaxy_map_perspective_basis_ceo_compile_2026-09-15.txt
+records/2026-09/galaxy_map_redevelopment_ceo_interrogation_2026-09-16.txt
+records/2026-09/galaxy_map_web_zoom_interrogation_2026-09-24.txt
+records/2026-09/galaxy_river_restructure_ceo_{compile,report}_2026-09-15.txt
+records/2026-09/infra_inter_redesign_ceo_{compile,plan,report}_2026-09-15.txt
+records/2026-09/interlink_drill_refactor_and_correction_2026-09-24.txt
+records/2026-09/interlink_remaining_pages_2026-09-24.txt
+records/2026-09/interlink_web_bubble_pass_2026-09-24.txt
+records/2026-09/minotaur_manual_unification_ceo_interrogation_2026-09-23.txt
+records/2026-09/p1_edge_gateways_design_2026-09-25.txt
+records/2026-09/p3_paranoia_commit_archaeology_pass_2026-09-24.txt
+records/2026-09/perspective_oversight_doc_paranoia_2026-09-15.txt
+records/2026-09/self_knowledge_contradiction_check_2026-09-23.txt
+records/2026-09/self_knowledge_staleness_check_ceo_interrogation_drift_paranoia_2026-09-23.txt
+records/2026-09/wiring_sweep_river_assignment_2026-09-15.txt
+records/2026-09/wiring_sweep_river_modules_gap_2026-09-15.txt
+records/2026-10/realm_inputs_ceo_plan_2026-10-15.txt
+refCorpus
+render_bubble_row()
+render_evidence_bubble
+render_infra_drilldown()
+researchTabs._resolveSections()
+resetPipeline
+resolve_destinations()
+restoreSendChat
+resumeFallbackPlacement
+rpgace_architecture
+rpgace_build.py
+rpgace_core.js:2870
+rpgace_core.js:4058
+runPipeline
+runPipeline()
+run_check(onclick_features, smoke_items)
+savePipelineToDB
+scheduleOracle
+scripts/graphify_river_group.py:1657
+scripts/smoke_test_generate_g_items.py
+setAgentPipeStatus
+setEnc
+setEncCategory
+setTimeout
+state: ERROR
+state: READY
+status='accepted'
+status='archived'
+status='failed'
+status='pending'
+status='queued'
+status='resolved'
+status=eq.accepted
+subItems
+taxonomySync
+taxonomySync.getTopGaps()
+taxonomy_*
+th.unit-rowhead
+toggleVoiceInput
+ui:{}
+ui_toast|toast()|⚠️ App froze for <n>ms (logged)
+undefined === undefined
+videoSummary
+video_jobs.content_production_id
+video_visual_treatment_wiring_and_conid_ux_spec_2026-07-31.txt
+visualOracle.CMDS[1]
+visualOracle._showDirectorPicker
+vw-*
+weekly_recap_2026-07-25.txt
+window.X
+zoom_href
+{passive:true}
+~/.claude-mem/
+~/.claude/skills/dummy/SKILL.md
+~/.claude/skills/omnitrix/SKILL.md

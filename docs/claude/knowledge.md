@@ -1,0 +1,40 @@
+# Knowledge — Taxonomy, Jargon, Library, Study, Bookworm
+
+Read before touching `phylumPath`, `taxonomyTree`, `lifeLibrary`, `knowledgeHub`, `studyHub`, `bookworm` or any taxonomy table. Every taxonomy write needs a human checkpoint (Building guide rule 4).
+
+## Taxonomy now
+- `taxonomy_tree` has 0 rows (full wipe Sep 25 2026, Alex's ask, to rebuild phyla around reviewed jargon). Restore point: `records/2026-09/taxonomy_tree_snapshot_2026-09-25.json` (671 rows). `taxonomy_links` was emptied with it; `encyclopedia`'s one linked row had `taxonomy_node_id` set NULL. [archive](../../patch_notes.html#card-2026-09-25-taxonomy-jargon-anchor-table-restructure) [build-out](../../patch_notes.html#card-2026-09-25-taxonomy-jargon-encyclopedia-build-out)
+- 21 phyla are hardcoded; nothing below phylum level exists. Next phase (Alex): plan each phylum's structure once enough jargon is reviewed. Phylum numbering: Fons Educationis = 11, Lingua Musicae = 12, Visio Cinematica = 13, Contentum = 14, Venditionis Beatorum = 16, Miscellaneous Ordinanda = 21. [renumber](../../patch_notes.html#card-2026-08-11-same-day-5th-taxonomy-pass-real)
+- `taxonomyTree.logic.isPaused()` pauses all automatic tree growth while `taxonomy_tree` has 0 non-archived rows (auto-resumes). [LL-3](../../patch_notes.html#card-2026-10-13-taxonomy-pause)
+- `jargon_encyclopedia` is the anchor table for term content (`status` pending/accepted/rejected; source tag `claude_code_prebuild` for session-authored terms). Generator `logic._buildOutJargonEncyclopedia` exists but has never run. Review on the standalone Jargon Encyclopedia page (leftNav sub-item under Phylum Path, picker `dashDeck._openTaxonomy()`), Accept/Edit/Reject via `phylumPath._resolvePendingTerm`. [UI rework](../../patch_notes.html#card-2026-09-26-jargon-encyclopedia-ui-rework) [Phylum 1 top-up](../../patch_notes.html#card-2026-09-27-jargon-encyclopedia-phylum-1-top-up) Record: `records/2026-09/jargon_encyclopedia_ui_rework_2026-09-26.txt`.
+- Dual authorship: Claude Code sessions may pre-build structure tagged `claude_code_prebuild` in `taxonomy_tree.sources` and `taxonomy_decision_log.source`; same schema and audit trail as Oracle-authored rows.
+- `taxonomy_nodes` (flat) is separate from `taxonomy_tree` on purpose. It holds the 50 director profiles (`source='f14_filmmaker_library'`); Phylum 13 has no tree of its own (`video_pipeline_director_phylum_spec_backlog_2026-07-30.txt`).
+- Placement engine: `phylumPath.decidePlacementScored` (an internal 1-10 "Council-of-5" score — not the chat protocol), `_insertNewSteps` extends an existing leaf on a duplicate insight, `_sanitizeNewSteps` strips path-like names, `_loadNodesAndRender` guarded by `_renderGeneration`, back-link to `bibliography.phyla_touched`/`total_insights_placed`. `phylumPath._injectNavTab()` is dead code (harmless). [A6](../../patch_notes.html#card-2026-08-23-massive-expansion-a6-shipped-bibliography-gets) [Loop 1+2](../../patch_notes.html#card-2026-08-11-same-day-continued-real-ceo-loop) [21 phyla](../../patch_notes.html#card-2026-08-11-same-day-continued-all-21-21) [Contentum→16](../../patch_notes.html#card-2026-08-11-same-day-continued-misfiled-phylum-13)
+- Keyword lists use compound phrases, never bare adjectives (hyphen word-boundary landmine).
+- Never cite `taxonomy_links`' near-100% confirm rate as quality — 42 of 47 same-session confirms were a rapid clear-through. The scored engine's own accept rate is ~75%.
+- `/Regeneration` (`.claude/skills/Regeneration/SKILL.md`) is the 3-tier human-gated structural repair skill; it never writes to `taxonomy_tree` on its own.
+- Designed, not built: per-node "🔄 Rejuvenate" button (needs live Oracle verdicts).
+- Review UI: one dashboard card "Taxonomy & Review"; `dd-needs-list` is a different, mixed to-do region.
+
+## Life Library (`lifeLibrary`, LL-1..8)
+- Private `library_items` (sources, one phylum shelf + topics, link dedup). Roles: Library = taken in, Bookworm = study, Encyclopedia = learned (Ideas | Jargon tabs), Phylum Path = map.
+- `lifeLibrary.logic.feed` (keyword shelf only) takes video analyses, screenshots, hand-added reference tracks and ⭐-starred Oracle replies.
+- `webLookup`: `WEB_QUERY:` trailer on main-chat turns only; library first, then Gemini; saved as `web_lookup`; 🔗 Find links on Jargon/Bookworm.
+- Morning Brief "📚 From your Library": one a day, `resurfaced_at` 30-day no-repeat, `resurface_off`. Jargon "📍 Met in" via `lifeLibrary.logic.metIn`. Phylum shelves `#pp-shelf` via `logic.shelfData/byPhylum`.
+- Chronicles filters by 8 life sections; cooks name recipes; done `plans` show.
+- Cards: [LL-1](../../patch_notes.html#card-2026-10-13-life-library) [LL-2](../../patch_notes.html#card-2026-10-13-knowledge-untangle-moves) [LL-4](../../patch_notes.html#card-2026-10-13-library-feeds) [LL-5](../../patch_notes.html#card-2026-10-13-web-lookups) [LL-6](../../patch_notes.html#card-2026-10-13-library-resurfacing) [LL-7](../../patch_notes.html#card-2026-10-13-phylum-shelves) [LL-8](../../patch_notes.html#card-2026-10-13-chronicles-sections)
+
+## Knowledge area (KN-0..7, `knowledgeHub`)
+- `RPGACE.AREAS` + coloured foldable nav bands with realm XP bars; `RPGACE.areaNav` Back/🏠 row; `/knowledge` home; Library/Screenshots as pages (`areaNav.page`); `knowledgeReview` at `/review`; `knowledgeHub.logic.screenFor`; cross-links via `knowledgeHub.ui.go` + `areaNav.closePopups`; `.ln-count` Review count; `dashDeck._mountPanel`. Record `records/2026-10/knowledge_reorg_ceo_plan_2026-10-15.txt`. Cards: [0](../../patch_notes.html#card-2026-10-15-area-bands) [1](../../patch_notes.html#card-2026-10-15-knowledge-home) [2](../../patch_notes.html#card-2026-10-15-library-screenshot-pages) [3](../../patch_notes.html#card-2026-10-15-knowledge-review) [4](../../patch_notes.html#card-2026-10-15-knowledge-back-row) [5](../../patch_notes.html#card-2026-10-15-knowledge-cross-links) [6](../../patch_notes.html#card-2026-10-15-knowledge-menu) [7](../../patch_notes.html#card-2026-10-15-knowledge-plan-done) [routines](../../patch_notes.html#card-2026-10-15-routine-edit)
+- `encyclopediaPosts` turns every `intel_reports` row into an article + idea cards (`encyclopedia_insights`). `recall` resurfaces in Morning Brief and makes Bookworm 🃏 cards. [C1](../../patch_notes.html#card-2026-10-10-encyclopedia-posts) [L1](../../patch_notes.html#card-2026-10-10-recall)
+- Screenshots: `screenshotInbox`, locked `screenshots` table + bucket via `/api/data-write`, image share target. `shareInbox` (manifest `share_target` → `intel_jobs`, Android only). [share](../../patch_notes.html#card-2026-10-10-share-to-rpgace)
+- Encyclopedia Sync buttons ("⚡ Sync", "⚡ Sync & Push All Reports") are safe but Alex wants them rethought (SL-2 removes them).
+
+## Study (`studyHub`)
+- Knowledge page `/study`, AWS AI Practitioner first: 18 lessons, 300 questions; `study/aws-aif-c01/*.json` is the source, synced into `study_questions` on open. Quick 10/topic/mock/flash/Redo; wrong answers on Recall's schedule; `xp_on_study` (+2 Scholar per correct, max 30/day). [story](../../patch_notes.html#card-2026-10-20-study-aws)
+
+## Bookworm
+- Large chapter text goes through `phylumPath._condenseIfLarge()` before the cap in `_analyzeChapter()`; background analysis `_continueAnalyzingInBackground` with `analysis_complete`. New books via `bookworm._createBookFromExtraction()` (raw fetch, `return=representation`). PDF.js loads at runtime via `_ensurePdfJs()`.
+- Credit-exhaustion auto-resume covers
+- Tables: `bookworm_books`, `bookworm_chapters`, `bibliography` (consolidated into Chronicles), all written through `/api/data-write`. only a cascade's first placement attempt per phylum, not reword/upgrade sub-calls inside `_placeInsightCascade`.
+- Worm family: Videoworm (built, see content.md), MusicWorm (identity exists), Articleworm (not built).
