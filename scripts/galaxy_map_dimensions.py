@@ -624,6 +624,17 @@ TEMPLATE = """<!DOCTYPE html>
 
 
 def main():
+    """ED-4 (Oct 22 2026): this in-app dimension now lives inside each domain
+    on galaxy_map_domain.html (scripts/galaxy_map_domain_dims.py). This file
+    keeps its data functions (the domain page reads them) and writes a
+    redirect that keeps the #hash, so old links land on the same entry."""
+    from galaxy_map_domain_dims import write_redirect
+    write_redirect(OUT, '#in-app-dims', 'Moved to domains')
+    print(f"Wrote {OUT} (redirect to galaxy_map_domain.html#in-app-dims).")
+
+
+def build_legacy_page():
+    """The pre-ED-4 standalone page, kept for reference; not called."""
     tags = compute_matrix()
     l0_tags = compute_l0_dim_tags()
     n_hubs = sum(1 for m, row in tags.items() if sum(row.values()) >= 3)

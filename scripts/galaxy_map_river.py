@@ -50,6 +50,7 @@ from graphify_river_group import (domain_label,   # noqa: E402
 # set (rule 8, not re-derived differently here) — real evidence backing
 # every river-to-river RIVER_FLOWS edge's own click-to-inspect panel.
 _RIVER_CROSS_CALLS = compute_cross_module_function_calls()
+from galaxy_map_domain_dims import build_all as build_domain_dims_all, DOMAIN_DIMS_CSS  # noqa: E402  (ED-4)
 from graphify_river_group import LINKS_BY_RIVER, EXTERNAL_CONNECTORS, STATE_ICON, DOMAIN_ORDER  # noqa: E402  (ED-3)
 from graphify_river_group import inject_level_rail, inject_plan_overlay  # noqa: E402
 from graphify_river_group import dimension_index_html, DIMENSION_INDEX_CSS  # noqa: E402
@@ -77,17 +78,15 @@ from graphify_river_group import render_bubble_row, INFRA_DRILLDOWN_CSS  # noqa:
 # out of what used to be an inline-only, per-call computation — closing
 # a real pre-existing rule-8 duplication at each site along the way,
 # never just a cosmetic export) so they can feed this same registry too.
-import galaxy_map_oracle as _dim_oracle  # noqa: E402
 import galaxy_map_supabase as _dim_supabase  # noqa: E402
-import galaxy_map_decisions as _dim_decisions  # noqa: E402
 import galaxy_map_connectors as _dim_connectors  # noqa: E402
 import galaxy_map_orchestrator_openmontage as _dim_orch_om  # noqa: E402
 import galaxy_map_oversight_sync as _dim_oversight  # noqa: E402
 
 _REVERSE_DIMENSIONS = [
-    ('galaxy_map_oracle.html', '🔮', 'Oracle', _dim_oracle.DRILL),
+    # ED-4 (Oct 22 2026): Oracle and Decisions are now in-app sections on this
+    # same page (see In-app dimensions below), so they no longer feed this list.
     ('galaxy_map_supabase.html', '🗄️', 'Supabase', _dim_supabase.DRILL),
-    ('galaxy_map_decisions.html', '🚦', 'Decisions', _dim_decisions.DRILL),
     ('galaxy_map_externals.html', '🧩', 'External AIs — call sites', _dim_connectors.DRILL),
     ('galaxy_map_orchestrator_cc.html', '🧭', 'Orchestrator CC',
      _dim_orch_om.DRILL_BY_UNIT['orchestrator_cc']),
@@ -606,6 +605,7 @@ TEMPLATE = """<!DOCTYPE html>
   .river-web-row{{margin-bottom:16px}}
 {infra_dd_css}
 {dim_css}
+{domain_dims_css}
 </style>
 </head>
 <body>
@@ -664,6 +664,28 @@ TEMPLATE = """<!DOCTYPE html>
   </div>
 </details>
 
+<div class="legend" id="in-app-dims">
+  <h2>🧭 In-app dimensions, by domain</h2>
+  <p class="cycle-intro">Oracle calls, human gates, the decision catalog, Alex's click path, the branch ledger, load triggers and loops — each shown inside the domain it belongs to ({dims_totals}). These used to be separate Dimension pages (and a Dimensions Matrix cross-tabbing them); since Oct 22 2026 (ED-4) they live here and the old pages redirect. Dimensions outside the app — External AIs, Supabase, the Claude Code side, the local PC pipeline — keep their own pages.</p>
+</div>
+{in_app_dims}
+<script>
+// ED-4: an old dimension link (redirected here with its #hash) opens the folded section holding it.
+(function() {{
+  function openHash() {{
+    var id = (location.hash || '').slice(1); if (!id) return;
+    var el = document.getElementById(id);
+    // fn-<module>-<func> with no branches → that module's ledger; view-* (old page views) → the section top.
+    if (!el && id.indexOf('fn-') === 0) el = document.getElementById('m-' + id.split('-')[1]);
+    if (!el) el = document.getElementById('in-app-dims');
+    if (!el) return;
+    for (var n = el; n; n = n.parentElement) if (n.tagName === 'DETAILS') n.open = true;
+    el.scrollIntoView({{block: 'start'}});
+  }}
+  window.addEventListener('hashchange', openHash); openHash();
+}})();
+</script>
+
 {dim_index}
 
 <div class="note">
@@ -685,12 +707,15 @@ def main():
     (nodes, edges, live_legend, archived_legend, itype_legend, W, H, markers,
      crossings_before, crossings_after, cycles_html) = build_svg()
     n_archived = len(RIVER_RETIRED)
+    _dims_html, _dims_totals = build_domain_dims_all()
     html = TEMPLATE.format(nodes=nodes, edges=edges, live_legend=live_legend,
                            archived_legend=archived_legend, itype_legend=itype_legend,
                            W=W, H=H, markers=markers, cycles_html=cycles_html,
                            n_rivers=len(RIVER_NAME), n_live=len(RIVER_NAME) - n_archived,
                            n_archived=n_archived,
                            river_web=build_river_web_section(), n_web_rivers=len(REVERSE_LINKS),
+                           in_app_dims=_dims_html, domain_dims_css=DOMAIN_DIMS_CSS,
+                           dims_totals=' · '.join(f'{n} {k}' for k, n in _dims_totals.items()),
                            dim_index=dimension_index_html(OUT.name,
                                heading='🌌 Dimensions — equal standing with the Domains above'),
                            dim_css="", infra_dd_css="")

@@ -4153,10 +4153,11 @@ LEVEL_RAIL = [
 #   infra = an attached-resource dimension (renders as a node bubble)
 #   meta  = a cross-dimension synthesis page (neither, by itself)
 DIMENSION_PAGES = [
-    ('galaxy_map_decision_matrix.html', '🚦', 'Decision Matrix (full catalog)', 'meta',
-     'The exhaustive dev-facing catalog — all 21 real decisions, gates/logic/text-inputs, by domain. See Alex’s Decision Path for the narrower, click-by-click UX view of the same gates.'),
-    ('galaxy_map_dimensions.html', '🧭', 'Dimensions Matrix', 'meta',
-     'Which modules are multi-home across every other dimension.'),
+    # ED-4 (Oct 22 2026): the in-app dimensions (Oracle calls, human gates,
+    # Decision Matrix, Alex's path, Branch Ledger, Load, Loops, Dimensions
+    # Matrix) were folded into each domain on galaxy_map_domain.html
+    # (scripts/galaxy_map_domain_dims.py); their old files are redirects.
+    # Only dimensions that live outside the app keep a page here.
     # G111 (Sep 1 2026) — 'galaxy_map_logic_dimension.html' REMOVED from
     # this registry: Alex's own ratified scope retires the Logic
     # Dimension as a standalone destination. Its 21 curated decision/
@@ -4174,20 +4175,12 @@ DIMENSION_PAGES = [
     # 404s. Level 6 (the exhaustive branch ledger) is deliberately NOT
     # touched — it stays a registered, link-out-only reference, which is
     # the other half of G111's own ratified scope.
-    ('galaxy_map_decisions.html', '🗑️', 'Decisions — Human Gates', 'infra',
-     'The real human-confirm gates before a destructive or taxonomy write.'),
-    ('galaxy_map_level6.html', '🔬', 'Branch Ledger', 'infra',
-     'Exhaustive, mechanical if/else/switch branch extraction, listed not narrated.'),
     ('galaxy_map_supabase.html', '💉', 'Supabase', 'infra',
      'Every real client-side Supabase table touch, by level/river/module.'),
     ('galaxy_map_externals.html', '🔀', 'External AIs', 'infra',
      'Every external AI/service outside the app, tagged live/dormant/off/planned, by domain, with call sites.'),
-    ('galaxy_map_load.html', '⏳', 'Load Dimension', 'infra',
-     'What actually triggers a load: boot task, page nav, or on-demand click.'),
     ('galaxy_map_skill_network.html', '🕸️', 'Skills', 'inter',
      'Real skill-to-skill invocation edges, plus each skill’s AI/UI/backend axes.'),
-    ('galaxy_map_alex_path.html', '🧑', 'Alex’s Decision Path (his own click-path)', 'inter',
-     'Not the full decision catalog (see Decision Matrix for that) — Alex’s own UX journey: each dashboard card’s real flow, and only the Y/N forks he actually hits clicking through it.'),
     # Sep 15 2026, real 2nd correction — was one combined entry for one
     # shared page; Alex's own direct words made clear he wanted genuinely
     # separate pages ("its still not 2 separate pages, just on one with
@@ -4200,8 +4193,6 @@ DIMENSION_PAGES = [
      'Real full profile (role/input/processing/output/contribution/stakeholders) + shared dispatch history with Orchestrator CC.'),
     ('galaxy_map_oversight_sync.html', '📚', 'Oversight Sync', 'inter',
      'Which oversight doc gets touched, in what order, during a push or ritual.'),
-    ('galaxy_map_loops.html', '🔄', 'Loops', 'meta',
-     'Real cycles across direct calls, cross-module event signals, and shared Supabase tables.'),
     # G110 (Sep 1 2026) — local_server.py's real Galaxy Map identity.
     # Registered as ONE Inter dimension joining local_server.py +
     # Whisper + the direct Anthropic call, per Alex's own ratified
@@ -4225,8 +4216,6 @@ DIMENSION_PAGES = [
     # genuinely invisible in the real left-nav despite the hub page
     # correctly listing them. Added here to close that gap at the
     # source, rather than patch the symptom in the sidebar.
-    ('galaxy_map_oracle.html', '🔮', 'Oracle', 'infra',
-     'Every real function anywhere that calls Oracle, by domain/module.'),
     # ED-3 (Oct 22 2026): Connectors merged into External AIs (galaxy_map_externals.html#view-calls).
 ]
 

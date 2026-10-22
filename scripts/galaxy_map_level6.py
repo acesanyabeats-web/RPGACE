@@ -231,6 +231,17 @@ TEMPLATE = """<!DOCTYPE html>
 
 
 def main():
+    """ED-4 (Oct 22 2026): this in-app dimension now lives inside each domain
+    on galaxy_map_domain.html (scripts/galaxy_map_domain_dims.py). This file
+    keeps its data functions (the domain page reads them) and writes a
+    redirect that keeps the #hash, so old links land on the same entry."""
+    from galaxy_map_domain_dims import write_redirect
+    write_redirect(OUT, '#in-app-dims', 'Moved to domains')
+    print(f"Wrote {OUT} (redirect to galaxy_map_domain.html#in-app-dims).")
+
+
+def build_legacy_page():
+    """The pre-ED-4 standalone page, kept for reference; not called."""
     mods_with_branches = {}
     for m in sorted(LEVEL3_MODULES):
         b = compute_function_branches(m)
