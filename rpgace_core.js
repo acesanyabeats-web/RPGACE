@@ -61857,9 +61857,15 @@ RPGACE.register('myDay', {
     },
     // One open item: 'tomorrow' carries it over, 'drop' lets it go, 'skip'
     // logs a recurring routine as skipped (never-miss-twice sees it).
-    eveningAct: function(x, act) {
+    eveningAct: function(x, act, reviewDay) {
       var self = RPGACE.modules.myDay, L = self.logic, tmr = L.addDays(x.b ? x.b.block_date : L.reviewDate(), 1);
-      if (x.kind === 'routine') return act === 'skip' ? L.skip(x.r) : Promise.resolve();
+      // Oct 27 2026 fix: the review could only Skip an Action, never log it done
+      // (Alex: "when I click log as done in evening review, fuck all is done").
+      if (x.kind === 'routine') {
+        var day = reviewDay || L.reviewDate(), at = day === L.iso() ? null : new Date(day + 'T12:00:00').toISOString();
+        if (act === 'done') return L.tick(x.r, at ? { at: at } : {});
+        return act === 'skip' ? L.skip(x.r) : Promise.resolve();
+      }
       if (x.kind === 'once') {
         if (act === 'drop') return L.remove(x.r.id).then(function() { self._routines = self._routines.filter(function(r) { return r.id !== x.r.id; }); });
         return RPGACE.sb.secureWrite('routines', 'update', { due_date: tmr, updated_at: new Date().toISOString() }, 'id=eq.' + x.r.id)
@@ -62117,7 +62123,7 @@ RPGACE.register('myDay', {
         quest_key: 'routine:' + r.id, quest_kind: 'routine', name: r.title, category: r.area,
         quest_type: r.cadence, xp: status === 'completed' ? (extra.xp != null ? extra.xp : (r.xp || 0)) : 0,
         estimated_minutes: r.est_mins || null, actual_minutes: extra.actual == null ? null : extra.actual,
-        started_at: extra.startedAt || null, completed_at: now, status: status,
+        started_at: extra.startedAt || null, completed_at: extra.at || now, status: status,
         source_table: 'routines', source_ref: String(r.id), description: extra.note || null,
       };
       return RPGACE.sb.secureWrite('quest_log', 'insert', row).then(function(data) {
@@ -64444,11 +64450,23 @@ RPGACE.register('myDay', {
         var did = document.createElement('button'); did.type = 'button'; did.id = 'myday-miss-did';
         did.style.cssText = 'background:none;border:none;color:var(--gold);font-size:14px;cursor:pointer;min-height:40px;text-align:left;padding:4px 0;';
         did.textContent = '✓ I did do it — log it';
+        // Oct 27 2026 fix: for 🌅 Morning this used to log only a time entry,
+        // so the Morning routine itself stayed "not done" every day. Now it
+        // ticks the Morning tasks for that day; a block still logs I just did.
+        // One tap only, and a failed save says so.
         did.onclick = function() {
-          if (!dn) return next();
-          var realms = it.block && it.block.realm ? [it.block.realm] : [];
-          try { dn.logic.justDid(it.label, Math.max(1, it.to - it.from), realms, new Date(it.day + 'T00:00:00').getTime() + it.to * 60000); dn.ui._refresh(); } catch (x) {}
-          next();
+          did.disabled = true; did.textContent = 'Saving…';
+          var at = new Date(new Date(it.day + 'T00:00:00').getTime() + it.to * 60000).toISOString();
+          var p;
+          if (it.kind === 'morning') {
+            var tasks = (L.dayParts(it.day).be.morning.tasks || []).filter(function(r) { var lg = L.todayLog(r, self._logs || [], it.day); return !lg || lg.status !== 'completed'; });
+            p = tasks.reduce(function(q, r) { return q.then(function() { return L.tick(r, { at: at }); }); }, Promise.resolve());
+          } else if (dn) {
+            var realms = it.block && it.block.realm ? [it.block.realm] : [];
+            p = Promise.resolve(dn.logic.justDid(it.label, Math.max(1, it.to - it.from), realms, new Date(at).getTime())).then(function() { try { dn.ui._refresh(); } catch (x) {} });
+          } else p = Promise.resolve();
+          p.then(function() { RPGACE.utils.toast('✅ Logged: ' + it.label, '#4caf82', 2000); next(); })
+            .catch(function(e) { did.disabled = false; did.textContent = '✓ I did do it — log it'; fail(e); });
         };
         list.appendChild(did);
       };
@@ -64719,12 +64737,12 @@ RPGACE.register('myDay', {
               var b = U._btn(label, ''); b.style.minHeight = '40px'; b.dataset.act = a;
               b.onclick = function() {
                 [].forEach.call(row.querySelectorAll('button'), function(y) { y.disabled = true; });
-                L.eveningAct(x, a).then(function() { moved.push(note + ': ' + x.label); return L.load(); }).then(draw)
+                L.eveningAct(x, a, day).then(function() { moved.push(note + ': ' + x.label); return L.load(); }).then(draw)
                   .catch(function(e) { [].forEach.call(row.querySelectorAll('button'), function(y) { y.disabled = false; }); RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 5000, 'myDay'); });
               };
               btns.appendChild(b);
             };
-            if (x.kind === 'routine') act('Skip', 'skip', 'Skipped');
+            if (x.kind === 'routine') { act('✓ Done', 'done', 'Done'); act('Skip', 'skip', 'Skipped'); }
             else if (x.kind === 'cooking') {
               var c = U._btn('🍳 Cooking', ''); c.style.minHeight = '40px';
               c.onclick = function() { pop.close(); U._openTool('cooking'); };

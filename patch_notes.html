@@ -73,6 +73,20 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-27-morning-done-fix" style="margin-bottom:30px;">
+    <div class="card-title">🐛 Oct 27 — "Log as done" for Morning didn't tick your Morning routine (fixed)</div>
+    <div class="card-body">
+      Your words: "Morning routine has been done every day, but when I click log as done in evening review, fuck all is done".
+      <ul>
+        <li><b>Root cause</b> (your data): "✓ I did do it — log it" on the "What happened? 🌅 Morning" card only saved a time entry ("🌅 Morning", Oct 24, 25, and twice on 26). It never ticked the Morning routine itself, whose last tick was Oct 18. So the evening review kept listing it as not done, and its only button was Skip.</li>
+        <li><b>Fix:</b> "I did do it" on Morning now ticks your Morning tasks for that day (dated that day). Blocks still log as "I just did". The button works once per tap and shows an error if the save fails, instead of failing silently.</li>
+        <li>Every not-done Action in the evening review now has <b>✓ Done</b> next to Skip; it logs the tick for the day being reviewed (yesterday's too, in the catch-up review).</li>
+        <li>Past days (Oct 19–26) were not changed; their Morning routine still shows not done.</li>
+        <li>Checked in a headless browser (5/5). Untested by you.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-10-27-realm-tasks" style="margin-bottom:30px;">
     <div class="card-title">▶ Oct 27 — Realm Tasks: a task list for every realm, ▶ Live now inside blocks, tasks from your videos (RT-1..RT-7)</div>
     <div class="card-body">
