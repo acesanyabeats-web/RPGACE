@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-27-deep-dive" style="margin-bottom:30px;">
+    <div class="card-title">🧭 Oct 27 — Deep dive: answer Oracle's questions one at a time (FL-4)</div>
+    <div class="card-body">
+      Your words (Oct 26 flag + today): one question per card with a text box, skips logged, a final "extra information or thoughts" pop-up, compiled into one prompt for Oracle to answer as a whole; "send straight away, the prompt would be too large"; journal only when you tap the button.
+      <ul>
+        <li>Any Oracle reply that lists 3 or more questions gets a <b>🧭 Deep dive (N)</b> button next to 📓.</li>
+        <li>Each pop-up: "Question 2 of 18", the question, a text box, ← Back / Skip / Next. Answers are kept on your phone as you type — close it and the same button carries on where you left off.</li>
+        <li>Last pop-up: "Any extra information or thoughts that came up?". ✓ Send to Oracle sends one prompt (each question with your answer, the skipped numbers, your extra thoughts) and Oracle answers it all at once.</li>
+        <li>Nothing goes to the journal unless you tap 📓 under Oracle's answer; the whole exchange is backed up in <code>oracle_chats</code> like every chat.</li>
+        <li>Also fixed while testing: an old June start-up step re-added the "INSTA-ORACLE — Command 1" session to your journal on any fresh device. Removed; your one existing copy stays.</li>
+        <li>Checked in a headless browser (8/8): button count, markdown stripped from questions, resume after closing, extra-thoughts step, one prompt sent with answers + skips + extra, no journal write, no errors. Untested by you.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-10-27-oracle-chat-memory" style="margin-bottom:30px;">
     <div class="card-title">🧠 Oct 27 — Oracle remembers your chats (FL-3)</div>
     <div class="card-body">
