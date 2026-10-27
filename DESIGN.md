@@ -2,6 +2,15 @@
 
 > One scroll answers everything: who you are, what your tools are, where to go next — in RPGACE's own gold-and-dark RPG skin, untouched.
 
+## 0. Design rules (RF-9, Oct 27 2026 — Alex chose "Write as design rules")
+
+Every new build is tested against these two before it's built:
+
+1. **Augment, don't just store (Engelbart, "Augmenting Human Intellect", 1962).** A feature earns its place when it helps Alex think, decide or act better — not when it only saves another record. RPGACE's loop (take in → analyse → tasks → do → XP → review) is the augmentation; a screen that only stores is a candidate to cut.
+2. **One job each, plain text between (Unix philosophy).** A module, prompt or page does one thing well, and the pieces talk through plain, shared formats (the realm registry `realm_lenses.json`, prompt files in `prompts/`, `RPGACE.hooks` events) rather than private copies. A second copy of the same thing is a bug (CLAUDE.md rule 8).
+
+The universal realm frame (`realmFrame`: Home, Tasks, Live, Take in, Log, Prompts, Weekly review) is these rules applied to the realms: built once outside the realms; each realm only adds its own tools.
+
 **Reference**: aingertomlin.co.nz (structure ONLY — hero answering who/what/how in one scroll, 2×2 service-card grid with one link each, narrative-left/"At a glance"-right sections, strict 3-color discipline). **Identity source**: RPGACE's existing `style.css` — every color and font below is the app's current real token, not a new one. This spec restructures layout; it deliberately changes zero visual identity.
 
 ## 1. Visual Theme & Atmosphere

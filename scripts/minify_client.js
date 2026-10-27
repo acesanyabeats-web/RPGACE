@@ -56,6 +56,8 @@ import { execSync } from 'child_process';
 const TARGETS = ['rpgace_core.js'];
 
 async function run() {
+  // RF-7 (Oct 27 2026): prompts/*.md -> rpgace_core.js first, so a prompt edit can't ship stale.
+  execSync('python3 scripts/build_prompts.py', { stdio: 'inherit' });
   for (const file of TARGETS) {
     const src = readFileSync(file, 'utf8');
     const result = await minify(src, {

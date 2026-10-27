@@ -240,6 +240,10 @@ Every domain in RPGACE ultimately touches one of exactly two hubs — **Oracle**
 
 ---
 
+## Realm frame (Oct 27 2026)
+
+`realm_lenses.json` is the realm registry: lens (Python analyser + app) and `frame` (target, tools, feeds, starters). `realmFrame` reads it with `xp_settings` and live counters to draw every realm home's universal frame, the slim realm line's target, and Oracle's realm brief (via `oracleAppGrounding`'s wrap). Area hubs share `areaNav.next` (What's next) and `areaNav.steps` (tiles). Prompts: `prompts/*.md` -> `R.PROMPTS` -> `RPGACE.prompt()`.
+
 ## Shared Touchpoint Cross-Reference
 
 Grouped by **shared destination**, not by domain — anything in the same row already talks to the same place; wiring a new feature to read/write there joins the cluster with zero new plumbing.

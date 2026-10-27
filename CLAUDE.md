@@ -19,6 +19,8 @@ Split from a 291KB file on Oct 22 2026 (plan "CLAUDE.md Debloat", record `record
 | Open items waiting on Alex | `docs/claude/open_forks.md` |
 | Architecture and data flow | `system_flow_map.md`, `interconnection_map.md` |
 | Skills, rule files, external connectors | `ai_tooling_and_rules_map.md`, `.claude/skills/*/SKILL.md` |
+| One folder per domain (facts, modules, prompts, tables; generated) | `docs/domains/<domain>/README.md` (`scripts/build_domain_folders.py`) |
+| Shared Oracle prompts / realm registry | `prompts/*.md` + `prompts/INDEX.md`; `realm_lenses.json` (each realm's `frame`) |
 
 ## Who and why
 - Alex (@AceSanyaBeats), UK music producer in Derby, solo. RPGACE is his personal AI operating system for music production, content and daily life. Live at rpgace.vercel.app, deployed from `main`.
@@ -29,6 +31,7 @@ Split from a 291KB file on Oct 22 2026 (plan "CLAUDE.md Debloat", record `record
 ## Architecture rules
 - One client script: `rpgace_core.js` (source) served as `rpgace_core.min.js`. Never add a static `<script>` tag to `index.html`; load extra libraries at runtime with `document.createElement('script')`.
 - New code goes in `rpgace_core.js` as a module: `RPGACE.register('name', {domain: …, …})` between `/* ===MODULE:name=== */` and `/* ===END:name=== */`, with an internal `ui`/`logic` split. Run `node --check rpgace_core.js` after every edit.
+- Shared Oracle prompts live in `prompts/*.md` (edit only there; `scripts/minify_client.js` copies them in via `build_prompts.py`); read them with `RPGACE.prompt(name, vars)`. Per-realm facts (target, tools, feeds, starters) live in `realm_lenses.json` `frame`; the universal realm frame is `realmFrame` (DESIGN.md §0 rules: Engelbart + Unix).
 - Every module declares `domain:` from `RPGACE.DOMAINS`.
 - Never Python string-replace `index.html`; use targeted edits.
 - Overlays: create with `document.createElement`, append to `document.body`, route through `dashDeck._popup()`. Page divs `id="page-X"` sit inside `#app`.

@@ -1,6 +1,6 @@
 {
   "_about": "Realm Inputs RI-0 (Oct 15 2026). One lens per xpSeason realm: what Oracle looks for in an input taken in for that realm, what its 1-10 score means, and the kind of quest it suggests. Read by the video analyser (local_server/rpgace_intel.py, run by the cloud runner and the laptop server) and the app (book chapters, screenshots). Edit here only. Draft v1, awaiting Alex's corrections.",
-  "version": 2,
+  "version": 3,
   "max_realms": 4,
   "xp_pot": 60,
   "xp_daily_inputs": 3,
@@ -21,7 +21,28 @@
         7,
         8,
         9
-      ]
+      ],
+      "frame": {
+        "target": {
+          "label": "beats finished",
+          "period": "week",
+          "default": 2,
+          "source": "beats_finished"
+        },
+        "tools": [
+          "Beats home",
+          "Beat log",
+          "Idea Bank",
+          "Reference tracks",
+          "Playlist Psychologist"
+        ],
+        "feeds": [],
+        "starters": [
+          "What should my next beat session focus on, based on my last few beats?",
+          "Give me one drum or 808 technique to try tonight.",
+          "Which of my unfinished beats is closest to done?"
+        ]
+      }
     },
     "creator": {
       "name": "Creator",
@@ -33,7 +54,34 @@
         12,
         13,
         14
-      ]
+      ],
+      "frame": {
+        "target": {
+          "label": "posts",
+          "period": "week",
+          "default": 2,
+          "setting": "posts_per_week",
+          "source": "posts_posted"
+        },
+        "tools": [
+          "Posting home",
+          "Post ideas",
+          "Captions"
+        ],
+        "feeds": [
+          {
+            "from": "producer",
+            "source": "beats_to_post",
+            "label": "finished beats with no post yet",
+            "open": "posting"
+          }
+        ],
+        "starters": [
+          "Plan my next post from my latest finished beat.",
+          "Write 3 hooks for a beat-making clip.",
+          "What format should my next post be, based on what I posted lately?"
+        ]
+      }
     },
     "hustler": {
       "name": "Hustler",
@@ -46,7 +94,42 @@
         17,
         18,
         19
-      ]
+      ],
+      "frame": {
+        "target": {
+          "label": "money in",
+          "period": "month",
+          "setting": "monthly_income_target",
+          "money": true,
+          "source": "money_in"
+        },
+        "tools": [
+          "Selling home",
+          "Beats for sale",
+          "Artist outreach",
+          "Outreach & collabs log",
+          "Money"
+        ],
+        "feeds": [
+          {
+            "from": "producer",
+            "source": "beats_to_sell",
+            "label": "finished beats not up for sale",
+            "open": "selling"
+          },
+          {
+            "from": "connector",
+            "source": "reachouts_week",
+            "label": "people reached out to this week",
+            "open": "selling"
+          }
+        ],
+        "starters": [
+          "Which artist should I pitch next and what should I send?",
+          "Price check: what should my lease and exclusive tiers be?",
+          "Draft a follow-up for an artist who went quiet."
+        ]
+      }
     },
     "chef": {
       "name": "Chef",
@@ -56,7 +139,27 @@
       "quest_style": "Cook, prep or try one dish or technique.",
       "phyla": [
         22
-      ]
+      ],
+      "frame": {
+        "target": {
+          "label": "home cooks",
+          "period": "week",
+          "default": 3,
+          "source": "cooks"
+        },
+        "tools": [
+          "Cooking",
+          "Recipes",
+          "Stock",
+          "Shopping"
+        ],
+        "feeds": [],
+        "starters": [
+          "What can I cook tonight with what I have in stock?",
+          "Plan 3 cooks for this week from my saved recipes.",
+          "Give me one technique to make my cooking better."
+        ]
+      }
     },
     "athlete": {
       "name": "Athlete",
@@ -66,7 +169,32 @@
       "quest_style": "Add one exercise, cue or habit to the next session.",
       "phyla": [
         23
-      ]
+      ],
+      "frame": {
+        "target": {
+          "label": "gym sessions",
+          "period": "week",
+          "default": 5,
+          "source": "gym_sessions"
+        },
+        "tools": [
+          "Gym",
+          "Health & body"
+        ],
+        "feeds": [
+          {
+            "from": "chef",
+            "source": "cooks_week",
+            "label": "home cooks this week",
+            "open": "health"
+          }
+        ],
+        "starters": [
+          "What should my next gym session be?",
+          "Am I eating enough protein for my training this week?",
+          "How has my training gone this month?"
+        ]
+      }
     },
     "scholar": {
       "name": "Scholar",
@@ -76,7 +204,29 @@
       "quest_style": "Explain it back, make recall cards or read the source it cites.",
       "phyla": [
         11
-      ]
+      ],
+      "frame": {
+        "target": {
+          "label": "study sessions",
+          "period": "week",
+          "default": 3,
+          "source": "study"
+        },
+        "tools": [
+          "Knowledge home",
+          "Life Library",
+          "Bookworm",
+          "Videoworm",
+          "Study",
+          "Phylum Path"
+        ],
+        "feeds": [],
+        "starters": [
+          "What should I study next from my library?",
+          "Quiz me on my last saved ideas.",
+          "Explain the main idea of my current book in plain words."
+        ]
+      }
     },
     "life": {
       "name": "Life",
@@ -86,7 +236,27 @@
       "quest_style": "Adjust one routine or plan one thing for the week.",
       "phyla": [
         24
-      ]
+      ],
+      "frame": {
+        "target": {
+          "label": "days with Morning + Night done",
+          "period": "week",
+          "default": 5,
+          "source": "bookend_days"
+        },
+        "tools": [
+          "My Day",
+          "Plan my day",
+          "Live now",
+          "Journal"
+        ],
+        "feeds": [],
+        "starters": [
+          "How did my week go, honestly?",
+          "What should my day look like tomorrow?",
+          "What keeps getting skipped in my mornings?"
+        ]
+      }
     },
     "homekeeper": {
       "name": "Homekeeper",
@@ -96,7 +266,25 @@
       "quest_style": "One chore, fix or organising job.",
       "phyla": [
         25
-      ]
+      ],
+      "frame": {
+        "target": {
+          "label": "housekeeping blocks",
+          "period": "week",
+          "default": 2,
+          "source": "chore_blocks"
+        },
+        "tools": [
+          "My Day",
+          "Housekeeping block"
+        ],
+        "feeds": [],
+        "starters": [
+          "What housekeeping is overdue?",
+          "Plan a 45-minute housekeeping block.",
+          "How do I keep the flat tidy with my shifts?"
+        ]
+      }
     },
     "mind": {
       "name": "Mind",
@@ -107,7 +295,26 @@
       "phyla": [
         10,
         28
-      ]
+      ],
+      "frame": {
+        "target": {
+          "label": "reflections",
+          "period": "week",
+          "default": 3,
+          "source": "reflections"
+        },
+        "tools": [
+          "Journal",
+          "Cut-backs",
+          "Evening review"
+        ],
+        "feeds": [],
+        "starters": [
+          "Ask me 3 questions to reflect on today.",
+          "What pattern do you see in my recent reflections?",
+          "What should I cut back on this week?"
+        ]
+      }
     },
     "steward": {
       "name": "Steward",
@@ -117,7 +324,42 @@
       "quest_style": "Review, cut or plan one money item.",
       "phyla": [
         26
-      ]
+      ],
+      "frame": {
+        "target": {
+          "label": "spent",
+          "period": "week",
+          "setting": "weekly_spend_limit",
+          "money": true,
+          "under": true,
+          "source": "spend_week"
+        },
+        "tools": [
+          "Money",
+          "Subscriptions",
+          "Wishlist"
+        ],
+        "feeds": [
+          {
+            "from": "hustler",
+            "source": "money_in",
+            "label": "money in this month",
+            "open": "money",
+            "money": true
+          },
+          {
+            "from": "chef",
+            "source": "shopping_open",
+            "label": "things on your grocery list",
+            "open": "cooking"
+          }
+        ],
+        "starters": [
+          "Where did my money go this week?",
+          "Which subscription should I cancel?",
+          "Can I afford the next thing on my wishlist this month?"
+        ]
+      }
     },
     "explorer": {
       "name": "Explorer",
@@ -127,7 +369,26 @@
       "quest_style": "Add a place or idea to Plans, or plan one outing.",
       "phyla": [
         27
-      ]
+      ],
+      "frame": {
+        "target": {
+          "label": "plan steps",
+          "period": "month",
+          "default": 2,
+          "source": "xp_explorer"
+        },
+        "tools": [
+          "Plans",
+          "Trips",
+          "Ideas board"
+        ],
+        "feeds": [],
+        "starters": [
+          "What is the next step on my current plan?",
+          "Give me a cheap day-trip idea from Derby.",
+          "What do I still need to book or buy for my next trip?"
+        ]
+      }
     },
     "connector": {
       "name": "Connector",
@@ -138,7 +399,25 @@
       "phyla": [
         15,
         29
-      ]
+      ],
+      "frame": {
+        "target": {
+          "label": "people reached",
+          "period": "week",
+          "default": 2,
+          "source": "outreach"
+        },
+        "tools": [
+          "People",
+          "Outreach log"
+        ],
+        "feeds": [],
+        "starters": [
+          "Who have I not spoken to in a while?",
+          "Draft a quick message to check in with a friend.",
+          "Who could I collab with next?"
+        ]
+      }
     },
     "builder": {
       "name": "Builder",
@@ -148,8 +427,28 @@
       "quest_style": "Try one tool, write one note for RPGACE or automate one task.",
       "phyla": [
         20
-      ]
+      ],
+      "frame": {
+        "target": {
+          "label": "RPGACE tasks",
+          "period": "week",
+          "default": 3,
+          "source": "builder_tasks"
+        },
+        "tools": [
+          "Oversight",
+          "Galaxy Map",
+          "Smoke test"
+        ],
+        "feeds": [],
+        "starters": [
+          "What should I build or fix in RPGACE next?",
+          "What broke recently in RPGACE?",
+          "Summarise what changed in RPGACE this week."
+        ]
+      }
     }
   },
-  "_phyla": "RC-0 (Oct 15 2026, Alex-approved): each realm's home phyla - the one source for the realm<->phylum map. Phylum 21 (Miscellaneous) has no realm. Names live in taxonomyTree.PHYLUM_NAMES/ENGLISH."
+  "_phyla": "RC-0 (Oct 15 2026, Alex-approved): each realm's home phyla - the one source for the realm<->phylum map. Phylum 21 (Miscellaneous) has no realm. Names live in taxonomyTree.PHYLUM_NAMES/ENGLISH.",
+  "_frame_about": "RF-1 (Oct 27 2026, plan Realm Frame & Folder Architecture): each realm's 'frame' = its one target (label, week/month, default, optional existing xp_settings column 'setting', counter 'source'), its own tools (names), 'feeds' (what another realm hands it: from, counter source, label, page to open) and 'starters' (ready Oracle questions). The universal frame (Home, Tasks, Live, Take in, Log, Prompts, Review) is the same for every realm and lives in rpgace_core.js realmFrame. Edit here only, via Claude Code."
 }
