@@ -46,3 +46,9 @@ Modules (`domain: 'schedule'`, 14): `agendaReminder`, `scheduleOracle`, `morning
 ## Side list declutter (SL-4, Oct 27)
 - Schedule: ⬆ Import shifts and 🏪 Update rota (paste) live in the › side list (`scheduleFixes.ui.sideExtras`); rota-sync.yml still imports Fourth every Monday. [story](../../patch_notes.html#card-2026-10-27-side-list-domains)
 - Journal: 🗑 Clear All and `clearJournal()` are deleted; 🔄 Refresh is in the › side list; source chips use plain names (`journalQoL.LABELS`) folded into one "Show: … ▾" row (`RPGACE.sideList.filterRow`).
+
+## Day & Habits Rewire (plan DR-1..DR-12, record `records/2026-10/schedule_habits_rewire_paranoia_2026-10-27.txt`)
+- DR-1..3 (Oct 27): no open quests remain (43 set `dismissed`; "Tendon Load Test" moved to an Athlete realm task). `quest_log` is the done-ledger only. [story](../../patch_notes.html#card-2026-10-27-quests-to-tasks)
+- `questEngine.refresh` → `logic.toTasks`: each `NEEDS_INPUT_SOURCES` alert is one stable-titled Builder task (`logic.TASK_TITLES`), read by title in any status and re-opened (`kept`) while its count > 0, `done` at 0 (the `realm_tasks_dedup` trigger swallows a same-title insert, so never re-insert). Knowledge-gap / taxonomy-review scans go to the Scholar inbox only while `taxonomyTree.logic.isPaused()` is false. The 🎯 `#qe-panel` is no longer injected.
+- `realmTasks.logic.doneInBlock(t, null)` writes `logic.ledgerRow(t)` (quest_kind `task`, category = realm, xp = task xp (max 100) or `myDay.TICK_XP`, 0 for `earns: real`, source_table `realm_tasks`); `xp_on_change` pays it as `quest_done`. Inside a block the block item tick pays instead (no double pay).
+- `realm_tasks_dedup` also rejects a title matching an ACTIVE `routines` row — the Actions merge (DR-5) must deactivate an Action before inserting its task.
