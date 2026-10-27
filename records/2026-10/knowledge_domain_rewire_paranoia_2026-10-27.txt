@@ -105,3 +105,6 @@ what can be re-wired to make a positive impact without mitigating function or pu
  KR-8 Menu: Knowledge = Home · Take in · Study · Learned · Review; old routes redirect with a one-line "moved to" note;
       Knowledge home tiles match the 4 steps; tests, docs, SELF_KNOWLEDGE, deploy.
  Each step briefed before building (rule 18).
+ Go (Alex, Oct 27, verbatim): "i have tried all of it, which is why i want the rework, it doesnt make sense right now how
+ it is built, not intuitive at all, hence whyn i want to restructure it" -> the Council's why-not (untested) is void; build
+ KR-1..KR-8.
