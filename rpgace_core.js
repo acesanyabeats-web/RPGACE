@@ -4476,7 +4476,16 @@ function startIntelPolling(){
   syncIntelData(false);
   checkServerStatus();
   if(INTEL_POLL_INTERVAL) clearInterval(INTEL_POLL_INTERVAL);
+  // Oct 27 2026 (FL-2): the full sync (all reports + watchlist, localStorage
+  // rewrite, list redraw, Encyclopedia check) took ~0.7s and ran every 30s on
+  // every page — about 300 recorded freezes a week. It only repeats now while
+  // its insights list is on screen and the tab is visible; a finished video
+  // job still syncs straight away (pollJobs) and articles are still made once
+  // per load (encyclopediaPosts boot task).
   INTEL_POLL_INTERVAL = setInterval(()=>{
+    if(document.hidden) return;
+    const list=document.getElementById('intel-insights-content');
+    if(!list || list.offsetParent===null) return;
     syncIntelData(false);
     checkServerStatus();
   }, 30000);

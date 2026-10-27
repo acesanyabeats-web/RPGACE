@@ -1,0 +1,94 @@
+Orchestrator CC flag review — /scope + /drift + /paranoia (scaled) + /free-for-all-debate + /CEO Loop 1
+Oct 27 2026
+
+PROMPT (verbatim, Alex): "...I also want you to finish whatever you were on. Then we will go through all
+flagged for orchestrator cc, starting with today's flagged ones. /paranoia and /free-for-all-debate with
+/drift and /CEO and /scope"
+(Same message also asked for clock-in/break/clock-out links on the My Day shift — briefed separately,
+awaiting go.)
+
+1. SCOPE — the 9 oracle_dev_suggestions rows with status 'new' (read live Oct 27)
+ Today (Oct 26):
+  d3c048dc 17:23  Jung/Greene shadow-questions session: asks for a "Deep Dive" popup (one question per card,
+                  autosave, skips logged, final "what extra thoughts surfaced?" card, compiles into one Oracle
+                  prompt) + reports "📓 Save button not appearing".
+  4991b1a2 17:18  Oracle explains it cannot save; says 📓 missing is a UI bug; mentions 5 freezes 800ms+.
+ Oct 23:
+  b1fa14be 21:20  "Folder-as-agent" analysis (from a Videoworm report): persistent oracle-context folder,
+                  CC trigger folder, recall state separated, XP ledger audit, phyla/realms as folders.
+                  Notes and ignores a prompt injection in fetched Instagram content.
+  c4db61bd 23:05  "Master systems report": left nav = 13 realms only, realm-aware Oracle tools, pop-up vs
+                  page rule, page-by-page fixes for Producer/Creator/Hustler/Scholar/Mind/Steward.
+                  Same injection noted and ignored.
+  b85edb88 23:07  Continuation: Chef/Athlete/Life/Homekeeper/Explorer/Connector fixes, folder tree,
+                  event bus, My Day max 7 items, dashboard realm rings.
+ Older:
+  69c1168e Oct 16  Oracle can't see previous session history.
+  931f62be Oct 5   Oracle has no record of a book list Alex gave earlier (wanted Amazon links).
+  f791dbc1 Sep 28  Korean spicy octopus bibimbap recipe (full text).
+  ad7a1abc Sep 28  Slow cooker beef bourguignon with mash (full text).
+
+2. EVIDENCE (live, this pass)
+ - 📓 missing: CONFIRMED BUG, FIXED (3e6adbf). Root cause: oracleProfessor.ui.run (every "deep" message since
+   OP-5, Oct 21) drew its own bubble and never added the 📓/📖/⭐ row; only sendChat did. Shared
+   addReplySaveRow() now used by both; headless test 6/6.
+ - Shadow-questions session: not in journal (last entries are Morning Briefs/reviews). Only copy = flag text.
+ - Sep 28 recipes: neither in recipes table (generated before the Oct 1 RECIPE_JSON parse fix).
+ - Freezes (perf_freezes, 7 days): 30-180/day, avg 0.7-0.9s, worst 12.3s (Oct 21, page-quests).
+   Pages: dashboard boot 131, dashboard use 123, quests(My Day) 107, advisor(Oracle) 65.
+   Invoker: "Response.json.then" in 329 of ~360 use-phase script entries = heavy synchronous render right
+   after a fetch resolves. perfWatch stores invoker but not sourceFunctionName/sourceCharPosition usefully
+   (fn empty), so the exact function is unknown.
+ - Oracle memory: STATE.chatHistory lives in the tab only; no table stores Oracle chats. askMyData can read
+   journal etc. but never past conversations. Oct 5, Oct 16, Oct 26 flags are all this one gap.
+ - Prompt injection (Oct 23): oracleFetchGuard behaved correctly; Oracle named and ignored it.
+
+3. DRIFT
+ - Oct 23 "left nav = 13 realms only" vs the 8-domain spine ratified and built Oct 11 (M1/N2) and Oct 22 (ED):
+   VERDICT conflicts, BASIS ratified (domains). MATERIAL fork — Alex decides; not built by default.
+ - Many Oct 23 suggestions describe things as missing that exist (Repeat last, PB celebration, auto stock
+   deduct preview, follow-up reminders 5/7 days, Cook it at home, evening review, What happened?). MINOR:
+   the reports were written from SELF_KNOWLEDGE + one Videoworm report, not live state. Not new work.
+ - "Folder-as-agent": RPGACE is a browser app with Supabase as its store; folders in the Claude Code sense
+   already exist dev-side (docs/claude per domain since ED-2, records/, .claude/skills). The one real user-
+   facing need inside it is persistent Oracle context = the memory gap above. Aintergration verdict:
+   Reference only (borrow the principle, not the folder tree).
+
+4. /free-for-all-debate (4 competitors, 2 picks each)
+ A Reliability first: freezes + memory. Freezes are daily, measurable and hit the 3 most-used pages; memory
+   is the gap behind 4 of 9 flags. Build these before any new UI.
+ B Alex's words first: Deep Dive popup + saving the shadow session. He asked for Deep Dive explicitly today
+   and lost the session data; rescue it now, build Deep Dive small.
+ C Product-shape: realm-native nav + My Day max-7. Strongest idea in the Oct 23 reports, but reverses a
+   2-week-old ratified spine; at most a realm filter/chip on top of domains.
+ D Why-not / 48h rule: none of these makes a beat or a post; only freezes affect everything daily. Folder
+   tree and event bus are big rewrites with no clear win — park. Recipes rescue is cheap data recovery.
+ Council of 5: order = (1) rescue data now (shadow session, 2 recipes) — cheap, irreversible loss otherwise;
+ (2) freezes: capture the real function then fix the worst render; (3) Oracle chat memory (store chats,
+ let Oracle look back on request); (4) Deep Dive popup; (5) small Oct 23 picks only where not already built
+ (tick-all-in-aisle, Accept all for the 8 recipe splits, water/sleep one-tap on My Day). Park: 13-realm nav,
+ folder tree, event bus, dashboard rings. Clock-in links run first (separate, already briefed).
+
+5. INTERROGATION — asked in chat (answers to be appended).
+ Answers (Alex, Oct 27, verbatim choices):
+ - Memory: "Save every chat (Recommended)".
+ - Deep Dive: "Button under replies with questions (Recommended)".
+ - Realm nav: "Keep domains, add realm filter (Recommended)".
+ - Do now: "build clock in links will be done later on, i have links saved, i will go through them to see what
+   is what for your feed, Save shadow session to journal, Fix freezes first". (Recipe rescue not picked.)
+
+6. PLAN — "Oracle Flags Oct 27" (ratified by the answers above)
+ FL-1 Save the Oct 26 shadow-questions session as a journal entry (data, now).
+ FL-2 Freezes: record the real function behind each freeze (LoAF sourceFunctionName/sourceURL/char position,
+      mapped to module.function via the minified offsets), then fix the worst render on dashboard / My Day /
+      Oracle page. Brief before the fix itself.
+ FL-3 Oracle chat memory: every chat stored in a private table; Oracle looks back on request (askMyData-style
+      read, never sent unless relevant). Brief first.
+ FL-4 Deep Dive popup from a button under replies listing 3+ questions; answers -> one journal entry;
+      optional send back to Oracle. Brief first.
+ FL-5 Realm filter chips on the 8-domain menu. Brief first.
+ FL-6 Small Oct 23 picks not already built (tick all in aisle, Accept all for the 8 recipe splits, one-tap
+      water/sleep on My Day). Brief first.
+ FL-7 Clock in / break / clock out links on the My Day shift — waiting on Alex's links.
+ Parked: 13-realm menu, folder-as-agent tree, event bus, dashboard realm rings, Sep 28 recipe rescue.
+ Done before the plan: 📓 row on Professor answers (3e6adbf).

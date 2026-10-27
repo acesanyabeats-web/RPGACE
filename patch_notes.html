@@ -73,6 +73,18 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-27-freeze-intel-poll" style="margin-bottom:30px;">
+    <div class="card-title">🧊 Oct 27 — The biggest cause of "App froze" found and stopped (FL-2)</div>
+    <div class="card-body">
+      You chose "Fix freezes first". The freeze recorder saw 30-180 freezes a day (about 0.7s each). Reading the recorded code positions against that build's file showed one source behind about 300 of them a week: the old Content Intelligence sync. Every 30 seconds, on every page, it downloaded all video reports and the watchlist, rewrote up to 200 of them into the phone's storage, redrew a list that is not even on screen (its page was retired in August) and re-checked the Encyclopedia.
+      <ul>
+        <li>Now it only repeats while that list is actually showing and the tab is visible. The one sync when the app opens stays; a finished video job still syncs straight away; Encyclopedia articles are still made once per app load.</li>
+        <li>Checked in a headless browser with a fake clock: no syncs over 5 minutes on the dashboard, one sync while the list was showing, no page errors.</li>
+        <li>Real proof is the count in <code>perf_freezes</code> over the next day or two — I'll check it. Other freezes (dashboard start-up, My Day) are smaller and still there.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-10-27-save-row-on-professor" style="margin-bottom:30px;">
     <div class="card-title">📓 Oct 27 — "Save as entry" now appears under deep (Professor) answers too</div>
     <div class="card-body">
