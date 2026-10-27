@@ -116,7 +116,6 @@
     <button class="sched-tab active" onclick="showSched('daily',this)">Daily (24hr)</button>
     <button class="sched-tab" onclick="showSched('weekly',this)">Weekly</button>
     <button class="sched-tab" onclick="showSched('monthly',this)">Monthly</button>
-    <button class="sched-tab" onclick="showSched('import',this)">⬆ Import Shifts</button>
   </div>
   <div id="sched-daily"><div class="section-title">24-Hour Schedule</div><div class="time-grid" id="time-slots"></div></div>
   <div id="sched-weekly" style="display:none"><div class="section-title">Weekly Agenda</div><div class="week-grid" id="week-slots"></div></div>
@@ -443,7 +442,7 @@
      here. The original rpgace_core.js remains the real, edited,
      fully-commented source - always edit that, never the .min.js file
      directly. -->
-<script src="rpgace_core.min.js?v=20261027p"></script>
+<script src="rpgace_core.min.js?v=20261027q"></script>
 
 <div class="page" id="page-encyclopedia">
   <div class="section-title">📖 Knowledge Encyclopedia ✦</div>
@@ -528,9 +527,7 @@
 <div class="page" id="page-journal">
   <div class="section-title">📓 Journal ✦</div>
   <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center">
-    <button class="learn-btn green" onclick="refreshJournalDisplay()">🔄 Refresh</button>
     <button class="learn-btn" onclick="openJournalEntry()" style="border-color:var(--gold);color:var(--gold)">✏️ New Entry</button>
-    <button class="learn-btn" onclick="clearJournal()" style="border-color:var(--muted);color:var(--muted)">🗑 Clear All</button>
     <span id="journal-count" style="font-size:12px;color:var(--muted)"></span>
   </div>
   <div id="journal-new-entry" style="display:none;background:var(--panel2);border:1px solid var(--gold);border-radius:10px;padding:16px;margin-bottom:16px">

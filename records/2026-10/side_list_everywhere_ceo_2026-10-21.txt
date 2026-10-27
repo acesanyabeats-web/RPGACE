@@ -110,3 +110,6 @@ new table day_misses (day, kind block|morning, block_id fk set null, label, reas
 anon_read_only/authenticated_all, in data-write ALLOWED_TABLES. Code: myDay.logic stFor/loadMisses/missedItems/saveMiss/
 missAction/wokeLate/missLine, ui.openMissed/_maybeMissed; evening review section; Sunday review line.
 Bug caught in test: the card could act on a stale block copy after a reload -> missAction now resolves the live block by id.
+
+BUILD GO for SL-1/3/4/5 (Alex, Oct 27, verbatim): "Compile the SQL pastes for later, I'm away from my laptop, let's do the other domains"
+-> built from the round 1/3/4/5 answers above (SL-2 was done by Knowledge Rewire KR-2). Card: patch_notes.html#card-2026-10-27-side-list-domains.

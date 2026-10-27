@@ -36,3 +36,8 @@ Modules (`domain: 'habits'`, 6): `moneyHub`, `cookingOracle`, `shoppingWishlist`
 ## Money and daily life
 - `moneyHub`: the Money page (Hustler + Steward realms), built in Selling SH-5b; selling detail is in `content.md`. [story](../../patch_notes.html#card-2026-10-17-selling-home)
 - `dailyLife` (D1): fridge photo → stock via shared `cookingOracle.logic._upsertStock`, watchlist digest, own-words brief, quests+cooks in Chronicles. [D1](../../patch_notes.html#card-2026-10-10-daily-life)
+
+## Side list declutter (SL-3, Oct 27)
+- Health & body Today: one ⚡ Quick log row (`#hb-quick`): 💧 +1 glass (body_log), ⚖️ Weight and 😴 Sleep (each opens its own row), 🚬 / ☕ from My Day's cut-back items matched by name (`healthBody.ui.cutTiles` → `myDay.logic.cutSet`, cutback_log; no second store). Calorie + protein targets are set on the 🎯 Targets tab only. [story](../../patch_notes.html#card-2026-10-27-side-list-domains)
+- Wishlist: add form folded behind ➕ Add an item (`RPGACE.sideList.foldForm`); budget setting (`#wl-budget-row`) and the Money link live in the › side list (`pop.overlay._sideExtras`); the "what fits" line stays.
+- `RPGACE.sideList.foldForm` also parks an element's inline `display`, so flex/grid rows really hide.
