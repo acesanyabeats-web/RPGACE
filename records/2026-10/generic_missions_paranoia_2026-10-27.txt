@@ -89,3 +89,13 @@ scrutiny team, then /CEO"
  (query pg_constraint first; additive value, not a delete).
 
 7. APPROVAL (Alex, Oct 27, verbatim): "Go" -> plan Generic Missions GM-1..GM-9 ratified as drafted in section 6.
+
+8. Alex, Oct 27 (verbatim): "* 7 new missions to keep or drop: Roast with a technique, Bake with a technique, Sear or fry with a
+technique, Braise or slow-cook with a technique, Make a rub, marinade or glaze, Train a muscle group, Tendon & joint strength.
+- keep, these are niche yet generic enough for practical use for me, i love it, this is how planning out thing would be so much
+easier. go, also i think we should review other 9 realms too (Tasks in the other 9 realms stay where they are.) [/paranoia and
+/free-for-all-debate with /drift /godmode /scope and /interrogation into oblivion, then /CEO and plan this while building
+previous plan so we get things built without task skipping in approved plans] everything in [] should be a new skill called
+/dev_ops_7 for future building"
+ -> the 7 missions kept; GM-3/4 approved ("go"); new skill .claude/skills/dev_ops_7; Loop 1 for missions in the other 9
+    realms runs alongside GM-3..9 (approved items are built, never skipped, while the new plan is drafted).
