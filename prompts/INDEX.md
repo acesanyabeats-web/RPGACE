@@ -7,6 +7,7 @@ built in `local_server/rpgace_intel.py` `insights_prompt`.
 
 ## Prompt files
 
+- `exercise_extract.md` - Gym exercise library (DR-12): pulls exercises out of one Athlete video write-up (exerciseLibrary.logic.extract, cheap model)
 - `professor.md` - Oracle Professor answers (oracleProfessor.PROF_SYSTEM)
 - `receipt_read.md` - Money: reads a receipt photo (RECEIPT_SYSTEM)
 - `rota_read.md` - Shift sync: reads a work rota screenshot (shiftSync.logic.ROTA_SYSTEM)

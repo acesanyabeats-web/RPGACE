@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-27-exercise-library" style="margin-bottom:30px;">
+    <div class="card-title">🏋️ Oct 27 — Exercise library from your gym videos, with combos that cover each muscle group (DR-12)</div>
+    <div class="card-body">
+      Your words: "exercises grouped by muscle group and over arching group by discipline", "sub categories under each for regions in group so I hit the entire group properly", "auto pops up as possible task to add to routine when I choose exercises".
+      <ul>
+        <li><b>📚 Exercise library &amp; combos</b> on the Gym page: tabs for Weights, Bodyweight, Cardio, Stretches, Mobility; inside each, exercises grouped by Chest, Back, Shoulders, Arms, Core, Legs, Glutes, Full body. Every exercise says which regions it works (e.g. Upper chest, Rear delts, Knees &amp; tendons) and what it also hits.</li>
+        <li><b>From your videos:</b> when an Athlete video is waiting, the Gym page shows "🎬 N gym videos with exercises to review". Tap it: the cheap model reads each write-up once, you tick which exercises to keep, and they're saved with a ▶ link to the video. Your two current videos (tendons, testosterone) are waiting.</li>
+        <li><b>Combos:</b> tap exercises to build a combo. For every muscle group it touches you see ✓ hit, ½ only partly, ✗ missed, plus exercises that fill each gap (your video ones first). Tap a suggestion to add it. "➕ Add combo as Athlete tasks" turns them into repeating Athlete tasks; give them a rhythm in Tasks to put them in your routine.</li>
+        <li><b>Starter list:</b> 44 common exercises so gaps can be filled before you have many videos, each labelled "Starter list — not from your videos". This was my recommended default; you said "Go" without choosing, so say if you want it off. A video exercise with the same name replaces the starter one.</li>
+        <li>One new table (exercises) and one new column (intel_reports.exercises_scanned_at), both additive.</li>
+        <li><b>Honest flags:</b> new suite 14/14 headless with a stand-in model reply; the real cheap-model read of your two videos hasn't run yet. Untested by you. Not built: the gym log's exercise picker doesn't suggest from the library yet.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-10-27-ideas-door" style="margin-bottom:30px;">
     <div class="card-title">💡 Oct 27 — One Ideas door, by realm (DR-10)</div>
     <div class="card-body">
@@ -95,7 +110,7 @@
         <li><b>📅 Calendar</b> (was Schedule in the menu): Week, Month and Shifts. The Daily tab is gone, because My Day is your day view. It opens on Week. Your one-off events show on their day (📅 coming up, 🎞 remembered). Tap any day in Week or Month and My Day opens on that date.</li>
         <li><b>🏋️ Gym</b> is one page: today's workout from your programme, logging a session, your target and your bests. Health &amp; body no longer has a Gym plan tab (Today, Trends, Targets); anything that pointed at it now opens the Gym page.</li>
         <li>"✅ What you did" used to sit under the Daily view; My Day's day view already shows it, so nothing is lost.</li>
-        <li><b>Honest flags:</b> new suite 7/7 headless (one check first failed because the test tapped the wrong weekday, not a code fault). Untested by you — open 📅 Calendar, tap a day, check My Day opens on it; open 🏋️ Gym and check today's workout is there.</li>
+        <li><b>Honest flags:</b> new suite 7/7 headless (one check first failed because the test tapped the wrong weekday, not a code fault). Correction (same day): the Health &amp; body suite still clicked the removed Gym plan tab and crashed, and my first regression run hid that; it now checks the plan on the Gym page and passes 42/42. Untested by you — open 📅 Calendar, tap a day, check My Day opens on it; open 🏋️ Gym and check today's workout is there.</li>
       </ul>
     </div>
   </div>

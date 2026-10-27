@@ -164,6 +164,7 @@ const ALLOWED_TABLES = new Set([
   // Oct 10 2026 (HABITS gym tracker): anon_read_only + authenticated_all from creation.
   'gym_sessions',
   'gym_sets',
+  'exercises', // Oct 27 2026 DR-12: exercise library (video-derived rows; starter list lives in code). anon_read_only + authenticated_all
   // 2026-09-16 - HABITS/Cooking Current Stock (Pantry/Fridge/Freezer/
   // Equipment). Created anon_read_only/authenticated_all FROM THE START
   // (same "flip RLS first, then allowlist" by construction as every
