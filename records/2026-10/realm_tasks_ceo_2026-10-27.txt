@@ -1,0 +1,69 @@
+Realm Tasks — /CEO Loop 1 (with /paranoia scaled, /free-for-all-debate, /drift, /scope, /interrogation)
+Oct 27 2026. Domains: schedule (My Day, Doing Now), chronicles (realms/XP), knowledge (Videoworm, Library, Bookworm), oracle.
+
+PROMPT (verbatim, Alex):
+"i now want to go through tasks that can be done for each realm, and i choice picker when im in the block so i can choose
+what to do, so i focus on types of tasks in the space of time rather than each task individually. /paranoia and
+/free-for-all-debate to come up with all tasks possible that serve me to become my best version of myself for each realm,
+and a way to make tasks appear when a video or post is shared to rpgace so i always come up with new tasks to complete.
+this should always go through /deduplication so no tasks are doubled and repeated in the system. use /interrogation into
+oblivion /drift and /scope as tools for scrutiny team, then /CEO all of it"
+Queued AFTER this plan (verbatim): "after i want the folder structure from lost and lucky and oracle review with engelbard
+etc to be adopted to the system" -> separate pass once this plan is approved (likely the Oct 23 folder-as-agent flags).
+
+1. SCOPE / EVIDENCE (live)
+ - myDay.REALM_ACTIVITIES: 52 hard-coded activities (4 x 13 realms), picked by Alex Oct 13 (record
+   day_templates_chores_spec_2026-10-13.txt). logic.realmOptions = these + realm routines + Scholar books -> 📋 Plan block.
+ - routines: 20 active (14 Chores area). activity_templates: 1 row.
+ - Videoworm: 26 intel_reports carry insights.realm_sections.<realm>.quests (3 per realm per report) = 105 task ideas
+   (mind 36, builder 21, hustler 15, life/athlete/chef/creator 6, connector/producer/scholar 3). quest_log has 1 open
+   input_quest -> ideas reach Alex only via one-tap buttons inside a report (pathways.addQuest).
+ - questEngine.addSuggested (realm suggestions) writes quest_log input_quest directly.
+ - No cross-source duplicate check exists (quests unique only by source_ref). pg_trgm 1.6 is installed.
+ - realm blocks: 6 ever, all 6 had items picked via Plan block.
+ - doingNow mounts on My Day only; oracleEntry offers 📓 Journal / ⚔️ Realm mission under Oracle replies.
+2. INTERROGATION (verbatim answers)
+ picker -> "Pick a type on start (Recommended)"
+ from videos -> "Inbox, accept to pool (Recommended)"
+ catalogue -> "I draft, you prune in-app (Recommended)"
+ duplicates -> "Merge, keep sources (Recommended)"
+ in-block -> "1 and i want each realm block to have a live doing window like cooking, i dont want it in oracle page
+   anymore, but rather a separate page as live now so i can always revisit it"
+ repeats -> "1 but some one off (like a recipe) has the recipe saved so i can always revisit it, the actual cooking is
+   the repeatable"
+ XP -> "Keep current rules (Recommended)"
+ sources -> "iim sure there are more too,Oracle chat replies,Book & idea cards,Realm suggestions"
+ oracle page -> "⚔️ Realm mission saving"
+ live now -> "Opens when a block starts (Recommended)"
+ sources 2 -> "Life Library saves,Journal & reviews,Plans & People"
+ plan block -> "both i guess, i pick a main agenda - if done can always pick more to add"
+3. FREE-FOR-ALL (4 competitors)
+ A One task pool table (realm_tasks) with types; a DB trigger dedups every insert from every source; Live now page.
+ B Reuse quest_log as the pool. Rejected: quest_log is the tick/XP ledger (xp_on_change) - a pool row is not a done thing.
+ C Grow REALM_ACTIVITIES in code. Rejected: no sources, no dedup, video ideas stay buried.
+ D Why-not: ~400 tasks = choice paralysis; Live now duplicating the Doing Now card; quests vs tasks becoming two systems.
+   Answers: top 3 per type (+ more); Live now becomes Doing Now's home (My Day card links to it); video/realm-suggest
+   ideas become tasks, not quests (one system, rule 8).
+ Council of 5: A.
+4. DRIFT
+ - Day Bookends DB-4 (Oct 27: Plan my day fills blocks via 📋 Plan block) -> now Plan block picks a main TYPE (agenda),
+   more added live. Alex's own change today; BASIS ratified.
+ - REALM_ACTIVITIES (Oct 13) keep all 52 as kept tasks; the code list retires (data moves to the table).
+ - RI-7 quests from inputs -> become inbox tasks. MATERIAL, flagged in the report for Alex.
+5. PROPOSED PLAN "Realm Tasks" (RT-1..RT-7)
+ RT-1 realm_tasks (+ realm_task_types): realm, type, title, kind repeat|once, rest_days (2), earns real|tick|xp, xp,
+      mins, opens, link (e.g. a recipe), status inbox|kept|dropped|done, sources[], last_done_at. A BEFORE INSERT trigger
+      dedups every write: same/near-same title in the realm (pg_trgm) merges the new source into the existing task; unsure
+      matches land in the inbox marked "same as X?".
+ RT-2 Catalogue: the 52 kept; ~5 types x ~6 tasks per realm drafted as proposed; per-realm review (Keep / Edit / Drop).
+ RT-3 Inbox + sources: Videoworm (105 backfill + every new analysis), Oracle replies (➕ Task replaces ⚔️ Realm mission),
+      Bookworm insights + idea-card Try this, realm suggestions, Life Library saves, journal/review "I want to" lines,
+      Plans tasks + People reach-outs. Due row when the inbox has new ones.
+ RT-4 ▶ Live now page: opens on block start; realm, time left, focus timer, type picker (main agenda first, add more
+      when done), top 3 + more; a picked task runs as Doing Now (its page opens); Stop -> next. In the left menu and on
+      the dashboard while running. Repeatables rest, one-offs retire; a recipe stays saved, cooking it repeats.
+ RT-5 Plan block -> pick a main type (agenda) per block; Plan my day / Good morning / Good night / evening show it;
+      planned vs did by type.
+ RT-6 One system: ⚔️ Realm mission removed from Oracle replies; REALM_ACTIVITIES read from the table; Pathways
+      "add quest" and realm suggestions feed the inbox instead of quest_log.
+ RT-7 Tests, docs, SELF_KNOWLEDGE, patch card, smoke rows.
