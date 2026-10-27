@@ -1,0 +1,142 @@
+Schedule & Habits rewire — /paranoia + /free-for-all-debate + /interrogation + /scope + /drift + GODMODE, then /CEO
+Oct 27 2026
+
+PROMPT (verbatim, Alex): "Make open quests and 20 agenda items turn into realm tasks, all quests should be tasks decided by
+realms, Two timelines: Schedule's Daily view shows the same day as My Day. Gym is in two places: the Gym card and Health &
+body's Gym plan tab. Ideas are in several places: the Idea Bank, Posting ideas and the Plans Ideas board. ... I want to
+address all of the above with the /paranoia and /free-for-all-debate with /interrogation into oblivion /scope /drift and
+/Godmode as tools for scrutiny team, then /CEO the outcomes for me"
+
+Scale note: Aintergration/restructure are not applicable (no third-party tool in scope). commit-archaeologist ran inline via
+the RT record (why quest_log is the XP ledger). Fable not used.
+
+1. SCOPE / GODMODE — live evidence (Supabase + code, Oct 27)
+ A. TASK STORES (5, not 3):
+  - realm_tasks 335: 52 kept (4 repeat per realm), 175 proposed (catalogue drafts), 107 inbox (video ideas). No XP trigger:
+    a task done inside a realm block pays through the block (chore_blocks item tick, +10); done outside a block pays nothing
+    (realmTasks.logic.markDone only bumps done_count/status).
+  - quest_log 42 open: 34 'workflow_step' (generic, 0 XP: "Study the concept", "Apply it in a real beat", "Feynman it back",
+    duplicated children of 3 open 'knowledge_gap' quests built from taxonomy_nodes — taxonomy is paused), 4 'needs_input'
+    (system alerts: error_log, smoke_test_items, system_map_flags, oracle_dev_suggestions), 1 taxonomy_review, 1 input_quest.
+    quest_log is ALSO the tick/XP ledger: every My Day Action tick is a completed 'routine' quest row (38 completed/skipped);
+    triggers xp_change/xp_delete pay XP from it. Producers: questEngine scan (_createQuests: knowledge_gap/taxonomy_review/
+    needs_input + workflow steps), feynman, errorLog, config. questEngine.addSuggested already writes realm_tasks (RT built).
+    Shown on My Day page as "🎯 Generated From Your Real Data" (questEngine._inject on #page-quests).
+  - routines ("Actions") 20 active: chores (laundry x8 variants, bins, hoover), one-offs (Haircut, Looking for 2 beds w Jack,
+    Freya's Birthday Pub Crawl, Call Mom), Morning routine, Update stock. Ticks -> quest_log. They are tasks too.
+  - rpgace_agendas 20 = the DAY TIMELINE, not to-dos: 7 doing_now sessions, 3 chore_block, 3 routine, 3 realm_block,
+    2 planned_cook, 2 'agenda' (1 stale Jul 8, 1 done). Trigger xp_doing_now pays sessions. -> "turn agenda items into tasks"
+    applies to the 1 stale agenda row only; the rest are timeline history and must stay.
+  - chore_blocks 12 (blocks with checklists, items src 'task' link realm_tasks) + plan_tasks (trip checklists, private).
+ B. TIMELINES: Schedule Daily (renderDailyGrid) is wrapped by myDay.ui.schedHook -> the SAME myDay timeline renders in
+    #time-slots (one code path, two homes) + a legacy ▦ Grid. Schedule-only: Weekly + Monthly calendar, ◄ Prev/Next day,
+    work shifts (The Joiners Arms) + rota import (rota-sync.yml weekly). My Day has Day | Week views already.
+ C. GYM: gymTracker card (+ Log a session, ↻ Repeat last, weekly target, bests; gym_sessions 3, gym_sets 51) vs healthBody
+    Gym plan tab (programme from health_settings.programme, progressive-overload suggestion, ▶ Start this workout ->
+    gymTracker.ui.openLog). Same engine (gymTracker), two doors.
+ D. IDEAS: conid_pot (Idea Bank) 3 rows, all kind 'beat' (Jul); posts 0 rows (Posting "Post ideas" = conid_pot kind 'post'
+    + posts at stage 'idea'); plans 0 rows (Ideas board = plans status 'idea'); realm_tasks inbox 107 (video task ideas).
+    Data is near-empty: the overlap is doors and screens, not stored data. Knowledge "Ideas" tab = idea cards (learned
+    insights) — a different meaning, out of scope.
+
+2. DRIFT
+ Baseline (RATIFIED): records/2026-10/realm_tasks_ceo_2026-10-27.txt — "ideas become tasks, not quests (one system, rule 8)",
+ "quest_log is the tick/XP ledger - a pool row is not a done thing", RI-7 quests from inputs -> inbox tasks.
+ VERDICT: ON TRACK — Alex's ask extends RT to the remaining quest producers. BASIS ratified.
+ D1 MATERIAL: RT left questEngine's scan (knowledge gaps, workflow steps, system alerts) writing open quests — a second
+    to-do system still alive on My Day. Alex's ask closes it.
+ D2 MATERIAL: routines/Actions are a third to-do store not covered by RT (RT only read them as plan-block options).
+ D3 MATERIAL (misunderstanding risk): "20 agenda items" are timeline entries, not tasks. Moving them would break the
+    timeline and Doing-now XP. Only the 1 stale 'agenda' row is a task.
+ D4 MINOR: realm tasks done outside a block pay no XP, while quests did — moving quests to tasks must not lose XP.
+ D5 MINOR: docs say "Schedule" is a calendar page; in practice its Daily view is My Day's timeline.
+
+3. /free-for-all-debate (5 competitors)
+ C1 "One task list": every to-do lives in realm_tasks (quests, Actions, alerts); quest_log stays ONLY as the done-ledger
+    (ticks + XP). questEngine scan writes inbox tasks; Actions become repeat tasks with a due rhythm (rest_days). One place
+    to look, realm decides everything.
+ C2 "Keep Actions separate": Actions are dated chores with countdowns and morning/evening slots (Life/Homekeeper streaks,
+    realm target "days with Morning + Night") — folding them into a pool breaks the rhythm. Show them in the realm task list
+    as a filter, keep the routines table.
+ C3 "Retire the generator": the 34 workflow steps are noise from a paused taxonomy; drop them, stop the scan, move the 4
+    system alerts to Builder realm tasks, the 1 input quest to its realm. Smallest change, biggest declutter.
+ C4 "One calendar": Schedule loses Daily (My Day is the day); Schedule becomes Calendar = Week + Month + Shifts, or folds
+    into My Day as a Calendar view. Gym = one page (Health & body Gym tab is the home; Gym card opens it). Ideas = one
+    "💡 Ideas" door listing Idea Bank + Ideas board + task inbox by realm; engines stay.
+ C5 "Why not / keep function": XP must not drop (tasks outside blocks pay 0); Actions' countdown/'due' logic and AC-5
+    missed-why reasons hang off routines; beat ideas drive the Beats making flow (conid_pot.status making) — merging ideas
+    into tasks would lose that. Merge the ENTRY and the LIST, not the engines.
+ Merged: C3 + C1 for quests (generator retired, alerts -> Builder tasks, quest_log = ledger only); C2 vs C1 on Actions is a
+ real fork for Alex; C4 + C5 for calendar/gym/ideas (one door, engines kept); C5's XP gap needs an answer.
+
+4. COUNCIL OF 5 (draft)
+ Risk: medium — quest_log rows move (destructive on 42 rows: status change, never delete); routines merge would touch
+ My Day's most-used flow. XP regression risk if done-outside-block pays nothing. Cost: 6-9 steps, no AI cost.
+ Maintainability: retires questEngine scan + workflow steps (~400 lines dormant). UX: one task list per realm, one calendar,
+ one gym page, one ideas door. Why-not: Actions are the one thing Alex uses daily (Morning routine ticks); changing them
+ risks the habit he has. Mitigation: keep their rhythm and slot, change where they're listed.
+
+5. INTERROGATION — asked in chat; answers appended below.
+ Round 1 (Alex, verbatim choices):
+ - Open quests: "Keep the real, drop the noise (Recommended)"
+ - Quest maker: "1 but my day can have the tasks generate with all realms available, I don't like the list beneath the
+   timeline, I'd say that is useless"
+ - Actions: "Fully merge into Realm Tasks"
+ - Task XP: "Its realm's XP, wherever ticked (Recommended)"
+ Round 2:
+ - My Day list: "Both go; one 'Pick from realms' button (Recommended)"
+ - Schedule: "Calendar: Week + Month + Shifts (Recommended)"
+ - Gym: "One Gym page with everything (Recommended)"
+ - Ideas: "One 💡 Ideas door, engines kept (Recommended)"
+ Round 3:
+ - Scheduling: "Tasks gain all of it (Recommended)"
+ - Bookends: "Stay as My Day bookends (Recommended)"
+ - Realms: "Freya pub crawl was a one off event, just save it as memory, much like interviews etc. I need an option for one
+   off events, looking for 2 beds is life too, otherwise go with 1"
+ - History: "Same ledger, linked to the task (Recommended)"
+ Round 4:
+ - Events: "Save one off events in table as memories I can revisit for nostalgia, so 1 with this twist"
+ - Memory: "Chronicles entry + optional note/photo (Recommended)"
+ - Freya: "Save as a past event memory (Recommended)"
+
+6. FACT-CHECK (Council of 5 + /simplify, fresh evidence)
+ - quest_log has no status CHECK; noise quests already use 'dismissed' (5 rows) -> use 'dismissed', never delete.
+ - plans has no kind column (Ideas board keeps kind in details) -> an event = plans row with details.kind='event'.
+ - No events/memories table exists -> Alex's "in table" = one new memories table (additive, CEO carve-out).
+ - realm_tasks CHECKs: kind repeat|once, status inbox|proposed|kept|dropped|done -> Actions map to kind 'repeat' (or 'once'
+   for due-dated one-offs) + new scheduling columns (ADD COLUMN, carve-out).
+ - Task XP anywhere needs a DB trigger/function on realm_tasks (or a ledger row in quest_log per tick, reusing the existing
+   xp_change trigger). /simplify: reuse quest_log as the tick ledger (Alex's "same ledger") -> a task tick writes one
+   completed quest_log row (quest_kind 'task', source_table realm_tasks, xp from task) and the EXISTING trigger pays it;
+   no new trigger. Block ticks must not also write -> one tick path (realmTasks.logic.tick).
+ - Due logic: myDay.logic.isDueToday/todayLog/chainParent already implement cadence/every_days/days/chains -> reuse them
+   on realm tasks (rule 8), do not write a second due engine.
+ - Morning routine stays in routines (bookend). Non-bookend Actions move (18 rows incl. 2 inactive -> copied, routines rows
+   set active=false only after Alex's review; ids mapped in realm_tasks.sources [{table:'routines', ref:id}]).
+ Mapping (Alex-confirmed): Chores -> homekeeper; Haircut -> life; Looking for 2 beds (w Jack) -> life; Call Mom -> connector;
+ Update stock -> chef; Freya's Birthday Pub Crawl -> memory (connector, Oct 18), Action retired.
+
+7. PLAN — "Day & Habits Rewire" (DR-1..DR-11), ratified by the answers above; each step briefed before building (rule 18).
+ DR-1 Open quests: input quest -> its realm task (inbox); 4 needs_input alerts -> Builder tasks; 34 workflow steps + 3
+      knowledge_gap + 1 taxonomy_review -> status 'dismissed'. quest_log becomes the done-ledger only.
+ DR-2 questEngine scans write Realm Tasks inbox (alerts -> Builder), never new quests; 🎯 panel removed from My Day.
+ DR-3 One tick path: realmTasks.logic.tick writes one completed quest_log ledger row (kind 'task') -> existing XP trigger
+      pays the task's XP (or +10 plain) to its realm, anywhere; block ticks route through the same call (no double pay).
+ DR-4 Realm tasks gain Action scheduling: cadence, every_days, days, times_per_week, part_of_day, due_date, after_task_id,
+      minimum, goal, steps, est_mins (ADD COLUMN); due logic reuses myDay's.
+ DR-5 Actions merge: 18 non-bookend Actions copied to realm_tasks with the mapping + a one-time review list; My Day's
+      Actions UI (▾ Doing now/I just did, due list, chains, never-miss-twice, AC-5 missed-why, Sunday review, Life target)
+      reads realm tasks; old ticks stay and are linked via sources; routines keeps Morning routine (bookend) only.
+ DR-6 One-off events + Memories: event = dated plan (details.kind 'event'), on Calendar + My Day timeline that day; after
+      the date "How was it?" -> new memories table (title, date, realm, people, note, photo, plan_id) -> Chronicles entry +
+      🎞 Memories view to revisit; realm XP on confirm. Freya's pub crawl saved as a Connector memory (Oct 18).
+ DR-7 My Day: 🎯 quest panel and 🧺 Tray removed; one "＋ Add from realms" picker (13 realms, due first, then best) that
+      drops a task onto the timeline or into a block.
+ DR-8 Schedule -> 📅 Calendar: Week + Month + Shifts/rota; Daily view removed (a date opens My Day on that date); events show.
+ DR-9 One Gym page: today's workout from the programme + next-weight suggestions, ▶ Start / Log / ↻ Repeat last, weekly
+      target, bests; Health & body loses its Gym plan tab.
+ DR-10 One 💡 Ideas door by realm: Idea Bank (beat/post -> Producer/Creator), Ideas board (-> Explorer), task inbox
+      (-> its realm); tapping opens its home; engines and stores unchanged.
+ DR-11 Menu, tests, docs, SELF_KNOWLEDGE, deploy, plan rows.
+ Tier notes: DR-1 status changes (42 rows) and DR-5 routines active=false are data changes -> counted before/after, shown
+ to Alex at build. DR-4/DR-6 are additive schema (carve-out). No deletes, no RLS loosening.
