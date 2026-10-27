@@ -87,3 +87,5 @@ scrutiny team, then /CEO"
  extra pick in Plan block, chosen by Alex; why-not = adds a step before doing and a new table — accepted because
  context at plan time is exactly what Alex asked for. Status 'filed' needs the realm_tasks status check widened
  (query pg_constraint first; additive value, not a delete).
+
+7. APPROVAL (Alex, Oct 27, verbatim): "Go" -> plan Generic Missions GM-1..GM-9 ratified as drafted in section 6.

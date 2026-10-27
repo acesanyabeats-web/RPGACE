@@ -94,6 +94,7 @@ const ALLOWED_TABLES = new Set([
   'study_questions', 'study_sessions', 'study_attempts', // Oct 20 2026: Study (exam practice) - recall schedule, rounds, answers
   'myday_alarms', // Oct 18 2026 MD-1: wake alarm per day (anon_read_only from creation); sent by push_alarm() via the myday-push cron
   'travel_profile', 'people', 'plans', 'plan_tasks', // Oct 12 2026 Trips & Plans: locked tables (no anon policy), read via action 'read'
+  'mission_contexts', // Oct 27 2026 GM-1: context cards under generic missions; locked (authenticated_all only), read via action 'read'
   'memories', // Oct 27 2026 DR-6: one-off events saved as memories; locked (authenticated_all only), read via action 'read'
   'library_items', // Oct 13 2026 LL-1 Life Library: locked like people (authenticated_all only), read via action 'read'
   'xp_events', 'xp_rules', // Oct 13 2026 XP Season Pass (XP-1): private, written by DB triggers, read via action 'read'
@@ -213,7 +214,7 @@ const ALLOWED_TABLES = new Set([
 // Every access is this action, behind requireAuth() with the service-role
 // key - one more action on this file (rule 8: no 13th
 // api file). Ops: upload | update | list | count | delete.
-const PRIVATE_READ_TABLES = new Set(['travel_profile', 'people', 'plans', 'plan_tasks', 'memories', 'library_items', 'xp_events', 'xp_rules', 'xp_ladders', 'xp_unlock_defs', 'xp_unlocks', 'xp_settings', 'xp_reports', 'xp_challenges', 'xp_quest_steps', 'xp_treats', 'outreach_log', 'cutback_items', 'cutback_log', 'food_log', 'body_log', 'health_settings', 'posts', 'artists', 'pitches', 'pitch_sends', 'subscriptions', 'work_links', 'oracle_chats', 'realm_tasks', 'realm_task_types']); // work_links: Oct 27 2026 FL-7, clock-in/break/clock-out links (private, read-only here)
+const PRIVATE_READ_TABLES = new Set(['travel_profile', 'people', 'plans', 'plan_tasks', 'memories', 'mission_contexts', 'library_items', 'xp_events', 'xp_rules', 'xp_ladders', 'xp_unlock_defs', 'xp_unlocks', 'xp_settings', 'xp_reports', 'xp_challenges', 'xp_quest_steps', 'xp_treats', 'outreach_log', 'cutback_items', 'cutback_log', 'food_log', 'body_log', 'health_settings', 'posts', 'artists', 'pitches', 'pitch_sends', 'subscriptions', 'work_links', 'oracle_chats', 'realm_tasks', 'realm_task_types']); // work_links: Oct 27 2026 FL-7, clock-in/break/clock-out links (private, read-only here)
 const SHOTS_BUCKET = 'screenshots';
 const SHOT_PATCH_FIELDS = ['extracted_text', 'description', 'tags', 'kind', 'suggestions', 'status', 'routed_to', 'read_at', 'realms'];
 // Realm Inputs RI-2: the 13 xpSeason realm keys a screenshot may carry (max 4).
