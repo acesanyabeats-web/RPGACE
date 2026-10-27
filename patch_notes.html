@@ -73,6 +73,19 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-27-work-clock-links" style="margin-bottom:30px;">
+    <div class="card-title">⏱ Oct 27 — Clock in, Break and Clock out on your My Day shift (FL-7)</div>
+    <div class="card-body">
+      Your ask: "clock in, I'll add start end break link (it's one link) and clock out links, so when I press shift on my day, I can do all these actions from RPGACE directly".
+      <ul>
+        <li>From 30 minutes before a shift until 30 minutes after it ends, My Day's Now/Next card shows a Work row: ⏱ Clock in, ☕ Break, 🏁 Clock out. Each opens your phone2fork page in a new tab; you still press the button there — RPGACE can't see whether it worked.</li>
+        <li>The row remembers today's taps on that phone ("Tapped: in 09:58 · break 13:02").</li>
+        <li>Your links live in a new private table (<code>work_links</code>), read only by the signed-in app. They are not in the code, the docs or any commit, because the repo is public and the links work like passwords.</li>
+        <li>Checked in a headless browser with test links: the row appears during a shift and not 40 minutes before, each button opens the right link, no page errors. Untested by you on a real shift.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-10-27-freeze-intel-poll" style="margin-bottom:30px;">
     <div class="card-title">🧊 Oct 27 — The biggest cause of "App froze" found and stopped (FL-2)</div>
     <div class="card-body">

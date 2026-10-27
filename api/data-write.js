@@ -209,7 +209,7 @@ const ALLOWED_TABLES = new Set([
 // Every access is this action, behind requireAuth() with the service-role
 // key - one more action on this file (rule 8: no 13th
 // api file). Ops: upload | update | list | count | delete.
-const PRIVATE_READ_TABLES = new Set(['travel_profile', 'people', 'plans', 'plan_tasks', 'library_items', 'xp_events', 'xp_rules', 'xp_ladders', 'xp_unlock_defs', 'xp_unlocks', 'xp_settings', 'xp_reports', 'xp_challenges', 'xp_quest_steps', 'xp_treats', 'outreach_log', 'cutback_items', 'cutback_log', 'food_log', 'body_log', 'health_settings', 'posts', 'artists', 'pitches', 'pitch_sends', 'subscriptions']);
+const PRIVATE_READ_TABLES = new Set(['travel_profile', 'people', 'plans', 'plan_tasks', 'library_items', 'xp_events', 'xp_rules', 'xp_ladders', 'xp_unlock_defs', 'xp_unlocks', 'xp_settings', 'xp_reports', 'xp_challenges', 'xp_quest_steps', 'xp_treats', 'outreach_log', 'cutback_items', 'cutback_log', 'food_log', 'body_log', 'health_settings', 'posts', 'artists', 'pitches', 'pitch_sends', 'subscriptions', 'work_links']); // work_links: Oct 27 2026 FL-7, clock-in/break/clock-out links (private, read-only here)
 const SHOTS_BUCKET = 'screenshots';
 const SHOT_PATCH_FIELDS = ['extracted_text', 'description', 'tags', 'kind', 'suggestions', 'status', 'routed_to', 'read_at', 'realms'];
 // Realm Inputs RI-2: the 13 xpSeason realm keys a screenshot may carry (max 4).
