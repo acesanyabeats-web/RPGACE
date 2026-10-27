@@ -20,3 +20,4 @@ Modules (`domain: 'chronicles'`, 3): `careerStatCard`, `chroniclesLog`, `xpSeaso
 
 ## Side list declutter (SL-5, Oct 27)
 - Chronicles: the 9 section chips fold into one "Show: … ▾" row (`chroniclesLog._renderFilterChips` + `RPGACE.sideList.filterRow`); + Log Sale / Expense stays. [story](../../patch_notes.html#card-2026-10-27-side-list-domains)
+- Chronicles reads kept `memories` (DR-6) as type `memory` in the "✈️ Trips, plans & memories" section; its › side list opens 🎞 Memories (`eventMemories.ui.openMemories`). [story](../../patch_notes.html#card-2026-10-27-picker-memories)
