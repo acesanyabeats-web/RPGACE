@@ -273,14 +273,14 @@
 
       <!-- URL Submit -->
       <div style="background:rgba(201,168,76,.06);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:14px;margin-bottom:14px">
-        <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">ANALYSE A VIDEO</div>
-        <div style="display:flex;gap:8px">
-          <input id="intel-url-input" type="text" placeholder="Paste YouTube, TikTok or Instagram URL..."
-            style="flex:1;background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px 12px;font-size:13px;font-family:'Rajdhani',sans-serif;outline:none"
-            onkeydown="if(event.key==='Enter')submitIntelURL()"/>
+        <div style="font-size:11px;color:var(--gold);font-family:'Cinzel',serif;letter-spacing:1px;margin-bottom:8px">SHARE ANYTHING: VIDEO, PAGE OR TEXT</div>
+        <div style="display:flex;gap:8px;align-items:flex-start">
+          <textarea id="intel-url-input" rows="2" placeholder="Paste a video link, a web page link, or any text..."
+            style="flex:1;min-width:0;resize:vertical;background:var(--panel2);border:1px solid var(--border);border-radius:6px;color:var(--text);padding:8px 12px;font-size:13px;font-family:'Rajdhani',sans-serif;outline:none"
+            onkeydown="if(event.key==='Enter'&&!event.shiftKey&&/^https?:\/\/\S+$/.test(this.value.trim())){event.preventDefault();submitIntelURL()}"></textarea>
           <button class="learn-btn green" onclick="submitIntelURL()" id="intel-submit-btn">⚡ Analyse</button>
         </div>
-        <div style="font-size:12px;color:var(--muted);margin-top:6px">Analysed in the cloud every 10 minutes. YouTube links may wait for your PC (<strong>start_server.bat</strong>).</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px">Analysed in the cloud every 10 minutes; each becomes an Encyclopedia write-up. YouTube links may wait for your PC (<strong>start_server.bat</strong>).</div>
       </div>
 
       <!-- Active jobs -->
@@ -443,7 +443,7 @@
      here. The original rpgace_core.js remains the real, edited,
      fully-commented source - always edit that, never the .min.js file
      directly. -->
-<script src="rpgace_core.min.js?v=20261027m"></script>
+<script src="rpgace_core.min.js?v=20261027n"></script>
 
 <div class="page" id="page-encyclopedia">
   <div class="section-title">📖 Knowledge Encyclopedia ✦</div>

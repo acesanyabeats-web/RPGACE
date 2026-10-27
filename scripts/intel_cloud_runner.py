@@ -107,7 +107,7 @@ def main():
     started = time.time()
 
     def next_job(skip):
-        q = "intel_jobs?status=eq.queued&order=created_at.asc&select=id,url,realms,use_api&limit=5" + yt_filter
+        q = "intel_jobs?status=eq.queued&order=created_at.asc&select=id,url,realms,use_api,text&limit=5" + yt_filter
         for j in sb("GET", q):
             if j["id"] not in skip:
                 return j
@@ -167,9 +167,9 @@ def main():
                 # RI-4: read it through the realms Alex picked (None = Producer).
                 cc = mode == "cc" and not job.get("use_api")
                 if cc:
-                    result = intel.prepare_for_cc(job["url"], job.get("realms"), jid)
+                    result = intel.prepare_for_cc(job["url"], job.get("realms"), jid, job.get("text"))
                 else:
-                    result = intel.process_url(job["url"], job.get("realms"))
+                    result = intel.process_url(job["url"], job.get("realms"), job.get("text"))
         except Exception as e:  # process_url catches its own errors; belt and braces
             result, last["msg"] = None, f"Runner error: {e}"
         ok = bool(result)

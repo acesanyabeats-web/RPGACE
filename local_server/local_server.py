@@ -333,9 +333,9 @@ def process_job(job):
             mode = "api"
         cc = mode == "cc" and not job.get("use_api")  # use_api: waited too long for CC
         if cc:
-            result = intel.prepare_for_cc(url, job.get("realms"), jid)
+            result = intel.prepare_for_cc(url, job.get("realms"), jid, job.get("text"))
         else:
-            result = intel.process_url(url, job.get("realms"))  # RI-4: picked realms (None = Producer)
+            result = intel.process_url(url, job.get("realms"), job.get("text"))  # RI-4: picked realms (None = Producer)
         intel.log = orig_log
 
         status = "complete" if result else "error"

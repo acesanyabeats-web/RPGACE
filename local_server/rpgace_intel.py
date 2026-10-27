@@ -442,7 +442,21 @@ def insights_prompt(meta: dict, transcript: str, visual_analysis: str, realms: l
         made_rule = ("Only the \"how_made\" block may talk about how the video is made (hook, editing, format, "
                      "on-screen tools, why it performs) - keep that out of the realm sections.")
 
-    prompt = f"""You are the RPGACE Oracle. Alex sent this {meta['platform']} video to learn from it in these realms: {names}.
+    # SA-1 (Oct 27 2026, Share anything): a web page or pasted text runs the
+    # same prompt; its "transcript" is the text with a [¶n] mark per
+    # paragraph instead of [m:ss], and there are no frames.
+    text_src = meta.get("kind") in ("page", "text")
+    noun = "web page" if meta.get("kind") == "page" else ("text" if text_src else "video")
+    mark = "[¶n] paragraph mark" if text_src else "[m:ss] time"
+    src_label = "TEXT" if text_src else "TRANSCRIPT"
+    screen_rule = "" if text_src else "Something only shown on screen (never said) is not a point: "
+    dur_part = "" if text_src else f", {duration_mins} min"
+    visual_part = "" if text_src else ("\nVISUAL ANALYSIS (frames spread over the whole video, each starting with its time):\n"
+                                       + visual_analysis[:4000] + "\n")
+    if text_src:
+        made_rule = made_rule.replace("how the video is made, edited, hooked or marketed", "how the text is written or marketed")
+    sent = {"page": f"web page from {meta.get('uploader')}", "text": "text"}.get(meta.get("kind"), f"{meta['platform']} video")
+    prompt = f"""You are the RPGACE Oracle. Alex sent this {sent} to learn from it in these realms: {names}.
 Alex is a UK music producer, but judge each realm ONLY by its own lens, never by music or content-creation value
 unless that realm is about music or content.
 
@@ -450,13 +464,13 @@ Realm lenses:
 {lens_block(realms, lenses)}
 
 Rules:
-- For each realm, say what the video actually TEACHES in that realm: the real protocol, recipe, steps, numbers,
+- For each realm, say what the {noun} actually TEACHES in that realm: the real protocol, recipe, steps, numbers,
   amounts, times, names. Specific beats general - "proof 45 min at 27C" not "proofing matters".
-- Every point must come from the video. Its "quote" is the exact words copied from the transcript line that says it
-  (copy, never paraphrase), and "at" is that line's [m:ss] time without brackets. No quote, no point - do not add
-  general knowledge the video does not say. Something only shown on screen (never said) is not a point: every
-  quote is checked word for word against the transcript and points without a real quote are thrown out.
-- If a realm gets little or nothing from this video, say so: score 1-2, "teaches": "nothing for this realm",
+- Every point must come from the {noun}. Its "quote" is the exact words copied from the {src_label.lower()} line that says it
+  (copy, never paraphrase), and "at" is that line's {mark} without brackets. No quote, no point - do not add
+  general knowledge the {noun} does not say. {screen_rule}every
+  quote is checked word for word against the {src_label.lower()} and points without a real quote are thrown out.
+- If a realm gets little or nothing from this {noun}, say so: score 1-2, "teaches": "nothing for this realm",
   empty "points", and no padding. Fewer, real points beat many vague ones.
 - A point that serves two picked realms is written ONCE, under the realm it serves best, with the other realm key
   in "also".
@@ -467,13 +481,10 @@ Rules:
 
 Return ONLY valid JSON (no fences, no explanation).
 
-VIDEO: "{meta['title']}" by {meta['uploader']} ({meta['platform']}, {duration_mins} min)
+{noun.upper()}: "{meta['title']}" by {meta['uploader']} ({meta['platform']}{dur_part})
 Description: {meta['description'][:300]}
-
-VISUAL ANALYSIS (frames spread over the whole video, each starting with its time):
-{visual_analysis[:4000]}
-
-TRANSCRIPT (the whole video; each line starts with its [m:ss] time; long videos have filler lines removed):
+{visual_part}
+{src_label} (the whole {noun}; each line starts with its {mark}; long {noun}s have filler lines removed):
 {transcript}
 
 Return this exact JSON structure:
@@ -481,7 +492,7 @@ Return this exact JSON structure:
   "realms": {{
     {realm_entry}
   }},
-  "verdict_summary": "<one honest sentence: what this video is worth to Alex>",
+  "verdict_summary": "<one honest sentence: what this {noun} is worth to Alex>",
   "watchlist_reason": "<why worth revisiting, or null>",
   "encyclopedia_entry": {{"title": "<title for the article>", "summary": "<2 sentences>", "tags": ["<tag>", "<tag>", "<tag>"]}}{made_part}
 }}"""
@@ -541,7 +552,7 @@ def transcript_words(timed: str) -> tuple:
     """(words, times): every word of the timed transcript with its line's [m:ss]."""
     words, times = [], []
     for line in (timed or "").splitlines():
-        m = re.match(r"\s*\[(\d+:\d{2}(?::\d{2})?)\]\s*(.*)", line)
+        m = re.match(r"\s*\[(\d+:\d{2}(?::\d{2})?|\u00b6\d+)\]\s*(.*)", line)
         at, text = (m.group(1), m.group(2)) if m else ("", line)
         for w in _norm_words(text):
             words.append(w)
@@ -847,10 +858,124 @@ def push_report(meta: dict, insights: dict, transcript: str) -> bool:
     return True
 
 
+# ── SA-1: SHARE ANYTHING (web pages + pasted text) ───────────────────────────
+# Oct 27 2026, Alex: "i want to share texts and pages for analysis". A link that
+# is not a video host, or a shared/pasted text, skips download/Whisper/frames:
+# its text (read through r.jina.ai for a page) becomes the "transcript" with a
+# [¶n] mark per paragraph, and the same insights prompt, quote check and
+# push_report run on it (one pipeline, rule 8).
+VIDEO_HOSTS = re.compile(
+    r"(youtube\.com|youtu\.be|instagram\.com|tiktok\.com|vimeo\.com|fb\.watch|facebook\.com/(watch|reel|.+/videos/)"
+    r"|twitch\.tv|dailymotion\.com|soundcloud\.com|(twitter|x)\.com/.+/status)", re.I)
+PAGE_CAP = 60000  # chars read from one page/text before paragraphs are marked
+
+
+def is_video_url(url: str) -> bool:
+    return bool(url) and not str(url).startswith("text:") and bool(VIDEO_HOSTS.search(str(url)))
+
+
+def fetch_page(url: str) -> tuple:
+    """(title, text) of a web page, read as plain text through r.jina.ai."""
+    req = urllib.request.Request("https://r.jina.ai/" + url,
+                                 headers={"Accept": "text/plain", "X-Return-Format": "text", "User-Agent": "RPGACE"})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        raw = r.read().decode("utf-8", "replace")
+    title, body = "", []
+    for line in raw.splitlines():
+        if not title and line.startswith("Title:"):
+            title = line[6:].strip()
+            continue
+        if re.match(r"^(URL Source|Published Time|Markdown Content|Warning):", line):
+            continue
+        body.append(line)
+    text = "\n".join(body).strip()
+    if len(text) < 200:
+        raise RuntimeError("The page had almost no readable text (it may need a login or block readers)")
+    return title, text
+
+
+def mark_paragraphs(text: str) -> tuple:
+    """(timed, plain): one line per paragraph, each starting [¶n]. Image-only
+    and link-only lines are dropped; a very long paragraph is split by sentence."""
+    text = text[:PAGE_CAP]
+    paras = []
+    for block in re.split(r"\n\s*\n", text):
+        b = re.sub(r"\s+", " ", block).strip()
+        if not b or re.fullmatch(r"!?\[[^\]]*\]\([^)]*\)", b) or len(b.split()) < 2:
+            continue
+        words = b.split()
+        if len(words) > 120:
+            cur = []
+            for sent in re.split(r"(?<=[.!?])\s+", b):
+                cur.append(sent)
+                if len(" ".join(cur).split()) >= 80:
+                    paras.append(" ".join(cur)); cur = []
+            if cur:
+                paras.append(" ".join(cur))
+        else:
+            paras.append(b)
+    if not paras:
+        raise RuntimeError("Nothing readable to analyse")
+    timed = "\n".join(f"[¶{i+1}] {t}" for i, t in enumerate(paras))
+    return timed, "\n\n".join(paras)
+
+
+def source_text(url: str, text: str = None) -> tuple:
+    """(meta, timed, plain) for a web page link or a shared/pasted text."""
+    from urllib.parse import urlparse
+    if text and text.strip():
+        timed, plain = mark_paragraphs(text)
+        first = re.sub(r"\s+", " ", plain.split("\n")[0]).strip()
+        title = (first[:77] + "...") if len(first) > 80 else first
+        meta = {"kind": "text", "title": title or "Shared text", "uploader": "Shared text", "platform": "Text"}
+    else:
+        log("Reading the page...", CYAN)
+        title, body = fetch_page(url)
+        timed, plain = mark_paragraphs(body)
+        host = urlparse(url).netloc.replace("www.", "") or "web page"
+        meta = {"kind": "page", "title": title or host, "uploader": host, "platform": "Web page"}
+    meta.update({"url": url, "duration": 0, "description": "", "id": hashlib.sha1(url.encode()).hexdigest()[:12]})
+    log(f"'{meta['title'][:50]}' ({meta['platform']}, {len(plain.split())} words)", CYAN)
+    return meta, timed, plain
+
+
+def process_page(url: str, realms=None, text: str = None):
+    """SA-1: analyse a web page or a text through the picked realms."""
+    try:
+        meta, timed, plain = source_text(url, text)
+        insights = generate_oracle_insights(meta, condense_transcript(timed, meta), "", realms, full_transcript=timed)
+        save_insight(url, meta, insights, plain)
+        push_report(meta, insights, plain)
+        return insights
+    except Exception as e:
+        log(f"Error: {e}", RED)
+        return None
+
+
+def prepare_page_for_cc(url: str, realms, job_id: str, text: str = None) -> bool:
+    """SA-1: the CC half for a page/text - just the marked text, no frames."""
+    import intel_common as ic
+    try:
+        meta, timed, plain = source_text(url, text)
+        meta = dict(meta, realms=clean_realms(realms), job_id=job_id,
+                    analyser_version=ANALYSER_VERSION, prepared_at=datetime.now().isoformat())
+        ic.put_file(f"{job_id}/meta.json", json.dumps(meta, ensure_ascii=False).encode("utf-8"), "application/json")
+        ic.put_file(f"{job_id}/transcript.txt", timed.encode("utf-8"), "text/plain; charset=utf-8")
+        ic.put_file(f"{job_id}/plain.txt", plain.encode("utf-8"), "text/plain; charset=utf-8")
+        log("Ready for Orchestrator CC", GREEN)
+        return True
+    except Exception as e:
+        log(f"Error: {e}", RED)
+        return False
+
+
 # ── MAIN PIPELINE ─────────────────────────────────────────────────────────────
-def process_url(url: str, realms=None):
+def process_url(url: str, realms=None, text: str = None):
     """Full pipeline: download → transcribe → analyse → report → delete.
-    realms: the realm keys Alex picked for this link (RI-4); None = Producer."""
+    realms: the realm keys Alex picked for this link (RI-4); None = Producer.
+    SA-1: a non-video link or a text goes to process_page instead."""
+    if text or not is_video_url(url):
+        return process_page(url, realms, text)
     print()
     log(f"Processing: {url[:60]}", GOLD)
 
@@ -945,13 +1070,15 @@ def process_url(url: str, realms=None):
             return None
 
 
-def prepare_for_cc(url: str, realms, job_id: str) -> bool:
+def prepare_for_cc(url: str, realms, job_id: str, text: str = None) -> bool:
     """CC-1 (Oct 21 2026): the free half of process_url for Orchestrator CC -
     metadata, download, Whisper transcript, frames - with zero API calls. The
     files go to the intel-cc bucket under <job_id>/ (meta.json,
     transcript.txt = the whole timed transcript, plain.txt, frames/*.jpg);
     scripts/intel_cc_worker.py hands them to the CC session, which writes the
     analysis on the Claude plan. Returns True once everything is uploaded."""
+    if text or not is_video_url(url):
+        return prepare_page_for_cc(url, realms, job_id, text)
     import intel_common as ic
     with tempfile.TemporaryDirectory(prefix="rpgace_intel_") as tmp:
         tmp_path = Path(tmp)

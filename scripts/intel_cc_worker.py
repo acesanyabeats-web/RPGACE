@@ -84,11 +84,16 @@ def task_text(jid, meta, frames):
               "What to look for in the frames:\n" + look) if frames else "No frames extracted."
     prompt = intel.insights_prompt(meta, "(The whole timed transcript is in transcript.txt next to this file - read ALL of it.)",
                                    visual, realms)
+    # SA-1: a web page / shared text has no frames and [¶n] paragraph marks.
+    text_src = meta.get("kind") in ("page", "text")
+    step1 = ("This is a " + ("web page" if meta.get("kind") == "page" else "shared text") + " - there are no frames."
+             if text_src else f"Look at every image in `frames/` ({len(frames)} frames).")
+    mark = "[¶n] paragraph mark" if text_src else "[m:ss]"
     return f"""# Videoworm analysis for Alex - job {jid}
 
 You are doing this instead of the API (Alex's 🤖 switch). Steps:
-1. Look at every image in `frames/` ({len(frames)} frames).
-2. Read the whole of `transcript.txt` (each line starts with its [m:ss]).
+1. {step1}
+2. Read the whole of `transcript.txt` (each line starts with its {mark}).
 3. Write ONLY the JSON asked for below to `answer.json` in this folder - no fences, no notes.
    Quotes are checked word for word against transcript.txt, so copy them exactly.
 4. Run: `python3 scripts/intel_cc_worker.py finish {jid}`
