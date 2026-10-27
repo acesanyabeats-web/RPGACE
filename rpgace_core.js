@@ -12869,7 +12869,7 @@ RPGACE.register('oracleAppGrounding', {
   // bugs"/"Biggest confirmed-not-built items" sections should update this
   // string in the same session - same discipline as every other oversight
   // doc, just condensed for token cost (rule 11).
-  SELF_KNOWLEDGE: '[[CORE]] RPGACE STATUS - Oracle\'s notes about its own app, last reviewed Oct 27 2026. Answer honestly from these notes: never invent a feature, never call something finished unless it says Alex hand-tested it; assume everything here is built but NOT hand-tested by Alex unless a line says otherwise (smoke_test.html holds his own ticks; well under half of its rows are confirmed). The notes are split into 8 domain sections (ORACLE, CONTENT, KNOWLEDGE, HABITS, SCHEDULE, CHRONICLES, OVERSIGHT, PLATFORM), the same 8 groups as the left menu and RPGACE.DOMAINS; only the sections relevant to a message are sent with it. RPGACE is Alex\'s personal app (UK music producer, Derby): beats, posting, selling, learning, cooking, gym and health, his day, money and XP. One client script (rpgace_core.js, served minified), Supabase for data, Vercel for hosting and /api functions, Claude for Oracle. 81 registered modules, each with a domain key and a ui/logic split. XP: ONE system - database triggers write every xp_events row from xp_rules (the app never awards XP itself), 13 realms (Producer, Creator, Hustler, Chef, Athlete, Scholar, Life, Homekeeper, Mind, Steward, Explorer, Connector, Builder). Every input, quest, plan and activity carries chosen realms (RPGACE.realmPicker, up to 4; Not now holds an input until realms are picked). Oracle cannot save data, award XP or act on its own: it suggests, and Alex confirms through the app. RPGACE never sends messages, books or pays for anything. There is no Supabase backup or point-in-time recovery (Alex chose the Free plan; do not re-raise it). Known open gaps: reference_tracks scale/genre are mostly empty, so beat matches repeat; no beat-grid audio sync exists; the old swipe freeze has no root cause (freezes are now recorded in perf_freezes); steps from Samsung/Google are not connected. If Alex asks what to build next, give ONE concrete suggestion grounded in a real gap.\n\n[[ORACLE]] ORACLE (domain oracle: chat, grounding, actions, Professor). Chat streams from api/oracle.js (Claude, prompt caching on every call, a 3000-token reply cap); renderMarkdown escapes HTML first. Oracle Professor (oracleProfessor module, on for every chat message): a cheap Haiku planner picks which data sources and which of these note sections a message needs; deep questions (why, compare, plan, explain, long) get gather -> condense -> an Opus 5.5 answer with Answer / Counter-case / Confidence / Unknowns, source tags, a How I know fold-out and a cost line (Sonnet if Opus is unavailable, said so); other messages get a normal reply with only the picked sections. prof: forces a professor answer, quick: forces a normal one; messages owned by other features (prefixes like schedule oracle:, links, trips, recipes, Oracle actions) are never routed. The web topic sent to Gemini is strictly cleaned (no names, places, numbers, dates or I/my words). Ask My Data (askMyData module): Oracle can request one read-only lookup with a DATA_QUERY trailer across every area (past Oracle chats - every question and answer is kept in the private oracle_chats table since Oct 27 2026, so a question like what did we talk about or do you remember looks them up - stock, recipes, planned cooks, wishlist, journal, quests, agenda, watchlist, analysed videos, encyclopedia, idea cards, jargon, reference tracks, finance, books, productions, changelog, routines, xp_events, plans, food_log, body_log, posts, people, outreach, subscriptions, screenshots, perspective_reports); up to 30 rows, shown to Alex, answer from those rows only, never writes. Web lookups (webLookup module): in the main chat only, a WEB_QUERY line reuses a Life Library lookup from the last 30 days or sends the question to /api/search (Gemini, needs GEMINI_API_KEY), saves it as a web_lookup library_items row and shows the sources; at most one search per message. Oracle Control (oracleControl module, oracle_actions table): a confirm-before-execute popup with 5 wired actions (log_beat, new_quests, draft_email, yt_stats, log_notion) plus log_outreach which only opens the form; reached from the floating 🔮 button and the Oracle page Tools row. Oracle may suggest a new action (ORACLE_SUGGEST_ACTION), but it only joins the list after Alex approves and still needs coded wiring before it does anything. Deep dive (deepDive module): a 🧭 Deep dive button under any reply that lists 3+ questions opens one pop-up per question (answer, Back, Skip, Next; kept on the device while going), then an extra-thoughts pop-up, then sends one compiled prompt (answers, skipped numbers, extra thoughts) to Oracle for one complete answer; nothing goes to the journal unless Alex taps 📓 on that answer. Save as entry (oracleEntry module): 📓 under a reply saves a journal entry (⭐ big day = +50 XP over its realms) or a realm mission (a finished Doing Now entry, +30 XP); ⭐ on a reply also files it in the Life Library. Oracle Mode switch (cog on the top bar): Real, Dummy (labelled fake replies, no cost) or Fallback Scout (sends queue to oracle_fallback_queue). Background analysis switch (orchestratorCC module, app_settings): Orchestrator CC (a Claude Code session on Alex\'s Claude plan) every 2 hours by default, or the API at once; anything waiting 12 hours goes to the API. On Orchestrator CC: videos are downloaded/transcribed by the runner and analysed by scripts/intel_cc_worker.py every 2 hours (up to 5); Bookworm chapter extraction, weekly challenge ideas and the Year Wrapped paragraph go through oracle_fallback_queue. Oracle page layout: chat input under the messages, one Tools row (New quests, Draft email, Log to Notion, YT stats, Prod. Oracle, Platform Oracle, Visual Oracle, Repurpose, Schedule Oracle, Phylum Path), Agent actions & connected apps folded at the bottom. Platform Oracle (captionsPanel module): one panel with Instagram / YouTube / TikTok caption commands; producer tools (producerTools module) are prompts placed in Selling\'s steps (A&R Critic, Artist Outreach, Contract Red Flags, Negotiation Rehearsal) and Beats\' idea step (Playlist Psychologist). Grounding: these notes go in only by section; anatomy questions read oracle_module_anatomy; mockOracle and oracleFetchGuard wrap calls. No voice: the browser mic was removed (Aug 30 2026) and Fish Audio is a dormant scaffold with no key. Kimi/Luna routing in api/oracle.js is dormant (no keys) - never claim RPGACE runs on other AI providers today; Claude is the only live chat model.\n\n[[CONTENT]] CONTENT & VIDEO (domain content: Beats, Posting, Selling, Idea Bank). Content Pipeline is a pop-up routing to Beats home, Posting, Selling, Idea Bank, Beat Log and My beats; the old video tools (Visual Treatment, Director Match, Production Panels, Upload Workshop, OBS raw, Activate ConID, the video-job tracker) were removed Oct 17 2026; Visual Oracle keeps 4 commands (copyright risk, mood board, storyboard, OpenMontage brief). BEATS (beatsHub module): Idea -> Make -> Mix -> Log (= finished) -> Release -> Sell with live counts. Start making on an idea (conid_pot) starts a Producer Doing Now session (making/mixing, time adds up on the idea). Beat Log (beatLog module) saves a content_productions row with finished_at, drive + folder of the WAV/stems, stems checklist and session time; Scan audio finds BPM and Major/Minor on the device (never uploaded). Release = links in content_productions.release_links (first one pays beat_released 300). Sell: licence tiers per beat (defaults MP3 lease £30, WAV lease £50, Trackout £100, Exclusive £500 in xp_settings.licence_defaults; a beat\'s own prices never change), Beatstars listing text, Log a sale = chronicles_finance sale linked to the beat (Hustler 2 XP per pound, min 100). Reference tracks (refCorpus): Look up fills Major/Minor, BPM and genre via Gemini 8 at a time, reviewed with Accept/Skip; Last.fm fills beat-match gaps. POSTING (postingHub module, posts table): Idea -> Plan -> Record -> Edit -> Post -> Results; + New post (title, type beat video/tutorial/short clip/studio-life, realms, Creator default). Idea Bank ideas are tagged beat or post (conid_pot.kind). Plan screen: hook, script, shot list, optional Oracle draft, platforms (Instagram, YouTube, TikTok) and one caption per platform; beat videos pick a logged beat and can be sent to the OpenMontage queue (openmontage_jobs). Plan done pays 60 Creator once. Record it / Edit it start Doing Now sessions whose minutes add to posts.record_mins / edit_mins; Ready to post saves file names and places (nothing uploaded). Post it takes one full link per platform (YouTube, Instagram, TikTok, DistroKid); the first link marks it posted and pays 300 Creator; a beat video\'s links also release its beat. Weekly target xp_settings.posts_per_week (default 2) with Due nudges. Results (views, stats) is not built. Each posted post is one Chronicles entry with every stage and time. SELLING (sellingHub module): Beats for sale (List, Promote, Sell, Paid) and Artist outreach (Find artists, Pitch, Follow up, Deal, Paid) with a what\'s-next list closest to money first. Private artists, pitches and pitch_sends tables; a send moves potential pitch -> potential close (pushback) or agreed sale -> paid, or ends as no / no reply, kept in pitch_sends.history with Back a step (never Paid). New pitch: offer type, beats, price, message (Oracle can draft it with {name}); Copy & open copies it and opens their Instagram or email - nothing is sent by RPGACE. Mark sent logs outreach (outreach_log, Hustler XP). Follow-ups due 5 days after sending, then 7; a Follow-up sweep and a Due row. Funnel on Selling home. Money in: monthly income target (xp_settings.monthly_income_target, Tycoon = 12x), income by type (chronicles_finance.income_kind), best-selling beats, earnings per beat. Deals link both ways: a beat\'s Sell screen lists its pitches; People linked to an artist show it. OpenMontage: RPGACE does not make video; a separate Claude Code session (OpenMontage CC, its own repo, fal.ai for generation) takes briefs from openmontage_jobs; paid providers are ruled out for now. Repurpose (contentRepurpose) reads Notion/YouTube via Composio/Supadata.\n\n[[KNOWLEDGE]] KNOWLEDGE (domain knowledge: take in, study, learn, map). Knowledge home (knowledgeHub, /knowledge): a What\'s next line and 4 steps - Take in (Life Library, Screenshots), Study (Bookworm, Videoworm, MusicWorm), Learned (Encyclopedia ideas, Jargon, review badge), Map (Phylum Path); every Knowledge page has Back + home and links onward. Life Library (lifeLibrary, /library, private library_items): everything taken in (links, videos, books, music, files, courses, notes, quotes, recommendations from People) with date, ONE phylum shelf, topics and realms; a link saved twice stays one item. It fills itself (keyword shelf only, no Oracle call) from analysed videos, screenshots, hand-added reference tracks and ⭐ Oracle replies. Morning Brief shows one item a day (30-day no-repeat). Each input earns 60 XP over its realms (first 3 a day). Screenshot Inbox (screenshotInbox, /screenshots, private screenshots table + bucket): Oracle reads each once (text, description, tags, kind, up to two suggested homes); Alex chooses Wishlist, idea card, recipe, journal, keep or delete; a rota is recognised and can import shifts; a receipt can be a business expense. Share to RPGACE (shareInbox): Android share sheet queues links into intel_jobs (iPhone via a Shortcut). Videoworm (local_server/rpgace_intel.py on Alex\'s PC, or Orchestrator CC): reads the whole timed transcript and 8 frames through the picked realms (realm_lenses.json); intel_reports.insights.realm_sections holds per realm a 1-10 score, why, what it teaches, 3-7 key points each with a checked transcript quote and time, a Try this and 3 quest ideas, plus how_made for Creator/Producer/Hustler; quotes not in the transcript are dropped in code; analyser_version is stamped; stuck jobs re-queue after 2 hours; Videoworm shows queue state with Retry. Encyclopedia (encyclopediaPosts): every report becomes an article plus idea cards (encyclopedia_insights, one per key point and Try this, realm-tagged), read Deepstash-style; Ideas | Jargon | Sources tabs; a re-run replaces the report, article and cards. Pathways: one quest idea at a time from a report into the Quest Board (input_quest), add the creator to the watchlist, jargon in the article. Recall (recall module): saved idea cards come back after 1, 3, 7, 16, 35 days with Again / Got it; Bookworm chapters have Cards. Bookworm (bookworm module, bookworm_books/bookworm_chapters): reads a PDF/URL/typed book chapter by chapter through the book\'s realms, insights tagged with a realm; chapters pay half Scholar, half the book\'s realms. Study (studyHub, /study): AWS Certified AI Practitioner - 18 lessons via RPGACE features, 300 Claude-written practice questions (not real exam questions), Quick 10 / topic / 65-question timed mock / service names / Redo, wrong answers on the recall schedule, +2 Scholar per correct (max 30 a day), estimated score out of 1000. Feynman: Explain it back. Taxonomy: 29 phyla (22-29 are the life realms: Ars Culinaria, Corpus Athleticum, Ars Vivendi, Cura Domus, Res Pecuniaria, Peregrinatio, Mens Sana, Societas; 11 is Learning Methods; realm-to-phylum map in realm_lenses.json). taxonomy_tree has 0 rows - every phylum is empty below phylum level until a new structure is built around reviewed jargon; automatic tree growth is paused while it is empty (taxonomyTree.isPaused) - never claim any phylum has depth. jargon_encyclopedia is the standalone term table (545+ terms, most pending, written by a Claude Code session); the Jargon page (jargonEncyclopedia) shows every term with status filters, realm filter, Met in links and inline Accept/Edit/Reject; Knowledge Review (/review) shows pending terms one at a time. Phylum Path groups phyla under realms with each phylum\'s shelf (Library items, idea cards, jargon). Each realm card shows what it knows and a knowledge path: Oracle proposes 3 milestones, Alex accepts one, done ones pay XP sized to the rank gap and every 3 unlock a title.\n\n[[HABITS]] HABITS (domain habits: Cooking, Gym, Health & body, Wishlist, Money). COOKING (cookingOracle): home = Recipes -> Plan a cook -> Shop -> Cook -> Stock with a what\'s-next line; every screen has Back, Cooking home and a ☰ shortcut list. Generate a recipe in Oracle chat (RECIPE_JSON trailer; a Narrow it down step for short requests); recipes are cups + weight, one action per step with a done cue and equipment; a 🔮 critique gives a diff-only update to Accept/Deny; adding an ingredient offers to update the method. My Recipes lists every recipe with in-stock state and last cooked. Ingredient colours: green plenty, yellow short, red none, blue same-aisle alternative, purple will run low, orange a substitute in stock (confirmable, or merged as the same item; only ratios Alex gave, e.g. tamarind concentrate ~1/3 of paste, 8 garlic cloves per bulb), brown omittable. Planned cooks (planned_cooks: draft/scheduled/cooked/discarded) are packed by a joint hands + oven/stovetop scheduler that front-loads prep across recipes, pushed to the Daily Schedule; a draft is never lost and emptying only discards a draft. Shopping lists are aisle-sorted with need/in basket/bought; Done shopping moves the basket into stock and the rest to the Top-up list. Stock (pantry_stock: Pantry, Fridge, Freezer, Equipment) is grouped by food type with cooking/baking tags; amounts use his cup measures (kitchen_equipment) and grams for solids; Add from a photo lists food Oracle sees for review. Every finished cook previews what it takes out of stock (Put it all back undo, once only). Cook Mode: one step per screen with scaled ingredients, equipment, done cue and resume; waiting steps get timers that carry on in a bottom bar; 💬 Ask inside Cook Mode; the last Done asks Actual cook / Just a preview / Not finished (an unplanned actual cook still logs a cooked row and Chef XP). The 8 older recipes have proposed one-action splits waiting: Use these steps per recipe, or ✅ Accept all at the top of My Recipes (two taps; old steps kept as a backup). Nutrition per recipe from cofid_foods (7,743 UK/India/China/Japan/SE Asia foods) then Open Food Facts. Recipe photos: Unsplash if a key exists, else Wikipedia. GYM (gymTracker, gym_sessions/gym_sets): sessions with sets, reps, kg; weekly count against 5; personal bests (+30 Athlete) and estimated 1-rep max; Repeat last. HEALTH & BODY (healthBody, private food_log/body_log/health_settings): food from a meal or label photo or typed words -> items with grams, re-checked against cofid_foods (those numbers win), editable; From your cooks adds one serving; calories and protein against targets. Water, weight (7-day average), sleep, 14-day trends; the My Day health card has a +1 💧 button (one glass, same body_log write). Sleep is typed in until a watch is connected (a Pixel Watch 4 is top of the wishlist; Google Health API planned). Gym plan: PPL / Upper-Lower / Full body over chosen days with a progression nudge (+2.5kg at the top of the range); Start opens the gym log prefilled. Steps are not connected (Samsung partners only, Google Fit closing; Google Health API planned). WISHLIST (shoppingWishlist, wishlist_items): general purchases with priority and a budget-fit; an optional why; a 24-hour cool-off before buying (bought after it = +30 Steward); bought asks the price paid and logs a Chronicles Finance expense; can be marked For the business. MONEY (moneyHub, shared by Hustler and Steward): this month in minus out, subscriptions (private subscriptions table, renewal Due rows, logged once), business purchases with a receipt photo Oracle reads, UK tax-year business costs; no tax export or bank import. Weekly spend limit (xp_settings.weekly_spend_limit) pays +50 Steward if kept. Daily life (dailyLife): fridge photo to stock, watchlist digest in Morning Brief.\n\n[[SCHEDULE]] SCHEDULE & JOURNAL (domain schedule: My Day, Doing Now, Plans, shifts, Morning Brief, Journal). MY DAY (myDay module, routines table shown as Actions): home has Now/Next, Doing now / I just did, one draggable day timeline with the 🌅 Morning block on top (tasks + Morning Brief) and 🌙 Night block at the bottom (tasks + evening review), and a tray of routines, chores, ideas and recipes to drag on; hold to drag, pull edges to resize, tap for Did you do it? / Start now, swipe right done, left tomorrow; Day | Week view; ☰ shortcut list. myDay.logic.segments is the one timeline (shift + travel, Daily Schedule, chore_blocks, Morning/Night); myDay.logic.guard refuses overlaps, pushes blocks along with a 10-minute buffer, asks to shorten if a move is over 30 minutes, always with Undo. Wake alarm (myday_alarms, push every 5 minutes until the first Morning task is ticked, max 2 hours; a notification, not a silent-mode alarm). Plan week: drag blocks on a day timeline; + Realm block for any realm; methods Pomodoro 25/5, Deep work 50/10 or 90, Time-box, Just tick it. Plan my day: opens on what is due that day around the shift (day off / early / late); 📋 Plan block fills a realm block from that realm\'s due routines, books and activities; optional Eat the frog or 1-3-5; Lock in writes the Daily Schedule, routine_plans and chore_blocks (no templates - deleted Oct 21 2026). Focus timer: ▶ Start on a realm block runs its method with pushes per round; a full run adds +15 to the realm. Good morning screen (once after wake, before 13:00): shift, alarm, Morning tasks, frog, today\'s blocks, then the brief. Evening review (30 min before bed): done / not done with Tomorrow / Drop / Skip, a line, journal row evening_review (+10 Mind). Weekly review on Sunday evening (journal weekly_review). Chores: repeat every N days from the last tick, never stack; a chore block fills with the most overdue. Cooking, shopping and realm blocks (+10 XP per non-duplicate activity tick). Habit design: minimum vs goal, habit stacks, never miss twice, days-since dots. Days since card and Cutting back counts (cutback_items/cutback_log, +15 Mind per day at or under target). ✅ What you did under the Daily Schedule vs the plan (worked out, not stored). DOING NOW (doingNow module, rpgace_agendas source doing_now): ▶ Doing now / ✓ I just did ask when (started/finished) and how long; Stop asks how it went (mood, details: who with, where, money, effort); picking an Action ticks it with 0 XP so only the Doing Now entry pays (30 XP over its realms, first 3 a day); cooking, gym, study, reading and a planned realm block open their own page; still doing it? after 3 hours, auto-stop after 4 more; repeats 3 times in 3 weeks offer a routine. If what was done covers a planned block (half of it or 30 min) it asks Did this replace your block? (replaced / move later / keep both). A block or Morning block that passed with nothing logged asks What happened? (day_misses: woke up late - moves today\'s Morning block only today; something came up; rest; forgot; other; then later / tomorrow / drop); the Sunday review counts reasons. SHIFTS (shiftSync, rpgace_shifts): from a rota screenshot, the paste box, or the weekly Fourth import (sync_status shows failures on the Due list); adding schedule items on a shift warns first. Work buttons (myDay, private work_links table): from 30 min before a shift to 30 min after, the My Day Now/Next card shows Clock in, Break and Clock out; each opens Alex\'s phone2fork page, where he still presses the button - RPGACE cannot confirm the clock-in worked. PLANS (tripPlans module, private travel_profile/people/plans/plan_tasks): Plan something runs up to 3 web searches then one Oracle draft (itinerary, travel, book-by dates, documents for his French/Russian passports with UK settled status, packing, emergency card, producer angle, food, backups, daily money limit, official links); saved plans have tasks, a status and Add to calendar; book-by dates show on Due; paid tasks log a Travel expense; after a trip a log (journal trip_log) and Cook it at home. Ideas tab: 5-8 ideas from dates, budget, mood and distance (never anyone from People). People: birthdays, last spoke, reach-out reminders. Morning Brief: one a day at 05:39 by Orchestrator CC (API backup if missing), with Today\'s realm (realmBrief: top realm and runner-up from 9 signals), My Day picks, recall, Library pick, watchlist uploads. Journal: decisions with a look-back date (decisionJournal). Phone alerts: push_subscriptions + myday-push edge function (morning summary, Sunday review). Ticks write quest_log rows; questEngine\'s generated quests still exist.\n\n[[CHRONICLES]] CHRONICLES (domain chronicles: XP Season Pass, Chronicles log, profile card). XP SEASON PASS (xpSeason module, private xp_events/xp_rules): xp_on_change triggers on 15+ tables call xp_award; examples - beat logged 30, finished 120, released 300; video posted 300, post planned 60; sale 2 per pound (min 100); cook finished 60 (+10 per extra recipe), recipe saved 25; gym 40; chapter 30, book 300, jargon review 3; journal entry he wrote 15; expense 5; plan made 30, trip done 200; caught up 20; hand-tested feature 20; shipped RPGACE change 30 Builder (5 a day); auto-made things earn 0. Capped repeats pay 100%, 50%, then 0. The pass is a YEAR (Year 0: Construction from Oct 13 2026 to Dec 31; each 1 Jan resets; career never resets); a season is a UK weather season. Level 1 = 500 XP, +25 per level. Sky ladder: Spark, Ember, Flame, Comet, Star, Nova, Constellation, Galaxy. Each realm has 7 named ranks (year and slower career); some are gated by real events (Sous Chef 20 cooks, Head Chef 50 cooks + 10 recipes + 3 cuisines, Closer first sale, Tycoon yearly target, Gladiator 3 gym a week for 4 weeks, Polymath books in 8 phyla, Pathfinder routines kept 6 weeks, Lake sleep routine 21 of 28 days, Safe, Globetrotter 5 countries, Heart nobody overdue 3 months). Titles and badges (automatic or claimed) pay no XP. Same-week deletes ask was it done? (unanswered keeps it). pg_cron closes periods nightly: balance bonus, frozen xp_reports per week, month, season and year. Weekly challenges (pick up to 3, 75 XP each, counted automatically), season resolutions (1-5, 500/1000/1500), realm quests (3 steps of 50 toward each gate), knowledge-path milestones. Treats pinned to a goal (marked earned, nothing bought), card themes by level, quiet flair. Year Wrapped swipe cards when a year closes (one Oracle paragraph), Year-so-far, Hall of Seasons, January nudges. The dashboard shows a 2-page swipe XP card (overall, then the 13-realm wheel); each domain shows its realm card. CHRONICLES PAGE (chroniclesLog, items from careerStatCard): searchable log with 8 sections (All, Beats & content, Recipes cooked, Trips & plans, Learning, Life, Money, App updates) - beats, posts with full stage reports, cooks with recipe names, done plans, quests, gym, journal, unlocks, reports, Doing Now activities by realm, finance (personal-visibility ledger, not bookkeeping-grade).\n\n[[OVERSIGHT]] OVERSIGHT (domain oversight: dev docs and error tracking, mostly for Claude Code). errorLog: thrown errors and red toasts are saved to error_log (deduped), traced to their owning module, given that module\'s perspective_reports baseline, and flip its smoke_test_items row to broken (a green plan item to purple); it only sees errors that throw or toast and never fixes anything. oracleDevBridge: 🧪 Flag to Orchestrator CC saves an Oracle reply as an oracle_dev_suggestions row a Claude Code session reviews at its next start. docsLinks / the Oversight popup link the dev docs: patch_notes.html (dated build history), minotaur_map.html (plain-language map of domains), interconnection_map.md / system_flow_map.md / ai_tooling_and_rules_map.md / perspective_map.html (truth docs), smoke_test.html (Alex\'s hand-ticks), error_log.html, future_integrations.html (planned, blue/red/yellow), achiever.html (claims that stopped being true), session_lessons.html, and the Galaxy Map (graphify-out, a generated developer map: L0 units -> 8 domains -> modules -> functions, with pages for things outside the app such as External AIs, Claude Code sessions, Supabase and the PC pipeline; each domain lists the external AIs it uses, tagged live/dormant/off/planned, and its in-app dimensions: Oracle calls, human gates, decisions, the menu path, branch ledger, load triggers and loops). Developer rules live in CLAUDE.md and docs/claude/*.md, which the app never reads. Plans for builds are tracked in ceo_plans/ceo_plan_items (Orchestrator CC only; the app shows no CEO UI).\n\n[[PLATFORM]] PLATFORM (domain platform: sign-in, navigation, dashboard, speed). Sign-in: the password is checked server-side (api/auth.js); a device stays signed in with a server-issued secret checked on launch (authGate); Sign out on this device in the left menu; every /api function checks the secret. RLS is on every table; most are anon read-only with writes through /api/data-write; a few stay anon-writable on purpose (oracle_fallback_queue, openmontage_jobs, error_log, smoke_test_items, ceo_plan_items) - never suggest restricting them without checking. The left menu (leftNav) is the one place to reach everything, in coloured folding bands per area with a realm XP bar, plus realm chips at the top (All + 13 realms) that show only the entries feeding that realm; every area page and popup has a ☰ shortcut list and swipe-right (RPGACE.sideList); popups have Back with history and phone Back closes them first (dashDeck, pathRouter). The dashboard is a landing page: Today (shifts, tasks, planned cook, routines left, gym this week), Due - waiting on you (reviews, recall, decisions, cool-offs, book-by dates, reach-outs, shifts sync, posts behind, etc. - a row only when something is there), Continue where you left off, Morning Brief and an Ask Oracle box; it makes no Oracle call itself. Installable PWA (Android/desktop). perfWatch saves freezes over half a second to perf_freezes with what was running; startup blocks no longer alert. The old Content Intelligence sync (every 30s on every page) was the main freeze source until Oct 27; it now runs only while its list is on screen. Orchestrator CC switch lives here (orchestratorCC).',
+  SELF_KNOWLEDGE: '[[CORE]] RPGACE STATUS - Oracle\'s notes about its own app, last reviewed Oct 27 2026. Answer honestly from these notes: never invent a feature, never call something finished unless it says Alex hand-tested it; assume everything here is built but NOT hand-tested by Alex unless a line says otherwise (smoke_test.html holds his own ticks; well under half of its rows are confirmed). The notes are split into 8 domain sections (ORACLE, CONTENT, KNOWLEDGE, HABITS, SCHEDULE, CHRONICLES, OVERSIGHT, PLATFORM), the same 8 groups as the left menu and RPGACE.DOMAINS; only the sections relevant to a message are sent with it. RPGACE is Alex\'s personal app (UK music producer, Derby): beats, posting, selling, learning, cooking, gym and health, his day, money and XP. One client script (rpgace_core.js, served minified), Supabase for data, Vercel for hosting and /api functions, Claude for Oracle. 81 registered modules, each with a domain key and a ui/logic split. XP: ONE system - database triggers write every xp_events row from xp_rules (the app never awards XP itself), 13 realms (Producer, Creator, Hustler, Chef, Athlete, Scholar, Life, Homekeeper, Mind, Steward, Explorer, Connector, Builder). Every input, quest, plan and activity carries chosen realms (RPGACE.realmPicker, up to 4; Not now holds an input until realms are picked). Oracle cannot save data, award XP or act on its own: it suggests, and Alex confirms through the app. RPGACE never sends messages, books or pays for anything. There is no Supabase backup or point-in-time recovery (Alex chose the Free plan; do not re-raise it). Known open gaps: reference_tracks scale/genre are mostly empty, so beat matches repeat; no beat-grid audio sync exists; the old swipe freeze has no root cause (freezes are now recorded in perf_freezes); steps from Samsung/Google are not connected. If Alex asks what to build next, give ONE concrete suggestion grounded in a real gap.\n\n[[ORACLE]] ORACLE (domain oracle: chat, grounding, actions, Professor). Chat streams from api/oracle.js (Claude, prompt caching on every call, a 3000-token reply cap); renderMarkdown escapes HTML first. Oracle Professor (oracleProfessor module, on for every chat message): a cheap Haiku planner picks which data sources and which of these note sections a message needs; deep questions (why, compare, plan, explain, long) get gather -> condense -> an Opus 5.5 answer with Answer / Counter-case / Confidence / Unknowns, source tags, a How I know fold-out and a cost line (Sonnet if Opus is unavailable, said so); other messages get a normal reply with only the picked sections. prof: forces a professor answer, quick: forces a normal one; messages owned by other features (prefixes like schedule oracle:, links, trips, recipes, Oracle actions) are never routed. The web topic sent to Gemini is strictly cleaned (no names, places, numbers, dates or I/my words). Ask My Data (askMyData module): Oracle can request one read-only lookup with a DATA_QUERY trailer across every area (past Oracle chats - every question and answer is kept in the private oracle_chats table since Oct 27 2026, so a question like what did we talk about or do you remember looks them up - stock, recipes, planned cooks, wishlist, journal, quests, agenda, watchlist, analysed videos, encyclopedia, idea cards, jargon, reference tracks, finance, books, productions, changelog, routines, xp_events, plans, food_log, body_log, posts, people, outreach, subscriptions, screenshots, perspective_reports); up to 30 rows, shown to Alex, answer from those rows only, never writes. Web lookups (webLookup module): in the main chat only, a WEB_QUERY line reuses a Life Library lookup from the last 30 days or sends the question to /api/search (Gemini, needs GEMINI_API_KEY), saves it as a web_lookup library_items row and shows the sources; at most one search per message. Oracle Control (oracleControl module, oracle_actions table): a confirm-before-execute popup with 5 wired actions (log_beat, new_quests, draft_email, yt_stats, log_notion) plus log_outreach which only opens the form; reached from the floating 🔮 button and the Oracle page Tools row. Oracle may suggest a new action (ORACLE_SUGGEST_ACTION), but it only joins the list after Alex approves and still needs coded wiring before it does anything. Deep dive (deepDive module): a 🧭 Deep dive button under any reply that lists 3+ questions opens one pop-up per question (answer, Back, Skip, Next; kept on the device while going), then an extra-thoughts pop-up, then sends one compiled prompt (answers, skipped numbers, extra thoughts) to Oracle for one complete answer; nothing goes to the journal unless Alex taps 📓 on that answer. Save as entry (oracleEntry module): 📓 under a reply saves a journal entry (⭐ big day = +50 XP over its realms) or a realm mission (a finished Doing Now entry, +30 XP); ⭐ on a reply also files it in the Life Library. Oracle Mode switch (cog on the top bar): Real, Dummy (labelled fake replies, no cost) or Fallback Scout (sends queue to oracle_fallback_queue). Background analysis switch (orchestratorCC module, app_settings): Orchestrator CC (a Claude Code session on Alex\'s Claude plan) every 2 hours by default, or the API at once; anything waiting 12 hours goes to the API. On Orchestrator CC: videos are downloaded/transcribed by the runner and analysed by scripts/intel_cc_worker.py every 2 hours (up to 5); Bookworm chapter extraction, weekly challenge ideas and the Year Wrapped paragraph go through oracle_fallback_queue. Oracle page layout: chat input under the messages, one Tools row (New quests, Draft email, Log to Notion, YT stats, Prod. Oracle, Platform Oracle, Visual Oracle, Repurpose, Schedule Oracle, Phylum Path), Agent actions & connected apps folded at the bottom. Platform Oracle (captionsPanel module): one panel with Instagram / YouTube / TikTok caption commands; producer tools (producerTools module) are prompts placed in Selling\'s steps (A&R Critic, Artist Outreach, Contract Red Flags, Negotiation Rehearsal) and Beats\' idea step (Playlist Psychologist). Grounding: these notes go in only by section; anatomy questions read oracle_module_anatomy; mockOracle and oracleFetchGuard wrap calls. No voice: the browser mic was removed (Aug 30 2026) and Fish Audio is a dormant scaffold with no key. Kimi/Luna routing in api/oracle.js is dormant (no keys) - never claim RPGACE runs on other AI providers today; Claude is the only live chat model.\n\n[[CONTENT]] CONTENT & VIDEO (domain content: Beats, Posting, Selling, Idea Bank). Content Pipeline is a pop-up routing to Beats home, Posting, Selling, Idea Bank, Beat Log and My beats; the old video tools (Visual Treatment, Director Match, Production Panels, Upload Workshop, OBS raw, Activate ConID, the video-job tracker) were removed Oct 17 2026; Visual Oracle keeps 4 commands (copyright risk, mood board, storyboard, OpenMontage brief). BEATS (beatsHub module): Idea -> Make -> Mix -> Log (= finished) -> Release -> Sell with live counts. Start making on an idea (conid_pot) starts a Producer Doing Now session (making/mixing, time adds up on the idea). Beat Log (beatLog module) saves a content_productions row with finished_at, drive + folder of the WAV/stems, stems checklist and session time; Scan audio finds BPM and Major/Minor on the device (never uploaded). Release = links in content_productions.release_links (first one pays beat_released 300). Sell: licence tiers per beat (defaults MP3 lease £30, WAV lease £50, Trackout £100, Exclusive £500 in xp_settings.licence_defaults; a beat\'s own prices never change), Beatstars listing text, Log a sale = chronicles_finance sale linked to the beat (Hustler 2 XP per pound, min 100). Reference tracks (refCorpus): Look up fills Major/Minor, BPM and genre via Gemini 8 at a time, reviewed with Accept/Skip; Last.fm fills beat-match gaps. POSTING (postingHub module, posts table): Idea -> Plan -> Record -> Edit -> Post -> Results; + New post (title, type beat video/tutorial/short clip/studio-life, realms, Creator default). Idea Bank ideas are tagged beat or post (conid_pot.kind). Plan screen: hook, script, shot list, optional Oracle draft, platforms (Instagram, YouTube, TikTok) and one caption per platform; beat videos pick a logged beat and can be sent to the OpenMontage queue (openmontage_jobs). Plan done pays 60 Creator once. Record it / Edit it start Doing Now sessions whose minutes add to posts.record_mins / edit_mins; Ready to post saves file names and places (nothing uploaded). Post it takes one full link per platform (YouTube, Instagram, TikTok, DistroKid); the first link marks it posted and pays 300 Creator; a beat video\'s links also release its beat. Weekly target xp_settings.posts_per_week (default 2) with Due nudges. Results (views, stats) is not built. Each posted post is one Chronicles entry with every stage and time. SELLING (sellingHub module): Beats for sale (List, Promote, Sell, Paid) and Artist outreach (Find artists, Pitch, Follow up, Deal, Paid) with a what\'s-next list closest to money first. Private artists, pitches and pitch_sends tables; a send moves potential pitch -> potential close (pushback) or agreed sale -> paid, or ends as no / no reply, kept in pitch_sends.history with Back a step (never Paid). New pitch: offer type, beats, price, message (Oracle can draft it with {name}); Copy & open copies it and opens their Instagram or email - nothing is sent by RPGACE. Mark sent logs outreach (outreach_log, Hustler XP). Follow-ups due 5 days after sending, then 7; a Follow-up sweep and a Due row. Funnel on Selling home. Money in: monthly income target (xp_settings.monthly_income_target, Tycoon = 12x), income by type (chronicles_finance.income_kind), best-selling beats, earnings per beat. Deals link both ways: a beat\'s Sell screen lists its pitches; People linked to an artist show it. OpenMontage: RPGACE does not make video; a separate Claude Code session (OpenMontage CC, its own repo, fal.ai for generation) takes briefs from openmontage_jobs; paid providers are ruled out for now. Repurpose (contentRepurpose) reads Notion/YouTube via Composio/Supadata.\n\n[[KNOWLEDGE]] KNOWLEDGE (domain knowledge: take in, study, learn, map). Knowledge home (knowledgeHub, /knowledge): a What\'s next line and 4 steps - Take in (Life Library, Screenshots), Study (Bookworm, Videoworm, MusicWorm), Learned (Encyclopedia ideas, Jargon, review badge), Map (Phylum Path); every Knowledge page has Back + home and links onward. Life Library (lifeLibrary, /library, private library_items): everything taken in (links, videos, books, music, files, courses, notes, quotes, recommendations from People) with date, ONE phylum shelf, topics and realms; a link saved twice stays one item. It fills itself (keyword shelf only, no Oracle call) from analysed videos, screenshots, hand-added reference tracks and ⭐ Oracle replies. Morning Brief shows one item a day (30-day no-repeat). Each input earns 60 XP over its realms (first 3 a day). Screenshot Inbox (screenshotInbox, /screenshots, private screenshots table + bucket): Oracle reads each once (text, description, tags, kind, up to two suggested homes); Alex chooses Wishlist, idea card, recipe, journal, keep or delete; a rota is recognised and can import shifts; a receipt can be a business expense. Share to RPGACE (shareInbox): Android share sheet queues links into intel_jobs (iPhone via a Shortcut). Videoworm (local_server/rpgace_intel.py on Alex\'s PC, or Orchestrator CC): reads the whole timed transcript and 8 frames through the picked realms (realm_lenses.json); intel_reports.insights.realm_sections holds per realm a 1-10 score, why, what it teaches, 3-7 key points each with a checked transcript quote and time, a Try this and 3 quest ideas, plus how_made for Creator/Producer/Hustler; quotes not in the transcript are dropped in code; analyser_version is stamped; stuck jobs re-queue after 2 hours; Videoworm shows queue state with Retry. Encyclopedia (encyclopediaPosts): every report becomes an article plus idea cards (encyclopedia_insights, one per key point and Try this, realm-tagged), read Deepstash-style; Ideas | Jargon | Sources tabs; a re-run replaces the report, article and cards. Pathways: one quest idea at a time from a report into the Quest Board (input_quest), add the creator to the watchlist, jargon in the article. Recall (recall module): saved idea cards come back after 1, 3, 7, 16, 35 days with Again / Got it; Bookworm chapters have Cards. Bookworm (bookworm module, bookworm_books/bookworm_chapters): reads a PDF/URL/typed book chapter by chapter through the book\'s realms, insights tagged with a realm; chapters pay half Scholar, half the book\'s realms. Study (studyHub, /study): AWS Certified AI Practitioner - 18 lessons via RPGACE features, 300 Claude-written practice questions (not real exam questions), Quick 10 / topic / 65-question timed mock / service names / Redo, wrong answers on the recall schedule, +2 Scholar per correct (max 30 a day), estimated score out of 1000. Feynman: Explain it back. Taxonomy: 29 phyla (22-29 are the life realms: Ars Culinaria, Corpus Athleticum, Ars Vivendi, Cura Domus, Res Pecuniaria, Peregrinatio, Mens Sana, Societas; 11 is Learning Methods; realm-to-phylum map in realm_lenses.json). taxonomy_tree has 0 rows - every phylum is empty below phylum level until a new structure is built around reviewed jargon; automatic tree growth is paused while it is empty (taxonomyTree.isPaused) - never claim any phylum has depth. jargon_encyclopedia is the standalone term table (545+ terms, most pending, written by a Claude Code session); the Jargon page (jargonEncyclopedia) shows every term with status filters, realm filter, Met in links and inline Accept/Edit/Reject; Knowledge Review (/review) shows pending terms one at a time. Phylum Path groups phyla under realms with each phylum\'s shelf (Library items, idea cards, jargon). Each realm card shows what it knows and a knowledge path: Oracle proposes 3 milestones, Alex accepts one, done ones pay XP sized to the rank gap and every 3 unlock a title.\n\n[[HABITS]] HABITS (domain habits: Cooking, Gym, Health & body, Wishlist, Money). COOKING (cookingOracle): home = Recipes -> Plan a cook -> Shop -> Cook -> Stock with a what\'s-next line; every screen has Back, Cooking home and a ☰ shortcut list. Generate a recipe in Oracle chat (RECIPE_JSON trailer; a Narrow it down step for short requests); recipes are cups + weight, one action per step with a done cue and equipment; a 🔮 critique gives a diff-only update to Accept/Deny; adding an ingredient offers to update the method. My Recipes lists every recipe with in-stock state and last cooked. Ingredient colours: green plenty, yellow short, red none, blue same-aisle alternative, purple will run low, orange a substitute in stock (confirmable, or merged as the same item; only ratios Alex gave, e.g. tamarind concentrate ~1/3 of paste, 8 garlic cloves per bulb), brown omittable. Planned cooks (planned_cooks: draft/scheduled/cooked/discarded) are packed by a joint hands + oven/stovetop scheduler that front-loads prep across recipes, pushed to the Daily Schedule; a draft is never lost and emptying only discards a draft. Shopping lists are aisle-sorted with need/in basket/bought; Done shopping moves the basket into stock and the rest to the Top-up list. Stock (pantry_stock: Pantry, Fridge, Freezer, Equipment) is grouped by food type with cooking/baking tags; amounts use his cup measures (kitchen_equipment) and grams for solids; Add from a photo lists food Oracle sees for review. Every finished cook previews what it takes out of stock (Put it all back undo, once only). Cook Mode: one step per screen with scaled ingredients, equipment, done cue and resume; waiting steps get timers that carry on in a bottom bar; 💬 Ask inside Cook Mode; the last Done asks Actual cook / Just a preview / Not finished (an unplanned actual cook still logs a cooked row and Chef XP). The 8 older recipes have proposed one-action splits waiting: Use these steps per recipe, or ✅ Accept all at the top of My Recipes (two taps; old steps kept as a backup). Nutrition per recipe from cofid_foods (7,743 UK/India/China/Japan/SE Asia foods) then Open Food Facts. Recipe photos: Unsplash if a key exists, else Wikipedia. GYM (gymTracker, gym_sessions/gym_sets): sessions with sets, reps, kg; weekly count against 5; personal bests (+30 Athlete) and estimated 1-rep max; Repeat last. HEALTH & BODY (healthBody, private food_log/body_log/health_settings): food from a meal or label photo or typed words -> items with grams, re-checked against cofid_foods (those numbers win), editable; From your cooks adds one serving; calories and protein against targets. Water, weight (7-day average), sleep, 14-day trends; the My Day health card has a +1 💧 button (one glass, same body_log write). Sleep is typed in until a watch is connected (a Pixel Watch 4 is top of the wishlist; Google Health API planned). Gym plan: PPL / Upper-Lower / Full body over chosen days with a progression nudge (+2.5kg at the top of the range); Start opens the gym log prefilled. Steps are not connected (Samsung partners only, Google Fit closing; Google Health API planned). WISHLIST (shoppingWishlist, wishlist_items): general purchases with priority and a budget-fit; an optional why; a 24-hour cool-off before buying (bought after it = +30 Steward); bought asks the price paid and logs a Chronicles Finance expense; can be marked For the business. MONEY (moneyHub, shared by Hustler and Steward): this month in minus out, subscriptions (private subscriptions table, renewal Due rows, logged once), business purchases with a receipt photo Oracle reads, UK tax-year business costs; no tax export or bank import. Weekly spend limit (xp_settings.weekly_spend_limit) pays +50 Steward if kept. Daily life (dailyLife): fridge photo to stock, watchlist digest in Morning Brief.\n\n[[SCHEDULE]] SCHEDULE & JOURNAL (domain schedule: My Day, Doing Now, Plans, shifts, Morning Brief, Journal). MY DAY (myDay module, routines table shown as Actions): home has Now/Next, Doing now / I just did, one draggable day timeline with the 🌅 Morning block on top (tasks + Morning Brief) and 🌙 Night block at the bottom (tasks + evening review), and a tray of routines, chores, ideas and recipes to drag on; hold to drag, pull edges to resize, tap for Did you do it? / Start now, swipe right done, left tomorrow; Day | Week view; ☰ shortcut list. myDay.logic.segments is the one timeline (shift + travel, Daily Schedule, chore_blocks, Morning/Night); myDay.logic.guard refuses overlaps, pushes blocks along with a 10-minute buffer, asks to shorten if a move is over 30 minutes, always with Undo. DAY BOOKENDS (myDay, myday_settings.day_state, since Oct 27 2026): the day starts when Alex presses ☀️ I\'m up and ends when he presses 🌙 Going to bed - one button on the dashboard and on My Day\'s Now/Next card; nothing opens by the clock any more. I\'m up sets today\'s wake to that minute, stops the alarm, slides today\'s planned blocks later by however late it is (Undo offered), offers yesterday\'s review first if he never pressed Going to bed, then opens Good morning. Going to bed runs the evening review (or Skip review), then Good night: tomorrow\'s blocks with Plan tomorrow, then the alarm (suggested = now + his sleep target from Health & body, earlier if a shift needs it; or No alarm). Wake alarm (myday_alarms): only the one set at bedtime; a phone push every 5 minutes until I\'m up, max 2 hours; a notification, not a silent-mode alarm. A Morning block only counts as missed on a day started with I\'m up; blocks that ended before he got up were slept through, not missed. Plan week: drag blocks on a day timeline; + Realm block for any realm; methods Pomodoro 25/5, Deep work 50/10 or 90, Time-box, Just tick it. Plan my day: blocks only - the day\'s blocks from Plan week (or a Realm, Housekeeping, Cooking or Shopping block added there), each filled with 📋 Plan block from that realm\'s due Actions, books and activities; due Actions are never listed loose on the day; optional Eat the frog or 1-3-5; Lock in saves blocks added there (no templates - deleted Oct 21 2026). Focus timer: ▶ Start on a realm block runs its method with pushes per round; a full run adds +15 to the realm. Good morning screen (opened by I\'m up): shift, time he got up, Morning tasks, frog, today\'s blocks, then the brief. Evening review (opened by Going to bed): done / not done with Tomorrow / Drop / Skip, a line, journal row evening_review (+10 Mind). Weekly review on Sunday evening (journal weekly_review). Chores: repeat every N days from the last tick, never stack; a housekeeping block (formerly chore block) fills with the most overdue chores. Cooking, shopping and realm blocks (+10 XP per non-duplicate activity tick). Habit design: minimum vs goal, habit stacks, never miss twice, days-since dots. Days since card and Cutting back counts (cutback_items/cutback_log, +15 Mind per day at or under target). ✅ What you did under the Daily Schedule vs the plan (worked out, not stored). DOING NOW (doingNow module, rpgace_agendas source doing_now): ▶ Doing now / ✓ I just did ask when (started/finished) and how long; Stop asks how it went (mood, details: who with, where, money, effort); picking an Action ticks it with 0 XP so only the Doing Now entry pays (30 XP over its realms, first 3 a day); cooking, gym, study, reading and a planned realm block open their own page; still doing it? after 3 hours, auto-stop after 4 more; repeats 3 times in 3 weeks offer a routine. If what was done covers a planned block (half of it or 30 min) it asks Did this replace your block? (replaced / move later / keep both). A block or Morning block that passed with nothing logged asks What happened? (day_misses: woke up late - moves today\'s Morning block only today; something came up; rest; forgot; other; then later / tomorrow / drop); the Sunday review counts reasons. SHIFTS (shiftSync, rpgace_shifts): from a rota screenshot, the paste box, or the weekly Fourth import (sync_status shows failures on the Due list); adding schedule items on a shift warns first. Work buttons (myDay, private work_links table): from 30 min before a shift to 30 min after, the My Day Now/Next card shows Clock in, Break and Clock out; each opens Alex\'s phone2fork page, where he still presses the button - RPGACE cannot confirm the clock-in worked. PLANS (tripPlans module, private travel_profile/people/plans/plan_tasks): Plan something runs up to 3 web searches then one Oracle draft (itinerary, travel, book-by dates, documents for his French/Russian passports with UK settled status, packing, emergency card, producer angle, food, backups, daily money limit, official links); saved plans have tasks, a status and Add to calendar; book-by dates show on Due; paid tasks log a Travel expense; after a trip a log (journal trip_log) and Cook it at home. Ideas tab: 5-8 ideas from dates, budget, mood and distance (never anyone from People). People: birthdays, last spoke, reach-out reminders. Morning Brief: one a day at 05:39 by Orchestrator CC (API backup if missing), with Today\'s realm (realmBrief: top realm and runner-up from 9 signals), My Day picks, recall, Library pick, watchlist uploads. Journal: decisions with a look-back date (decisionJournal). Phone alerts: push_subscriptions + myday-push edge function (morning summary, Sunday review). Ticks write quest_log rows; questEngine\'s generated quests still exist.\n\n[[CHRONICLES]] CHRONICLES (domain chronicles: XP Season Pass, Chronicles log, profile card). XP SEASON PASS (xpSeason module, private xp_events/xp_rules): xp_on_change triggers on 15+ tables call xp_award; examples - beat logged 30, finished 120, released 300; video posted 300, post planned 60; sale 2 per pound (min 100); cook finished 60 (+10 per extra recipe), recipe saved 25; gym 40; chapter 30, book 300, jargon review 3; journal entry he wrote 15; expense 5; plan made 30, trip done 200; caught up 20; hand-tested feature 20; shipped RPGACE change 30 Builder (5 a day); auto-made things earn 0. Capped repeats pay 100%, 50%, then 0. The pass is a YEAR (Year 0: Construction from Oct 13 2026 to Dec 31; each 1 Jan resets; career never resets); a season is a UK weather season. Level 1 = 500 XP, +25 per level. Sky ladder: Spark, Ember, Flame, Comet, Star, Nova, Constellation, Galaxy. Each realm has 7 named ranks (year and slower career); some are gated by real events (Sous Chef 20 cooks, Head Chef 50 cooks + 10 recipes + 3 cuisines, Closer first sale, Tycoon yearly target, Gladiator 3 gym a week for 4 weeks, Polymath books in 8 phyla, Pathfinder routines kept 6 weeks, Lake sleep routine 21 of 28 days, Safe, Globetrotter 5 countries, Heart nobody overdue 3 months). Titles and badges (automatic or claimed) pay no XP. Same-week deletes ask was it done? (unanswered keeps it). pg_cron closes periods nightly: balance bonus, frozen xp_reports per week, month, season and year. Weekly challenges (pick up to 3, 75 XP each, counted automatically), season resolutions (1-5, 500/1000/1500), realm quests (3 steps of 50 toward each gate), knowledge-path milestones. Treats pinned to a goal (marked earned, nothing bought), card themes by level, quiet flair. Year Wrapped swipe cards when a year closes (one Oracle paragraph), Year-so-far, Hall of Seasons, January nudges. The dashboard shows a 2-page swipe XP card (overall, then the 13-realm wheel); each domain shows its realm card. CHRONICLES PAGE (chroniclesLog, items from careerStatCard): searchable log with 8 sections (All, Beats & content, Recipes cooked, Trips & plans, Learning, Life, Money, App updates) - beats, posts with full stage reports, cooks with recipe names, done plans, quests, gym, journal, unlocks, reports, Doing Now activities by realm, finance (personal-visibility ledger, not bookkeeping-grade).\n\n[[OVERSIGHT]] OVERSIGHT (domain oversight: dev docs and error tracking, mostly for Claude Code). errorLog: thrown errors and red toasts are saved to error_log (deduped), traced to their owning module, given that module\'s perspective_reports baseline, and flip its smoke_test_items row to broken (a green plan item to purple); it only sees errors that throw or toast and never fixes anything. oracleDevBridge: 🧪 Flag to Orchestrator CC saves an Oracle reply as an oracle_dev_suggestions row a Claude Code session reviews at its next start. docsLinks / the Oversight popup link the dev docs: patch_notes.html (dated build history), minotaur_map.html (plain-language map of domains), interconnection_map.md / system_flow_map.md / ai_tooling_and_rules_map.md / perspective_map.html (truth docs), smoke_test.html (Alex\'s hand-ticks), error_log.html, future_integrations.html (planned, blue/red/yellow), achiever.html (claims that stopped being true), session_lessons.html, and the Galaxy Map (graphify-out, a generated developer map: L0 units -> 8 domains -> modules -> functions, with pages for things outside the app such as External AIs, Claude Code sessions, Supabase and the PC pipeline; each domain lists the external AIs it uses, tagged live/dormant/off/planned, and its in-app dimensions: Oracle calls, human gates, decisions, the menu path, branch ledger, load triggers and loops). Developer rules live in CLAUDE.md and docs/claude/*.md, which the app never reads. Plans for builds are tracked in ceo_plans/ceo_plan_items (Orchestrator CC only; the app shows no CEO UI).\n\n[[PLATFORM]] PLATFORM (domain platform: sign-in, navigation, dashboard, speed). Sign-in: the password is checked server-side (api/auth.js); a device stays signed in with a server-issued secret checked on launch (authGate); Sign out on this device in the left menu; every /api function checks the secret. RLS is on every table; most are anon read-only with writes through /api/data-write; a few stay anon-writable on purpose (oracle_fallback_queue, openmontage_jobs, error_log, smoke_test_items, ceo_plan_items) - never suggest restricting them without checking. The left menu (leftNav) is the one place to reach everything, in coloured folding bands per area with a realm XP bar, plus realm chips at the top (All + 13 realms) that show only the entries feeding that realm; every area page and popup has a ☰ shortcut list and swipe-right (RPGACE.sideList); popups have Back with history and phone Back closes them first (dashDeck, pathRouter). The dashboard is a landing page: Today (shifts, tasks, planned cook, routines left, gym this week), Due - waiting on you (reviews, recall, decisions, cool-offs, book-by dates, reach-outs, shifts sync, posts behind, etc. - a row only when something is there), Continue where you left off, Morning Brief and an Ask Oracle box; it makes no Oracle call itself. Installable PWA (Android/desktop). perfWatch saves freezes over half a second to perf_freezes with what was running; startup blocks no longer alert. The old Content Intelligence sync (every 30s on every page) was the main freeze source until Oct 27; it now runs only while its list is on screen. Orchestrator CC switch lives here (orchestratorCC).',
 
   init: function() {
     var self = this;
@@ -18080,7 +18080,7 @@ RPGACE.register('dashDeck', {
     // stays as the card registry (_navOpenCard, _pageBack, NAV_DOMAINS).
     // Record: records/2026-10/dashboard_landing_leftnav_paranoia_debate_2026-10-10.txt
     deck.innerHTML =
-      '<div class="dd-ld-hello"><h2 id="dd-ld-greet">Today</h2><p id="dd-ld-date"></p></div>' +
+      '<div class="dd-ld-hello"><h2 id="dd-ld-greet">Today</h2><p id="dd-ld-date"></p><div id="dd-ld-daybtn" style="margin-top:8px;"></div></div>' +
       '<div class="dd-ld-grid">' +
         '<section class="dd-ld-sec"><h3>📅 Today</h3><ul class="dd-ld-list" id="dd-ld-today"><li class="dd-ld-empty">Loading…</li></ul></section>' +
         '<section class="dd-ld-sec"><h3>⚑ Due · waiting on you</h3><ul class="dd-ld-list" id="dd-ld-due"><li class="dd-ld-empty">Loading…</li></ul></section>' +
@@ -18133,6 +18133,9 @@ RPGACE.register('dashDeck', {
       return;
     }
     self._ldRetries = 0;
+    // Day Bookends (Oct 27 2026): ☀️ I'm up / 🌙 Going to bed.
+    var md = RPGACE.modules.myDay;
+    if (md && md.ui.dayButton) md.ui.dayButton(document.getElementById('dd-ld-daybtn'));
     var safe = function(pr) { return pr ? pr.then(function(r) { return Array.isArray(r) ? r : []; }, function() { return null; }) : Promise.resolve(null); };
 
     // ── TODAY ──
@@ -47814,9 +47817,7 @@ RPGACE.register('errorLog', {
   "_makeChip": "journalQoL",
   "_markBookComplete": "bookworm",
   "_markBought": "shoppingWishlist",
-  "_maybeEvening": "myDay",
   "_maybeMissed": "myDay",
-  "_maybeMorning": "myDay",
   "_maybeRefresh": "videoSummary",
   "_mdxBtn": "myDay",
   "_mdxCss": "myDay",
@@ -47909,6 +47910,7 @@ RPGACE.register('errorLog', {
   "_queueScoutItem": "mockOracle",
   "_quickDetectPhyla": "conidPot",
   "_realmGroups": "phylumPath",
+  "_refreshDayButtons": "myDay",
   "_refreshFinish": "beatLog",
   "_refreshGlance": "dashDeck",
   "_refreshHome": "sellingHub",
@@ -48109,7 +48111,6 @@ RPGACE.register('errorLog', {
   "addWeeks": "decisionJournal",
   "agreedEntries": "sellingHub",
   "alarmDue": "myDay",
-  "alarmRows": "myDay",
   "alertsRow": "myDay",
   "all": "doingNow",
   "analogyBox": "studyHub",
@@ -48139,6 +48140,7 @@ RPGACE.register('errorLog', {
   "autoStopped": "doingNow",
   "autoTemplate": "doingNow",
   "autoWrapped": "xpSeason",
+  "awake": "myDay",
   "back": "sellingHub",
   "backUpdate": "sellingHub",
   "bar": "moneyHub",
@@ -48149,6 +48151,7 @@ RPGACE.register('errorLog', {
   "beatFile": "postingHub",
   "beatLine": "postingHub",
   "beatLists": "sellingHub",
+  "bedDay": "myDay",
   "bests": "gymTracker",
   "blend": "questEngine",
   "blockChores": "myDay",
@@ -48167,7 +48170,6 @@ RPGACE.register('errorLog', {
   "build": "perfWatch",
   "buildActionsBlock": "oracleControl",
   "buildDataBlock": "askMyData",
-  "buildDay": "myDay",
   "buildHud": "xpSeason",
   "buildMap": "oracleProfessor",
   "buildProgramme": "healthBody",
@@ -48259,11 +48261,13 @@ RPGACE.register('errorLog', {
   "cutStats": "myDay",
   "cycleProvider": "oracleProviderMode",
   "dayBlocks": "myDay",
+  "dayButton": "myDay",
   "dayKind": "myDay",
   "dayLoad": "myDay",
   "dayParts": "myDay",
   "daySegs": "myDay",
   "dayStart": "knowledgeReview",
+  "dayState": "myDay",
   "dayView": "myDay",
   "dealName": "sellingHub",
   "dealTool": "sellingHub",
@@ -48313,6 +48317,7 @@ RPGACE.register('errorLog', {
   "emptyPlan": "oracleProfessor",
   "enablePush": "myDay",
   "endAt": "doingNow",
+  "endDay": "myDay",
   "endSub": "moneyHub",
   "ensureArticles": "encyclopediaPosts",
   "ensureKnowledgeHeader": "lifeLibrary",
@@ -48321,11 +48326,8 @@ RPGACE.register('errorLog', {
   "estimate": "studyHub",
   "estimateFor": "questEngine",
   "eveningAct": "myDay",
-  "eveningDue": "myDay",
   "eveningLines": "myDay",
   "eveningModel": "myDay",
-  "eveningOpen": "myDay",
-  "eveningOpenAt": "myDay",
   "eveningText": "myDay",
   "evidenceText": "oracleProfessor",
   "exchange": "lifeLibrary",
@@ -48389,6 +48391,7 @@ RPGACE.register('errorLog', {
   "giveSections": "oracleProfessor",
   "goKnowledge": "lifeLibrary",
   "goStep": "myDay",
+  "goingToBed": "myDay",
   "guard": "myDay",
   "guessKind": "lifeLibrary",
   "guessRealms": "oracleEntry",
@@ -48411,6 +48414,7 @@ RPGACE.register('errorLog', {
   "ideaToBuilder": "tripPlans",
   "ideas": "doingNow",
   "ideasPrompt": "tripPlans",
+  "imUp": "myDay",
   "inProgress": "beatsHub",
   "incomeKindOf": "beatsHub",
   "ingest": "screenshotInbox",
@@ -48529,7 +48533,6 @@ RPGACE.register('errorLog', {
   "monthLabel": "lifeLibrary",
   "monthlyCost": "moneyHub",
   "monthlyOf": "xpSeason",
-  "morningDue": "myDay",
   "mount": "doingNow",
   "moveBlock": "myDay",
   "moveBlockAfter": "myDay",
@@ -48612,6 +48615,7 @@ RPGACE.register('errorLog', {
   "openFeynman": "knowledgeHub",
   "openFixTime": "doingNow",
   "openFromSchedule": "myDay",
+  "openGoodnight": "myDay",
   "openGym": "doingNow",
   "openJustDid": "doingNow",
   "openLast": "oracleEntry",
@@ -48836,6 +48840,7 @@ RPGACE.register('errorLog', {
   "review": "decisionJournal",
   "reviewDate": "myDay",
   "reviewDone": "myDay",
+  "reviewPending": "myDay",
   "reviewSummary": "myDay",
   "reviewTarget": "myDay",
   "reviewText": "myDay",
@@ -48938,6 +48943,7 @@ RPGACE.register('errorLog', {
   "skip": "myDay",
   "skipPlan": "myDay",
   "skyFor": "xpSeason",
+  "slideOrder": "myDay",
   "snap5": "myDay",
   "sortDay": "myDay",
   "sourceLink": "questEngine",
@@ -48954,6 +48960,7 @@ RPGACE.register('errorLog', {
   "startBlockNow": "myDay",
   "startBoardQuest": "questEngine",
   "startChallenges": "xpSeason",
+  "startDay": "myDay",
   "startFocus": "myDay",
   "startItemNow": "myDay",
   "startMaking": "beatsHub",
@@ -48971,6 +48978,7 @@ RPGACE.register('errorLog', {
   "studyLine": "recall",
   "submit": "feynman",
   "suggest": "healthBody",
+  "suggestAlarm": "myDay",
   "suggestDays": "myDay",
   "suggestFor": "questEngine",
   "suggestSlots": "myDay",
@@ -59928,13 +59936,8 @@ RPGACE.register('myDay', {
     setInterval(function() { try { self.ui._alarmCheck(); } catch (e) {} }, 20000);
     // MD-4: focus timer bar (runs from the real clock, so it never drifts).
     setInterval(function() { try { self.ui._focusTick(); } catch (e) {} }, 1000);
-    // MD-5: first visit after wake time opens the Good-morning screen.
-    RPGACE.hooks.on('rpgace:login', function() { setTimeout(function() { try { self.ui._maybeMorning(); } catch (e) {} }, 2500); });
-    document.addEventListener('visibilitychange', function() { if (!document.hidden) setTimeout(function() { try { self.ui._maybeMorning(); } catch (e) {} }, 800); });
-    // MD-6: the evening review opens by itself at its time (and every 5 min check while open).
-    RPGACE.hooks.on('rpgace:login', function() { setTimeout(function() { try { self.ui._maybeEvening(); } catch (e) {} }, 3500); });
-    document.addEventListener('visibilitychange', function() { if (!document.hidden) setTimeout(function() { try { self.ui._maybeEvening(); } catch (e) {} }, 1200); });
-    setInterval(function() { try { if (!document.hidden) self.ui._maybeEvening(); } catch (e) {} }, 300000);
+    // Day Bookends (Oct 27 2026): Good morning / the evening review open only
+    // from ☀️ I'm up / 🌙 Going to bed (ui.imUp / ui.goingToBed), never by the clock.
     RPGACE.hooks.on('page:show', function(name) {
       if (name !== RPGACE.CONFIG.pages.agenda) return;
       // AC-5: a missed block asks "What happened?" when My Day opens.
@@ -60122,7 +60125,7 @@ RPGACE.register('myDay', {
         var saved = (Array.isArray(data) && data[0]) || null;
         if (!saved || !saved.id) throw new Error('The block saved but came back without an id — reload My Day.');
         var titles = L.blockChores(saved).map(function(r) { return r.title; });
-        var entry = scheduleToCalendar({ title: '🧹 Chore block', description: titles.join(' · '), category: 'chores', xp: 0,
+        var entry = scheduleToCalendar({ title: '🧹 Housekeeping block', description: titles.join(' · '), category: 'chores', xp: 0,
           duration_mins: mins, hour: Math.floor(start / 60), minute: start % 60, date: f.date, source_type: 'chore_block', source_id: saved.id });
         saved.agenda_id = entry.id;
         self._choreBlocks = self._choreBlocks.concat([saved]);
@@ -60486,41 +60489,6 @@ RPGACE.register('myDay', {
     // with that day's most overdue chores; routines due that day but missing
     // from the template are fitted into free gaps (marked added). Chores due
     // that day are left to the chore block.
-    buildDay: function(isoDate, srcItems, opts) {
-      var self = RPGACE.modules.myDay, L = self.logic, byId = {};
-      opts = opts || {};
-      (self._routines || []).forEach(function(r) { byId[String(r.id)] = r; });
-      var out = [], have = {};
-      // Today: a routine already ticked or skipped stays off the plan.
-      var handled = function(r) { return isoDate === L.iso() && !!L.todayLog(r, self._logs, isoDate); };
-      (srcItems || []).forEach(function(it) {
-        var x = Object.assign({}, it, { keep: true });
-        if (x.type === 'routine') {
-          var r = byId[String(x.routine_id)];
-          if (!r || r.cadence === 'every_days' || !L.dueOnDate(r, isoDate) || have[r.id] || handled(r)) return;
-          have[r.id] = 1;
-          x.title = r.title; x.category = (r.area || 'personal').toLowerCase();
-        }
-        out.push(x);
-      });
-      out.forEach(function(x) { if (x.type === 'chore_block') x.chore_ids = L.fillBlock(x.mins, isoDate, L.blockedIds(isoDate)).items.map(function(c) { return String(c.r.id); }); });
-      // A shopping block from a template keeps only items typed by hand -
-      // list and Wishlist items change, so they are picked fresh each time.
-      out.forEach(function(x) { if (x.type === 'shopping_block') x.shop_items = (x.shop_items || []).filter(function(i) { return i.src === 'own'; }); });
-      // A realm block keeps its activities; a routine that was removed drops out.
-      out.forEach(function(x) { if (x.type === 'realm_block') x.realm_items = (x.realm_items || []).filter(function(i) { return i.src !== 'routine' || byId[String(i.ref_id)]; }); });
-      if (opts.fill !== false) {
-        // MD-1: Morning/Night tasks live in their bookend blocks, not as loose items.
-        var inBookend = {};
-        L.bookendTasks('morning').concat(L.bookendTasks('night')).forEach(function(r) { inBookend[String(r.id)] = 1; });
-        var missing = (self._routines || []).filter(function(r) { return r.cadence !== 'every_days' && r.cadence !== 'next_time' && !have[r.id] && !handled(r) && !inBookend[String(r.id)] && L.dueOnDate(r, isoDate); });
-        var sched = L.busySched(isoDate).concat(out.map(function(x) { var m = L.toMin(x.start) || 0; return { hour: Math.floor(m / 60), minute: m % 60, estimated_mins: x.mins, place: x.place, journey_mins: x.journey_mins }; }));
-        L.suggestSlots(missing, { shifts: L.shiftsOn(isoDate), sched: sched, nowMin: opts.nowMin, timing: self._settings }).forEach(function(sl) {
-          out.push({ type: 'routine', routine_id: String(sl.routine.id), title: sl.routine.title, category: (sl.routine.area || 'personal').toLowerCase(), start: sl.start != null ? L.fmtMin(sl.start) : '', mins: sl.mins, keep: sl.start != null, added: true });
-        });
-      }
-      return L.sortDay(out);
-    },
     sortDay: function(items) {
       var L = RPGACE.modules.myDay.logic;
       return items.sort(function(a, b) { var x = L.toMin(a.start), y = L.toMin(b.start); return (x == null ? 9999 : x) - (y == null ? 9999 : y); });
@@ -61085,7 +61053,7 @@ RPGACE.register('myDay', {
     blockLabel: function(b) {
       var xs = RPGACE.modules.xpSeason, R = b.realm && xs && xs.REALMS[b.realm];
       if (b.kind === 'realm') return (R ? R.icon + ' ' + R.name : '✨ ' + (b.realm || 'Realm')) + ' block';
-      return { cooking: '🍳 Cooking', shopping: '🛒 Shopping' }[b.kind] || '🧹 Chore block';
+      return { cooking: '🍳 Cooking', shopping: '🛒 Shopping' }[b.kind] || '🧹 Housekeeping block';
     },
     // 🌅 Morning / 🌙 Night: the routines Alex put in each (myday_settings
     // morning_tasks / night_tasks, in order). Until he edits them the
@@ -61532,14 +61500,17 @@ RPGACE.register('myDay', {
       var self = RPGACE.modules.myDay, L = self.logic, out = [];
       var answered = (self._misses || []).filter(function(m) { return m.day === isoDate; });
       var covered = function(a, b) { return (did || []).some(function(d) { return d.to >= a && d.from <= b; }); };
-      var dp = L.dayParts(isoDate), m = dp.be.morning;
-      if (m.tasks.length && m.to <= nowMin && !answered.some(function(x) { return x.kind === 'morning'; })
+      var dp = L.dayParts(isoDate), m = dp.be.morning, ds = L.dayState();
+      // Day Bookends: no I'm up that day = no Morning to miss; blocks that
+      // ended before the press were slept through, not missed.
+      var upMin = ds && ds.day === isoDate && ds.up_at ? L.nowMin(new Date(ds.up_at)) : null;
+      if (upMin != null && m.tasks.length && m.to <= nowMin && !answered.some(function(x) { return x.kind === 'morning'; })
           && !m.tasks.some(function(r) { return L.todayLog(r, self._logs || [], isoDate); }) && !covered(m.from, m.to)) {
         out.push({ kind: 'morning', day: isoDate, label: m.label, from: m.from, to: m.to });
       }
       dp.blocks.forEach(function(b) {
         var a = L.toMin(b.start_time), e = a + (Number(b.mins) || 30);
-        if (a == null || e > nowMin) return;
+        if (a == null || e > nowMin || (upMin != null && e <= upMin)) return;
         if (answered.some(function(x) { return String(x.block_id) === String(b.id); })) return;
         if ((b.items || []).some(function(i) { return i.done; }) || covered(a, e)) return;
         out.push({ kind: 'block', day: isoDate, block: b, label: L.blockLabel(b), from: a, to: e });
@@ -61590,6 +61561,95 @@ RPGACE.register('myDay', {
           return p.then(function() { return L.moveBlockAfter(b, mEnd).then(function(r) { moved = moved.concat(r.moved); }, function() {}); });
         }, Promise.resolve()).then(function() { return { wake: o.time, moved: moved }; });
       });
+    },
+    // ── Day Bookends (Oct 27 2026) ──────────────────────────────────────
+    // Alex: "i want evening rewiew to only pop-up when i press im going to
+    // bed in dashboard. same as morning brief - i press woke up, and from
+    // there the day starts ends". myday_settings.day_state = {day, up_at,
+    // bed_at}. Record: records/2026-10/day_bookends_paranoia_2026-10-27.txt
+    dayState: function() { return (RPGACE.modules.myDay._settings || {}).day_state || null; },
+    // Awake = pressed I'm up and not Going to bed, within 20 hours. Pure.
+    awake: function(ds, nowMs) {
+      if (!ds || !ds.up_at || ds.bed_at) return false;
+      return (nowMs || Date.now()) - new Date(ds.up_at).getTime() < 20 * 3600000;
+    },
+    // The day Going to bed reviews: the day I'm up started, else the clock's. Pure.
+    bedDay: function(ds, now) {
+      var L = RPGACE.modules.myDay.logic;
+      return ds && ds.day && !ds.bed_at ? ds.day : L.reviewDate(now);
+    },
+    // Today's blocks that slide after a late I'm up: the ones starting at or
+    // after the planned wake, latest first (so each moves into free time). Pure.
+    slideOrder: function(blocks, plannedWake) {
+      var L = RPGACE.modules.myDay.logic;
+      return (blocks || []).filter(function(b) { var a = L.toMin(b.start_time); return a != null && a >= plannedWake; })
+        .sort(function(x, y) { return L.toMin(y.start_time) - L.toMin(x.start_time); });
+    },
+    // ☀️ I'm up: today starts now. Wake = press time (wake_override), any
+    // ringing alarm stops, and the whole day slides later by however late
+    // this is against the planned wake (never earlier). Undo-able.
+    startDay: function(now) {
+      var self = RPGACE.modules.myDay, L = self.logic;
+      now = now || new Date();
+      var today = L.iso(now), nowMin = L.nowMin(now), prev = L.dayState();
+      var st0 = Object.assign({}, self._settings || {}); delete st0.wake_override;
+      var planned = L.bookends(L.shiftsOn(today), st0, L.bookendTasks('morning'), L.bookendTasks('night')).wake;
+      var ds = { day: today, up_at: now.toISOString(), bed_at: null }, o = { date: today, time: L.fmtMin(nowMin) };
+      return RPGACE.sb.secureWrite('myday_settings', 'update', { day_state: ds, wake_override: o }, 'id=eq.1').then(function() {
+        self._settings = Object.assign({}, self._settings || {}, { day_state: ds, wake_override: o });
+        RPGACE.cache.clear('myday_settings');
+        (self._alarms || []).forEach(function(a) { if (a.day <= today && a.status === 'set') a.status = 'done'; });
+        var off = RPGACE.sb.secureWrite('myday_alarms', 'update', { status: 'done' }, 'kind=eq.wake&status=eq.set&day=lte.' + today)
+          .then(function() { RPGACE.cache.clear('myday_alarms'); }, function() {});
+        var by = Math.max(0, nowMin - planned), moved = [], failed = [];
+        var gap = Number((self._settings || {}).buffer_mins); if (isNaN(gap) || (self._settings || {}).buffer_mins == null) gap = 10;
+        self._lastUndo = [];
+        var list = by > 0 ? L.slideOrder(L.dayBlocks(today), planned) : [];
+        return off.then(function() {
+          return list.reduce(function(p, b) {
+            return p.then(function() {
+              return L.moveBlockAfter(b, L.toMin(b.start_time) + by - gap).then(function(r) { moved = moved.concat(r.moved); }, function() { failed.push(L.blockLabel(b)); });
+            });
+          }, Promise.resolve());
+        }).then(function() { return { prev: prev, by: by, moved: moved, failed: failed, day: today }; });
+      });
+    },
+    // The bedtime alarm suggestion: now + sleep target, but early enough for
+    // tomorrow's shift (start minus get-ready + travel), rounded to 5 min.
+    // shiftsFor(isoDate) -> shifts. Returns a Date. Pure.
+    suggestAlarm: function(now, sleepH, shiftsFor, st) {
+      var L = RPGACE.modules.myDay.logic, h = Number(sleepH) > 0 ? Number(sleepH) : 8;
+      var at = new Date(now.getTime() + h * 3600000), why = h + 'h sleep';
+      var d = L.iso(at), sh = (shiftsFor(d) || []).map(function(x) { return L.toMin(x.start); }).filter(function(m) { return m != null; }).sort(function(a, b) { return a - b; })[0];
+      if (sh != null) {
+        var cap = new Date(d + 'T00:00:00'); cap.setMinutes(sh - L.shiftBefore(st || {}));
+        if (cap < at && cap > now) { at = cap; why = 'ready for your ' + L.fmtMin(sh) + ' shift'; }
+      }
+      at = new Date(Math.round(at.getTime() / 300000) * 300000);
+      return { at: at, why: why };
+    },
+    // 🌙 Going to bed: the day closes; one wake alarm for the morning (or none).
+    endDay: function(alarmAt, now) {
+      var self = RPGACE.modules.myDay, L = self.logic;
+      now = now || new Date();
+      var prev = L.dayState(), ds = { day: L.bedDay(prev, now), up_at: prev && !prev.bed_at ? prev.up_at : null, bed_at: now.toISOString() };
+      return RPGACE.sb.secureWrite('myday_settings', 'update', { day_state: ds }, 'id=eq.1').then(function() {
+        self._settings = Object.assign({}, self._settings || {}, { day_state: ds });
+        RPGACE.cache.clear('myday_settings');
+        if (!alarmAt) return { day: ds.day, alarm: null };
+        var row = { day: L.iso(alarmAt), kind: 'wake', at: alarmAt.toISOString(), stop_routine_id: null, stop_label: null, status: 'set', last_sent_at: null, sends: 0 };
+        return RPGACE.sb.secureWrite('myday_alarms', 'insert', row, null, 'day,kind').then(function() {
+          RPGACE.cache.clear('myday_alarms');
+          self._alarms = (self._alarms || []).filter(function(a) { return a.day !== row.day; }).concat([row]);
+          return { day: ds.day, alarm: row };
+        });
+      });
+    },
+    // Forgot Going to bed: the day before has no evening review yet?
+    reviewPending: function(prev, today) {
+      if (!prev || !prev.day || prev.bed_at || prev.day === today) return Promise.resolve(null);
+      return RPGACE.sb.select('journal', 'select=id&source=eq.evening_review&review_on=eq.' + prev.day + '&limit=1')
+        .then(function(r) { return Array.isArray(r) && r.length ? null : prev.day; }, function() { return null; });
     },
     // Sunday review line: 'Woke up late ×2, Something came up ×1'.
     missLine: function(ws, end) {
@@ -61693,12 +61753,6 @@ RPGACE.register('myDay', {
       var L = RPGACE.modules.myDay.logic, f = null;
       L.dayBlocks(isoDate).forEach(function(b) { (b.items || []).forEach(function(i) { if (i.frog && !f) f = { block: b, item: i }; }); });
       return f;
-    },
-    // ── MD-5 Good-morning screen ────────────────────────────────────────
-    // Open it by itself once a day: the first visit after wake time (the
-    // 🌅 block's start, earlier on an early shift) and before 13:00. Pure.
-    morningDue: function(nowMin, wakeMin, seenDate, today) {
-      return seenDate !== today && wakeMin != null && nowMin >= wakeMin && nowMin < 13 * 60;
     },
     // ── MD-8 Did blocks ─────────────────────────────────────────────────
     // Alex (Oct 18): "chronicles could fill out a block, since ill be doing
@@ -61809,32 +61863,13 @@ RPGACE.register('myDay', {
       return out;
     },
     // ── MD-6 evening review ─────────────────────────────────────────────
-    // Alex's picks (Oct 20 2026, "go MD-6, your picks"): opens by itself 30
-    // minutes before bed, or once home from a late shift if that's later;
-    // +10 Mind XP once a day for doing it (DB trigger xp_on_evening).
+    // Opens from 🌙 Going to bed (Day Bookends, Oct 27 2026; it used to open
+    // by itself before bed); +10 Mind XP once a day (DB trigger xp_on_evening).
     // The day a review is about: before 04:00 it is still yesterday. Pure.
     reviewDate: function(now) {
       var L = RPGACE.modules.myDay.logic;
       now = now || new Date();
       return now.getHours() < 4 ? L.addDays(L.iso(now), -1) : L.iso(now);
-    },
-    // Minutes (from the day's midnight, may pass 1440) it opens at. Pure.
-    eveningOpenAt: function(bedMin, homeMin) { return Math.max(bedMin - 30, homeMin == null ? -1 : homeMin); },
-    // Due once per review day; before 04:00 counts as the night before. Pure.
-    eveningDue: function(nowMin, openAt, seenDate, day) {
-      if (nowMin < 240) nowMin += 1440;
-      return seenDate !== day && openAt != null && nowMin >= openAt;
-    },
-    eveningOpen: function(isoDate) {
-      var L = RPGACE.modules.myDay.logic, dp = L.dayParts(isoDate), st = dp.st || {}, home = null;
-      var bed = L.toMin(st.bed_time || '23:00'); if (bed < 12 * 60) bed += 1440;
-      (dp.shifts || []).forEach(function(s) {
-        var a = L.toMin(s.start), b = L.toMin(s.end);
-        if (a == null || b == null) return;
-        if (b <= a) b += 1440;
-        if (b > 15 * 60) home = Math.max(home || 0, b + L.shiftAfter(st));
-      });
-      return L.eveningOpenAt(bed, home);
     },
     // What got done and what didn't on a day, from what My Day has loaded.
     // Chores (every_days) roll on by themselves, so they only count as done.
@@ -62085,42 +62120,18 @@ RPGACE.register('myDay', {
         return saved;
       });
     },
-    // Wake alarm rows for the next 7 days (myday_alarms): rings at the
-    // Morning block start, stops when its first task is ticked (checked by
-    // push_alarm() every minute). Only rows that changed are written.
-    alarmRows: function(today, st, mTasks, nTasks, shiftsFor, existing) {
-      var L = RPGACE.modules.myDay.logic, have = {}, out = [];
-      (existing || []).forEach(function(r) { have[r.day] = r; });
-      var on = !st || st.alarm_on !== false, first = (mTasks || [])[0] || null;
-      for (var i = 0; i < 7; i++) {
-        var d = L.addDays(today, i), be = L.bookends(shiftsFor(d), L.stFor(d), mTasks, nTasks);
-        var at = new Date(d + 'T00:00:00'); at.setMinutes(at.getMinutes() + be.morning.from);
-        var row = { day: d, kind: 'wake', at: at.toISOString(), stop_routine_id: first ? String(first.id) : null, stop_label: first ? first.title : null };
-        var old = have[d];
-        var same = old && new Date(old.at).getTime() === at.getTime() && (old.stop_routine_id || null) === row.stop_routine_id;
-        if (!on) { if (!old || old.status !== 'off') { row.status = 'off'; out.push(row); } continue; }
-        if (same && old.status !== 'off') continue;
-        row.status = 'set'; row.last_sent_at = null; row.sends = 0;
-        out.push(row);
-      }
-      return out;
-    },
+    // Day Bookends: the wake alarm is set at bedtime (logic.endDay), one row
+    // per night in myday_alarms; push_alarm() rings it until ☀️ I'm up
+    // marks it done. This only loads the rows for the in-app alarm bar.
     syncAlarms: function(force) {
       var self = RPGACE.modules.myDay, L = self.logic, ag = RPGACE.modules.authGate;
       if (!ag || !ag._apiSecret) return Promise.resolve(0);
       if (!force && Date.now() - (self._alarmSyncedAt || 0) < 600000) return Promise.resolve(0);
       self._alarmSyncedAt = Date.now();
-      var today = L.iso();
-      return Promise.resolve(RPGACE.sb.select('myday_alarms', 'select=day,at,status,stop_routine_id&kind=eq.wake&day=gte.' + today)).then(function(rows) {
+      return Promise.resolve(RPGACE.sb.select('myday_alarms', 'select=day,at,status&kind=eq.wake&day=gte.' + L.addDays(L.iso(), -1))).then(function(rows) {
         self._alarms = Array.isArray(rows) ? rows : [];
-        var w = L.alarmRows(today, self._settings || {}, L.bookendTasks('morning'), L.bookendTasks('night'), L.shiftsOn, self._alarms);
-        if (!w.length) return 0;
-        return RPGACE.sb.secureWrite('myday_alarms', 'insert', w, null, 'day,kind').then(function() {
-          RPGACE.cache.clear('myday_alarms');
-          w.forEach(function(x) { var o = self._alarms.filter(function(a) { return a.day === x.day; })[0]; if (o) Object.assign(o, x); else self._alarms.push(x); });
-          return w.length;
-        });
-      }).catch(function(e) { console.warn('[myDay] alarm sync:', e && e.message); return 0; });
+        return 0;
+      }).catch(function(e) { console.warn('[myDay] alarm load:', e && e.message); return 0; });
     },
     // Is the wake alarm ringing now? Pure.
     alarmDue: function(now, alarm, firstDone, st) {
@@ -62380,7 +62391,7 @@ RPGACE.register('myDay', {
       if (d.reviewDue) next.push({ go: 'weekly', icon: '📓', title: 'Weekly review', sub: '2 minutes: what went well, what slipped, one thing for next week', verb: 'Start' });
       if (d.hour >= 19 && !tmr.length) next.push({ go: 'day', icon: '📋', title: 'Plan tomorrow', sub: 'Nothing planned for tomorrow yet', verb: 'Plan' });
       if (!week.length) next.push({ go: 'week', icon: '🗓', title: 'Plan your week', sub: 'No blocks placed for the rest of this week', verb: 'Plan' });
-      if (overdue) next.push({ go: 'chores', icon: '🧹', title: plural(overdue, 'chore') + ' due', sub: 'Tick them or fit them in a chore block', verb: 'See' });
+      if (overdue) next.push({ go: 'chores', icon: '🧹', title: plural(overdue, 'chore') + ' due', sub: 'Tick them or fit them in a housekeeping block', verb: 'See' });
       if (left) next.push({ go: 'do', icon: '▶️', title: left + ' left today', sub: d.nextRoutine ? 'Next: ' + d.nextRoutine : 'Your actions for today', verb: 'Go' });
       return { steps: steps, next: next.slice(0, 4), tomorrow: tomorrow, planDate: planDate };
     },
@@ -63078,6 +63089,7 @@ RPGACE.register('myDay', {
       var s = L.daySegs(today), nowM = L.nowMin(), nx = L.nowNext(s.segs, nowM);
       host.innerHTML = '';
       var card = document.createElement('div'); card.className = 'mdx-card mdx-nn'; card.id = 'mdx-nn';
+      var dbh = document.createElement('div'); dbh.id = 'mdx-daybtn'; dbh.style.cssText = 'margin-bottom:8px;'; card.appendChild(dbh); U.dayButton(dbh);
       var row = function(k, g, verb, act, sub) {
         var r = document.createElement('div'); r.className = 'mdx-nn-row';
         r.innerHTML = '<span class="mdx-nn-k">' + k + '</span><span class="mdx-nn-t">' + esc(g ? g.label : sub) + (g ? '<span class="mdx-nn-s">' + esc(sub) + '</span>' : '') + '</span>';
@@ -63612,7 +63624,7 @@ RPGACE.register('myDay', {
             .then(function() { RPGACE.utils.toast('✨ ' + nx.title + ' at ' + L.fmtMin(from), '#4caf82', 2200); if (redraw) redraw(); self.ui.render(); }, U._mdxFail);
         });
       };
-      var cb = U._mdxBtn('🧹 Chore block', false, 'mdx-gap-chores');
+      var cb = U._mdxBtn('🧹 Housekeeping block', false, 'mdx-gap-chores');
       cb.onclick = function() {
         var fill = L.fillBlock(mins, isoDate, L.blockedIds(isoDate));
         if (!fill.items.length) { U._mdxFail(new Error('No chores fit in ' + mins + ' min.')); return; }
@@ -63954,7 +63966,7 @@ RPGACE.register('myDay', {
       panel.appendChild(box);
       var open = due.filter(function(x) { return !x.log; }).length;
       self.ui._group(box, '🧹 Chores' + (open ? ' · ' + open + ' to do' : ' · all done'));
-      var bb = self.ui._btn('🧹 Chore block', '');
+      var bb = self.ui._btn('🧹 Housekeeping block', '');
       bb.id = 'myday-chore-block';
       bb.style.marginBottom = '8px';
       // MD-7: one place to plan a chore block - Plan my day, with one added.
@@ -63977,7 +63989,7 @@ RPGACE.register('myDay', {
         var nb = document.createElement('div');
         nb.className = 'myday-chores-nextblock';
         nb.style.cssText = 'font-size:13px;color:var(--muted);margin:0 0 8px;';
-        nb.textContent = 'Next chore block: ' + later.map(function(b) { return self.ui._dayLabel(b.block_date) + ' ' + b.start_time + ' (' + (b.routine_ids || []).length + ((b.routine_ids || []).length === 1 ? ' chore)' : ' chores)'); }).join(' · ');
+        nb.textContent = 'Next housekeeping block: ' + later.map(function(b) { return self.ui._dayLabel(b.block_date) + ' ' + b.start_time + ' (' + (b.routine_ids || []).length + ((b.routine_ids || []).length === 1 ? ' chore)' : ' chores)'); }).join(' · ');
         box.appendChild(nb);
       }
     },
@@ -64087,7 +64099,7 @@ RPGACE.register('myDay', {
       el.style.cssText = 'border:1px solid var(--gold);border-radius:10px;padding:10px 12px;margin-bottom:10px;';
       var head = document.createElement('div');
       head.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;align-items:center;margin-bottom:6px;';
-      head.innerHTML = '<b style="font-size:14px;color:var(--text);">🧹 Chore block ' + esc(L.fmtMin(start) + '–' + L.fmtMin(start + b.mins)) + '</b>' +
+      head.innerHTML = '<b style="font-size:14px;color:var(--text);">🧹 Housekeeping block ' + esc(L.fmtMin(start) + '–' + L.fmtMin(start + b.mins)) + '</b>' +
         '<span class="myday-choreblock-count" style="font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums;">' + done + ' of ' + list.length + ' done</span>';
       var cancel = document.createElement('button');
       cancel.type = 'button'; cancel.className = 'myday-choreblock-cancel'; cancel.textContent = 'Cancel block';
@@ -64096,7 +64108,7 @@ RPGACE.register('myDay', {
       cancel.onclick = function() {
         if (!armed) { armed = true; cancel.textContent = 'Cancel it?'; cancel.style.color = '#CC4A4A'; timer = setTimeout(function() { armed = false; cancel.textContent = 'Cancel block'; cancel.style.color = 'var(--muted)'; }, 3000); return; }
         clearTimeout(timer); cancel.disabled = true;
-        L.cancelChoreBlock(b).then(function() { RPGACE.utils.toast('Chore block cancelled — the chores stay due', '#4caf82', 2400); self.ui.render(); })
+        L.cancelChoreBlock(b).then(function() { RPGACE.utils.toast('Housekeeping block cancelled — the chores stay due', '#4caf82', 2400); self.ui.render(); })
           .catch(function(e) { cancel.disabled = false; RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500, 'myDay'); });
       };
       head.appendChild(cancel);
@@ -64111,7 +64123,7 @@ RPGACE.register('myDay', {
     pickChores: function(date, mins, selected, cb) {
       var self = RPGACE.modules.myDay, L = self.logic, esc = self.ui._esc;
       if (!L.chores(self._routines).length) { RPGACE.utils.toast('Set up your chore list first (+ Add actions → Chores)', '#e0a84c', 3000); return null; }
-      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '🧹 Chore block', title: 'Which chores?', width: '520px', noDefaultClose: true });
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '🧹 Housekeeping block', title: 'Which chores?', width: '520px', noDefaultClose: true });
       pop.box.id = 'myday-choreblock-pop';
       var picked = {}; (selected || []).forEach(function(id) { picked[String(id)] = 1; });
       var info = document.createElement('div'); info.id = 'mcb-total';
@@ -64350,14 +64362,12 @@ RPGACE.register('myDay', {
         top.style.cssText = 'font-size:14px;color:var(--text);margin-bottom:8px;';
         top.textContent = sh.length ? '🧑‍🍳 Shift today ' + sh.map(function(x) { return x.start + '–' + x.end; }).join(', ') : '🌴 No shift today';
         day.appendChild(top);
-        // wake alarm state
-        var al = (self._alarms || []).filter(function(a) { return a.day === today; })[0];
-        var first = L.bookendTasks('morning')[0];
-        var firstDone = first && L.todayLog(first, self._logs, today);
-        if (al && first) {
+        // Day Bookends: when the day started (☀️ I'm up stops the alarm).
+        var ds = L.dayState();
+        if (ds && ds.day === today && ds.up_at) {
           var a = document.createElement('div'); a.id = 'myday-morning-alarm';
-          a.style.cssText = 'font-size:13px;margin-bottom:8px;color:' + (firstDone ? 'var(--muted)' : 'var(--gold)') + ';';
-          a.textContent = firstDone ? '⏰ Alarm off — ' + first.title + ' done' : '⏰ Alarm stops when you tick: ' + first.title;
+          a.style.cssText = 'font-size:13px;margin-bottom:8px;color:var(--muted);';
+          a.textContent = '☀️ Up at ' + L.fmtMin(L.nowMin(new Date(ds.up_at))) + ' · alarm off';
           day.appendChild(a);
         }
         // Same card as My Day's Do section, own id (both can be on screen).
@@ -64401,7 +64411,6 @@ RPGACE.register('myDay', {
       }).then(draw).catch(function(e) { day.innerHTML = ''; var m = document.createElement('div'); m.style.color = '#CC4A4A'; m.textContent = 'My Day could not load: ' + (e.message || e); day.appendChild(m); });
       return pop;
     },
-    // Open the Good-morning screen by itself, once, after wake time.
     // ── AC-5 "What happened?" card ──────────────────────────────────────
     // One missed item at a time: a reason, then Later today / Tomorrow / Drop
     // (blocks only). "I did do it" logs it as I just did instead.
@@ -64510,17 +64519,6 @@ RPGACE.register('myDay', {
         self.ui.openMissed(items);
       }).catch(function() {});
     },
-    _maybeMorning: function() {
-      var self = RPGACE.modules.myDay, L = self.logic;
-      if (document.getElementById('myday-morning') || !RPGACE.sb || !RPGACE.sb.select) return;
-      var seen = null; try { seen = localStorage.getItem('myday_morning_seen'); } catch (e) {}
-      var today = L.iso(), n = new Date(), nowMin = n.getHours() * 60 + n.getMinutes();
-      if (seen === today || nowMin >= 13 * 60) return;
-      Promise.all([L.load(), L.loadTimings()]).then(function() {
-        var wake = L.dayParts(today).be.wake;
-        if (L.morningDue(nowMin, wake, seen, today)) self.ui.openMorning();
-      }).catch(function() {});
-    },
     // ── MD-8 Did blocks on the Daily Schedule ───────────────────────────
     // Under the 24-hour list (today and past days): ✅ What you did, one row
     // per merged realm run, with the planned block it lines up with.
@@ -64608,11 +64606,112 @@ RPGACE.register('myDay', {
     // ── MD-6 evening review ─────────────────────────────────────────────
     // One screen: what got done, what didn't (Tomorrow / Drop / Skip, or
     // Move all), the 🌙 Night tasks, one line about today -> Journal.
-    openEvening: function() {
+    // ── Day Bookends (Oct 27 2026): one button, ☀️ I'm up / 🌙 Going to bed,
+    // on the dashboard (#dd-ld-daybtn) and My Day's Now/Next card.
+    dayButton: function(host) {
+      var self = RPGACE.modules.myDay, L = self.logic, U = self.ui;
+      if (!host) return;
+      host.classList.add('myday-daybtn-host');
+      var paint = function() {
+        host.innerHTML = '';
+        var up = L.awake(L.dayState());
+        var b = U._btn(up ? '🌙 Going to bed' : '☀️ I\'m up', up ? '' : 'primary');
+        b.className += ' myday-daybtn'; b.dataset.state = up ? 'awake' : 'asleep';
+        b.style.minHeight = '44px';
+        b.onclick = function() { b.disabled = true; (up ? U.goingToBed() : U.imUp()).then(function() { b.disabled = false; }, function() { b.disabled = false; }); };
+        host.appendChild(b);
+      };
+      if (self._settings === undefined) L.loadTimings().then(paint, paint); else paint();
+    },
+    _refreshDayButtons: function() {
+      var U = RPGACE.modules.myDay.ui;
+      [].forEach.call(document.querySelectorAll('.myday-daybtn-host'), function(h) { U.dayButton(h); });
+    },
+    imUp: function() {
+      var self = RPGACE.modules.myDay, L = self.logic, U = self.ui;
+      var bar = document.getElementById('myday-alarm'); if (bar) bar.remove();
+      return Promise.all([L.load(), L.loadTimings()]).then(function() { return L.startDay(); }).then(function(res) {
+        RPGACE.utils.toast('☀️ Day started at ' + L.fmtMin(L.nowMin()) + (res.by > 0 ? ' — your day moved ' + res.by + ' min later' : ''), 'var(--gold)', 3200);
+        if (res.moved.length) U.undoToast(res.moved);
+        if (res.failed.length) RPGACE.utils.toast('⚠️ No room left today for: ' + res.failed.join(', ') + ' — move it by hand', '#e0a84c', 5000, 'myDay');
+        U._refreshDayButtons();
+        try { if (document.getElementById('myday-panel')) U.render(); } catch (e) {}
+        return L.reviewPending(res.prev, res.day).then(function(pend) {
+          if (pend) U.openEvening({ day: pend, catchUp: true, onDone: function() { U.openMorning(); } });
+          else U.openMorning();
+        });
+      }).catch(function(e) { RPGACE.utils.toast('⚠️ Day not started: ' + (e.message || e), '#CC4A4A', 4000, 'myDay'); throw e; });
+    },
+    goingToBed: function() {
+      var self = RPGACE.modules.myDay, L = self.logic, U = self.ui;
+      return Promise.all([L.load(), L.loadTimings()]).then(function() {
+        var day = L.bedDay(L.dayState(), new Date());
+        U.openEvening({ day: day, bed: true, onDone: function() { U.openGoodnight(day); } });
+      }).catch(function(e) { RPGACE.utils.toast('⚠️ My Day could not load: ' + (e.message || e), '#CC4A4A', 4000, 'myDay'); throw e; });
+    },
+    // Going to bed, after the review: tomorrow's blocks, then the alarm.
+    openGoodnight: function(day) {
+      var self = RPGACE.modules.myDay, L = self.logic, U = self.ui, esc = U._esc;
+      var tmr = L.addDays(day, 1), now = new Date();
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '🌙 Good night', title: 'Tomorrow + alarm', accent: 'var(--gold)', width: '520px', closeLabel: 'Close' });
+      pop.box.id = 'myday-goodnight';
+      var tw = document.createElement('div'); tw.id = 'myday-gn-tomorrow';
+      var drawTomorrow = function() {
+        var bl = L.dayBlocks(tmr), sh = L.shiftsOn(tmr);
+        tw.innerHTML = '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">📅 ' + esc(U._dayLabel(tmr)) + (sh.length ? ' · 🧑‍🍳 shift ' + esc(sh.map(function(x) { return x.start + '–' + x.end; }).join(', ')) : '') + '</div>' +
+          (bl.length ? bl.map(function(b) { var f = L.toMin(b.start_time); return '<div class="myday-gn-block" style="font-size:13px;color:var(--text);padding:3px 0;"><b style="font-variant-numeric:tabular-nums;">' + L.fmtMin(f) + '</b> ' + esc(L.blockLabel(b)) + ((b.items || []).length ? ' <span style="color:var(--muted);">· ' + esc(b.items.map(function(i) { return i.label; }).slice(0, 3).join(' · ')) + '</span>' : '') + '</div>'; }).join('')
+            : '<div style="font-size:13px;color:var(--muted);">No blocks planned yet.</div>');
+        var pl = U._btn('📋 Plan tomorrow', ''); pl.id = 'myday-gn-plan'; pl.style.marginTop = '6px';
+        pl.onclick = function() { U.openPlan(tmr, { after: function() { L.load().then(drawTomorrow, drawTomorrow); } }); };
+        tw.appendChild(pl);
+      };
+      pop.box.appendChild(tw);
+      drawTomorrow();
+      var aw = document.createElement('div'); aw.id = 'myday-gn-alarm-box';
+      aw.style.cssText = 'margin-top:14px;padding-top:10px;border-top:1px solid var(--border);';
+      aw.innerHTML = '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">⏰ Alarm</div><div id="myday-gn-why" style="font-size:12px;color:var(--muted);margin-bottom:6px;">Working it out…</div>';
+      var tin = document.createElement('input'); tin.type = 'time'; tin.id = 'myday-gn-alarm';
+      tin.setAttribute('aria-label', 'Alarm time');
+      tin.style.cssText = 'background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:18px;padding:6px 10px;min-height:44px;font-family:Rajdhani,sans-serif;';
+      aw.appendChild(tin);
+      var row = document.createElement('div'); row.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;margin-top:12px;';
+      var none = U._btn('No alarm', ''); none.id = 'myday-gn-noalarm';
+      var set = U._btn('⏰ Set alarm & sleep', 'primary'); set.id = 'myday-gn-set';
+      var finish = function(at) {
+        none.disabled = set.disabled = true;
+        L.endDay(at).then(function() {
+          pop.close();
+          RPGACE.utils.toast('🌙 Good night' + (at ? ' — alarm ' + L.fmtMin(L.nowMin(at)) : ''), 'var(--gold)', 3000);
+          U._refreshDayButtons();
+        }).catch(function(e) { none.disabled = set.disabled = false; RPGACE.utils.toast('⚠️ Not saved: ' + (e.message || e), '#CC4A4A', 4000, 'myDay'); });
+      };
+      none.onclick = function() { finish(null); };
+      set.onclick = function() {
+        var m = L.toMin(tin.value); if (m == null) { RPGACE.utils.toast('Pick a time, or tap No alarm', '#e0a84c', 2500); return; }
+        var n = new Date(), at = new Date(L.iso(n) + 'T00:00:00'); at.setMinutes(m);
+        if (at <= n) at = new Date(at.getTime() + 86400000);
+        finish(at);
+      };
+      row.appendChild(none); row.appendChild(set); aw.appendChild(row);
+      pop.box.appendChild(aw);
+      var hb = RPGACE.modules.healthBody;
+      Promise.resolve(hb && hb.logic.signedIn() ? hb.logic.loadSettings().catch(function() { return {}; }) : {}).then(function(hs) {
+        var sg = L.suggestAlarm(now, (hs || {}).sleep_target_h, L.shiftsOn, self._settings || {});
+        tin.value = L.fmtMin(L.nowMin(sg.at));
+        aw.querySelector('#myday-gn-why').textContent = 'Suggested: ' + sg.why + '. Change it if you need to.';
+      });
+      return pop;
+    },
+    // opts (Day Bookends): day = the day to review; bed = part of 🌙 Going
+    // to bed (Skip review, then onDone -> Good night); catchUp = yesterday's
+    // forgotten review offered on ☀️ I'm up (closing it also goes on).
+    openEvening: function(opts) {
       var self = RPGACE.modules.myDay, L = self.logic, U = self.ui, dd = RPGACE.modules.dashDeck, esc = U._esc;
-      var day = L.reviewDate();
-      try { localStorage.setItem('myday_evening_seen', day); } catch (e) {}
-      var pop = dd._popup({ eyebrow: '🌙 Evening review', title: new Date(day + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }), accent: 'var(--gold)', width: '600px', closeLabel: 'Close' });
+      opts = opts || {};
+      var day = opts.day || L.reviewDate(), flow = !!(opts.bed || opts.catchUp), went = false;
+      var next = function() { if (went) return; went = true; if (opts.onDone) opts.onDone(); };
+      var pop = dd._popup({ eyebrow: opts.catchUp ? '🌙 Yesterday\'s review' : '🌙 Evening review', title: new Date(day + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }), accent: 'var(--gold)', width: '600px', closeLabel: 'Close',
+        onClose: opts.catchUp ? function() { setTimeout(next, 0); } : null });
       pop.box.id = 'myday-evening';
       var body = document.createElement('div'); body.id = 'myday-evening-body';
       body.innerHTML = '<div style="font-size:13px;color:var(--muted);">Loading your day…</div>';
@@ -64699,7 +64798,7 @@ RPGACE.register('myDay', {
         var dp = L.dayParts(day);
         if (dp.be.night.tasks.length) { body.appendChild(head('🌙 Night')); var nc = U.bookendCard('night', dp.be, L.iso()); nc.id = 'myday-evening-night'; body.appendChild(nc); }
         var lab = document.createElement('label'); lab.style.cssText = 'display:block;font-size:13px;color:var(--muted);margin-top:12px;';
-        lab.textContent = 'One line about today (optional)';
+        lab.textContent = opts.catchUp ? 'One line about that day (optional)' : 'One line about today (optional)';
         var ta = document.createElement('textarea'); ta.id = 'myday-evening-note'; ta.rows = 2;
         ta.style.cssText = 'background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;padding:8px;font-family:Rajdhani,sans-serif;width:100%;box-sizing:border-box;resize:vertical;margin-top:4px;';
         lab.appendChild(ta); body.appendChild(lab);
@@ -64710,17 +64809,25 @@ RPGACE.register('myDay', {
           wk.onclick = function() { pop.close(); U.openReview(rv); };
           bar.appendChild(wk);
         }
-        var pl = U._btn('📋 Plan tomorrow', ''); pl.id = 'myday-evening-plan';
-        pl.onclick = function() { pop.close(); U.openPlan(L.addDays(day, 1)); };
-        bar.appendChild(pl);
-        var sv = U._btn('Save & finish (+10 Mind)', 'primary'); sv.id = 'myday-evening-save';
+        if (flow) {
+          var sk = U._btn(opts.catchUp ? 'Skip' : 'Skip review', ''); sk.id = 'myday-evening-skip';
+          sk.onclick = function() { pop.close(); next(); };
+          bar.appendChild(sk);
+        } else {
+          var pl = U._btn('📋 Plan tomorrow', ''); pl.id = 'myday-evening-plan';
+          pl.onclick = function() { pop.close(); U.openPlan(L.addDays(day, 1)); };
+          bar.appendChild(pl);
+        }
+        var svLabel = opts.bed ? 'Save & next (+10 Mind)' : 'Save & finish (+10 Mind)';
+        var sv = U._btn(svLabel, 'primary'); sv.id = 'myday-evening-save';
         sv.onclick = function() {
           sv.disabled = true; sv.textContent = 'Saving…';
           L.saveEvening(day, L.eveningText(L.eveningModel(day), xpToday, moved, ta.value, didM && didM.vs.length ? L.vsLine(didM.vs) : '')).then(function() {
             pop.close();
             RPGACE.utils.toast('🌙 Evening saved to your Journal · +10 Mind', '#4caf82', 2800);
             try { self.ui.render(); } catch (e) {}
-          }).catch(function(e) { sv.disabled = false; sv.textContent = 'Save & finish (+10 Mind)'; RPGACE.utils.toast('⚠️ Not saved: ' + (e.message || e), '#CC4A4A', 4000, 'myDay'); });
+            next();
+          }).catch(function(e) { sv.disabled = false; sv.textContent = svLabel; RPGACE.utils.toast('⚠️ Not saved: ' + (e.message || e), '#CC4A4A', 4000, 'myDay'); });
         };
         bar.appendChild(sv); body.appendChild(bar);
       };
@@ -64731,17 +64838,6 @@ RPGACE.register('myDay', {
         L.loadMisses()
       ]).then(draw).catch(function(e) { body.innerHTML = ''; var m = document.createElement('div'); m.style.color = '#CC4A4A'; m.textContent = 'My Day could not load: ' + (e.message || e); body.appendChild(m); });
       return pop;
-    },
-    // Open the evening review by itself, once a day, at its time.
-    _maybeEvening: function() {
-      var self = RPGACE.modules.myDay, L = self.logic;
-      if (document.getElementById('myday-evening') || document.getElementById('myday-morning') || !RPGACE.sb || !RPGACE.sb.select) return;
-      var seen = null; try { seen = localStorage.getItem('myday_evening_seen'); } catch (e) {}
-      var n = new Date(), day = L.reviewDate(n), nowMin = n.getHours() * 60 + n.getMinutes();
-      if (seen === day || (nowMin >= 240 && nowMin < 17 * 60)) return;
-      Promise.all([L.load(), L.loadTimings()]).then(function() {
-        if (L.eveningDue(nowMin, L.eveningOpen(day), seen, day)) self.ui.openEvening();
-      }).catch(function() {});
     },
     // ── MD-4 focus timer bar ────────────────────────────────────────────
     // A bar along the bottom of every screen while a block timer runs.
@@ -64819,7 +64915,7 @@ RPGACE.register('myDay', {
         var c = L.count135(blocks), lim = { big: 1, medium: 3, small: 5 };
         tip.innerHTML = '1-3-5: ' + ['big', 'medium', 'small'].map(function(k) { var over = c[k] > lim[k]; return '<span style="color:' + (over ? '#e0a84c' : 'var(--text)') + ';">' + k[0].toUpperCase() + k.slice(1) + ' ' + c[k] + '/' + lim[k] + '</span>'; }).join(' · ') +
           ' <span style="color:var(--muted);">(big = an hour+, medium = 20 min+)</span>';
-      } else tip.textContent = 'Fill each block with what you\'ll actually do. Actions below fit around them.';
+      } else tip.textContent = 'Fill each block with what you\'ll actually do. Due Actions show up inside 📋 Plan block for their realm.';
       wrap.appendChild(tip);
       blocks.forEach(function(b) {
         var row = document.createElement('div');
@@ -65502,8 +65598,7 @@ RPGACE.register('myDay', {
       var self = RPGACE.modules.myDay, L = self.logic, U = self.ui, st = self._settings || {};
       if (!self._routines || !self._alarms) return;
       var today = L.iso(), a = self._alarms.filter(function(x) { return x.day === today; })[0];
-      var first = L.bookendTasks('morning')[0];
-      var done = !!(first && L.todayLog(first, self._logs || [], today) && L.todayLog(first, self._logs || [], today).status === 'completed');
+      var ds = L.dayState(), done = !!(ds && ds.day === today && ds.up_at && !ds.bed_at);
       var ring = L.alarmDue(Date.now(), a, done, st);
       var bar = document.getElementById('myday-alarm');
       if (!ring) { if (bar) bar.remove(); return; }
@@ -65512,15 +65607,10 @@ RPGACE.register('myDay', {
         bar = document.createElement('div'); bar.id = 'myday-alarm'; bar.setAttribute('role', 'alert');
         bar.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:100002;display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;background:var(--orange);color:#111;font-weight:700;font-size:15px';
         var t = document.createElement('div'); t.style.cssText = 'flex:1;min-width:0';
-        t.textContent = '⏰ Time to get up' + (first ? ' — first: ' + first.title : '');
-        var ok = document.createElement('button'); ok.type = 'button'; ok.id = 'myday-alarm-done'; ok.textContent = first ? '✅ ' + first.title + ' done' : 'OK';
+        t.textContent = '⏰ Time to get up';
+        var ok = document.createElement('button'); ok.type = 'button'; ok.id = 'myday-alarm-done'; ok.textContent = '☀️ I\'m up';
         ok.style.cssText = 'min-height:44px;padding:8px 14px;border-radius:10px;border:none;background:#111;color:#fff;font-weight:700;cursor:pointer;font-family:inherit';
-        ok.onclick = function() {
-          ok.disabled = true;
-          if (!first) { bar.remove(); return; }
-          L.tick(first, {}).then(function() { bar.remove(); RPGACE.utils.toast('⏰ Alarm off — good morning', 'var(--gold)', 2200); return L.load(); }).then(function() { if (document.getElementById('myday-panel')) U.render(); })
-            .catch(function(e) { ok.disabled = false; RPGACE.utils.toast('⚠️ Not ticked: ' + (e.message || e), '#CC4A4A', 3500, 'myDay'); });
-        };
+        ok.onclick = function() { ok.disabled = true; U.imUp().catch(function() { ok.disabled = false; }); };
         bar.appendChild(t); bar.appendChild(ok); document.body.appendChild(bar);
         self._alarmBeepAt = 0;
       }
@@ -66407,19 +66497,22 @@ RPGACE.register('myDay', {
       return f;
     },
 
-    // Plan my day: pick a date; it opens on what's due that day fitted
-    // around shifts (AC-2, Oct 21 2026: day/week templates and the "like
-    // last Tuesday" suggestion are gone); edit it, then Lock in.
+    // Plan my day: pick a date; it shows that day's blocks (from Plan week
+    // or added here) and you fill each with 📋 Plan block. Day Bookends (Oct
+    // 27 2026, Alex: "when i plan my day, i only plan steps that are needed
+    // to be done in blocks that i planned out in plan my week"): no loose
+    // list of due Actions; they are offered inside a matching realm block.
+    // New blocks added here are saved with Lock in. opts.after runs on close.
     openPlan: function(isoDate, opts) {
       var self = RPGACE.modules.myDay, L = self.logic, esc = self.ui._esc;
       var today = L.iso();
-      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '☀️ My Day', title: 'Plan my day', width: '600px', noDefaultClose: true });
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '☀️ My Day', title: 'Plan my day', width: '600px', noDefaultClose: true, onClose: opts && opts.after ? opts.after : null });
       pop.box.id = 'myday-dayplan';
       var inp = 'background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;padding:6px;font-family:Rajdhani,sans-serif;min-height:40px;box-sizing:border-box;';
       var state = { date: isoDate || today, items: [] };
       var nowMinFor = function(d) { var n = new Date(); return d === today ? n.getHours() * 60 + n.getMinutes() : undefined; };
       var load = function() {
-        state.items = L.buildDay(state.date, [], { nowMin: nowMinFor(state.date) });
+        state.items = [];
         draw();
       };
       var draw = function() {
@@ -66439,7 +66532,7 @@ RPGACE.register('myDay', {
         pop.box.appendChild(top);
         var hint = document.createElement('div');
         hint.style.cssText = 'font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5;';
-        hint.textContent = 'What\'s due this day, fitted around your shifts. Untick, change times and lengths, remove or add, then Lock in. ⚠ = overlaps your shift or its travel.';
+        hint.textContent = 'Plan inside your blocks: fill each with 📋 Plan block (due Actions are offered in the block for their realm), or add a block below. ⚠ = overlaps your shift or its travel.';
         pop.box.appendChild(hint);
         // MD-3: blocks already placed for this day (Plan week), each filled with 📋 Plan block.
         self.ui.plannedBlocks(pop.box, d, function() { draw(); });
@@ -66517,26 +66610,15 @@ RPGACE.register('myDay', {
           row.appendChild(cb); row.appendChild(t); row.appendChild(name); row.appendChild(rm);
           list.appendChild(row);
         });
-        if (!state.items.length) list.innerHTML = '<div style="font-size:13px;color:var(--muted);padding:8px 0;">Nothing planned yet — add something below.</div>';
+        if (!state.items.length && !L.dayBlocks(d).length) list.innerHTML = '<div id="mdp-noblocks" style="font-size:13px;color:#e0a84c;padding:8px 0;">No blocks for this day yet — add a Realm or Housekeeping block below.</div>';
+        else if (state.items.length) list.insertAdjacentHTML('afterbegin', '<div style="font-size:12px;font-weight:700;color:var(--text);margin:4px 0;">➕ New blocks (saved when you Lock in)</div>');
         pop.box.appendChild(list);
         // add row
         var add = document.createElement('div');
         add.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;';
-        var rsel = document.createElement('select');
-        rsel.id = 'mdp-add-routine'; rsel.style.cssText = inp + 'flex:1;min-width:160px;';
-        var inDay = {}; state.items.forEach(function(x) { if (x.type === 'routine') inDay[String(x.routine_id)] = 1; });
-        rsel.innerHTML = '<option value="">+ Add an action…</option>' + (self._routines || []).filter(function(r) { return r.cadence !== 'every_days' && r.cadence !== 'next_time' && !inDay[String(r.id)]; })
-          .map(function(r) { return '<option value="' + esc(r.id) + '">' + esc((r.icon ? r.icon + ' ' : '') + r.title) + '</option>'; }).join('');
-        rsel.onchange = function() {
-          var r = (self._routines || []).filter(function(x) { return String(x.id) === rsel.value; })[0];
-          if (!r) return;
-          var sl = L.suggestSlots([r], { shifts: L.shiftsOn(d), sched: L.busySched(d).concat(state.items.filter(function(x) { return x.keep !== false && x.start; }).map(function(x) { var m = L.toMin(x.start); return { hour: Math.floor(m / 60), minute: m % 60, estimated_mins: x.mins }; })), nowMin: nowMinFor(d), timing: self._settings })[0];
-          state.items.push({ type: 'routine', routine_id: String(r.id), title: r.title, category: (r.area || 'personal').toLowerCase(), start: sl && sl.start != null ? L.fmtMin(sl.start) : '', mins: sl ? sl.mins : (r.est_mins || 15), keep: true });
-          L.sortDay(state.items); draw();
-        };
-        var cbB = self.ui._btn('+ Chore block', ''); cbB.id = 'mdp-add-chores';
+        var cbB = self.ui._btn('+ Housekeeping block', ''); cbB.id = 'mdp-add-chores';
         cbB.onclick = function() {
-          if (state.items.some(function(x) { return x.type === 'chore_block'; })) { RPGACE.utils.toast('This day already has a chore block — change its length instead', '#e0a84c', 2600); return; }
+          if (state.items.some(function(x) { return x.type === 'chore_block'; })) { RPGACE.utils.toast('This day already has a housekeeping block — change its length instead', '#e0a84c', 2600); return; }
           // The longest block that fits a free gap: 2 h, then shorter.
           var busy = state.items.filter(function(x) { return x.keep !== false && x.start; }).map(function(x) { var m = L.toMin(x.start); return { hour: Math.floor(m / 60), minute: m % 60, estimated_mins: x.mins }; });
           var mins = 120, sl = null;
@@ -66545,7 +66627,7 @@ RPGACE.register('myDay', {
             if (got && got.start != null) { sl = got; mins = len; return true; }
             return false;
           });
-          state.items.push({ type: 'chore_block', title: '🧹 Chore block', start: sl && sl.start != null ? L.fmtMin(sl.start) : '', mins: mins, keep: true, chore_ids: L.fillBlock(mins, d, L.blockedIds(d)).items.map(function(c) { return String(c.r.id); }) });
+          state.items.push({ type: 'chore_block', title: '🧹 Housekeeping block', start: sl && sl.start != null ? L.fmtMin(sl.start) : '', mins: mins, keep: true, chore_ids: L.fillBlock(mins, d, L.blockedIds(d)).items.map(function(c) { return String(c.r.id); }) });
           L.sortDay(state.items); draw();
         };
         var dayBusy = function() { return state.items.filter(function(x) { return x.keep !== false && x.start; }).map(function(x) { var mm = L.toMin(x.start); return { hour: Math.floor(mm / 60), minute: mm % 60, estimated_mins: x.mins }; }); };
@@ -66597,14 +66679,7 @@ RPGACE.register('myDay', {
             L.sortDay(state.items); draw();
           });
         };
-        var itB = self.ui._btn('+ Something else', ''); itB.id = 'mdp-add-item';
-        itB.onclick = function() {
-          var title = window.prompt('What is it?');
-          if (!title || !title.trim()) return;
-          state.items.push({ type: 'item', title: title.trim(), start: '', mins: 60, keep: true });
-          draw();
-        };
-        add.appendChild(rsel); add.appendChild(cbB); add.appendChild(ckB); add.appendChild(shB); add.appendChild(rbB); add.appendChild(itB);
+        add.appendChild(rbB); add.appendChild(cbB); add.appendChild(ckB); add.appendChild(shB);
         pop.box.appendChild(add);
         var err = document.createElement('div');
         err.id = 'mdp-err';
@@ -66622,7 +66697,7 @@ RPGACE.register('myDay', {
             self.ui.render();
           }).catch(function(e) { lock.disabled = false; lock.textContent = '🔒 Lock in'; err.textContent = e.message || String(e); err.style.display = 'block'; });
         };
-        bar.appendChild(close); bar.appendChild(lock);
+        bar.appendChild(close); if (state.items.length) bar.appendChild(lock);
         pop.box.appendChild(bar);
       };
       L.loadRecipes().catch(function() { return []; }).then(function() {
