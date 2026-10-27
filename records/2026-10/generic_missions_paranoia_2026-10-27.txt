@@ -1,0 +1,89 @@
+GENERIC MISSIONS WITH CONTEXT — /paranoia + /free-for-all-debate + /scope + GODMODE + /drift + /interrogation, then /CEO
+Opened Oct 27 2026 (CEO Loop 1, Step 1 compile).
+
+1. ASK (Alex, Oct 27, verbatim, sent with 3 phone screenshots of the Calendar):
+"Poorly done on phone. Also the new tasks in live now are too specific, but it works with a tweak - it should be a generic
+mission (eg the poking pork etc - too specific, but roasting with technique, and then planning what is going to be roasted
+through generate recipe to choose context would be awesome) so making generic missions that I can then pick context for
+would be a massive upgrade, it helps with realm block planning, making those special to each cook etc  this can be done on
+other domains too. /paranoia and /free-for-all-debate with /scope /Godmode /drift and /interrogation into oblivion for
+scrutiny team, then /CEO"
+("Poorly done on phone" = the Calendar layout; fixed and shipped separately in 87d0fdc, not part of this plan.)
+
+2. EVIDENCE (/scope + GODMODE, live, Oct 27)
+- realm_tasks by status: inbox 113, kept 63, proposed 172 (catalogue), dropped 1, across 13 realms.
+- Video tasks come from DB function realm_tasks_from_report(uuid): one task per realm_sections quest, title = quest name,
+  notes = quest action, kind once, earns xp 5-100, status inbox. They are one-off and very specific, e.g. Chef inbox:
+  "Crackling Code — test the poke-and-score skin prep on any pork joint", "Knuckle Down — cook the full Schweinshaxe
+  recipe", "Caraway Rub Remix", "Sheet-Pan Cinnamon Rolls", "Cream Cheese Icing Experiment".
+- Catalogue tasks (data/realm_tasks_catalogue.py, status proposed) are already generic but carry no context:
+  Chef "Learn a technique", "Cook a new cuisine", "Master a sauce", "Cook a saved recipe" (5 types: cook/kitchen/learn/
+  plan/recipes).
+- Live now (realmTasks.ui.openLive) shows a block's type chips, top 3 tasks by logic.rank, Start opens the task's page
+  (opens), Done ticks into the block. Plan block (myDay.ui.planBlock) fills a block from due Actions + realm activities.
+- Context generators that already exist: Chef cookingOracle.logic._generate(description, servings, cb, stockOnly)
+  (recipe from a description, optionally stock-only); Athlete exerciseLibrary combos (DR-12); Creator/Producer Idea Bank
+  (conid_pot), reference tracks; Explorer tripPlans Ideas; Scholar library_items.
+- Nothing links a task to a chosen context today; chore_blocks.items[] holds what a block will do (label, src, ref_id).
+
+3. FREE-FOR-ALL DEBATE (4 real shapes, each argued by its own competitor)
+ A "Mission + context slot": a mission is generic (verb + skill, e.g. "Roast with a technique"); it has a context slot
+   filled when planned/started; video specifics become CONTEXT CARDS under a mission ("poke-and-score crackling" is a
+   technique card under Roast). For: exactly Alex's words, reusable, repeatable, helps block planning. Against: new
+   shape on realm_tasks (or a new table), migration of 113 inbox rows.
+ B "Generalise on intake": keep the pipeline; the cheap model maps each video quest to the nearest generic mission and
+   stores the specific as an example. For: automatic, no new UI to learn. Against: alone it gives no place to choose
+   context; mapping errors need review.
+ C "Group, don't change": keep specific tasks, show them grouped under generic headings in Live now. For: cheapest.
+   Against: doesn't give "pick context" or help planning; the inbox keeps filling with one-offs. Loses on Alex's goal.
+ D "Context = the realm's own generator": choosing context runs the realm's existing engine (Chef → Generate recipe with
+   the technique pre-filled; Athlete → exercise combo; Producer → reference track / beat idea; Creator → post idea).
+   For: reuses engines (rule 8), "making those special to each cook". Against: costs a model call where the generator
+   uses one; not every realm has a generator.
+ Outcome: A + B + D together beat each alone. A is the shape, B fills it from videos, D fills the context slot.
+ C is rejected (doesn't meet the goal). Why-not (Council of 5): one more step before doing (friction) — mitigated by
+ picking context at plan time, not at the moment of doing; token cost per generated context — use the cheap model or
+ the existing generator's own cost, never a premium triage call (Building guide 11).
+
+4. /drift: consistent with DR-1..12 ("every to-do is a realm task", "Fully merge into Realm Tasks"); refines task shape,
+   does not reintroduce quests. Realm Tasks rest rules (repeatable rests 2 days) still apply to missions. No CAPTURED
+   finding. BASIS for this new plan: none until Alex answers the interrogation.
+
+5. INTERROGATION — questions asked Oct 27 (answers recorded below verbatim when they arrive).
+ Round 1 (Oct 27, verbatim picks):
+ - Mission shape: "Mission + context cards (Recommended)"
+ - Context when: "When planning the block (Recommended)"
+ - 113 waiting: "Sort into missions (Recommended)"
+ - Rollout: "Realms with a generator (Recommended)"  (Chef, Athlete, Producer, Creator)
+ Round 2 (Oct 27, verbatim):
+ - Missions from: "Make it so only generic missions are reviewed. When choosing mission in block I can then choose context"
+   -> understood: the review queue (inbox / Catalogue) only ever shows generic MISSIONS. Specific items from videos are
+      filed automatically as context cards under a mission (no review). Only when a video brings something no mission
+      covers does a new generic mission get proposed for review. Context is chosen when a mission is picked for a block.
+ - XP: "Mission's fixed XP (Recommended)"
+ - Card after use: "Stays, marked 'done N times' (Recommended)"
+ - Chef link (multi): "Save the recipe to My Recipes", "Make it the block's planned cook", "Add missing items to shopping"
+
+6. DRAFT PLAN "Generic Missions" (GM-1..GM-9) — Council of 5 reviewed, awaiting Alex's approval (CEO Loop 1 Step 6)
+ GM-1 Shape: missions stay realm_tasks rows (repeatable, generic, fixed XP); new private table mission_contexts
+      (mission_id, realm, title, detail, source video|generated|typed|starter, source_ref, recipe_id, times_done,
+      last_done_at, status kept|dropped). Additive (carve-out). chore_blocks.items[] item gains context_id/context.
+ GM-2 Missions for Chef, Athlete, Producer, Creator: catalogue reworded into generic missions with a context kind
+      (recipe / combo / reference / post idea / card), shown in Catalogue for keep/drop (missions only).
+ GM-3 Filing pipeline: one client job (cheap model, batches of ~10) reads inbox video tasks for the 4 realms, maps each
+      to a kept/proposed mission and writes a context card; the task leaves the inbox (status filed, never deleted).
+      Nothing fits -> one proposed generic mission for review. Same job for every new video.
+ GM-4 Backfill: run GM-3 on today's 113 inbox rows (count before/after; the 9 other realms' rows stay in the inbox).
+ GM-5 Plan block: picking a mission asks for context: its cards (untried first, "done N times"), Generate (realm
+      engine), or type your own. Stored on the block item.
+ GM-6 Chef: Generate recipe pre-filled with mission + card -> saved to My Recipes, set as the block's planned cook,
+      missing items added to shopping.
+ GM-7 Athlete (exercise combo, DR-12), Producer (reference track / beat idea), Creator (post idea) as context sources.
+ GM-8 Live now shows mission + context with its Open (recipe, combo, reference, post); Done pays the mission's fixed
+      XP, card times_done +1.
+ GM-9 Wrap: tests, docs, SELF_KNOWLEDGE, notes for rolling out to the other 9 realms.
+ Council of 5: risk = model mis-filing (card shows "filed under X · move"); cost = one cheap call per ~10 tasks, Chef
+ Generate uses the recipe engine's own model; maintainability = one filing job, no second pipeline (rule 8); UX = one
+ extra pick in Plan block, chosen by Alex; why-not = adds a step before doing and a new table — accepted because
+ context at plan time is exactly what Alex asked for. Status 'filed' needs the realm_tasks status check widened
+ (query pg_constraint first; additive value, not a delete).
