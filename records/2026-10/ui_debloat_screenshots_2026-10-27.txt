@@ -1,0 +1,22 @@
+UI Debloat — screenshot tour (Oct 27 2026). Alex's words verbatim, findings per page. Builds nothing until agreed.
+
+PROMPT 1 (verbatim): "I hate how cluttered and ugly everything looks, I really will need you to lock in and /debloat all
+domains and pages, because it looks hideous, the clutter makes it so hard to use. ... I'll go through all pages making
+screenshots so you see how horrible it all looks"
+
+PAGE: Selling (screenshot 1 + full page text pasted)
+ Verbatim: "each method needs to be broken down into smaller pages ( beats for sale; artist outreach; outreach and collabs
+ log; money in is like a target - i think target should be in a home dashboard for each realm) and the button beneath
+ selling should be a right swipe, not that button structure - i hate this"
+ Findings: one long page holds Hustler realm card + 4 sections (Beats for sale 4 steps, Artist outreach 5 steps,
+ Outreach & collabs log, Money in) + Money out. The round ☰ button under every area title (SL-0 RPGACE.sideList) is what
+ he wants replaced by swipe-right only.
+
+PAGE: Knowledge / Library -> Videoworm (screenshots 2-4)
+ Verbatim: "knowledge is way too bloated - id like the share a video function to expand beyond just videos; i want to
+ share texts and pages for analysis; knowledge is too confusing to use - i press open in videoworm and instantly see this
+ (pic 3) - wtf is this, i forgot what im looking for, then i barely remember and look (pic 4) no link to full article -
+ this is abysmal"
+ Findings (code): lifeLibrary item "🐛 Open in Videoworm" calls knowledgeHub.ui.go('videoworm') = the whole 80-video
+ Insights list, not that video. The expanded row shows the realm "why" quote + Original link only; no link to the full
+ Encyclopedia article / report.
