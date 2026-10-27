@@ -73,6 +73,20 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-27-calendar-phone" style="margin-bottom:30px;">
+    <div class="card-title">📱 Oct 27 — Calendar fixed on phone; Trackers pop-up refreshes (DR-11)</div>
+    <div class="card-body">
+      Your words, with 3 phone screenshots: "Poorly done on phone".
+      <ul>
+        <li><b>Cause:</b> the Week and Month boxes still had an old card-grid style (2 columns on phone). The newer Week/Month layouts draw their own rows, so the grid split them: Prev/Next sat beside Monday, the day names sat beside the month grid, and the month spilled off the screen (439px wide on a 400px phone). It was always like this on phone, but it only became the main view when DR-8 removed the Daily tab.</li>
+        <li><b>Fix:</b> Week and Month now draw full width: nav on top, then one row per day (Week) or the day names over a 7-column grid that fits the screen (Month). Long shift times are cut with … inside small cells instead of pushing the page wider.</li>
+        <li><b>Monday's two "08:00 🌅 Morning":</b> not a calendar bug. They're two real "I just did" entries saved 7 seconds apart at 02:42 this morning, which looks like a double tap. Nothing deleted; say if you want one removed.</li>
+        <li><b>Trackers pop-up:</b> from My Day's ☰ → Trackers &amp; cut-backs, tapping "Talked today", + or − saved but left the pop-up showing old numbers until you reopened it. It now refreshes in place.</li>
+        <li><b>Honest flags:</b> checked headless at phone width (400px): rows full width, no sideways scroll, Calendar suite 9/9, trackers suite 21/21. Untested by you on your phone.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-10-27-exercise-library" style="margin-bottom:30px;">
     <div class="card-title">🏋️ Oct 27 — Exercise library from your gym videos, with combos that cover each muscle group (DR-12)</div>
     <div class="card-body">

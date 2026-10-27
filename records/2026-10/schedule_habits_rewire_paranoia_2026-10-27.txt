@@ -164,3 +164,5 @@ the RT record (why quest_log is the XP ledger). Fable not used.
  DR-6 deviation recorded: events live in memories (status upcoming), not plans, to avoid plan_made Explorer XP.
 
 10. "Go" (Oct 27, verbatim) after the DR-10 + DR-12 briefs. DR-12 starter-list question unanswered; going with the recommended option (starter list, marked "not from your videos") -- flagged as a default, not his answer.
+
+11. "Go" (Oct 27, verbatim) for DR-11 wrap-up.

@@ -1979,6 +1979,9 @@ function _calFmtShort(s){return s.start+'\u2013'+(s.end==='00:00'?'00:00':s.end)
 
 function buildMonthSlots(){
   const el=document.getElementById('month-slots');if(!el)return;el.innerHTML='';
+  // DR-11 (Oct 27 2026, Alex on phone: "Poorly done on phone"): .month-grid's old card grid (4 cols, 2 on phone)
+  // split nav / day names / grid into columns; this view lays out its own rows.
+  el.style.display='block';
   const ref=window._calMonthDate,yr=ref.getFullYear(),mo=ref.getMonth();
   const btnS='background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:#E2E2EC;padding:5px 13px;border-radius:5px;cursor:pointer;font-family:Rajdhani,sans-serif;font-size:12px;font-weight:700;';
   const moName=ref.toLocaleDateString('en-GB',{month:'long',year:'numeric'});
@@ -1990,19 +1993,19 @@ function buildMonthSlots(){
     +'<button onclick="calMonthNav(1)" style="'+btnS+'">\u25BA</button>';
   el.appendChild(nav);
   const days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  const hdrRow=document.createElement('div');hdrRow.style.cssText='display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px;';
+  const hdrRow=document.createElement('div');hdrRow.style.cssText='display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;margin-bottom:4px;';
   days.forEach(function(d){const h=document.createElement('div');h.style.cssText='font-family:Rajdhani,sans-serif;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted);text-align:center;padding:4px 0;';h.textContent=d.toUpperCase();hdrRow.appendChild(h);});
   el.appendChild(hdrRow);
   const firstOfMonth=new Date(yr,mo,1),gridStart=_calMondayOf(firstOfMonth);
   const lastOfMonth=new Date(yr,mo+1,0),lastDow=lastOfMonth.getDay();
   const gridEnd=new Date(lastOfMonth);gridEnd.setDate(lastOfMonth.getDate()+(lastDow===0?0:7-lastDow));
-  const grid=document.createElement('div');grid.style.cssText='display:grid;grid-template-columns:repeat(7,1fr);gap:2px;';
+  const grid=document.createElement('div');grid.style.cssText='display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;';
   const cursor=new Date(gridStart),todayStr=_calDateStr(new Date());
   while(cursor<=gridEnd){
     const dateStr=_calDateStr(cursor),inMonth=cursor.getMonth()===mo&&cursor.getFullYear()===yr,isToday=dateStr===todayStr;
     const {shifts,agendas}=_calCellItems(dateStr);
     const cell=document.createElement('div');
-    cell.style.cssText='background:'+(isToday?'rgba(201,168,76,0.1)':'rgba(255,255,255,0.02)')+';border:1px solid '+(isToday?'rgba(201,168,76,0.4)':'rgba(255,255,255,0.05)')+';border-radius:4px;padding:4px;min-height:52px;cursor:pointer;';
+    cell.style.cssText='background:'+(isToday?'rgba(201,168,76,0.1)':'rgba(255,255,255,0.02)')+';border:1px solid '+(isToday?'rgba(201,168,76,0.4)':'rgba(255,255,255,0.05)')+';border-radius:4px;padding:4px;min-height:52px;cursor:pointer;min-width:0;overflow:hidden;';
     cell.onclick=(function(ds){return function(){var sf=RPGACE.modules.scheduleFixes;if(sf)sf.ui.openDay(ds);};})(dateStr);
     const dayNum=document.createElement('div');dayNum.style.cssText='font-family:Rajdhani,sans-serif;font-size:11px;font-weight:700;color:'+(isToday?'#C9A84C':inMonth?'#E2E2EC':'rgba(226,226,236,0.25)')+';margin-bottom:2px;';dayNum.textContent=cursor.getDate();cell.appendChild(dayNum);
     shifts.forEach(function(s){const dot=document.createElement('div');dot.style.cssText='background:rgba(201,168,76,0.15);border-left:2px solid #C9A84C;border-radius:2px;padding:1px 4px;font-size:9px;color:#C9A84C;font-family:Rajdhani,sans-serif;font-weight:700;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';dot.textContent='\uD83C\uDFEA '+_calFmtShort(s);cell.appendChild(dot);});
@@ -2016,6 +2019,7 @@ function calYearNav(delta){const d=window._calMonthDate;window._calMonthDate=new
 
 function buildWeekSlots(){
   const el=document.getElementById('week-slots');if(!el)return;el.innerHTML='';
+  el.style.display='block'; // DR-11: same as buildMonthSlots - one full-width row per day, not .week-grid columns
   if(!window._calWeekStart)window._calWeekStart=_calMondayOf(new Date());
   const monday=new Date(window._calWeekStart),endSun=new Date(monday);endSun.setDate(monday.getDate()+6);
   const wNum=Math.ceil(monday.getDate()/7);
@@ -66937,7 +66941,13 @@ RPGACE.register('myDay', {
       var self = RPGACE.modules.myDay, L = self.logic, esc = self.ui._esc, t = self._trk;
       if (!t) return;
       var cardCss = 'border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:12px;background:var(--panel);';
-      var redraw = function() { self.ui.render(); };
+      // DR-11: from the ☰ drawer this draws into a popup (#mdx-tool), which
+      // self.ui.render() never touches, so a tap redrew the home but left the
+      // popup stale. State is updated in place, so redraw the popup too.
+      var redraw = function() {
+        if (panel.id !== 'myday-panel' && panel.isConnected) { panel.innerHTML = ''; self.ui.renderTrackers(panel, today); }
+        self.ui.render();
+      };
       var fail = function(e) { RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500, 'myDay'); redraw(); };
 
       self.ui._group(panel, '📍 Days since');
