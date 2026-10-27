@@ -73,6 +73,19 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-27-oracle-chat-memory" style="margin-bottom:30px;">
+    <div class="card-title">🧠 Oct 27 — Oracle remembers your chats (FL-3)</div>
+    <div class="card-body">
+      Behind 4 of the 9 flags (Oct 5 book list, Oct 16 "no previous session history", both Oct 26 flags). Your answer: "Save every chat".
+      <ul>
+        <li>Every Oracle question and answer (normal and Professor) is saved to a private table, <code>oracle_chats</code>, readable only by the signed-in app. One shared spot does it: the same function that draws the 📓 row under each answer.</li>
+        <li>Ask things like "what did we talk about last time", "do you remember the book list I gave you", or "remember when we discussed…" and Oracle looks through past chats (up to 30 matches) and answers from them. Normal chats cost the same as before — past chats are only read when a question needs them.</li>
+        <li>Only chats from now on are saved; earlier ones were never stored anywhere, so they can't be recovered.</li>
+        <li>Checked in a headless browser: both reply paths save, past-chat questions route to the saved chats, no errors. Untested by you.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-10-27-work-clock-links" style="margin-bottom:30px;">
     <div class="card-title">⏱ Oct 27 — Clock in, Break and Clock out on your My Day shift (FL-7)</div>
     <div class="card-body">
