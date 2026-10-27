@@ -24,6 +24,7 @@ Modules (`domain: 'habits'`, 6): `moneyHub`, `cookingOracle`, `shoppingWishlist`
 ## Health & body (`healthBody`, plan HB-1..3 built, HB-4 waiting)
 - Private `food_log`/`body_log`/`health_settings`, read via `/api/data-write` action `read`.
 - Food: photo (`RPGACE.utils.oracleVision`) or typed (`phylumPath._callGroundWorkerJSON`) → items with grams → `cookingOracle.logic._lookupCofid` re-check (CoFID wins) → editable review. Cooks finished within 3 days add one serving (`recipe_ingredients.grams_estimate` × per-100g ÷ `servings_base`).
+- `decisionJournal` (schedule domain) sits beside the Wishlist cool-off. [G1](../../patch_notes.html#card-2026-10-10-money-guardrails)
 - One Gym page (DR-9): the 🏋️ Gym card holds the log, bests and the programme plan (`#gym-plan`, drawn by `healthBody.ui.renderGym`); Health & body tabs are Today/Trends/Targets and `healthBody.ui.open('gym')` opens the Gym card. [story](../../patch_notes.html#card-2026-10-27-calendar-gym)
 - Gym: `health_settings.programme` (PPL/UL/FB over chosen days); `logic.suggest` = double progression (+2.5kg at top of range); Start → `gymTracker.ui.openLog` prefilled. `gymTracker` writes `gym_sessions`/`gym_sets`.
 - Body: water, weight (7-day avg), sleep, 14-day trends; My Day card `healthBody.ui.myDayCard` with a +1 💧 button (`#myday-health-water`, same `logic.addBody('water', glass)` write; count updates in place). [FL-6](../../patch_notes.html#card-2026-10-27-fl6-water-accept-all)
