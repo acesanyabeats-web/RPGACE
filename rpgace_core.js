@@ -9507,11 +9507,14 @@ RPGACE.register('pathways', {
       };
     },
     // One tap = one quest (was: every quest at once).
+    // Realm Tasks (Oct 27 2026): a video's idea is a realm task now (one
+    // system, not quests + tasks); every report's ideas already reach the
+    // 📥 inbox by themselves - this keeps the one tapped.
     addQuest: function(report, i) {
-      var qe = RPGACE.modules.questEngine, c = RPGACE.modules.pathways.logic.questCand(report, i);
-      if (!qe || !qe._createQuests) return Promise.reject(new Error('Quests are not loaded'));
-      if (!c) return Promise.reject(new Error('That quest is no longer in the report'));
-      return qe._createQuests([c]).then(function(rows) { return (rows || [])[0] || null; });
+      var rt = RPGACE.modules.realmTasks, c = RPGACE.modules.pathways.logic.questCand(report, i);
+      if (!rt) return Promise.reject(new Error('Tasks are not loaded'));
+      if (!c) return Promise.reject(new Error('That idea is no longer in the report'));
+      return rt.logic.keepIdea({ realm: c.category, title: c.name, notes: c.description, xp: c.xp, source: { table: 'intel_reports', ref: c.sourceRef, label: String(report.title || 'video').slice(0, 80) } });
     },
     makeQuests: function(entry, report) {
       var L = RPGACE.modules.pathways.logic, qe = RPGACE.modules.questEngine;
@@ -9669,10 +9672,10 @@ RPGACE.register('pathways', {
           add.disabled = true;
           L.addQuest(report, i).then(function() {
             add.textContent = '✓ Added';
-            RPGACE.utils.toast('⚔️ Quest added: ' + q.name, 'var(--gold)', 2500, 'pathways');
+            RPGACE.utils.toast('➕ Task kept: ' + q.name, 'var(--gold)', 2500, 'pathways');
           }).catch(function(e) {
             add.disabled = false;
-            RPGACE.utils.toast('Couldn\'t add the quest: ' + e.message, '#CC4A4A', 4000, 'pathways');
+            RPGACE.utils.toast('Couldn\'t keep the task: ' + e.message, '#CC4A4A', 4000, 'pathways');
           });
         };
         r.appendChild(t); r.appendChild(xp); r.appendChild(add);
@@ -9714,10 +9717,10 @@ RPGACE.register('pathways', {
         add.disabled = true;
         L.addQuest(report, i).then(function() {
           added[i] = true; show();
-          RPGACE.utils.toast('⚔️ Quest added: ' + qs[i].name, 'var(--gold)', 2500, 'pathways');
+          RPGACE.utils.toast('➕ Task kept: ' + qs[i].name, 'var(--gold)', 2500, 'pathways');
         }).catch(function(e) {
           add.disabled = false;
-          RPGACE.utils.toast('Couldn\'t add the quest: ' + e.message, '#CC4A4A', 4000, 'pathways');
+          RPGACE.utils.toast('Couldn\'t keep the task: ' + e.message, '#CC4A4A', 4000, 'pathways');
         });
       };
       r.appendChild(t); r.appendChild(roll); r.appendChild(add);
@@ -11821,6 +11824,8 @@ RPGACE.register('encyclopediaPosts', {
                 .catch(function(e) { save.disabled = false; RPGACE.utils.toast('Couldn\'t save idea: ' + e.message, '#CC4A4A', 4000, 'encyclopediaPosts'); });
             };
             row.appendChild(save); row.appendChild(from);
+            // Realm Tasks: an idea card can become a task (duplicate-checked).
+            if (RPGACE.modules.realmTasks) row.appendChild(RPGACE.modules.realmTasks.ui.taskButton({ title: String(d.insight_text || '').slice(0, 120), realm: (d.realms || [])[0] || d.realm || null, kind: 'once', source: { table: 'idea_card', ref: String(d.id), label: String(d.source_entry_title || 'idea card').slice(0, 60) } }));
             var ph = state.shelfOf && state.shelfOf(d);
             if (ph && RPGACE.modules.knowledgeHub) {
               var sh = self._btn('🧭 Phylum ' + ph + ' shelf', false); sh.className = 'enc-idea-shelf';
@@ -12869,7 +12874,7 @@ RPGACE.register('oracleAppGrounding', {
   // bugs"/"Biggest confirmed-not-built items" sections should update this
   // string in the same session - same discipline as every other oversight
   // doc, just condensed for token cost (rule 11).
-  SELF_KNOWLEDGE: '[[CORE]] RPGACE STATUS - Oracle\'s notes about its own app, last reviewed Oct 27 2026. Answer honestly from these notes: never invent a feature, never call something finished unless it says Alex hand-tested it; assume everything here is built but NOT hand-tested by Alex unless a line says otherwise (smoke_test.html holds his own ticks; well under half of its rows are confirmed). The notes are split into 8 domain sections (ORACLE, CONTENT, KNOWLEDGE, HABITS, SCHEDULE, CHRONICLES, OVERSIGHT, PLATFORM), the same 8 groups as the left menu and RPGACE.DOMAINS; only the sections relevant to a message are sent with it. RPGACE is Alex\'s personal app (UK music producer, Derby): beats, posting, selling, learning, cooking, gym and health, his day, money and XP. One client script (rpgace_core.js, served minified), Supabase for data, Vercel for hosting and /api functions, Claude for Oracle. 81 registered modules, each with a domain key and a ui/logic split. XP: ONE system - database triggers write every xp_events row from xp_rules (the app never awards XP itself), 13 realms (Producer, Creator, Hustler, Chef, Athlete, Scholar, Life, Homekeeper, Mind, Steward, Explorer, Connector, Builder). Every input, quest, plan and activity carries chosen realms (RPGACE.realmPicker, up to 4; Not now holds an input until realms are picked). Oracle cannot save data, award XP or act on its own: it suggests, and Alex confirms through the app. RPGACE never sends messages, books or pays for anything. There is no Supabase backup or point-in-time recovery (Alex chose the Free plan; do not re-raise it). Known open gaps: reference_tracks scale/genre are mostly empty, so beat matches repeat; no beat-grid audio sync exists; the old swipe freeze has no root cause (freezes are now recorded in perf_freezes); steps from Samsung/Google are not connected. If Alex asks what to build next, give ONE concrete suggestion grounded in a real gap.\n\n[[ORACLE]] ORACLE (domain oracle: chat, grounding, actions, Professor). Chat streams from api/oracle.js (Claude, prompt caching on every call, a 3000-token reply cap); renderMarkdown escapes HTML first. Oracle Professor (oracleProfessor module, on for every chat message): a cheap Haiku planner picks which data sources and which of these note sections a message needs; deep questions (why, compare, plan, explain, long) get gather -> condense -> an Opus 5.5 answer with Answer / Counter-case / Confidence / Unknowns, source tags, a How I know fold-out and a cost line (Sonnet if Opus is unavailable, said so); other messages get a normal reply with only the picked sections. prof: forces a professor answer, quick: forces a normal one; messages owned by other features (prefixes like schedule oracle:, links, trips, recipes, Oracle actions) are never routed. The web topic sent to Gemini is strictly cleaned (no names, places, numbers, dates or I/my words). Ask My Data (askMyData module): Oracle can request one read-only lookup with a DATA_QUERY trailer across every area (past Oracle chats - every question and answer is kept in the private oracle_chats table since Oct 27 2026, so a question like what did we talk about or do you remember looks them up - stock, recipes, planned cooks, wishlist, journal, quests, agenda, watchlist, analysed videos, encyclopedia, idea cards, jargon, reference tracks, finance, books, productions, changelog, routines, xp_events, plans, food_log, body_log, posts, people, outreach, subscriptions, screenshots, perspective_reports); up to 30 rows, shown to Alex, answer from those rows only, never writes. Web lookups (webLookup module): in the main chat only, a WEB_QUERY line reuses a Life Library lookup from the last 30 days or sends the question to /api/search (Gemini, needs GEMINI_API_KEY), saves it as a web_lookup library_items row and shows the sources; at most one search per message. Oracle Control (oracleControl module, oracle_actions table): a confirm-before-execute popup with 5 wired actions (log_beat, new_quests, draft_email, yt_stats, log_notion) plus log_outreach which only opens the form; reached from the floating 🔮 button and the Oracle page Tools row. Oracle may suggest a new action (ORACLE_SUGGEST_ACTION), but it only joins the list after Alex approves and still needs coded wiring before it does anything. Deep dive (deepDive module): a 🧭 Deep dive button under any reply that lists 3+ questions opens one pop-up per question (answer, Back, Skip, Next; kept on the device while going), then an extra-thoughts pop-up, then sends one compiled prompt (answers, skipped numbers, extra thoughts) to Oracle for one complete answer; nothing goes to the journal unless Alex taps 📓 on that answer. Save as entry (oracleEntry module): 📓 under a reply saves a journal entry (⭐ big day = +50 XP over its realms) or a realm mission (a finished Doing Now entry, +30 XP); ⭐ on a reply also files it in the Life Library. Oracle Mode switch (cog on the top bar): Real, Dummy (labelled fake replies, no cost) or Fallback Scout (sends queue to oracle_fallback_queue). Background analysis switch (orchestratorCC module, app_settings): Orchestrator CC (a Claude Code session on Alex\'s Claude plan) every 2 hours by default, or the API at once; anything waiting 12 hours goes to the API. On Orchestrator CC: videos are downloaded/transcribed by the runner and analysed by scripts/intel_cc_worker.py every 2 hours (up to 5); Bookworm chapter extraction, weekly challenge ideas and the Year Wrapped paragraph go through oracle_fallback_queue. Oracle page layout: chat input under the messages, one Tools row (New quests, Draft email, Log to Notion, YT stats, Prod. Oracle, Platform Oracle, Visual Oracle, Repurpose, Schedule Oracle, Phylum Path), Agent actions & connected apps folded at the bottom. Platform Oracle (captionsPanel module): one panel with Instagram / YouTube / TikTok caption commands; producer tools (producerTools module) are prompts placed in Selling\'s steps (A&R Critic, Artist Outreach, Contract Red Flags, Negotiation Rehearsal) and Beats\' idea step (Playlist Psychologist). Grounding: these notes go in only by section; anatomy questions read oracle_module_anatomy; mockOracle and oracleFetchGuard wrap calls. No voice: the browser mic was removed (Aug 30 2026) and Fish Audio is a dormant scaffold with no key. Kimi/Luna routing in api/oracle.js is dormant (no keys) - never claim RPGACE runs on other AI providers today; Claude is the only live chat model.\n\n[[CONTENT]] CONTENT & VIDEO (domain content: Beats, Posting, Selling, Idea Bank). Content Pipeline is a pop-up routing to Beats home, Posting, Selling, Idea Bank, Beat Log and My beats; the old video tools (Visual Treatment, Director Match, Production Panels, Upload Workshop, OBS raw, Activate ConID, the video-job tracker) were removed Oct 17 2026; Visual Oracle keeps 4 commands (copyright risk, mood board, storyboard, OpenMontage brief). BEATS (beatsHub module): Idea -> Make -> Mix -> Log (= finished) -> Release -> Sell with live counts. Start making on an idea (conid_pot) starts a Producer Doing Now session (making/mixing, time adds up on the idea). Beat Log (beatLog module) saves a content_productions row with finished_at, drive + folder of the WAV/stems, stems checklist and session time; Scan audio finds BPM and Major/Minor on the device (never uploaded). Release = links in content_productions.release_links (first one pays beat_released 300). Sell: licence tiers per beat (defaults MP3 lease £30, WAV lease £50, Trackout £100, Exclusive £500 in xp_settings.licence_defaults; a beat\'s own prices never change), Beatstars listing text, Log a sale = chronicles_finance sale linked to the beat (Hustler 2 XP per pound, min 100). Reference tracks (refCorpus): Look up fills Major/Minor, BPM and genre via Gemini 8 at a time, reviewed with Accept/Skip; Last.fm fills beat-match gaps. POSTING (postingHub module, posts table): Idea -> Plan -> Record -> Edit -> Post -> Results; + New post (title, type beat video/tutorial/short clip/studio-life, realms, Creator default). Idea Bank ideas are tagged beat or post (conid_pot.kind). Plan screen: hook, script, shot list, optional Oracle draft, platforms (Instagram, YouTube, TikTok) and one caption per platform; beat videos pick a logged beat and can be sent to the OpenMontage queue (openmontage_jobs). Plan done pays 60 Creator once. Record it / Edit it start Doing Now sessions whose minutes add to posts.record_mins / edit_mins; Ready to post saves file names and places (nothing uploaded). Post it takes one full link per platform (YouTube, Instagram, TikTok, DistroKid); the first link marks it posted and pays 300 Creator; a beat video\'s links also release its beat. Weekly target xp_settings.posts_per_week (default 2) with Due nudges. Results (views, stats) is not built. Each posted post is one Chronicles entry with every stage and time. SELLING (sellingHub module): Beats for sale (List, Promote, Sell, Paid) and Artist outreach (Find artists, Pitch, Follow up, Deal, Paid) with a what\'s-next list closest to money first. Private artists, pitches and pitch_sends tables; a send moves potential pitch -> potential close (pushback) or agreed sale -> paid, or ends as no / no reply, kept in pitch_sends.history with Back a step (never Paid). New pitch: offer type, beats, price, message (Oracle can draft it with {name}); Copy & open copies it and opens their Instagram or email - nothing is sent by RPGACE. Mark sent logs outreach (outreach_log, Hustler XP). Follow-ups due 5 days after sending, then 7; a Follow-up sweep and a Due row. Funnel on Selling home. Money in: monthly income target (xp_settings.monthly_income_target, Tycoon = 12x), income by type (chronicles_finance.income_kind), best-selling beats, earnings per beat. Deals link both ways: a beat\'s Sell screen lists its pitches; People linked to an artist show it. OpenMontage: RPGACE does not make video; a separate Claude Code session (OpenMontage CC, its own repo, fal.ai for generation) takes briefs from openmontage_jobs; paid providers are ruled out for now. Repurpose (contentRepurpose) reads Notion/YouTube via Composio/Supadata.\n\n[[KNOWLEDGE]] KNOWLEDGE (domain knowledge: take in, study, learn, map). Knowledge home (knowledgeHub, /knowledge): a What\'s next line and 4 steps - Take in (Life Library, Screenshots), Study (Bookworm, Videoworm, MusicWorm), Learned (Encyclopedia ideas, Jargon, review badge), Map (Phylum Path); every Knowledge page has Back + home and links onward. Life Library (lifeLibrary, /library, private library_items): everything taken in (links, videos, books, music, files, courses, notes, quotes, recommendations from People) with date, ONE phylum shelf, topics and realms; a link saved twice stays one item. It fills itself (keyword shelf only, no Oracle call) from analysed videos, screenshots, hand-added reference tracks and ⭐ Oracle replies. Morning Brief shows one item a day (30-day no-repeat). Each input earns 60 XP over its realms (first 3 a day). Screenshot Inbox (screenshotInbox, /screenshots, private screenshots table + bucket): Oracle reads each once (text, description, tags, kind, up to two suggested homes); Alex chooses Wishlist, idea card, recipe, journal, keep or delete; a rota is recognised and can import shifts; a receipt can be a business expense. Share to RPGACE (shareInbox): Android share sheet queues links into intel_jobs (iPhone via a Shortcut). Videoworm (local_server/rpgace_intel.py on Alex\'s PC, or Orchestrator CC): reads the whole timed transcript and 8 frames through the picked realms (realm_lenses.json); intel_reports.insights.realm_sections holds per realm a 1-10 score, why, what it teaches, 3-7 key points each with a checked transcript quote and time, a Try this and 3 quest ideas, plus how_made for Creator/Producer/Hustler; quotes not in the transcript are dropped in code; analyser_version is stamped; stuck jobs re-queue after 2 hours; Videoworm shows queue state with Retry. Encyclopedia (encyclopediaPosts): every report becomes an article plus idea cards (encyclopedia_insights, one per key point and Try this, realm-tagged), read Deepstash-style; Ideas | Jargon | Sources tabs; a re-run replaces the report, article and cards. Pathways: one quest idea at a time from a report into the Quest Board (input_quest), add the creator to the watchlist, jargon in the article. Recall (recall module): saved idea cards come back after 1, 3, 7, 16, 35 days with Again / Got it; Bookworm chapters have Cards. Bookworm (bookworm module, bookworm_books/bookworm_chapters): reads a PDF/URL/typed book chapter by chapter through the book\'s realms, insights tagged with a realm; chapters pay half Scholar, half the book\'s realms. Study (studyHub, /study): AWS Certified AI Practitioner - 18 lessons via RPGACE features, 300 Claude-written practice questions (not real exam questions), Quick 10 / topic / 65-question timed mock / service names / Redo, wrong answers on the recall schedule, +2 Scholar per correct (max 30 a day), estimated score out of 1000. Feynman: Explain it back. Taxonomy: 29 phyla (22-29 are the life realms: Ars Culinaria, Corpus Athleticum, Ars Vivendi, Cura Domus, Res Pecuniaria, Peregrinatio, Mens Sana, Societas; 11 is Learning Methods; realm-to-phylum map in realm_lenses.json). taxonomy_tree has 0 rows - every phylum is empty below phylum level until a new structure is built around reviewed jargon; automatic tree growth is paused while it is empty (taxonomyTree.isPaused) - never claim any phylum has depth. jargon_encyclopedia is the standalone term table (545+ terms, most pending, written by a Claude Code session); the Jargon page (jargonEncyclopedia) shows every term with status filters, realm filter, Met in links and inline Accept/Edit/Reject; Knowledge Review (/review) shows pending terms one at a time. Phylum Path groups phyla under realms with each phylum\'s shelf (Library items, idea cards, jargon). Each realm card shows what it knows and a knowledge path: Oracle proposes 3 milestones, Alex accepts one, done ones pay XP sized to the rank gap and every 3 unlock a title.\n\n[[HABITS]] HABITS (domain habits: Cooking, Gym, Health & body, Wishlist, Money). COOKING (cookingOracle): home = Recipes -> Plan a cook -> Shop -> Cook -> Stock with a what\'s-next line; every screen has Back, Cooking home and a ☰ shortcut list. Generate a recipe in Oracle chat (RECIPE_JSON trailer; a Narrow it down step for short requests); recipes are cups + weight, one action per step with a done cue and equipment; a 🔮 critique gives a diff-only update to Accept/Deny; adding an ingredient offers to update the method. My Recipes lists every recipe with in-stock state and last cooked. Ingredient colours: green plenty, yellow short, red none, blue same-aisle alternative, purple will run low, orange a substitute in stock (confirmable, or merged as the same item; only ratios Alex gave, e.g. tamarind concentrate ~1/3 of paste, 8 garlic cloves per bulb), brown omittable. Planned cooks (planned_cooks: draft/scheduled/cooked/discarded) are packed by a joint hands + oven/stovetop scheduler that front-loads prep across recipes, pushed to the Daily Schedule; a draft is never lost and emptying only discards a draft. Shopping lists are aisle-sorted with need/in basket/bought; Done shopping moves the basket into stock and the rest to the Top-up list. Stock (pantry_stock: Pantry, Fridge, Freezer, Equipment) is grouped by food type with cooking/baking tags; amounts use his cup measures (kitchen_equipment) and grams for solids; Add from a photo lists food Oracle sees for review. Every finished cook previews what it takes out of stock (Put it all back undo, once only). Cook Mode: one step per screen with scaled ingredients, equipment, done cue and resume; waiting steps get timers that carry on in a bottom bar; 💬 Ask inside Cook Mode; the last Done asks Actual cook / Just a preview / Not finished (an unplanned actual cook still logs a cooked row and Chef XP). The 8 older recipes have proposed one-action splits waiting: Use these steps per recipe, or ✅ Accept all at the top of My Recipes (two taps; old steps kept as a backup). Nutrition per recipe from cofid_foods (7,743 UK/India/China/Japan/SE Asia foods) then Open Food Facts. Recipe photos: Unsplash if a key exists, else Wikipedia. GYM (gymTracker, gym_sessions/gym_sets): sessions with sets, reps, kg; weekly count against 5; personal bests (+30 Athlete) and estimated 1-rep max; Repeat last. HEALTH & BODY (healthBody, private food_log/body_log/health_settings): food from a meal or label photo or typed words -> items with grams, re-checked against cofid_foods (those numbers win), editable; From your cooks adds one serving; calories and protein against targets. Water, weight (7-day average), sleep, 14-day trends; the My Day health card has a +1 💧 button (one glass, same body_log write). Sleep is typed in until a watch is connected (a Pixel Watch 4 is top of the wishlist; Google Health API planned). Gym plan: PPL / Upper-Lower / Full body over chosen days with a progression nudge (+2.5kg at the top of the range); Start opens the gym log prefilled. Steps are not connected (Samsung partners only, Google Fit closing; Google Health API planned). WISHLIST (shoppingWishlist, wishlist_items): general purchases with priority and a budget-fit; an optional why; a 24-hour cool-off before buying (bought after it = +30 Steward); bought asks the price paid and logs a Chronicles Finance expense; can be marked For the business. MONEY (moneyHub, shared by Hustler and Steward): this month in minus out, subscriptions (private subscriptions table, renewal Due rows, logged once), business purchases with a receipt photo Oracle reads, UK tax-year business costs; no tax export or bank import. Weekly spend limit (xp_settings.weekly_spend_limit) pays +50 Steward if kept. Daily life (dailyLife): fridge photo to stock, watchlist digest in Morning Brief.\n\n[[SCHEDULE]] SCHEDULE & JOURNAL (domain schedule: My Day, Doing Now, Plans, shifts, Morning Brief, Journal). MY DAY (myDay module, routines table shown as Actions): home has Now/Next, Doing now / I just did, one draggable day timeline with the 🌅 Morning block on top (tasks + Morning Brief) and 🌙 Night block at the bottom (tasks + evening review), and a tray of routines, chores, ideas and recipes to drag on; hold to drag, pull edges to resize, tap for Did you do it? / Start now, swipe right done, left tomorrow; Day | Week view; ☰ shortcut list. myDay.logic.segments is the one timeline (shift + travel, Daily Schedule, chore_blocks, Morning/Night); myDay.logic.guard refuses overlaps, pushes blocks along with a 10-minute buffer, asks to shorten if a move is over 30 minutes, always with Undo. DAY BOOKENDS (myDay, myday_settings.day_state, since Oct 27 2026): the day starts when Alex presses ☀️ I\'m up and ends when he presses 🌙 Going to bed - one button on the dashboard and on My Day\'s Now/Next card; nothing opens by the clock any more. I\'m up sets today\'s wake to that minute, stops the alarm, slides today\'s planned blocks later by however late it is (Undo offered), offers yesterday\'s review first if he never pressed Going to bed, then opens Good morning. Going to bed runs the evening review (or Skip review), then Good night: tomorrow\'s blocks with Plan tomorrow, then the alarm (suggested = now + his sleep target from Health & body, earlier if a shift needs it; or No alarm). Wake alarm (myday_alarms): only the one set at bedtime; a phone push every 5 minutes until I\'m up, max 2 hours; a notification, not a silent-mode alarm. A Morning block only counts as missed on a day started with I\'m up; blocks that ended before he got up were slept through, not missed. Plan week: drag blocks on a day timeline; + Realm block for any realm; methods Pomodoro 25/5, Deep work 50/10 or 90, Time-box, Just tick it. Plan my day: blocks only - the day\'s blocks from Plan week (or a Realm, Housekeeping, Cooking or Shopping block added there), each filled with 📋 Plan block from that realm\'s due Actions, books and activities; due Actions are never listed loose on the day; optional Eat the frog or 1-3-5; Lock in saves blocks added there (no templates - deleted Oct 21 2026). Focus timer: ▶ Start on a realm block runs its method with pushes per round; a full run adds +15 to the realm. Good morning screen (opened by I\'m up): shift, time he got up, Morning tasks, frog, today\'s blocks, then the brief. Evening review (opened by Going to bed): done / not done with Tomorrow / Drop / Skip, a line, journal row evening_review (+10 Mind). Weekly review on Sunday evening (journal weekly_review). Chores: repeat every N days from the last tick, never stack; a housekeeping block (formerly chore block) fills with the most overdue chores. Cooking, shopping and realm blocks (+10 XP per non-duplicate activity tick). Habit design: minimum vs goal, habit stacks, never miss twice, days-since dots. Days since card and Cutting back counts (cutback_items/cutback_log, +15 Mind per day at or under target). ✅ What you did under the Daily Schedule vs the plan (worked out, not stored). DOING NOW (doingNow module, rpgace_agendas source doing_now): ▶ Doing now / ✓ I just did ask when (started/finished) and how long; Stop asks how it went (mood, details: who with, where, money, effort); picking an Action ticks it with 0 XP so only the Doing Now entry pays (30 XP over its realms, first 3 a day); cooking, gym, study, reading and a planned realm block open their own page; still doing it? after 3 hours, auto-stop after 4 more; repeats 3 times in 3 weeks offer a routine. If what was done covers a planned block (half of it or 30 min) it asks Did this replace your block? (replaced / move later / keep both). A block or Morning block that passed with nothing logged asks What happened? (day_misses: woke up late - moves today\'s Morning block only today; something came up; rest; forgot; other; then later / tomorrow / drop); the Sunday review counts reasons. SHIFTS (shiftSync, rpgace_shifts): from a rota screenshot, the paste box, or the weekly Fourth import (sync_status shows failures on the Due list); adding schedule items on a shift warns first. Work buttons (myDay, private work_links table): from 30 min before a shift to 30 min after, the My Day Now/Next card shows Clock in, Break and Clock out; each opens Alex\'s phone2fork page, where he still presses the button - RPGACE cannot confirm the clock-in worked. PLANS (tripPlans module, private travel_profile/people/plans/plan_tasks): Plan something runs up to 3 web searches then one Oracle draft (itinerary, travel, book-by dates, documents for his French/Russian passports with UK settled status, packing, emergency card, producer angle, food, backups, daily money limit, official links); saved plans have tasks, a status and Add to calendar; book-by dates show on Due; paid tasks log a Travel expense; after a trip a log (journal trip_log) and Cook it at home. Ideas tab: 5-8 ideas from dates, budget, mood and distance (never anyone from People). People: birthdays, last spoke, reach-out reminders. Morning Brief: one a day at 05:39 by Orchestrator CC (API backup if missing), with Today\'s realm (realmBrief: top realm and runner-up from 9 signals), My Day picks, recall, Library pick, watchlist uploads. Journal: decisions with a look-back date (decisionJournal). Phone alerts: push_subscriptions + myday-push edge function (morning summary, Sunday review). Ticks write quest_log rows; questEngine\'s generated quests still exist.\n\n[[CHRONICLES]] CHRONICLES (domain chronicles: XP Season Pass, Chronicles log, profile card). XP SEASON PASS (xpSeason module, private xp_events/xp_rules): xp_on_change triggers on 15+ tables call xp_award; examples - beat logged 30, finished 120, released 300; video posted 300, post planned 60; sale 2 per pound (min 100); cook finished 60 (+10 per extra recipe), recipe saved 25; gym 40; chapter 30, book 300, jargon review 3; journal entry he wrote 15; expense 5; plan made 30, trip done 200; caught up 20; hand-tested feature 20; shipped RPGACE change 30 Builder (5 a day); auto-made things earn 0. Capped repeats pay 100%, 50%, then 0. The pass is a YEAR (Year 0: Construction from Oct 13 2026 to Dec 31; each 1 Jan resets; career never resets); a season is a UK weather season. Level 1 = 500 XP, +25 per level. Sky ladder: Spark, Ember, Flame, Comet, Star, Nova, Constellation, Galaxy. Each realm has 7 named ranks (year and slower career); some are gated by real events (Sous Chef 20 cooks, Head Chef 50 cooks + 10 recipes + 3 cuisines, Closer first sale, Tycoon yearly target, Gladiator 3 gym a week for 4 weeks, Polymath books in 8 phyla, Pathfinder routines kept 6 weeks, Lake sleep routine 21 of 28 days, Safe, Globetrotter 5 countries, Heart nobody overdue 3 months). Titles and badges (automatic or claimed) pay no XP. Same-week deletes ask was it done? (unanswered keeps it). pg_cron closes periods nightly: balance bonus, frozen xp_reports per week, month, season and year. Weekly challenges (pick up to 3, 75 XP each, counted automatically), season resolutions (1-5, 500/1000/1500), realm quests (3 steps of 50 toward each gate), knowledge-path milestones. Treats pinned to a goal (marked earned, nothing bought), card themes by level, quiet flair. Year Wrapped swipe cards when a year closes (one Oracle paragraph), Year-so-far, Hall of Seasons, January nudges. The dashboard shows a 2-page swipe XP card (overall, then the 13-realm wheel); each domain shows its realm card. CHRONICLES PAGE (chroniclesLog, items from careerStatCard): searchable log with 8 sections (All, Beats & content, Recipes cooked, Trips & plans, Learning, Life, Money, App updates) - beats, posts with full stage reports, cooks with recipe names, done plans, quests, gym, journal, unlocks, reports, Doing Now activities by realm, finance (personal-visibility ledger, not bookkeeping-grade).\n\n[[OVERSIGHT]] OVERSIGHT (domain oversight: dev docs and error tracking, mostly for Claude Code). errorLog: thrown errors and red toasts are saved to error_log (deduped), traced to their owning module, given that module\'s perspective_reports baseline, and flip its smoke_test_items row to broken (a green plan item to purple); it only sees errors that throw or toast and never fixes anything. oracleDevBridge: 🧪 Flag to Orchestrator CC saves an Oracle reply as an oracle_dev_suggestions row a Claude Code session reviews at its next start. docsLinks / the Oversight popup link the dev docs: patch_notes.html (dated build history), minotaur_map.html (plain-language map of domains), interconnection_map.md / system_flow_map.md / ai_tooling_and_rules_map.md / perspective_map.html (truth docs), smoke_test.html (Alex\'s hand-ticks), error_log.html, future_integrations.html (planned, blue/red/yellow), achiever.html (claims that stopped being true), session_lessons.html, and the Galaxy Map (graphify-out, a generated developer map: L0 units -> 8 domains -> modules -> functions, with pages for things outside the app such as External AIs, Claude Code sessions, Supabase and the PC pipeline; each domain lists the external AIs it uses, tagged live/dormant/off/planned, and its in-app dimensions: Oracle calls, human gates, decisions, the menu path, branch ledger, load triggers and loops). Developer rules live in CLAUDE.md and docs/claude/*.md, which the app never reads. Plans for builds are tracked in ceo_plans/ceo_plan_items (Orchestrator CC only; the app shows no CEO UI).\n\n[[PLATFORM]] PLATFORM (domain platform: sign-in, navigation, dashboard, speed). Sign-in: the password is checked server-side (api/auth.js); a device stays signed in with a server-issued secret checked on launch (authGate); Sign out on this device in the left menu; every /api function checks the secret. RLS is on every table; most are anon read-only with writes through /api/data-write; a few stay anon-writable on purpose (oracle_fallback_queue, openmontage_jobs, error_log, smoke_test_items, ceo_plan_items) - never suggest restricting them without checking. The left menu (leftNav) is the one place to reach everything, in coloured folding bands per area with a realm XP bar, plus realm chips at the top (All + 13 realms) that show only the entries feeding that realm; every area page and popup has a ☰ shortcut list and swipe-right (RPGACE.sideList); popups have Back with history and phone Back closes them first (dashDeck, pathRouter). The dashboard is a landing page: Today (shifts, tasks, planned cook, routines left, gym this week), Due - waiting on you (reviews, recall, decisions, cool-offs, book-by dates, reach-outs, shifts sync, posts behind, etc. - a row only when something is there), Continue where you left off, Morning Brief and an Ask Oracle box; it makes no Oracle call itself. Installable PWA (Android/desktop). perfWatch saves freezes over half a second to perf_freezes with what was running; startup blocks no longer alert. The old Content Intelligence sync (every 30s on every page) was the main freeze source until Oct 27; it now runs only while its list is on screen. Orchestrator CC switch lives here (orchestratorCC).',
+  SELF_KNOWLEDGE: '[[CORE]] RPGACE STATUS - Oracle\'s notes about its own app, last reviewed Oct 27 2026. Answer honestly from these notes: never invent a feature, never call something finished unless it says Alex hand-tested it; assume everything here is built but NOT hand-tested by Alex unless a line says otherwise (smoke_test.html holds his own ticks; well under half of its rows are confirmed). The notes are split into 8 domain sections (ORACLE, CONTENT, KNOWLEDGE, HABITS, SCHEDULE, CHRONICLES, OVERSIGHT, PLATFORM), the same 8 groups as the left menu and RPGACE.DOMAINS; only the sections relevant to a message are sent with it. RPGACE is Alex\'s personal app (UK music producer, Derby): beats, posting, selling, learning, cooking, gym and health, his day, money and XP. One client script (rpgace_core.js, served minified), Supabase for data, Vercel for hosting and /api functions, Claude for Oracle. 81 registered modules, each with a domain key and a ui/logic split. XP: ONE system - database triggers write every xp_events row from xp_rules (the app never awards XP itself), 13 realms (Producer, Creator, Hustler, Chef, Athlete, Scholar, Life, Homekeeper, Mind, Steward, Explorer, Connector, Builder). Every input, quest, plan and activity carries chosen realms (RPGACE.realmPicker, up to 4; Not now holds an input until realms are picked). Oracle cannot save data, award XP or act on its own: it suggests, and Alex confirms through the app. RPGACE never sends messages, books or pays for anything. There is no Supabase backup or point-in-time recovery (Alex chose the Free plan; do not re-raise it). Known open gaps: reference_tracks scale/genre are mostly empty, so beat matches repeat; no beat-grid audio sync exists; the old swipe freeze has no root cause (freezes are now recorded in perf_freezes); steps from Samsung/Google are not connected. If Alex asks what to build next, give ONE concrete suggestion grounded in a real gap.\n\n[[ORACLE]] ORACLE (domain oracle: chat, grounding, actions, Professor). Chat streams from api/oracle.js (Claude, prompt caching on every call, a 3000-token reply cap); renderMarkdown escapes HTML first. Oracle Professor (oracleProfessor module, on for every chat message): a cheap Haiku planner picks which data sources and which of these note sections a message needs; deep questions (why, compare, plan, explain, long) get gather -> condense -> an Opus 5.5 answer with Answer / Counter-case / Confidence / Unknowns, source tags, a How I know fold-out and a cost line (Sonnet if Opus is unavailable, said so); other messages get a normal reply with only the picked sections. prof: forces a professor answer, quick: forces a normal one; messages owned by other features (prefixes like schedule oracle:, links, trips, recipes, Oracle actions) are never routed. The web topic sent to Gemini is strictly cleaned (no names, places, numbers, dates or I/my words). Ask My Data (askMyData module): Oracle can request one read-only lookup with a DATA_QUERY trailer across every area (past Oracle chats - every question and answer is kept in the private oracle_chats table since Oct 27 2026, so a question like what did we talk about or do you remember looks them up - stock, recipes, planned cooks, wishlist, journal, quests, agenda, watchlist, analysed videos, encyclopedia, idea cards, jargon, reference tracks, finance, books, productions, changelog, routines, xp_events, plans, food_log, body_log, posts, people, outreach, subscriptions, screenshots, perspective_reports); up to 30 rows, shown to Alex, answer from those rows only, never writes. Web lookups (webLookup module): in the main chat only, a WEB_QUERY line reuses a Life Library lookup from the last 30 days or sends the question to /api/search (Gemini, needs GEMINI_API_KEY), saves it as a web_lookup library_items row and shows the sources; at most one search per message. Oracle Control (oracleControl module, oracle_actions table): a confirm-before-execute popup with 5 wired actions (log_beat, new_quests, draft_email, yt_stats, log_notion) plus log_outreach which only opens the form; reached from the floating 🔮 button and the Oracle page Tools row. Oracle may suggest a new action (ORACLE_SUGGEST_ACTION), but it only joins the list after Alex approves and still needs coded wiring before it does anything. Deep dive (deepDive module): a 🧭 Deep dive button under any reply that lists 3+ questions opens one pop-up per question (answer, Back, Skip, Next; kept on the device while going), then an extra-thoughts pop-up, then sends one compiled prompt (answers, skipped numbers, extra thoughts) to Oracle for one complete answer; nothing goes to the journal unless Alex taps 📓 on that answer. Save as entry (oracleEntry module): 📓 under a reply saves a journal entry (⭐ big day = +50 XP over its realms) or turns it into a ➕ Task for a realm (realmTasks; realm missions were removed Oct 27 2026); ⭐ on a reply also files it in the Life Library. Oracle Mode switch (cog on the top bar): Real, Dummy (labelled fake replies, no cost) or Fallback Scout (sends queue to oracle_fallback_queue). Background analysis switch (orchestratorCC module, app_settings): Orchestrator CC (a Claude Code session on Alex\'s Claude plan) every 2 hours by default, or the API at once; anything waiting 12 hours goes to the API. On Orchestrator CC: videos are downloaded/transcribed by the runner and analysed by scripts/intel_cc_worker.py every 2 hours (up to 5); Bookworm chapter extraction, weekly challenge ideas and the Year Wrapped paragraph go through oracle_fallback_queue. Oracle page layout: chat input under the messages, one Tools row (New quests, Draft email, Log to Notion, YT stats, Prod. Oracle, Platform Oracle, Visual Oracle, Repurpose, Schedule Oracle, Phylum Path), Agent actions & connected apps folded at the bottom. Platform Oracle (captionsPanel module): one panel with Instagram / YouTube / TikTok caption commands; producer tools (producerTools module) are prompts placed in Selling\'s steps (A&R Critic, Artist Outreach, Contract Red Flags, Negotiation Rehearsal) and Beats\' idea step (Playlist Psychologist). Grounding: these notes go in only by section; anatomy questions read oracle_module_anatomy; mockOracle and oracleFetchGuard wrap calls. No voice: the browser mic was removed (Aug 30 2026) and Fish Audio is a dormant scaffold with no key. Kimi/Luna routing in api/oracle.js is dormant (no keys) - never claim RPGACE runs on other AI providers today; Claude is the only live chat model.\n\n[[CONTENT]] CONTENT & VIDEO (domain content: Beats, Posting, Selling, Idea Bank). Content Pipeline is a pop-up routing to Beats home, Posting, Selling, Idea Bank, Beat Log and My beats; the old video tools (Visual Treatment, Director Match, Production Panels, Upload Workshop, OBS raw, Activate ConID, the video-job tracker) were removed Oct 17 2026; Visual Oracle keeps 4 commands (copyright risk, mood board, storyboard, OpenMontage brief). BEATS (beatsHub module): Idea -> Make -> Mix -> Log (= finished) -> Release -> Sell with live counts. Start making on an idea (conid_pot) starts a Producer Doing Now session (making/mixing, time adds up on the idea). Beat Log (beatLog module) saves a content_productions row with finished_at, drive + folder of the WAV/stems, stems checklist and session time; Scan audio finds BPM and Major/Minor on the device (never uploaded). Release = links in content_productions.release_links (first one pays beat_released 300). Sell: licence tiers per beat (defaults MP3 lease £30, WAV lease £50, Trackout £100, Exclusive £500 in xp_settings.licence_defaults; a beat\'s own prices never change), Beatstars listing text, Log a sale = chronicles_finance sale linked to the beat (Hustler 2 XP per pound, min 100). Reference tracks (refCorpus): Look up fills Major/Minor, BPM and genre via Gemini 8 at a time, reviewed with Accept/Skip; Last.fm fills beat-match gaps. POSTING (postingHub module, posts table): Idea -> Plan -> Record -> Edit -> Post -> Results; + New post (title, type beat video/tutorial/short clip/studio-life, realms, Creator default). Idea Bank ideas are tagged beat or post (conid_pot.kind). Plan screen: hook, script, shot list, optional Oracle draft, platforms (Instagram, YouTube, TikTok) and one caption per platform; beat videos pick a logged beat and can be sent to the OpenMontage queue (openmontage_jobs). Plan done pays 60 Creator once. Record it / Edit it start Doing Now sessions whose minutes add to posts.record_mins / edit_mins; Ready to post saves file names and places (nothing uploaded). Post it takes one full link per platform (YouTube, Instagram, TikTok, DistroKid); the first link marks it posted and pays 300 Creator; a beat video\'s links also release its beat. Weekly target xp_settings.posts_per_week (default 2) with Due nudges. Results (views, stats) is not built. Each posted post is one Chronicles entry with every stage and time. SELLING (sellingHub module): Beats for sale (List, Promote, Sell, Paid) and Artist outreach (Find artists, Pitch, Follow up, Deal, Paid) with a what\'s-next list closest to money first. Private artists, pitches and pitch_sends tables; a send moves potential pitch -> potential close (pushback) or agreed sale -> paid, or ends as no / no reply, kept in pitch_sends.history with Back a step (never Paid). New pitch: offer type, beats, price, message (Oracle can draft it with {name}); Copy & open copies it and opens their Instagram or email - nothing is sent by RPGACE. Mark sent logs outreach (outreach_log, Hustler XP). Follow-ups due 5 days after sending, then 7; a Follow-up sweep and a Due row. Funnel on Selling home. Money in: monthly income target (xp_settings.monthly_income_target, Tycoon = 12x), income by type (chronicles_finance.income_kind), best-selling beats, earnings per beat. Deals link both ways: a beat\'s Sell screen lists its pitches; People linked to an artist show it. OpenMontage: RPGACE does not make video; a separate Claude Code session (OpenMontage CC, its own repo, fal.ai for generation) takes briefs from openmontage_jobs; paid providers are ruled out for now. Repurpose (contentRepurpose) reads Notion/YouTube via Composio/Supadata.\n\n[[KNOWLEDGE]] KNOWLEDGE (domain knowledge: take in, study, learn, map). Knowledge home (knowledgeHub, /knowledge): a What\'s next line and 4 steps - Take in (Life Library, Screenshots), Study (Bookworm, Videoworm, MusicWorm), Learned (Encyclopedia ideas, Jargon, review badge), Map (Phylum Path); every Knowledge page has Back + home and links onward. Life Library (lifeLibrary, /library, private library_items): everything taken in (links, videos, books, music, files, courses, notes, quotes, recommendations from People) with date, ONE phylum shelf, topics and realms; a link saved twice stays one item. It fills itself (keyword shelf only, no Oracle call) from analysed videos, screenshots, hand-added reference tracks and ⭐ Oracle replies. Morning Brief shows one item a day (30-day no-repeat). Each input earns 60 XP over its realms (first 3 a day). Screenshot Inbox (screenshotInbox, /screenshots, private screenshots table + bucket): Oracle reads each once (text, description, tags, kind, up to two suggested homes); Alex chooses Wishlist, idea card, recipe, journal, keep or delete; a rota is recognised and can import shifts; a receipt can be a business expense. Share to RPGACE (shareInbox): Android share sheet queues links into intel_jobs (iPhone via a Shortcut). Videoworm (local_server/rpgace_intel.py on Alex\'s PC, or Orchestrator CC): reads the whole timed transcript and 8 frames through the picked realms (realm_lenses.json); intel_reports.insights.realm_sections holds per realm a 1-10 score, why, what it teaches, 3-7 key points each with a checked transcript quote and time, a Try this and 3 quest ideas, plus how_made for Creator/Producer/Hustler; quotes not in the transcript are dropped in code; analyser_version is stamped; stuck jobs re-queue after 2 hours; Videoworm shows queue state with Retry. Encyclopedia (encyclopediaPosts): every report becomes an article plus idea cards (encyclopedia_insights, one per key point and Try this, realm-tagged), read Deepstash-style; Ideas | Jargon | Sources tabs; a re-run replaces the report, article and cards. Every report\'s per-realm task ideas go by themselves into the Realm Tasks 📥 inbox (realm_tasks, database trigger, duplicate-checked); tapping one in a report keeps it. Pathways: add the creator to the watchlist, jargon in the article. Recall (recall module): saved idea cards come back after 1, 3, 7, 16, 35 days with Again / Got it; Bookworm chapters have Cards. Bookworm (bookworm module, bookworm_books/bookworm_chapters): reads a PDF/URL/typed book chapter by chapter through the book\'s realms, insights tagged with a realm; chapters pay half Scholar, half the book\'s realms. Study (studyHub, /study): AWS Certified AI Practitioner - 18 lessons via RPGACE features, 300 Claude-written practice questions (not real exam questions), Quick 10 / topic / 65-question timed mock / service names / Redo, wrong answers on the recall schedule, +2 Scholar per correct (max 30 a day), estimated score out of 1000. Feynman: Explain it back. Taxonomy: 29 phyla (22-29 are the life realms: Ars Culinaria, Corpus Athleticum, Ars Vivendi, Cura Domus, Res Pecuniaria, Peregrinatio, Mens Sana, Societas; 11 is Learning Methods; realm-to-phylum map in realm_lenses.json). taxonomy_tree has 0 rows - every phylum is empty below phylum level until a new structure is built around reviewed jargon; automatic tree growth is paused while it is empty (taxonomyTree.isPaused) - never claim any phylum has depth. jargon_encyclopedia is the standalone term table (545+ terms, most pending, written by a Claude Code session); the Jargon page (jargonEncyclopedia) shows every term with status filters, realm filter, Met in links and inline Accept/Edit/Reject; Knowledge Review (/review) shows pending terms one at a time. Phylum Path groups phyla under realms with each phylum\'s shelf (Library items, idea cards, jargon). Each realm card shows what it knows and a knowledge path: Oracle proposes 3 milestones, Alex accepts one, done ones pay XP sized to the rank gap and every 3 unlock a title.\n\n[[HABITS]] HABITS (domain habits: Cooking, Gym, Health & body, Wishlist, Money). COOKING (cookingOracle): home = Recipes -> Plan a cook -> Shop -> Cook -> Stock with a what\'s-next line; every screen has Back, Cooking home and a ☰ shortcut list. Generate a recipe in Oracle chat (RECIPE_JSON trailer; a Narrow it down step for short requests); recipes are cups + weight, one action per step with a done cue and equipment; a 🔮 critique gives a diff-only update to Accept/Deny; adding an ingredient offers to update the method. My Recipes lists every recipe with in-stock state and last cooked. Ingredient colours: green plenty, yellow short, red none, blue same-aisle alternative, purple will run low, orange a substitute in stock (confirmable, or merged as the same item; only ratios Alex gave, e.g. tamarind concentrate ~1/3 of paste, 8 garlic cloves per bulb), brown omittable. Planned cooks (planned_cooks: draft/scheduled/cooked/discarded) are packed by a joint hands + oven/stovetop scheduler that front-loads prep across recipes, pushed to the Daily Schedule; a draft is never lost and emptying only discards a draft. Shopping lists are aisle-sorted with need/in basket/bought; Done shopping moves the basket into stock and the rest to the Top-up list. Stock (pantry_stock: Pantry, Fridge, Freezer, Equipment) is grouped by food type with cooking/baking tags; amounts use his cup measures (kitchen_equipment) and grams for solids; Add from a photo lists food Oracle sees for review. Every finished cook previews what it takes out of stock (Put it all back undo, once only). Cook Mode: one step per screen with scaled ingredients, equipment, done cue and resume; waiting steps get timers that carry on in a bottom bar; 💬 Ask inside Cook Mode; the last Done asks Actual cook / Just a preview / Not finished (an unplanned actual cook still logs a cooked row and Chef XP). The 8 older recipes have proposed one-action splits waiting: Use these steps per recipe, or ✅ Accept all at the top of My Recipes (two taps; old steps kept as a backup). Nutrition per recipe from cofid_foods (7,743 UK/India/China/Japan/SE Asia foods) then Open Food Facts. Recipe photos: Unsplash if a key exists, else Wikipedia. GYM (gymTracker, gym_sessions/gym_sets): sessions with sets, reps, kg; weekly count against 5; personal bests (+30 Athlete) and estimated 1-rep max; Repeat last. HEALTH & BODY (healthBody, private food_log/body_log/health_settings): food from a meal or label photo or typed words -> items with grams, re-checked against cofid_foods (those numbers win), editable; From your cooks adds one serving; calories and protein against targets. Water, weight (7-day average), sleep, 14-day trends; the My Day health card has a +1 💧 button (one glass, same body_log write). Sleep is typed in until a watch is connected (a Pixel Watch 4 is top of the wishlist; Google Health API planned). Gym plan: PPL / Upper-Lower / Full body over chosen days with a progression nudge (+2.5kg at the top of the range); Start opens the gym log prefilled. Steps are not connected (Samsung partners only, Google Fit closing; Google Health API planned). WISHLIST (shoppingWishlist, wishlist_items): general purchases with priority and a budget-fit; an optional why; a 24-hour cool-off before buying (bought after it = +30 Steward); bought asks the price paid and logs a Chronicles Finance expense; can be marked For the business. MONEY (moneyHub, shared by Hustler and Steward): this month in minus out, subscriptions (private subscriptions table, renewal Due rows, logged once), business purchases with a receipt photo Oracle reads, UK tax-year business costs; no tax export or bank import. Weekly spend limit (xp_settings.weekly_spend_limit) pays +50 Steward if kept. Daily life (dailyLife): fridge photo to stock, watchlist digest in Morning Brief.\n\n[[SCHEDULE]] SCHEDULE & JOURNAL (domain schedule: My Day, Doing Now, Plans, shifts, Morning Brief, Journal). MY DAY (myDay module, routines table shown as Actions): home has Now/Next, Doing now / I just did, one draggable day timeline with the 🌅 Morning block on top (tasks + Morning Brief) and 🌙 Night block at the bottom (tasks + evening review), and a tray of routines, chores, ideas and recipes to drag on; hold to drag, pull edges to resize, tap for Did you do it? / Start now, swipe right done, left tomorrow; Day | Week view; ☰ shortcut list. myDay.logic.segments is the one timeline (shift + travel, Daily Schedule, chore_blocks, Morning/Night); myDay.logic.guard refuses overlaps, pushes blocks along with a 10-minute buffer, asks to shorten if a move is over 30 minutes, always with Undo. DAY BOOKENDS (myDay, myday_settings.day_state, since Oct 27 2026): the day starts when Alex presses ☀️ I\'m up and ends when he presses 🌙 Going to bed - one button on the dashboard and on My Day\'s Now/Next card; nothing opens by the clock any more. I\'m up sets today\'s wake to that minute, stops the alarm, slides today\'s planned blocks later by however late it is (Undo offered), offers yesterday\'s review first if he never pressed Going to bed, then opens Good morning. Going to bed runs the evening review (or Skip review), then Good night: tomorrow\'s blocks with Plan tomorrow, then the alarm (suggested = now + his sleep target from Health & body, earlier if a shift needs it; or No alarm). Wake alarm (myday_alarms): only the one set at bedtime; a phone push every 5 minutes until I\'m up, max 2 hours; a notification, not a silent-mode alarm. A Morning block only counts as missed on a day started with I\'m up; blocks that ended before he got up were slept through, not missed. Plan week: drag blocks on a day timeline; + Realm block for any realm; methods Pomodoro 25/5, Deep work 50/10 or 90, Time-box, Just tick it. Plan my day: blocks only - the day\'s blocks from Plan week (or a Realm, Housekeeping, Cooking or Shopping block added there), each filled with 📋 Plan block from that realm\'s due Actions, books and activities; due Actions are never listed loose on the day; optional Eat the frog or 1-3-5; Lock in saves blocks added there (no templates - deleted Oct 21 2026). Focus timer: ▶ Start on a realm block runs its method with pushes per round; a full run adds +15 to the realm. Good morning screen (opened by I\'m up): shift, time he got up, Morning tasks, frog, today\'s blocks, then the brief. Evening review (opened by Going to bed): done / not done with Tomorrow / Drop / Skip, a line, journal row evening_review (+10 Mind). Weekly review on Sunday evening (journal weekly_review). Chores: repeat every N days from the last tick, never stack; a housekeeping block (formerly chore block) fills with the most overdue chores. Cooking, shopping and realm blocks (+10 XP per non-duplicate activity tick). Habit design: minimum vs goal, habit stacks, never miss twice, days-since dots. Days since card and Cutting back counts (cutback_items/cutback_log, +15 Mind per day at or under target). ✅ What you did under the Daily Schedule vs the plan (worked out, not stored). REALM TASKS (realmTasks module, private realm_tasks + realm_task_types, since Oct 27 2026): one task list per realm, 5 types each (e.g. Producer: Create, Finish & mix, Sound design & digging, Learn & practise, Catalogue & organise); Alex\'s 52 original activities are kept, 175 more are proposals he keeps or drops in 🗂 Catalogue. Every new task is checked for duplicates in the database (same or near-same title merges and keeps all its sources; unsure ones ask "same as X?"). New tasks arrive in the 📥 inbox by themselves from analysed videos, I want to / I will lines in journal entries and reviews, and Life Library saves; ➕ Task on Oracle replies, idea cards and book insights; realm suggestions. ▶ Live now (a page in the left menu) opens when a realm block starts: pick a type of work (the block\'s main type from 📋 Plan block first, then the one left longest), its top 3 tasks, Start opens its page, Done ticks it into the block (+10 in that realm, a video task pays its own 5-100, tasks whose real action pays do not pay twice); repeatable tasks rest 2 days, one-offs retire. Explorer and Connector blocks also show trip tasks and people due from Plans. DOING NOW (doingNow module, rpgace_agendas source doing_now): ▶ Doing now / ✓ I just did ask when (started/finished) and how long; Stop asks how it went (mood, details: who with, where, money, effort); picking an Action ticks it with 0 XP so only the Doing Now entry pays (30 XP over its realms, first 3 a day); cooking, gym, study, reading and a planned realm block open their own page; still doing it? after 3 hours, auto-stop after 4 more; repeats 3 times in 3 weeks offer a routine. If what was done covers a planned block (half of it or 30 min) it asks Did this replace your block? (replaced / move later / keep both). A block or Morning block that passed with nothing logged asks What happened? (day_misses: woke up late - moves today\'s Morning block only today; something came up; rest; forgot; other; then later / tomorrow / drop); the Sunday review counts reasons. SHIFTS (shiftSync, rpgace_shifts): from a rota screenshot, the paste box, or the weekly Fourth import (sync_status shows failures on the Due list); adding schedule items on a shift warns first. Work buttons (myDay, private work_links table): from 30 min before a shift to 30 min after, the My Day Now/Next card shows Clock in, Break and Clock out; each opens Alex\'s phone2fork page, where he still presses the button - RPGACE cannot confirm the clock-in worked. PLANS (tripPlans module, private travel_profile/people/plans/plan_tasks): Plan something runs up to 3 web searches then one Oracle draft (itinerary, travel, book-by dates, documents for his French/Russian passports with UK settled status, packing, emergency card, producer angle, food, backups, daily money limit, official links); saved plans have tasks, a status and Add to calendar; book-by dates show on Due; paid tasks log a Travel expense; after a trip a log (journal trip_log) and Cook it at home. Ideas tab: 5-8 ideas from dates, budget, mood and distance (never anyone from People). People: birthdays, last spoke, reach-out reminders. Morning Brief: one a day at 05:39 by Orchestrator CC (API backup if missing), with Today\'s realm (realmBrief: top realm and runner-up from 9 signals), My Day picks, recall, Library pick, watchlist uploads. Journal: decisions with a look-back date (decisionJournal). Phone alerts: push_subscriptions + myday-push edge function (morning summary, Sunday review). Ticks write quest_log rows; questEngine\'s generated quests still exist.\n\n[[CHRONICLES]] CHRONICLES (domain chronicles: XP Season Pass, Chronicles log, profile card). XP SEASON PASS (xpSeason module, private xp_events/xp_rules): xp_on_change triggers on 15+ tables call xp_award; examples - beat logged 30, finished 120, released 300; video posted 300, post planned 60; sale 2 per pound (min 100); cook finished 60 (+10 per extra recipe), recipe saved 25; gym 40; chapter 30, book 300, jargon review 3; journal entry he wrote 15; expense 5; plan made 30, trip done 200; caught up 20; hand-tested feature 20; shipped RPGACE change 30 Builder (5 a day); auto-made things earn 0. Capped repeats pay 100%, 50%, then 0. The pass is a YEAR (Year 0: Construction from Oct 13 2026 to Dec 31; each 1 Jan resets; career never resets); a season is a UK weather season. Level 1 = 500 XP, +25 per level. Sky ladder: Spark, Ember, Flame, Comet, Star, Nova, Constellation, Galaxy. Each realm has 7 named ranks (year and slower career); some are gated by real events (Sous Chef 20 cooks, Head Chef 50 cooks + 10 recipes + 3 cuisines, Closer first sale, Tycoon yearly target, Gladiator 3 gym a week for 4 weeks, Polymath books in 8 phyla, Pathfinder routines kept 6 weeks, Lake sleep routine 21 of 28 days, Safe, Globetrotter 5 countries, Heart nobody overdue 3 months). Titles and badges (automatic or claimed) pay no XP. Same-week deletes ask was it done? (unanswered keeps it). pg_cron closes periods nightly: balance bonus, frozen xp_reports per week, month, season and year. Weekly challenges (pick up to 3, 75 XP each, counted automatically), season resolutions (1-5, 500/1000/1500), realm quests (3 steps of 50 toward each gate), knowledge-path milestones. Treats pinned to a goal (marked earned, nothing bought), card themes by level, quiet flair. Year Wrapped swipe cards when a year closes (one Oracle paragraph), Year-so-far, Hall of Seasons, January nudges. The dashboard shows a 2-page swipe XP card (overall, then the 13-realm wheel); each domain shows its realm card. CHRONICLES PAGE (chroniclesLog, items from careerStatCard): searchable log with 8 sections (All, Beats & content, Recipes cooked, Trips & plans, Learning, Life, Money, App updates) - beats, posts with full stage reports, cooks with recipe names, done plans, quests, gym, journal, unlocks, reports, Doing Now activities by realm, finance (personal-visibility ledger, not bookkeeping-grade).\n\n[[OVERSIGHT]] OVERSIGHT (domain oversight: dev docs and error tracking, mostly for Claude Code). errorLog: thrown errors and red toasts are saved to error_log (deduped), traced to their owning module, given that module\'s perspective_reports baseline, and flip its smoke_test_items row to broken (a green plan item to purple); it only sees errors that throw or toast and never fixes anything. oracleDevBridge: 🧪 Flag to Orchestrator CC saves an Oracle reply as an oracle_dev_suggestions row a Claude Code session reviews at its next start. docsLinks / the Oversight popup link the dev docs: patch_notes.html (dated build history), minotaur_map.html (plain-language map of domains), interconnection_map.md / system_flow_map.md / ai_tooling_and_rules_map.md / perspective_map.html (truth docs), smoke_test.html (Alex\'s hand-ticks), error_log.html, future_integrations.html (planned, blue/red/yellow), achiever.html (claims that stopped being true), session_lessons.html, and the Galaxy Map (graphify-out, a generated developer map: L0 units -> 8 domains -> modules -> functions, with pages for things outside the app such as External AIs, Claude Code sessions, Supabase and the PC pipeline; each domain lists the external AIs it uses, tagged live/dormant/off/planned, and its in-app dimensions: Oracle calls, human gates, decisions, the menu path, branch ledger, load triggers and loops). Developer rules live in CLAUDE.md and docs/claude/*.md, which the app never reads. Plans for builds are tracked in ceo_plans/ceo_plan_items (Orchestrator CC only; the app shows no CEO UI).\n\n[[PLATFORM]] PLATFORM (domain platform: sign-in, navigation, dashboard, speed). Sign-in: the password is checked server-side (api/auth.js); a device stays signed in with a server-issued secret checked on launch (authGate); Sign out on this device in the left menu; every /api function checks the secret. RLS is on every table; most are anon read-only with writes through /api/data-write; a few stay anon-writable on purpose (oracle_fallback_queue, openmontage_jobs, error_log, smoke_test_items, ceo_plan_items) - never suggest restricting them without checking. The left menu (leftNav) is the one place to reach everything, in coloured folding bands per area with a realm XP bar, plus realm chips at the top (All + 13 realms) that show only the entries feeding that realm; every area page and popup has a ☰ shortcut list and swipe-right (RPGACE.sideList); popups have Back with history and phone Back closes them first (dashDeck, pathRouter). The dashboard is a landing page: Today (shifts, tasks, planned cook, routines left, gym this week), Due - waiting on you (reviews, recall, decisions, cool-offs, book-by dates, reach-outs, shifts sync, posts behind, etc. - a row only when something is there), Continue where you left off, Morning Brief and an Ask Oracle box; it makes no Oracle call itself. Installable PWA (Android/desktop). perfWatch saves freezes over half a second to perf_freezes with what was running; startup blocks no longer alert. The old Content Intelligence sync (every 30s on every page) was the main freeze source until Oct 27; it now runs only while its list is on screen. Orchestrator CC switch lives here (orchestratorCC).',
 
   init: function() {
     var self = this;
@@ -14683,6 +14688,7 @@ RPGACE.register('leftNav', {
       { icon: '💷', label: 'Money', desc: 'In − out · subscriptions · receipts', page: P.money, run: function() { var mh = RPGACE.modules.moneyHub; if (mh) mh.open('wishlist'); } },
       { heading: 'Schedule & Journal' },
       { icon: '☀️', label: 'My Day',        desc: 'Actions, plan my day, agenda',       page: P.agenda },
+      { icon: '▶', label: 'Live now',       desc: 'The block you\'re in · new tasks · task catalogue', card: 'liveNow' },
       { icon: '📅', label: 'Schedule',      desc: 'Weekly / daily / monthly calendar',   page: P.schedule },
       { icon: '🧳', label: 'Plans',         desc: 'Trips, events, people to reach out to', card: 'plans' },
       { icon: '📓', label: 'Journal',       desc: 'Session logs, decisions',             page: P.journal },
@@ -17733,6 +17739,7 @@ RPGACE.register('dashDeck', {
     { key: 'gym', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '🏋️', name: 'Gym', desc: 'Log sessions, see this week against your 5-session target, and track personal bests.', go: function() { var m = RPGACE.modules.gymTracker; if (m) m.open(); } },
     // Oct 13 2026 — LL-1 Life Library (Knowledge): what you took in.
     { key: 'library', accent: '--dd-blue-rgb', color: 'var(--blue)', emoji: '📚', name: 'Life Library', desc: 'Everything you took in: books, videos, links, lookups, notes, by date, shelf and topic.', go: function() { var m = RPGACE.modules.lifeLibrary; if (m) m.open(); } },
+    { key: 'liveNow', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '▶', name: 'Live now', desc: 'The realm block you are in: pick a type of work, do its tasks. Also New tasks and the task Catalogue.', go: function() { var m = RPGACE.modules.realmTasks; if (m) m.ui.openLive(); } },
     { key: 'plans', accent: '--dd-gold-rgb', color: 'var(--gold)', emoji: '🧳', name: 'Plans', desc: 'Trips, events and days out: Oracle researches and drafts, you book.', go: function() { var m = RPGACE.modules.tripPlans; if (m) m.open(); } },
     // Oct 11 2026 — S1 Screenshot Inbox (Knowledge).
     { key: 'screenshots', accent: '--dd-purple-rgb', color: 'var(--purple)', emoji: '📸', name: 'Screenshot Inbox', desc: 'Drop screenshots; Oracle reads them, you choose where each one goes.', go: function() { var m = RPGACE.modules.screenshotInbox; if (m) m.open(); } },
@@ -17772,7 +17779,7 @@ RPGACE.register('dashDeck', {
   NAV_DOMAINS: {
     library: 'Knowledge', bookworm: 'Knowledge', taxonomy: 'Knowledge', gaps: 'Knowledge', encyclopedia: 'Knowledge', screenshots: 'Knowledge',
     oracle: 'Oracle',
-    agenda: 'Schedule & Journal', morningBrief: 'Schedule & Journal', journal: 'Schedule & Journal', plans: 'Schedule & Journal',
+    agenda: 'Schedule & Journal', morningBrief: 'Schedule & Journal', journal: 'Schedule & Journal', plans: 'Schedule & Journal', liveNow: 'Schedule & Journal',
     pipeline: 'Content & Video', chronicles: 'Chronicles', cooking: 'Habits', gym: 'Habits',
     health: 'Habits', wishlist: 'Habits', oversight: 'Oversight',
   },
@@ -18306,6 +18313,14 @@ RPGACE.register('dashDeck', {
       } });
       if (r[9] && r[9].routines && !r[9].plans) due.push({ icon: '📅', text: 'Plan next week', sub: 'Pick the days for your weekly actions', on: function() {
         go(P.agenda)(); setTimeout(function() { var m = RPGACE.modules.myDay; if (m) m.ui.openWeekPlanner(1); }, 400); } });
+      // Realm Tasks: a block running -> back to Live now; new tasks to keep or drop.
+      var rtm = RPGACE.modules.realmTasks;
+      if (rtm) {
+        var lb = rtm.logic.liveBlock();
+        if (lb) due.unshift({ icon: '▶', text: 'Live now: ' + rtm.ui._realm(lb.run.realm).name + ' block', sub: 'Pick a type of work, do its tasks', hot: true, on: function() { rtm.ui.openLive(); } });
+        var nIn = rtm.logic.inbox().length;
+        if (nIn) due.push({ icon: '📥', text: nIn + ' new task' + (nIn === 1 ? '' : 's') + ' to keep or drop', sub: 'From videos, journal, Library and Oracle', on: function() { rtm.ui.openInbox(); } });
+      }
       self._ldFill('dd-ld-due', due, 'All clear — nothing is waiting on you.');
     });
 
@@ -19888,10 +19903,10 @@ RPGACE.register('videoSummary', {
       btn.disabled = true;
       PW.logic.addQuest(found.entry, Number(btn.getAttribute('data-qi'))).then(function() {
         btn.textContent = '✓ Added';
-        RPGACE.utils.toast('⚔️ Quest added', 'var(--gold)', 2200, 'videoSummary');
+        RPGACE.utils.toast('➕ Task kept', 'var(--gold)', 2200, 'videoSummary');
       }).catch(function(e) {
         btn.disabled = false;
-        RPGACE.utils.toast('Couldn\'t add the quest: ' + e.message, '#CC4A4A', 4000, 'videoSummary');
+        RPGACE.utils.toast('Couldn\'t keep the task: ' + e.message, '#CC4A4A', 4000, 'videoSummary');
       });
     },
 
@@ -27060,6 +27075,11 @@ RPGACE.register('bookworm', {
         fl.style.marginBottom = '12px';
         box.appendChild(fl);
       }
+      // Realm Tasks: a book insight can become a task (duplicate-checked).
+      if (RPGACE.modules.realmTasks && insight.text) {
+        var tb = RPGACE.modules.realmTasks.ui.taskButton({ title: String(insight.text).slice(0, 120), realm: insight.realm || null, kind: 'once', source: { table: 'bookworm', ref: String(insight.id || insight.text).slice(0, 80), label: String((book && book.title) || 'book').slice(0, 60) } });
+        tb.style.marginBottom = '12px'; box.appendChild(tb);
+      }
 
       var tt = RPGACE.modules.taxonomyTree;
       var pathLine = document.createElement('div');
@@ -32919,7 +32939,7 @@ RPGACE.register('morningBrief', {
 // realm with a plain reason. Top realm + a runner-up, shown with why, at the
 // top of the Brief and passed into Oracle's brief prompt. Plain code, no AI.
 // A winning realm with nothing of Alex's own to do suggests one of its
-// myDay.REALM_ACTIVITIES and says so (never a silent random pick).
+// the kept realm tasks (realmTasks) and says so (never a silent random pick).
 RPGACE.register('realmBrief', {
   domain: 'schedule',
   PICKS: 2,
@@ -33027,7 +33047,7 @@ RPGACE.register('realmBrief', {
         var x = by[s.realm] || (by[s.realm] = { realm: s.realm, pts: 0, sigs: [] });
         x.pts += s.pts; x.sigs.push(s);
       });
-      var acts = (RPGACE.modules.myDay && RPGACE.modules.myDay.REALM_ACTIVITIES) || {};
+      var acts = RPGACE.modules.realmTasks ? RPGACE.modules.realmTasks.logic.activityMap() : {};
       return Object.keys(by).map(function(k) { return by[k]; })
         .sort(function(a, b) { return (b.pts - a.pts) || (a.realm < b.realm ? -1 : 1); }).slice(0, self.PICKS)
         .map(function(x) {
@@ -33905,19 +33925,14 @@ RPGACE.register('questEngine', {
     },
     // One suggestion -> one quest. Same kind (and daily XP cap) as quests
     // from inputs; the realm is the category.
+    // Realm Tasks (Oct 27 2026): a realm suggestion becomes a kept realm
+    // task (duplicate-checked), not a quest.
     addSuggested: function(realm, q) {
-      var qe = RPGACE.modules.questEngine;
+      var rt = RPGACE.modules.realmTasks;
+      if (!rt) return Promise.reject(new Error('Tasks are not loaded'));
       var slug = String(q.name).toLowerCase().replace(/[^a-z0-9]+/g, '-').slice(0, 60);
       var xp = Math.max(5, Math.min(100, Math.round((Number(q.xp) || 50) / 5) * 5));
-      return qe.logic._createQuests([{
-        key: 'input_quest', kind: 'input_quest', name: q.name, description: q.action || '',
-        category: realm, questType: 'weekly', xp: xp,
-        sourceTable: 'realm_suggest', sourceRef: realm + ':' + slug, workflow: null,
-      }]).then(function(rows) {
-        var row = (rows || [])[0] || null;
-        if (row && row.id) { qe._rows = (qe._rows || []).concat([row]); qe._renderPanel(); }
-        return row;
-      });
+      return rt.logic.keepIdea({ realm: realm, title: q.name, notes: q.action || '', xp: xp, source: { table: 'realm_suggest', ref: realm + ':' + slug, label: 'realm ideas' } });
     },
     _createQuests: function(cands) {
       var self = RPGACE.modules.questEngine;
@@ -38311,7 +38326,7 @@ RPGACE.register('xpSeason', {
           add.onclick = function() {
             add.disabled = true; add.textContent = 'Adding…';
             qe.logic.addSuggested(realm, q).then(function(row) {
-              add.textContent = row ? '✓ Added' : '✓ Already on your board';
+              add.textContent = '✓ Kept as a task';
             }).catch(function(e) {
               add.disabled = false; add.textContent = '+ Add';
               RPGACE.utils.toast('Could not add quest: ' + e.message, '#CC4A4A', 5000, 'xpSeason');
@@ -44462,16 +44477,6 @@ RPGACE.register('oracleEntry', {
         RPGACE.hooks.fire('journal:saved', { title: f.title, source: 'oracle_entry' });
         return r;
       });
-    },
-    // A realm mission = a finished Doing Now entry ending that evening (or now, today).
-    saveMission: function(f) {
-      var dn = RPGACE.modules.doingNow;
-      if (!dn) return Promise.reject(new Error('Doing Now is not loaded'));
-      var today = dn.logic.iso();
-      var end = (!f.date || f.date === today) ? null : new Date(f.date + 'T22:00:00');
-      var e = dn.logic.justDid(f.title, f.mins, f.realms, end);
-      e.details = Object.assign({}, e.details || {}, { notes: [{ at: new Date().toISOString(), text: String(f.body).slice(0, 500) }], mission: true });
-      return dn.logic.patch(e.id, { details: e.details }).then(function() { return e; });
     }
   },
 
@@ -44493,7 +44498,7 @@ RPGACE.register('oracleEntry', {
       var list = function() {
         box.textContent = '';
         var n = document.createElement('div'); n.style.cssText = 'font-size:13px;color:var(--muted);';
-        n.textContent = 'This reply has ' + entries.length + ' write-ups — save each one as a journal entry or a realm mission.';
+        n.textContent = 'This reply has ' + entries.length + ' write-ups — save each one as a journal entry or a ➕ task.';
         box.appendChild(n);
         entries.forEach(function(en, i) {
           var b = document.createElement('button'); b.type = 'button'; b.className = 'bh-morerow oe-pick'; b.dataset.i = i;
@@ -44512,7 +44517,7 @@ RPGACE.register('oracleEntry', {
         var chipCss = function(on) { return 'min-height:40px;padding:6px 12px;border-radius:18px;font-size:13px;cursor:pointer;font-family:inherit;' + (on ? 'background:var(--gold);border:1px solid var(--gold);color:#111;font-weight:700;' : 'background:none;border:1px solid var(--border);color:var(--text);'); };
         var kinds = document.createElement('div'); kinds.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
         var kb = {};
-        [['journal', '📓 Journal entry'], ['mission', '⚔️ Realm mission']].forEach(function(k) {
+        [['journal', '📓 Journal entry'], ['task', '➕ Task']].forEach(function(k) {
           var b = document.createElement('button'); b.type = 'button'; b.className = 'oe-kind'; b.dataset.kind = k[0]; b.textContent = k[1];
           b.onclick = function() { kind = k[0]; paint(); };
           kb[k[0]] = b; kinds.appendChild(b);
@@ -44554,24 +44559,31 @@ RPGACE.register('oracleEntry', {
           Object.keys(kb).forEach(function(k) { kb[k].style.cssText = chipCss(kind === k); kb[k].setAttribute('aria-pressed', kind === k ? 'true' : 'false'); });
           help.textContent = kind === 'journal'
             ? 'A journal entry earns journal XP. Tick ⭐ for a big, unusual day: +50 XP split over its realms.'
-            : 'A realm mission is something you did, saved like Doing Now\'s "I just did": +30 XP split over its realms.';
+            : 'A task goes into the first realm\'s task list (duplicates merge) so you can do it in a block. Realm missions moved to Live now (Oct 27 2026).';
           Array.prototype.forEach.call(rbox.children, function(c) { var on = realms.indexOf(c.dataset.realm) > -1; c.style.cssText = chipCss(on); c.setAttribute('aria-pressed', on ? 'true' : 'false'); });
-          big.hidden = kind !== 'journal'; minsWrap.hidden = kind !== 'mission';
+          big.hidden = kind !== 'journal'; minsWrap.hidden = true; date.hidden = kind === 'task';
           var bo = big.dataset.on === '1';
           big.textContent = (bo ? '⭐ Big unusual day — +50 XP' : '☆ Big unusual day?');
           big.style.cssText = chipCss(bo) + 'align-self:flex-start;';
-          save.textContent = kind === 'journal' ? '📓 Save journal entry' : '⚔️ Save realm mission';
+          save.textContent = kind === 'journal' ? '📓 Save journal entry' : '➕ Next: add as task';
         };
         paint();
         save.onclick = function() {
           var f = { title: title.value.trim(), body: body.value.trim(), date: date.value, realms: realms.slice(), bigDay: big.dataset.on === '1', mins: Math.max(1, Math.min(720, Math.round(Number(mins.value) || 60))) };
           if (!f.title || !f.body) { err.textContent = 'Add a title and some text.'; err.hidden = false; return; }
-          if (kind === 'mission' && !f.realms.length) { err.textContent = 'Pick at least one realm for a realm mission.'; err.hidden = false; return; }
+          // Realm Tasks (Oct 27 2026): ⚔️ Realm mission replaced by ➕ Task (Alex:
+          // "⚔️ Realm mission saving" leaves the Oracle page; doing happens on Live now).
+          if (kind === 'task') {
+            var rt = RPGACE.modules.realmTasks;
+            if (!rt) { err.textContent = 'Tasks are not loaded.'; err.hidden = false; return; }
+            pop.close();
+            rt.ui.openAdd({ title: f.title, notes: f.body.slice(0, 500), realm: f.realms[0], kind: 'once', source: { table: 'oracle', ref: 'reply:' + Date.now(), label: f.title.slice(0, 60) } });
+            return;
+          }
           save.disabled = true; err.hidden = true;
-          (kind === 'journal' ? L.saveJournal(f) : L.saveMission(f)).then(function() {
-            saved[i] = kind === 'journal' ? (f.bigDay ? '⭐ journal entry' : 'journal entry') : 'realm mission';
-            RPGACE.utils.toast(kind === 'journal' ? '📓 Saved to Journal' + (f.bigDay ? ' — ⭐ big day' : '') : '⚔️ Realm mission saved', 'var(--gold)', 2500);
-            try { if (kind === 'mission') RPGACE.modules.doingNow.ui._refresh(); } catch (e) {}
+          L.saveJournal(f).then(function() {
+            saved[i] = f.bigDay ? '⭐ journal entry' : 'journal entry';
+            RPGACE.utils.toast('📓 Saved to Journal' + (f.bigDay ? ' — ⭐ big day' : ''), 'var(--gold)', 2500);
             if (entries.length > 1) list(); else pop.close();
           }, function(e) {
             save.disabled = false;
@@ -47680,6 +47692,7 @@ RPGACE.register('errorLog', {
   "_dockShow": "myDay",
   "_domainName": "studyHub",
   "_dragify": "myDay",
+  "_drawLive": "realmTasks",
   "_drawOutreachList": "producerTools",
   "_dropSeg": "myDay",
   "_editPhylumPathProposal": "taxonomyReviewQueue",
@@ -47800,6 +47813,7 @@ RPGACE.register('errorLog', {
   "_listenForErrorToasts": "oracleControl",
   "_listenForReplies": "oracleControl",
   "_live": "myDay",
+  "_liveDue": "realmTasks",
   "_liveFactsLine": "oracleAppGrounding",
   "_load": "knowledgeGap",
   "_loadAnatomyIndex": "oracleAppGrounding",
@@ -47909,6 +47923,7 @@ RPGACE.register('errorLog', {
   "_queueLeafCreation": "bookworm",
   "_queueScoutItem": "mockOracle",
   "_quickDetectPhyla": "conidPot",
+  "_realm": "realmTasks",
   "_realmGroups": "phylumPath",
   "_refreshDayButtons": "myDay",
   "_refreshFinish": "beatLog",
@@ -48087,7 +48102,8 @@ RPGACE.register('errorLog', {
   "_writeStats": "intelDedup",
   "action": "scheduleOracle",
   "actionList": "myDay",
-  "add": "lifeLibrary",
+  "activities": "realmTasks",
+  "activityMap": "realmTasks",
   "addBlock": "myDay",
   "addBody": "healthBody",
   "addBookendTask": "myDay",
@@ -48182,7 +48198,6 @@ RPGACE.register('errorLog', {
   "busySched": "myDay",
   "button": "deepDive",
   "byPhylum": "lifeLibrary",
-  "bySource": "lifeLibrary",
   "byStage": "postingHub",
   "cadenceText": "myDay",
   "calendarBookends": "myDay",
@@ -48292,6 +48307,7 @@ RPGACE.register('errorLog', {
   "discard": "doingNow",
   "dismissQuest": "questEngine",
   "doToday": "myDay",
+  "doneInBlock": "realmTasks",
   "doneThisWeek": "myDay",
   "doneWith": "lifeLibrary",
   "dow": "myDay",
@@ -48416,6 +48432,7 @@ RPGACE.register('errorLog', {
   "ideasPrompt": "tripPlans",
   "imUp": "myDay",
   "inProgress": "beatsHub",
+  "inbox": "realmTasks",
   "incomeKindOf": "beatsHub",
   "ingest": "screenshotInbox",
   "insert": "config",
@@ -48433,6 +48450,7 @@ RPGACE.register('errorLog', {
   "isoDay": "postingHub",
   "itemKey": "myDay",
   "justDid": "doingNow",
+  "keepIdea": "realmTasks",
   "key": "deepDive",
   "keywordShelf": "lifeLibrary",
   "kindChooser": "postingHub",
@@ -48457,6 +48475,7 @@ RPGACE.register('errorLog', {
   "lines": "realmBrief",
   "linkFinish": "doingNow",
   "list": "screenshotInbox",
+  "liveBlock": "realmTasks",
   "liveKind": "doingNow",
   "loadAgreed": "sellingHub",
   "loadAll": "tripPlans",
@@ -48500,6 +48519,7 @@ RPGACE.register('errorLog', {
   "markApplied": "taxonomySync",
   "markBooked": "tripPlans",
   "markChatTurn": "webLookup",
+  "markDone": "realmTasks",
   "markFollowed": "sellingHub",
   "markSent": "sellingHub",
   "markSurfaced": "lifeLibrary",
@@ -48595,12 +48615,14 @@ RPGACE.register('errorLog', {
   "onActual": "doingNow",
   "onPick": "encyclopediaPosts",
   "openActivity": "myDay",
+  "openAdd": "realmTasks",
   "openArtist": "sellingHub",
   "openArtists": "sellingHub",
   "openBeat": "beatsHub",
   "openBeatList": "sellingHub",
   "openBlocks": "myDay",
   "openBookend": "myDay",
+  "openCatalogue": "realmTasks",
   "openChallengePicker": "xpSeason",
   "openChapter": "recall",
   "openChapterById": "recall",
@@ -48617,11 +48639,11 @@ RPGACE.register('errorLog', {
   "openFromSchedule": "myDay",
   "openGoodnight": "myDay",
   "openGym": "doingNow",
+  "openInbox": "realmTasks",
   "openJustDid": "doingNow",
   "openLast": "oracleEntry",
   "openLessons": "studyHub",
   "openLink": "sellingHub",
-  "openLive": "doingNow",
   "openManage": "myDay",
   "openMissed": "myDay",
   "openMorning": "myDay",
@@ -48656,6 +48678,7 @@ RPGACE.register('errorLog', {
   "oracleShelf": "lifeLibrary",
   "oracleSuggestions": "xpSeason",
   "order": "studyHub",
+  "orderTypes": "realmTasks",
   "outreachContext": "sellingHub",
   "outreachKind": "producerTools",
   "outreachTool": "sellingHub",
@@ -48723,6 +48746,7 @@ RPGACE.register('errorLog', {
   "priority": "studyHub",
   "progressText": "xpSeason",
   "proposeLineage": "taxonomyTree",
+  "proposed": "realmTasks",
   "purge": "intelDedup",
   "pushPending": "shiftSync",
   "pushState": "myDay",
@@ -48739,6 +48763,7 @@ RPGACE.register('errorLog', {
   "questions": "deepDive",
   "questsFromReport": "pathways",
   "r2": "moneyHub",
+  "rank": "realmTasks",
   "rankFor": "xpSeason",
   "rankNameForDepth": "taxonomyTree",
   "rankOptions": "myDay",
@@ -48831,6 +48856,7 @@ RPGACE.register('errorLog', {
   "resizeImage": "dailyLife",
   "resolve": "knowledgeReview",
   "resourcesNear": "perfWatch",
+  "resting": "realmTasks",
   "restorePending": "perfWatch",
   "resume": "authGate",
   "resumeFallbackPlacement": "phylumPath",
@@ -48872,7 +48898,6 @@ RPGACE.register('errorLog', {
   "saveItems": "dailyLife",
   "saveJournal": "oracleEntry",
   "saveMiss": "myDay",
-  "saveMission": "oracleEntry",
   "saveOracleSuggestions": "xpSeason",
   "savePending": "perfWatch",
   "savePitch": "sellingHub",
@@ -48951,6 +48976,7 @@ RPGACE.register('errorLog', {
   "splitHowIKnow": "oracleProfessor",
   "spokeToday": "myDay",
   "spreadSeeds": "myDay",
+  "srcLabel": "realmTasks",
   "stFor": "myDay",
   "stageFor": "postingHub",
   "starAnswer": "lifeLibrary",
@@ -48992,6 +49018,7 @@ RPGACE.register('errorLog', {
   "takeSections": "oracleProfessor",
   "tap": "myDay",
   "targetOf": "sellingHub",
+  "taskButton": "realmTasks",
   "tasksFor": "tripPlans",
   "taxYear": "moneyHub",
   "templateFor": "doingNow",
@@ -49032,6 +49059,9 @@ RPGACE.register('errorLog', {
   "treeLive": "knowledgeReview",
   "treeSection": "knowledgeReview",
   "tripDue": "tripPlans",
+  "typeLine": "realmTasks",
+  "typeOf": "realmTasks",
+  "types": "realmTasks",
   "ukDate": "oracleEntry",
   "ukSeason": "xpSeason",
   "undo": "myDay",
@@ -59808,94 +59838,8 @@ RPGACE.register('myDay', {
   // DT-4: planned chore blocks (chore_blocks), from yesterday on.
   _choreBlocks: [],
   DAY_KINDS: { off: '🌴 Day off', early: '☀️ Early shift', late: '🌙 Late shift' },
-  // DT-7 (Oct 14 2026): realm blocks. Alex: "Make it possible to do blocks
-  // for all realms ... so I can do activities that help boost those areas".
-  // He picked every activity below over 4 /interrogation rounds (record:
-  // records/2026-10/day_templates_chores_spec_2026-10-13.txt, answer 10).
-  // earns 'real' = the real action already pays XP (the tick only checks it
-  // off - "No double counting"); 'tick' = +10 XP in that realm on tick.
-  // opens = a dashDeck card key, or outreach / smoke / plan_tomorrow.
-  REALM_ACTIVITIES: {
-    producer: [
-      { key: 'beat', title: 'Make a beat', mins: 90, earns: 'real', how: 'log it in Beat Log', opens: 'pipeline' },
-      { key: 'wip', title: 'Finish or mix a WIP beat', mins: 60, earns: 'real', how: 'mark the beat finished', opens: 'pipeline' },
-      { key: 'sound', title: 'Sound design / digging', mins: 45, earns: 'tick' },
-      { key: 'technique', title: 'Practise a technique', mins: 30, earns: 'tick' },
-    ],
-    creator: [
-      { key: 'post', title: 'Post a short', mins: 30, earns: 'real', how: 'post the video', opens: 'pipeline' },
-      { key: 'film', title: 'Film / record content', mins: 60, earns: 'tick' },
-      { key: 'captions', title: 'Write captions or a script', mins: 20, earns: 'tick', opens: 'oracle' },
-      { key: 'treatment', title: 'Visual treatment for a beat', mins: 45, earns: 'real', how: 'finish the treatment', opens: 'pipeline' },
-    ],
-    hustler: [
-      { key: 'outreach', title: 'Message 3 artists', mins: 20, earns: 'real', how: 'log each message in the outreach log', opens: 'outreach' },
-      { key: 'beatstars', title: 'Make a Beatstars listing', mins: 30, earns: 'tick', opens: 'pipeline' },
-      { key: 'research', title: 'Research artists to pitch', mins: 30, earns: 'tick' },
-      { key: 'followup', title: 'Follow up a collab', mins: 15, earns: 'tick', opens: 'outreach' },
-    ],
-    chef: [
-      { key: 'recipe', title: 'Generate & save a new recipe', mins: 30, earns: 'real', how: 'save the recipe', opens: 'cooking' },
-      { key: 'stock', title: 'Update kitchen stock', mins: 10, earns: 'tick', opens: 'cooking' },
-      { key: 'mealprep', title: 'Meal prep', mins: 90, earns: 'real', how: 'finish the cook', opens: 'cooking' },
-      { key: 'technique', title: 'Learn a technique', mins: 20, earns: 'tick' },
-    ],
-    athlete: [
-      { key: 'gym', title: 'Gym session', mins: 60, earns: 'real', how: 'log it in the Gym tracker', opens: 'gym' },
-      { key: 'run', title: 'Run or walk', mins: 30, earns: 'tick' },
-      { key: 'stretch', title: 'Stretch / mobility', mins: 15, earns: 'tick' },
-      { key: 'home', title: 'Home workout', mins: 30, earns: 'tick' },
-    ],
-    scholar: [
-      { key: 'chapter', title: 'Read a Bookworm chapter', mins: 30, earns: 'real', how: 'analyse the chapter', opens: 'bookworm' },
-      { key: 'jargon', title: 'Review 10 jargon terms', mins: 15, earns: 'real', how: 'review the terms', opens: 'taxonomy' },
-      { key: 'video', title: 'Watch & analyse a video', mins: 30, earns: 'tick', opens: 'bookworm' },
-      // Oct 20 2026: 'Fill a knowledge gap' (the phylum tree is empty, paused) swapped for Study.
-      { key: 'study', title: 'Exam practice (Study)', mins: 20, earns: 'real', how: 'finish a practice round', opens: 'study' },
-    ],
-    life: [
-      { key: 'journal', title: 'Journal — 3 lines', mins: 5, earns: 'real', how: 'write the entry', opens: 'journal' },
-      { key: 'plan', title: 'Plan tomorrow', mins: 10, earns: 'tick', opens: 'plan_tomorrow' },
-      { key: 'review', title: 'Weekly review', mins: 15, earns: 'tick' },
-      { key: 'admin', title: 'Admin & errands', mins: 30, earns: 'tick' },
-    ],
-    homekeeper: [
-      { key: 'deep', title: 'Deep clean one area', mins: 45, earns: 'tick' },
-      { key: 'declutter', title: 'Declutter one spot', mins: 20, earns: 'tick' },
-      { key: 'fix', title: 'Fix or repair something', mins: 30, earns: 'tick' },
-      { key: 'restock', title: 'Restock household items', mins: 10, earns: 'tick' },
-    ],
-    mind: [
-      { key: 'meditate', title: 'Meditate', mins: 10, earns: 'tick' },
-      { key: 'screenfree', title: 'Screen-free hour', mins: 60, earns: 'tick' },
-      { key: 'walk', title: 'Walk outside / breathing', mins: 15, earns: 'tick' },
-      { key: 'winddown', title: 'Wind-down routine', mins: 20, earns: 'real', how: 'tick your sleep routine' },
-    ],
-    steward: [
-      { key: 'budget', title: 'Budget check', mins: 15, earns: 'tick', opens: 'chronicles' },
-      { key: 'spend', title: 'Log this week\'s spending', mins: 10, earns: 'real', how: 'log each expense', opens: 'chronicles' },
-      { key: 'wishlist', title: 'Review Wishlist', mins: 10, earns: 'tick', opens: 'wishlist' },
-      { key: 'bills', title: 'Plan bills & savings', mins: 20, earns: 'tick' },
-    ],
-    explorer: [
-      { key: 'trip', title: 'Plan a trip or day out', mins: 20, earns: 'real', how: 'save the plan', opens: 'plans' },
-      { key: 'local', title: 'Try somewhere new locally', mins: 60, earns: 'tick' },
-      { key: 'research', title: 'Research a place or event', mins: 20, earns: 'tick', opens: 'plans' },
-      { key: 'language', title: 'Practise a language', mins: 20, earns: 'tick' },
-    ],
-    connector: [
-      { key: 'catchup', title: 'Catch up with someone', mins: 20, earns: 'real', how: 'log it in People', opens: 'plans' },
-      { key: 'message', title: 'Message a friend or family', mins: 10, earns: 'tick' },
-      { key: 'meetup', title: 'Plan a meetup', mins: 15, earns: 'tick', opens: 'plans' },
-      { key: 'community', title: 'Join a community / event', mins: 30, earns: 'tick' },
-    ],
-    builder: [
-      { key: 'handtest', title: 'Hand-test RPGACE features', mins: 15, earns: 'real', how: 'tick each feature on the smoke test page', opens: 'smoke' },
-      { key: 'flag', title: 'Flag an idea to Claude Code', mins: 5, earns: 'real', how: 'flag it from Oracle', opens: 'oracle' },
-      { key: 'code', title: 'Coding session', mins: 60, earns: 'tick' },
-      { key: 'learncode', title: 'Learn a coding skill', mins: 30, earns: 'tick' },
-    ],
-  },
+  // DT-7 realm blocks: the activities Alex picked Oct 13 now live in the
+  // realm_tasks table (Realm Tasks, Oct 27 2026) - see realmTasks.
   // MD-2: how a block is worked. Default per realm (Alex: "Default per realm,
   // change any time"); myday_settings.realm_methods overrides; a block's own
   // chore_blocks.method overrides that.
@@ -60340,7 +60284,8 @@ RPGACE.register('myDay', {
         if (done && !it.log_id) {
           side = RPGACE.sb.secureWrite('quest_log', 'insert', {
             quest_key: 'block:' + b.id + ':' + idx, quest_kind: 'block', name: it.label, category: b.realm, quest_type: 'block',
-            xp: self.TICK_XP, estimated_minutes: it.mins || null, completed_at: new Date().toISOString(), status: 'completed',
+            // Realm Tasks: a task from a video pays its own size (5-100); others +10.
+            xp: it.earns === 'xp' && it.xp ? Math.min(100, Math.max(5, Number(it.xp) || 0)) : self.TICK_XP, estimated_minutes: it.mins || null, completed_at: new Date().toISOString(), status: 'completed',
             source_table: 'chore_blocks', source_ref: String(b.id),
           }).then(function(data) { var row = Array.isArray(data) && data[0]; patch.log_id = row && row.id ? row.id : null; RPGACE.cache.clear('quest_log'); });
         } else if (!done && it.log_id) {
@@ -60419,9 +60364,9 @@ RPGACE.register('myDay', {
     // realm, and (Scholar) books being read outside RPGACE.
     realmOptions: function(realm) {
       var self = RPGACE.modules.myDay, L = self.logic;
-      var starters = (self.REALM_ACTIVITIES[realm] || []).map(function(a) {
-        return { src: 'activity', ref_id: a.key, label: a.title, mins: a.mins, earns: a.earns, how: a.how || null, opens: a.opens || null };
-      });
+      // Realm Tasks (Oct 27 2026): the realm's kept tasks (realmTasks) replace the old hard-coded list.
+      var rt = RPGACE.modules.realmTasks;
+      var starterP = rt ? rt.logic.load().then(function() { return rt.logic.activities(realm); }, function() { return rt.logic.activities(realm); }) : Promise.resolve([]);
       var routines = (self._routines || []).filter(function(r) { return r.cadence !== 'every_days' && r.cadence !== 'next_time' && L.realmOf(r) === realm; })
         .map(function(r) { return { src: 'routine', ref_id: String(r.id), label: r.title, mins: r.est_mins || 15, earns: 'real', how: 'its routine XP', opens: r.opens || null }; });
       var tp = RPGACE.modules.tripPlans;
@@ -60431,7 +60376,10 @@ RPGACE.register('myDay', {
               .map(function(b) { return { src: 'book', ref_id: String(b.id), label: 'Read ' + b.title, mins: 30, earns: 'tick' }; });
           }).catch(function() { return []; })
         : Promise.resolve([]);
-      return books.then(function(bk) { return { starters: starters, routines: routines, books: bk }; });
+      return Promise.all([books, starterP]).then(function(r) {
+        var starters = (r[1] || []).map(function(a) { return { src: 'activity', ref_id: a.key, label: a.title, mins: a.mins, earns: a.earns, how: a.how || null, opens: a.opens || null, type: a.type || null }; });
+        return { starters: starters, routines: routines, books: r[0] };
+      });
     },
     saveRealmBlock: function(isoDate, x) {
       var self = RPGACE.modules.myDay, L = self.logic, m = L.toMin(x.start), xs = RPGACE.modules.xpSeason;
@@ -62029,6 +61977,8 @@ RPGACE.register('myDay', {
       try { if (dn) entry = dn.logic.start(label, b.realm ? [b.realm] : []); } catch (e) {}
       run.entryId = entry && entry.id ? entry.id : null;
       L._saveRun(run);
+      // Realm Tasks: a realm block's start opens ▶ Live now.
+      try { RPGACE.hooks.fire('myday:block-start', b); } catch (e) {}
       return L._queueFocusAlarms(run).then(function() { return run; });
     },
     pauseFocus: function() {
@@ -64391,7 +64341,7 @@ RPGACE.register('myDay', {
           var r = document.createElement('div'); r.className = 'myday-morning-block';
           r.style.cssText = 'font-size:13px;color:var(--text);padding:4px 0;border-bottom:1px solid var(--border);';
           r.innerHTML = '<b style="font-variant-numeric:tabular-nums;">' + L.fmtMin(from) + '–' + L.fmtMin(from + (Number(b.mins) || 30)) + '</b> ' + esc(L.blockLabel(b)) +
-            (its.length ? ' <span style="color:var(--muted);">· ' + esc(its.map(function(i) { return i.label; }).slice(0, 3).join(' · ')) + (its.length > 3 ? ' …' : '') + '</span>' : (b.kind === 'realm' ? ' <span style="color:#e0a84c;">· not planned yet</span>' : ''));
+            (its.length ? ' <span style="color:var(--muted);">· ' + esc(its.map(function(i) { return i.label; }).slice(0, 3).join(' · ')) + (its.length > 3 ? ' …' : '') + '</span>' : (b.kind === 'realm' ? ((RPGACE.modules.realmTasks ? RPGACE.modules.realmTasks.logic.typeLine(b) : '') ? ' <span style="color:var(--gold);">· ' + esc((RPGACE.modules.realmTasks ? RPGACE.modules.realmTasks.logic.typeLine(b) : '')) + '</span>' : ' <span style="color:#e0a84c;">· pick a type on ▶ Live now</span>') : ''));
           bw.appendChild(r);
         });
         day.appendChild(bw);
@@ -64659,7 +64609,7 @@ RPGACE.register('myDay', {
       var drawTomorrow = function() {
         var bl = L.dayBlocks(tmr), sh = L.shiftsOn(tmr);
         tw.innerHTML = '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">📅 ' + esc(U._dayLabel(tmr)) + (sh.length ? ' · 🧑‍🍳 shift ' + esc(sh.map(function(x) { return x.start + '–' + x.end; }).join(', ')) : '') + '</div>' +
-          (bl.length ? bl.map(function(b) { var f = L.toMin(b.start_time); return '<div class="myday-gn-block" style="font-size:13px;color:var(--text);padding:3px 0;"><b style="font-variant-numeric:tabular-nums;">' + L.fmtMin(f) + '</b> ' + esc(L.blockLabel(b)) + ((b.items || []).length ? ' <span style="color:var(--muted);">· ' + esc(b.items.map(function(i) { return i.label; }).slice(0, 3).join(' · ')) + '</span>' : '') + '</div>'; }).join('')
+          (bl.length ? bl.map(function(b) { var f = L.toMin(b.start_time); return '<div class="myday-gn-block" style="font-size:13px;color:var(--text);padding:3px 0;"><b style="font-variant-numeric:tabular-nums;">' + L.fmtMin(f) + '</b> ' + esc(L.blockLabel(b)) + ((RPGACE.modules.realmTasks ? RPGACE.modules.realmTasks.logic.typeLine(b) : '') ? ' <span style="color:var(--gold);">· ' + esc((RPGACE.modules.realmTasks ? RPGACE.modules.realmTasks.logic.typeLine(b) : '')) + '</span>' : '') + ((b.items || []).length ? ' <span style="color:var(--muted);">· ' + esc(b.items.map(function(i) { return i.label; }).slice(0, 3).join(' · ')) + '</span>' : '') + '</div>'; }).join('')
             : '<div style="font-size:13px;color:var(--muted);">No blocks planned yet.</div>');
         var pl = U._btn('📋 Plan tomorrow', ''); pl.id = 'myday-gn-plan'; pl.style.marginTop = '6px';
         pl.onclick = function() { U.openPlan(tmr, { after: function() { L.load().then(drawTomorrow, drawTomorrow); } }); };
@@ -64934,7 +64884,9 @@ RPGACE.register('myDay', {
         var items = b.kind === 'realm' ? (b.items || []) : (b.kind === 'chores' || !b.kind) ? (b.routine_ids || []).map(function(id) { var r = (self._routines || []).filter(function(x) { return String(x.id) === String(id); })[0]; return r ? { label: r.title, mins: r.est_mins } : null; }).filter(Boolean) : (b.items || []);
         var list = document.createElement('div');
         list.style.cssText = 'display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;';
-        if (!items.length) list.innerHTML = '<span style="font-size:12px;color:#e0a84c;">Empty — tap 📋 Plan block</span>';
+        var tln = (RPGACE.modules.realmTasks ? RPGACE.modules.realmTasks.logic.typeLine(b) : '');
+        if (tln) list.innerHTML = '<span class="mdp-btypes" style="font-size:12px;color:var(--gold);">' + esc(tln) + '</span>';
+        if (!items.length && !tln) list.innerHTML = '<span style="font-size:12px;color:#e0a84c;">No type yet — tap 📋 Plan block, or pick on ▶ Live now</span>';
         items.forEach(function(i) {
           var chip = document.createElement(style === 'frog' && b.kind === 'realm' ? 'button' : 'span');
           chip.className = 'mdp-bitem'; chip.dataset.key = L.itemKey(i);
@@ -64959,10 +64911,29 @@ RPGACE.register('myDay', {
       pop.box.id = 'mdp-planblock';
       pop.box.innerHTML = '<div style="font-size:13px;color:var(--muted);">Loading…</div>';
       L.blockOptions(b, isoDate).then(function(opts) {
-        var pick = {}, showAll = false, own = [];
+        var pick = {}, showAll = false, own = [], rt = RPGACE.modules.realmTasks;
+        var agenda = Array.isArray(b.types) ? b.types.slice() : [];
         (b.items || []).forEach(function(i) { pick[L.itemKey(i)] = i; });
         var draw = function() {
           pop.box.innerHTML = '';
+          // Realm Tasks (Oct 27 2026): the block's main type(s) - Alex: "i pick
+          // a main agenda - if done can always pick more to add" (on Live now).
+          if (b.kind === 'realm' && rt && rt.logic.types(b.realm).length) {
+            var ah = document.createElement('div'); ah.style.cssText = 'font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;';
+            ah.textContent = '⭐ Main type for this block (optional, up to 2)';
+            var ac = document.createElement('div'); ac.id = 'mdp-pb-types'; ac.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;';
+            rt.logic.types(b.realm).forEach(function(ty) {
+              var on = agenda.indexOf(ty.key) !== -1, c = document.createElement('button'); c.type = 'button'; c.className = 'mdp-pb-type'; c.dataset.type = ty.key;
+              c.textContent = (ty.icon ? ty.icon + ' ' : '') + ty.label; c.setAttribute('aria-pressed', on ? 'true' : 'false');
+              c.style.cssText = 'min-height:40px;padding:6px 12px;border-radius:18px;font-size:13px;cursor:pointer;font-family:inherit;' + (on ? 'background:var(--gold);color:#111;border:1px solid var(--gold);font-weight:700;' : 'background:none;color:var(--text);border:1px solid var(--border);');
+              c.onclick = function() { var j = agenda.indexOf(ty.key); if (j !== -1) agenda.splice(j, 1); else { agenda.push(ty.key); if (agenda.length > 2) agenda.shift(); } draw(); };
+              ac.appendChild(c);
+            });
+            pop.box.appendChild(ah); pop.box.appendChild(ac);
+            var tl = document.createElement('div'); tl.style.cssText = 'font-size:12px;color:var(--muted);margin-bottom:8px;';
+            tl.textContent = 'Or pick specific tasks below (optional) — inside the block, ▶ Live now shows your main type first.';
+            pop.box.appendChild(tl);
+          }
           var info = document.createElement('div'); info.id = 'mdp-pb-mins';
           var chosen = Object.keys(pick).map(function(k) { return pick[k]; });
           var mins = chosen.reduce(function(a, i) { return a + (Number(i.mins) || 15); }, 0), len = Number(b.mins) || 30;
@@ -65000,7 +64971,9 @@ RPGACE.register('myDay', {
             ok.disabled = true;
             var keepFrog = {}; (b.items || []).forEach(function(i) { if (i.frog) keepFrog[L.itemKey(i)] = 1; });
             var items = opts.filter(function(o) { return pick[o.key]; }).map(function(o) { return Object.assign({}, o, { frog: !!keepFrog[o.key] }); });
-            L.saveBlockItems(b, items).then(function() { pop.close(); RPGACE.utils.toast('📋 ' + L.blockLabel(b) + ' planned', '#4caf82', 2000); if (onDone) onDone(); self.ui.render(); })
+            var same = JSON.stringify(agenda) === JSON.stringify(Array.isArray(b.types) ? b.types : []);
+            var saveTypes = b.kind !== 'realm' || same ? Promise.resolve() : RPGACE.sb.secureWrite('chore_blocks', 'update', { types: agenda }, 'id=eq.' + b.id).then(function() { b.types = agenda.slice(); RPGACE.cache.clear('chore_blocks'); });
+            saveTypes.then(function() { return L.saveBlockItems(b, items); }).then(function() { pop.close(); RPGACE.utils.toast('📋 ' + L.blockLabel(b) + ' planned', '#4caf82', 2000); if (onDone) onDone(); self.ui.render(); })
               .catch(function(e) { ok.disabled = false; RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500, 'myDay'); });
           };
           pop.box.appendChild(ok);
@@ -66951,6 +66924,454 @@ RPGACE.register('myDay', {
 });
 /* ===END:myDay=== */
 
+/* ===MODULE:realmTasks=== */
+// Realm Tasks (Oct 27 2026, plan "Realm Tasks Oct 27", record
+// records/2026-10/realm_tasks_ceo_2026-10-27.txt). One task pool per realm
+// (private realm_tasks + realm_task_types). Alex: "i choice picker when im in
+// the block so i can choose what to do, so i focus on types of tasks in the
+// space of time rather than each task individually" ... "a way to make tasks
+// appear when a video or post is shared ... this should always go through
+// /deduplication". Every insert is deduplicated by the realm_tasks_dedup
+// trigger in the database (same title -> merged, sources kept); videos,
+// journal lines and Library saves feed the inbox from database triggers.
+// The 52 activities Alex picked Oct 13 (old myDay.REALM_ACTIVITIES) are kept
+// rows; 175 more are proposals he keeps or drops. ▶ Live now is the page a
+// realm block runs on: pick a type, its top 3 tasks, Done ticks it into the
+// block (the block's existing XP rules), then pick the next.
+RPGACE.register('realmTasks', {
+  domain: 'schedule',
+  _types: null,
+  _tasks: null,
+  init: function() {
+    var self = this;
+    RPGACE.hooks.on('rpgace:login', function() { setTimeout(function() {
+      // Once loaded, redraw the dashboard so its 📥 / ▶ rows appear.
+      self.logic.load().then(function() { var dd = RPGACE.modules.dashDeck; if (dd && dd._refreshGlance) dd._refreshGlance(); }).catch(function() {});
+    }, 2000); });
+    // A realm block's ▶ Start opens Live now (Alex: "Opens when a block starts").
+    RPGACE.hooks.on('myday:block-start', function(b) { if (b && b.kind === 'realm') setTimeout(function() { self.ui.openLive(); }, 50); });
+    RPGACE.areaNav.onPageShow('live', function() { self.ui.openLive(); });
+  },
+  logic: {
+    read: function(table, params) { return RPGACE.modules.tripPlans.logic.read(table, params); },
+    load: function(force) {
+      var self = RPGACE.modules.realmTasks, L = self.logic;
+      if (!force && self._tasks && Date.now() - (self._at || 0) < 60000) return Promise.resolve(self._tasks);
+      return Promise.all([
+        L.read('realm_task_types', 'select=*&order=realm.asc,sort.asc'),
+        L.read('realm_tasks', 'select=*&status=in.(kept,inbox,proposed)&order=created_at.asc&limit=2000'),
+      ]).then(function(r) {
+        self._types = Array.isArray(r[0]) ? r[0] : [];
+        self._tasks = Array.isArray(r[1]) ? r[1] : [];
+        self._at = Date.now();
+        RPGACE.hooks.fire('realmTasks:loaded', self._tasks);
+        return self._tasks;
+      });
+    },
+    types: function(realm) { return (RPGACE.modules.realmTasks._types || []).filter(function(t) { return t.realm === realm; }); },
+    typeOf: function(realm, key) { return RPGACE.modules.realmTasks.logic.types(realm).filter(function(t) { return t.key === key; })[0] || null; },
+    // A repeatable rests rest_days after it was done; a one-off retires. Pure.
+    resting: function(t, now) {
+      if (!t || t.kind !== 'repeat' || !t.last_done_at) return false;
+      return (now || Date.now()) < new Date(t.last_done_at).getTime() + (Number(t.rest_days) || 0) * 86400000;
+    },
+    // Kept tasks of one type, best first: not resting, never done, least done, shortest. Pure.
+    rank: function(tasks, realm, typeKey, now) {
+      var L = RPGACE.modules.realmTasks.logic;
+      return (tasks || []).filter(function(t) { return t.status === 'kept' && t.realm === realm && (!typeKey || t.type_key === typeKey); })
+        .map(function(t) { return { t: t, rest: L.resting(t, now) ? 1 : 0 }; })
+        .sort(function(a, b) { return (a.rest - b.rest) || ((a.t.done_count || 0) - (b.t.done_count || 0)) || ((a.t.mins || 30) - (b.t.mins || 30)) || String(a.t.title).localeCompare(b.t.title); })
+        .map(function(x) { return Object.assign({}, x.t, { _resting: !!x.rest }); });
+    },
+    // Types for a realm, the block's chosen ones first, then the one left
+    // longest (Alex: "i pick a main agenda - if done can always pick more"). Pure.
+    orderTypes: function(types, tasks, agenda) {
+      var last = {};
+      (tasks || []).forEach(function(t) { if (t.last_done_at && (!last[t.type_key] || t.last_done_at > last[t.type_key])) last[t.type_key] = t.last_done_at; });
+      agenda = agenda || [];
+      return (types || []).slice().sort(function(a, b) {
+        var ia = agenda.indexOf(a.key), ib = agenda.indexOf(b.key);
+        if (ia !== -1 || ib !== -1) return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+        return String(last[a.key] || '').localeCompare(String(last[b.key] || '')) || (a.sort - b.sort);
+      });
+    },
+    inbox: function() { return (RPGACE.modules.realmTasks._tasks || []).filter(function(t) { return t.status === 'inbox'; }); },
+    proposed: function(realm) { return (RPGACE.modules.realmTasks._tasks || []).filter(function(t) { return t.status === 'proposed' && (!realm || t.realm === realm); }); },
+    // Kept tasks shaped like the old REALM_ACTIVITIES entries (for realm
+    // ideas, Plan block, the realm brief). Sync, from the loaded pool.
+    activities: function(realm) {
+      return (RPGACE.modules.realmTasks._tasks || []).filter(function(t) { return t.status === 'kept' && t.realm === realm; })
+        .map(function(t) { return { key: t.id, title: t.title, mins: t.mins || 30, earns: t.earns === 'real' ? 'real' : 'tick', how: t.how || null, opens: t.opens || null, type: t.type_key || null }; });
+    },
+    // One tapped idea (a video's quest, a realm suggestion, an idea card):
+    // the matching task is kept, or a kept task is added (dedup merges).
+    keepIdea: function(idea) {
+      var self = RPGACE.modules.realmTasks, L = self.logic;
+      var norm = function(t) { return String(t || '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').replace(/\s+/g, ' ').trim(); };
+      return L.load(true).then(function() {
+        var want = norm(idea.title).slice(0, 120);
+        var t = (self._tasks || []).filter(function(x) { return norm(x.title) === want; })[0];
+        if (t) return t.status === 'kept' ? t : L.update(t, { status: 'kept', dup_of: null });
+        return L.add({ realm: idea.realm, title: idea.title, notes: idea.notes, kind: idea.kind || 'once', earns: idea.xp ? 'xp' : 'tick', xp: idea.xp || null, status: 'kept', sources: idea.source ? [idea.source] : [] });
+      });
+    },
+    // "⭐ Create · Finish & mix" for a block with main types; '' otherwise.
+    typeLine: function(b) {
+      var L = RPGACE.modules.realmTasks.logic;
+      if (!b || b.kind !== 'realm' || !Array.isArray(b.types) || !b.types.length) return '';
+      return '⭐ ' + b.types.map(function(k) { var t = L.typeOf(b.realm, k); return t ? t.label : k; }).join(' · ');
+    },
+    activityMap: function() {
+      var L = RPGACE.modules.realmTasks.logic, xs = RPGACE.modules.xpSeason, out = {};
+      (xs ? xs.ORDER : []).forEach(function(k) { out[k] = L.activities(k); });
+      return out;
+    },
+    // Every new task goes through the database's dedup trigger.
+    add: function(row) {
+      var self = RPGACE.modules.realmTasks, xs = RPGACE.modules.xpSeason;
+      var title = String(row.title || '').trim().slice(0, 120);
+      if (!title) return Promise.reject(new Error('Give the task a name'));
+      if (!row.realm || !(xs && xs.REALMS[row.realm])) return Promise.reject(new Error('Pick a realm'));
+      var clean = { realm: row.realm, type_key: row.type_key || null, title: title, notes: row.notes ? String(row.notes).slice(0, 500) : null,
+        kind: row.kind === 'once' ? 'once' : 'repeat', mins: Math.max(5, Math.min(480, parseInt(row.mins, 10) || 30)),
+        earns: row.earns === 'real' || row.earns === 'xp' ? row.earns : 'tick', xp: row.xp || null, opens: row.opens || null,
+        status: row.status === 'kept' ? 'kept' : 'inbox', sources: Array.isArray(row.sources) ? row.sources : [] };
+      return RPGACE.sb.secureWrite('realm_tasks', 'insert', clean).then(function() { RPGACE.cache.clear('realm_tasks'); return self.logic.load(true); });
+    },
+    update: function(t, patch) {
+      return RPGACE.sb.secureWrite('realm_tasks', 'update', patch, 'id=eq.' + t.id).then(function() {
+        Object.assign(t, patch); RPGACE.cache.clear('realm_tasks'); return t;
+      });
+    },
+    // A task finished: a one-off retires; a repeatable rests.
+    markDone: function(t) {
+      var patch = { last_done_at: new Date().toISOString(), done_count: (Number(t.done_count) || 0) + 1 };
+      if (t.kind === 'once') patch.status = 'done';
+      return RPGACE.modules.realmTasks.logic.update(t, patch);
+    },
+    // The task whose sources include this table/ref (e.g. a video idea).
+    bySource: function(table, ref) {
+      return (RPGACE.modules.realmTasks._tasks || []).filter(function(t) { return (t.sources || []).some(function(s) { return s.table === table && String(s.ref) === String(ref); }); })[0] || null;
+    },
+    srcLabel: function(t) {
+      var s = (t.sources || []).filter(function(x) { return x.table !== 'catalogue' && x.table !== 'realm_activities'; })[0];
+      if (!s) return '';
+      var from = { intel_reports: '🎬 from video', journal: '📓 from journal', library_items: '📚 from Library', oracle: '🔮 from Oracle', realm_suggest: '✨ suggested', idea_card: '💡 from idea card', bookworm: '📖 from book' }[s.table] || 'from ' + s.table;
+      return from + (s.label ? ': ' + s.label : '') + ((t.sources || []).length > 1 ? ' (+' + ((t.sources || []).length - 1) + ' more)' : '');
+    },
+    // The running realm block (myDay focus run) and its chore_blocks row.
+    liveBlock: function() {
+      var md = RPGACE.modules.myDay, run = md && md.logic.focusRun();
+      if (!run) return null;
+      var b = (md._choreBlocks || []).filter(function(x) { return String(x.id) === String(run.blockId); })[0] || null;
+      return { run: run, block: b };
+    },
+    // Done inside a block: the task becomes a ticked item on the block, so
+    // the block's own XP rules pay (Alex: "Keep current rules"): +10 for a
+    // plain task, nothing extra for one whose real action pays.
+    doneInBlock: function(t, b) {
+      var md = RPGACE.modules.myDay, L = RPGACE.modules.realmTasks.logic;
+      var p = Promise.resolve();
+      if (b) {
+        var items = (b.items || []).slice(), idx = -1;
+        items.forEach(function(i, k) { if (i.src === 'task' && String(i.ref_id) === String(t.id) && !i.done) idx = k; });
+        if (idx === -1) {
+          items.push({ src: 'task', ref_id: String(t.id), label: t.title, mins: t.mins || 30, earns: t.earns || 'tick', xp: t.xp || null, how: t.how || null, opens: t.opens || null, type: t.type_key || null });
+          idx = items.length - 1;
+          p = RPGACE.sb.secureWrite('chore_blocks', 'update', { items: items }, 'id=eq.' + b.id).then(function() { b.items = items; });
+        }
+        p = p.then(function() { return md.logic.setBlockItem(b, idx, true); });
+      }
+      return p.then(function() { return L.markDone(t); });
+    },
+  },
+  ui: {
+    _esc: function(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); },
+    _btn: function(label, kind) { return RPGACE.modules.myDay.ui._btn(label, kind); },
+    _realm: function(k) { var xs = RPGACE.modules.xpSeason; return (xs && xs.REALMS[k]) || { icon: '✨', name: k }; },
+    _css: function() {
+      if (document.getElementById('rt-css')) return;
+      var st = document.createElement('style'); st.id = 'rt-css';
+      st.textContent = '.rt-chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}.rt-chip{min-height:40px;padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:none;color:var(--text);font:inherit;font-size:13px;cursor:pointer}' +
+        '.rt-chip[aria-pressed="true"]{background:var(--gold);color:#111;border-color:var(--gold);font-weight:700}' +
+        '.rt-task{display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}.rt-task-t{flex:1 1 180px;min-width:0;font-size:14px}' +
+        '.rt-sub{font-size:12px;color:var(--muted);margin-top:2px}.rt-now{border:1px solid var(--gold);border-radius:12px;padding:12px;margin:10px 0}' +
+        '.rt-head{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}.rt-big{font-size:18px;font-weight:700}';
+      document.head.appendChild(st);
+    },
+    // ▶ Live now: the running realm block's page (Alex: "each realm block to
+    // have a live doing window like cooking ... a separate page as live now
+    // so i can always revisit it").
+    openLive: function(opts) {
+      var self = RPGACE.modules.realmTasks, L = self.logic, U = self.ui;
+      U._css();
+      var host = RPGACE.areaNav.page('myday', 'live', '▶ Live now', { key: 'live', label: 'Live now', open: function() { U.openLive(); } });
+      if (!host) return null;
+      var box = host.box; box.id = 'rt-live';
+      box.textContent = 'Loading…';
+      var md = RPGACE.modules.myDay;
+      Promise.all([L.load(), md ? md.logic.load().catch(function() {}) : null]).then(function() { U._drawLive(box, opts || {}); })
+        .catch(function(e) { box.textContent = '⚠️ Could not load your tasks: ' + (e && e.message || e); });
+      return host;
+    },
+    _drawLive: function(box, opts) {
+      var self = RPGACE.modules.realmTasks, L = self.logic, U = self.ui, esc = U._esc, md = RPGACE.modules.myDay;
+      box.innerHTML = '';
+      var top = document.createElement('div'); top.className = 'rt-head';
+      var inN = L.inbox().length, prN = L.proposed().length;
+      var tools = document.createElement('div'); tools.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
+      var ib = U._btn('📥 New tasks' + (inN ? ' (' + inN + ')' : ''), ''); ib.id = 'rt-open-inbox'; ib.onclick = function() { U.openInbox(); };
+      var cb = U._btn('🗂 Catalogue' + (prN ? ' (' + prN + ' to review)' : ''), ''); cb.id = 'rt-open-catalogue'; cb.onclick = function() { U.openCatalogue(); };
+      var ab = U._btn('➕ Task', ''); ab.id = 'rt-open-add'; ab.onclick = function() { U.openAdd({}); };
+      tools.appendChild(ib); tools.appendChild(cb); tools.appendChild(ab);
+      top.appendChild(tools); box.appendChild(top);
+      var live = L.liveBlock(), realm = opts.realm || (live && live.run.realm) || null, b = live ? live.block : null;
+      var head = document.createElement('div'); head.id = 'rt-live-head'; head.style.cssText = 'margin:12px 0 4px;';
+      if (live) {
+        var R = U._realm(live.run.realm), st = md.logic.focusAt(live.run, Date.now());
+        var left = Math.max(0, Math.round((live.run.startedAt + live.run.mins * 60000 + (live.run.pausedMs || 0) - Date.now()) / 60000));
+        head.innerHTML = '<div class="rt-big">' + esc(R.icon + ' ' + R.name + ' block') + '</div><div class="rt-sub">' + (st.done ? 'Time is up' : left + ' min left') + (st.phase ? ' · ' + esc(st.phase.kind === 'focus' ? 'focus' : 'break') : '') + '</div>';
+      } else if (realm) {
+        var R2 = U._realm(realm); head.innerHTML = '<div class="rt-big">' + esc(R2.icon + ' ' + R2.name) + '</div><div class="rt-sub">No block running — tasks done here are still recorded.</div>';
+      } else {
+        head.innerHTML = '<div class="rt-big">Nothing running</div><div class="rt-sub">Start a realm block on My Day (▶ Start) and it opens here, or pick a realm to work on now.</div>';
+      }
+      box.appendChild(head);
+      if (!realm) {
+        var rc = document.createElement('div'); rc.className = 'rt-chips'; rc.id = 'rt-realm-pick';
+        (RPGACE.modules.xpSeason ? RPGACE.modules.xpSeason.ORDER : []).forEach(function(k) {
+          var R3 = U._realm(k), c = document.createElement('button'); c.type = 'button'; c.className = 'rt-chip'; c.dataset.realm = k; c.textContent = R3.icon + ' ' + R3.name;
+          c.onclick = function() { U._drawLive(box, { realm: k }); };
+          rc.appendChild(c);
+        });
+        box.appendChild(rc);
+        return;
+      }
+      var key = 'rt_live_' + (b ? b.id : 'free_' + realm), st2 = {};
+      try { st2 = JSON.parse(localStorage.getItem(key) || '{}') || {}; } catch (e) {}
+      var save = function() { try { localStorage.setItem(key, JSON.stringify(st2)); } catch (e) {} };
+      var agenda = (b && Array.isArray(b.types)) ? b.types : [];
+      var types = L.orderTypes(L.types(realm), self._tasks, agenda);
+      if (!st2.type && types[0]) st2.type = types[0].key;
+      // current task
+      var cur = st2.task ? (self._tasks || []).filter(function(t) { return t.id === st2.task; })[0] : null;
+      if (cur) {
+        var nw = document.createElement('div'); nw.className = 'rt-now'; nw.id = 'rt-current';
+        nw.innerHTML = '<div class="rt-sub">Doing now</div><div class="rt-big">' + esc(cur.title) + '</div>' + (cur.notes ? '<div class="rt-sub">' + esc(cur.notes) + '</div>' : '') + (cur.how ? '<div class="rt-sub">Counts when you ' + esc(cur.how) + '</div>' : '');
+        var row = document.createElement('div'); row.style.cssText = 'display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;';
+        if (cur.opens) { var op = U._btn('Open ↗', ''); op.onclick = function() { md.ui._openTool(cur.opens); }; row.appendChild(op); }
+        var dn = U._btn('✅ Done', 'primary'); dn.id = 'rt-done';
+        dn.onclick = function() {
+          dn.disabled = true;
+          L.doneInBlock(cur, b).then(function() {
+            RPGACE.utils.toast('✅ ' + cur.title + (b && cur.earns !== 'real' ? ' · +' + (cur.earns === 'xp' && cur.xp ? Math.min(100, cur.xp) : md.TICK_XP) + ' ' + U._realm(realm).name : ''), '#4caf82', 2200);
+            st2.task = null; st2.done = (st2.done || 0) + 1; save(); U._drawLive(box, opts);
+          }).catch(function(e) { dn.disabled = false; RPGACE.utils.toast('⚠️ Not saved: ' + (e.message || e), '#CC4A4A', 4000, 'realmTasks'); });
+        };
+        var nn = U._btn('↩ Not now', ''); nn.onclick = function() { st2.task = null; save(); U._drawLive(box, opts); };
+        row.appendChild(dn); row.appendChild(nn); nw.appendChild(row); box.appendChild(nw);
+      }
+      // type picker
+      var lab = document.createElement('div'); lab.className = 'rt-sub'; lab.style.marginTop = '10px';
+      lab.textContent = agenda.length ? 'Your agenda first (⭐). Done with it? Pick another type.' : 'What kind of work for this stretch?';
+      box.appendChild(lab);
+      var chips = document.createElement('div'); chips.className = 'rt-chips'; chips.id = 'rt-types';
+      types.forEach(function(ty) {
+        var n = L.rank(self._tasks, realm, ty.key).filter(function(t) { return !t._resting; }).length;
+        var c = document.createElement('button'); c.type = 'button'; c.className = 'rt-chip'; c.dataset.type = ty.key;
+        c.setAttribute('aria-pressed', st2.type === ty.key ? 'true' : 'false');
+        c.textContent = (agenda.indexOf(ty.key) !== -1 ? '⭐ ' : '') + (ty.icon ? ty.icon + ' ' : '') + ty.label + ' (' + n + ')';
+        c.onclick = function() { st2.type = ty.key; save(); U._drawLive(box, opts); };
+        chips.appendChild(c);
+      });
+      box.appendChild(chips);
+      // that type's tasks: top 3, then the rest
+      var list = L.rank(self._tasks, realm, st2.type).filter(function(t) { return !cur || t.id !== cur.id; });
+      var wrap = document.createElement('div'); wrap.id = 'rt-list';
+      var draw = function(all) {
+        wrap.innerHTML = '';
+        (all ? list : list.slice(0, 3)).forEach(function(t) {
+          var r = document.createElement('div'); r.className = 'rt-task'; r.dataset.id = t.id;
+          var tx = document.createElement('div'); tx.className = 'rt-task-t';
+          var sub = [t.mins + ' min', t.kind === 'once' ? 'one-off' : null, t._resting ? 'resting' : null, t.earns === 'real' ? 'counts when you ' + (t.how || 'do it') : null, L.srcLabel(t) || null].filter(Boolean);
+          tx.innerHTML = esc(t.title) + '<div class="rt-sub">' + esc(sub.join(' · ')) + '</div>';
+          var go = U._btn('▶ Start', cur ? '' : 'primary'); go.className += ' rt-start';
+          go.onclick = function() { st2.task = t.id; save(); if (t.opens) md.ui._openTool(t.opens); U._drawLive(box, opts); };
+          r.appendChild(tx); r.appendChild(go); wrap.appendChild(r);
+        });
+        if (!list.length) wrap.innerHTML = '<div class="rt-sub" style="padding:8px 0;">No kept tasks of this type yet — keep some in 🗂 Catalogue or 📥 New tasks.</div>';
+        if (!all && list.length > 3) {
+          var more = U._btn('Show ' + (list.length - 3) + ' more', ''); more.id = 'rt-more'; more.style.marginTop = '8px';
+          more.onclick = function() { draw(true); };
+          wrap.appendChild(more);
+        }
+      };
+      draw(false);
+      box.appendChild(wrap);
+      if (st2.done) { var dl = document.createElement('div'); dl.className = 'rt-sub'; dl.style.marginTop = '10px'; dl.textContent = '✅ ' + st2.done + ' done in this stretch'; box.appendChild(dl); }
+      U._liveDue(box, realm);
+    },
+    // Plans & People (Alex picked them as sources): Explorer shows trip tasks
+    // with a book-by date coming up, Connector shows people due a reach-out.
+    // Read live from Plans, never copied into realm_tasks.
+    _liveDue: function(box, realm) {
+      var tp = RPGACE.modules.tripPlans, U = RPGACE.modules.realmTasks.ui, esc = U._esc;
+      if (!tp || !tp.logic.signedIn() || (realm !== 'explorer' && realm !== 'connector')) return;
+      var today = RPGACE.modules.myDay.logic.iso();
+      var people = tp.logic.read('people', 'select=*&limit=300').catch(function() { return []; });
+      var work = realm === 'connector'
+        ? people.then(function(pp) { return tp.logic.peopleDue(pp, today); })
+        : Promise.all([tp.logic.read('plans', 'select=id,title,status,start_date,end_date,people,details,created_at&status=in.(planning,booked,done)&limit=100'),
+            tp.logic.read('plan_tasks', 'select=id,plan_id,title,kind,due_by,done&done=eq.false&due_by=not.is.null&limit=500'), people])
+          .then(function(x) { return tp.logic.tripDue(x[0], x[1], x[2], today); });
+      work.then(function(rows) {
+        if (!rows || !rows.length) return;
+        var w = document.createElement('div'); w.id = 'rt-live-due'; w.style.marginTop = '14px';
+        w.innerHTML = '<div style="font-weight:700;margin-bottom:4px;">📌 Due from ' + (realm === 'connector' ? 'People' : 'Plans') + '</div>';
+        rows.slice(0, 5).forEach(function(x) {
+          var r = document.createElement('div'); r.className = 'rt-task';
+          var tx = document.createElement('div'); tx.className = 'rt-task-t'; tx.innerHTML = esc((x.icon ? x.icon + ' ' : '') + x.text) + (x.sub ? '<div class="rt-sub">' + esc(x.sub) + '</div>' : '');
+          var go = U._btn('Open', ''); go.onclick = function() { tp.ui.open('plans', x.plan ? { planId: x.plan.id } : undefined); };
+          r.appendChild(tx); r.appendChild(go); w.appendChild(r);
+        });
+        box.appendChild(w);
+      }).catch(function() {});
+    },
+    // 📥 New tasks: Keep (with a type) or Drop; "same as X?" asks.
+    openInbox: function() {
+      var self = RPGACE.modules.realmTasks, L = self.logic, U = self.ui, esc = U._esc;
+      U._css();
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '📥 New tasks', title: 'Keep or drop', width: '600px', scroll: true });
+      pop.box.id = 'rt-inbox';
+      var draw = function() {
+        pop.box.innerHTML = '';
+        var items = L.inbox();
+        if (!items.length) { pop.box.innerHTML = '<div class="rt-sub">Nothing new. Tasks from videos you share, your journal and Library saves land here.</div>'; return; }
+        var byRealm = {};
+        items.forEach(function(t) { (byRealm[t.realm] = byRealm[t.realm] || []).push(t); });
+        Object.keys(byRealm).forEach(function(rk) {
+          var R = U._realm(rk), h = document.createElement('div'); h.style.cssText = 'font-weight:700;margin:12px 0 4px;'; h.textContent = R.icon + ' ' + R.name + ' (' + byRealm[rk].length + ')';
+          pop.box.appendChild(h);
+          byRealm[rk].forEach(function(t) {
+            var r = document.createElement('div'); r.className = 'rt-task'; r.dataset.id = t.id;
+            var same = t.dup_of ? (self._tasks || []).filter(function(x) { return x.id === t.dup_of; })[0] : null;
+            var tx = document.createElement('div'); tx.className = 'rt-task-t';
+            tx.innerHTML = esc(t.title) + (t.notes ? '<div class="rt-sub">' + esc(t.notes) + '</div>' : '') + '<div class="rt-sub">' + esc([L.srcLabel(t), t.xp ? '+' + t.xp + ' XP' : null].filter(Boolean).join(' · ')) + '</div>' +
+              (same ? '<div class="rt-sub" style="color:#e0a84c;">Same as "' + esc(same.title) + '"?</div>' : '');
+            var sel = document.createElement('select'); sel.className = 'rt-type'; sel.setAttribute('aria-label', 'Type');
+            sel.style.cssText = 'min-height:40px;background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:4px;';
+            L.types(rk).forEach(function(ty) { var o = document.createElement('option'); o.value = ty.key; o.textContent = ty.label; sel.appendChild(o); });
+            if (t.type_key) sel.value = t.type_key;
+            var keep = U._btn(same ? 'Different — keep' : 'Keep', 'primary'); keep.className += ' rt-keep';
+            keep.onclick = function() { keep.disabled = true; L.update(t, { status: 'kept', type_key: sel.value || null, dup_of: null }).then(draw).catch(function(e) { keep.disabled = false; RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500, 'realmTasks'); }); };
+            var drop = U._btn(same ? 'Same — drop' : 'Drop', ''); drop.className += ' rt-drop';
+            drop.onclick = function() { drop.disabled = true; L.update(t, { status: 'dropped' }).then(draw).catch(function(e) { drop.disabled = false; RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500, 'realmTasks'); }); };
+            r.appendChild(tx); r.appendChild(sel); r.appendChild(keep); r.appendChild(drop);
+            pop.box.appendChild(r);
+          });
+        });
+      };
+      L.load().then(draw).catch(function(e) { pop.box.textContent = '⚠️ ' + (e.message || e); });
+      return pop;
+    },
+    // 🗂 Catalogue: per realm, the proposed tasks by type - Keep / Edit / Drop.
+    openCatalogue: function(realm) {
+      var self = RPGACE.modules.realmTasks, L = self.logic, U = self.ui, esc = U._esc, xs = RPGACE.modules.xpSeason;
+      U._css();
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '🗂 Catalogue', title: 'Tasks for each realm', width: '640px', scroll: true });
+      pop.box.id = 'rt-catalogue';
+      var cur = realm || null;
+      var draw = function() {
+        pop.box.innerHTML = '';
+        var chips = document.createElement('div'); chips.className = 'rt-chips';
+        (xs ? xs.ORDER : []).forEach(function(k) {
+          var R = U._realm(k), n = L.proposed(k).length, c = document.createElement('button'); c.type = 'button'; c.className = 'rt-chip'; c.dataset.realm = k;
+          c.setAttribute('aria-pressed', cur === k ? 'true' : 'false'); c.textContent = R.icon + ' ' + R.name + (n ? ' · ' + n : ' ✓');
+          c.onclick = function() { cur = k; draw(); };
+          chips.appendChild(c);
+        });
+        pop.box.appendChild(chips);
+        if (!cur) { var h = document.createElement('div'); h.className = 'rt-sub'; h.textContent = 'Pick a realm. Kept tasks show in your blocks; proposed ones only after you keep them.'; pop.box.appendChild(h); return; }
+        L.types(cur).forEach(function(ty) {
+          var all = (self._tasks || []).filter(function(t) { return t.realm === cur && t.type_key === ty.key && (t.status === 'kept' || t.status === 'proposed'); });
+          if (!all.length) return;
+          var hd = document.createElement('div'); hd.className = 'rt-head'; hd.style.marginTop = '12px';
+          hd.innerHTML = '<b>' + esc((ty.icon ? ty.icon + ' ' : '') + ty.label) + '</b>';
+          var props = all.filter(function(t) { return t.status === 'proposed'; });
+          if (props.length > 1) {
+            var ka = U._btn('Keep all ' + props.length, ''); ka.className += ' rt-keepall';
+            ka.onclick = function() { ka.disabled = true; props.reduce(function(p, t) { return p.then(function() { return L.update(t, { status: 'kept' }); }); }, Promise.resolve()).then(draw).catch(function(e) { RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500, 'realmTasks'); draw(); }); };
+            hd.appendChild(ka);
+          }
+          pop.box.appendChild(hd);
+          all.forEach(function(t) {
+            var r = document.createElement('div'); r.className = 'rt-task'; r.dataset.id = t.id;
+            var tx = document.createElement('div'); tx.className = 'rt-task-t';
+            tx.innerHTML = esc(t.title) + '<div class="rt-sub">' + esc([t.mins + ' min', t.kind === 'once' ? 'one-off' : 'repeatable', t.status === 'kept' ? '✓ kept' : 'proposed'].join(' · ')) + '</div>';
+            r.appendChild(tx);
+            if (t.status === 'proposed') {
+              var k = U._btn('Keep', 'primary'); k.className += ' rt-keep';
+              k.onclick = function() { k.disabled = true; L.update(t, { status: 'kept' }).then(draw); };
+              r.appendChild(k);
+            }
+            var ed = U._btn('Edit', ''); ed.className += ' rt-edit';
+            ed.onclick = function() {
+              var nt = window.prompt('Task name', t.title); if (nt == null || !nt.trim()) return;
+              var nm = window.prompt('Minutes', String(t.mins || 30)); var m = parseInt(nm, 10);
+              L.update(t, { title: nt.trim().slice(0, 120), mins: m > 0 ? Math.min(480, m) : t.mins }).then(draw).catch(function(e) { RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500, 'realmTasks'); });
+            };
+            var dr = U._btn('Drop', ''); dr.className += ' rt-drop';
+            dr.onclick = function() { dr.disabled = true; L.update(t, { status: 'dropped' }).then(function() { t.status = 'dropped'; draw(); }); };
+            r.appendChild(ed); r.appendChild(dr);
+            pop.box.appendChild(r);
+          });
+        });
+      };
+      L.load().then(draw).catch(function(e) { pop.box.textContent = '⚠️ ' + (e.message || e); });
+      return pop;
+    },
+    // The one "➕ Task" button other screens add (idea cards, book insights).
+    taskButton: function(opts) {
+      var U = RPGACE.modules.realmTasks.ui, b = U._btn('➕ Task', '');
+      b.className += ' rt-task-btn'; b.style.minHeight = '40px';
+      b.onclick = function() { U.openAdd(opts); };
+      return b;
+    },
+    // ➕ Task: one form for every place a task can come from (Oracle replies,
+    // idea cards, Live now). opts: { title, notes, realm, source }.
+    openAdd: function(opts) {
+      var self = RPGACE.modules.realmTasks, L = self.logic, U = self.ui, xs = RPGACE.modules.xpSeason;
+      opts = opts || {};
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '➕ Task', title: 'Add a task', width: '480px' });
+      pop.box.id = 'rt-add';
+      var inp = 'width:100%;box-sizing:border-box;min-height:44px;background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px;font:inherit;margin-bottom:8px;';
+      var ti = document.createElement('input'); ti.id = 'rt-add-title'; ti.value = String(opts.title || '').slice(0, 120); ti.placeholder = 'What is the task?'; ti.style.cssText = inp;
+      var rs = document.createElement('select'); rs.id = 'rt-add-realm'; rs.style.cssText = inp;
+      (xs ? xs.ORDER : []).forEach(function(k) { var o = document.createElement('option'); o.value = k; o.textContent = U._realm(k).icon + ' ' + U._realm(k).name; rs.appendChild(o); });
+      if (opts.realm) rs.value = opts.realm;
+      var ts = document.createElement('select'); ts.id = 'rt-add-type'; ts.style.cssText = inp;
+      var fillTypes = function() { ts.innerHTML = ''; L.types(rs.value).forEach(function(ty) { var o = document.createElement('option'); o.value = ty.key; o.textContent = ty.label; ts.appendChild(o); }); };
+      rs.onchange = fillTypes;
+      var kind = document.createElement('select'); kind.id = 'rt-add-kind'; kind.style.cssText = inp;
+      kind.innerHTML = '<option value="repeat">Repeatable</option><option value="once">One-off</option>';
+      if (opts.kind) kind.value = opts.kind;
+      var sv = U._btn('Save task', 'primary'); sv.id = 'rt-add-save';
+      sv.onclick = function() {
+        sv.disabled = true;
+        var before = (self._tasks || []).length;
+        L.add({ realm: rs.value, type_key: ts.value, title: ti.value, notes: opts.notes, kind: kind.value, status: 'kept', sources: opts.source ? [opts.source] : [] }).then(function() {
+          pop.close();
+          RPGACE.utils.toast((self._tasks || []).length > before ? '➕ Task added to ' + U._realm(rs.value).name : '➕ Already there — merged into the existing task', '#4caf82', 2600);
+        }).catch(function(e) { sv.disabled = false; RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500, 'realmTasks'); });
+      };
+      [ti, rs, ts, kind, sv].forEach(function(el) { pop.box.appendChild(el); });
+      L.load().then(fillTypes).catch(fillTypes);
+      return pop;
+    },
+  },
+});
+/* ===END:realmTasks=== */
+
 /* ===MODULE:doingNow=== */
 // Oct 16 2026, plan "Doing Now" DN-0/DN-1 (records/2026-10/doing_now_plan_paranoia_2026-10-15.txt).
 // Log what you are doing as it happens (or just did): a running rpgace_agendas
@@ -66959,7 +67380,7 @@ RPGACE.register('myDay', {
 // then a short Stop sheet (how it went + mood) with "+ more details" (photo,
 // who with, where, money, linked thing, would do again, effort). Realms are
 // picked on start (RPGACE.realmPicker). No XP yet (DN-5). DN-1b: "Try
-// something new" ideas from the quietest realms (myDay.REALM_ACTIVITIES).
+// something new" ideas from the quietest realms (kept realm tasks, realmTasks).
 // DN-2: after 3h asks "still doing it?"; 4h after the last answer it auto-stops at that mark.
 // DN-3: cooking-sounding names offer Cook Mode (cookingOracle.ui.cookRecipeNow), gym ones the
 // gym logger; an Actual cook / saved session stops the entry and links it (one schedule entry).
@@ -67381,11 +67802,11 @@ RPGACE.register('doingNow', {
       });
     },
     // DN-1b: the quietest realms (longest since any XP or Doing Now entry;
-    // never-touched realms first), one idea each from myDay.REALM_ACTIVITIES,
+    // never-touched realms first), one idea each from the kept realm tasks,
     // rotated by day so the list changes daily. Pure: data in, ideas out.
     ideas: function(events, sched, today, n) {
       var S = RPGACE.modules.xpSeason, md = RPGACE.modules.myDay, L = RPGACE.modules.doingNow.logic;
-      var acts = (md && md.REALM_ACTIVITIES) || {}, order = (S && S.ORDER) || Object.keys(acts);
+      var acts = RPGACE.modules.realmTasks ? RPGACE.modules.realmTasks.logic.activityMap() : {}, order = (S && S.ORDER) || Object.keys(acts);
       var last = {};
       var seen = function(r, d) { if (r && d && (!last[r] || d > last[r])) last[r] = d; };
       (events || []).forEach(function(e) { if (!e.status || e.status === 'active') seen(e.realm, e.earned_on); });
