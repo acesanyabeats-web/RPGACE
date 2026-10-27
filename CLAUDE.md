@@ -16,6 +16,7 @@ Split from a 291KB file on Oct 22 2026 (plan "CLAUDE.md Debloat", record `record
 | The why behind every landmine below | `docs/claude/landmines.md` |
 | Auth, RLS, secrets | `docs/claude/security.md` |
 | Oversight docs, Galaxy Map, colour vocabulary, records (`oversight`) | `docs/claude/oversight.md` |
+| Realm Tasks, Live now, Generic Missions (cross-realm) | `docs/claude/realm_tasks.md` |
 | Open items waiting on Alex | `docs/claude/open_forks.md` |
 | Architecture and data flow | `system_flow_map.md`, `interconnection_map.md` |
 | Skills, rule files, external connectors | `ai_tooling_and_rules_map.md`, `.claude/skills/*/SKILL.md` |

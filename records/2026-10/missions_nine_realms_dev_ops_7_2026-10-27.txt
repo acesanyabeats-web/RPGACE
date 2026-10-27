@@ -1,0 +1,40 @@
+MISSIONS FOR THE OTHER 9 REALMS — first /dev_ops_7 run (Track B), alongside Generic Missions GM-3..9 (Track A)
+Opened Oct 27 2026.
+
+1. ASK (Alex, Oct 27, verbatim): "also i think we should review other 9 realms too (Tasks in the other 9 realms stay where they
+are.) [/paranoia and /free-for-all-debate with /drift /godmode /scope and /interrogation into oblivion, then /CEO and plan this
+while building previous plan so we get things built without task skipping in approved plans]"
+
+2. EVIDENCE (/scope + GODMODE, live Oct 27, after GM-4)
+- Inbox in the 9 realms: 91 = Mind 35, Builder 21, Hustler 15, Life 7, Connector 6, Homekeeper 4, Scholar 3, Explorer 0, Steward 0.
+  Kept/proposed per realm: Builder 7/6, Connector 5/8, Explorer 4/7, Homekeeper 13/12, Hustler 4/19, Life 5/12, Mind 4/12,
+  Scholar 4/12, Steward 4/9.
+- Mind inbox is video reflection exercises (Stoic Sparring Session, Urge Audit, Shame Audit, 12-Week Commit...). Builder inbox
+  is dev/AI-tooling ideas from videos (One-Agent Interview, Harness Showdown, Engelbart Hour...). Hustler: selling/outreach
+  (Cold Outreach Round, Licensing Rate Card, Sync Pitch Test...). Homekeeper inbox = 4 "Put away laundry" follow-ups (Actions,
+  not videos). Life: digital admin + time-blocking. Connector: relationship exercises. Scholar: study methods.
+- Context that already exists per realm: Connector -> People (tripPlans people); Scholar -> Life Library items / studyHub
+  courses; Explorer -> Plans (trip/outing ideas); Hustler -> beats (content_productions) and artists/pitches (sellingHub);
+  Steward -> money (subscriptions, finance); Builder -> ceo_plan_items / error_log; Mind -> journal; Life/Homekeeper -> none
+  (typed cards).
+- Engine reuse: GM-3 filing (realmTasks.logic.fileInbox) already handles any realm by MISSION_REALMS; widening it is a list
+  change plus a default context kind per realm.
+
+3. FREE-FOR-ALL DEBATE (real shapes)
+ A "Same as the four": generic missions + cards in all 9; context from each realm's own data where it exists (a person, a
+   book, a plan, a beat/artist, a money item, a plan item), typed card otherwise. For: one model everywhere, reuses data.
+ B "Mind runs through the Journal": Mind missions are reflection methods; picking one opens the Journal with the method as
+   the prompt and the entry is the proof. For: Mind's real home is the journal. Against: a second path for one realm.
+ C "Rhythm realms stay plain": Homekeeper and Steward are mostly cadence chores/bills already handled as Actions; missions
+   add a step for no gain. For: less friction. Against: a little inconsistency.
+ D "One catch-all per realm" ("Try a method from a video"): cheapest. Against: loses exactly the specificity Alex liked.
+ Council of 5 leaning: A + B, with C for Homekeeper/Steward; D rejected. Why-not: more inbox review up front (missions per
+ realm), and Builder overlaps the dev backlog (Builder missions would track RPGACE work Alex also does with Claude Code).
+
+4. /drift: consistent with the Generic Missions answers (missions-only review, context at plan time, fixed XP, cards stay).
+   Overlap with Track A: GM-3's filing job gains realms; no approved GM item changes. No CAPTURED finding.
+
+5. INTERROGATION (answers recorded verbatim below)
+ Round 1 (Oct 27, verbatim picks): Realms "7 realms (Recommended)" (Mind, Builder, Hustler, Life, Connector, Scholar,
+ Explorer; Homekeeper + Steward stay as Actions) | Context from "Each realm's own data (Recommended)" | Mind "Through the
+ Journal (Recommended)" | 91 waiting "Automatically, like the four (Recommended)".
