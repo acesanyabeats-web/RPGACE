@@ -73,6 +73,18 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-27-save-row-on-professor" style="margin-bottom:30px;">
+    <div class="card-title">📓 Oct 27 — "Save as entry" now appears under deep (Professor) answers too</div>
+    <div class="card-body">
+      From your flag on Oct 26: the 📓 Save button wasn't there under the Jung/Greene shadow-questions answer. Cause: since Oct 21 a "deep" message (why, compare, explain, long) is answered by Oracle Professor, which drew its own answer bubble and never added the row of buttons under it — so 📓 Save as entry, 📖 Save to Encyclopedia and ⭐ Library were missing on those answers only. It was not the freezes.
+      <ul>
+        <li>Fix: one shared <code>addReplySaveRow()</code> draws the row; normal replies and Professor answers both call it.</li>
+        <li>Checked in a headless browser: a deep answer is followed by the row, 📓 on it opens Save as entry with that answer's text, a normal reply still gets exactly one row, no page errors.</li>
+        <li>Untested by you. Your shadow-questions answer from Oct 26 is still in that chat only if the tab hasn't reloaded; if it has, its text is saved in the flag and I can file it as a journal entry for you.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-10-22-domain-spine-externals" style="margin-bottom:30px;">
     <div class="card-title">🏛️ Oct 22 — The 8 domains become the one spine: Oracle's self-description, topic files, external AIs and map dimensions (ED-1..ED-5)</div>
     <div class="card-body">

@@ -863,22 +863,8 @@ One sharp memorable line at the end of every reply.`;
       STATE.chatHistory.push({role:'assistant',content:cleanReply});
       checkForQuestSuggestions(cleanReply);
 
-      // Add Save to Journal button after every AI reply
-      const saveBtn = document.createElement('div');
-      saveBtn.style.cssText = 'display:flex;gap:6px;margin:4px 0 12px 0;flex-wrap:wrap';
-      saveBtn.innerHTML = `
-        <button class="oe-open" onclick="(window.RPGACE&&RPGACE.modules.oracleEntry)?RPGACE.modules.oracleEntry.ui.openLast():quickSaveToJournal()" style="background:none;border:1px solid rgba(201,168,76,.3);color:var(--gold);border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif">📓 Save as entry</button>
-        <button onclick="quickSaveToEncyclopedia()" style="background:none;border:1px solid rgba(255,255,255,.1);color:var(--muted);border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif">📖 Save to Encyclopedia</button>
-      `;
-      // LL-4: ⭐ keeps this answer in the Life Library (question as title).
-      const llMod = window.RPGACE && RPGACE.modules.lifeLibrary;
-      if (llMod) {
-        const ex = llMod.logic.exchange(msg, cleanReply);
-        window._lastOracleExchange = ex;
-        saveBtn.appendChild(llMod.ui.starButton(ex));
-      }
-      document.getElementById('chat-msgs').appendChild(saveBtn);
-      document.getElementById('chat-msgs').scrollTop = 99999;
+      // Oct 27 2026: one shared row (also used by Oracle Professor answers).
+      addReplySaveRow(msg, cleanReply);
     }
 
     // Show agent result if any
@@ -909,6 +895,27 @@ One sharp memorable line at the end of every reply.`;
     addMsg('✗ Oracle error: '+e.message,'error-msg');
   }
   document.getElementById('send-btn').disabled=false;
+}
+// Oct 27 2026 — the 📓 Save as entry / 📖 Save to Encyclopedia / ⭐ Library row
+// under an Oracle reply. Shared by sendChat and oracleProfessor.ui.run (deep
+// answers used to get no row at all, so 📓 never appeared on them).
+function addReplySaveRow(question, reply){
+  const saveBtn = document.createElement('div');
+  saveBtn.style.cssText = 'display:flex;gap:6px;margin:4px 0 12px 0;flex-wrap:wrap';
+  saveBtn.innerHTML = `
+    <button class="oe-open" onclick="(window.RPGACE&&RPGACE.modules.oracleEntry)?RPGACE.modules.oracleEntry.ui.openLast():quickSaveToJournal()" style="background:none;border:1px solid rgba(201,168,76,.3);color:var(--gold);border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif">📓 Save as entry</button>
+    <button onclick="quickSaveToEncyclopedia()" style="background:none;border:1px solid rgba(255,255,255,.1);color:var(--muted);border-radius:5px;padding:3px 10px;font-size:11px;cursor:pointer;font-family:'Rajdhani',sans-serif">📖 Save to Encyclopedia</button>
+  `;
+  // LL-4: ⭐ keeps this answer in the Life Library (question as title).
+  const llMod = window.RPGACE && RPGACE.modules.lifeLibrary;
+  if (llMod) {
+    const ex = llMod.logic.exchange(question, reply);
+    window._lastOracleExchange = ex;
+    saveBtn.appendChild(llMod.ui.starButton(ex));
+  }
+  const msgs = document.getElementById('chat-msgs');
+  if (msgs) { msgs.appendChild(saveBtn); msgs.scrollTop = 99999; }
+  return saveBtn;
 }
 // July 28 FROZEN-file exception, logged in patch_notes.html: renderMarkdown
 // used to inject `text` straight into innerHTML with zero HTML-escaping.
@@ -10782,6 +10789,8 @@ RPGACE.register('oracleProfessor', {
           STATE.chatHistory.push({ role: 'user', content: q });
           STATE.chatHistory.push({ role: 'assistant', content: r.body });
         } catch (e) {}
+        // Oct 27 2026: the same 📓 / 📖 / ⭐ row as a normal reply (was missing here).
+        try { if (typeof addReplySaveRow === 'function') addReplySaveRow(q, r.body || ''); } catch (e) {}
         return r;
       }).catch(function(e) {
         body.textContent = '⚠️ Professor answer failed: ' + ((e && e.message) || e);
