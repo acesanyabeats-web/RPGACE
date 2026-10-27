@@ -1,0 +1,107 @@
+Knowledge domain re-evaluation — /scope + /paranoia + /free-for-all-debate + /drift + /interrogation
+Oct 27 2026
+
+PROMPT (verbatim, Alex): "now we need to re-evaluate the entire knowledge domain, it has too many overlapping functions
+making it cluttered. run /scope to see what is made, how it is structured, what duplicate functions and outputs exist,
+what can be re-wired to make a positive impact without mitigating function or purpose, only improve. then /paranoia and
+/free-for-all-debate for scrutiny using /drift and /interrogation into oblivion"
+
+1. SCOPE — what exists (live, Oct 27)
+ 25 modules, ~15,700 lines (domain: 'knowledge'): phylumPath 3215, bookworm 2444, lifeLibrary 1133, intelDelete 1060,
+ feynman 882, taxonomyTree 761, taxonomyReviewQueue 715, encyclopediaPosts 642, studyHub 593, screenshotInbox 525,
+ pathways 444, knowledgeGap 389, jargonEncyclopedia 361, knowledgeHub 307, taxonomySync 291, encTaxonomyLink 290,
+ ciAutoPropose 276, researchTabs 257, knowledgeReview 209, encyclopediaQoL 208, intelDedup 199, recall 194,
+ shareInbox 162, encSync 119, intelBatchList 36.
+ Menu (Knowledge band): Knowledge home, Life Library, Screenshot Inbox, Bookworm (+ Videoworm, MusicWorm, Bibliography,
+ Your books), Encyclopedia (+ Jargon Encyclopedia), Phylum Path, Review, Study = 8 entries + 4 sub-entries.
+ Live rows: library_items 56 (3 books) | bookworm_books 1, chapters 26 | bibliography 0 | encyclopedia 55 articles |
+ encyclopedia_insights 597 idea cards (8 saved for recall) | jargon 545 (386 pending review) | taxonomy_tree 0 (wiped
+ Sep 25, growth paused) | taxonomy_proposals 179 (1 pending) | taxonomy_links 0 | taxonomy_nodes 91 (directors) |
+ intel_reports 49 | intel_watchlist 26 | reference_tracks 32 | screenshots 0 | study_questions 300, attempts 12.
+
+ Overlap groups (each with evidence):
+ A. Ways IN (7 doors, different stores): Life Library add, Screenshot Inbox (0 screenshots ever), Share anything box on
+    Videoworm, phone share sheet, Video Finder (YouTube search on Videoworm), Bookworm new book, MusicWorm reference track.
+    library_items is already meant to be the one index (LL-4 feeds), but each door still has its own page.
+ B. Books in 3 stores + 2 menu entries: bookworm_books (1), library_items kind=book (3), bibliography (0, "consolidated
+    into Chronicles"); menu has both "Bibliography" and "Your books" under Bookworm.
+ C. What you LEARNED, 4 stores across 5 screens: write-ups (encyclopedia 55), idea cards (597), jargon (545), recall-saved
+    cards (8). Screens: Encyclopedia page (Ideas tab + old articles with 8 beat-era categories, 5 "sort workflows",
+    Maintenance tools: ⚡Sync, 🗑Clear All, Sync & Push All Reports, reanalysis pool, "use the Upload Workshop" (retired)),
+    Jargon Encyclopedia page, Review page, Phylum shelves, Videoworm write-up links.
+ D. REVIEW/resurfacing, 6 mechanisms: Review page (jargon one at a time), taxonomyReviewQueue (1 pending; tree empty),
+    recall (idea cards in Morning Brief), Library daily pick (Morning Brief), Study redo (wrong answers on recall's
+    schedule), Feynman "explain it back".
+ E. Dormant taxonomy machinery (tree has 0 rows, paused since Sep 25): taxonomyTree, taxonomySync, taxonomyReviewQueue,
+    encTaxonomyLink ("🌳 Propose to Taxonomy" per card), ciAutoPropose, encSync, knowledgeGap (dashboard gap panel),
+    phylumPath placement + "Generate Curriculum Breakdown"/"Generate Phylum-Level Article" ≈ 2,800+ lines and several
+    visible buttons that can't do anything useful until the tree is rebuilt.
+ F. Legacy video UI: Videoworm page = old File Analyzer panel (server check, Insights/Watchlist tabs, 🔄 Sync, How it works,
+    📥 Manual Import) + Video Finder; intelDelete (collapsed list, master toggle, bib section), intelBatchList, intelDedup,
+    researchTabs (Research page retired - 'learning' unreachable), encyclopediaQoL.
+ G. Tasks from what you learn, 2 paths: pathways "Make these quests" (report -> quest_log) vs realm_tasks auto-made from
+    reports/journal/library (RT, built today) -> duplicate route to tasks.
+
+2. DRIFT
+ Baseline A (RATIFIED, records/2026-10/knowledge_reorg_ceo_plan_2026-10-15.txt + LL plan): roles Library = taken in,
+ Bookworm = study, Encyclopedia = learned, Phylum Path = map. Verdict: ON TRACK in intent, DRIFTED in surface - the roles
+ exist but each still carries its pre-reorg screens (findings C, F).
+ D1 MATERIAL: SL-2 (ratified, status red, never built) already says "Knowledge: delete Encyclopedia ⚡Sync×2 / 🌿Sync Taxonomy /
+    🗑Clear All; Filter & sort ..." - approved work left undone; it is part of this clean-up, not new scope.
+ D2 MINOR: docs/claude/knowledge.md describes Screenshot Inbox as a live feed; the table has 0 rows ever.
+ D3 MINOR: pathways ("Make these quests") predates RT; RT now does it automatically - a second route, not a decision.
+ D4 BASIS note: taxonomy pause is ratified (Alex, Sep 25: rebuild phyla once jargon is reviewed); 386 pending jargon is
+    the real blocker for the Map step. Not drift, but it makes group E pure clutter today.
+
+3. /free-for-all-debate (4 competitors, 2 problems each)
+ 1 "One door in" (A, B): one ＋ Take in (link/text/screenshot/file/book) feeding library_items; Bookworm/MusicWorm open
+   FROM a library item ("Study this"); books live once (library_items + bookworm chapters); Bibliography = a Library filter.
+ 2 "One learned shelf" (C, D): one Learned page with tabs Write-ups | Ideas | Jargon (jargon page folds in); old categories,
+   sort workflows, maintenance buttons go (SL-2). One Review page lists everything due: jargon to accept, idea cards due,
+   exam redo; "Explain it back" is a button on any card, not a separate screen. Morning Brief shows the count + a link.
+ 3 "Park the dormant" (E, F): hide taxonomy-growth buttons/panels while the tree is empty (code stays, auto-returns when
+   rows exist - same rule as isPaused); Videoworm page = Share box + reports list only (Sync/Manual Import/How it works
+   into ☰); Video Finder kept but moved into the Share box as "🔎 find a video".
+ 4 "Why not / keep function" (A, D, G): every door has a reason (screenshots need vision, books need chapters, tracks need
+   audio stats) - merge the ENTRY, not the engines. Recall vs Study redo vs Feynman test different things - merge the
+   LIST, not the logic. pathways should route into realm_tasks (one route), not be deleted.
+ Merged: 1+4 -> one Take in entry, engines untouched. 2+4 -> one Learned page + one Review list, engines untouched.
+ 3 stands with 4's caveat: hide, never delete, while dormant. G -> pathways buttons call realmTasks.keepIdea (already done
+ for addQuest on Oct 27) - verify every pathways button does.
+
+4. COUNCIL OF 5 (draft, pending answers)
+ Risk: low for UI merges (engines unchanged); medium for menu rename (links/bookmarks) - keep old routes redirecting.
+ Cost: 4-6 build steps, no AI cost change. Maintainability: fewer screens, same modules -> less code paths to test.
+ UX: Knowledge menu 8+4 entries -> 5 (Home, Take in, Study, Learned, Review) + Map under Learned until the tree exists.
+ Why-not: Alex hasn't hand-tested most of Knowledge (KN/LL all yellow); a reshuffle before he uses it risks moving things
+ he never learned. Mitigation: one plan, one release, a "where did X go" line on each old route.
+
+5. INTERROGATION — asked in chat; answers appended below.
+ Answers (Alex, Oct 27, verbatim choices):
+ - Take in: "One door, engines kept (Recommended)"
+ - Learned: "One page, 3 tabs (Recommended)"
+ - Review: "One Review list (Recommended)"
+ - Dormant taxonomy: "Hide until the tree has rows (Recommended)"
+ - Menu: "Home · Take in · Study · Learned · Review (Recommended)"
+ - Videoworm: "Reports list + Find videos (Recommended)"
+ - Books: "Library is the book list (Recommended)"
+ - Tasks: "Everything goes to Realm Tasks (Recommended)"
+
+6. PLAN — "Knowledge Rewire" (KR-1..KR-8), ratified by the answers above
+ KR-1 ＋ Take in: one door (link / text / screenshot / file / book / reference track) on Life Library + Knowledge home;
+      each kind hands off to its existing engine (shareInbox, screenshotInbox, bookworm, MusicWorm); "Study this" on a
+      Library item opens the matching worm.
+ KR-2 Learned page: Write-ups | Ideas | Jargon tabs + one search; Jargon Encyclopedia folds in (old route redirects);
+      old categories, sort workflows, maintenance tools (⚡Sync×2, Sync Taxonomy, 🗑Clear All, Upload Workshop text)
+      removed (completes SL-2). Phylum Path reached from Learned.
+ KR-3 One Review list: jargon to accept + idea cards due (recall) + exam questions to redo, one queue; "🧠 Explain it
+      back" (feynman) as a button on any card; Morning Brief shows the count + one tap in.
+ KR-4 Hide dormant taxonomy UI while taxonomy_tree has no live rows (taxonomyTree.logic.isPaused): Propose to
+      Taxonomy, Sync Taxonomy, gap panel, Generate Curriculum Breakdown, Generate Phylum-Level Article. Auto-return.
+ KR-5 Videoworm = analysed videos list (open write-up) + 🔎 Find videos; Sync / Manual Import / How it works / server
+      check into the › side list; share box moves to ＋ Take in.
+ KR-6 Books: Library filtered to books is the one list; "Bibliography" + "Your books" menu entries -> that filter.
+ KR-7 pathways buttons send ideas to realmTasks (keepIdea / inbox), not quest_log.
+ KR-8 Menu: Knowledge = Home · Take in · Study · Learned · Review; old routes redirect with a one-line "moved to" note;
+      Knowledge home tiles match the 4 steps; tests, docs, SELF_KNOWLEDGE, deploy.
+ Each step briefed before building (rule 18).
