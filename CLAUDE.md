@@ -50,6 +50,7 @@ Split from a 291KB file on Oct 22 2026 (plan "CLAUDE.md Debloat", record `record
 - Never restrict these to anon-read-only: `openmontage_jobs`, `oracle_fallback_queue`, `journal`, `intel_jobs`, `intel_reports`, `intel_watchlist`, `intel_bibliography`, `error_log`, `smoke_test_items`, `ceo_plan_items`. Each has a live anon-key writer.
 - Query `pg_constraint` before writing a new enum-like status value.
 - Destructive SQL through the connector times out or gets cancelled: write a paste file in `records/` with a check query and hand it to Alex.
+- Keep every SQL call short (one or two statements; split a migration into small pieces) and run it yourself. Alex, Oct 27: "stop making such large sqls, just make them shorter always, i want it always automatic".
 - Renaming or deleting a file means grepping the whole repo, including `vercel.json`, `scripts/`, `.claude/settings.json` and `.github/workflows/`. Deleting an `api/*.js` file needs a `vercel.json` grep too.
 - `hooks.on('rpgace:ready')` inside `init()` never fires; call the function directly.
 - dashDeck `onClose` must call `_stashWidget(id, true)`. Inside a popup, call `closeWidgetPopup(id)` before opening a side panel or drawer.
