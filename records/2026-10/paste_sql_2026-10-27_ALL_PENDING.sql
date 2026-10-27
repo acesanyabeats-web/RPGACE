@@ -16,3 +16,6 @@ update ceo_plan_items set status='yellow', last_checked_at=now(), evidence='Buil
 update ceo_plan_items set status='yellow', last_checked_at=now(), evidence='Built Oct 27: Schedule Import shifts + Update rota to side list; Journal Clear All deleted (button + clearJournal), Refresh to side list, plain-name chips in one filter row. sl_test 29/29. Untested by Alex.' where item_code='SL-4' and plan_id=(select id from ceo_plans where name='Side List Everywhere + Real-Day Timeline');
 update ceo_plan_items set status='yellow', last_checked_at=now(), evidence='Built Oct 27: Oracle tools + 8 agent actions to side list with a Tools button by SEND; Chronicles one filter row; Oversight already lean; no side list on Dashboard. sl_test 29/29. Untested by Alex.' where item_code='SL-5' and plan_id=(select id from ceo_plans where name='Side List Everywhere + Real-Day Timeline');
 select item_code, status from ceo_plan_items where status='red' and (item_code like 'CC-%' or item_code like 'MDX-%' or item_code like 'RF-%' or item_code like 'KR-%' or item_code like 'SL-%') order by 1;
+-- Day & Habits Rewire plan approved Oct 27 ("Looks fantastic go"):
+update ceo_plans set basis='ratified', ratified_at=now() where name='Day & Habits Rewire';
+update ceo_plan_items set basis='ratified' where plan_id=(select id from ceo_plans where name='Day & Habits Rewire');

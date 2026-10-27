@@ -140,3 +140,12 @@ the RT record (why quest_log is the XP ledger). Fable not used.
  DR-11 Menu, tests, docs, SELF_KNOWLEDGE, deploy, plan rows.
  Tier notes: DR-1 status changes (42 rows) and DR-5 routines active=false are data changes -> counted before/after, shown
  to Alex at build. DR-4/DR-6 are additive schema (carve-out). No deletes, no RLS loosening.
+
+8. APPROVAL (Alex, Oct 27, verbatim): "Looks fantastic go, also I'd like imported videos on gym exercises to come up as
+ exercises grouped by muscle group and over arching group by discipline (stretches, weights, cardio etc)"
+ -> plan ratified; DR-12 added: exercise library from Athlete-realm video reports (2 today), grouped discipline ->
+ muscle group, on the one Gym page, each linked to its video moment. Each step briefed before building (rule 18; "go",
+ not "do all").
+ DR-1 exact rows (fresh, Oct 27): input_quest "Tendon Load Test" (athlete) -> Athlete task; needs_input x4 (map flag, 10
+ errors, 3 hand-tests, 2 Oracle suggestions) -> live Builder tasks; knowledge_gap x3 + taxonomy_review x1 + 34
+ workflow_step -> 'dismissed'.
