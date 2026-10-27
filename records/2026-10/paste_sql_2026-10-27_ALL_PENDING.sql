@@ -19,3 +19,5 @@ select item_code, status from ceo_plan_items where status='red' and (item_code l
 -- Day & Habits Rewire plan approved Oct 27 ("Looks fantastic go"):
 update ceo_plans set basis='ratified', ratified_at=now() where name='Day & Habits Rewire';
 update ceo_plan_items set basis='ratified' where plan_id=(select id from ceo_plans where name='Day & Habits Rewire');
+-- DR-1..3 built (2ef5709):
+update ceo_plan_items set status='yellow', last_checked_at=now(), evidence='2ef5709: 43 open quests dismissed (87 rows before/after), Tendon Load Test -> Athlete task; questEngine scans keep live Builder alert tasks; quest panel off My Day; task tick outside a block writes one quest_log ledger row paid by xp_on_change. dr1_test 12/12. Untested by Alex.' where item_code in ('DR-1','DR-2','DR-3') and plan_id=(select id from ceo_plans where name='Day & Habits Rewire');
