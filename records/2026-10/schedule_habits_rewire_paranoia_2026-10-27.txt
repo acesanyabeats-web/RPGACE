@@ -149,3 +149,16 @@ the RT record (why quest_log is the XP ledger). Fable not used.
  DR-1 exact rows (fresh, Oct 27): input_quest "Tendon Load Test" (athlete) -> Athlete task; needs_input x4 (map flag, 10
  errors, 3 hand-tests, 2 Oracle suggestions) -> live Builder tasks; knowledge_gap x3 + taxonomy_review x1 + 34
  workflow_step -> 'dismissed'.
+
+9. DR-12 exercise library — Alex's answers (Oct 27, verbatim):
+ - Disciplines: "Weights · Bodyweight · Cardio · Stretches · Mobility (Recommended)"
+ - Muscles: "1 but have sub categories under each for regions in group so I hit the entire group properly (identify muscles
+   involved - combo of exercises should hit all muscles in grouping through different combos)"
+   -> 8 groups (Chest, Back, Shoulders, Arms, Core, Legs, Glutes, Full body), each with sub-regions; every exercise tagged
+   with the muscles/regions it works (primary + secondary); a chosen combo shows which regions of a group are covered and
+   suggests exercises for the gaps.
+ - Source: "1 and videos can take each exercise and add muscle groups involved so it auto pops up as possible task to add
+   to routine when I choose exercises"
+   -> exercises extracted from existing Athlete write-ups with the cheap model (reviewed before saving), each with muscles
+   involved; when choosing exercises for a workout/routine the library suggests them (gap-filling first).
+ DR-6 deviation recorded: events live in memories (status upcoming), not plans, to avoid plan_made Explorer XP.
