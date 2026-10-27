@@ -92,3 +92,14 @@ awaiting go.)
  FL-7 Clock in / break / clock out links on the My Day shift — waiting on Alex's links.
  Parked: 13-realm menu, folder-as-agent tree, event bus, dashboard realm rings, Sep 28 recipe rescue.
  Done before the plan: 📓 row on Professor answers (3e6adbf).
+
+7. FL-6 answers (Alex, Oct 27, verbatim): "make aisle just a grouping, i dont need it tickable, it is there to
+   just reduce time in the shops, i also think i can get the phone to see what my sleep is like, id even invest
+   in a watch that monitors it all so data comes up"
+ - Aisle: already a grouping (📍 heading per aisle, walk order, H13). Tick-all dropped. No change.
+ - Sleep: one-tap sleep chip dropped; sleep should come from a device instead (HB-4, Google Health API).
+   Research Oct 27: Google Health API (health.googleapis.com/v4) replaces the Fitbit Web API (legacy shut off
+   ~Oct 30 / Nov 2 2026), has a sleep type, OAuth from a web app works -> Fitbit / Pixel Watch is the device
+   RPGACE can read directly. Samsung Health / Galaxy Watch data is on-device only (Health Connect) - a web app
+   cannot read it without a native Android helper. Oura: OAuth only (PATs removed end of 2025), needs Membership,
+   new terms (June 2026) restrict AI processing of the data.
