@@ -92,6 +92,7 @@
 // @file src/habits/exerciseLibrary.js
 // @file src/habits/healthBody.js
 // @file src/schedule/myDay.js
+// @file src/schedule/alarmSounds.js
 // @file src/schedule/eventMemories.js
 // @file src/schedule/ideasDoor.js
 // @file src/schedule/realmTasks.js

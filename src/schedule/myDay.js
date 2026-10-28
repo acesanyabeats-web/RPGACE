@@ -6143,6 +6143,12 @@ RPGACE.register('myDay', {
         al = document.createElement('input'); al.type = 'checkbox'; al.id = 'myday-be-alarm'; al.checked = st.alarm_on !== false; al.style.cssText = 'width:22px;height:22px';
         aRow.appendChild(al); aRow.appendChild(document.createTextNode('⏰ Alarm at the start of this block, again every ' + (st.alarm_repeat_mins || 5) + ' min until the first task is ticked'));
         box.appendChild(aRow);
+        // PA-1/PA-4: the phone side of this alarm (your sounds, MacroDroid, whether a phone is listening).
+        if (RPGACE.modules.alarmSounds) {
+          var snd = U._btn('🔔 Alarm sounds & phone', ''); snd.id = 'myday-be-sounds';
+          snd.onclick = function() { RPGACE.modules.alarmSounds.open(); };
+          box.appendChild(snd);
+        }
       }
       var note = document.createElement('div'); note.style.cssText = 'font-size:12px;color:var(--muted)';
       note.textContent = which === 'morning' ? 'On a morning shift the block moves earlier so it ends before you get ready. The first task stops the alarm.' : 'After a late shift the block starts once you\'re home.';

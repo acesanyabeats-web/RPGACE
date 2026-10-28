@@ -391,6 +391,68 @@ def reset_stuck():
     except Exception:
         pass
 
+# PA-1b (Oct 28 2026, plan "Phone Alarms"; Alex: "just download through yt-dlp and save the audio for the purpose"):
+# alarm_sounds rows with status 'queued' and a source_url become personal alarm sounds - yt-dlp pulls the audio,
+# ffmpeg keeps the first 60 s as an mp3, it is uploaded to the public alarm_sounds bucket, and the row turns 'ready'.
+# The phone (MacroDroid via the alarm-feed edge function) plays one at random at wake time.
+ALARM_BUSY = set()
+
+def sb_patch(table, match, data):
+    req = urllib.request.Request(f"{SB_URL}/rest/v1/{table}?{match}", data=json.dumps(data).encode(),
+                                 headers=SB_HEADERS, method="PATCH")
+    with urllib.request.urlopen(req, timeout=15, context=SSL_CTX) as r:
+        return r.status
+
+def import_alarm_sound(row):
+    sid = row["id"]
+    work = HOME / "alarm_sounds"
+    work.mkdir(parents=True, exist_ok=True)
+    try:
+        sb_patch("alarm_sounds", f"id=eq.{sid}", {"status": "working", "error": None})
+        log(f"Alarm sound: {row.get('title') or sid}")
+        for old in work.glob(f"{sid}*"):
+            old.unlink()
+        dl = subprocess.run([sys.executable, "-m", "yt_dlp", "-f", "bestaudio/best", "--no-playlist",
+                             "-o", str(work / f"{sid}.%(ext)s"), row["source_url"]],
+                            capture_output=True, text=True, timeout=300)
+        got = [f for f in work.glob(f"{sid}.*") if not f.name.endswith(".mp3")]
+        if dl.returncode or not got:
+            raise RuntimeError("yt-dlp: " + (dl.stderr or dl.stdout or "no file")[-300:])
+        try:
+            from rpgace_intel import get_ffmpeg_path
+            ff = get_ffmpeg_path() or "ffmpeg"
+        except Exception:
+            ff = "ffmpeg"
+        out = work / f"{sid}.mp3"
+        cv = subprocess.run([ff, "-y", "-i", str(got[0]), "-t", "60", "-vn", "-ac", "2", "-b:a", "160k", str(out)],
+                            capture_output=True, text=True, timeout=180)
+        if cv.returncode or not out.exists():
+            raise RuntimeError("ffmpeg: " + (cv.stderr or "no mp3")[-300:])
+        req = urllib.request.Request(f"{SB_URL}/storage/v1/object/alarm_sounds/{sid}.mp3", data=out.read_bytes(),
+                                     headers={"apikey": SB_KEY, "Authorization": f"Bearer {SB_KEY}",
+                                              "Content-Type": "audio/mpeg", "x-upsert": "true"}, method="POST")
+        with urllib.request.urlopen(req, timeout=60, context=SSL_CTX) as r:
+            if r.status >= 300:
+                raise RuntimeError(f"upload HTTP {r.status}")
+        url = f"{SB_URL}/storage/v1/object/public/alarm_sounds/{sid}.mp3"
+        sb_patch("alarm_sounds", f"id=eq.{sid}", {"status": "ready", "url": url, "error": None})
+        log(f"Alarm sound ready: {row.get('title') or sid}")
+    except Exception as e:
+        log(f"Alarm sound failed: {e}")
+        try:
+            sb_patch("alarm_sounds", f"id=eq.{sid}", {"status": "failed", "error": str(e)[:500]})
+        except Exception:
+            pass
+    finally:
+        ALARM_BUSY.discard(sid)
+
+def poll_alarm_sounds():
+    rows = sb_get("alarm_sounds", "status=eq.queued&source_url=not.is.null&order=created_at.asc&limit=2")
+    for row in rows:
+        if row["id"] not in ALARM_BUSY:
+            ALARM_BUSY.add(row["id"])
+            threading.Thread(target=import_alarm_sound, args=(row,), daemon=True).start()
+
 def poll_loop():
     log("Polling Supabase for jobs...")
     last_reset = 0
@@ -398,6 +460,10 @@ def poll_loop():
         if time.time() - last_reset > 600:
             reset_stuck(); last_reset = time.time()
         try:
+            try:
+                poll_alarm_sounds()   # PA-1b
+            except Exception:
+                pass
             jobs = sb_get("intel_jobs", "status=eq.queued&order=created_at.asc&limit=3")
             for job in jobs:
                 if job["id"] not in ACTIVE and len(ACTIVE) < 2:

@@ -54,3 +54,6 @@ PHONE ALARMS - /dev_ops_7 Track B (opened Oct 28 2026 while CK-8 builds)
     Their low Videoworm scores are expected (analysed as learning videos, not ringtones). PA-1b imports these 6 first.
  Finding for PA-1b: a share gives no way to say "this is a ringtone" - add a "🔔 Use as alarm sound" choice on the share/Videoworm
  card so a ringtone skips analysis (no wasted analysis spend) and goes straight to the laptop audio job.
+
+6. APPROVAL (Alex, Oct 28, verbatim): "go, tell me what to do on macrodroid, if the 7 day trial goes perfectly, ill pay the £6 to upgrade to keep benefits"
+ -> plan Phone Alarms PA-1..PA-5 ratified as drafted (PA-1 sounds list, PA-1b ringtone import, PA-2 random pick, PA-3 phone side + MacroDroid guide, PA-4 status). Spending stays Alex's own (MacroDroid Pro £6 after the trial, his call).

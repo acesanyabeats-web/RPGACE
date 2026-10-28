@@ -67,6 +67,11 @@ RPGACE.register('shareInbox', {
       if (t.length < L.TEXT_MIN) return null;
       return { url: L.textKey(t), text: t.slice(0, 60000) };
     },
+    // PA-1b (Oct 28 2026): a shared video whose title says alarm/ringtone/wake up may be a ringtone, not a lesson.
+    looksLikeAlarm: function(share, url) {
+      var hay = [share && share.title, share && share.text].filter(Boolean).join(' ');
+      return RPGACE.modules.shareInbox.logic.isVideo(url) && /\b(alarm|ringtones?|wake[\s-]?up)\b/i.test(hay);
+    },
     textKey: function(t) { return 'text:' + RPGACE.modules.lifeLibrary.logic.hashText(String(t || '').trim()); },
     whatOf: function(url) { var L = RPGACE.modules.shareInbox.logic; return /^text:/.test(url) ? 'text' : (L.isVideo(url) ? 'video' : 'page'); },
     // RI-2: an already-queued link is never asked about again; a new one
@@ -99,6 +104,7 @@ RPGACE.register('shareInbox', {
       var src = self.logic.source(share);
       if (!src) { RPGACE.utils.toast('⚠️ Nothing to analyse - share a link, or a few sentences of text', '#CC4A4A', 4000, 'shareInbox'); return; }
       var url = src.url, kind = self.logic.platform(url);
+      if (!(share && share.asLesson) && RPGACE.modules.alarmSounds && self.logic.looksLikeAlarm(share, url)) { self.ui.askAlarm(share, url, kind); return; }
       self.logic.queue(url, null, src.text).then(function(r) {
         // RI-3: "Not now" on the picker = saved, waits for realms.
         if (r.held && share && share.fromShare) { self.ui.sentScreen(kind, false, { title: 'Saved for later', sub: kind + ' waits until you pick its realms.' }); return; }
@@ -120,6 +126,30 @@ RPGACE.register('shareInbox', {
       }).catch(function(e) {
         RPGACE.utils.toast('⚠️ Could not queue the shared link: ' + (e.message || e), '#CC4A4A', 4500, 'shareInbox');
       });
+    },
+
+    // PA-1b: "Use as alarm sound" (the laptop pulls the audio; no analysis spend) or analyse it as usual.
+    askAlarm: function(share, url, kind) {
+      var self = RPGACE.modules.shareInbox, K = RPGACE.kit;
+      var title = String((share && (share.title || share.text)) || 'Alarm sound').replace(/https?:\/\/\S+/g, '').trim().slice(0, 120) || 'Alarm sound';
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '📥 Shared to RPGACE', title: 'Alarm sound or lesson?', width: '420px' });
+      pop.box.id = 'share-alarm-ask';
+      var p = document.createElement('div'); p.style.cssText = 'font-size:14px;line-height:1.5;margin-bottom:10px;';
+      p.textContent = '"' + title + '" looks like an alarm. Add it to your alarm sounds, or analyse it as a ' + kind + '?';
+      pop.box.appendChild(p);
+      var a = K.btn('🔔 Use as alarm sound', 'primary'); a.id = 'share-as-alarm'; a.style.width = '100%';
+      a.onclick = function() {
+        a.disabled = true;
+        RPGACE.modules.alarmSounds.logic.addLink(url, title).then(function() {
+          pop.close();
+          if (share && share.fromShare) self.ui.sentScreen(kind, false, { title: 'Added to alarm sounds', sub: 'Your laptop pulls the audio when the local server runs.' });
+          else RPGACE.utils.toast('🔔 Added to alarm sounds: your laptop pulls the audio', 'var(--gold)', 3500);
+        }, function(e) { a.disabled = false; RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 4000, 'shareInbox'); });
+      };
+      var l = K.btn('🎓 Analyse it', ''); l.id = 'share-as-lesson'; l.style.cssText += 'width:100%;margin-top:8px;';
+      l.onclick = function() { pop.close(); self.ui.handle(Object.assign({}, share, { asLesson: true })); };
+      pop.box.appendChild(a); pop.box.appendChild(l);
+      return pop;
     },
 
     // Oct 10 2026 — Alex: "id also want to stay in the app im viewing when
