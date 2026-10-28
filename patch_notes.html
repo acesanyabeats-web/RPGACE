@@ -73,6 +73,20 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-28-ck5-brown-archive" style="margin-bottom:30px;">
+    <div class="card-title">🟫 Oct 28 — Patch notes that stop being true now get archived, not left to mislead (CK-5)</div>
+    <div class="card-body">
+      Your words: "archive not after 30 days, but when a change affects a patch note ... so when plan is made, changes identified should identify what should be archived".
+      <ul>
+        <li><b>Plans name what they make untrue:</b> each plan step now has a list of patch-note cards it will make untrue (<code>ceo_plan_items.stales</code>, a new column; nothing else in the table changed).</li>
+        <li><b>On ship, one command moves them:</b> <code>scripts/archive_stale_cards.py archive</code> moves each card word for word into the archive's new "Archived as untrue" section. It leaves a brown one-line note with the same id in the live doc, so old links still land, and gives one <code>achiever_archive</code> row per card.</li>
+        <li><b>The script also suggests extras:</b> <code>propose</code> finds cards that name code which no longer exists. Most cards are plain English, so the plan's own list stays the main way in.</li>
+        <li><b>First batch is waiting on you:</b> 6 strong suggestions and 2 unsure ones (day templates, the old Doing Now screen, director picker, voice input). Nothing has moved yet. The list is in <code>records/2026-10/ck5_first_batch_proposal_2026-10-28.txt</code>.</li>
+        <li>Tested on a copy: the card count stays the same and every tag still closes, in both files. Docs and tooling only, nothing changes in the app.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-10-28-ck34-maps-split" style="margin-bottom:30px;">
     <div class="card-title">🗺 Oct 28 — The two big maps split per domain, with a cross-domain root (CK-3, CK-4)</div>
     <div class="card-body">

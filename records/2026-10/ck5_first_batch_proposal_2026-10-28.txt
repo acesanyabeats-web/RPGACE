@@ -1,0 +1,24 @@
+CK-5 FIRST BATCH - proposed patch-note cards to archive as untrue (plan "Caps and Central Kit", Oct 28 2026)
+Nothing has moved. Alex confirms (all, some, none) before scripts/archive_stale_cards.py archive runs.
+Sources: `propose` (cards whose code names are >=60% gone: 4) and `propose --since HEAD~400` (9), then checked by hand
+against live code. Plain-English cards rarely name code, so plan items naming cards in ceo_plan_items.stales stay the main path.
+
+STRONG (the feature the card describes is gone or replaced)
+1. card-2026-10-14-day-templates  "Day templates: Plan my day starts from a day like this one"
+   -> templates deleted Oct 21 (AC-2, card-2026-10-21-no-templates).
+2. card-2026-10-16-doing-now  "Doing Now: log what you're doing as it happens (DN-0, DN-1)"
+   -> the separate Doing Now screen retired Oct 28 (DL-2); every button opens Live now.
+3. card-2026-07-31-director-picker-dropdown-taxonomy-summary-inspiration  "Director picker ..."
+4. card-2026-08-05-engineer-phase-c-3-director-blend-picker  "3-director blend picker ..."
+   -> no director picker exists in rpgace_core.js (_showDirectorPicker and every "director picker" string gone).
+5. card-2026-07-28-29-round-43-real-bug-caught  (voice input duplication, round 43)
+6. card-2026-07-29-round-45-real-second-attempt-at  (voice input duplication, round 45)
+   -> no SpeechRecognition / voice input code left in rpgace_core.js.
+
+UNSURE (named code gone, the feature may live elsewhere) - leave unless Alex says otherwise
+7. card-2026-07-28-round-42-routine-item-5-local  (librosa audio analysis; _tryRealAudioAnalysis gone from the client,
+   librosa may still run on the laptop's main.js / local_server)
+8. card-2026-08-06-engineer-pass-12-content-pipeline-ux  (3 of 5 named helpers gone; the pipeline itself still exists)
+
+NOT PROPOSED: G53 split cards, Galaxy G84/G85, A7 OBS-raw, session-closed cards - they name a removed helper in passing but
+their story (a split, a map change, a session state) is still true history.

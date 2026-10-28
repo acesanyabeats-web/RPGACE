@@ -183,7 +183,7 @@ Mirrored in `scripts/graphify_river_group.py` as `SUPABASE_CORE` (a single real 
 
 ### Tier C — Historical / superseded — real files, but NOT current authority (a future session should not treat these as live rules)
 - **`CLAUDE_archive.md`** — explicitly, per CLAUDE.md's own text, "never read for current state — historical only."
-- **`patch_notes_archive.html`** — same convention, pre-July-12 patch notes.
+- **`patch_notes_archive.html`** — same convention, pre-July-12 patch notes; since Oct 28 2026 also the "Archived as untrue" section filled by `scripts/archive_stale_cards.py` (CK-5: propose / archive, brown pointer left in the live doc).
 - **`RPGACE.md`** — dated "Last updated: 2026-06-18," a pre-CLAUDE.md-era context file (Composio connected-account IDs, user goals). Superseded by CLAUDE.md's own "Who you're working with" section and `api/_context.js`'s real `ACCOUNTS` map — real risk if a future session reads this INSTEAD of `api/_context.js` for account IDs, since CLAUDE.md rule 8 already documents once that a stale hand-copied `ACCOUNTS` map caused a real silent wrong-account bug (`api/composio.js`, June 28). This file could cause that exact class of bug again if trusted over the live code.
 - **`RPGACE_ARCHITECTURE.md`** — dated June 26, "Pre-Step-8 Hardening," diagnosing a "no extension system, every feature requires editing the source file" problem. Genuinely historical: the `RPGACE.register()` module system this diagnosis argued for now exists and is exactly how every module in `rpgace_core.js` is built. Kept for archaeology (why the module system exists), not as a live rule.
 - **`saved_conversation.md`** — a single archived Oracle content-strategy session (June 21), not a rule file at all — a content-brainstorm transcript.

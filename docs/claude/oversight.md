@@ -26,6 +26,7 @@ Modules (`domain: 'oversight'`, 3): `oracleDevBridge`, `docsLinks`, `errorLog`. 
 - Tense: tiers and layers (c)/(d) hold green, present-tense facts only; (e) holds future and past.
 - Chronicles (`#page-chronicles`) shows `system_updates` rows — one per shipped change, written the same session.
 - Archives, never current: `patch_notes_archive.html`, `CLAUDE_archive.md`.
+- Brown archive for patch notes (CK-5): a card a change makes untrue moves to `patch_notes_archive.html` § "Archived as untrue" via `scripts/archive_stale_cards.py`; the live doc keeps a brown pointer with the same id, so old card links still land; `achiever_archive` gets one row per card. Plan items name such cards in `ceo_plan_items.stales` (jsonb list of card ids).
 
 ## Colour vocabulary (`/colourgradient`)
 blue idea · red planned · yellow built, untested/in progress · green verified live · purple regression (also an `error_log` row) · brown stale claim (`achiever_archive`).
