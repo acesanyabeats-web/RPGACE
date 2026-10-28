@@ -113,3 +113,38 @@ B. Duplicated building blocks in rpgace_core.js (grep counts, Oct 28)
     Risk 1 (a built copy that can wipe edits) is removed by design rather than guarded. Tools that read rpgace_core.js (graphify,
     checks, tests) are re-pointed to the hub + module files in the same step.
  Also: GM-5..GM-9 plan rows confirmed yellow by Alex ("both yellow").
+
+10. CK-8 DEEPER REVIEW (Track B, Oct 28, run while DL built; scope = Alex's correction in section 9)
+ Evidence (live repo, Oct 28):
+ - rpgace_core.js: 74,770 lines, 94 modules between ===MODULE:/===END: markers, 6,610 lines OUTSIDE any module (legacy globals
+   such as scheduleToCalendar, renderDailyGrid, completeScheduledTask, interleaved between modules - order matters at load).
+ - Readers of rpgace_core.js: 55 scripts (galaxy_map_*, graphify_to_obsidian, check_module_domains, check_self_knowledge_*,
+   verify_anchors, build_domain_folders, perspective_generate_*, smoke_test_generate_v1, minify_client.js ...), CI
+   (.github/workflows/deploy.yml), .claude/settings.json, 7 skill files (Engineer, omnitrix, Routine, 5thDimension, impeccable,
+   update-logging-system, CEO galaxy framework), CLAUDE.md rules. ~180 Playwright suites load rpgace_core.min.js (unaffected).
+ Shape (Alex: "the big files should reference smaller blocks ... like a ladder or tree"):
+ - src/<domain>/<module>.js per module (94) + src/_core/NN_<name>.js for the 6,610 non-module lines, cut at the same
+   boundaries so nothing moves relative to anything else.
+ - rpgace_core.js becomes the HUB: a short index (domain -> module -> file, one line each, in load order). It holds no code.
+ - ONE reader, scripts/core_source.py (+ a JS twin for minify): joins the hub's files in order IN MEMORY. Every tool that needs
+   "the whole code" calls it; nothing writes a joined copy to disk. Only rpgace_core.min.js is built (generated, never edited).
+ Risks re-graded:
+ - R1 two copies of the truth: REMOVED by design (no joined copy exists). New guard: the build fails if a src file is not in the
+   hub, or the hub names a missing file.
+ - R2 every tool at once: real (55 scripts + CI + settings + 7 skills). Mitigation: stage it - first point every reader at
+   core_source while the code is STILL one file (core_source just reads it), prove each tool's output is identical before/after;
+   only then split.
+ - R3 the move must be exact: join(hub files) must equal today's rpgace_core.js byte for byte, AND the new min.js must equal
+   today's min.js byte for byte. Either mismatch stops the split.
+ - R4 rules: CLAUDE.md architecture + ship checklist ("node --check rpgace_core.js" -> check the changed src files),
+   prep script, the 7 skills - same commit as the split.
+ - R5 line anchors: verify_anchors.py and 4 doc citations point at rpgace_core.js:line -> re-pointed to src file:line.
+ - R6 load order: the 6,610 legacy lines keep their exact position between modules (hub order = current order).
+ - R7 Oracle: SELF_KNOWLEDGE names modules, not files - unchanged; graphify sees 100+ small files (a finer graph, the "deeper
+   when needed" ladder Alex described). docs/domains/<domain>/README.md (generated) can list its module files - rung 2 of the ladder.
+ Staged build proposed for CK-8 (each its own commit, Alex sees nothing change):
+ - CK-8a core_source reader; all readers re-pointed; outputs diffed identical (code still one file).
+ - CK-8b split into src/ + hub; byte-identity checks (join == old file, min.js == old min.js); orphan/missing guard in build + CI.
+ - CK-8c rules, skills, prep script, anchors, docs/domains ladder; graphify update.
+ Verdict: buildable and lower-risk than the first version (no copy to drift). The real cost is R2 (55 readers), handled by
+ doing the re-pointing before the split. Stays Tier 3: it runs only inside the approved CK plan, after Day Log, with its own brief.
