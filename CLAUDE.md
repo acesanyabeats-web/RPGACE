@@ -18,7 +18,7 @@ Split from a 291KB file on Oct 22 2026 (plan "CLAUDE.md Debloat", record `record
 | Oversight docs, Galaxy Map, colour vocabulary, records (`oversight`) | `docs/claude/oversight.md` |
 | Realm Tasks, Live now, Generic Missions (cross-realm) | `docs/claude/realm_tasks.md` |
 | Open items waiting on Alex | `docs/claude/open_forks.md` |
-| Architecture and data flow | `system_flow_map.md`, `interconnection_map.md` |
+| Architecture and data flow | `system_flow_map.md`, `interconnection_map.md` (cross-domain) → `docs/domains/<domain>/flow.md`, `interconnections.md` |
 | Skills, rule files, external connectors | `ai_tooling_and_rules_map.md`, `.claude/skills/*/SKILL.md` |
 | One folder per domain (facts, modules, prompts, tables; generated) | `docs/domains/<domain>/README.md` (`scripts/build_domain_folders.py`) |
 | Shared Oracle prompts / realm registry | `prompts/*.md` + `prompts/INDEX.md`; `realm_lenses.json` (each realm's `frame`) |
@@ -43,7 +43,7 @@ Split from a 291KB file on Oct 22 2026 (plan "CLAUDE.md Debloat", record `record
 1. `git branch --show-current` is `main` before every commit (a harness can switch branches silently).
 2. `node --check rpgace_core.js`; `node scripts/minify_client.js`; bump the `?v=` cache-bust in `index.html` — same commit as the source change.
 3. Push `main`, then confirm with Vercel `list_deployments` that the commit is `READY` in production before saying "live". "Pushed" is not "live".
-4. Same session: a `patch_notes.html` card (with honest "untested" flags), the topic file in `docs/claude/`, `interconnection_map.md`/`system_flow_map.md` if architecture changed, `oracleAppGrounding.SELF_KNOWLEDGE` if a domain or Oracle mechanism changed, one `system_updates` row, the plan row in `ceo_plan_items`. Use `.claude/skills/update-logging-system/SKILL.md` as the checklist.
+4. Same session: a `patch_notes.html` card (with honest "untested" flags), the topic file in `docs/claude/`, the domain's `docs/domains/<domain>/interconnections.md`/`flow.md` (root maps only for cross-domain) if architecture changed, `oracleAppGrounding.SELF_KNOWLEDGE` if a domain or Oracle mechanism changed, one `system_updates` row, the plan row in `ceo_plan_items`. Use `.claude/skills/update-logging-system/SKILL.md` as the checklist.
 5. Code change → regenerate the Galaxy Map (`docs/claude/oversight.md`) and commit `graphify-out`.
 6. Never commit test screenshots.
 
@@ -101,7 +101,7 @@ Split from a 291KB file on Oct 22 2026 (plan "CLAUDE.md Debloat", record `record
 
 ## Logging rules
 - `patch_notes.html`: one card per shipped thing, dated, root cause + fix, honest flags. The only place for narrative.
-- `docs/claude/*.md` and `interconnection_map.md`: present tense, current facts only. When a story is done, collapse it to one line plus a card link.
+- `docs/claude/*.md` and the interconnection maps (root + `docs/domains/<domain>/interconnections.md`): present tense, current facts only. When a story is done, collapse it to one line plus a card link.
 - `system_flow_map.md`: update the diagram and the truth table. Fix a self-flagged stale note in the same session.
 - `minotaur_map.html`: only when a domain or function changes shape.
 - Spec decisions: verbatim Q&A in a `records/` file.

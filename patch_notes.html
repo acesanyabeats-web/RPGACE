@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-28-ck34-maps-split" style="margin-bottom:30px;">
+    <div class="card-title">🗺 Oct 28 — The two big maps split per domain, with a cross-domain root (CK-3, CK-4)</div>
+    <div class="card-body">
+      Your picks: "Split interconnection_map", "Split system_flow_map".
+      <ul>
+        <li><b>interconnection_map.md</b> went from 223 KB to 41 KB. It keeps the cross-domain picture (the two hubs, security, client architecture, Oracle digest rules, conventions, global buttons) plus an index. 105 domain sections moved word for word into <code>docs/domains/&lt;domain&gt;/interconnections.md</code>.</li>
+        <li><b>system_flow_map.md</b> went from 133 KB to 39 KB. It keeps the whole-system inventory, the Supabase tables and the verified / unverified truth lists. 43 domain sections, diagrams included, moved into <code>docs/domains/&lt;domain&gt;/flow.md</code>.</li>
+        <li><b>The ladder:</b> each domain folder's README now lists Facts (hub → sub-files) and Maps (interconnections, flow), so a session or Oracle goes one rung deeper only when it needs to.</li>
+        <li><b>Checks:</b> every code reference is kept (3,836 → 3,857 and 991 → 1,005; the extras are the new index lines). All links resolve, and the anchor check passes. A sub-section always moves with its parent section. My first pass left a "Known open issues" behind, so I put the original back and redid it.</li>
+        <li><b>Rules updated:</b> the CLAUDE.md ship checklist and the logging skill now say where new architecture notes go (the domain's file; the root only for cross-domain).</li>
+        <li>Docs only, nothing changes in the app.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-10-28-ck2-topic-hubs" style="margin-bottom:30px;">
     <div class="card-title">📚 Oct 28 — The three fullest fact files are now hubs that link down (CK-2)</div>
     <div class="card-body">

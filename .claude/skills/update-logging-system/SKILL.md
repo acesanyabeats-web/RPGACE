@@ -13,10 +13,10 @@ Built Aug 6 after `oracleAppGrounding.SELF_KNOWLEDGE` went stale even though rul
 Numbers are cited elsewhere; keep them.
 
 1. **Durable fact changes** → the matching `docs/claude/<area>.md` topic file (one present-tense line + card link; CLAUDE.md itself only for a new rule or landmine) + a `patch_notes.html` dated card + a `system_updates` row.
-2. **Architecture change** (new module, connection or data flow) → `interconnection_map.md`: a present-tense paragraph, not a changelog.
+2. **Architecture change** (new module, connection or data flow) → the domain's `docs/domains/<domain>/interconnections.md` (and `flow.md` for diagrams/truth tables); the root `interconnection_map.md`/`system_flow_map.md` only for cross-domain flows (CK-3/4, Oct 28 2026): a present-tense paragraph, not a changelog.
 3. **A flow's built/not-built status changes** → `system_flow_map.md` (the diagram + truth table).
 4. **A new domain or function shape** → `minotaur_map.html` (plain language, no code names).
-5. **New button or table** → `interconnection_map.md` button catalog / `system_flow_map.md` §0 table reference; roadmap status → `future_integrations.html`.
+5. **New button or table** → the button catalog (root `interconnection_map.md` for global/dashboard buttons, the domain's `interconnections.md` for domain buttons) / `system_flow_map.md` §0 table reference; roadmap status → `future_integrations.html`.
 6. **Taxonomy structure** (columns or query shape) → `taxonomy_map.html`.
 7. **Anything Oracle should know** (a domain, mechanism, landmine or major open item) → `oracleAppGrounding.SELF_KNOWLEDGE` in `rpgace_core.js`, naming the owning module or table. Then run `scripts/check_self_knowledge_staleness.py` and `check_self_knowledge_contradictions.py`. Same weight as CLAUDE.md.
 8. **New skill, new tool used against RPGACE, or new rule file** → `ai_tooling_and_rules_map.md`.
