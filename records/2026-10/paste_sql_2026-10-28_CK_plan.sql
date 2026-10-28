@@ -1,0 +1,5 @@
+-- Oct 28 2026: plan "Caps & Central Kit" (CK-1..CK-9), drafted; Alex approves before any build. Run all, then the check alone.
+insert into ceo_plans (name, status, basis) values ('Caps & Central Kit', 'active', 'provisional');
+insert into ceo_plan_items (plan_id, item_code, title, status, basis) select id, x.c, x.t, 'red', 'provisional' from ceo_plans, (values ('CK-1','Oracle notes: Missions + Study sub-blocks, total cap 40k'),('CK-2','Topic hubs link down to sub-files (cooking, health_gym, my_day, study)'),('CK-3','interconnection_map split per domain'),('CK-4','system_flow_map split per domain'),('CK-5','Brown archive: plan names stale cards + diff scan, archive on ship'),('CK-6','RPGACE.kit + copy check'),('CK-7','Shared concepts: one Oracle call path, mission source registry, kit.md'),('CK-8','Source split per module, built back into one file (Tier 3)'),('CK-9','Wrap: tests, docs, plan rows, stale cards')) x(c,t) where name='Caps & Central Kit';
+-- CHECK (run alone): should print 9
+select count(*) from ceo_plan_items where plan_id=(select id from ceo_plans where name='Caps & Central Kit');

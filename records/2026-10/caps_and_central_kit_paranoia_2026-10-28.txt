@@ -1,0 +1,104 @@
+CONTEXT FILES AT CAP + UNIVERSAL CENTRAL CONSTRUCTIONS — /dev_ops_7 Track B (with /debloat)
+Opened Oct 28 2026 while Generic Missions GM-8/GM-9 (Track A, approved) are still to build.
+
+1. ASK (Alex, Oct 28, verbatim, two messages sent while GM-7 shipped):
+"lets have a look at the md files and other context files that are almost at cap, and think through how to devide them with
+/dev_ops_7 with /debloat as part of it"
+"we should also see what structures should become a universal central construction rather than domain specific with same
+/dev_ops_7"
+
+2. EVIDENCE (/scope + GODMODE, live, Oct 28)
+A. Capped context files (scripts/check_claude_md_size.py, check_self_knowledge_staleness.py)
+ - oracleAppGrounding.SELF_KNOWLEDGE total 33,996 / 34,000 (binding: GM-5, GM-6 and GM-7 each had to trim other text to fit).
+   Blocks (cap 6,500 each, CORE 2,600): SCHEDULE 5,930 · KNOWLEDGE 5,637 · ORACLE 4,997 · HABITS 4,873 · CONTENT 3,842 ·
+   CHRONICLES 2,371 · PLATFORM 2,356 · CORE 2,320 · OVERSIGHT 1,567. Only CORE + the blocks relevant to a message are sent,
+   so per-message cost is bounded by the block caps; the 34,000 total is a ceiling on the whole, not on what one call sends.
+ - docs/claude topic files (cap 12,000): habits 10,564 (88%), schedule 10,353 (86%), knowledge 10,238 (85%), oracle 8,723,
+   oversight 8,466, content 6,517, landmines 6,490, platform 4,477, chronicles 4,057, realm_tasks 3,527, open_forks 2,321,
+   security 1,564. CLAUDE.md 19,055 / 24,000. Long single lines flagged: habits.md:18 (1,710 chars), platform.md:9 (1,242).
+ - Uncapped big docs: patch_notes.html 1.89 MB, interconnection_map.md 223 KB, system_flow_map.md 133 KB,
+   ai_tooling_and_rules_map.md 46 KB, CLAUDE_archive.md 862 KB (history only). Generated per-domain folders already exist
+   (docs/domains/<domain>/README.md, scripts/build_domain_folders.py).
+ - rpgace_core.js 4.71 MB source / 2.76 MB minified, one file (Architecture rule: one client script).
+ Precedent: schedule.md hit its cap on Oct 27 and Realm Tasks moved out to docs/claude/realm_tasks.md (one topic per file).
+
+B. Duplicated building blocks in rpgace_core.js (grep counts, Oct 28)
+ - HTML escape helper defined per module: 15 copies (`_esc: function`), while RPGACE.utils.escapeHtml exists (6 callers).
+ - Button helper per module: 23 `_btn` + 3 `_mkBtn`.
+ - Date helpers: `addDays` 5 copies, today/todayISO helpers 7, en-GB date formatting inline 45 places.
+ - Private-table read wrapper `read(table, params)`: 6 copies (3 delegate to tripPlans.logic.read).
+ - Search-box list pickers: 7. Two-click arm/confirm destructive buttons: many (95 'arm' hits); native confirm() 23.
+ - Raw fetch('/api/oracle') in 10 places vs the shared phylumPath._callGroundWorkerJSON (25 callers).
+ - Already central: dashDeck._popup (123 callers), RPGACE.utils.toast (732), RPGACE.hooks, RPGACE.sb, realmPicker, prompts/*.md.
+ - Concept-level: Generic Missions' realmTasks.logic.CONTEXT_SOURCES (GM-7) is already realm-generic, built for MR-3.
+
+3. /debloat Mode A Step 3 scope confirm (misunderstanding-shaped self-check)
+ Alex named "md files and other context files that are almost at cap": read as the capped set in 2A (SELF_KNOWLEDGE,
+ docs/claude/*.md, CLAUDE.md) plus the large uncapped oversight docs that every session reads from. Plan: split by topic where a
+ file mixes topics, shorten only what Council of 5 clears, never lose a fact. "universal central construction rather than domain
+ specific": read as code building blocks repeated per module (2B) and concepts every realm/domain shares.
+
+4. /drift vs Track A: no conflict. Generic Missions GM-8/GM-9 touch realmTasks/myDay; the kit would later absorb their helpers,
+ not change their behaviour. Approved work is built first (/dev_ops_7 rule).
+
+5. INTERROGATION (answers recorded verbatim below when they arrive)
+ Round 1 (Oct 28, verbatim picks/answers):
+ - Oracle notes: "Split + raise total (Recommended)"
+ - Topic files: "keep the md files current with reference to sub mds so they link downwards yet keep grouping so oracle can have
+   same navigation without degrouping anything, so a combo of 1 with augmentations"
+   -> understood: habits.md / schedule.md / knowledge.md stay as the group hub (same grouping, same index row), each linking DOWN
+      to sub-files (e.g. habits.md -> cooking.md, health_gym.md); facts move to the sub-file, the hub keeps a one-line pointer
+      per sub-area. Nothing leaves its group.
+ - Big docs (multi): "archive not after 30 days, but when a change affects a patch note that makes error log go from green to
+   brown automatically, so when plan is made, changes identified should identify what should be archived", "Split
+   interconnection_map", "Archive old patch notes", "Split system_flow_map", "Split rpgace_core.js source"
+   -> understood: patch-note cards are archived when a change makes them stale (green -> brown, the existing brown/achiever_archive
+      vocabulary), not by age; every plan names the cards its changes will make stale, and archiving happens automatically on ship.
+      Both maps split per domain. rpgace_core.js source split is in scope (Tier 3: architecture rule changes, deeper scrutiny).
+ - Central kit: "Kit + concepts, gradual (Recommended)"
+ Round 2 (Oct 28, verbatim picks):
+ - Source split: "Per module, still build 1 file (Recommended)"
+ - Brown archive: "Plan names + script checks (Recommended)"
+ - Order: "GM-8/9 → this → MR (Recommended)"
+
+6. /free-for-all-debate (scaled: the real shapes were settled by Alex's answers; competitors argued the remaining build shape)
+ - "Hubs + sub-files" vs "flat new topic files": hubs win (Alex's own words: keep grouping, link downwards, Oracle navigation
+   unchanged). Same for Oracle notes: new sub-blocks ride with their parent domain, never a 9th/10th domain.
+ - "Kit as a new module" vs "extend RPGACE.utils": RPGACE.kit as one registered module (domain platform) with a ui/logic split
+   wins - utils is a loose bag with 54 mixed members; the kit gets a check script that flags new private copies.
+ - "Source split first" vs "kit first": kit first - splitting 95 modules is a mechanical move best done once, after the kit
+   exists so new files start clean; the split itself must produce a byte-identical rpgace_core.js on its first build.
+ - "Archive by age" lost to Alex's answer (archive by staleness).
+
+7. /drift: matches Alex's compiled words (2 asks + 7 answers). Track A unchanged: GM-8, GM-9 build first; MR waits for this plan
+ (Alex's order answer). No CAPTURED finding.
+
+8. DRAFT PLAN "Caps & Central Kit" (CK-1..CK-9) - Council of 5 reviewed, awaiting Alex's approval
+ CK-1 Oracle notes: SCHEDULE -> SCHEDULE + MISSIONS sub-block, KNOWLEDGE -> KNOWLEDGE + STUDY sub-block; a sub-block is sent
+      with its parent domain or on its own keywords (grouping kept); total cap 34,000 -> 40,000, block caps unchanged; both
+      check scripts updated.
+ CK-2 Topic hubs: habits.md -> cooking.md + health_gym.md; schedule.md -> my_day.md (+ realm_tasks.md already);
+      knowledge.md -> study.md. Each hub keeps one pointer line per sub-file; CLAUDE.md index shows hub -> subs; size check and
+      build_domain_folders.py cover sub-files. No fact lost (line count before/after).
+ CK-3 interconnection_map.md split per domain into docs/domains/<domain>/interconnections.md; the root file becomes a short index
+      with the cross-domain flows; every link/anchor grepped and re-pointed (verify_anchors.py, scripts/, skills).
+ CK-4 system_flow_map.md split the same way (diagram + truth table per domain; root keeps the whole-system diagram).
+ CK-5 Brown archive: ceo_plan_items gains a `stales` list (additive column) naming patch-note cards a change makes untrue;
+      scripts/archive_stale_cards.py moves them to patch_notes_archive.html on ship, writes an achiever_archive row and leaves a
+      one-line pointer; it also scans the diff for functions/tables named in older cards and PROPOSES extras for Alex to confirm.
+      First run: a proposed list for today's 1.9 MB, Alex confirms before anything moves.
+ CK-6 RPGACE.kit (domain platform): esc, btn, dates (today/addDays/fmt en-GB), readPrivate, pickList (search list, from GM-7),
+      armConfirm (two-click, 3s). scripts/check_kit_copies.py flags new private copies (session-start check); modules switch
+      over when touched; a Building-guide line in CLAUDE.md.
+ CK-7 Shared concepts: the 10 raw fetch('/api/oracle') calls listed and routed through one Oracle call path as modules are
+      touched; CONTEXT_SOURCES documented as the realm-generic mission source registry; new docs/claude/kit.md.
+ CK-8 Source split (Tier 3 - its own /paranoia pass at brief time): src/<domain>/<module>.js per module, scripts/build_core.js
+      joins them into rpgace_core.js (still committed; first build must be byte-identical), then minify as now. Architecture rule
+      becomes "edit src/, run the build"; a CI check fails if rpgace_core.js differs from the build. graphify/tests unchanged.
+ CK-9 Wrap: tests, docs, SELF_KNOWLEDGE, plan rows; the stale-card list for the cards this plan itself makes untrue.
+ Council of 5: risk = CK-8 drift between src and the built file (CI byte check), CK-3/4 link rot (anchor + grep sweep),
+ CK-5 archiving a still-true card (script proposes, plan names, Alex confirms the first batch); cost = no app tokens, Oracle
+ per-message cost unchanged; maintainability = the main gain (smaller files to edit, no 15th escape helper); UX = nothing visible
+ in the app, Oracle answers the same with more room; why-not = CK-8 changes every session's muscle memory and touches every tool
+ that reads rpgace_core.js, and the whole plan delays MR by a few sessions - accepted because MR would otherwise fight the caps
+ on every step.
