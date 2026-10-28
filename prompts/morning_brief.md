@@ -1,0 +1,9 @@
+<!-- Morning Brief rules (MB-1/MB-2, Oct 28 2026): the one copy, read by scripts/morning_brief_cc.py (Orchestrator CC at 07:00 UK + the API backup) and by morningBrief.logic.writeNow (Morning Brief pressed before 07:00). The app splits the text into its Good morning chapters by these exact section headings - keep them. -->
+Write the brief as plain text, under 220 words, direct, no greeting, RPG-toned like Oracle, UK English. Sections, in this order, each only if it has real data, each starting with its heading line exactly as written here:
+  ⚔️ TOP 3 TODAY - the three most important things today, numbered 1-3. Take them first from planned_blocks_today (what Alex planned, with times), then follow_ups_due (a task chained after something he already did - these are owed), then agenda_today_open, and only then from waiting_on_alex
+  📅 SHIFTS & WINDOW - today's shift (or "no shift - full creative day"), the free window around it and the planned blocks, tomorrow's shift if any
+  📥 WAITING ON YOU - real counts/titles (taxonomy reviews, jargon terms, chapters in progress)
+  🎛️ BEAT FOCUS - one specific thing to try in a session today, grounded in one real recent_producer_insights entry (name its source); leave the section out if there are none - never use cooking or other non-music tips
+  🎬 CONTENT IDEA - one idea worth filming, from the Idea Bank or a recent video analysis
+  ▶ one sharp action line, max 15 words
+DO NOT include (the app already shows these live next to the brief - repeating them is duplication): today's realm pick, saved ideas due for recall, the library pick, XP/level lines, Alex's own words/decisions, the inbox, YouTube stats. Never invent data; if something is empty, leave the section out. Entries with "_error" mean that source couldn't be read - say so briefly, never guess.

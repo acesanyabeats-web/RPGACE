@@ -74,6 +74,22 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-28-morning-story" style="margin-bottom:30px;">
+    <div class="card-title">🌅 Oct 28 — Good morning is one story in 5 chapters; the brief comes at 7am or when you press it (MB-1..3)</div>
+    <div class="card-body">
+      Your words: "Too cluttered, I want morning brief to generate at 7am or if I press morning brief before 7am", "its like a stroke rather than an engaging story", "i like the order you gave one scroll with chapters".
+      <ul>
+        <li><b>One scroll, five numbered chapters:</b> 1 Wake (shift, up at) · 2 Start here (Morning routine) · 3 Today's quest (realm of the day, Top 3, your blocks, window, the action line, Open My Day) · 4 Make (Beat focus, Content idea, Library pick) · 5 Catch up (Review, Waiting on you, Since yesterday, Inbox + YouTube, Watchlist). Nothing was removed; every piece now sits in the same card style.</li>
+        <li><b>The written brief is split by its own headings,</b> so each part lands in its chapter instead of one long block at the bottom. Same length as before.</li>
+        <li><b>Motion:</b> each card slides in as it scrolls into view (off if your phone is set to reduce motion).</li>
+        <li><b>7am:</b> Orchestrator CC now writes it at 7:00, with the API as backup a few minutes later. <b>Press ☀️ Morning Brief before then</b> and the API writes it there and then, saved once. Just opening the screen never writes one; it says it's coming at 7:00 and offers "Write it now".</li>
+        <li><b>Top 3 now reads your real plans:</b> the brief was reading an old blocks table (0 rows) and missed your planned blocks. It now reads today's blocks and any do-after follow-ups first. One rule file (<code>prompts/morning_brief.md</code>) serves 7am, the backup and your press.</li>
+        <li><b>Not yet:</b> the 7am writer can't see follow-ups, because that task list isn't readable with the public key. Opening it up needs your go. The old in-chat brief was replaced; five helpers it used are now unused and will be cleared in CK clean-up.</li>
+        <li>Tests: story order and section cards 6/6, press-to-write 5/5, reopen 1/1, the 7am/backup timing 8/8, old brief test 5/5 (two checks updated for the new rule). Untested on your phone.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-10-28-brief-reopen" style="margin-bottom:30px;">
     <div class="card-title">🌅 Oct 28 — Reopening Good morning now shows today's written brief</div>
     <div class="card-body">

@@ -9,6 +9,7 @@ built in `local_server/rpgace_intel.py` `insights_prompt`.
 
 - `exercise_extract.md` - Gym exercise library (DR-12): pulls exercises out of one Athlete video write-up (exerciseLibrary.logic.extract, cheap model)
 - `mission_file.md` - Generic Missions (GM-3): files specific new tasks (mostly from videos) under generic missions as context cards. realmTasks.logic.fileInbox, cheap model
+- `morning_brief.md` - Morning Brief rules (MB-1/MB-2, Oct 28 2026): the one copy, read by scripts/morning_brief_cc.py (Orchestrator CC at 07:00 UK + the API backup) and by morningBrief.logic.writeNow (Morning Brief pressed before 07:00). The app splits the text into its Good morning chapters by these exact section headings - keep them.
 - `professor.md` - Oracle Professor answers (oracleProfessor.PROF_SYSTEM)
 - `receipt_read.md` - Money: reads a receipt photo (RECEIPT_SYSTEM)
 - `rota_read.md` - Shift sync: reads a work rota screenshot (shiftSync.logic.ROTA_SYSTEM)

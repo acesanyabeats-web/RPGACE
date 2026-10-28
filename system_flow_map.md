@@ -218,16 +218,17 @@ flowchart LR
 
 Truth table: recorder, boot-phase no-alert, sign-in-gated flush — built, headless-verified (13 checks). Splitting the 1.9MB script (the only real cut to the ~690ms load block) — not built.
 
-## 15aa. One Morning Brief (Oct 21 2026, CC-3) — built
+## 15aa. One Morning Brief (Oct 21 2026, CC-3; 07:00 + press-to-write + story, Oct 28 MB-1..3) — built
 
 ```mermaid
 flowchart LR
-  T[05:39 UK CC task] --> G[morning_brief_cc.py gather: public tables] --> W[CC writes brief] --> S[save: one journal row, checked] --> J[(journal morning-routine)]
+  T[07:00 UK CC task] --> G[morning_brief_cc.py gather: chore_blocks, follow-ups, public tables] --> W[CC writes brief from prompts/morning_brief.md] --> S[save: one journal row, checked] --> J[(journal morning-routine)]
   J --> P[push notification]
   J --> A[morningBrief panel + live inbox/YouTube]
   A -->|no brief today| B{🤖?}
-  B -->|yes| BTN[Write it now button -> _generateApi]
-  B -->|no| API[_generateApi]
+  B -->|opened| WAIT[wait for 07:00 + Write it now]
+  B -->|pressed| NOW[logic.writeNow: gatherNow + same rules -> API -> journal once]
+  A --> STORY[Good morning story: 5 chapters, sections by heading - myDay.ui.storyCss]
 ```
 
 ## 15z. App prompts via Orchestrator CC (Oct 21 2026, CC-2) — built

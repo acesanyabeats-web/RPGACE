@@ -38,3 +38,15 @@ MORNING BRIEF RESTRUCTURE - /dev_ops_7 Track B (opened Oct 28 2026 while Caps an
  - Opening: "I'm up opens it (Recommended)".
  Note: /remotion is not a skill in this repo or this session. Remotion is a library for making videos from React code;
  asked Alex what he means rather than guess.
+ Round 2 (Oct 28, verbatim): "forget remotion for now, i like the order you gave one scroll with chapters, go with this and
+ ck-plans straight after"
+ -> PLAN "Morning Brief Story" approved:
+  MB-1 Timing: Orchestrator CC writes at 07:00 UK (API backup a few minutes later); pressing Morning Brief before 07:00 with
+       no brief yet makes the API write it there and then (same data, same rules, saved to journal so 07:00 sees it done).
+  MB-2 The brief reads real plans: chore_blocks today, realm tasks due / do-after follow-ups, planned cook; Top 3 comes from
+       those first.
+  MB-3 One scroll, five chapters, one card style: 1 Wake (date, shift, up at) 2 Start here (Morning routine) 3 Today's quest
+       (realm of the day, brief Top 3, blocks + window, action line) 4 Make (Beat focus, Content idea, Library pick)
+       5 Catch up (Review, Waiting on you, Since yesterday, Inbox, YouTube, Watchlist). The written brief is split by its own
+       section headings into the chapters; chapters fade/slide in on scroll (CSS, off with reduced motion). Nothing removed.
+  MB-4 Tests, docs, plan rows. Then CK-6..9.

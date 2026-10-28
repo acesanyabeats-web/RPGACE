@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-The one Morning Brief, written by Orchestrator CC before 6am UK time
+The one Morning Brief, written by Orchestrator CC at 7am UK time (05:39 until Oct 28 2026)
 (CC-3, Oct 21 2026, plan "Orchestrator CC Analysis").
 
 Alex: "make it at one time at 6am, deduplicate and /paranoia this to get
@@ -11,7 +11,7 @@ paying the API for a second one.
   python3 scripts/morning_brief_cc.py gather       today's inputs as JSON (or "ALREADY WRITTEN")
   python3 scripts/morning_brief_cc.py save <file>  save the written brief to journal, checked
   python3 scripts/morning_brief_cc.py rules        how the brief is written (one copy, used by both writers)
-  python3 scripts/morning_brief_cc.py fallback     API backup: writes it if CC hasn't, brief_fallback_mins after 05:39 UK
+  python3 scripts/morning_brief_cc.py fallback     API backup: writes it if CC hasn't, brief_fallback_mins after 07:00 UK
 
 Backup (Oct 21 2026, Alex: "if ever failed, then 5 min timer on api to pick
 up the job"): the first CC run failed on his plan's usage limit and no brief
@@ -34,6 +34,7 @@ but never wrote a single journal row (checked Oct 21: zero morning-routine
 rows). save() checks the row really exists.
 """
 import json
+import re
 import sys
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -43,18 +44,20 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "local_server"))
 import intel_common as ic  # noqa: E402
 
 SOURCE = "morning-routine"
-BRIEF_TIME = (5, 39)          # UK time the scheduled CC task runs
+BRIEF_TIME = (7, 0)           # UK time the scheduled CC task runs (Alex, Oct 28: "generate at 7am")
 FALLBACK_UNTIL = 13           # after 1pm UK the backup stops trying (the app's own window)
 API_TAG = " (API)"
 
-RULES = """Write the brief as plain text, under 220 words, direct, no greeting, RPG-toned like Oracle, UK English. Sections, in this order, each only if it has real data:
-  ⚔️ TOP 3 TODAY - the three most important things, from the agenda/planned blocks/waiting items
-  📅 SHIFTS & WINDOW - today's shift (or "no shift - full creative day"), the free window around it, tomorrow's shift if any
-  📥 WAITING ON YOU - real counts/titles (taxonomy reviews, jargon terms, chapters in progress)
-  🎛️ BEAT FOCUS - one specific thing to try in a session today, grounded in one real recent_producer_insights entry (name its source); leave the section out if there are none - never use cooking or other non-music tips
-  🎬 CONTENT IDEA - one idea worth filming, from the Idea Bank or a recent video analysis
-  ▶ one sharp action line, max 15 words
-DO NOT include (the app already shows these live next to the brief - repeating them is duplication): today's realm pick, saved ideas due for recall, the library pick, XP/level lines, Alex's own words/decisions, the My Day task list, the inbox, YouTube stats. Never invent data; if something is empty, leave the section out. Entries with "_error" mean that source couldn't be read - say so briefly, never guess."""
+PROMPT_FILE = Path(__file__).resolve().parent.parent / "prompts" / "morning_brief.md"
+
+
+def load_rules():
+    """The one copy of the brief rules (MB-1, Oct 28 2026): prompts/morning_brief.md, shared with the app."""
+    txt = PROMPT_FILE.read_text(encoding="utf-8")
+    return re.sub(r"^\s*<!--.*?-->\s*", "", txt, flags=re.S).strip()
+
+
+RULES = load_rules()
 try:
     from zoneinfo import ZoneInfo
     UK = ZoneInfo("Europe/London")
@@ -87,7 +90,10 @@ def gather(now=None):
     day = uk_today(now)
     d, tm = day.isoformat(), (day + timedelta(days=1)).isoformat()
     shifts = get(f"rpgace_shifts?date=in.({d},{tm})&select=date,role,start,end&order=date.asc,start.asc")
-    blocks = get(f"day_blocks?start_date=lte.{d}&end_date=gte.{d}&select=title,kind,start_time,end_time&order=start_time.asc&limit=12")
+    # MB-2 (Oct 28 2026): planned blocks live in chore_blocks (day_blocks is the old table - it read 0 rows), and
+    # do-after follow-ups (realm_tasks.next_due_at, DL-4/5) are owed today, so the Top 3 comes from these first.
+    blocks = get(f"chore_blocks?block_date=eq.{d}&status=neq.cancelled&select=kind,realm,start_time,mins,items,status&order=start_time.asc&limit=12")
+    follow = get("realm_tasks?next_due_at=not.is.null&status=eq.kept&select=title,realm,next_due_at,next_after&order=next_due_at.asc&limit=6")
     agenda = get(f"rpgace_agendas?date=eq.{d}&completed=is.false&select=title,hour,minute,category&order=hour.asc,minute.asc&limit=12")
     settings = get("myday_settings?id=eq.1&select=wake_time,bed_time")
     chapters = get("bookworm_chapters?status=eq.in_progress&analysis_complete=is.false&select=chapter_title,cc_queued_at&limit=5")
@@ -105,7 +111,8 @@ def gather(now=None):
         "shifts_today": [s for s in shifts if s.get("date") == d],
         "shift_tomorrow": next((s for s in shifts if s.get("date") == tm), None),
         "my_day": (settings[0] if settings and "wake_time" in settings[0] else {}),
-        "planned_blocks_today": blocks,
+        "planned_blocks_today": [dict(b, items=[i.get("label") for i in (b.get("items") or []) if isinstance(i, dict)][:5]) if isinstance(b, dict) else b for b in blocks],
+        "follow_ups_due": follow,
         "agenda_today_open": agenda,
         "waiting_on_alex": dict(reviews, chapters_in_progress=[c.get("chapter_title") for c in chapters if c.get("chapter_title")]),
         "recent_producer_insights": insights,

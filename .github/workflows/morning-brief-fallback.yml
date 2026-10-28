@@ -1,9 +1,9 @@
 name: Morning Brief backup
 
 # Oct 21 2026 (Alex: "if ever failed, then 5 min timer on api to pick up the
-# job"). Orchestrator CC writes the Morning Brief at 05:39 UK on Alex's Claude
+# job"). Orchestrator CC writes the Morning Brief at 07:00 UK on Alex's Claude
 # plan. If that run fails (the first one hit his plan's usage limit), this
-# writes it with the API instead: from 05:39 + brief_fallback_mins
+# writes it with the API instead: from 07:00 + brief_fallback_mins
 # (app_settings.background_analysis, default 5) until 1pm UK, every 5 minutes.
 # Each run is a few lines of Python and exits at once when the brief is
 # already saved or it isn't time yet. The cron covers both GMT and BST (the
@@ -32,8 +32,8 @@ jobs:
           # Only the three files it needs - no checkout. The brief text is
           # never printed (public logs), only the save result.
           base="https://raw.githubusercontent.com/${{ github.repository }}/${{ github.sha }}"
-          mkdir -p r/local_server r/scripts
-          for f in local_server/intel_common.py local_server/rpgace_intel.py scripts/morning_brief_cc.py; do
+          mkdir -p r/local_server r/scripts r/prompts
+          for f in local_server/intel_common.py local_server/rpgace_intel.py scripts/morning_brief_cc.py prompts/morning_brief.md; do
             curl -fsSL "$base/$f" -o "r/$f"
           done
           python3 r/scripts/morning_brief_cc.py fallback
