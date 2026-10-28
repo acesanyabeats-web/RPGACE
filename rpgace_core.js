@@ -6502,6 +6502,16 @@ RPGACE.register('kit', {
       var d = new Date(String(isoDay).slice(0, 10) + 'T12:00:00');
       return d.toLocaleDateString('en-GB', opts && opts.long ? { weekday: 'long', day: 'numeric', month: 'long' } : { weekday: 'short', day: 'numeric', month: 'short' });
     },
+    // CK-7: the one door for one-shot Oracle calls (text, or parsed JSON with opts.json). It goes through
+    // phylumPath's ground-worker path, so credit-exhaustion fallback queueing (opts.context) is shared.
+    // Chat stays on callOracle, images on RPGACE.utils.oracleVision, Professor on oracleProfessor (streaming).
+    ask: function(prompt, opts) {
+      opts = opts || {};
+      var pp = RPGACE.modules.phylumPath;
+      if (!pp) return Promise.reject(new Error('Oracle call path not loaded'));
+      return opts.json ? pp.logic._callGroundWorkerJSON(prompt, opts.max || 1000, opts.model, opts.context)
+        : pp.logic._callGroundWorkerText(prompt, opts.max || 1000, opts.model, opts.context);
+    },
     // Private tables (RLS, no anon read) through /api/data-write action 'read' after sign-in; [] when signed out.
     readPrivate: function(table, params) {
       var ag = RPGACE.modules.authGate;
@@ -33132,12 +33142,12 @@ RPGACE.register('morningBrief', {
 
   // MB-1: write + save once (journal source 'morning-routine', title ends "(API)" like the backup).
   writeNow: function() {
-    var self = RPGACE.modules.morningBrief, pp = RPGACE.modules.phylumPath;
+    var self = RPGACE.modules.morningBrief;
     return self.logic.todayBrief().then(function(have) {
       if (have) return have;
       return self.logic.gatherNow().then(function(data) {
         var prompt = 'Today\'s RPGACE data for Alex (@AceSanyaBeats), as JSON:\n' + JSON.stringify(data) + '\n\n' + RPGACE.prompt('morning_brief') + '\n\nReply with the brief text only.';
-        return pp.logic._callGroundWorkerText(prompt, 900, 'claude-sonnet-4-6');
+        return RPGACE.kit.ask(prompt, { max: 900, model: 'claude-sonnet-4-6' });
       }).then(function(text) {
         text = String(text || '').trim();
         if (text.length < 40) throw new Error('the brief came back empty');

@@ -97,7 +97,7 @@ Split from a 291KB file on Oct 22 2026 (plan "CLAUDE.md Debloat", record `record
 11. Token cost is a design constraint. Use numbered name trees, not slash-joined paths. Prefilter with the free keyword scan, and skip the call when nothing matches. No premium "triage" call in front of a ground-worker call.
 12. Large content goes through `phylumPath._condenseIfLarge(text, context)` before any cap — never a bare `.slice()`.
 13. In `SELF_KNOWLEDGE`, name the owning module or table for every claim, so `scripts/check_self_knowledge_contradictions.py` can check it.
-14. Small helpers (escape, dates, buttons, 2-tap confirm, private read, search list) come from `RPGACE.kit` (`docs/claude/kit.md`); `scripts/check_kit_copies.py` fails on a new private copy.
+14. Small helpers (escape, dates, buttons, 2-tap confirm, private read, search list) and one-shot Oracle calls (`RPGACE.kit.ask`) come from `RPGACE.kit` (`docs/claude/kit.md`, which also lists the mission source registry); `scripts/check_kit_copies.py` fails on a new private copy.
 - UI: thumb-sized targets (mobile first); cross-module signals through `RPGACE.hooks` named events, never a second MutationObserver.
 
 ## Logging rules

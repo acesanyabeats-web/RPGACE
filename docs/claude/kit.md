@@ -11,3 +11,13 @@ Present tense, one fact per line. Plan "Caps and Central Kit" CK-6/CK-7 ([story]
 - `pickList(host, items, onPick, {id, itemClass, empty, max})` — searchable list (search box past 6 items); `opts.id` gives `<id>-q` / `<id>-list`.
 - Switched over (Oct 28): `myDay`, `doingNow`, `tripPlans` `_btn`; `tripPlans.logic.read`; `healthBody._arm`; the GM-7 source picker in `myDay.ui.pickContext`.
 - `scripts/check_kit_copies.py` counts private copies left (esc, btn, iso, addDays, arm, data-write reads) and fails when a count rises above its BASELINE; lower the baseline in the same commit that switches a module over.
+
+## One Oracle call path (CK-7)
+- `RPGACE.kit.ask(prompt, {max, model, json, context})` is the door for one-shot calls; it runs `phylumPath.logic._callGroundWorkerText/_callGroundWorkerJSON` (credit-out fallback queueing via `context`). First user: `morningBrief.logic.writeNow`.
+- Chat replies use `callOracle()` (global; external-provider, streaming and plain branches). Images use `RPGACE.utils.oracleVision`. Professor answers use `oracleProfessor` (streaming, Opus with model fallback). Nutrition uses `/api/oracle` action `nutrition-lookup` (`cookingOracle._lookupNutrition`).
+- Still a separate raw fetch (switch when touched): the chat image upload (global, near `isRotaUpload`, should use `utils.oracleVision`).
+- Any new one-shot Oracle call uses `RPGACE.kit.ask`, never a new `fetch('/api/oracle')`.
+
+## Mission source registry (CK-7)
+- `realmTasks.logic.CONTEXT_SOURCES` is the realm-generic list of "pick from your own data" sources for a mission's context (GM-7): `combo` (exerciseLibrary), `reference` (reference_tracks + beat ideas), `post` (Idea Bank post ideas).
+- A new source = one entry there (`label`, `empty`) + one branch in `realmTasks.logic.sourceItems(kind)` returning `[{title, sub, detail, ref}]`; the picker (`RPGACE.kit.pickList`) needs no change. A mission card picks it with `context_kind`.
