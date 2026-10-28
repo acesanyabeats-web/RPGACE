@@ -1,0 +1,49 @@
+LEFTOVER RED PLAN ITEMS — /dev_ops_7 run with deduplication (Track B), alongside Generic Missions GM-5..9 (Track A)
+Oct 28 2026.
+
+1. ASK (Alex, verbatim): "Fable Total-Systems Audit3Worm Family & Encyclopedia2Cooking Reorganisation1Health & body1RPGACE
+Domains & Navigation1HABITS Cooking Module1 (never approved)Galaxy Map Web Redesign4 (never approved) - /devops this one with
+/deduplication to make sure no clashes with current builds and currently building is happening"
+
+2. EVIDENCE + DEDUP (live Oct 28; ceo_plan_items, git, code)
+ STALE (built, row never updated):
+ - CR-7 Cooking Reorganisation "tests, minify, docs, push, verify": shipped Oct 14 (b46cd72, card-2026-10-14-cooking-reorg).
+ - P1 Galaxy "edges as evidence gateways": built Sep 25 (scripts/graphify_river_group.py _curved_edge evidence_text/zoom_href,
+   click inspector; P0/P2 green). Row still red.
+ DONE BY A LATER PLAN (duplicate):
+ - F7 CLAUDE.md + SELF_KNOWLEDGE prune -> CLAUDE.md Debloat CD-0..8 (Oct 22) + SELF_KNOWLEDGE size check (now under 34000).
+ - H5 calendar/shift collision checking -> MD-7 clash check (myDay.logic.clashWith: Plan my day, calendar flags, + Add task).
+ - F12 residual boot freeze + setTimeout violations -> Polish and speed PS-1 (perf_freezes recorder) + PS-2 (boot measured at
+   phone speed), both yellow; what remains is reading perf_freezes, not new work.
+ STILL REAL:
+ - F13 /colourgradient full-board report (read-only, cheap).
+ - HB-4 steps via Google Health API: waits on Alex's OAuth Playground check.
+ - T1 Knowledge Tree insights -> Encyclopedia: blocked, taxonomy_tree has 0 rows (taxonomy paused).
+ - W7 revisit Content Intelligence extraction cap; W10 Encyclopedia source-worm filter: Phase-2 deferrals from Aug; Videoworm
+   realm extraction (VW-0..7) and Knowledge Rewire (Learned page, one search) changed both areas since.
+ - Galaxy GATE (Alex hand-tests 3 Galaxy pages), P3 (one shared web shell, 3-5 sessions), P4 (comment debloat): never approved.
+ CLASH CHECK vs current builds (Generic Missions GM-5..9, Missions Across Realms MR-1..6): only W7 touches the same pipe
+ (video extraction feeds mission filing GM-3/MR-2) -> must not change while MR-2 files the 91 tasks. Nothing else overlaps.
+
+3. FREE-FOR-ALL (short; Tier 1-2 cleanup, scaled down per the skill)
+ A "Close the books": stale -> yellow with evidence; duplicates -> 'dropped' pointing at the plan that did it; still-real items
+   kept with a named blocker. B "Build the leftovers now": rejected — W7/T1/HB-4 are blocked or clash. C "Leave as is": rejected —
+   red rows that are built make every board report lie (rule 16).
+
+4. INTERROGATION (answers below)
+ Answers (Oct 28, verbatim picks): Stale rows "Close them with evidence (Recommended)" | Galaxy "we relook it and adapt them
+ later on once the previous plan is done" | W7/W10 "Drop both as superseded (Recommended)" | Remaining "Keep T1 parked until
+ the taxonomy is rebuilt", "Keep HB-4 waiting on my Google check", "Run F13 board report now".
+ -> Galaxy P3/P4/GATE stay red, noted "relook after Missions Across Realms"; no plan change.
+
+5. APPLIED (Oct 28, run directly; the connector handled ceo_plan_items this time)
+ CR-7 -> yellow, P1 -> yellow (built, evidence named); F7, H5, F12, W7, W10 -> dropped (note names the plan that did the work);
+ T1, HB-4 stay red with the blocker; GATE/P3/P4 stay red, "relook after Missions Across Realms"; F13 -> green (this board).
+
+6. F13 BOARD (Oct 28, all active/compiled plans; g=green y=yellow r=red b=blue d=dropped)
+ Totals: 223 green, 257 yellow, 16 red, 17 blue, 5 dropped, 0 purple.
+ Red left: Missions Across Realms 6 (not started, awaiting approval), Generic Missions 5 (GM-5..9, approved, next),
+ Galaxy Map Web Redesign 3 (GATE/P3/P4, relook later), Domains & Navigation 1 (T1, blocked), Health & body 1 (HB-4, waits on
+ Alex). Fable audit: 6 green, 4 yellow, 3 blue, 2 dropped, 0 red.
+ Headline: the real backlog is 257 yellow items = built and live but not hand-tested by Alex. Biggest yellow blocks: Domains &
+ Navigation 13, Day & Habits Rewire 12, Realm Inputs 11, Side List 11, My Day Round 2 10.
