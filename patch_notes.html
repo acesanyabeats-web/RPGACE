@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-28-missions-recipe" style="margin-bottom:30px;">
+    <div class="card-title">🍳 Oct 28 — Generate a recipe for a Chef mission, straight into the block (GM-6)</div>
+    <div class="card-body">
+      Your picks: "Save the recipe to My Recipes", "Make it the block's planned cook", "Add missing items to shopping".
+      <ul>
+        <li><b>In "What is it about this time?"</b> for a Chef recipe mission there's now <b>✨ Generate a recipe</b>, plus a small ✨ next to each card. ✨ on "Salt-dried skin" asks for "Roast with a technique: Salt-dried skin". The big button uses what you typed, or just the mission.</li>
+        <li><b>You see a short preview</b> (name, ingredients, rough time), then <b>Use this recipe</b>, <b>Try again</b> or <b>Back</b>.</li>
+        <li><b>Use does all three of your picks:</b> the recipe goes into My Recipes; it becomes the block's planned cook (so Cooking shows it as your scheduled cook, on the block's own Schedule line, not a second one); and a grocery list is made with what you're missing. It's also kept as a card under the mission for next time.</li>
+        <li><b>Picking again on the same block</b> swaps the recipe on the same planned cook rather than adding another.</li>
+        <li><b>Cost:</b> one recipe call each time you tap Generate, through your usual recipe engine. Nothing runs unless you tap.</li>
+        <li><b>Honest flags:</b> new suite 17/17. The model reply and the ingredient-matching save were stubbed in the test (both are the existing Cooking paths). The planned cook, grocery list and block link ran for real against the test database. Cooking, missions, Plan block and My Day suites pass. Untested by you. Earlier grocery lists from a swapped recipe are left in place, not deleted. ▶ Start cooking on a Chef realm block and Live now showing the recipe come in GM-8.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-10-28-missions-picker" style="margin-bottom:30px;">
     <div class="card-title">🎯 Oct 28 — Plan block asks what a mission is about (GM-5)</div>
     <div class="card-body">
