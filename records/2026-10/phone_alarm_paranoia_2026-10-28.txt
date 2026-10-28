@@ -1,0 +1,39 @@
+PHONE ALARMS - /dev_ops_7 Track B (opened Oct 28 2026 while CK-8 builds)
+
+1. ASK (Alex, Oct 28, verbatim): "will an alarm actually go off on my phone if it hit 2pm, i want it synced to my alarm on my
+   phone, with sounds i want (i have some cool alarms i want to be used at random selection)"
+
+2. EVIDENCE (live, Oct 28)
+ - Alarms today: myday_alarms holds only kind 'wake' rows (08:00 UK, one per day, set at bedtime by myDay.logic.endDay) plus
+   focus-timer rows when a focus run starts. Nothing is set for 14:00, and block starts never create an alarm.
+ - Delivery: pg_cron -> edge fn myday-push every minute -> push_alarm() -> web push to push_subscriptions -> sw.js
+   notification (requireInteraction). push_subscriptions has 0 rows, so NO push reaches the phone today. Oct 25/26 wake rows
+   show sends=24 (counted) but nothing could have been delivered. Rule-7 gap: the app never says "no phone registered".
+ - A web app cannot set the phone's own Clock alarms in the background, and a web-push notification plays the system
+   notification sound, not a chosen alarm file. Ways to reach the real phone alarm: an Android intent link the user taps
+   (Clock app SET_ALARM with hour/minute/label - one tap per alarm, Clock's own sound), or an automation app on the phone
+   (MacroDroid free tier / Tasker paid) reading RPGACE's alarm list and ringing a random file from a folder.
+ - Phone: Android (nav bar in Alex's Oct 28 screenshots).
+
+3. /drift: no approved plan touches alarms (MR-1..6 drafted, not alarms). No conflict with CK-8.
+
+4. INTERROGATION - answers recorded verbatim below when they arrive.
+ Round 1 (Oct 28, verbatim picks):
+ - Route: "Automation app (Recommended)" (MacroDroid free tier on Android reads RPGACE's alarm list, rings a random sound)
+ - Which: "Wake alarm"
+ - Sounds: "I'll upload to RPGACE"
+
+5. DRAFT PLAN "Phone Alarms" (PA-1..PA-4) - awaiting Alex's approval
+ PA-1 Alarm sounds: a "🔔 Alarm sounds" list in My Day settings; upload MP3/WAV/OGG files into RPGACE (Supabase Storage
+      bucket alarm_sounds, public read so the phone can fetch them); play / remove each.
+ PA-2 Random pick: each wake alarm row gets one sound chosen at random from the list when it is set (myday_alarms.sound_url),
+      so the phone only plays what RPGACE picked.
+ PA-3 Phone side: a step-by-step MacroDroid guide + one small feed URL (next wake alarm: time, sound URL, label) the phone
+      reads; it rings that sound at that time, repeating until stopped; "I'm up" in RPGACE also marks it done. Exact MacroDroid
+      steps verified against its current docs at build time (free tier: 5 macros - this needs 1-2).
+ PA-4 Honest status: My Day shows whether a phone is connected (last time the phone read the feed) and warns when nothing can
+      ring; notifications say plainly when no phone is registered (push_subscriptions = 0 today).
+ Council of 5: risk = Android battery saving can delay MacroDroid (guide includes "don't optimise" setting; feed read near
+ alarm time); cost = free (MacroDroid free tier, Supabase storage tiny); UX = your sounds, random, no tap per alarm; why-not =
+ one more app on the phone and a one-time setup you must do yourself; a public sound bucket means anyone with the link can play
+ the files (they are alarm sounds, not private).

@@ -148,3 +148,6 @@ B. Duplicated building blocks in rpgace_core.js (grep counts, Oct 28)
  - CK-8c rules, skills, prep script, anchors, docs/domains ladder; graphify update.
  Verdict: buildable and lower-risk than the first version (no copy to drift). The real cost is R2 (55 readers), handled by
  doing the re-pointing before the split. Stays Tier 3: it runs only inside the approved CK plan, after Day Log, with its own brief.
+
+11. CK-8 GO (Alex, Oct 28, verbatim): "do ck-8, while /dev_ops_7 will an alarm actually go off on my phone if it hit 2pm, i want it synced to my alarm on my phone, with sounds i want (i have some cool alarms i want to be used at random selection)"
+ -> explicit Tier 3 go for CK-8 as briefed (8a readers re-pointed while still one file and outputs proven identical; 8b split with byte-identical min.js gate; 8c rules/skills).
