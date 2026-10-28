@@ -1,0 +1,22 @@
+MORNING BRIEF RESTRUCTURE - /dev_ops_7 Track B (opened Oct 28 2026 while Caps and Central Kit builds)
+
+1. ASK (Alex, Oct 28, verbatim): "go, also morning brief will have to be restructured a bit too"
+   (sent after DL-1..7 shipped: Live now / I just did / chains / Homekeeper block, and GM-5..9 missions)
+
+2. EVIDENCE (live, Oct 28)
+ - Two writers, one set of rules: scripts/morning_brief_cc.py (Orchestrator CC task 05:39 UK; API backup via
+   .github/workflows/morning-brief-fallback.yml; RULES string = the only copy) -> journal source 'morning-routine';
+   the app shows it (morningBrief.ui._showCCBrief) plus live inbox/YouTube. morningBrief.ui._generateApi is an older
+   in-app writer (Oracle chat prompt) used only on request / when CC is off.
+ - Today's brief: written by the API backup at 10:26 UTC (CC missed it), Top 3 = taxonomy proposal + 2 book chapters.
+ - gather() reads day_blocks (old table): 0 rows today. Planned blocks live in chore_blocks (block_date): 12 in the last
+   14 days. So the brief never sees Alex's planned blocks.
+ - gather() reads no realm_tasks, no missions (mission_contexts / planned items), no do-after follow-ups (realm_tasks
+   next_due_at / next_after, DL-4/5), no yesterday's day log (doing_now entries, missed blocks), no planned cook.
+ - RULES tell the brief to leave out realm pick, My Day task list, XP, own words (the Good morning screen shows them live).
+ - _generateApi still lists "TODAY'S SHIFTS" from localStorage and Idea Bank rotation - a second shape of the same brief.
+
+3. /drift vs approved work: overlaps MR-1..6 (Missions Across Realms, drafted) - a brief that names today's missions is
+   MR-shaped; no conflict with CK (docs/kit). Track A unchanged.
+
+4. INTERROGATION - answers recorded verbatim below when they arrive.
