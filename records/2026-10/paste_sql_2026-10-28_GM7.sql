@@ -1,0 +1,5 @@
+-- Oct 28 2026, GM-7 plan row + Chronicles row. Run each block; the editor shows only the LAST result.
+update ceo_plan_items set status='yellow', evidence='Built 07d7b9d (Oct 28): realmTasks.logic.CONTEXT_SOURCES; Athlete combo (exerciseLibrary.ui.pickCombo, least-trained groups first), Producer reference tracks + starred beat ideas, Creator Idea Bank post ideas; cards source picked (migration gm7_mission_contexts_source_picked), same-name card reused. gm7 14/14. Not hand-tested.' where id = (select id from ceo_plan_items where item_code='GM-7' limit 1);
+insert into system_updates (title, summary, category) values ('GM-7: Athlete, Producer and Creator missions pick from your own stuff', 'Mission picker gets Build a combo (exercise library, least-trained muscle groups first), Pick a reference track (references + starred beat ideas) and Pick a post idea (Idea Bank). No model calls. Commit 07d7b9d. Untested by Alex.', 'feature');
+-- CHECK (run alone): should print GM-7 | yellow
+select item_code, status from ceo_plan_items where item_code='GM-7';
