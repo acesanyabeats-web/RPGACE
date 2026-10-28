@@ -74,6 +74,18 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-28-brief-reopen" style="margin-bottom:30px;">
+    <div class="card-title">🌅 Oct 28 — Reopening Good morning now shows today's written brief</div>
+    <div class="card-body">
+      Your words: "i just reopened morning brief, and it only got to since yesterday paragraph too".
+      <ul>
+        <li><b>Cause:</b> the brief only drew itself when it auto-ran, and the auto-run skips once it has run that day. After the app reloaded, Good morning showed everything down to "Since yesterday" and then nothing, until you pressed ☀️ Morning Brief.</li>
+        <li><b>Fix:</b> opening the screen now shows today's saved brief (with live inbox and YouTube lines). It only shows the brief; it never writes a new one.</li>
+        <li>Reproduced in a test browser first (empty after reload), then fixed (shows the brief). The existing brief test still passes 5/5. Untested on your phone.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-10-28-ck5-brown-archive" style="margin-bottom:30px;">
     <div class="card-title">🟫 Oct 28 — Patch notes that stop being true now get archived, not left to mislead (CK-5)</div>
     <div class="card-body">

@@ -19498,6 +19498,8 @@ RPGACE.register('dashDeck', {
     }
     w.style.marginBottom = '0';
     host.appendChild(w);
+    var mbm = RPGACE.modules.morningBrief;
+    if (mbm && mbm.ui && mbm.ui._showSaved) mbm.ui._showSaved().catch(function(e) { RPGACE.utils.toast('⚠️ Could not load today\'s brief: ' + (e.message || e), '#CC4A4A', 4000); });
     // L1 (Oct 10 2026): saved ideas due for recall sit at the top of the brief.
     // KR-3: one Review line (idea cards, exam redo, jargon) instead of the recall strip.
     if (RPGACE.modules.knowledgeReview) RPGACE.modules.knowledgeReview.ui.briefLine(w); else if (RPGACE.modules.recall) RPGACE.modules.recall.renderInto(w);
@@ -32912,6 +32914,17 @@ RPGACE.register('morningBrief', {
       live.textContent = '📧 Inbox now: ' + g.unread + ' unread' + ((g.subjects || []).length ? '\n' + g.subjects.map(function(x) { return '• ' + x; }).join('\n') : '') +
         '\n🎬 YouTube: ' + (y.summary || '—');
       live.style.whiteSpace = 'pre-wrap';
+    });
+  },
+
+  // Oct 28 2026 fix: after a reload the auto-run skips ("already ran today"),
+  // so a reopened Good morning screen had no written brief. Opening it now
+  // shows today's saved brief - display only, never writes a new one.
+  _showSaved: function() {
+    var self = RPGACE.modules.morningBrief, output = document.getElementById('mb-output');
+    if (!output || output.textContent.trim()) return Promise.resolve();
+    return self.logic.todayBrief().then(function(row) {
+      if (row && !output.textContent.trim()) { output.style.display = 'block'; return self.ui._showCCBrief(output, row); }
     });
   },
 
@@ -48509,6 +48522,7 @@ RPGACE.register('errorLog', {
   "_showReader": "bookworm",
   "_showRows": "askMyData",
   "_showSaveToPipelinePicker": "visualOracle",
+  "_showSaved": "morningBrief",
   "_showSuggestConfirm": "oracleControl",
   "_showTreeConfirm": "phylumPath",
   "_sid": "videoSummary",

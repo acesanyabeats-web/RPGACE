@@ -20,3 +20,21 @@ MORNING BRIEF RESTRUCTURE - /dev_ops_7 Track B (opened Oct 28 2026 while Caps an
    MR-shaped; no conflict with CK (docs/kit). Track A unchanged.
 
 4. INTERROGATION - answers recorded verbatim below when they arrive.
+ Message 2 (Alex, Oct 28 12:29, verbatim, with 5 screenshots of the Good morning screen):
+ "Too cluttered, I want morning brief to generate at 7am or if I press morning brief before 7am"
+ Screens show, top to bottom: date, shift line, "Up at" line, Morning block with Morning routine (8 steps), "Today - nothing
+ planned yet" + Open My Day / Plan today, YOUR BRIEF: Today's realm card (Chef) + Runner-up card (Hustler), Morning Brief
+ button + "Last run", Review line (idea cards / exam questions / jargon), From your Library card (Open / Done with it),
+ New from your watchlist button, Since yesterday (XP unlocks), the written brief (Top 3, Shifts & window, Waiting on you,
+ Beat focus, Content idea, action line), Inbox now (10 unread + 5 subjects), YouTube line, Close. About 4 phone screens.
+ Round 1 (Oct 28, verbatim answers):
+ - Keep: "it just not uniform, looks ugly by design, not intuitive by design either. its like a stroke rather than an engaging
+   story. use /impeccable and /remotion" + ticked ALL FOUR: Morning block + Today, Written brief, Today's realm,
+   Review/Library/Inbox  -> nothing leaves the screen; the problem is order, look and flow, not content.
+ - Brief size: "i dont have an issue with how long it is, i like that, the way it is structured is twisted and stroke inducing"
+   -> keep the length; restructure how it reads.
+ - Before 7am: "i pressed, api, if 7am - orchestrator cc" -> press before 7am = API writes it then; 7am = Orchestrator CC
+   (API backup unchanged); one brief a day.
+ - Opening: "I'm up opens it (Recommended)".
+ Note: /remotion is not a skill in this repo or this session. Remotion is a library for making videos from React code;
+ asked Alex what he means rather than guess.
