@@ -46,3 +46,11 @@ PHONE ALARMS - /dev_ops_7 Track B (opened Oct 28 2026 while CK-8 builds)
     trims to a ringtone length, uploads it to the alarm sound list. Links Alex sends in chat are collected below until he says
     stop.
  Links received:
+ Alex (Oct 28, verbatim): "ive now sent through 6 ringtones in life, all of them scored low but thats fine, oracle doesnt know
+ the purpose, i want those ringtones"
+ -> the 6 shares are intel_jobs rows (Videoworm), 13:41-13:49 UTC Oct 28, all complete:
+    4e6b374f youtube.com/shorts/2WxlAqbutu0 | 5c69fab9 youtube.com/watch?v=5fXguWSM7TU | aa9ed60b youtube.com/shorts/cph67P2PQ2M
+    a7c84ff0 youtube.com/watch?v=3NvPuYjwSVI | 8bf00cd2 youtube.com/shorts/vdUjgTjBtfE | d74ff356 youtube.com/watch?v=uxxskFGjitc
+    Their low Videoworm scores are expected (analysed as learning videos, not ringtones). PA-1b imports these 6 first.
+ Finding for PA-1b: a share gives no way to say "this is a ringtone" - add a "🔔 Use as alarm sound" choice on the share/Videoworm
+ card so a ringtone skips analysis (no wasted analysis spend) and goes straight to the laptop audio job.
