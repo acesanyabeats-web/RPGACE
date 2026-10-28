@@ -1,0 +1,12 @@
+# Health & body and Gym — sub-file of the Habits hub (`docs/claude/habits.md`)
+Modules `healthBody`, `gymTracker`, `exerciseLibrary` (domain habits). Facts only; stories in `patch_notes.html`.
+
+## Health & body (`healthBody`, plan HB-1..3 built, HB-4 waiting)
+- Private `food_log`/`body_log`/`health_settings`, read via `/api/data-write` action `read`.
+- Food: photo (`RPGACE.utils.oracleVision`) or typed (`phylumPath._callGroundWorkerJSON`) → items with grams → `cookingOracle.logic._lookupCofid` re-check (CoFID wins) → editable review. Cooks finished within 3 days add one serving (`recipe_ingredients.grams_estimate` × per-100g ÷ `servings_base`).
+- `decisionJournal` (schedule domain) sits beside the Wishlist cool-off. [G1](../../patch_notes.html#card-2026-10-10-money-guardrails)
+- One Gym page (DR-9): the 🏋️ Gym card holds the log, bests and the programme plan (`#gym-plan`, drawn by `healthBody.ui.renderGym`); Health & body tabs are Today/Trends/Targets and `healthBody.ui.open('gym')` opens the Gym card. [story](../../patch_notes.html#card-2026-10-27-calendar-gym)
+- Exercise library (DR-12, `exerciseLibrary`): 5 disciplines × 8 muscle groups (`GROUPS`, each with regions). Video exercises in `exercises` (anon read, authenticated all; `intel_report_id`, `video_url`); `STARTER` lives only in code, labelled not from videos. `logic.extract` = one cheap-model call per Athlete `intel_reports` row (prompt `prompts/exercise_extract.md`, `sanitize`), reviewed before saving; `exercises_scanned_at` marks it read. Combo → `logic.coverage` (full/part/gap per region + 2 suggestions, video first) → `addAsTasks` via `realmTasks.logic.keepIdea` (Athlete, repeat). [story](../../patch_notes.html#card-2026-10-27-exercise-library)
+- Gym: `health_settings.programme` (PPL/UL/FB over chosen days); `logic.suggest` = double progression (+2.5kg at top of range); Start → `gymTracker.ui.openLog` prefilled. `gymTracker` writes `gym_sessions`/`gym_sets`.
+- Body: water, weight (7-day avg), sleep, 14-day trends; My Day card `healthBody.ui.myDayCard` with a +1 💧 button (`#myday-health-water`, same `logic.addBody('water', glass)` write; count updates in place). [FL-6](../../patch_notes.html#card-2026-10-27-fl6-water-accept-all)
+- HB-4 Google Health API waits on Alex's OAuth Playground check (Samsung = partners only; Google Fit API closing). [story](../../patch_notes.html#card-2026-10-14-health-body)
