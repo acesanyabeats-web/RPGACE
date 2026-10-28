@@ -67,3 +67,11 @@ doing this will be important for step by step logical action for me to keep myse
  model calls; maintainability = one screen, one store; UX = fewer buttons, every stretch of the day lands on the timeline;
  why-not = retiring the Doing Now screen changes a habit Alex already has, and old Doing Now shortcuts must all be re-pointed
  (grep sweep) - accepted because Alex asked for exactly that.
+
+7. APPROVAL (Alex, Oct 28, verbatim): "sorry i meant build dl plans, so change that to last prompt of mine, then review ck-8 deeper
+ while building dl" -> plan Day Log & Live Now DL-1..DL-7 ratified as drafted in section 6; build all steps in order (one brief,
+ then run - CLAUDE.md rule 18 "do all"); the deeper CK-8 review runs as Track B while DL builds.
+ Addition (Alex, Oct 28, verbatim, during the DL build): "DL-4: ... - sometimes choosing what task to do before a task can also
+ help chain the other way; rename doing now to live now, it should open the same page, just rename it please on top of what youre
+ doing" -> DL-4 also offers "Do before…" (sets the other task's after link to this one); every visible "Doing now" label reads
+ "Live now" and opens the same ▶ Live now page (DL-2).

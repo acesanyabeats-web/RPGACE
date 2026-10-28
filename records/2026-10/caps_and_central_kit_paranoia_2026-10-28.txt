@@ -102,3 +102,14 @@ B. Duplicated building blocks in rpgace_core.js (grep counts, Oct 28)
  in the app, Oracle answers the same with more room; why-not = CK-8 changes every session's muscle memory and touches every tool
  that reads rpgace_core.js, and the whole plan delays MR by a few sessions - accepted because MR would otherwise fight the caps
  on every step.
+
+9. CORRECTION from Alex (Oct 28, verbatim, after the CK-8 risk explanation):
+ "Risk 1: two copies of the truth. ... - the big files should reference smaller blocks so oracle goes deeper when needed, like a
+ ladder or tree, no risk you misunderstood me."
+ -> understood: CK-8 must not keep two copies of the code. The big file becomes a HUB that references the smaller module files
+    (domain -> module -> file, a ladder/tree), the same shape as the doc hubs in CK-2, so Oracle and sessions go one rung deeper
+    only when needed. The per-module files are the only source of truth; nothing is ever edited in two places. Only the served
+    rpgace_core.min.js is built (generated, never edited). This replaces round 2's "Per module, still build 1 file" for CK-8;
+    Risk 1 (a built copy that can wipe edits) is removed by design rather than guarded. Tools that read rpgace_core.js (graphify,
+    checks, tests) are re-pointed to the hub + module files in the same step.
+ Also: GM-5..GM-9 plan rows confirmed yellow by Alex ("both yellow").
