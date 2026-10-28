@@ -1,0 +1,69 @@
+DAY LOG FROM LIVE NOW + HOUSEKEEPING = HOMEKEEPER — /dev_ops_7 Track B
+Opened Oct 28 2026 while Generic Missions finished (GM-8/9 shipped 11eab45) and Caps & Central Kit awaits approval.
+
+1. ASK (Alex, Oct 28, verbatim, two messages):
+"cool, i did doing now with washing up, i want that block to be seen in my day timeline as block that already passed with time
+set as when started and when finished with xp given and ticked mission that then reoccurs. also was not able to put do after
+cooking, i cooked a very simple rice and scrambled egg dish, then cleaned up, didnt record the meal (dont want to for now) but
+doing this will be important for step by step logical action for me to keep myself on top of my shit and be a grown adult"
+"i see housekeeping block in my day, yet in live now its is not in homekeeper, they need to be merged"
+
+2. EVIDENCE (live, Oct 28)
+- The washing up was done through ▶ Live now with no block running: quest_log row quest_key task:9d4c913a-… "Washing dishes",
+  quest_kind task, xp 10, completed 02:15 UTC; realm_tasks "Washing dishes" (homekeeper, repeat, earns tick) last_done_at 02:15.
+  So XP was paid and the task rests then comes back (repeat). NO rpgace_agendas row was written (newest doing_now row is
+  Oct 26) - realmTasks.logic.doneInBlock(t, null) writes only the ledger row, never a start/finish time, so My Day's timeline
+  (doing_now segments, myDay logic ~62840) has nothing to draw.
+- Doing Now (doingNow.logic.start / justDid) does write a timed rpgace_agendas entry (source_type doing_now) through
+  scheduleToCalendar; its Supabase push failure is only console.warn'd (scheduleToCalendar ~2112) - a rule-7 gap to fix in passing.
+- Housekeeping blocks are chore_blocks kind 'chores' with realm NULL (last 7 days: 2 planned, 1 cancelled); a focus run on one
+  has run.realm null, so ▶ Live now shows no realm (realmTasks.ui._drawLive). Homekeeper realm: 14 kept tasks (13 carry
+  legacy_routine_id = the old chores), 12 proposed, 4 inbox. Active routines with a chores/house area: 0.
+
+3. /drift vs approved/drafted work: overlaps Caps & Central Kit only in docs; no conflict with GM (done). MR-1..6 (drafted) adds
+ missions to Homekeeper - this merge makes that cleaner, not different.
+
+4. INTERROGATION (answers recorded verbatim below when they arrive)
+ Round 1 (Oct 28, verbatim):
+ - Live now with no block: "Record it as a done block (Recommended)"
+ - After cooking: "the tasks had a questionnaire, where it had an option of do after another task (washing colours, then put
+   colours away the next day) cooking ending would auto load clean up next so im motivated to get shit done, if not im held
+   accountable"
+   -> evidence: realm_tasks.after_task_id / routines.after_routine_id exist (MD2-9); 3 chains set (Laundry Colours/Blacks/Whites
+      -> put away); only the Morning/Night bookends read them (myDay.logic.waitingOnChain). Live now never offers the next task
+      and no chain can start from a cook.
+ - Merge: "Housekeeping = Homekeeper block (Recommended)"
+ - Order: "This first (Recommended)"
+ Extra message (Oct 28, verbatim, sent during round 1):
+ "doing now should be merged fully with live now (eg pressing live now should open live now page with live now instead of doing
+ now) just did should be same as live now, just asking how long i took, when i started and/or finished approximately (if only
+ finish and time duration, calculate start time, if time start and finish, calculate time, if start time and duration calculate
+ finish time, then make that retroactive block in timeline"
+ Round 2 (Oct 28, verbatim picks):
+ - Held accountable: "Stays on top until done (Recommended)", "Evening review asks"
+ - Cook trigger: "Any cook, any way (Recommended)"
+
+5. /free-for-all-debate (scaled; Alex's answers settled the shape): "Live now writes its own timed rows" vs "Live now uses Doing
+ Now's store": one store wins (rule 8) - Doing Now's rpgace_agendas doing_now entries are already drawn on the timeline; Live now
+ becomes the only screen, doingNow.logic stays underneath as the store. "Chain after a cook via a fake task id" vs "a cook
+ anchor": an anchor value on the chained task (after_kind 'cook') wins - a cook is not one task row.
+
+6. DRAFT PLAN "Day Log & Live Now" (DL-1..DL-7) - awaiting Alex's approval
+ DL-1 Live now with no block records a block: ▶ Start opens a timed entry (doingNow.logic.start, realm + task id), ✅ Done
+      finishes it (end time, minutes) and ticks the task as now (XP once). My Day's timeline shows it as a finished block.
+ DL-2 Doing Now folded into Live now: every Doing Now button/entry point opens ▶ Live now; Live now gets "Something else…"
+      (typed, any realm) and shows the running entry. Doing Now's store and data stay; its separate screen retires.
+ DL-3 I just did = Live now's retro mode: pick a task or type one, give any two of start / finish / how long (approximate
+      chips or a time); the third is worked out; a finished block is written back in the timeline; task ticked, XP once.
+ DL-4 Do-after chains in Live now: after ✅ Done the chained task loads as "Next: …" (Start / Later). A task's edit form gets
+      "Do after… [task | any cook]" (after_task_id exists; additive after_kind column for 'cook'). Any finished cook (Cook Mode,
+      cooking or Chef block, Chef task, typed cook) loads "Washing dishes" next once Alex sets that chain.
+ DL-5 Accountability: an unfinished chained task stays on top of My Day and Live now ("Due: Wash up - after your 19:40 cook")
+      until done or skipped with a reason; the evening review lists skipped follow-ups and asks why.
+ DL-6 Housekeeping = Homekeeper block: new Housekeeping blocks are Homekeeper realm blocks (chores = Homekeeper tasks); Live now
+      opens Homekeeper; the 2 planned chores blocks are switched over (scoped update of 2 rows, nothing deleted).
+ DL-7 Wrap: a failed Schedule save toasts (scheduleToCalendar now only console.warns - rule 7), tests, docs, plan rows.
+ Council of 5: risk = two timers (a block run and a free run) at once - Live now shows one at a time, the block wins; cost = no
+ model calls; maintainability = one screen, one store; UX = fewer buttons, every stretch of the day lands on the timeline;
+ why-not = retiring the Doing Now screen changes a habit Alex already has, and old Doing Now shortcuts must all be re-pointed
+ (grep sweep) - accepted because Alex asked for exactly that.

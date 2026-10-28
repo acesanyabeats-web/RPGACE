@@ -1,0 +1,4 @@
+-- Oct 28 2026: plan "Day Log & Live Now" (DL-1..DL-7), drafted; Alex approves before any build. Check alone: should print 7.
+insert into ceo_plans (name, status, basis) values ('Day Log & Live Now', 'active', 'provisional');
+insert into ceo_plan_items (plan_id, item_code, title, status, basis) select id, x.c, x.t, 'red', 'provisional' from ceo_plans, (values ('DL-1','Live now with no block records a finished block'),('DL-2','Doing Now folded into Live now'),('DL-3','I just did = retro mode (any two of start/finish/length)'),('DL-4','Do-after chains in Live now, incl. after any cook'),('DL-5','Accountability: chained task stays on top + evening review'),('DL-6','Housekeeping = Homekeeper block'),('DL-7','Wrap + fail-loud Schedule save')) x(c,t) where name='Day Log & Live Now';
+select count(*) from ceo_plan_items where plan_id=(select id from ceo_plans where name='Day Log & Live Now');
