@@ -73,6 +73,21 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-28-builder-time" style="margin-bottom:30px;">
+    <div class="card-title">🛠 Oct 28 — Builder time on your timeline, "replaced?" in I just did, old tests brought up to date (BT-1..3)</div>
+    <div class="card-body">
+      Your words: "when chronicles updates with my builder updates, it should log into just did, with the block expanding until last update ... no duplicate xp", "1 but after 45 min cooldown or new realm task done, keep end of block at where last task was complete", "15 min before 1st update".
+      <ul>
+        <li><b>🛠 Building RPGACE block (BT-1):</b> each builder update in Chronicles stretches one Builder block on your timeline, which starts 15 min before the first update. It closes after 45 quiet minutes, or once you finish another task or activity, and its end stays at the last update. The next update starts a new block. It pays no XP (each update already pays "change shipped").</li>
+        <li><b>Status:</b> the "no extra XP" part is live. The trigger that makes the blocks needs one paste: <code>records/2026-10/paste_sql_2026-10-28_BT1_builder_time.sql</code>, because the connector's approval pop-up timed out.</li>
+        <li><b>"Did this replace your block?" (BT-2)</b> is now asked after ✓ I just did and after a timed Live now block, the same question the typed path asks (Yes / Move it later / Keep both). It only asks when at least half of a planned block, or 30 min, is covered.</li>
+        <li><b>Old tests (BT-3):</b> dn3, dn3x, dn4, dn4x and md6 pass again (19/19/20/20/20). They were written before AC-3 (live pages open straight away, a "When?" step), DR-5 (new Actions are realm tasks) and Day Bookends (the review opens from Going to bed), or ran on the real clock. Checks for removed behaviour are marked retired with the reason; dnx was an older copy of dn and is retired. No app code was wrong.</li>
+        <li><b>Plan rows:</b> your paste failed on the "&amp;" in the plan name. I wrote "Day Log and Live Now" (7 yellow) and "Caps and Central Kit" (9 red) directly.</li>
+        <li><b>Honest flags:</b> Day Log suite 30/30 (incl. the new "replaced?" check). The builder trigger was not run in a test database; your paste plus its check is the test. Untested by you.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-10-28-day-log" style="margin-bottom:30px;">
     <div class="card-title">▶ Oct 28 — Live now logs your day: timed blocks, I just did, "do after" chains, Homekeeper blocks (DL-1..7)</div>
     <div class="card-body">

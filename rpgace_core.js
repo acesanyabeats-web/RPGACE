@@ -68930,7 +68930,8 @@ RPGACE.register('realmTasks', {
       var L = RPGACE.modules.realmTasks.logic, dn = RPGACE.modules.doingNow, e = L.freeEntry(entryId), now = Date.now();
       return L.doneInBlock(t, null).then(function() {
         if (!e || e.completed) return null;
-        return dn.logic.patch(e.id, { completed: true, ended_at: new Date(now).toISOString(), actual_mins: Math.max(1, Math.round((now - new Date(e.started_at).getTime()) / 60000)) });
+        return dn.logic.patch(e.id, { completed: true, ended_at: new Date(now).toISOString(), actual_mins: Math.max(1, Math.round((now - new Date(e.started_at).getTime()) / 60000)) })
+          .then(function(hit) { try { dn.ui._checkBlocks(hit || e); } catch (x) {} return hit; }); // BT-2: covering a planned block? ask
       });
     },
     freeDiscard: function(entryId) {
@@ -68944,10 +68945,10 @@ RPGACE.register('realmTasks', {
       if (!dn) return Promise.reject(new Error('Live now is not loaded'));
       var title = t ? t.title : String(name || '').trim().slice(0, 80);
       if (!title) return Promise.reject(new Error('Pick a task or type what you did.'));
-      dn.logic.justDid(title, times.mins, [t ? t.realm : (realm || 'life')], times.end, { details: t ? { task_id: String(t.id) } : {} });
-      if (!t) return Promise.resolve(null);
+      var e = dn.logic.justDid(title, times.mins, [t ? t.realm : (realm || 'life')], times.end, { details: t ? { task_id: String(t.id) } : {} });
+      if (!t) return Promise.resolve(e);
       var row = L.ledgerRow(t); row.completed_at = new Date(times.end).toISOString();
-      return RPGACE.sb.secureWrite('quest_log', 'insert', row).then(function() { RPGACE.cache.clear('quest_log'); return L.markDone(t); });
+      return RPGACE.sb.secureWrite('quest_log', 'insert', row).then(function() { RPGACE.cache.clear('quest_log'); return L.markDone(t); }).then(function() { return e; });
     },
     // DL-4: "do after" chains. A finished cook (any way) counts as 'cook'.
     isCook: function(t, name) {
@@ -69260,8 +69261,11 @@ RPGACE.register('realmTasks', {
         if (!t && !name) { out.style.color = '#CC4A4A'; out.textContent = 'Pick a task or type what you did.'; return; }
         sv.disabled = true;
         var times = res;
-        L.retro(t, name, rs.value, times).then(function() { return L.afterDone(t, name, times.end).catch(function() { return []; }); }).then(function(next) {
+        var entry = null;
+        L.retro(t, name, rs.value, times).then(function(e) { entry = e; return L.afterDone(t, name, times.end).catch(function() { return []; }); }).then(function(next) {
           pop.close();
+          // BT-2: same "Did this replace your block?" as the typed path (doingNow.ui._checkBlocks, rule 8).
+          try { if (entry && RPGACE.modules.doingNow) RPGACE.modules.doingNow.ui._checkBlocks(entry); } catch (x) {}
           RPGACE.utils.toast('✓ ' + (t ? t.title : name) + ' ' + U._clock(times.start) + '–' + U._clock(times.end) + (next && next.length ? ' · ⏭ Next: ' + next[0].title : ''), '#4caf82', 3000);
           var lv = document.getElementById('rt-live'); if (lv) U._drawLive(lv, lv._opts || {});
           try { if (RPGACE.modules.myDay) RPGACE.modules.myDay.ui.render(); } catch (e) {}
