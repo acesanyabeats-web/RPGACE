@@ -74,6 +74,20 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-28-ck6-kit" style="margin-bottom:30px;">
+    <div class="card-title">🧰 Oct 28 — One shared kit for the small helpers every module kept rewriting (CK-6)</div>
+    <div class="card-body">
+      Your words: "we should also see what structures should become a universal central construction rather than domain specific"; your pick: "Kit + concepts, gradual".
+      <ul>
+        <li><b>RPGACE.kit</b> holds one copy each of: safe text for the screen, date helpers, the thumb-sized button, the two-tap delete confirm, reading your private tables, and the searchable pick list from Missions.</li>
+        <li><b>Switched over now:</b> My Day, Live now and Trips buttons (three identical copies became one), the Trips private read, the Health delete confirm, and the Missions source search. Others switch when they are next touched (your "gradual").</li>
+        <li><b>New copies get caught:</b> <code>scripts/check_kit_copies.py</code> counts the private copies left (15 text-escapes, 10 date helpers, and so on) and fails if any number goes up.</li>
+        <li>Safe-text now also escapes apostrophes everywhere it is used.</li>
+        <li>Tests: Missions picker 14/14, Plan block 15/15, Day Log 30/30, Health 42/42, Trips 30/30 + 30/30, Live now 16/16, Good morning 6/6. Nothing should look different in the app.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-10-28-morning-story" style="margin-bottom:30px;">
     <div class="card-title">🌅 Oct 28 — Good morning is one story in 5 chapters; the brief comes at 7am or when you press it (MB-1..3)</div>
     <div class="card-body">

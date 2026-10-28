@@ -4993,7 +4993,7 @@ document.addEventListener('keydown', e=>{
     // implementation here; both modules now delegate to this instead of
     // keeping their own copy that could drift further.
     escapeHtml: function (s) {
-      return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');  // CK-6: + apostrophe (RPGACE.kit.esc)
     },
 
     /* YYYY-MM-DD string from a Date object */
@@ -6478,6 +6478,97 @@ document.addEventListener('keydown', e=>{
      - Agenda: spaced repetition (3/7/14 day follow-up)
      - Content Pipeline: YouTube idea from verified explanation
 ================================================================ */
+
+/* ===MODULE:kit=== */
+// CK-6 (Oct 28 2026, plan "Caps and Central Kit"; Alex: "we should also see what structures should become a
+// universal central construction rather than domain specific"). The small helpers every module was re-writing:
+// 19 private _esc copies, 15+ _btn copies, iso/addDays date helpers in 6 modules, 2-click delete arming, the
+// private-table read and GM-7's search list. One copy each here, reachable as RPGACE.kit.* from any module.
+// Modules switch over when they are next touched; scripts/check_kit_copies.py flags NEW private copies.
+// Doc: docs/claude/kit.md.
+RPGACE.register('kit', {
+  domain: 'platform',
+  init: function() {},
+
+  logic: {
+    // HTML-escape for innerHTML (& < > " '). One implementation: RPGACE.utils.escapeHtml.
+    esc: function(s) { return RPGACE.utils.escapeHtml(s); },
+    // Local-date helpers (YYYY-MM-DD, never UTC-shifted).
+    iso: function(d) { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); },
+    today: function() { return RPGACE.kit.iso(new Date()); },
+    addDays: function(isoDay, n) { var d = new Date(isoDay + 'T12:00:00'); d.setDate(d.getDate() + n); return RPGACE.kit.iso(d); },
+    // en-GB display: 'Wed 28 Oct' (opts.long -> 'Wednesday 28 October').
+    fmt: function(isoDay, opts) {
+      var d = new Date(String(isoDay).slice(0, 10) + 'T12:00:00');
+      return d.toLocaleDateString('en-GB', opts && opts.long ? { weekday: 'long', day: 'numeric', month: 'long' } : { weekday: 'short', day: 'numeric', month: 'short' });
+    },
+    // Private tables (RLS, no anon read) through /api/data-write action 'read' after sign-in; [] when signed out.
+    readPrivate: function(table, params) {
+      var ag = RPGACE.modules.authGate;
+      if (!(ag && ag._apiSecret)) return Promise.resolve([]);
+      return fetch('/api/data-write', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'read', table: table, params: params || 'select=*' }) })
+        .then(function(r) { return r.json().catch(function() { return {}; }).then(function(d) {
+          if (!r.ok) throw new Error((d && d.error) || ('HTTP ' + r.status));
+          return Array.isArray(d.data) ? d.data : [];
+        }); });
+    },
+  },
+
+  ui: {
+    // Thumb-sized button: kind 'primary' (gold fill) or '' (outline).
+    btn: function(label, kind) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.textContent = label;
+      b.style.cssText = 'min-height:44px;padding:8px 14px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;' +
+        (kind === 'primary' ? 'background:var(--gold);border:none;color:#111;' : 'background:none;border:1px solid var(--border);color:var(--text);');
+      return b;
+    },
+    // Building guide 8: destructive buttons arm on the first tap, act on the second within 3s.
+    armConfirm: function(btn, onConfirm, armedLabel) {
+      var armed = false, t = null, label = btn.textContent;
+      btn.onclick = function() {
+        if (!armed) { armed = true; btn.textContent = armedLabel || 'Tap again to confirm'; btn.style.color = '#CC4A4A';
+          t = setTimeout(function() { armed = false; btn.textContent = label; btn.style.color = ''; }, 3000); return; }
+        clearTimeout(t); armed = false; btn.disabled = true; onConfirm();
+      };
+      return btn;
+    },
+    // Search list (GM-7 shape): items [{title, sub}], onPick(item). Search box shows past 6 items. Returns the box.
+    pickList: function(host, items, onPick, opts) {
+      opts = opts || {};
+      var wrap = document.createElement('div'); wrap.className = 'kit-pick';
+      var q = document.createElement('input'); q.type = 'search'; q.className = 'kit-pick-q'; q.placeholder = opts.placeholder || 'Search…';
+      if (opts.id) q.id = opts.id + '-q';
+      q.style.cssText = 'width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;padding:8px;min-height:40px;margin-bottom:6px;font-family:inherit;';
+      var list = document.createElement('div'); list.className = 'kit-pick-list'; if (opts.id) list.id = opts.id + '-list';
+      list.style.cssText = 'max-height:50vh;overflow-y:auto;';
+      var paint = function() {
+        list.innerHTML = '';
+        var s = q.value.trim().toLowerCase(), shown = items.filter(function(x) { return !s || ((x.title || '') + ' ' + (x.sub || '')).toLowerCase().indexOf(s) >= 0; });
+        if (!items.length) { var em = document.createElement('div'); em.style.cssText = 'font-size:13px;color:var(--muted);padding:6px 0;'; em.textContent = opts.empty || 'Nothing here yet.'; list.appendChild(em); }
+        shown.slice(0, opts.max || 60).forEach(function(x) {
+          var b = RPGACE.kit.btn('', ''); b.className = 'kit-pick-item' + (opts.itemClass ? ' ' + opts.itemClass : '');
+          b.style.cssText += 'display:block;width:100%;text-align:left;margin:4px 0;';
+          b.innerHTML = RPGACE.kit.esc(x.title) + (x.sub ? '<br><span style="font-size:12px;color:var(--muted);">' + RPGACE.kit.esc(x.sub) + '</span>' : '');
+          b.onclick = function() { onPick(x); };
+          list.appendChild(b);
+        });
+      };
+      q.oninput = paint;
+      if (items.length > 6) wrap.appendChild(q);
+      wrap.appendChild(list); host.appendChild(wrap); paint();
+      return wrap;
+    },
+  },
+});
+// The flat surface every module calls: RPGACE.kit.esc(), RPGACE.kit.btn(), ...
+(function() {
+  var k = RPGACE.modules.kit, out = {};
+  ['logic', 'ui'].forEach(function(ns) { Object.keys(k[ns]).forEach(function(n) { out[n] = k[ns][n]; }); });
+  RPGACE.kit = out;
+})();
+/* ===END:kit=== */
 
 /* ===DOMAIN:ORACLE=== */
 
@@ -48638,6 +48729,7 @@ RPGACE.register('errorLog', {
   "apply": "bookworm",
   "applyMoves": "myDay",
   "applyTheme": "xpSeason",
+  "armConfirm": "kit",
   "articleActions": "pathways",
   "articleFromReport": "encyclopediaPosts",
   "askLine": "eventMemories",
@@ -48689,6 +48781,7 @@ RPGACE.register('errorLog', {
   "brief": "realmFrame",
   "briefLine": "knowledgeReview",
   "briefLines": "myDay",
+  "btn": "kit",
   "build": "perfWatch",
   "buildActionsBlock": "oracleControl",
   "buildDataBlock": "askMyData",
@@ -48853,6 +48946,7 @@ RPGACE.register('errorLog', {
   "ensureKnowledgeHeader": "lifeLibrary",
   "ensureWrappedText": "xpSeason",
   "entry": "oracleEntry",
+  "esc": "kit",
   "estimate": "studyHub",
   "estimateFor": "questEngine",
   "eveningAct": "myDay",
@@ -48889,7 +48983,6 @@ RPGACE.register('errorLog', {
   "flair": "xpSeason",
   "flairText": "xpSeason",
   "flush": "perfWatch",
-  "fmt": "doingNow",
   "fmtClock": "doingNow",
   "fmtIn": "myDay",
   "fmtMin": "myDay",
@@ -49277,6 +49370,7 @@ RPGACE.register('errorLog', {
   "pickContext": "myDay",
   "pickDaily": "lifeLibrary",
   "pickIdea": "beatsHub",
+  "pickList": "kit",
   "pickRealm": "xpSeason",
   "pickRealmBlock": "myDay",
   "pickRecipes": "myDay",
@@ -49336,6 +49430,7 @@ RPGACE.register('errorLog', {
   "readMeal": "healthBody",
   "readMinutes": "encyclopediaPosts",
   "readPhoto": "dailyLife",
+  "readPrivate": "kit",
   "readReceipt": "moneyHub",
   "readShifts": "screenshotInbox",
   "readText": "healthBody",
@@ -60229,13 +60324,7 @@ RPGACE.register('healthBody', {
         v.toLocaleString('en-GB') + (target ? ' / ' + Number(target).toLocaleString('en-GB') : '') + ' ' + unit + '</span></div>' +
         (target ? '<div style="height:8px;border-radius:4px;background:rgba(255,255,255,0.06);overflow:hidden;margin-top:3px;"><div style="height:100%;width:' + pct + '%;background:' + color + ';"></div></div>' : '') + '</div>';
     },
-    _arm: function(btn, label, onConfirm) {
-      var armed = false, t = null;
-      btn.onclick = function() {
-        if (!armed) { armed = true; btn.textContent = 'Delete?'; btn.style.color = '#CC4A4A'; t = setTimeout(function() { armed = false; btn.textContent = label; btn.style.color = ''; }, 3000); return; }
-        clearTimeout(t); armed = false; btn.disabled = true; onConfirm();
-      };
-    },
+    _arm: function(btn, label, onConfirm) { btn.textContent = label; RPGACE.kit.armConfirm(btn, onConfirm, 'Delete?'); },   // CK-6: RPGACE.kit
     _pickFile: function(cb) {
       var f = document.createElement('input'); f.type = 'file'; f.accept = 'image/*'; f.style.display = 'none';
       f.onchange = function() { var file = f.files && f.files[0]; f.remove(); if (file) cb(file); };
@@ -63788,13 +63877,7 @@ RPGACE.register('myDay', {
 
   ui: {
     _esc: function(s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; },
-    _btn: function(label, kind) {
-      var b = document.createElement('button');
-      b.type = 'button'; b.textContent = label;
-      b.style.cssText = 'min-height:44px;padding:8px 14px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;' +
-        (kind === 'primary' ? 'background:var(--gold);border:none;color:#111;' : 'background:none;border:1px solid var(--border);color:var(--text);');
-      return b;
-    },
+    _btn: function(label, kind) { return RPGACE.kit.btn(label, kind); },   // CK-6: one copy in RPGACE.kit
     _openTool: function(key) {
       var dd = RPGACE.modules.dashDeck;
       // Study is a page, not a dashboard card.
@@ -66255,23 +66338,7 @@ RPGACE.register('myDay', {
         pop.box.innerHTML = '<div style="font-size:13px;color:var(--muted);">Loading…</div>';
         rt.logic.sourceItems(o.context_kind).then(function(items) {
           pop.box.innerHTML = '';
-          var q = document.createElement('input'); q.type = 'search'; q.id = 'mdp-src-q'; q.placeholder = 'Search…';
-          q.style.cssText = 'width:100%;box-sizing:border-box;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;padding:8px;min-height:40px;margin-bottom:6px;font-family:inherit;';
-          var list = document.createElement('div'); list.id = 'mdp-src-list'; list.style.cssText = 'max-height:50vh;overflow-y:auto;';
-          var paint = function() {
-            list.innerHTML = '';
-            var t = q.value.trim().toLowerCase(), shown = items.filter(function(x) { return !t || (x.title + ' ' + x.sub).toLowerCase().indexOf(t) >= 0; });
-            if (!items.length) { var em = document.createElement('div'); em.style.cssText = 'font-size:13px;color:var(--muted);padding:6px 0;'; em.textContent = def.empty; list.appendChild(em); }
-            shown.slice(0, 60).forEach(function(x) {
-              var b = self.ui._btn('', ''); b.className += ' mdp-src-item'; b.style.cssText += 'display:block;width:100%;text-align:left;margin:4px 0;';
-              b.innerHTML = esc(x.title) + '<br><span style="font-size:12px;color:var(--muted);">' + esc(x.sub) + '</span>';
-              b.onclick = function() { usePicked(x, cards); };
-              list.appendChild(b);
-            });
-          };
-          q.oninput = paint;
-          if (items.length > 6) pop.box.appendChild(q);
-          pop.box.appendChild(list); paint();
+          RPGACE.kit.pickList(pop.box, items, function(x) { usePicked(x, cards); }, { id: 'mdp-src', itemClass: 'mdp-src-item', empty: def.empty });   // CK-6
           var bk = self.ui._btn('Back', ''); bk.style.cssText += 'width:100%;margin-top:6px;'; bk.onclick = drawList; pop.box.appendChild(bk);
         });
       };
@@ -70390,13 +70457,7 @@ RPGACE.register('doingNow', {
   },
 
   ui: {
-    _btn: function(label, kind) {
-      var b = document.createElement('button');
-      b.type = 'button'; b.textContent = label;
-      b.style.cssText = 'min-height:44px;padding:8px 14px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;' +
-        (kind === 'primary' ? 'background:var(--gold);border:none;color:#111;' : 'background:none;border:1px solid var(--border);color:var(--text);');
-      return b;
-    },
+    _btn: function(label, kind) { return RPGACE.kit.btn(label, kind); },   // CK-6: one copy in RPGACE.kit
     _refresh: function() {
       var md = RPGACE.modules.myDay, dd = RPGACE.modules.dashDeck;
       try { RPGACE.modules.doingNow.logic.autoTemplate(); } catch (e) {}
@@ -71374,15 +71435,7 @@ RPGACE.register('tripPlans', {
     iso: function(d) { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); },
     addDays: function(isoDate, n) { var d = new Date(isoDate + 'T12:00:00'); d.setDate(d.getDate() + n); return RPGACE.modules.tripPlans.logic.iso(d); },
     signedIn: function() { var ag = RPGACE.modules.authGate; return !!(ag && ag._apiSecret); },
-    read: function(table, params) {
-      if (!RPGACE.modules.tripPlans.logic.signedIn()) return Promise.resolve([]);
-      return fetch('/api/data-write', { method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'read', table: table, params: params || 'select=*' }) })
-        .then(function(r) { return r.json().catch(function() { return {}; }).then(function(d) {
-          if (!r.ok) throw new Error((d && d.error) || ('HTTP ' + r.status));
-          return Array.isArray(d.data) ? d.data : [];
-        }); });
-    },
+    read: function(table, params) { return RPGACE.kit.readPrivate(table, params); },   // CK-6: one copy in RPGACE.kit
     loadAll: function() {
       var self = RPGACE.modules.tripPlans, L = self.logic;
       return Promise.all([
@@ -71892,13 +71945,7 @@ RPGACE.register('tripPlans', {
 
   ui: {
     _esc: function(s) { var d = document.createElement('div'); d.textContent = String(s == null ? '' : s); return d.innerHTML; },
-    _btn: function(label, kind) {
-      var b = document.createElement('button');
-      b.type = 'button'; b.textContent = label;
-      b.style.cssText = 'min-height:44px;padding:8px 14px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;' +
-        (kind === 'primary' ? 'background:var(--gold);border:none;color:#111;' : 'background:none;border:1px solid var(--border);color:var(--text);');
-      return b;
-    },
+    _btn: function(label, kind) { return RPGACE.kit.btn(label, kind); },   // CK-6: one copy in RPGACE.kit
     _input: function(type, id, val, ph) {
       var i = document.createElement(type === 'textarea' ? 'textarea' : 'input');
       if (type !== 'textarea') i.type = type;

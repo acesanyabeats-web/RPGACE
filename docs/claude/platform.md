@@ -23,3 +23,4 @@ Modules (`domain: 'platform'`, 8): `orchestratorCC`, `leftNav`, `dashDeck`, `con
 ## Other platform modules
 - `orchestratorCC` + `app_settings` (`background_analysis`) = the analysis on/off switch. [CC](../../patch_notes.html#card-2026-10-21-analysis-switch)
 - `pwaInstall` handles the install prompt; `pathRouter` maps URL paths (e.g. `/knowledge`, `/study`) to pages.
+- Shared kit (`RPGACE.kit`: escape, dates, button, 2-tap confirm, private read, search list) → sub-file `docs/claude/kit.md`.

@@ -12,7 +12,7 @@ Split from a 291KB file on Oct 22 2026 (plan "CLAUDE.md Debloat", record `record
 | Cooking, Health & body, Gym, Wishlist, Money, Daily life (`habits`) | `docs/claude/habits.md` (hub) → `cooking.md`, `health_gym.md` |
 | My Day, Live now store, realms, Plans/trips, briefs, shifts (`schedule`) | `docs/claude/schedule.md` (hub) → `my_day.md`, `realm_tasks.md` |
 | XP Season Pass, Chronicles (`chronicles`) | `docs/claude/chronicles.md` |
-| Navigation/areas, boot, speed, auth (`platform`) | `docs/claude/platform.md` |
+| Navigation/areas, boot, speed, auth, shared kit (`platform`) | `docs/claude/platform.md` (hub) → `kit.md` |
 | The why behind every landmine below | `docs/claude/landmines.md` |
 | Auth, RLS, secrets | `docs/claude/security.md` |
 | Oversight docs, Galaxy Map, colour vocabulary, records (`oversight`) | `docs/claude/oversight.md` |
@@ -97,6 +97,7 @@ Split from a 291KB file on Oct 22 2026 (plan "CLAUDE.md Debloat", record `record
 11. Token cost is a design constraint. Use numbered name trees, not slash-joined paths. Prefilter with the free keyword scan, and skip the call when nothing matches. No premium "triage" call in front of a ground-worker call.
 12. Large content goes through `phylumPath._condenseIfLarge(text, context)` before any cap — never a bare `.slice()`.
 13. In `SELF_KNOWLEDGE`, name the owning module or table for every claim, so `scripts/check_self_knowledge_contradictions.py` can check it.
+14. Small helpers (escape, dates, buttons, 2-tap confirm, private read, search list) come from `RPGACE.kit` (`docs/claude/kit.md`); `scripts/check_kit_copies.py` fails on a new private copy.
 - UI: thumb-sized targets (mobile first); cross-module signals through `RPGACE.hooks` named events, never a second MutationObserver.
 
 ## Logging rules
