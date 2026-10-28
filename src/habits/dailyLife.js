@@ -29,24 +29,6 @@ RPGACE.register('dailyLife', {
     _clip: function(t, n) { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > n ? t.slice(0, n - 1) + '…' : t; },
 
     // One block of Alex's own recent words for the Morning Brief prompt.
-    ownWords: function() {
-      var L = RPGACE.modules.dailyLife.logic;
-      var sel = function(t, q) { return RPGACE.sb.select(t, q).then(function(r) { return Array.isArray(r) ? r : []; }).catch(function() { return []; }); };
-      return Promise.all([
-        sel('quest_log', 'select=name,description&status=eq.open&parent_quest_id=is.null&order=created_at.desc&limit=3'),
-        sel('journal', 'select=title,content,review_on&entry_type=eq.decision&status=neq.reviewed&review_on=lte.' + L._today(3) + '&order=review_on.asc&limit=2'),
-        sel('journal', 'select=title,content,created_at&or=(entry_type.is.null,entry_type.eq.note)&order=created_at.desc&limit=1'),
-        RPGACE.modules.gymTracker ? RPGACE.modules.gymTracker.logic.weekLine().catch(function() { return ''; }) : Promise.resolve(''),
-      ]).then(function(r) {
-        var lines = [];
-        if (r[3]) lines.push('• ' + r[3]);
-        r[0].forEach(function(q) { lines.push('• Open quest: ' + L._clip(q.name, 80) + (q.description ? ' - "' + L._clip(q.description, 120) + '"' : '')); });
-        r[1].forEach(function(d) { lines.push('• Decision due for a look-back (' + d.review_on + '): ' + L._clip(String(d.title || '').replace(/^🧭\s*/, ''), 80) + ' - you said: "' + L._clip(d.content, 140) + '"'); });
-        r[2].forEach(function(j) { lines.push('• Latest journal note (' + String(j.created_at || '').slice(0, 10) + '): "' + L._clip(j.content || j.title, 160) + '"'); });
-        if (!lines.length) return '';
-        return '📌 IN YOUR OWN WORDS (quote these back where they matter, do not invent any)\n' + lines.join('\n');
-      });
-    },
 
     // Fence-tolerant: take the first {...} block in the reply.
     parseItems: function(raw) {
@@ -323,7 +305,6 @@ RPGACE.register('dailyLife', {
     },
   },
 
-  ownWords: function() { return this.logic.ownWords(); },
   photoButton: function(c, l, d) { return this.ui.photoButton(c, l, d); },
   renderInto: function(w) { return this.ui.renderInto(w); },
 });

@@ -202,28 +202,6 @@ RPGACE.register('conidPot', {
 
 
     // ── Get ideas for Morning Brief by day rotation ───────────────
-    getIdeasForBrief: function() {
-      var day = new Date().getDay();
-      var self = RPGACE.modules.conidPot;
-      var rotation = self.BRIEF_ROTATION[day] || { type: 'gap' };
-
-      return RPGACE.sb.select('conid_pot', 'status=eq.potential&order=created_at.desc&limit=50')
-        .then(function(rows) {
-          rows = rows || [];
-          if (rows.length === 0) return [];
-
-          if (rotation.type === 'starred') {
-            var starred = rows.filter(function(r) { return r.starred; });
-            if (starred.length === 0) starred = rows;
-            return [starred[Math.floor(Math.random() * starred.length)]];
-          }
-          if (rotation.type === 'oldest') {
-            return rows.slice(-5).reverse(); // oldest 5
-          }
-          // gap: highest gap_score_avg
-          return rows.sort(function(a,b) { return (b.gap_score_avg||0) - (a.gap_score_avg||0); }).slice(0, 3);
-        });
-    },
 
 
     // ── Helpers ───────────────────────────────────────────────────
@@ -905,7 +883,6 @@ RPGACE.register('conidPot', {
   _injectIdeaBank: function() { return this.ui._injectIdeaBank(); },
   _refreshIdeaBank: function(filter) { return this.ui._refreshIdeaBank(filter); },
   _updateBriefRotationLabel: function() { return this.ui._updateBriefRotationLabel(); },
-  getIdeasForBrief: function() { return this.logic.getIdeasForBrief(); },
   _extractTitle: function(text) { return this.logic._extractTitle(text); },
   _parseIdeas: function(text) { return this.logic._parseIdeas(text); },
   _quickDetectPhyla: function(text) { return this.logic._quickDetectPhyla(text); },

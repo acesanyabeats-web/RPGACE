@@ -494,43 +494,6 @@ RPGACE.register('morningBrief', {
       });
   },
 
-  _getShifts: function() {
-    try {
-      var shifts = JSON.parse(localStorage.getItem('rpgace_shifts') || '[]');
-      var today = new Date().toISOString().split('T')[0];
-      var todayShifts = shifts.filter(function(s) {
-        return s.date === today || (s.date && s.date.startsWith(today));
-      });
-
-      var todayList = todayShifts.map(function(s) {
-        return (s.start || '') + ' – ' + (s.end || '') + ' at ' + (s.location || s.venue || 'The Joiners Arms');
-      });
-
-      // Calculate free creative time
-      var freeTime = null;
-      if (todayShifts.length > 0) {
-        var lastShift = todayShifts[todayShifts.length - 1];
-        if (lastShift.end) {
-          freeTime = 'Creative window after ' + lastShift.end;
-        }
-      } else {
-        freeTime = 'Full day — no shifts. Protect at least 2 hours for FL Studio.';
-      }
-
-      // Also check tomorrow
-      var tomorrow = new Date();
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      var tomorrowStr = tomorrow.toISOString().split('T')[0];
-      var tomorrowShifts = shifts.filter(function(s) { return s.date && s.date.startsWith(tomorrowStr); });
-      if (tomorrowShifts.length > 0) {
-        freeTime = (freeTime || '') + ' · Tomorrow: shift at ' + (tomorrowShifts[0].start || '?');
-      }
-
-      return Promise.resolve({ today: todayList, freeTime: freeTime });
-    } catch(e) {
-      return Promise.resolve({ today: [], freeTime: 'Could not read shifts' });
-    }
-  },
 
   _getYouTube: function() {
     return RPGACE.api('SUPADATA_GET_YOUTUBE_CHANNEL', { id: '@AceSanyaBeats' })
@@ -556,15 +519,6 @@ RPGACE.register('morningBrief', {
       });
   },
 
-  _getKnowledgeGaps: function() {
-    if (!RPGACE.modules.taxonomySync) return Promise.resolve({ top: null, score: null });
-    return RPGACE.modules.taxonomySync.getTopGaps(1)
-      .then(function(nodes) {
-        if (!nodes || nodes.length === 0) return { top: null, score: null };
-        return { top: nodes[0].concept, score: parseFloat(nodes[0].gap_score).toFixed(1) };
-      })
-      .catch(function() { return { top: null, score: null }; });
-  },
 
   },
 
@@ -587,9 +541,7 @@ RPGACE.register('morningBrief', {
   todayBrief: function() { return this.logic.todayBrief(); },
   _autoRun: function() { return this.logic._autoRun(); },
   _getGmail: function() { return this.logic._getGmail(); },
-  _getShifts: function() { return this.logic._getShifts(); },
   _getYouTube: function() { return this.logic._getYouTube(); },
-  _getKnowledgeGaps: function() { return this.logic._getKnowledgeGaps(); },
 
 });
 /* ===END:morningBrief=== */

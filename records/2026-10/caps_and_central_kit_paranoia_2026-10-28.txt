@@ -151,3 +151,7 @@ B. Duplicated building blocks in rpgace_core.js (grep counts, Oct 28)
 
 11. CK-8 GO (Alex, Oct 28, verbatim): "do ck-8, while /dev_ops_7 will an alarm actually go off on my phone if it hit 2pm, i want it synced to my alarm on my phone, with sounds i want (i have some cool alarms i want to be used at random selection)"
  -> explicit Tier 3 go for CK-8 as briefed (8a readers re-pointed while still one file and outputs proven identical; 8b split with byte-identical min.js gate; 8c rules/skills).
+12. CK-9 GO (Alex, Oct 28, verbatim): "sql all yellow but 9, go with ck-9, i also downloaded macrodroid now"
+ -> CK-9 done: 5 dead morning-brief helpers removed (no callers), SELF_KNOWLEDGE kit + ladder lines, md5 suite updated
+    (13/13), CK-5 scan for cards this plan made untrue: none, tooling map lines. Deviation named: /Engineer Stage 5 Truth Check
+    ran as this session's own re-verification (deploy READY + suites + checks), not a separate /Engineer invocation.

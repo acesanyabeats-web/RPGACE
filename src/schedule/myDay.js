@@ -2937,12 +2937,6 @@ RPGACE.register('myDay', {
       return picks.sort(function(a, b) { return b.score - a.score; })
         .filter(function(x) { if (seen[x.text]) return false; seen[x.text] = 1; return true; }).slice(0, 5);
     },
-    briefLines: function() {
-      var self = RPGACE.modules.myDay, L = self.logic;
-      return Promise.all([L.load(), L.loadTimings(), L.loadTrackers()]).then(function() {
-        return L.doToday(L.iso()).map(function(x) { return x.text + ' — ' + x.reason; });
-      });
-    },
     pushSupported: function() {
       return typeof navigator !== 'undefined' && 'serviceWorker' in navigator && typeof window.PushManager !== 'undefined' && typeof window.Notification !== 'undefined';
     },
