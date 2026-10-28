@@ -30,8 +30,8 @@ Split from a 291KB file on Oct 22 2026 (plan "CLAUDE.md Debloat", record `record
 - Write to Alex in plain words; say what something does for him, not how it's built.
 
 ## Architecture rules
-- One client script: `rpgace_core.js` (source) served as `rpgace_core.min.js`. Never add a static `<script>` tag to `index.html`; load extra libraries at runtime with `document.createElement('script')`.
-- New code goes in `rpgace_core.js` as a module: `RPGACE.register('name', {domain: …, …})` between `/* ===MODULE:name=== */` and `/* ===END:name=== */`, with an internal `ui`/`logic` split. Run `node --check rpgace_core.js` after every edit.
+- One client script, served as `rpgace_core.min.js`. Its source is a ladder (CK-8): `rpgace_core.js` is a hub of `// @file` lines (no code) → `src/_core/core.js` + `src/<domain>/<module>.js`, one file per module, in load order. Edit only `src/` files. Every tool reads the whole source through `scripts/core_source.py` / `.js` (joined in memory, never written to disk); `python3 scripts/core_source.py where N` maps a `rpgace_core.js:N` citation to its file. Never add a static `<script>` tag to `index.html`; load extra libraries at runtime with `document.createElement('script')`.
+- New code is a module in a new `src/<domain>/<name>.js` file, listed in the hub at its load position: `RPGACE.register('name', {domain: …, …})` between `/* ===MODULE:name=== */` and `/* ===END:name=== */`, with an internal `ui`/`logic` split. Run `python3 scripts/core_source.py check` after every edit (it also fails on a src file missing from the hub).
 - Shared Oracle prompts live in `prompts/*.md` (edit only there; `scripts/minify_client.js` copies them in via `build_prompts.py`); read them with `RPGACE.prompt(name, vars)`. Per-realm facts (target, tools, feeds, starters) live in `realm_lenses.json` `frame`; the universal realm frame is `realmFrame` (DESIGN.md §0 rules: Engelbart + Unix).
 - Every module declares `domain:` from `RPGACE.DOMAINS`.
 - Never Python string-replace `index.html`; use targeted edits.
@@ -41,7 +41,7 @@ Split from a 291KB file on Oct 22 2026 (plan "CLAUDE.md Debloat", record `record
 
 ## Ship checklist (every change)
 1. `git branch --show-current` is `main` before every commit (a harness can switch branches silently).
-2. `node --check rpgace_core.js`; `node scripts/minify_client.js`; bump the `?v=` cache-bust in `index.html` — same commit as the source change.
+2. `python3 scripts/prep_ship.py <version>` (method map, anchor remap, `?v=` cache-bust, `core_source.py check`, minify, anchor check) — same commit as the source change.
 3. Push `main`, then confirm with Vercel `list_deployments` that the commit is `READY` in production before saying "live". "Pushed" is not "live".
 4. Same session: a `patch_notes.html` card (with honest "untested" flags), the topic file in `docs/claude/`, the domain's `docs/domains/<domain>/interconnections.md`/`flow.md` (root maps only for cross-domain) if architecture changed, `oracleAppGrounding.SELF_KNOWLEDGE` if a domain or Oracle mechanism changed, one `system_updates` row, the plan row in `ceo_plan_items`. Use `.claude/skills/update-logging-system/SKILL.md` as the checklist.
 5. Code change → regenerate the Galaxy Map (`docs/claude/oversight.md`) and commit `graphify-out`.
@@ -75,7 +75,7 @@ Split from a 291KB file on Oct 22 2026 (plan "CLAUDE.md Debloat", record `record
 8. Deduplicate always: the same process goes through one function or pipeline (code), and the same record is stored once (data). Grep for a second copy before assuming none exists. (`taxonomy_nodes` vs `taxonomy_tree` is a deliberate split, not a duplicate.)
 9. If the same interrupt/continue cycle repeats a second time with nothing new, stop. Finish the current unit, write state to a `records/` file, and report.
 10. Any step Alex must do himself ships with a concrete check: a command and what it should print, or a page and what it should show.
-12. In JS single-quoted strings, escape an apostrophe as `\'`, never `''` (SQL habit). Run `node --check` right after.
+12. In JS single-quoted strings, escape an apostrophe as `\'`, never `''` (SQL habit). Run `python3 scripts/core_source.py check` right after.
 13. A renumber or rename needs two greps: the display text AND the raw literal (e.g. `phylum_number:\s*\d+`).
 14. Check `git branch --show-current` before every commit, not just the first.
 15. For "where does X live / what owns X", check the Galaxy Map data first (`scripts/graphify_river_group.py` tables, `graphify-out/galaxy_map*.html`). Grep only for the detail it doesn't hold.

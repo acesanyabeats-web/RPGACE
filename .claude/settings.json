@@ -15,7 +15,7 @@
   ]
 },
   "check_commands": [
-    "node --check rpgace_core.js"
+    "python3 scripts/core_source.py check"
   ],
   "ignore_paths": [
     "index.html.bak",

@@ -90,6 +90,89 @@ def write_region(start_marker, end_marker, new_block):
     raise SystemExit('core_source: start marker not found: ' + start_marker[:60])
 
 
+def read_at(rev):
+    """The joined source at a git revision (hub or pre-split single file)."""
+    git = lambda path: subprocess.run(['git', 'show', '%s:%s' % (rev, path)], cwd=ROOT, capture_output=True, text=True).stdout
+    hub = git('rpgace_core.js')
+    files = FILE_RE.findall(hub) if hub.startswith('/* RPGACE HUB') else []
+    return ''.join(git(f) for f in files) if files else hub
+
+
+def file_containing(needle):
+    """The src file (or the single file) whose text contains needle."""
+    for f in (hub_files() or ['rpgace_core.js']):
+        if needle in (ROOT / f).read_text(encoding='utf-8'):
+            return f
+    return None
+
+
+def replace_once(old, new):
+    """Replace old (must occur exactly once across the source) in whichever file holds it."""
+    hits = [f for f in (hub_files() or ['rpgace_core.js']) if old in (ROOT / f).read_text(encoding='utf-8')]
+    if len(hits) != 1 or (ROOT / hits[0]).read_text(encoding='utf-8').count(old) != 1:
+        raise SystemExit('core_source.replace_once: text must occur exactly once (found in %s)' % hits)
+    p = ROOT / hits[0]
+    p.write_text(p.read_text(encoding='utf-8').replace(old, new, 1), encoding='utf-8')
+    _cache.clear()
+    return hits[0]
+
+
+HUB_HEAD = """/* RPGACE HUB - rpgace_core.js holds no code (CK-8, Oct 28 2026, plan "Caps and Central Kit").
+ * Alex: "the big files should reference smaller blocks so oracle goes deeper when needed, like a ladder or tree".
+ * Ladder: this hub -> src/<domain>/<module>.js (one per RPGACE.register module) and src/_core/core.js (the
+ * pre-module core: config, utils, register, legacy main.js). Load order = the order below. Edit the src files only.
+ * Read the whole source with scripts/core_source.py (Python) / scripts/core_source.js (Node): it joins these files
+ * in memory; nothing joined is written to disk except the served build rpgace_core.min.js (scripts/minify_client.js).
+ * "rpgace_core.js:N" in docs = line N of the joined source; `python3 scripts/core_source.py where N` finds the file.
+ * Check: `python3 scripts/core_source.py check` (syntax + every src file listed + every listed file present).
+ */
+"""
+
+
+def split():
+    """CK-8b: cut the single file into src/ files at module boundaries; byte-identical join or nothing is written."""
+    if hub_files():
+        raise SystemExit('already split')
+    orig = HUB.read_text(encoding='utf-8')
+    lines = orig.splitlines(keepends=True)
+    mods, cur = [], None
+    for i, l in enumerate(lines):
+        m = re.match(r'\s*/\* ===MODULE:(\w+)=== \*/\s*$', l)
+        e = re.match(r'\s*/\* ===END:(\w+)=== \*/\s*$', l)
+        if m:
+            cur = (m.group(1), i)
+        elif e and cur and e.group(1) == cur[0]:
+            mods.append((cur[0], cur[1], i)); cur = None
+    if cur:
+        raise SystemExit('unclosed module ' + cur[0])
+    plan = [('src/_core/core.js', 0, mods[0][1])]           # [start, end) line indexes
+    prev_end = mods[0][1]
+    for k, (name, s, e) in enumerate(mods):
+        body = ''.join(lines[s:e + 1])
+        dm = re.search(r"domain:\s*'(\w+)'", body)
+        dom = dm.group(1) if dm else 'platform'
+        stop = mods[k + 1][1] if k + 1 < len(mods) else len(lines)
+        # a module file = any gap before it (domain markers, banners) + the module + (last file only) the tail
+        plan.append(('src/%s/%s.js' % (dom, name), prev_end, stop if k + 1 == len(mods) else e + 1))
+        prev_end = e + 1
+    chunks = [(f, ''.join(lines[a:b])) for f, a, b in plan]   # gaps between modules travel with the next file
+    joined = ''.join(c for _, c in chunks)
+    if joined != orig:
+        raise SystemExit('split would not be byte-identical - nothing written')
+    names = [f for f, _ in chunks]
+    if len(set(names)) != len(names):
+        raise SystemExit('duplicate module file name')
+    for f, c in chunks:
+        (ROOT / f).parent.mkdir(parents=True, exist_ok=True)
+        (ROOT / f).write_text(c, encoding='utf-8')
+    hub = HUB_HEAD + ''.join('// @file %s\n' % f for f in names)
+    HUB.write_text(hub, encoding='utf-8')
+    _cache.clear()
+    if read() != orig:
+        raise SystemExit('re-read after split differs - restore with: git checkout rpgace_core.js && rm -rf src')
+    print('split: %d files (%d modules + core), join byte-identical (%d bytes)' % (len(names), len(mods), len(orig.encode('utf-8'))))
+
+
 class CorePath:
     """Drop-in for Path('rpgace_core.js') in tools that call .read_text()/.exists()/str()."""
     name = 'rpgace_core.js'
@@ -132,10 +215,12 @@ def check():
 
 if __name__ == '__main__':
     a = sys.argv[1:]
-    if not a or a[0] not in ('check', 'where', 'file', 'cat'):
+    if not a or a[0] not in ('check', 'where', 'file', 'cat', 'split'):
         sys.exit(__doc__)
     if a[0] == 'check':
         sys.exit(check())
+    if a[0] == 'split':
+        split(); sys.exit(0)
     if a[0] == 'where':
         f, n = where(int(a[1]))
         print('%s:%s' % (f, n) if f else 'line out of range')

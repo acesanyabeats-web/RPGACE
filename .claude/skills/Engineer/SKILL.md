@@ -22,7 +22,7 @@ The core idea: **a report about what was built is a claim, not evidence.** This 
 Then apply the gate and stop.
 
 ## Objective Completion Gate
-- **G1 Syntax** — `node --check rpgace_core.js` clean, locally. (CI runs after deploy; it's an alarm, not a gate.)
+- **G1 Syntax** — `python3 scripts/core_source.py check` clean, locally (since CK-8 it joins the `src/` files in memory and runs `node --check`). (CI runs after deploy; it's an alarm, not a gate.)
 - **G2 index.html** (if touched) — div balance; every `id="page-X"` inside `#app` before the script; exactly one static script tag (`rpgace_core.min.js`).
 - **G3 Module convention** — new code inside `/* ===MODULE:x=== */` markers via `RPGACE.register()`, with a `domain:` key; `python3 scripts/check_module_domains.py` passes.
 - **G4 Claim ↔ diff** — Stage 5 is clean both ways.

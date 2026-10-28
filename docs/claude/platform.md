@@ -24,3 +24,4 @@ Modules (`domain: 'platform'`, 8): `orchestratorCC`, `leftNav`, `dashDeck`, `con
 - `orchestratorCC` + `app_settings` (`background_analysis`) = the analysis on/off switch. [CC](../../patch_notes.html#card-2026-10-21-analysis-switch)
 - `pwaInstall` handles the install prompt; `pathRouter` maps URL paths (e.g. `/knowledge`, `/study`) to pages.
 - Shared kit (`RPGACE.kit`: escape, dates, button, 2-tap confirm, private read, search list) → sub-file `docs/claude/kit.md`.
+- Source ladder (CK-8): `rpgace_core.js` = hub (`// @file` lines, no code) → `src/_core/core.js` + `src/<domain>/<module>.js`; edit `src/` only; whole-source reads go through `scripts/core_source.py`/`.js` (`check`, `where N`, `file <module>`, `read_at(rev)`, `replace_once`, `write_region`); ship prep `scripts/prep_ship.py <ver>`; `rpgace_build.py` is retired. [story](../../patch_notes.html#card-2026-10-28-ck8-source-ladder)

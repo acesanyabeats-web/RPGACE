@@ -18,6 +18,8 @@ import sys, re, subprocess
 from pathlib import Path
 
 TARGET = Path("rpgace_core.js")
+if TARGET.exists() and TARGET.read_text(encoding="utf-8", errors="replace").startswith("/* RPGACE HUB"):
+    sys.exit("rpgace_build.py is retired: since CK-8 (Oct 28 2026) rpgace_core.js is a hub; edit src/<domain>/<module>.js and see scripts/core_source.py")
 IS_WIN = sys.platform == 'win32'
 
 def MOD_S(n): return f"/* ===MODULE:{n}=== */"

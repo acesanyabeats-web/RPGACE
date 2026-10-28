@@ -74,6 +74,20 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-28-ck8-source-ladder" style="margin-bottom:30px;">
+    <div class="card-title">🪜 Oct 28 — The 4.7 MB code file is now a ladder: a short hub pointing to one file per module (CK-8)</div>
+    <div class="card-body">
+      Your words: "the big files should reference smaller blocks so oracle goes deeper when needed, like a ladder or tree, no risk you misunderstood me" and "do ck-8".
+      <ul>
+        <li><b>The hub:</b> <code>rpgace_core.js</code> is now 4.5 KB and holds no code. It lists, in load order, <code>src/_core/core.js</code> (the old core) and 95 module files under <code>src/&lt;domain&gt;/</code>, e.g. <code>src/schedule/myDay.js</code>.</li>
+        <li><b>One copy of the truth:</b> only the module files are edited. Every tool reads the whole code through one reader that joins them in memory; nothing joined is saved. The only built file is the one your phone loads (<code>rpgace_core.min.js</code>).</li>
+        <li><b>Proof it moved exactly:</b> the joined code is byte-for-byte today's file, and the built app file is byte-for-byte identical. So the app you load is literally unchanged. The Galaxy Map regenerated with zero differences, and every check passes. The prompt builder writes into the right module file, tested both ways.</li>
+        <li><b>Staged as briefed:</b> 8a pointed 14 tools at the one reader while the code was still one file (outputs identical); 8b did the split; 8c updated the rules, CI check, ship tool (<code>scripts/prep_ship.py</code>), the Engineer skill and Oracle's notes. The old <code>rpgace_build.py</code> now refuses to run.</li>
+        <li>Old "<code>rpgace_core.js:12345</code>" line citations still work: they mean the joined code, and <code>core_source.py where 12345</code> names the file.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-10-28-ck7-concepts" style="margin-bottom:30px;">
     <div class="card-title">🧭 Oct 28 — One door for Oracle calls, and the mission sources written down as one list (CK-7)</div>
     <div class="card-body">

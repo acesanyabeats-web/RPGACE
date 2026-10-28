@@ -23,7 +23,7 @@ jobs:
       # this Action (confirmed via list_deployments: every commit shows
       # state:READY regardless of this workflow's own pass/fail history).
       - name: Check JS syntax
-        run: node --check rpgace_core.js && echo "JS syntax clean"
+        run: python3 scripts/core_source.py check   # CK-8: rpgace_core.js is a hub; this joins src/ in memory and runs node --check
 
       # Advisory only, per the July 25 Aintergration pass on emilkowalski/skills +
       # pbakaus/impeccable - real deterministic anti-pattern findings (contrast,

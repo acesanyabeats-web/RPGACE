@@ -66,7 +66,7 @@ def title(card_html):
 
 
 def removed_names(since):
-    diff = subprocess.run(['git', 'diff', since, '--', 'rpgace_core.js', 'api'], cwd=ROOT,
+    diff = subprocess.run(['git', 'diff', since, '--', 'rpgace_core.js', 'src', 'api'], cwd=ROOT,
                           capture_output=True, text=True).stdout
     gone = set()
     for l in diff.splitlines():
