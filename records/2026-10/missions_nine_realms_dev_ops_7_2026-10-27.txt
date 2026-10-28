@@ -38,3 +38,23 @@ while building previous plan so we get things built without task skipping in app
  Round 1 (Oct 27, verbatim picks): Realms "7 realms (Recommended)" (Mind, Builder, Hustler, Life, Connector, Scholar,
  Explorer; Homekeeper + Steward stay as Actions) | Context from "Each realm's own data (Recommended)" | Mind "Through the
  Journal (Recommended)" | 91 waiting "Automatically, like the four (Recommended)".
+ Round 2 (Oct 27/28, verbatim picks): Builder "A plan item or error (Recommended)" | Hustler "A beat or an artist
+ (Recommended)" | Missions "Same as the first four (Recommended)" | Order "Finish GM first (Recommended)".
+
+6. DRAFT PLAN "Missions Across Realms" (MR-1..MR-6) — awaiting Alex's approval; starts after GM-9 (his order)
+ MR-1 Missions for Mind, Builder, Hustler, Life, Connector, Scholar, Explorer: catalogue turned into missions + new ones only
+      where videos need them; missions-only review. New context kinds: person, book, plan, beat/artist, dev item, journal
+      (realm_tasks.context_kind check widened; additive).
+ MR-2 Filing widened to the 7 realms (MISSION_REALMS + default kinds); the 91 waiting tasks filed automatically when New
+      tasks opens; Homekeeper + Steward untouched; the 4 laundry put-aways stay Actions.
+ MR-3 Context from each realm's own data in the Plan block picker (GM-5's step): Connector -> a person (People), Scholar ->
+      a book/course (Life Library, studyHub), Explorer -> a plan, Hustler -> a beat (listing/pricing/pitch) or an artist
+      (outreach), Builder -> a plan item or open error; video and typed cards everywhere.
+ MR-4 Mind through the Journal: a Mind mission's card opens the Journal with the exercise as the prompt; the saved entry is
+      the proof and pays the mission's fixed XP (one ledger row, no double pay).
+ MR-5 Live now shows these contexts with an Open (person, book, plan, beat, artist, plan item, journal).
+ MR-6 Wrap: tests, docs, SELF_KNOWLEDGE, plan rows.
+ Council of 5: risk = model mis-filing across 91 tasks (cards show their mission + move); cost = ~10 cheap calls once;
+ maintainability = same filing job and picker, no second pipeline; UX = Mind journal path is one extra screen Alex chose;
+ why-not = Builder overlaps Claude Code dev work (context is a real plan item, so it stays honest). /drift: no conflict with
+ approved GM items; MR-3 extends GM-5's picker, so GM-5 is built generic (kind -> source table) to avoid rework.
