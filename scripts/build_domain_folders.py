@@ -12,9 +12,11 @@ The facts themselves stay in docs/claude/<domain>.md (CLAUDE.md's index).
 import os, re, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from check_module_domains import domain_labels, module_domains  # one source of truth
+import sys as _sys, os as _os; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+import core_source  # CK-8: the one reader of the client source
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-CORE = open(os.path.join(ROOT, 'rpgace_core.js'), encoding='utf-8').read()
+CORE = core_source.read()
 OUT = os.path.join(ROOT, 'docs', 'domains')
 
 

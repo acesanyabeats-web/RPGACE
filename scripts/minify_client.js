@@ -52,6 +52,7 @@
 import { minify } from 'terser';
 import { readFileSync, writeFileSync } from 'fs';
 import { execSync } from 'child_process';
+import { readCore } from './core_source.js';  // CK-8: the one reader (hub -> src files, joined in memory)
 
 const TARGETS = ['rpgace_core.js'];
 
@@ -59,7 +60,7 @@ async function run() {
   // RF-7 (Oct 27 2026): prompts/*.md -> rpgace_core.js first, so a prompt edit can't ship stale.
   execSync('python3 scripts/build_prompts.py', { stdio: 'inherit' });
   for (const file of TARGETS) {
-    const src = readFileSync(file, 'utf8');
+    const src = file === 'rpgace_core.js' ? readCore() : readFileSync(file, 'utf8');
     const result = await minify(src, {
       compress: { defaults: true },
       mangle: false, // NEVER change — see the file header's onclick-safety note

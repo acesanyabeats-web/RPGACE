@@ -55,8 +55,10 @@ import re
 from pathlib import Path
 
 from graphify_river_group import _mainjs_function_bodies, sql_escape  # rule 8
+import sys as _sys, os as _os; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+import core_source  # CK-8: the one reader of the client source
 
-CORE_JS = Path('rpgace_core.js').read_text(encoding='utf-8')
+CORE_JS = core_source.read()
 OUT = Path('perspective_mainjs_batch_2026-09-08.sql')
 
 # Real, already-covered scope_ids (perspective_reports, ALL scope_levels —

@@ -37,3 +37,12 @@ PHONE ALARMS - /dev_ops_7 Track B (opened Oct 28 2026 while CK-8 builds)
  alarm time); cost = free (MacroDroid free tier, Supabase storage tiny); UX = your sounds, random, no tap per alarm; why-not =
  one more app on the phone and a one-time setup you must do yourself; a public sound bucket means anyone with the link can play
  the files (they are alarm sounds, not private).
+ Messages (Oct 28, verbatim, during CK-8): "ill send through some youtube videos for ringtones to import, ill also download
+ marcodroid now" / "ill send them through in life until i say stop in this chat through share to rpgace, just download through
+ yt-dlp and save the audio for the purpose"
+ -> evidence: this cloud session cannot reach YouTube (curl blocked); the laptop's local_server.py already runs yt-dlp for
+    Videoworm. Added to the draft: PA-1b Ringtone import - a YouTube link shared to RPGACE (or pasted in this chat and queued
+    by the session) becomes an alarm-sound job; the laptop's local_server pulls the audio with yt-dlp (personal ringtone use),
+    trims to a ringtone length, uploads it to the alarm sound list. Links Alex sends in chat are collected below until he says
+    stop.
+ Links received:

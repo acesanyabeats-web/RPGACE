@@ -32,8 +32,10 @@ import sys
 import json
 from pathlib import Path
 from collections import defaultdict
+import sys as _sys, os as _os; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+import core_source  # CK-8: the one reader of the client source
 
-SRC = Path(__file__).resolve().parent.parent / 'rpgace_core.js'
+SRC = core_source.CORE
 
 # Matches "RPGACE.register('moduleName', {" — the one real module
 # convention this whole project uses (CLAUDE.md's own standing rule).

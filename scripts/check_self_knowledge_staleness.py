@@ -39,9 +39,11 @@ import re
 import sys
 from datetime import date
 from pathlib import Path
+import sys as _sys, os as _os; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+import core_source  # CK-8: the one reader of the client source
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-CORE_JS = REPO_ROOT / "rpgace_core.js"
+CORE_JS = core_source.CORE
 PATCH_NOTES = REPO_ROOT / "patch_notes.html"
 
 DAYS_THRESHOLD = 7
@@ -268,7 +270,7 @@ def main():
         print('SELF_KNOWLEDGE CHECK: STALE (no dated fact found at all inside the string)')
         sys.exit(1)
 
-    js = (Path(__file__).resolve().parent.parent / 'rpgace_core.js').read_text()
+    js = core_source.read()
     sizes = size_problems(extract_self_knowledge(js) or '')
     if sizes:
         print('SELF_KNOWLEDGE SIZE: OVER')

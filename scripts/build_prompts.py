@@ -11,6 +11,8 @@ Edits happen only through Claude Code (Alex, Oct 27: "Only via Claude Code").
   python3 scripts/build_prompts.py --check  exit 1 if rpgace_core.js or INDEX.md is stale
 """
 import json, os, re, sys
+import sys as _sys, os as _os; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+import core_source  # CK-8: the one reader of the client source
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PDIR = os.path.join(ROOT, 'prompts')
@@ -39,7 +41,7 @@ def block(prompts):
 
 def inline_personas():
     rows = []
-    for rel in ['rpgace_core.js'] + ['api/' + f for f in sorted(os.listdir(os.path.join(ROOT, 'api'))) if f.endswith('.js')] + \
+    for rel in [f for f in (core_source.hub_files() or ['rpgace_core.js'])] + ['api/' + f for f in sorted(os.listdir(os.path.join(ROOT, 'api'))) if f.endswith('.js')] + \
                ['local_server/rpgace_intel.py', 'scripts/intel_cc_worker.py']:
         p = os.path.join(ROOT, rel)
         if not os.path.exists(p):
@@ -70,7 +72,7 @@ def index(prompts, about):
 
 def main():
     prompts, about = load()
-    core = open(CORE, encoding='utf-8').read()
+    core = core_source.read()
     a, b = core.find(START), core.find(END)
     if a < 0 or b < 0:
         sys.exit('PROMPTS markers missing from rpgace_core.js')
@@ -83,7 +85,7 @@ def main():
         print('PROMPTS CHECK: ' + ('stale: ' + ', '.join(stale) if stale else '%d prompt files, in sync' % len(prompts)))
         sys.exit(1 if stale else 0)
     if new_core != core:
-        open(CORE, 'w', encoding='utf-8').write(new_core)
+        core_source.write_region(START, END, block(prompts))
     open(ipath, 'w', encoding='utf-8').write(new_index)
     print('prompts: %d files -> rpgace_core.js + prompts/INDEX.md' % len(prompts))
 

@@ -98,8 +98,10 @@ import math
 import re
 import sys
 from pathlib import Path
+import sys as _sys, os as _os; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+import core_source  # CK-8: the one reader of the client source
 
-CORE_JS = Path('rpgace_core.js')
+CORE_JS = core_source.CORE
 # main.js was mechanically merged into rpgace_core.js Aug 20 2026 (Alex's
 # own direct ask) — there is no separate main.js file to point at anymore.
 # Every former MAIN_JS reader now sources from CORE_JS's own legacy

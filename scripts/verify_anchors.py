@@ -27,9 +27,11 @@ session.
 import re
 import sys
 from pathlib import Path
+import sys as _sys, os as _os; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+import core_source  # CK-8: the one reader of the client source
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-CORE_JS = REPO_ROOT / 'rpgace_core.js'
+CORE_JS = core_source.CORE
 
 ANCHOR_FILES = [
     'galaxy_map_decision_matrix.py',

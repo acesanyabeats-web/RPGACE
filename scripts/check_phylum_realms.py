@@ -4,7 +4,9 @@ Miscellaneous) belongs to exactly one realm in realm_lenses.json, every realm
 has at least one phylum, and the names/English/purpose tables cover the same
 numbers. Cheap, regex-only; exits 1 and says what is wrong otherwise."""
 import json, re, sys
-src = open('rpgace_core.js', encoding='utf-8').read()
+import sys as _sys, os as _os; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+import core_source  # CK-8: the one reader of the client source
+src = core_source.read()
 def table(name):
     m = re.search(r'\n  ' + name + r': \{(.*?)\n  \},', src, re.S)
     if not m: sys.exit('missing ' + name)

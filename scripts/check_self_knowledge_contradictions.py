@@ -50,9 +50,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent))
 from check_self_knowledge_staleness import extract_self_knowledge  # noqa: E402  (rule 8 -- one shared extractor, not re-derived)
+import sys as _sys, os as _os; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+import core_source  # CK-8: the one reader of the client source
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-CORE_JS = REPO_ROOT / "rpgace_core.js"
+CORE_JS = core_source.CORE
 
 # Real, narrow, high-precision negation phrases -- every one pulled from
 # actual observed vocabulary in this project's own oversight docs (rule 7,

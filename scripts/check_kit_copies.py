@@ -9,6 +9,8 @@ When you switch a module over, lower its number here in the same commit.
   python3 scripts/check_kit_copies.py
 """
 import os, re, sys
+import sys as _sys, os as _os; _sys.path.insert(0, _os.path.dirname(_os.path.abspath(__file__)))
+import core_source  # CK-8: the one reader of the client source
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PATTERNS = {
@@ -24,7 +26,7 @@ BASELINE = {'esc': 15, 'btn': 4, 'iso': 10, 'addDays': 5, 'arm': 1, 'readPrivate
 
 
 def counts():
-    src = open(os.path.join(ROOT, 'rpgace_core.js'), encoding='utf-8').read()
+    src = core_source.read()
     kit = re.search(r'/\* ===MODULE:kit=== \*/.*?/\* ===END:kit=== \*/', src, re.S)
     if kit:
         src = src[:kit.start()] + src[kit.end():]
