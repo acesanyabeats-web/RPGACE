@@ -71,7 +71,10 @@ def extract_self_knowledge(core_js_text):
 # [[DOMAIN]] block per RPGACE.DOMAINS key; oracleProfessor sends only the
 # core + picked sections, but every block still has to stay short.
 SK_DOMAINS = ['ORACLE', 'CONTENT', 'KNOWLEDGE', 'HABITS', 'SCHEDULE', 'CHRONICLES', 'OVERSIGHT', 'PLATFORM']
-SK_MAX_TOTAL = 34000
+# CK-1 (Oct 28 2026, plan "Caps and Central Kit", Alex: "Split + raise total"): a domain can carry
+# [[PARENT/SUB]] sub-blocks (same grouping); per-message cost is bounded by the block caps, so the
+# total moved 34,000 -> 40,000.
+SK_MAX_TOTAL = 40000
 SK_MAX_CORE = 2600
 SK_MAX_BLOCK = 6500
 
@@ -81,8 +84,13 @@ def size_problems(sk_text):
     probs = []
     if len(sk_text) > SK_MAX_TOTAL:
         probs.append(f'total {len(sk_text)} chars > {SK_MAX_TOTAL}')
-    parts = re.split(r'\[\[([A-Z]+)\]\]', sk_text)
+    parts = re.split(r'\[\[([A-Z]+(?:/[A-Z]+)?)\]\]', sk_text)
     blocks = {parts[i]: parts[i + 1] for i in range(1, len(parts) - 1, 2)}
+    for k in [k for k in blocks if '/' in k]:
+        if k.split('/')[0] not in SK_DOMAINS:
+            probs.append(f'[[{k}]] has no parent domain')
+        elif len(blocks[k]) > SK_MAX_BLOCK:
+            probs.append(f'{k} {len(blocks[k])} chars > {SK_MAX_BLOCK}')
     if 'CORE' not in blocks:
         probs.append('no [[CORE]] block')
     elif len(blocks['CORE']) > SK_MAX_CORE:
@@ -267,7 +275,7 @@ def main():
         for s in sizes:
             print('  -', s)
     else:
-        print('SELF_KNOWLEDGE SIZE: ok (core + 8 domain blocks within limits)')
+        print('SELF_KNOWLEDGE SIZE: ok (core + 8 domain blocks + sub-blocks within limits)')
     status = 'STALE' if result['stale'] else 'FRESH'
     if sizes:
         result['stale'] = True
