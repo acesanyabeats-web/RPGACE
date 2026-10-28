@@ -22,3 +22,6 @@ UNSURE (named code gone, the feature may live elsewhere) - leave unless Alex say
 
 NOT PROPOSED: G53 split cards, Galaxy G84/G85, A7 OBS-raw, session-closed cards - they name a removed helper in passing but
 their story (a split, a map change, a session state) is still true history.
+
+DECISION (Alex, Oct 28, verbatim): "go, also morning brief will have to be restructured a bit too"
+-> read as go on the proposal as written: STRONG 1-6 archived (6 achiever_archive rows), UNSURE 7-8 left in place.

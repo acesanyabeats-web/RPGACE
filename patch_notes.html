@@ -53,6 +53,7 @@
   .date-tag{display:inline-block;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.25);color:var(--gold);font-size:10px;font-weight:700;letter-spacing:1px;padding:3px 10px;border-radius:12px;margin-bottom:16px}
   hr{border:none;border-top:1px solid var(--border);margin:32px 0}
   @media(max-width:900px){.sidebar{display:none}.content{margin-left:0;padding:24px 20px}}
+  .card.brown{border-color:rgba(150,105,60,0.3);background:rgba(150,105,60,0.05)}
 </style>
 </head>
 <body>
@@ -81,7 +82,7 @@
         <li><b>Plans name what they make untrue:</b> each plan step now has a list of patch-note cards it will make untrue (<code>ceo_plan_items.stales</code>, a new column; nothing else in the table changed).</li>
         <li><b>On ship, one command moves them:</b> <code>scripts/archive_stale_cards.py archive</code> moves each card word for word into the archive's new "Archived as untrue" section. It leaves a brown one-line note with the same id in the live doc, so old links still land, and gives one <code>achiever_archive</code> row per card.</li>
         <li><b>The script also suggests extras:</b> <code>propose</code> finds cards that name code which no longer exists. Most cards are plain English, so the plan's own list stays the main way in.</li>
-        <li><b>First batch is waiting on you:</b> 6 strong suggestions and 2 unsure ones (day templates, the old Doing Now screen, director picker, voice input). Nothing has moved yet. The list is in <code>records/2026-10/ck5_first_batch_proposal_2026-10-28.txt</code>.</li>
+        <li><b>First batch done (your "go"):</b> 6 cards archived: day templates, the old Doing Now screen, the two director picker cards and the two voice-input cards. The 2 unsure ones (librosa, Content Pipeline UX) stay. List: <code>records/2026-10/ck5_first_batch_proposal_2026-10-28.txt</code>.</li>
         <li>Tested on a copy: the card count stays the same and every tag still closes, in both files. Docs and tooling only, nothing changes in the app.</li>
       </ul>
     </div>
@@ -1820,21 +1821,7 @@
       Tested headless (8 new checks). <b>Untested by your own hand.</b>
     </div>
 </div>
-<div class="card" id="card-2026-10-16-doing-now" style="margin-bottom:30px;">
-    <div class="card-title">▶ Oct 16 — Doing Now: log what you're doing as it happens (DN-0, DN-1)</div>
-    <div class="card-body">
-      Your ask: log spontaneous things as you do them, so repeats can later become routines. Your picks: short stop screen with "+ more details"; extras = linked thing, would do again, effort 1-5.
-      <ul>
-        <li><b>▶ Doing now</b> sits right under the My Day heading. Name it, pick its realms, and it starts a timer. It shows on My Day and at the top of the dashboard Today list while it runs, on any device.</li>
-        <li><b>+ note</b> adds a line while it's running.</li>
-        <li><b>■ Stop</b> asks two things: how did it go, and mood after (1-5). Tap <b>+ more details</b> for a photo, who you were with, where, money spent, what it was for (a beat, recipe, plan or Library item), would you do it again, and effort 1-5.</li>
-        <li>Who with marks those People as "talked today"; money spent goes into Chronicles as an expense; where is saved on the entry.</li>
-        <li><b>✓ I just did…</b> logs something already done: name + minutes, realms, then the same stop screen.</li>
-        <li>Each one is a finished Daily Schedule entry with its real start and end time. No XP yet - that's step DN-5.</li>
-      </ul>
-      Tested headless (25 new checks + the older My Day and cooking tests). <b>Untested by your own hand.</b> Next steps in the plan: ideas from quiet realms (DN-1b), forgot-to-stop catch (DN-2).
-    </div>
-</div>
+<div class="card brown" id="card-2026-10-16-doing-now" style="margin-bottom:30px;"><div class="card-title">🟫 ▶ Oct 16 — Doing Now: log what you&#x27;re doing as it happens (DN-0, DN-1) (archived: no longer true)</div><div class="card-body">The separate Doing Now screen was retired on Oct 28 (DL-2); every button opens Live now. <a href="patch_notes_archive.html#card-2026-10-16-doing-now">Full card in the archive</a>.</div></div>
 <div class="card" id="card-2026-10-15-cook-ask" style="margin-bottom:30px;">
     <div class="card-title">💬 Oct 15 — Ask Oracle inside Cook Mode + "take out" fix (CM-4, CM-5)</div>
     <div class="card-body">
@@ -2556,22 +2543,7 @@
       Verified: 14 new headless checks cover the timing (closing shift, after midnight, before 18:00, an early shift, a day off), the not-planned and planned rows, the tap opening the right date, and a locked day counting as planned. The Due list and day template suites pass too. Not yet hand-tested by Alex.
     </div>
 </div>
-<div class="card" id="card-2026-10-14-day-templates" style="margin-bottom:30px;">
-    <div class="card-title">🗓 Oct 14 — Day templates: Plan my day starts from a day like this one</div>
-    <div class="card-body">
-      Alex: "routines should remember the day and give 1st suggestion of template for day that can be shaped similar, with me being able to change chosen activities within template before locking in as planned day", then "go DT-1, yes, 1, 1". Step 3 of the Day Templates &amp; Chores plan.
-      <ul>
-        <li><strong>🗓 Plan my day now plans any date</strong> (today by default). It replaces the old time-suggestion popup and still does what that did.</li>
-        <li><strong>Kind of day</strong> comes from your rota: no shift = day off, a closing shift (yours end at 00:00) = late, any other shift = early.</li>
-        <li><strong>First suggestion:</strong> the last day of the same kind and weekday you locked in; failing that, what was really on your Daily Schedule for a day like it (up to 8 weeks back); then the same kind on any weekday; then a fresh fit of what's due. Your saved templates (📌) are in the same list.</li>
-        <li>It's adjusted for that date: routines not due that day drop out, a chore block refills with that day's most overdue chores, and routines due but missing are fitted into free gaps (marked "also due"). Anything that overlaps your shift or its travel gets a ⚠.</li>
-        <li><strong>Shape it:</strong> untick, change start times and lengths, remove, or add a routine, a chore block (the longest that fits a gap, up to 2 h) or anything else.</li>
-        <li><strong>🔒 Lock in:</strong> everything kept goes on your Daily Schedule (places keep their journey time), weekly and "N a week" routines are planned for that day, the chore block becomes a real one, and the day is remembered so the next day like it starts from it. Locking twice doesn't double up.</li>
-        <li><strong>📌 Save as template</strong> keeps a day under a name; Delete template (two taps) removes one.</li>
-      </ul>
-      Verified: new table <code>day_templates</code> on the live database. 24 new headless checks cover day kinds, learning from the schedule and from locked days, routines dropping out or being added, clash warnings, the chore block shrinking to fit, saving a template, locking in (schedule, places, plans, chore block, the day record) and not doubling up. The My Day, chores, chore block and week planner suites pass; the old Plan my day checks were rewritten for the new screen. Caught before shipping: a 2-hour chore block that didn't fit any gap was silently dropped (now it shrinks to fit), and an unescaped apostrophe broke the script check again. Not yet hand-tested by Alex. Note: your Supabase schedule table holds only one row (8 July), so learning from past schedules will mostly start from days you lock in. Next: the night-before reminder (DT-2).
-    </div>
-</div>
+<div class="card brown" id="card-2026-10-14-day-templates" style="margin-bottom:30px;"><div class="card-title">🟫 🗓 Oct 14 — Day templates: Plan my day starts from a day like this one (archived: no longer true)</div><div class="card-body">Day templates were deleted on Oct 21 (AC-2); Plan my day opens on what is due. <a href="patch_notes_archive.html#card-2026-10-14-day-templates">Full card in the archive</a>.</div></div>
 <div class="card" id="card-2026-10-14-chore-block" style="margin-bottom:30px;">
     <div class="card-title">🧹 Oct 14 — Chore block: a slot in your day that fills itself with the most overdue chores</div>
     <div class="card-body">
@@ -7563,18 +7535,7 @@
     </div>
 </div>
 
-<div class="card gold" id="card-2026-08-05-engineer-phase-c-3-director-blend-picker" style="margin-bottom:30px;">
-    <div class="card-title">🎬 Aug 5 — /Engineer Phase C: 3-director blend picker, 5 helper phrases, 3 named info groups</div>
-    <div class="card-body">
-      Second real build pass of the Content/Video Pipeline unification (spec item 3), same 5-stage <code>/Engineer</code> discipline as Phase A. Full record: <code>engineer_pass_2026-08-05_02.txt</code>. Phase B (reference-corpus linking) was stopped mid-evidence-gathering after a real architecture mismatch — <code>findMatches()</code> is metadata-tag scoring, not audio-similarity matching, and the "Add These Artists" mechanism is a separate Last.fm suggestion feature — logged as a real future build instead of built on the wrong premise: <code>beat_audience_matching_engine_future_idea_2026-08-05.txt</code>.
-      <br><br>
-      <strong><code>visualOracle._showDirectorPicker</code> now offers 3 separate director rows</strong> (primary/secondary/tertiary, per <code>/interrogation</code>'s confirmed answer) instead of one, sharing a single real row-factory and a single shared <code>taxonomy_nodes</code> fetch (rule 8 dedup — not 3 hand-rolled copies). Each row shows up to 5 real "helper phrases" split from that director's own <code>definition</code> field (confirmed via live Supabase read — no dedicated phrases column exists, so this is honestly built from what's actually there) in a live preview strip, since a native <code>&lt;select&gt;</code> can't render rich content per-option while scrolling.
-      <br><br>
-      <strong>Output is now 3 distinctly labeled info groups</strong>, per the confirmed spec: beat metadata stays in the existing template fields untouched; a new "DIRECTOR-BLEND STYLE" block conjoins up to 3 chosen directors' concept/definition/palette; a separately labeled "CREATIVE INSPIRATION" block carries Alex's own free-text — replacing the old single unlabeled sentence that mixed director name and inspiration together. Both real call sites (DOC_SLUGS proceed-flow, ConID-card Visual Treatment button) needed zero changes — the callback's string contract is unchanged.
-      <br><br>
-      Full Objective Completion Gate: G1-G7 all pass, including G6 — independently confirmed via Vercel MCP post-merge (production deployment READY on commit <code>b79e91a</code>, the exact commit this pass produced). <strong>UNTESTED, needs Alex's hands</strong>: open the picker from a real ConID, confirm all 3 rows render and their phrase strips update live; submit a 2-3 director blend plus free-text inspiration and confirm the filled prompt shows both labeled blocks; submit blank and confirm the old "NONE" behavior still holds.
-    </div>
-</div>
+<div class="card brown" id="card-2026-08-05-engineer-phase-c-3-director-blend-picker" style="margin-bottom:30px;"><div class="card-title">🟫 🎬 Aug 5 — /Engineer Phase C: 3-director blend picker, 5 helper phrases, 3 named info groups (archived: no longer true)</div><div class="card-body">The director picker no longer exists in the app code. <a href="patch_notes_archive.html#card-2026-08-05-engineer-phase-c-3-director-blend-picker">Full card in the archive</a>.</div></div>
 
 <div class="card gold" id="card-2026-08-05-engineer-phase-mood-aware-colour-palette-auto-advancing" style="margin-bottom:30px;">
     <div class="card-title">🎨 Aug 5 — /Engineer Phase A: mood-aware colour palette, auto-advancing status, ConID recency sort</div>
@@ -7806,18 +7767,7 @@
     </div>
 </div>
 
-<div class="card green" id="card-2026-07-31-director-picker-dropdown-taxonomy-summary-inspiration" style="margin-bottom:30px;">
-    <div class="card-title">🎬 July 31 — Director picker (dropdown + taxonomy summary + inspiration box) + fixed Oracle reply truncation, via new <code>/free-for-all-debate</code> skill</div>
-    <div class="card-body">
-      Alex hand-tested the Visual Treatment build the same session it shipped and hit 2 real problems immediately: the director-reference field was a plain one-line textbox with no guidance, and his real "Kubrick" reply cut off mid-scene-breakdown. Asked for a new skill — <code>/free-for-all-debate</code> — individual competitors (not two teams) each picking 2 real problems to argue, converging points merged, Council of 5 turning the result into a plan.
-      <br><br>
-      <strong>Problem 1 fixed</strong>: <code>visualOracle._showDirectorPicker</code> — a real dropdown of the 50-director <code>f14_filmmaker_library</code>, a "ℹ️ View Style" button showing that director's real taxonomy_tree definition/palette before committing, and a free-text inspiration box layered on top rather than instead of a real pick. Wired into both real call sites (the ConID-card button and the global Visual Oracle panel's own command) — filling the placeholder before <code>fillGaps</code> runs means it sees zero remaining gaps and skips its own step for this field entirely.
-      <br><br>
-      <strong>Problem 2 root-caused and fixed</strong>: <code>main.js</code>'s <code>sendChat</code> was still capping <code>callOracle</code> at <code>maxTokens:1200</code> — tuned back when a real 504-timeout risk scaled with response length. Streaming (built July 28) already removed that risk, and max_tokens is a ceiling billed on tokens actually generated, not a floor — raised to 3000. FROZEN-file exception, logged, <code>node --check</code> clean.
-      <br><br>
-      <code>node --check</code> clean on both files. <strong>Untested</strong> — needs Alex's hands: pick a director from the new dropdown, view its style summary, and confirm a real Visual Treatment Doc no longer cuts off.
-    </div>
-</div>
+<div class="card brown" id="card-2026-07-31-director-picker-dropdown-taxonomy-summary-inspiration" style="margin-bottom:30px;"><div class="card-title">🟫 🎬 July 31 — Director picker (dropdown + taxonomy summary + inspiration box) + fixed Oracle reply truncation, via new /free-for-all-debate skill (archived: no longer true)</div><div class="card-body">The director picker no longer exists in the app code. <a href="patch_notes_archive.html#card-2026-07-31-director-picker-dropdown-taxonomy-summary-inspiration">Full card in the archive</a>.</div></div>
 
 <div class="card green" id="card-2026-07-31-video-content-pipeline-ux-pass-beatstars" style="margin-bottom:30px;">
     <div class="card-title">🎥 July 31 — Video/Content Pipeline UX pass: Beatstars label fix, ConID delete, direct Visual Treatment wiring, music_video status labels, script/EDL handoff view</div>
@@ -8035,18 +7985,7 @@
     </div>
 </div>
 
-<div class="card" id="card-2026-07-29-round-45-real-second-attempt-at" style="margin-bottom:30px;">
-    <div class="card-title">🎤 July 29 (Round 45) — Real second attempt at voice-input duplication: Round 43's fix (e.resultIndex) confirmed NOT sufficient by a real reload-and-retest</div>
-    <div class="card-body">
-      Alex reloaded and retested per Round 44's own ask — the exact same compounding duplication ("can you" → "can you can you" → ...) still happened on the new floating button. This rules out the "stale tab" theory and means the e.resultIndex-based fix genuinely didn't work in practice.
-      <br><br>
-      <strong>Real reasoning for why, not a second blind guess</strong>: Android Chrome's SpeechRecognition (what Alex uses) is documented to be far less spec-reliable than desktop Chrome specifically around <code>e.resultIndex</code> and continuous-mode restarts — relying on the browser's own "what changed" hint was the wrong foundation to build on.
-      <br><br>
-      <strong>Rewrite</strong>: ignores <code>e.resultIndex</code> entirely. Tracks idempotency ourselves via array position (<code>_finalizedCount</code>) — once <code>e.results[i].isFinal</code> is true, that transcript is committed to <code>_baseText</code> exactly once, regardless of what the browser claims changed. Also spawns a genuinely NEW <code>SpeechRecognition</code> object on every auto-restart instead of reusing the ended one — the standard, more robust pattern real SpeechRecognition wrapper libraries use, since reusing an ended instance is inconsistent on some mobile implementations.
-      <br><br>
-      `node --check` clean, cache-bust bumped 20260729a→20260729b. <strong>Per CLAUDE.md rule 9 / the Engineer skill's per-defect cap: this is the last attempt before stopping to get real console evidence instead of guessing a third time</strong> — if this doesn't hold up on a real retest, next step needs Alex's actual browser console output, not another reasoned-but-unverified patch.
-    </div>
-</div>
+<div class="card brown" id="card-2026-07-29-round-45-real-second-attempt-at" style="margin-bottom:30px;"><div class="card-title">🟫 🎤 July 29 (Round 45) — Real second attempt at voice-input duplication: Round 43&#x27;s fix (e.resultIndex) confirmed NOT sufficient by a real reload-and-retest (archived: no longer true)</div><div class="card-body">Voice input was removed from the app; no speech-recognition code is left. <a href="patch_notes_archive.html#card-2026-07-29-round-45-real-second-attempt-at">Full card in the archive</a>.</div></div>
 
 <div class="card" id="card-2026-07-29-round-44-real-accessibility-escalation-alex" style="margin-bottom:30px;">
     <div class="card-title">🎤 July 29 (Round 44) — Real accessibility escalation: Alex working one-handed all day, added a global floating mic button so voice input works on every field, not just Oracle chat</div>
@@ -8061,18 +8000,7 @@
     </div>
 </div>
 
-<div class="card" id="card-2026-07-28-29-round-43-real-bug-caught" style="margin-bottom:30px;">
-    <div class="card-title">🎤 July 28/29 (Round 43) — Real bug caught from Alex's own first hand-test of voice input: transcript duplication, root-caused and fixed same night</div>
-    <div class="card-body">
-      Alex tested the new 🎤 button (Round 41) and pasted the real result: a BeatStars listing generated correctly by Insta-Oracle, but with a gibberish "hello hello hello can hello can you hear me, I said once hello can you hear me" block appearing under an otherwise-empty section — his own mic test getting mangled and submitted as a follow-up Oracle message, not anything Oracle itself generated.
-      <br><br>
-      <strong>Real root cause</strong>: <code>voiceInput._start</code>'s <code>rec.onresult</code> looped <code>e.results</code> from index 0 on every single event. Chrome's continuous mode never shrinks <code>e.results</code> — it keeps every result (final and interim) for the life of the recognition session — so each event re-summed ALL final text seen so far and then <em>appended</em> that full running sum onto an already-appended <code>_baseText</code>. A compounding duplication: one final word became "word", then the next event re-added it as "word word", then a third as "word word word &lt;new word&gt;" — exactly the pattern in Alex's paste.
-      <br><br>
-      <strong>Fix</strong>: loop from <code>e.resultIndex</code> instead of 0 — the browser-provided index of the first result that actually changed since the last event, the standard Web Speech API idiom. One-line, well-understood, low-risk (Tier 1, single function) — fixed the same night rather than left live, per this project's standing practice of acting immediately on real hand-test bugs.
-      <br><br>
-      `node --check` clean, cache-bust bumped 20260728j→20260728k. <strong>Untested</strong> — needs Alex's real second hand-test (same 🎤 button) to confirm the fix holds; the first test is what caught this, so it already proved the button itself opens/records — just the accumulation logic was wrong.
-    </div>
-</div>
+<div class="card brown" id="card-2026-07-28-29-round-43-real-bug-caught" style="margin-bottom:30px;"><div class="card-title">🟫 🎤 July 28/29 (Round 43) — Real bug caught from Alex&#x27;s own first hand-test of voice input: transcript duplication, root-caused and fixed same night (archived: no longer true)</div><div class="card-body">Voice input was removed from the app; no speech-recognition code is left. <a href="patch_notes_archive.html#card-2026-07-28-29-round-43-real-bug-caught">Full card in the archive</a>.</div></div>
 
 <div class="card" id="card-2026-07-28-round-42-routine-item-5-local" style="margin-bottom:30px;">
     <div class="card-title">🎧 July 28 (Round 42) — /Routine item 5: local librosa audio analysis built, real evidence changed the design from the naive assumption</div>

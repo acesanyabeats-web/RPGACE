@@ -124,8 +124,8 @@ def archive(ids, reason, plan_item=None):
                    % (cid, html.escape(t), html.escape(reason), cid))
         live = live[:a] + pointer + live[b:]
         arch = arch.replace('<!--ARCHIVED-UNTRUE-END-->', card + '\n\n<!--ARCHIVED-UNTRUE-END-->', 1)
-        sql.append("insert into achiever_archive (category, claim_text, source_doc, source_location, became_false_reason, archived_by%s) values ('patch_note', %s, 'patch_notes.html', %s, %s, 'archive_stale_cards.py'%s);"
-                   % (', linked_plan_item_id' if plan_item else '', sql_str(t[:300]), sql_str(cid), sql_str(reason),
+        sql.append("insert into achiever_archive (category, claim_text, source_doc, source_location, became_false_reason, current_true_value, archived_by%s) values ('patch_note', %s, 'patch_notes.html', %s, %s, %s, 'archive_stale_cards.py'%s);"
+                   % (', linked_plan_item_id' if plan_item else '', sql_str(t[:300]), sql_str(cid), sql_str(reason), sql_str(reason),
                       ', ' + sql_str(plan_item) if plan_item else ''))
     if '.card.brown' not in live:
         live = live.replace('</style>', '  .card.brown{border-color:rgba(150,105,60,0.3);background:rgba(150,105,60,0.05)}\n</style>', 1)
