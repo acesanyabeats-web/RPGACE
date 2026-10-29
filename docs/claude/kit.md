@@ -21,3 +21,4 @@ Present tense, one fact per line. Plan "Caps and Central Kit" CK-6/CK-7 ([story]
 ## Mission source registry (CK-7)
 - `realmTasks.logic.CONTEXT_SOURCES` is the realm-generic list of "pick from your own data" sources for a mission's context (GM-7): `combo` (exerciseLibrary), `reference` (reference_tracks + beat ideas), `post` (Idea Bank post ideas).
 - A new source = one entry there (`label`, `empty`) + one branch in `realmTasks.logic.sourceItems(kind)` returning `[{title, sub, detail, ref}]`; the picker (`RPGACE.kit.pickList`) needs no change. A mission card picks it with `context_kind`.
+- `RPGACE.kit.taskCard(o)` (TK-1, Oct 29 2026): THE task card for every task (Actions/routines, block steps, Live now, planning; Alex: "everything is task"). Big circle + gold ✓ Done + tools, faded when done/skipped; `o.onTick(nowDone)` returns a Promise and `o.after(el)` redraws in place; modes `do` / `plan` (no tick) / `view`. `myDay.ui.row` is built on it.

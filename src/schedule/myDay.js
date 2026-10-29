@@ -6021,25 +6021,13 @@ RPGACE.register('myDay', {
     },
 
     // One routine row. missedDay set = a catch-up row for that earlier day.
+    // TK-1: the My Day task card is RPGACE.kit.taskCard (one card for every task in the app) with My Day's own
+    // parts: the meta line, ▶ Start timer, Open, minimum, Skip, ✏️ Edit and the step checklist.
     row: function(r, today, missedDay) {
       var self = RPGACE.modules.myDay, L = self.logic, esc = self.ui._esc;
       var log = missedDay ? null : L.todayLog(r, self._logs, today);
       if (r.cadence === 'next_time') log = null; // stays on the list until removed
       var isDone = log && log.status === 'completed', isSkip = log && log.status === 'skipped';
-      var el = document.createElement('div');
-      el.className = 'myday-row';
-      el.dataset.id = r.id;
-      el.style.cssText = 'border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:var(--panel);' + (log ? 'opacity:.6;' : '');
-      var top = document.createElement('div');
-      top.style.cssText = 'display:flex;align-items:center;gap:10px;';
-      var tick = document.createElement('button');
-      tick.type = 'button';
-      tick.className = 'myday-tick';
-      tick.setAttribute('aria-label', isDone ? 'Done' : 'Mark done');
-      tick.textContent = isDone ? '✓' : isSkip ? '–' : '';
-      tick.style.cssText = 'flex:0 0 auto;width:40px;height:40px;border-radius:50%;border:2px solid ' + (isDone ? 'var(--gold)' : 'var(--border)') + ';background:' + (isDone ? 'var(--gold)' : 'none') + ';color:#111;font-size:18px;font-weight:700;cursor:pointer;';
-      var mid = document.createElement('div');
-      mid.style.cssText = 'flex:1;min-width:0;';
       var streak = L.streak(r, self._logs, today);
       var meta = [];
       if (missedDay) meta.push('was due ' + new Date(missedDay + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long' }));
@@ -6064,54 +6052,37 @@ RPGACE.register('myDay', {
       meta.push('+' + (r.xp || 0) + ' XP');
       var miss = missedDay || log ? 0 : L.missRun(r, self._logs, today);
       var kids = L.chainChildren(r).filter(function(c) { return c.active !== false; });
-      mid.innerHTML = '<div style="font-size:15px;font-weight:700;color:var(--text);' + (isDone ? 'text-decoration:line-through;' : '') + '">' + esc((r.icon ? r.icon + ' ' : '') + r.title) + '</div>' +
-        '<div style="font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;">' + esc(meta.join(' · ')) + '</div>' +
+      var metaHtml = '<div style="font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums;">' + esc(meta.join(' · ')) + '</div>' +
         (miss ? '<div class="myday-miss" style="font-size:12px;color:#e0a84c;margin-top:2px;">' + (miss >= 2 ? '⚠ Missed twice — do the minimum today to restart' : '⚠ Missed last time — don\'t miss twice') + '</div>' : '') +
         (r.goal || r.minimum ? '<div style="font-size:12px;color:var(--text);opacity:.8;margin-top:2px;">' + (r.minimum ? '▫ Minimum: ' + esc(r.minimum) + (r.goal ? ' · ' : '') : '') + (r.goal ? '🎯 Goal: ' + esc(r.goal) : '') + '</div>' : '') +
         (kids.length ? '<div style="font-size:12px;color:var(--muted);margin-top:2px;">→ then ' + esc(kids.map(function(c) { return c.title; }).join(', ')) + '</div>' : '');
-      top.appendChild(tick); top.appendChild(mid);
-      el.appendChild(top);
-
-      var tools = document.createElement('div');
-      tools.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;padding-left:50px;';
-      var small = 'min-height:36px;padding:6px 10px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;background:none;border:1px solid var(--border);color:var(--text);';
-      var mk = function(label, fn, cls) { var b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.style.cssText = small; if (cls) b.className = cls; b.onclick = fn; tools.appendChild(b); return b; };
-      var timerKey = 'timer_' + r.id;
-
-      // Oct 29 2026 (Alex: "i have been have bugs with a lot of tasks on ticking circle lately"): the tick saved, but
-      // only the My Day page redrew, so a row inside a pop-up (evening review, Good morning, Night card) never changed.
-      // Now the row redraws itself in place wherever it is, and tells other screens (myday:ticked).
+      var timerKey = 'timer_' + r.id, el = null;
+      // Oct 29 2026: the row redraws itself in place wherever it is (pop-ups too) and tells other screens.
       var redraw = function() {
         try { self.ui.render(); } catch (e) {}
-        if (el.parentNode && !el.closest('#myday-panel')) { var nr = self.ui.row(r, today, missedDay); el.parentNode.replaceChild(nr, el); }
+        if (el && el.parentNode && !el.closest('#myday-panel')) { var nr = self.ui.row(r, today, missedDay); el.parentNode.replaceChild(nr, el); }
         try { RPGACE.hooks.fire('myday:ticked', r); } catch (e) {}
       };
       var fail = function(e) { RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500, 'myDay'); redraw(); };
-
-      if (log) {
-        mk('↶ Undo', function() { self.logic.undo(log).then(redraw).catch(fail); });
-      } else {
-        var doneB = mk('✓ Done', function() { tick.onclick(); }, 'myday-done-btn');
-        doneB.style.background = 'var(--gold)'; doneB.style.color = '#111'; doneB.style.border = 'none';
+      var tools = [];
+      if (log) tools.push({ label: '↶ Undo', fn: function() { self.logic.undo(log).then(redraw).catch(fail); } });
+      else {
         var started = L._ls(timerKey);
-        var timerB = mk(started ? '⏱ ' + Math.max(0, Math.round((Date.now() - started) / 60000)) + ' min' : '▶ Start', function() {
-          if (L._ls(timerKey)) { L._ls(timerKey, null); } else { L._ls(timerKey, Date.now()); }
-          redraw();
-        }, 'myday-timer');
-        timerB.dataset.started = started || '';
+        tools.push({ label: started ? '⏱ ' + Math.max(0, Math.round((Date.now() - started) / 60000)) + ' min' : '▶ Start', cls: 'myday-timer', data: { started: started || '' },
+          fn: function() { if (L._ls(timerKey)) { L._ls(timerKey, null); } else { L._ls(timerKey, Date.now()); } redraw(); } });
         if (r.opens) {
-          var t = self.TOOLS.filter(function(x) { return x.key === r.opens; })[0];
-          mk('Open ' + (t ? t.label : r.opens), function() { self.ui._openTool(r.opens); });
+          var tl = self.TOOLS.filter(function(x) { return x.key === r.opens; })[0];
+          tools.push({ label: 'Open ' + (tl ? tl.label : r.opens), fn: function() { self.ui._openTool(r.opens); } });
         }
-        if (r.minimum && !missedDay && r.cadence !== 'next_time') mk('▫ Did the minimum', function(ev) {
+        if (r.minimum && !missedDay && r.cadence !== 'next_time') tools.push({ label: '▫ Did the minimum', cls: 'myday-min', fn: function(ev) {
           ev.target.disabled = true;
           self.logic.tick(r, { minimum: true }).then(function() { L._ls(timerKey, null); }).then(redraw).catch(fail);
-        }, 'myday-min');
-        if (r.cadence !== 'next_time') mk('Skip', function() { self.logic.skip(r).then(redraw).catch(fail); });
+        } });
+        if (r.cadence !== 'next_time') tools.push({ label: 'Skip', fn: function() { self.logic.skip(r).then(redraw).catch(fail); } });
       }
       // Oct 15 2026: edit a chosen routine straight from its row.
-      if (!missedDay) mk('✏️ Edit', function() { self.ui.openEditor(r, r.id); }, 'myday-edit');
-
+      if (!missedDay) tools.push({ label: '✏️ Edit', cls: 'myday-edit', fn: function() { self.ui.openEditor(r, r.id); } });
+      var below = null;
       var steps = Array.isArray(r.steps) ? r.steps : [];
       if (steps.length && !log) {
         var stepKey = 'steps_' + r.id + '_' + today;
@@ -6134,21 +6105,23 @@ RPGACE.register('myDay', {
           lab.appendChild(document.createTextNode(s));
           sb.appendChild(lab);
         });
-        el.appendChild(sb);
+        below = sb;
       }
-      el.appendChild(tools);
-
-      tick.onclick = function() {
-        if (log) { self.logic.undo(log).then(redraw).catch(fail); return; }
-        var st = L._ls(timerKey);
-        var actual = st ? Math.max(1, Math.round((Date.now() - st) / 60000)) : null;
-        tick.disabled = true;
-        var forDay = !missedDay && today && today !== L.iso() ? new Date(today + 'T12:00:00').toISOString() : null;
-        self.logic.tick(r, { actual: actual, startedAt: st ? new Date(st).toISOString() : null, note: missedDay ? 'catch-up' : null, at: forDay || undefined }).then(function() {
-          L._ls(timerKey, null);
-          if (r.cadence === 'next_time') return self.logic.remove(r.id).then(function() { return self.logic.load(); });
-        }).then(redraw).catch(fail);
-      };
+      el = RPGACE.kit.taskCard({
+        cls: 'myday-row', id: String(r.id), icon: r.icon, title: r.title, metaHtml: metaHtml,
+        done: isDone, skipped: isSkip, tools: tools, below: below,
+        onTick: function(nowDone) {
+          if (log) return self.logic.undo(log);
+          var st = L._ls(timerKey);
+          var actual = st ? Math.max(1, Math.round((Date.now() - st) / 60000)) : null;
+          var forDay = !missedDay && today && today !== L.iso() ? new Date(today + 'T12:00:00').toISOString() : null;
+          return self.logic.tick(r, { actual: actual, startedAt: st ? new Date(st).toISOString() : null, note: missedDay ? 'catch-up' : null, at: forDay || undefined }).then(function() {
+            L._ls(timerKey, null);
+            if (r.cadence === 'next_time') return self.logic.remove(r.id).then(function() { return self.logic.load(); });
+          });
+        },
+        after: redraw
+      });
       return el;
     },
 

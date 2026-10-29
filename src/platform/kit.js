@@ -63,6 +63,55 @@ RPGACE.register('kit', {
       };
       return btn;
     },
+    // TK-1 (Oct 29 2026, plan "Task Card Kit"; Alex: "make this part of central kit, i want my day different task cards
+    // to work the same way" / "everything is task - action etc are just sysnonyms"): THE task card. One look for every
+    // task anywhere (Actions, block steps, Live now, planning): big circle + gold ✓ Done + tools, faded once done.
+    //   o = { title, icon, metaHtml (trusted, caller-escaped), done, skipped, mode: 'do' | 'plan' | 'view',
+    //         onTick(nowDone) -> Promise   (circle / ✓ Done; a done card's circle undoes),
+    //         after()                       (runs once onTick resolves - the caller redraws in place),
+    //         tools: [{label, fn, cls, primary, data}], below: Element, cls, id, dataset }
+    // In 'plan' mode there is no tick (planning a future block); 'view' shows state only.
+    taskCard: function(o) {
+      o = o || {};
+      var K = RPGACE.kit, mode = o.mode || 'do', done = !!o.done, skip = !!o.skipped, settled = done || skip;
+      var el = document.createElement('div');
+      el.className = 'kit-task' + (o.cls ? ' ' + o.cls : '');
+      if (o.id) el.dataset.id = o.id;
+      Object.keys(o.dataset || {}).forEach(function(k) { el.dataset[k] = o.dataset[k]; });
+      el.style.cssText = 'border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin-bottom:8px;background:var(--panel);' + (settled ? 'opacity:.6;' : '');
+      var top = document.createElement('div'); top.style.cssText = 'display:flex;align-items:center;gap:10px;';
+      var tick = document.createElement('button'); tick.type = 'button'; tick.className = 'myday-tick kit-task-tick';
+      tick.setAttribute('aria-label', done ? 'Done' : 'Mark done');
+      tick.textContent = done ? '✓' : skip ? '–' : '';
+      tick.style.cssText = 'flex:0 0 auto;width:40px;height:40px;border-radius:50%;border:2px solid ' + (done ? 'var(--gold)' : 'var(--border)') + ';background:' + (done ? 'var(--gold)' : 'none') + ';color:#111;font-size:18px;font-weight:700;cursor:pointer;' + (mode === 'plan' ? 'border-style:dashed;cursor:default;' : '');
+      var mid = document.createElement('div'); mid.className = 'kit-task-mid'; mid.style.cssText = 'flex:1;min-width:0;';
+      mid.innerHTML = '<div class="kit-task-title" style="font-size:15px;font-weight:700;color:var(--text);' + (done ? 'text-decoration:line-through;' : '') + '">' + K.esc((o.icon ? o.icon + ' ' : '') + (o.title || '')) + '</div>' + (o.metaHtml || '');
+      top.appendChild(tick); top.appendChild(mid); el.appendChild(top);
+      var run = function(nowDone) {
+        if (mode !== 'do' || !o.onTick) return;
+        [].forEach.call(el.querySelectorAll('button'), function(b) { b.disabled = true; });
+        Promise.resolve().then(function() { return o.onTick(nowDone); }).then(function() { if (o.after) o.after(el); })
+          .catch(function(e) { [].forEach.call(el.querySelectorAll('button'), function(b) { b.disabled = false; }); RPGACE.utils.toast('⚠️ ' + (e && e.message || e), '#CC4A4A', 3500); if (o.after) o.after(el); });
+      };
+      if (mode === 'do') tick.onclick = function() { run(!settled); };
+      else tick.disabled = mode === 'view';
+      if (o.below) el.appendChild(o.below);
+      var tools = document.createElement('div'); tools.className = 'kit-task-tools';
+      tools.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;padding-left:50px;';
+      var small = 'min-height:36px;padding:6px 10px;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      var add = function(sp) {
+        var b = document.createElement('button'); b.type = 'button'; b.textContent = sp.label; if (sp.cls) b.className = sp.cls;
+        b.style.cssText = small + (sp.primary ? 'background:var(--gold);color:#111;border:none;' : 'background:none;border:1px solid var(--border);color:var(--text);');
+        Object.keys(sp.data || {}).forEach(function(k) { b.dataset[k] = sp.data[k]; });
+        b.onclick = function(ev) { sp.fn(ev, el); };
+        tools.appendChild(b); return b;
+      };
+      if (mode === 'do' && !settled && o.onTick) add({ label: '✓ Done', cls: 'myday-done-btn', primary: true, fn: function() { run(true); } });
+      (o.tools || []).forEach(add);
+      if (tools.childNodes.length) el.appendChild(tools);
+      el._tick = tick;
+      return el;
+    },
     // Search list (GM-7 shape): items [{title, sub}], onPick(item). Search box shows past 6 items. Returns the box.
     pickList: function(host, items, onPick, opts) {
       opts = opts || {};
