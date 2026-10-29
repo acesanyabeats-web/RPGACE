@@ -50,3 +50,6 @@ MORNING BRIEF RESTRUCTURE - /dev_ops_7 Track B (opened Oct 28 2026 while Caps an
        5 Catch up (Review, Waiting on you, Since yesterday, Inbox, YouTube, Watchlist). The written brief is split by its own
        section headings into the chapters; chapters fade/slide in on scroll (CSS, off with reduced motion). Nothing removed.
   MB-4 Tests, docs, plan rows. Then CK-6..9.
+
+8. Alex (Oct 29, verbatim): "Don't make task list public, allow notifications, nr"
+ -> realm_tasks stays signed-in-only (7am brief keeps no follow-ups; pressed brief has them). Notifications: Alex re-allows on his phone (My Day alerts row).
