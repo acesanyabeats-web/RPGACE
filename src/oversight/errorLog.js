@@ -1183,6 +1183,8 @@ RPGACE.register('errorLog', {
   "logFromIdea": "beatLog",
   "logIdea": "beatsHub",
   "logIncome": "sellingHub",
+  "logPast": "myDay",
+  "logPastBlock": "myDay",
   "logSale": "beatsHub",
   "logText": "tripPlans",
   "logsFor": "myDay",

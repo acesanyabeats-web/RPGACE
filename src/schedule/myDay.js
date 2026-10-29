@@ -668,12 +668,14 @@ RPGACE.register('myDay', {
     setBlockItem: function(b, idx, done) {
       var self = RPGACE.modules.myDay, L = self.logic, it = (b.items || [])[idx];
       if (!it) return Promise.reject(new Error('That item is gone — reload My Day.'));
+      // TK-7: a step on a past day's block counts on that day (at the block's start), not today.
+      var when = b.block_date && b.block_date !== L.iso() ? new Date(b.block_date + 'T' + (b.start_time || '12:00').slice(0, 5) + ':00').toISOString() : null;
       var side = Promise.resolve();
       if (it.src === 'list' && it.ref_id) side = RPGACE.sb.secureWrite('shopping_list_items', 'update', done ? { bought: true, in_basket: true } : { bought: false }, 'id=eq.' + it.ref_id);
       var patch = {};
       if (it.src === 'routine') {
         var r = (self._routines || []).filter(function(x) { return String(x.id) === String(it.ref_id); })[0];
-        if (r && done) side = L.tick(r).then(function() { return r.cadence === 'next_time' ? L.remove(r.id) : null; });
+        if (r && done) side = L.tick(r, when ? { at: when } : {}).then(function() { return r.cadence === 'next_time' ? L.remove(r.id) : null; });
         // Undo in a realm block: remove today's tick for that routine (same as My Day's own Undo).
         if (r && !done && b.kind === 'realm') { var lg = L.todayLog(r, self._logs, L.iso()); if (lg) side = L.undo(lg); }
       }
@@ -686,7 +688,7 @@ RPGACE.register('myDay', {
           side = RPGACE.sb.secureWrite('quest_log', 'insert', {
             quest_key: 'block:' + b.id + ':' + idx, quest_kind: 'block', name: it.label, category: b.realm, quest_type: 'block',
             // Realm Tasks: a task from a video pays its own size (5-100); others +10.
-            xp: it.earns === 'xp' && it.xp ? Math.min(100, Math.max(5, Number(it.xp) || 0)) : self.TICK_XP, estimated_minutes: it.mins || null, completed_at: new Date().toISOString(), status: 'completed',
+            xp: it.earns === 'xp' && it.xp ? Math.min(100, Math.max(5, Number(it.xp) || 0)) : self.TICK_XP, estimated_minutes: it.mins || null, completed_at: when || new Date().toISOString(), status: 'completed',
             source_table: 'chore_blocks', source_ref: String(b.id),
           }).then(function(data) { var row = Array.isArray(data) && data[0]; patch.log_id = row && row.id ? row.id : null; RPGACE.cache.clear('quest_log'); });
         } else if (!done && it.log_id) {
@@ -789,6 +791,7 @@ RPGACE.register('myDay', {
       if (!want.length) return Promise.reject(new Error('Pick at least one activity for the ' + x.realm + ' block.'));
       var rl = xs && xs.REALMS[x.realm] ? xs.REALMS[x.realm] : { icon: '✨', name: x.realm };
       var items = want.map(function(i) { return { src: i.src, ref_id: i.ref_id || null, label: i.label, mins: i.mins || null, earns: i.earns || 'tick', xp: i.xp || null, how: i.how || null, opens: i.opens || null, done: false, context_kind: i.context_kind || null, context_id: i.context_id || null, context: i.context || null }; });
+      // TK-7: a logged block (done after the fact) is saved untouched in time; its steps get ticked after saving.
       var row = { kind: 'realm', realm: x.realm, block_date: isoDate, start_time: L.fmtMin(m), mins: Math.max(10, Math.min(480, parseInt(x.mins, 10) || 60)), routine_ids: [], items: items, status: 'planned' };
       if (x.method && self.METHODS[x.method] && !self._noMethodCol) row.method = x.method;
       // MD-2: until chore_blocks.method exists, save without it (the realm default applies).
@@ -2136,6 +2139,16 @@ RPGACE.register('myDay', {
           status: 'completed', source_table: 'chore_blocks', source_ref: String(b.id) }).then(function() { RPGACE.cache.clear('quest_log'); return 'finished'; });
         if (!all && have) return RPGACE.sb.secureWrite('quest_log', 'delete', null, 'id=eq.' + have.id).then(function() { RPGACE.cache.clear('quest_log'); return 'reopened'; });
         return null;
+      });
+    },
+    // TK-7: a block done after the fact - saved, every step ticked (each pays as usual), finished once.
+    logPastBlock: function(isoDate, realm, from, mins, items) {
+      var self = RPGACE.modules.myDay, L = self.logic;
+      return L.saveRealmBlock(isoDate, { realm: realm, start: L.fmtMin(from), mins: Math.max(10, mins), realm_items: items, method: 'none' }).then(function() {
+        var b = (self._choreBlocks || []).filter(function(x) { return x.block_date === isoDate && x.realm === realm && L.toMin(x.start_time) === from; }).slice(-1)[0];
+        if (!b) throw new Error('Saved, but the block did not come back - reload My Day.');
+        return (b.items || []).reduce(function(p, it, i) { return p.then(function() { return L.setBlockItem(b, i, true); }); }, Promise.resolve())
+          .then(function() { return L.syncBlockFinish(b, isoDate); }).then(function() { return b; });
       });
     },
     removeBlockStep: function(b, s) {
@@ -3683,6 +3696,19 @@ RPGACE.register('myDay', {
           lane.appendChild(b);
         });
       }
+      // TK-7 (Oct 29 2026, Alex: "if no block in past, and i press, ask what realm, then i choose what actions i did"):
+      // empty past time is tappable too - log what you did there after the fact.
+      if (isoDate <= today && !compact) {
+        var pTo = isoDate === today ? L.snap5(nowM) : endM;
+        L.freeGaps(segs, startM, pTo, 20).forEach(function(gp) {
+          var pb = document.createElement('button'); pb.type = 'button'; pb.className = 'mdx-gap mdx-gap-past';
+          pb.style.top = (y(gp.from) + 2) + 'px'; pb.style.height = Math.max(18, y(gp.to) - y(gp.from) - 4) + 'px'; pb.style.opacity = '0.55';
+          pb.textContent = '✍️ log what you did';
+          pb.dataset.from = gp.from; pb.dataset.to = gp.to;
+          pb.onclick = function() { if (lane._noTap) return; U.logPast(isoDate, gp.from, gp.to, o.redraw); };
+          lane.appendChild(pb);
+        });
+      }
       segs.filter(function(g) { return g.kind === 'block' || (g.kind === 'item' && g.item); }).forEach(function(g) {
         lane.appendChild(U._segEl(g, isoDate, today, lane, segs, s.gap, y, PX, startM, o));
       });
@@ -4114,6 +4140,66 @@ RPGACE.register('myDay', {
       host.appendChild(det);
     },
     // Tap a free gap: what goes here?
+    // TK-7 (Oct 29 2026, Alex: "ask what realm, then i choose what actions i did to make a list, then it gets
+    // ratified ... itll help with logging connectors"): log time you've already spent. Times + realm, then tick the
+    // tasks you did (or type your own); Save makes a finished block on the timeline (steps ticked, XP as usual,
+    // block_done once) and opens its page to check. Also from the evening review (✍️ Log something you did).
+    logPast: function(isoDate, from, to, after) {
+      var self = RPGACE.modules.myDay, L = self.logic, U = self.ui, K = RPGACE.kit, xs = RPGACE.modules.xpSeason, rt = RPGACE.modules.realmTasks;
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '✍️ ' + U._dayLabel(isoDate), title: 'What did you do?', width: '520px', closeLabel: 'Close' });
+      pop.box.id = 'tk-log';
+      var inCss = 'min-height:44px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:15px;font-family:inherit;';
+      if (from == null) { var nm = L.snap5(L.nowMin()); to = isoDate === L.iso() ? nm : 18 * 60; from = Math.max(0, to - 60); }
+      var tr = document.createElement('div'); tr.style.cssText = 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;font-size:14px;';
+      var a = document.createElement('input'); a.type = 'time'; a.id = 'tk-log-from'; a.value = L.fmtMin(from); a.style.cssText = inCss;
+      var z = document.createElement('input'); z.type = 'time'; z.id = 'tk-log-to'; z.value = L.fmtMin(Math.min(to, 1439)); z.style.cssText = inCss;
+      tr.appendChild(document.createTextNode('From ')); tr.appendChild(a); tr.appendChild(document.createTextNode(' to ')); tr.appendChild(z);
+      pop.box.appendChild(tr);
+      var chips = document.createElement('div'); chips.id = 'tk-log-realms'; chips.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;';
+      var body = document.createElement('div'); body.id = 'tk-log-body';
+      pop.box.appendChild(chips); pop.box.appendChild(body);
+      var realm = null, picked = [];
+      var drawBody = function() {
+        body.innerHTML = '';
+        if (!realm) { body.innerHTML = '<div style="font-size:13px;color:var(--muted);">Pick the realm it was for.</div>'; return; }
+        var lab = document.createElement('div'); lab.style.cssText = 'font-size:13px;color:var(--muted);margin-bottom:4px;'; lab.textContent = 'Tick what you did (or type it):';
+        body.appendChild(lab);
+        var opts = ((rt && rt._tasks) || []).filter(function(x) { return x.realm === realm && x.status === 'kept'; })
+          .map(function(x) { return { key: 't' + x.id, label: x.title, item: { src: 'task', ref_id: String(x.id), label: x.title, mins: x.mins || 30, earns: x.earns || 'tick', xp: x.xp || null, how: x.how || null } }; });
+        picked.filter(function(p) { return p.own; }).forEach(function(p) { opts.push(p); });
+        opts.forEach(function(o) {
+          var on = picked.some(function(p) { return p.key === o.key; });
+          var c = K.btn((on ? '✓ ' : '') + o.label, on ? 'primary' : ''); c.className += ' tk-log-opt'; c.style.margin = '3px 4px 3px 0';
+          c.onclick = function() { if (on) picked = picked.filter(function(p) { return p.key !== o.key; }); else picked.push(o); drawBody(); };
+          body.appendChild(c);
+        });
+        var own = document.createElement('div'); own.style.cssText = 'display:flex;gap:6px;margin:8px 0;';
+        var oi = document.createElement('input'); oi.type = 'text'; oi.id = 'tk-log-own'; oi.placeholder = 'e.g. Met up with 2 friends'; oi.style.cssText = inCss + 'flex:1;min-width:0;';
+        var ob = K.btn('+ Add', ''); ob.id = 'tk-log-own-add';
+        ob.onclick = function() { var v = oi.value.trim(); if (!v) return; picked.push({ key: 'o' + Date.now(), own: true, label: v, item: { src: 'own', label: v } }); drawBody(); };
+        own.appendChild(oi); own.appendChild(ob); body.appendChild(own);
+        var sv = K.btn('✓ Save — I did these', 'primary'); sv.id = 'tk-log-save'; sv.disabled = !picked.length;
+        sv.onclick = function() {
+          var f = L.toMin(a.value), e = L.toMin(z.value);
+          if (f == null || e == null || e <= f) { RPGACE.utils.toast('Set when it started and ended', '#e0a84c', 2500); return; }
+          sv.disabled = true;
+          L.logPastBlock(isoDate, realm, f, e - f, picked.map(function(p) { return Object.assign({ mins: Math.round((e - f) / picked.length) }, p.item); })).then(function(b) {
+            pop.close();
+            RPGACE.utils.toast('✍️ Logged · ' + picked.length + ' done', '#4caf82', 2500);
+            if (after) { try { after(); } catch (er) {} }
+            if (rt) rt.ui.openLive({ block: b, date: isoDate });
+          }, function(err) { sv.disabled = false; RPGACE.utils.toast('⚠️ Not saved: ' + (err.message || err), '#CC4A4A', 4000, 'myDay'); });
+        };
+        body.appendChild(sv);
+      };
+      (xs ? xs.ORDER : []).forEach(function(k) {
+        var R = xs.REALMS[k], c = K.btn(R.icon + ' ' + R.name, ''); c.className += ' tk-log-realm'; c.dataset.realm = k;
+        c.onclick = function() { realm = k; picked = picked.filter(function(p) { return p.own; }); [].forEach.call(chips.children, function(x) { x.style.background = x.dataset.realm === k ? 'var(--gold)' : 'none'; x.style.color = x.dataset.realm === k ? '#111' : 'var(--text)'; }); drawBody(); };
+        chips.appendChild(c);
+      });
+      drawBody();
+      return pop;
+    },
     addInGap: function(isoDate, from, to, redraw) {
       var self = RPGACE.modules.myDay, L = self.logic, U = self.ui;
       var mins = to - from;
@@ -5459,6 +5545,10 @@ RPGACE.register('myDay', {
         }
         var dp = L.dayParts(day);
         if (dp.be.night.tasks.length) { body.appendChild(head('🌙 Night')); var nc = U.bookendCard('night', dp.be, L.iso()); nc.id = 'myday-evening-night'; body.appendChild(nc); }
+        // TK-7 (Alex: "having this add actions to evening review too would be awesome"): log time you didn't plan.
+        var lg = U._btn('✍️ Log something you did', ''); lg.id = 'myday-evening-log'; lg.style.marginTop = '12px';
+        lg.onclick = function() { U.logPast(day, null, null, function() { Promise.all([L.load(), L.loadDid(day).then(function(m) { didM = m; })]).then(draw, draw); }); };
+        body.appendChild(lg);
         var lab = document.createElement('label'); lab.style.cssText = 'display:block;font-size:13px;color:var(--muted);margin-top:12px;';
         lab.textContent = opts.catchUp ? 'One line about that day (optional)' : 'One line about today (optional)';
         var ta = document.createElement('textarea'); ta.id = 'myday-evening-note'; ta.rows = 2;
