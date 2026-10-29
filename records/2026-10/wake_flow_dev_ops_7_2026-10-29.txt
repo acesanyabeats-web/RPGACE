@@ -1,0 +1,22 @@
+Wake flow (dev_ops_7 Track B) - Oct 29 2026
+============================================
+Alex, verbatim (with 2 screenshots: evening review Wed 28 Oct showing "Not done: Morning routine [Skip]"; My Day Alerts "Phone alerts on"):
+"Can't click done on morning routine when I did complete it in the end, so this in evening review is a must. Alarm should auto overlay the I'm up button, it stops the alarm, and opens morning brief so I get up and look at something useful straight away to get up. The alarm should be set always as beginning of morning block, this is done when I press I'm going to sleep in the app (making those buttons in left nav would be awesome as action buttons bar /dev_ops_7 this"
+
+Track A at the time: Morning Brief follow-ups removal live (6ada042, READY). MR waiting on Alex ("nr" unclear). Phone alarm setup paused.
+
+Evidence (GODMODE/scope)
+1. Evening review Done: the "✓ Done" button next to Skip for a daily Action shipped Oct 27 (d785ecd) and is in the live min.js
+   (act("✓ Done","done","Done")). Test browser at 400px with the live code and a daily "Morning routine" not done: row shows
+   "✓ Done, Skip". quest_log has no Morning routine row for Oct 28, so Done was never saved. Not reproduced; leading
+   suspect: the installed app was still running an old copy (Android keeps PWAs alive). Needs Alex's check, not a blind fix (rule 4).
+2. In-app alarm: myDay.ui._alarmCheck shows a thin orange top bar "⏰ Time to get up [☀️ I'm up]" at the Morning block start
+   while the app is open; I'm up -> startDay marks myday_alarms done (phone feed alarm-feed then answers WAIT, so MacroDroid stops)
+   -> openMorning (Good morning screen: alarm, Morning tasks, blocks, brief chapters).
+3. Going to bed alarm: openGoodnight pre-fills L.suggestAlarm = now + sleep target (capped for an early shift), editable time input.
+   Morning block start = L.bookends(...).wake (wake_time, earlier on a morning shift).
+4. Left nav: I'm up / Going to bed lives on the dashboard (#dd-ld-daybtn) and My Day's Now/Next card (ui.dayButton, hosts refresh
+   via _refreshDayButtons). Nothing in the left nav.
+
+Scale: 4 small pieces in one module + leftNav; Tier 2 but small. Deviation stated: short plan, no full paranoia/free-for-all
+ceremony; forks go straight to interrogation.
