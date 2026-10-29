@@ -2109,6 +2109,43 @@ RPGACE.register('myDay', {
       var L = RPGACE.modules.myDay.logic;
       return L.realmOptions(b.realm).then(function(opt) { return L.rankOptions(opt, isoDate, b.items); });
     },
+    // ── TK-2/3/4 (Oct 29 2026, Task Card Kit): a block's steps are tasks ("everything is task") ──────────────
+    // Steps = Homekeeper routines (routine_ids) + items. 'now' | 'past' | 'future' by the block's time.
+    blockMode: function(b, isoDate) {
+      var L = RPGACE.modules.myDay.logic, today = L.iso(), from = L.toMin(b.start_time), to = from + (Number(b.mins) || 30), n = L.nowMin();
+      if (isoDate < today) return 'past';
+      if (isoDate > today) return 'future';
+      return n < from ? 'future' : n >= to ? 'past' : 'now';
+    },
+    blockSteps: function(b, isoDate) {
+      var self = RPGACE.modules.myDay, L = self.logic, out = [];
+      L.blockChores(b).forEach(function(r) { var lg = L.todayLog(r, self._logs || [], isoDate); out.push({ kind: 'routine', r: r, done: !!(lg && lg.status === 'completed') }); });
+      (b.items || []).forEach(function(it, i) { out.push({ kind: 'item', it: it, idx: i, done: !!it.done }); });
+      return out;
+    },
+    // TK-3 (Alex: "yes" - every step ticked finishes the block): the same 'block_done:<id>' +15 XP row the focus
+    // timer writes, keyed so timer + steps never pay twice; unticking a step takes the finish back.
+    syncBlockFinish: function(b, isoDate) {
+      var self = RPGACE.modules.myDay, L = self.logic, steps = L.blockSteps(b, isoDate), key = 'block_done:' + b.id;
+      var all = steps.length > 0 && steps.every(function(s) { return s.done; });
+      return Promise.resolve(RPGACE.sb.select('quest_log', 'select=id&quest_key=eq.' + encodeURIComponent(key) + '&limit=1')).then(function(rows) {
+        var have = Array.isArray(rows) && rows[0];
+        if (all && !have) return RPGACE.sb.secureWrite('quest_log', 'insert', {
+          quest_key: key, quest_kind: 'block', name: L.blockLabel(b) + ' finished', category: b.realm || 'life', quest_type: 'block',
+          xp: self.BLOCK_BONUS_XP, estimated_minutes: Number(b.mins) || null, completed_at: isoDate === L.iso() ? new Date().toISOString() : new Date(isoDate + 'T12:00:00').toISOString(),
+          status: 'completed', source_table: 'chore_blocks', source_ref: String(b.id) }).then(function() { RPGACE.cache.clear('quest_log'); return 'finished'; });
+        if (!all && have) return RPGACE.sb.secureWrite('quest_log', 'delete', null, 'id=eq.' + have.id).then(function() { RPGACE.cache.clear('quest_log'); return 'reopened'; });
+        return null;
+      });
+    },
+    removeBlockStep: function(b, s) {
+      if (s.kind === 'routine') {
+        var ids = (b.routine_ids || []).filter(function(id) { return String(id) !== String(s.r.id); });
+        return RPGACE.sb.secureWrite('chore_blocks', 'update', { routine_ids: ids }, 'id=eq.' + b.id).then(function() { b.routine_ids = ids; RPGACE.cache.clear('chore_blocks'); });
+      }
+      var items = (b.items || []).filter(function(x, i) { return i !== s.idx; });
+      return RPGACE.sb.secureWrite('chore_blocks', 'update', { items: items }, 'id=eq.' + b.id).then(function() { b.items = items; RPGACE.cache.clear('chore_blocks'); });
+    },
     saveBlockItems: function(b, items) {
       var self = RPGACE.modules.myDay, L = self.logic;
       var clean = (items || []).filter(function(i) { return i && i.label; }).map(function(i) {
@@ -3846,6 +3883,73 @@ RPGACE.register('myDay', {
       if (dir === 'left') { if (g.block) U._toTomorrow(g.block, redraw); else U._itemTomorrow(g.item, redraw); return; }
       U._didIt(g, isoDate, today, redraw);
     },
+    // TK-2/4/5: a block's steps as task cards (RPGACE.kit.taskCard) + "+ Add a step" (your tasks or free text).
+    // now / past = tick (past = "already done - fill it out"); future = plan (no tick, ✕ to remove).
+    blockSteps: function(host, b, isoDate, onChange) {
+      var self = RPGACE.modules.myDay, L = self.logic, U = self.ui, K = RPGACE.kit, esc = K.esc;
+      var wrap = document.createElement('div'); wrap.className = 'tk-steps'; wrap.id = 'tk-steps-' + b.id;
+      host.appendChild(wrap);
+      var draw = function() {
+        wrap.innerHTML = '';
+        var mode = L.blockMode(b, isoDate), steps = L.blockSteps(b, isoDate), done = steps.filter(function(s) { return s.done; }).length;
+        var hd = document.createElement('div'); hd.className = 'tk-steps-head'; hd.style.cssText = 'font-size:13px;color:var(--muted);margin:8px 0 6px;font-variant-numeric:tabular-nums;';
+        hd.textContent = (mode === 'future' ? '📋 Plan this block — ' : mode === 'past' ? '✍️ Already done — tick what you did · ' : '▶ Steps · ') + (mode === 'future' ? steps.length + ' step' + (steps.length === 1 ? '' : 's') : done + ' of ' + steps.length + ' done') + (steps.length && done === steps.length && mode !== 'future' ? ' · block finished +' + self.BLOCK_BONUS_XP + ' XP' : '');
+        wrap.appendChild(hd);
+        var afterTick = function() { return L.syncBlockFinish(b, isoDate).then(function(r) { if (r === 'finished') RPGACE.utils.toast('✅ Block finished · +' + self.BLOCK_BONUS_XP + ' XP', '#4caf82', 2600); }).catch(function() {}).then(function() { draw(); if (onChange) onChange(); }); };
+        steps.forEach(function(s) {
+          var tools = mode === 'future' ? [{ label: '✕ Remove', cls: 'tk-remove', fn: function() { L.removeBlockStep(b, s).then(function() { draw(); if (onChange) onChange(); }, U._mdxFail); } }] : [];
+          if (s.kind === 'routine') {
+            var r = s.r, card;
+            if (mode === 'future') card = K.taskCard({ cls: 'tk-step', icon: r.icon, title: r.title, mode: 'plan', metaHtml: '<div style="font-size:12px;color:var(--muted);">~' + esc(r.est_mins || 15) + ' min</div>', tools: tools });
+            else { card = U.row(r, isoDate); card.classList.add('tk-step'); card.addEventListener('click', function(ev) { if (ev.target.closest('.myday-tick,.myday-done-btn')) setTimeout(afterTick, 1200); }); }
+            wrap.appendChild(card);
+            return;
+          }
+          var it = s.it;
+          wrap.appendChild(K.taskCard({
+            cls: 'tk-step', title: it.label, mode: mode === 'future' ? 'plan' : 'do', done: s.done,
+            metaHtml: '<div style="font-size:12px;color:var(--muted);">' + esc([it.mins ? '~' + it.mins + ' min' : null, it.context ? '🎯 ' + it.context : null, it.how ? 'counts when you ' + it.how : null].filter(Boolean).join(' · ')) + '</div>',
+            tools: tools.concat(it.opens && mode !== 'future' ? [{ label: 'Open ↗', fn: function() { U._openTool(it.opens); } }] : []),
+            onTick: function(nowDone) { return L.setBlockItem(b, s.idx, nowDone); },
+            after: afterTick
+          }));
+        });
+        if (!steps.length) { var em = document.createElement('div'); em.style.cssText = 'font-size:13px;color:var(--muted);padding:4px 0 8px;'; em.textContent = 'No steps yet.'; wrap.appendChild(em); }
+        var add = U._btn('+ Add a step', ''); add.className += ' tk-add'; add.id = 'tk-add-' + b.id;
+        add.onclick = function() { U.addStepPicker(b, function() { draw(); if (onChange) onChange(); }); };
+        wrap.appendChild(add);
+      };
+      draw();
+      return wrap;
+    },
+    // TK-4 (Alex: "both"): pick one of your tasks (any realm; Actions are tasks too) or type a new one.
+    addStepPicker: function(b, done) {
+      var self = RPGACE.modules.myDay, L = self.logic, K = RPGACE.kit, rt = RPGACE.modules.realmTasks;
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '+ Add a step', title: L.blockLabel(b), width: '500px', closeLabel: 'Close' });
+      pop.box.id = 'tk-add-pop';
+      var row = document.createElement('div'); row.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;';
+      var inCss = 'min-height:44px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:15px;font-family:inherit;';
+      var nm = document.createElement('input'); nm.type = 'text'; nm.id = 'tk-add-name'; nm.placeholder = 'New step…'; nm.style.cssText = inCss + 'flex:1 1 160px;min-width:0;';
+      var mn = document.createElement('input'); mn.type = 'number'; mn.id = 'tk-add-mins'; mn.min = '1'; mn.value = '15'; mn.setAttribute('aria-label', 'Minutes'); mn.style.cssText = inCss + 'width:70px;';
+      var go = K.btn('Add', 'primary'); go.id = 'tk-add-free';
+      var put = function(item) {
+        go.disabled = true;
+        L.addToBlock(b, item).then(function() { pop.close(); RPGACE.utils.toast('+ ' + item.label + ' added', 'var(--gold)', 1800); if (done) done(); }, function(e) { go.disabled = false; RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500); });
+      };
+      go.onclick = function() { var v = nm.value.trim(); if (!v) { nm.focus(); return; } put({ src: 'own', label: v, mins: Math.max(1, parseInt(mn.value, 10) || 15) }); };
+      row.appendChild(nm); row.appendChild(mn); row.appendChild(go); pop.box.appendChild(row);
+      var have = {}; L.blockSteps(b, b.block_date || L.iso()).forEach(function(s) { have[s.kind === 'routine' ? 'r' + s.r.id : (s.it.src === 'routine' ? 'r' : 't') + s.it.ref_id] = true; });
+      var items = (self._routines || []).filter(function(r) { return r.active !== false && r.cadence !== 'next_time' && !have['r' + r.id]; })
+        .map(function(r) { return { title: (r.icon ? r.icon + ' ' : '') + r.title, sub: (r.area || '') + ' · ~' + (r.est_mins || 15) + ' min', item: { src: 'routine', ref_id: String(r.id), label: r.title, mins: r.est_mins || 15, earns: 'real', how: 'its routine XP', opens: r.opens || null } }; });
+      ((rt && rt._tasks) || []).filter(function(x) { return x.status === 'kept' && !have['t' + x.id]; }).forEach(function(x) {
+        var R = RPGACE.modules.xpSeason && RPGACE.modules.xpSeason.REALMS[x.realm];
+        items.push({ title: (R ? R.icon + ' ' : '') + x.title, sub: (R ? R.name : x.realm || '') + ' · ~' + (x.mins || 30) + ' min', item: { src: 'task', ref_id: String(x.id), label: x.title, mins: x.mins || 30, earns: x.earns || 'tick', xp: x.xp || null, how: x.how || null, opens: x.opens || null } });
+      });
+      var lab = document.createElement('div'); lab.style.cssText = 'font-size:13px;color:var(--muted);margin-bottom:4px;'; lab.textContent = 'Or pick one of your tasks:';
+      pop.box.appendChild(lab);
+      K.pickList(pop.box, items, function(x) { put(x.item); }, { id: 'tk-pick', placeholder: 'Search your tasks…', empty: 'No saved tasks yet — type one above.' });
+      return pop;
+    },
     // ── MDX-3: tap a block ──────────────────────────────────────────────
     _live: function(g, isoDate, today) {
       var self = RPGACE.modules.myDay, L = self.logic, b = g.block, x = g.item;
@@ -3860,6 +3964,10 @@ RPGACE.register('myDay', {
       var U = RPGACE.modules.myDay.ui;
       if (g.kind === 'bookend') { U._openPin(g.which, isoDate); return; }
       if (g.kind !== 'block' && g.kind !== 'item') return;
+      // TK-2 (Alex: "clicking a block ... opens the live now of the block with the steps and add task"; past = fill
+      // it out, future = plan it): a planned block opens ▶ Live now for that block; ⋯ there opens this old sheet.
+      var rtm = RPGACE.modules.realmTasks;
+      if (g.block && rtm) { rtm.ui.openLive({ block: g.block, date: isoDate, seg: g, redraw: redraw }); return; }
       U.blockSheet(g, isoDate, today, redraw);
     },
     _startNow: function(g, today, redraw) {

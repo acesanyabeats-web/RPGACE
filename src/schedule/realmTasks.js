@@ -480,6 +480,20 @@ RPGACE.register('realmTasks', {
       var ab = U._btn('➕ Task', ''); ab.id = 'rt-open-add'; ab.onclick = function() { U.openAdd({}); };
       tools.appendChild(ib); tools.appendChild(cb); tools.appendChild(ab);
       top.appendChild(tools); box.appendChild(top);
+      // TK-2: a block tapped on the timeline opens here: its steps as task cards, + Add a step, ⋯ for move/edit.
+      if (opts.block) {
+        var ob = opts.block, od = opts.date || md.logic.iso(), om = md.logic.blockMode(ob, od), oF = md.logic.toMin(ob.start_time);
+        var bh = document.createElement('div'); bh.id = 'rt-block-head'; bh.style.cssText = 'margin:12px 0 4px;';
+        bh.innerHTML = '<div class="rt-big">' + esc(md.logic.blockLabel(ob)) + '</div><div class="rt-sub">' + esc(md.ui._dayLabel(od) + ' · ' + md.logic.fmtMin(oF) + '–' + md.logic.fmtMin(oF + (Number(ob.mins) || 30))) + ' · ' + (om === 'now' ? 'on now' : om === 'past' ? 'already done' : 'coming up') + '</div>';
+        box.appendChild(bh);
+        var bt = document.createElement('div'); bt.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;';
+        var lv = om !== 'past' && opts.seg ? md.ui._live(opts.seg, od, md.logic.iso()) : null;
+        if (lv && om === 'now' && !lv.running) { var sb = U._btn(lv.label, 'primary'); sb.id = 'rt-block-start'; sb.onclick = function() { sb.disabled = true; lv.run().then(function() { U._drawLive(box, opts); }, function() { sb.disabled = false; }); }; bt.appendChild(sb); }
+        if (opts.seg) { var mo = U._btn('⋯ Move / edit block', ''); mo.id = 'rt-block-more'; mo.onclick = function() { md.ui.blockSheet(opts.seg, od, md.logic.iso(), opts.redraw); }; bt.appendChild(mo); }
+        box.appendChild(bt);
+        md.ui.blockSteps(box, ob, od, function() { if (opts.redraw) { try { opts.redraw(); } catch (e) {} } });
+        return;
+      }
       var live = L.liveBlock(), realm = opts.realm || (live && live.run.realm) || null, b = live ? live.block : null;
       var head = document.createElement('div'); head.id = 'rt-live-head'; head.style.cssText = 'margin:12px 0 4px;';
       if (live) {
@@ -492,6 +506,8 @@ RPGACE.register('realmTasks', {
         head.innerHTML = '<div class="rt-big">Nothing running</div><div class="rt-sub">Start a realm block on My Day (▶ Start) and it opens here, or pick a realm to work on now.</div>';
       }
       box.appendChild(head);
+      // TK-2: the running block's steps as task cards (same cards as the timeline's block page).
+      if (b) md.ui.blockSteps(box, b, md.logic.iso());
       U._liveNext(box, opts);
       U._liveFree(box, realm, opts);
       if (!realm) {
