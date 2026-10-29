@@ -63,3 +63,7 @@ live now of the block with the steps and add task etc ( everything is task - act
 all the same thing divided by realms, dont code them as different, the tasks have the my day cards if it makes sense)"
 Change recorded: TK-2's tap target = the block's ▶ Live now page (steps as task cards + "+ Add a step"), not a separate
 sheet. Naming/model rule: task = action = routine step; one kind of thing, split only by realm; one card for all.
+Interrogation 2 (Oct 29), verbatim:
+Q: which blocks open Live now when tapped?  A: "1 but if past, it open the already done and i fill it out, if in future its add and plan the block"
+   -> every block: now = Live now (tick steps, + Add a step); past = "already done" fill-in (tick what was done); future = add/plan its steps.
+Q: pace?  A: "Do all (Recommended)" -> TK-1..6 built back to back, report at the end.
