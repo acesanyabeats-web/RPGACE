@@ -490,6 +490,9 @@ RPGACE.register('realmTasks', {
         var lv = om !== 'past' && opts.seg ? md.ui._live(opts.seg, od, md.logic.iso()) : null;
         if (lv && om === 'now' && !lv.running) { var sb = U._btn(lv.label, 'primary'); sb.id = 'rt-block-start'; sb.onclick = function() { sb.disabled = true; lv.run().then(function() { U._drawLive(box, opts); }, function() { sb.disabled = false; }); }; bt.appendChild(sb); }
         if (opts.seg) { var mo = U._btn('⋯ Move / edit block', ''); mo.id = 'rt-block-more'; mo.onclick = function() { md.ui.blockSheet(opts.seg, od, md.logic.iso(), opts.redraw); }; bt.appendChild(mo); }
+        // Oct 29 2026: a past block can carry details (people, place, reflection, photo) as a memory - same format as events.
+        var em = RPGACE.modules.eventMemories;
+        if (om === 'past' && em) { var dt = U._btn('🎞 Add details', ''); dt.id = 'rt-block-details'; dt.onclick = function() { dt.disabled = true; em.logic.forBlock(ob).then(function(m) { dt.disabled = false; em.ui.openEdit(m); }, function(e) { dt.disabled = false; RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500); }); }; bt.appendChild(dt); }
         box.appendChild(bt);
         md.ui.blockSteps(box, ob, od, function() { if (opts.redraw) { try { opts.redraw(); } catch (e) {} } });
         return;

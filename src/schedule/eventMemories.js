@@ -71,6 +71,30 @@ RPGACE.register('eventMemories', {
       return RPGACE.sb.secureWrite('quest_log', 'insert', { quest_key: 'memory:' + ev.id, quest_kind: 'memory', name: ev.title, category: ev.realm, quest_type: 'memory',
         xp: RPGACE.modules.eventMemories.XP, source_table: 'memories', source_ref: String(ev.id), status: 'completed', completed_at: new Date().toISOString() });
     },
+    // Oct 29 2026 (Alex: "i want to be able to edit log so i can add details, like i did with freya pub crawl in same
+    // format to leave reflection and impression"): edit a memory's details any time.
+    update: function(ev, f) {
+      var si = RPGACE.modules.screenshotInbox;
+      var photo = f.file && si ? si.logic.upload(f.file, 'proof', [ev.realm]).then(function(x) { return x && x.row ? String(x.row.id) : null; }) : Promise.resolve(null);
+      return photo.then(function(pid) {
+        var patch = { title: String(f.title || ev.title).trim().slice(0, 120) || ev.title, people: f.people || null, place: f.place || null,
+          note: f.note ? String(f.note).slice(0, 4000) : null, updated_at: new Date().toISOString() };
+        if (pid) patch.photo_id = pid;
+        return RPGACE.sb.secureWrite('memories', 'update', patch, 'id=eq.' + ev.id).then(function() { Object.assign(ev, patch); return ev; });
+      });
+    },
+    // A logged or finished block becomes a memory you can add details to (same format as events). The block already
+    // paid its XP, so this one does not pay again ("no double counting"). Found again by date + start + realm.
+    forBlock: function(b) {
+      var L = RPGACE.modules.eventMemories.logic, md = RPGACE.modules.myDay;
+      var at = String(b.start_time || '').slice(0, 5);
+      return L.read('select=*&source=eq.block&happened_on=eq.' + b.block_date + '&realm=eq.' + (b.realm || 'life') + '&at_time=eq.' + at + '&limit=1').then(function(rows) {
+        if (Array.isArray(rows) && rows[0]) return rows[0];
+        var title = (b.items || []).map(function(i) { return i.label; }).join(' · ') || (md ? md.logic.blockLabel(b) : 'Block');
+        return RPGACE.sb.secureWrite('memories', 'insert', { title: title.slice(0, 120), happened_on: b.block_date, at_time: at, realm: b.realm || 'life', status: 'kept', source: 'block' })
+          .then(function(data) { var s = Array.isArray(data) && data[0]; if (!s || !s.id) throw new Error('The memory saved but came back without an id.'); RPGACE.cache.clear('memories'); return s; });
+      });
+    },
     // It didn't happen: dropped, never deleted.
     drop: function(ev) { return RPGACE.sb.secureWrite('memories', 'update', { status: 'dropped' }, 'id=eq.' + ev.id).then(function() { ev.status = 'dropped'; }); },
   },
@@ -153,6 +177,28 @@ RPGACE.register('eventMemories', {
       pop.box.appendChild(f);
       return pop;
     },
+    openEdit: function(ev, onSaved) {
+      var self = RPGACE.modules.eventMemories, L = self.logic, U = self.ui, xs = RPGACE.modules.xpSeason, R = (xs && xs.REALMS[ev.realm]) || {};
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '🎞 ' + (R.icon || '') + ' ' + (R.name || ev.realm || ''), title: 'Edit memory', width: '480px' });
+      pop.box.id = 'ev-edit';
+      var css = 'min-height:44px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--panel2);color:var(--text);font-size:15px;font-family:inherit;width:100%;box-sizing:border-box;';
+      var f = document.createElement('div'); f.style.cssText = 'display:flex;flex-direction:column;gap:8px;';
+      var sub = document.createElement('div'); sub.style.cssText = 'font-size:13px;color:var(--muted);'; sub.textContent = ev.happened_on + (ev.at_time ? ' · ' + ev.at_time : ''); f.appendChild(sub);
+      var field = function(id, ph, val, area) { var x = document.createElement(area ? 'textarea' : 'input'); if (!area) x.type = 'text'; x.id = id; x.placeholder = ph; x.value = val || ''; x.style.cssText = css + (area ? 'min-height:120px;' : ''); f.appendChild(x); return x; };
+      var ti = field('ev-edit-title', 'What was it?', ev.title), pe = field('ev-edit-people', 'Who with?', ev.people), pl = field('ev-edit-place', 'Where?', ev.place);
+      var no = field('ev-edit-note', 'Reflection and impression — how was it, what stood out?', ev.note, true);
+      var file = document.createElement('input'); file.type = 'file'; file.accept = 'image/*'; file.id = 'ev-edit-photo'; f.appendChild(file);
+      if (ev.photo_id) { var ph = document.createElement('div'); ph.style.cssText = 'font-size:12px;color:var(--muted);'; ph.textContent = '📷 A photo is saved (adding one replaces it)'; f.appendChild(ph); }
+      var sv = U._btn('💾 Save', true, 'ev-edit-save');
+      sv.onclick = function() {
+        sv.disabled = true;
+        L.update(ev, { title: ti.value, people: pe.value.trim(), place: pl.value.trim(), note: no.value.trim(), file: file.files && file.files[0] }).then(function() {
+          pop.close(); RPGACE.utils.toast('🎞 Saved: ' + ev.title, '#4caf82', 2000); RPGACE.cache.clear('memories'); if (onSaved) onSaved(ev);
+        }, function(e) { sv.disabled = false; RPGACE.utils.toast('⚠️ ' + e.message, '#CC4A4A', 3500, 'eventMemories'); });
+      };
+      f.appendChild(sv); pop.box.appendChild(f);
+      return pop;
+    },
     openMemories: function() {
       var self = RPGACE.modules.eventMemories, L = self.logic, U = self.ui, xs = RPGACE.modules.xpSeason, today = L.iso();
       var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '🎞 MEMORIES', title: 'Things you did', width: '520px', scroll: true });
@@ -169,6 +215,7 @@ RPGACE.register('eventMemories', {
             d.innerHTML = '<b>' + U._esc(r.title) + '</b> <span style="color:var(--muted);">' + U._esc(r.happened_on) + (r.at_time ? ' ' + U._esc(r.at_time) : '') + ' · ' + (R.icon || '') + ' ' + U._esc(R.name || r.realm) + '</span>' +
               ([r.place, r.people].filter(Boolean).length ? '<br><span style="color:var(--muted);">' + U._esc([r.place, r.people].filter(Boolean).join(' · ')) + '</span>' : '') +
               (r.note ? '<br>' + U._esc(r.note) : '') + (r.photo_id ? '<br><span style="color:var(--muted);">📷 photo saved</span>' : '');
+            if (r.status === 'kept') { var ed = U._btn('✏️ Edit', false, ''); ed.className += ' ev-mem-edit'; ed.style.marginTop = '6px'; ed.onclick = function() { pop.close(); U.openEdit(r, function() { U.openMemories(); }); }; d.appendChild(document.createElement('br')); d.appendChild(ed); }
             pop.box.appendChild(d);
           });
         };
