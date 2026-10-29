@@ -35,3 +35,9 @@ WF-2 Going to bed alarm pre-filled with tomorrow's Morning block start (earlier 
 WF-3 Left nav ⚡ Actions button -> popup: I'm up/Going to bed, Morning Brief, Doing now, I just did, Evening review.
 WF-4 MacroDroid: add "open rpgace.vercel.app" when it rings (done when phone setup resumes).
 WF-0 Evening review Done: not reproduced (live code shows ✓ Done); Alex checks after fully closing and reopening the app.
+
+Build (Oct 29, after Alex: "Go, I'm on my way home so laptop is near, do wf")
+WF-1..3 shipped in 6fdc453 (tests: wf_test 12/12, db_test 24/24 with the alarm check updated to the Morning-start rule, pa_test 16/16, md5_test 13/13).
+WF-4 MacroDroid step (for when phone setup resumes): inside the If (status contains RING), after Play Sound, add
+"Launch Application" -> RPGACE (the installed app). Check: at a test ring, the phone opens RPGACE on the full-screen
+"⏰ Time to get up" cover; tapping ☀️ I'm up stops the ringing within a minute.
