@@ -627,6 +627,41 @@ RPGACE.register('doingNow', {
       pop.box.appendChild(wrap);
       return pop;
     },
+    // Oct 29 2026 (Alex: "a page where I can see active timers and stop them"): every running timer in one list
+    // (⚡ Actions → ⏱ Running now). ■ Stop opens the usual Stop screen; ✓ Done finishes it straight away.
+    openRunning: function() {
+      var dd = RPGACE.modules.dashDeck, self = RPGACE.modules.doingNow, L = self.logic, ui = self.ui;
+      var pop = dd._popup({ eyebrow: '⏱ Running now', title: 'Your timers', width: '460px', closeLabel: 'Close' });
+      pop.box.id = 'dn-running-list';
+      var list = document.createElement('div'); list.style.cssText = 'display:flex;flex-direction:column;gap:8px;';
+      var paint = function() {
+        list.innerHTML = '';
+        var run = L.running();
+        if (!run.length) { var none = document.createElement('div'); none.style.cssText = 'color:var(--muted);font-size:14px;'; none.textContent = 'Nothing is running.'; list.appendChild(none); return; }
+        run.forEach(function(e) {
+          var row = document.createElement('div'); row.className = 'dn-run-row';
+          row.style.cssText = 'border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;';
+          var t = document.createElement('div'); t.style.cssText = 'flex:1 1 180px;font-size:15px;font-weight:700;color:var(--text);';
+          t.textContent = e.title + ' · ' + L.fmt(L.mins(e));
+          var stop = ui._btn('■ Stop', ''); stop.className = 'dn-run-stop';
+          stop.onclick = function() { pop.close(); ui.openStop(e); };
+          var done = ui._btn('✓ Done', 'primary'); done.className = 'dn-run-done';
+          done.onclick = function() {
+            done.disabled = true;
+            L.finish(e, {}).then(function(res) {
+              ui._refresh(); paint();
+              try { RPGACE.modules.myDay.ui.render(); } catch (x) {}
+              RPGACE.utils.toast(res.failed.length ? '⚠️ Done, but: ' + res.failed.join('; ') : '✓ ' + e.title + ' done', res.failed.length ? '#CC4A4A' : '#4caf82', 2600);
+            }, function(x) { done.disabled = false; RPGACE.utils.toast('⚠️ Not saved: ' + (x.message || x), '#CC4A4A', 4000, 'doingNow'); });
+          };
+          [t, stop, done].forEach(function(n) { row.appendChild(n); });
+          list.appendChild(row);
+        });
+      };
+      paint();
+      pop.box.appendChild(list);
+      return pop;
+    },
     // Fix the end time of an auto-stopped entry, then the Stop screen.
     openFixTime: function(entry) {
       var dd = RPGACE.modules.dashDeck, self = RPGACE.modules.doingNow, L = self.logic, ui = self.ui;

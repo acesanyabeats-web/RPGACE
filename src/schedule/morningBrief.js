@@ -277,10 +277,11 @@ RPGACE.register('morningBrief', {
           b.textContent = '';
           lines.forEach(function(x) {
             if (!/^\d+[.)]\s+/.test(x)) { var h = document.createElement('div'); h.textContent = x; b.appendChild(h); return; }
-            var label = x.replace(/^\d+[.)]\s+/, '').replace(/\*\*/g, '');
-            var r = document.createElement('div'); r.className = 'mb-top3-row'; r.style.cssText = 'display:flex;align-items:center;gap:8px;justify-content:space-between;margin:4px 0;';
-            var t = document.createElement('span'); t.textContent = x; r.appendChild(t);
-            r.appendChild(md.ui.addTodayBtn(label, 'life'));
+            var rk = self.logic.top3Realm(x), shown = x.replace(/\s*\[[a-z]+\]\s*$/i, '');
+            var label = shown.replace(/^\d+[.)]\s+/, '').replace(/\*\*/g, '');
+            var r = document.createElement('div'); r.className = 'mb-top3-row'; r.dataset.realm = rk; r.style.cssText = 'display:flex;align-items:center;gap:8px;justify-content:space-between;margin:4px 0;';
+            var t = document.createElement('span'); t.textContent = shown; r.appendChild(t);
+            r.appendChild(md.ui.addTodayBtn(label, rk));
             b.appendChild(r);
           });
         }
@@ -369,6 +370,17 @@ RPGACE.register('morningBrief', {
   // Oct 29 2026 (Alex: "orchestrator cc can't make morning brief at 7am"; the GitHub backup ran at 10:46): from 7:00
   // the app writes a missing brief itself with the API when it opens, instead of waiting for a button press.
   due: function() { return new Date().getHours() >= 7; },
+  // Oct 29 2026 (Alex: "it has info on what realm it came from, so associate it with the right realm"): a Top 3 line
+  // ends with its realm key, e.g. "[chef]" (prompts/morning_brief.md). Older briefs without the tag: reviews, jargon
+  // and chapters are Scholar; a realm named in the line wins; else Life.
+  top3Realm: function(line) {
+    var X = RPGACE.modules.xpSeason, t = String(line || ''), m = /\[([a-z]+)\]\s*$/i.exec(t);
+    if (m && X && X.REALMS[m[1].toLowerCase()]) return m[1].toLowerCase();
+    var low = ' ' + t.toLowerCase() + ' ';
+    if (/taxonomy|proposal|jargon|chapter|bookworm|exam|lesson|study/.test(low)) return 'scholar';
+    var hit = X ? X.ORDER.filter(function(k) { return new RegExp('[^a-z]' + X.REALMS[k].name.toLowerCase() + '[^a-z]').test(low); })[0] : null;
+    return hit || 'life';
+  },
 
   sections: function(text) {
     var S = RPGACE.modules.morningBrief.logic.SECTIONS, out = [], cur = null;

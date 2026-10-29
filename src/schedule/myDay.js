@@ -5371,6 +5371,8 @@ RPGACE.register('myDay', {
         var up = L.awake(L.dayState());
         add('myday-act-day', up ? '🌙 Going to bed' : '☀️ I\'m up', up ? '' : 'primary', function() { (up ? U.goingToBed() : U.imUp()).catch(function() {}); });
         add('myday-act-brief', '☀️ Morning Brief', '', function() { dd._openMorningBrief(); });
+        var nRun = dn ? dn.logic.running().length : 0;
+        if (nRun) add('myday-act-running', '⏱ Running now (' + nRun + ')', 'primary', function() { dn.ui.openRunning(); });
         if (dn) {
           add('myday-act-live', '▶ Doing now', '', function() { dn.ui.openStart(); });
           add('myday-act-did', '✓ I just did', '', function() { dn.ui.openJustDid(); });
@@ -6302,19 +6304,32 @@ RPGACE.register('myDay', {
         try { RPGACE.hooks.fire('myday:ticked', r); } catch (e) {}
       };
       var fail = function(e) { RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500, 'myDay'); redraw(); };
-      var tools = [];
+      var tools = [], dn = RPGACE.modules.doingNow;
+      var run = !log && dn ? dn.logic.running().filter(function(e) { return e.details && String(e.details.action_id) === String(r.id); })[0] || null : null;
       if (log) tools.push({ label: '↶ Undo', fn: function() { self.logic.undo(log).then(redraw).catch(fail); } });
       else {
-        var started = L._ls(timerKey);
-        tools.push({ label: started ? '⏱ ' + Math.max(0, Math.round((Date.now() - started) / 60000)) + ' min' : '▶ Start', cls: 'myday-timer', data: { started: started || '' },
-          fn: function() { if (L._ls(timerKey)) { L._ls(timerKey, null); } else { L._ls(timerKey, Date.now()); } redraw(); } });
+        // Oct 29 2026 (Alex: "ongoing timers pop up asking if still doing, or a page where I can see active timers and
+        // stop them, clicking task complete should stop it"): ▶ Start starts a Live now entry for this Action (one timer
+        // kind: synced, listed on the Live now card, asks "Still doing?", stops itself after 4 h). The old per-phone
+        // timer (localStorage myday_timer_<id>, which kept counting after a tick elsewhere: "⏱ 1450 min") is dropped.
+        if (L._ls(timerKey)) L._ls(timerKey, null);
+        var started = run ? new Date(run.started_at).getTime() : 0;
+        tools.push({ label: run ? '⏱ ' + Math.max(0, Math.round((Date.now() - started) / 60000)) + ' min' : '▶ Start', cls: 'myday-timer', data: { started: started || '' },
+          fn: function() {
+            if (!dn) return;
+            if (run) { dn.ui.openStop(run); return; }
+            Promise.resolve(dn.logic.start(r.title, [L.realmOf(r)], null, { expect: r.est_mins || 30, details: { action_id: r.id } }))
+              .then(function() { try { dn.ui._refresh(); } catch (e) {} redraw(); }).catch(fail);
+          } });
         if (r.opens) {
           var tl = self.TOOLS.filter(function(x) { return x.key === r.opens; })[0];
           tools.push({ label: 'Open ' + (tl ? tl.label : r.opens), fn: function() { self.ui._openTool(r.opens); } });
         }
         if (r.minimum && !missedDay && r.cadence !== 'next_time') tools.push({ label: '▫ Did the minimum', cls: 'myday-min', fn: function(ev) {
           ev.target.disabled = true;
-          self.logic.tick(r, { minimum: true }).then(function() { L._ls(timerKey, null); }).then(redraw).catch(fail);
+          // A running timer pays as Live now (its XP); the Action is then ticked with xp 0, as AC-3 does.
+          (run ? dn.logic.endAt(run, Date.now()).then(function() { return self.logic.tick(r, { minimum: true, xp: 0, actual: dn.logic.mins(run), note: 'doing_now' }); })
+            : self.logic.tick(r, { minimum: true })).then(redraw).catch(fail);
         } });
         if (r.cadence !== 'next_time') tools.push({ label: 'Skip', fn: function() { self.logic.skip(r).then(redraw).catch(fail); } });
       }
@@ -6350,11 +6365,11 @@ RPGACE.register('myDay', {
         done: isDone, skipped: isSkip, tools: tools, below: below,
         onTick: function(nowDone) {
           if (log) return self.logic.undo(log);
-          var st = L._ls(timerKey);
-          var actual = st ? Math.max(1, Math.round((Date.now() - st) / 60000)) : null;
           var forDay = !missedDay && today && today !== L.iso() ? new Date(today + 'T12:00:00').toISOString() : null;
-          return self.logic.tick(r, { actual: actual, startedAt: st ? new Date(st).toISOString() : null, note: missedDay ? 'catch-up' : null, at: forDay || undefined }).then(function() {
-            L._ls(timerKey, null);
+          // Done with its timer running: finish the Live now entry (it ticks this Action off, xp 0 - no double XP).
+          var done = run ? dn.logic.finish(run, {}).then(function(res) { try { dn.ui._refresh(); } catch (e) {} if (res.failed.length) throw new Error(res.failed.join('; ')); })
+            : self.logic.tick(r, { note: missedDay ? 'catch-up' : null, at: forDay || undefined });
+          return done.then(function() {
             if (r.cadence === 'next_time') return self.logic.remove(r.id).then(function() { return self.logic.load(); });
           });
         },
