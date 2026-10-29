@@ -64,3 +64,8 @@ PHONE ALARMS - /dev_ops_7 Track B (opened Oct 28 2026 while CK-8 builds)
  (alarm-feed hits 01:35 + 01:44 UTC Oct 29, rpg_alarm = WAIT). NOT DONE: the 6 ringtones are still queued (laptop server was
  running old code - restart start_server.bat to git pull), no ready sound yet, test ring not run, "RPGACE stop" shortcut macro
  not built, time constraint to restore after the test.
+
+8. Oct 29 03:12-03:18: first real import on the laptop. yt-dlp + ffmpeg worked; every storage upload got 400 (storage_logs)
+   because the uploader sent x-upsert:true and the alarm_sounds bucket allows INSERT only (upsert needs SELECT+UPDATE).
+   Fix 40000f9: no x-upsert (each sound has its own id file name). Bucket rules unchanged. Re-queued; all 6 ready
+   (Joey Diaz ringtone, David Goggins - Wake Up, Motivational alarm, Wakey wakey eggs and bakey, Minions wake up alarm, Joey Diaz alarm).
