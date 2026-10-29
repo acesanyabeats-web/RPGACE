@@ -109,6 +109,8 @@ self.addEventListener('push', function (event) {
   var opts = { body: d.body || '', icon: '/icons/icon-192.png', badge: '/icons/icon-192.png',
     tag: d.kind ? 'rpgace-' + d.kind : undefined, data: { url: d.url || '/' } };
   if (d.alarm) { opts.requireInteraction = true; opts.renotify = true; opts.vibrate = [400, 200, 400, 200, 800]; }
+  // Oct 29 2026: the 23:00 "Going to bed now?" and 07:00 "Are you up?" asks stay until tapped or swiped.
+  if (d.sticky) { opts.requireInteraction = true; opts.vibrate = [300, 150, 300]; }
   event.waitUntil(self.registration.showNotification(d.title || 'RPGACE', opts));
 });
 

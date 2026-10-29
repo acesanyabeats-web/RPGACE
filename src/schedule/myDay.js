@@ -223,6 +223,16 @@ RPGACE.register('myDay', {
       self.ui.inject();
     });
     var open = _rpgaceMyDayOpenAtLoad;
+    // Oct 29 2026: the 23:00 "🌙 Going to bed now?" alert opens ?open=bed (evening review, then alarm);
+    // the 07:00 "☀️ Are you up?" alert (no-alarm nights) opens ?open=up (starts the day). push_digest sends both.
+    if (open === 'bed' || open === 'up') {
+      try { history.replaceState(history.state, '', location.pathname); } catch (e) {}
+      var once = false;
+      RPGACE.hooks.on('rpgace:login', function() {
+        if (once) return; once = true;
+        setTimeout(function() { (open === 'bed' ? self.ui.goingToBed() : self.ui.imUp()).catch(function() {}); }, 1200);
+      });
+    }
     if (open === 'myday' || open === 'myday-review') {
       try { history.replaceState(history.state, '', location.pathname); } catch (e) {}
       var fired = false;
