@@ -392,6 +392,16 @@ RPGACE.register('leftNav', {
     hdr.appendChild(brand);
     hdr.appendChild(close);
     panel.appendChild(hdr);
+    // WF-3 (Oct 29 2026): one folded ⚡ Actions button; tapping it pops up I'm up / Going to bed,
+    // Morning Brief, Doing now, I just did and Evening review (myDay.ui.openActions owns the list).
+    if (RPGACE.modules.myDay) {
+      var act = document.createElement('button');
+      act.id = 'ln-actions'; act.type = 'button';
+      act.textContent = '⚡ Actions';
+      act.style.cssText = 'margin:8px 12px 4px;min-height:48px;border-radius:10px;border:1px solid rgba(201,168,76,0.45);background:rgba(201,168,76,0.12);color:var(--gold);font-size:16px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;text-align:left;padding:8px 14px;';
+      act.onclick = function() { self.close(); RPGACE.modules.myDay.ui.openActions(); };
+      panel.appendChild(act);
+    }
     // FL-5 (Oct 27 2026): realm filter chips (Alex: "Keep domains, add realm filter").
     var chips = RPGACE.modules.leftNav.ui._realmChips();
     if (chips) panel.appendChild(chips);

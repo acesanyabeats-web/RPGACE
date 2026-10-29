@@ -206,7 +206,9 @@ RPGACE.register('myDay', {
     // MDX-6: the Daily Schedule shows the same draggable timeline.
     RPGACE.registerBootTask(function() { self.ui.schedHook(); });
     // MD-1: the wake alarm rings in the app on any page (every 20s check).
-    setInterval(function() { try { self.ui._alarmCheck(); } catch (e) {} }, 20000);
+    // WF-1 (Oct 29 2026): the alarm rows load here too, so a cold open (MacroDroid opens the app
+    // when the phone rings) shows the cover without visiting My Day first.
+    setInterval(function() { try { self.logic.syncAlarms().then(function() { self.ui._alarmCheck(); }); } catch (e) {} }, 20000);
     // MD-4: focus timer bar (runs from the real clock, so it never drifts).
     setInterval(function() { try { self.ui._focusTick(); } catch (e) {} }, 1000);
     // Day Bookends (Oct 27 2026): Good morning / the evening review open only
@@ -1988,6 +1990,17 @@ RPGACE.register('myDay', {
       }
       at = new Date(Math.round(at.getTime() / 300000) * 300000);
       return { at: at, why: why };
+    },
+    // WF-2 (Oct 29 2026, Alex: "The alarm should be set always as beginning of morning block"):
+    // the Going to bed alarm = the start of the next Morning block (earlier on a morning shift).
+    // null when that time has already gone (suggestAlarm is used then). Pure apart from dayParts.
+    morningAlarm: function(isoDate, now) {
+      var L = RPGACE.modules.myDay.logic, dp = L.dayParts(isoDate), w = dp.be.wake;
+      if (w == null) return null;
+      var at = new Date(isoDate + 'T00:00:00'); at.setMinutes(w);
+      if (at <= (now || new Date())) return null;
+      var plain = L.toMin((dp.st || {}).wake_time || '08:00');
+      return { at: at, why: 'start of your Morning block' + (w < plain && dp.shifts.length ? ' (early for your ' + dp.shifts[0].start + ' shift)' : '') };
     },
     // 🌙 Going to bed: the day closes; one wake alarm for the morning (or none).
     endDay: function(alarmAt, now) {
@@ -5096,6 +5109,33 @@ RPGACE.register('myDay', {
         U.openEvening({ day: day, bed: true, onDone: function() { U.openGoodnight(day); } });
       }).catch(function(e) { RPGACE.utils.toast('⚠️ My Day could not load: ' + (e.message || e), '#CC4A4A', 4000, 'myDay'); throw e; });
     },
+    // WF-3 (Oct 29 2026, Alex: "making those buttons in left nav would be awesome as action buttons bar ...
+    // I tap it then actions above come as pop up to choose"): the ⚡ Actions pop-up, opened from the left menu.
+    openActions: function() {
+      var self = RPGACE.modules.myDay, L = self.logic, U = self.ui, dd = RPGACE.modules.dashDeck, dn = RPGACE.modules.doingNow;
+      var pop = dd._popup({ eyebrow: '⚡ Actions', title: 'What now?', accent: 'var(--gold)', width: '420px', closeLabel: 'Close' });
+      pop.box.id = 'myday-actions';
+      var list = document.createElement('div'); list.style.cssText = 'display:flex;flex-direction:column;gap:10px;';
+      var add = function(id, label, kind, fn) {
+        var b = U._btn(label, kind); b.id = id; b.style.minHeight = '52px'; b.style.fontSize = '16px'; b.style.textAlign = 'left';
+        b.onclick = function() { pop.close(); setTimeout(fn, 0); };
+        list.appendChild(b);
+      };
+      var paint = function() {
+        list.innerHTML = '';
+        var up = L.awake(L.dayState());
+        add('myday-act-day', up ? '🌙 Going to bed' : '☀️ I\'m up', up ? '' : 'primary', function() { (up ? U.goingToBed() : U.imUp()).catch(function() {}); });
+        add('myday-act-brief', '☀️ Morning Brief', '', function() { dd._openMorningBrief(); });
+        if (dn) {
+          add('myday-act-live', '▶ Doing now', '', function() { dn.ui.openStart(); });
+          add('myday-act-did', '✓ I just did', '', function() { dn.ui.openJustDid(); });
+        }
+        add('myday-act-evening', '🌙 Evening review', '', function() { U.openEvening(); });
+      };
+      pop.box.appendChild(list);
+      if (self._settings === undefined) L.loadTimings().then(paint, paint); else paint();
+      return pop;
+    },
     // Going to bed, after the review: tomorrow's blocks, then the alarm.
     openGoodnight: function(day) {
       var self = RPGACE.modules.myDay, L = self.logic, U = self.ui, esc = U._esc;
@@ -5143,7 +5183,7 @@ RPGACE.register('myDay', {
       pop.box.appendChild(aw);
       var hb = RPGACE.modules.healthBody;
       Promise.resolve(hb && hb.logic.signedIn() ? hb.logic.loadSettings().catch(function() { return {}; }) : {}).then(function(hs) {
-        var sg = L.suggestAlarm(now, (hs || {}).sleep_target_h, L.shiftsOn, self._settings || {});
+        var sg = L.morningAlarm(tmr, now) || L.suggestAlarm(now, (hs || {}).sleep_target_h, L.shiftsOn, self._settings || {});
         tin.value = L.fmtMin(L.nowMin(sg.at));
         aw.querySelector('#myday-gn-why').textContent = 'Suggested: ' + sg.why + '. Change it if you need to.';
       });
@@ -6234,7 +6274,7 @@ RPGACE.register('myDay', {
     // ticked. Phone alerts come from push_alarm() when the app is closed.
     _alarmCheck: function() {
       var self = RPGACE.modules.myDay, L = self.logic, U = self.ui, st = self._settings || {};
-      if (!self._routines || !self._alarms) return;
+      if (!self._alarms) return;
       var today = L.iso(), a = self._alarms.filter(function(x) { return x.day === today; })[0];
       var ds = L.dayState(), done = !!(ds && ds.day === today && ds.up_at && !ds.bed_at);
       var ring = L.alarmDue(Date.now(), a, done, st);
@@ -6242,16 +6282,24 @@ RPGACE.register('myDay', {
       if (!ring) { if (bar) bar.remove(); return; }
       var rep = (st.alarm_repeat_mins || 5) * 60000;
       if (!bar) {
-        bar = document.createElement('div'); bar.id = 'myday-alarm'; bar.setAttribute('role', 'alert');
-        bar.style.cssText = 'position:fixed;left:0;right:0;top:0;z-index:100002;display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 16px 10px;background:var(--orange);color:#111;font-weight:700;font-size:15px';
-        var t = document.createElement('div'); t.style.cssText = 'flex:1;min-width:0';
+        // WF-1 (Oct 29 2026, Alex: "Alarm should auto overlay the I'm up button, it stops the alarm"):
+        // the whole screen is one cover with one big ☀️ I'm up (stops app + phone alarm, opens Good morning).
+        bar = document.createElement('div'); bar.id = 'myday-alarm'; bar.setAttribute('role', 'alertdialog'); bar.setAttribute('aria-label', 'Wake alarm');
+        bar.style.cssText = 'position:fixed;inset:0;z-index:100002;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:calc(24px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,#2a1606 0%,#0d0e14 100%);color:var(--text);text-align:center;';
+        var t = document.createElement('div'); t.style.cssText = 'font-size:22px;font-weight:700;letter-spacing:0.5px;color:var(--orange);';
         t.textContent = '⏰ Time to get up';
+        var clock = document.createElement('div'); clock.id = 'myday-alarm-clock';
+        clock.style.cssText = 'font-size:64px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1;';
+        clock.textContent = L.fmtMin(L.nowMin());
         var ok = document.createElement('button'); ok.type = 'button'; ok.id = 'myday-alarm-done'; ok.textContent = '☀️ I\'m up';
-        ok.style.cssText = 'min-height:44px;padding:8px 14px;border-radius:10px;border:none;background:#111;color:#fff;font-weight:700;cursor:pointer;font-family:inherit';
-        ok.onclick = function() { ok.disabled = true; U.imUp().catch(function() { ok.disabled = false; }); };
-        bar.appendChild(t); bar.appendChild(ok); document.body.appendChild(bar);
+        ok.style.cssText = 'width:min(320px,100%);min-height:96px;border-radius:20px;border:none;background:var(--gold);color:#111;font-size:30px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;box-shadow:0 0 0 6px rgba(201,168,76,0.18);';
+        ok.onclick = function() { ok.disabled = true; ok.textContent = 'Starting your day…'; U.imUp().catch(function() { ok.disabled = false; ok.textContent = '☀️ I\'m up'; }); };
+        var sub = document.createElement('div'); sub.style.cssText = 'font-size:13px;color:var(--muted);max-width:300px;';
+        sub.textContent = 'Stops the alarm here and on your phone, then opens your Good morning screen.';
+        bar.appendChild(t); bar.appendChild(clock); bar.appendChild(ok); bar.appendChild(sub); document.body.appendChild(bar);
         self._alarmBeepAt = 0;
       }
+      var ck = document.getElementById('myday-alarm-clock'); if (ck) ck.textContent = L.fmtMin(L.nowMin());
       if (Date.now() - (self._alarmBeepAt || 0) >= rep - 1000) { self._alarmBeepAt = Date.now(); U._beep(); }
     },
     _beep: function() {
