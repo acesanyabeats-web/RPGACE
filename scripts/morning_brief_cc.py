@@ -90,10 +90,9 @@ def gather(now=None):
     day = uk_today(now)
     d, tm = day.isoformat(), (day + timedelta(days=1)).isoformat()
     shifts = get(f"rpgace_shifts?date=in.({d},{tm})&select=date,role,start,end&order=date.asc,start.asc")
-    # MB-2 (Oct 28 2026): planned blocks live in chore_blocks (day_blocks is the old table - it read 0 rows), and
-    # do-after follow-ups (realm_tasks.next_due_at, DL-4/5) are owed today, so the Top 3 comes from these first.
+    # MB-2 (Oct 28 2026): planned blocks live in chore_blocks (day_blocks is the old table - it read 0 rows); the Top 3
+    # comes from these first. Do-after follow-ups are left out (Alex, Oct 29: the evening review handles them).
     blocks = get(f"chore_blocks?block_date=eq.{d}&status=neq.cancelled&select=kind,realm,start_time,mins,items,status&order=start_time.asc&limit=12")
-    follow = get("realm_tasks?next_due_at=not.is.null&status=eq.kept&select=title,realm,next_due_at,next_after&order=next_due_at.asc&limit=6")
     agenda = get(f"rpgace_agendas?date=eq.{d}&completed=is.false&select=title,hour,minute,category&order=hour.asc,minute.asc&limit=12")
     settings = get("myday_settings?id=eq.1&select=wake_time,bed_time")
     chapters = get("bookworm_chapters?status=eq.in_progress&analysis_complete=is.false&select=chapter_title,cc_queued_at&limit=5")
@@ -112,7 +111,6 @@ def gather(now=None):
         "shift_tomorrow": next((s for s in shifts if s.get("date") == tm), None),
         "my_day": (settings[0] if settings and "wake_time" in settings[0] else {}),
         "planned_blocks_today": [dict(b, items=[i.get("label") for i in (b.get("items") or []) if isinstance(i, dict)][:5]) if isinstance(b, dict) else b for b in blocks],
-        "follow_ups_due": follow,
         "agenda_today_open": agenda,
         "waiting_on_alex": dict(reviews, chapters_in_progress=[c.get("chapter_title") for c in chapters if c.get("chapter_title")]),
         "recent_producer_insights": insights,

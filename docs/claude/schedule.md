@@ -15,7 +15,7 @@ Modules (`domain: 'schedule'`): generated list in `docs/domains/schedule/README.
 - Book-by Due rows 7 days out (`tripPlans.logic.tripDue`, `.dd-ld-hot`); ticking a money task → `plan_tasks.cost_paid` + one `chronicles_finance` Travel expense; after-trip log = `journal` source `trip_log` + `plans.details.trip_log`; who's-coming chips. [story](../../patch_notes.html#card-2026-10-14-plans-money-people)
 
 ## Briefs, journal, decisions
-- `morningBrief` builds the Morning Brief from Supabase (`_autoRun()` waits for the login hook); `realmBrief` adds the realm pick and per-realm report periods; the daily Morning Brief Routine writes `journal` with the plain anon key. Brief time 07:00 UK (`trig_015uRjGVrdmiwc5zxq47mMA6` + API backup); pressing ☀️ Morning Brief with none yet writes it now (`logic.writeNow` → `gatherNow` + `prompts/morning_brief.md` → journal once); just opening never writes. The brief reads `chore_blocks` + do-after follow-ups (MB-2).
+- `morningBrief` builds the Morning Brief from Supabase (`_autoRun()` waits for the login hook); `realmBrief` adds the realm pick and per-realm report periods; the daily Morning Brief Routine writes `journal` with the plain anon key. Brief time 07:00 UK (`trig_015uRjGVrdmiwc5zxq47mMA6` + API backup); pressing ☀️ Morning Brief with none yet writes it now (`logic.writeNow` → `gatherNow` + `prompts/morning_brief.md` → journal once); just opening never writes. The brief reads `chore_blocks` (Top 3 starts from your planned blocks); do-after follow-ups stay out (the evening review handles them, Oct 29).
 - `oracleEntry` = Oracle "Save as entry" into the journal. [story](../../patch_notes.html#card-2026-10-16-oracle-save-entry)
 - Realm Tasks, Live now and Generic Missions: see `docs/claude/realm_tasks.md`.
 

@@ -53,3 +53,6 @@ MORNING BRIEF RESTRUCTURE - /dev_ops_7 Track B (opened Oct 28 2026 while Caps an
 
 8. Alex (Oct 29, verbatim): "Don't make task list public, allow notifications, nr"
  -> realm_tasks stays signed-in-only (7am brief keeps no follow-ups; pressed brief has them). Notifications: Alex re-allows on his phone (My Day alerts row).
+
+9. Alex (Oct 29, verbatim): "Why would I need do after follow ups in morning brief? I only register already did if I didn't tick in evening review, I don't think I need that in brief, only morning routine is task list in morning brief, as well as briefed steps"
+ -> follow_ups_due removed from the brief (rules file, CC gather, app gatherNow). Top 3 = planned blocks, then open agenda, then waiting on you.

@@ -387,7 +387,7 @@ RPGACE.register('morningBrief', {
   // MB-1/MB-2: today's data in the same shape scripts/morning_brief_cc.py gather() prints, so one rules file
   // (prompts/morning_brief.md) serves the 7am writer, its API backup and this.
   gatherNow: function() {
-    var md = RPGACE.modules.myDay, rt = RPGACE.modules.realmTasks;
+    var md = RPGACE.modules.myDay;
     var d = md ? md.logic.iso() : new Date().toISOString().slice(0, 10);
     var nx = new Date(d + 'T12:00:00'); nx.setDate(nx.getDate() + 1);
     var tm = nx.getFullYear() + '-' + String(nx.getMonth() + 1).padStart(2, '0') + '-' + String(nx.getDate()).padStart(2, '0');
@@ -402,17 +402,14 @@ RPGACE.register('morningBrief', {
       get('jargon_encyclopedia', 'status=eq.pending&select=id&limit=1000'),
       get('encyclopedia_insights', 'status=neq.rejected&realms=cs.%7Bproducer%7D&select=insight_text,source_entry_title,realms&order=created_at.desc&limit=8'),
       get('conid_pot', 'status=neq.archived&select=title,starred,kind&order=starred.desc,created_at.desc&limit=6'),
-      get('intel_reports', 'select=title,creator,score,created_at&order=created_at.desc&limit=3'),
-      (rt && rt.logic.load ? rt.logic.load().catch(function() {}) : Promise.resolve())
+      get('intel_reports', 'select=title,creator,score,created_at&order=created_at.desc&limit=3')
     ]).then(function(r) {
-      var follow = rt && rt.logic.pendingNext ? rt.logic.pendingNext().slice(0, 6).map(function(x) { return { title: x.title, realm: x.realm, next_due_at: x.next_due_at, next_after: x.next_after }; }) : [];
       return {
         date: d, weekday: new Date(d + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long' }),
         shifts_today: r[0].filter(function(s) { return s.date === d; }),
         shift_tomorrow: r[0].filter(function(s) { return s.date === tm; })[0] || null,
         my_day: (r[3][0] && 'wake_time' in r[3][0]) ? r[3][0] : {},
         planned_blocks_today: r[1].map(function(b) { return b._error ? b : Object.assign({}, b, { items: (b.items || []).map(function(i) { return i && i.label; }).filter(Boolean).slice(0, 5) }); }),
-        follow_ups_due: follow,
         agenda_today_open: r[2],
         waiting_on_alex: { taxonomy_proposals_pending: r[5].length, jargon_terms_pending: r[6].length, chapters_in_progress: r[4].map(function(c) { return c.chapter_title; }).filter(Boolean) },
         recent_producer_insights: r[7], idea_bank: r[8], latest_video_analyses: r[9]
