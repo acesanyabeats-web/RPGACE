@@ -5608,6 +5608,11 @@ RPGACE.register('myDay', {
         var tln = (RPGACE.modules.realmTasks ? RPGACE.modules.realmTasks.logic.typeLine(b) : '');
         if (tln) list.innerHTML = '<span class="mdp-btypes" style="font-size:12px;color:var(--gold);">' + esc(tln) + '</span>';
         if (!items.length && !tln) list.innerHTML = '<span style="font-size:12px;color:#e0a84c;">No type yet — tap 📋 Plan block, or pick on ▶ Live now</span>';
+        // TK-5 (Oct 29 2026): with no planning style on, a block's tasks are the same task cards as everywhere else
+        // (plan a later block: ✕ Remove / + Add a step). 🐸 Frog and 1-3-5 keep their chips (tapping one picks the frog).
+        if (style === 'none' && (b.kind === 'realm' || b.kind === 'chores' || !b.kind)) {
+          row.appendChild(list); self.ui.blockSteps(row, b, isoDate, redraw); wrap.appendChild(row); return;
+        }
         items.forEach(function(i) {
           var chip = document.createElement(style === 'frog' && b.kind === 'realm' ? 'button' : 'span');
           chip.className = 'mdp-bitem'; chip.dataset.key = L.itemKey(i);
