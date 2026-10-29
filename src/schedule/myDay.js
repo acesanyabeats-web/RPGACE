@@ -209,6 +209,8 @@ RPGACE.register('myDay', {
     // WF-1 (Oct 29 2026): the alarm rows load here too, so a cold open (MacroDroid opens the app
     // when the phone rings) shows the cover without visiting My Day first.
     setInterval(function() { try { self.logic.syncAlarms().then(function() { self.ui._alarmCheck(); }); } catch (e) {} }, 20000);
+    // WF-5: when the phone opens RPGACE for an alarm, show the cover straight after sign-in, not 20 s later.
+    RPGACE.hooks.on('rpgace:login', function() { setTimeout(function() { try { self.logic.syncAlarms(true).then(function() { self.ui._alarmCheck(); }); } catch (e) {} }, 1500); });
     // MD-4: focus timer bar (runs from the real clock, so it never drifts).
     setInterval(function() { try { self.ui._focusTick(); } catch (e) {} }, 1000);
     // Day Bookends (Oct 27 2026): Good morning / the evening review open only
@@ -2510,7 +2512,8 @@ RPGACE.register('myDay', {
       if (!ag || !ag._apiSecret) return Promise.resolve(0);
       if (!force && Date.now() - (self._alarmSyncedAt || 0) < 600000) return Promise.resolve(0);
       self._alarmSyncedAt = Date.now();
-      return Promise.resolve(RPGACE.sb.select('myday_alarms', 'select=day,at,status&kind=eq.wake&day=gte.' + L.addDays(L.iso(), -1))).then(function(rows) {
+      // WF-5: test rings load too (kind test:<ms>), so a test shows the same cover as a real alarm.
+      return Promise.resolve(RPGACE.sb.select('myday_alarms', 'select=id,day,kind,at,status&or=(kind.eq.wake,kind.like.test*)&day=gte.' + L.addDays(L.iso(), -1))).then(function(rows) {
         self._alarms = Array.isArray(rows) ? rows : [];
         return 0;
       }).catch(function(e) { console.warn('[myDay] alarm load:', e && e.message); return 0; });
@@ -6275,16 +6278,23 @@ RPGACE.register('myDay', {
     _alarmCheck: function() {
       var self = RPGACE.modules.myDay, L = self.logic, U = self.ui, st = self._settings || {};
       if (!self._alarms) return;
-      var today = L.iso(), a = self._alarms.filter(function(x) { return x.day === today; })[0];
+      // WF-5 (Oct 29 2026, Alex: "id like the overlay to display ... a minute before alarm sets off so i can auto
+      // have it load on wakening"): the cover shows from 60 s before the alarm (the phone opens RPGACE on SOON).
+      var today = L.iso(), nowMs = Date.now(), LEAD = 60000;
       var ds = L.dayState(), done = !!(ds && ds.day === today && ds.up_at && !ds.bed_at);
-      var ring = L.alarmDue(Date.now(), a, done, st);
+      var a = self._alarms.filter(function(x) {
+        var test = /^test:/.test(x.kind || '');
+        return (test || (x.kind || 'wake') === 'wake' && x.day === today) && L.alarmDue(nowMs + LEAD, x, test ? false : done, st);
+      })[0];
+      var ring = !!a, isTest = a && /^test:/.test(a.kind || '');
       var bar = document.getElementById('myday-alarm');
       if (!ring) { if (bar) bar.remove(); return; }
+      if (bar && bar.dataset.kind !== a.kind) { bar.remove(); bar = null; }
       var rep = (st.alarm_repeat_mins || 5) * 60000;
       if (!bar) {
         // WF-1 (Oct 29 2026, Alex: "Alarm should auto overlay the I'm up button, it stops the alarm"):
         // the whole screen is one cover with one big ☀️ I'm up (stops app + phone alarm, opens Good morning).
-        bar = document.createElement('div'); bar.id = 'myday-alarm'; bar.setAttribute('role', 'alertdialog'); bar.setAttribute('aria-label', 'Wake alarm');
+        bar = document.createElement('div'); bar.id = 'myday-alarm'; bar.dataset.kind = a.kind || 'wake'; bar.setAttribute('role', 'alertdialog'); bar.setAttribute('aria-label', 'Wake alarm');
         bar.style.cssText = 'position:fixed;inset:0;z-index:100002;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:calc(24px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px));background:linear-gradient(180deg,#2a1606 0%,#0d0e14 100%);color:var(--text);text-align:center;';
         var t = document.createElement('div'); t.style.cssText = 'font-size:22px;font-weight:700;letter-spacing:0.5px;color:var(--orange);';
         t.textContent = '⏰ Time to get up';
@@ -6296,11 +6306,24 @@ RPGACE.register('myDay', {
         ok.onclick = function() { ok.disabled = true; ok.textContent = 'Starting your day…'; U.imUp().catch(function() { ok.disabled = false; ok.textContent = '☀️ I\'m up'; }); };
         var sub = document.createElement('div'); sub.style.cssText = 'font-size:13px;color:var(--muted);max-width:300px;';
         sub.textContent = 'Stops the alarm here and on your phone, then opens your Good morning screen.';
+        if (isTest) {
+          // A test ring never starts the day: this button only stops the test (the phone goes quiet at its next check).
+          t.textContent = '🔔 Test ring'; ok.textContent = '■ Stop test ring';
+          sub.textContent = 'Your real alarm shows ☀️ I\'m up here. This only stops the test.';
+          ok.onclick = function() {
+            ok.disabled = true;
+            RPGACE.sb.secureWrite('myday_alarms', 'update', { status: 'done' }, 'id=eq.' + a.id).then(function() {
+              a.status = 'done'; RPGACE.cache.clear('myday_alarms'); bar.remove();
+              RPGACE.utils.toast('🔔 Test stopped — your phone goes quiet within a minute', 'var(--gold)', 3000);
+            }, function(e) { ok.disabled = false; RPGACE.utils.toast('⚠️ Not stopped: ' + (e.message || e), '#CC4A4A', 4000, 'myDay'); });
+          };
+        }
         bar.appendChild(t); bar.appendChild(clock); bar.appendChild(ok); bar.appendChild(sub); document.body.appendChild(bar);
         self._alarmBeepAt = 0;
       }
       var ck = document.getElementById('myday-alarm-clock'); if (ck) ck.textContent = L.fmtMin(L.nowMin());
-      if (Date.now() - (self._alarmBeepAt || 0) >= rep - 1000) { self._alarmBeepAt = Date.now(); U._beep(); }
+      // Silent until the alarm time itself (the phone plays your sound); the app beeps only once it is due.
+      if (nowMs >= new Date(a.at).getTime() && nowMs - (self._alarmBeepAt || 0) >= rep - 1000) { self._alarmBeepAt = nowMs; U._beep(); }
     },
     _beep: function() {
       try { if (navigator.vibrate) navigator.vibrate([400, 200, 400, 200, 800]); } catch (e) {}

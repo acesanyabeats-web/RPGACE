@@ -16,10 +16,11 @@ RPGACE.register('alarmSounds', {
       ['Let it run', 'Android Settings → Apps → MacroDroid → Battery → Unrestricted. In MacroDroid allow everything it asks for (notifications, files).'],
       ['New macro "RPGACE alarm"', 'Trigger: Date/Time → Regular Interval → every 1 minute. (Optional constraint: Time of day 04:00–14:00 to save battery.)'],
       ['Ask RPGACE', 'Action: Connectivity → HTTP Request → GET → URL: FEED?q=status → save the response in a new global text variable called rpg_alarm.'],
-      ['When it says RING', 'Action: If clause → rpg_alarm contains RING. Inside it: HTTP Request → GET → URL: FEED?q=sound → save the response to a file: Download/rpgace_alarm.mp3. Then Media → Play/Stop Sound → that file, on the Alarm stream, volume high.'],
-      ['When it says WAIT', 'Add Else → Media → Play/Stop Sound → Stop. End If. Save the macro. The sound clip is about a minute long and plays again each minute until you stop it.'],
+      ['When it says RING', 'Action: If clause → rpg_alarm contains RING. Inside it: HTTP Request → GET → URL: FEED?q=sound → save the response to a file: Download/rpgace_alarm.mp3. Then Media → Play/Stop Sound → that file, on the Alarm stream (set its volume to taste). Then Applications → Launch Application → RPGACE (Force new and Exclude from recents off), so the ☀️ I\'m up cover is in front of you.'],
+      ['A minute early', 'Before Else add Else If → rpg_alarm contains SOON → Launch Application → RPGACE. RPGACE says SOON a minute before the alarm, so the app is loaded and showing the cover when the sound starts.'],
+      ['When it says WAIT', 'Add Else → Media → Play/Stop Sound → Stop. End If. Keep Launch Application inside the If (never after End If, or RPGACE opens every minute). Save the macro. The sound clip is about a minute long and plays again each minute until you stop it.'],
       ['Stop button', 'Second macro "RPGACE stop": Trigger: Shortcut Launched (add the shortcut to your home screen). Actions: Play/Stop Sound → Stop, then HTTP Request → GET → FEED?q=stop. ☀️ I\'m up in RPGACE also stops it at the next check.'],
-      ['Test it', 'In RPGACE press 🔔 Test ring my phone. Within about a minute your phone should play one of your sounds. Press your RPGACE stop shortcut.']
+      ['Test it', 'In RPGACE press 🔔 Test ring my phone. Within about a minute your phone should play one of your sounds and open RPGACE on a 🔔 Test ring cover. Tap ■ Stop test ring (or your RPGACE stop shortcut).']
     ],
     load: function() {
       return RPGACE.sb.select('alarm_sounds', 'select=id,title,source_url,url,status,error,created_at&status=neq.removed&order=created_at.asc')
