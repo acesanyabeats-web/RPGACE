@@ -57,3 +57,10 @@ PHONE ALARMS - /dev_ops_7 Track B (opened Oct 28 2026 while CK-8 builds)
 
 6. APPROVAL (Alex, Oct 28, verbatim): "go, tell me what to do on macrodroid, if the 7 day trial goes perfectly, ill pay the £6 to upgrade to keep benefits"
  -> plan Phone Alarms PA-1..PA-5 ratified as drafted (PA-1 sounds list, PA-1b ringtone import, PA-2 random pick, PA-3 phone side + MacroDroid guide, PA-4 status). Spending stays Alex's own (MacroDroid Pro £6 after the trial, his call).
+
+7. PAUSED (Alex, Oct 29 ~02:25, verbatim): "Let's postpone this till I'm back, I'll tell you, what's next on plans to finish"
+ State: MacroDroid "RPGACE alarm" macro built and saved (status GET -> rpg_alarm; If contains RING -> GET q=sound saved to
+ Documents/RPGACE/rpgace_alarm.mp3 -> Play Sound (Alarm stream); Else -> Stop Existing Sound; End If). Phone check-in verified
+ (alarm-feed hits 01:35 + 01:44 UTC Oct 29, rpg_alarm = WAIT). NOT DONE: the 6 ringtones are still queued (laptop server was
+ running old code - restart start_server.bat to git pull), no ready sound yet, test ring not run, "RPGACE stop" shortcut macro
+ not built, time constraint to restore after the test.
