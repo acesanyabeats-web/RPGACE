@@ -5149,6 +5149,17 @@ RPGACE.register('myDay', {
       if (self._settings === undefined) L.loadTimings().then(paint, paint); else paint();
       return pop;
     },
+    // Oct 29 2026 (Alex: "when either selected, force stop rpgace saving all needed info before force stop"):
+    // everything is already saved by now (review in journal, day_state + alarm by logic.endDay). A web app cannot
+    // force-stop itself, so it asks the phone to close the window, and if the phone refuses it reloads to a fresh
+    // copy - either way the morning starts on the newest code (the stale-copy problem from the alarm tests).
+    _closeForNight: function() {
+      if (RPGACE._noNightClose) return;
+      setTimeout(function() {
+        try { window.close(); } catch (e) {}
+        setTimeout(function() { if (!window.closed) location.replace(location.pathname + '?slept=1'); }, 400);
+      }, 2200);
+    },
     // Going to bed, after the review: tomorrow's blocks, then the alarm.
     openGoodnight: function(day) {
       var self = RPGACE.modules.myDay, L = self.logic, U = self.ui, esc = U._esc;
@@ -5181,8 +5192,9 @@ RPGACE.register('myDay', {
         none.disabled = set.disabled = true;
         L.endDay(at).then(function() {
           pop.close();
-          RPGACE.utils.toast('🌙 Good night' + (at ? ' — alarm ' + L.fmtMin(L.nowMin(at)) : ''), 'var(--gold)', 3000);
+          RPGACE.utils.toast('🌙 Good night' + (at ? ' — alarm ' + L.fmtMin(L.nowMin(at)) : '') + '. Saved — closing RPGACE', 'var(--gold)', 3000);
           U._refreshDayButtons();
+          U._closeForNight();
         }).catch(function(e) { none.disabled = set.disabled = false; RPGACE.utils.toast('⚠️ Not saved: ' + (e.message || e), '#CC4A4A', 4000, 'myDay'); });
       };
       none.onclick = function() { finish(null); };

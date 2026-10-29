@@ -268,6 +268,7 @@ RPGACE.register('errorLog', {
   "_clearForm": "beatLog",
   "_clip": "dailyLife",
   "_clock": "realmTasks",
+  "_closeForNight": "myDay",
   "_coerce": "videoSummary",
   "_colAt": "myDay",
   "_completeChapter": "bookworm",
