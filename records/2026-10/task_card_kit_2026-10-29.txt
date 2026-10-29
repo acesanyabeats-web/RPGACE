@@ -57,3 +57,9 @@ TK-6 Other task lists switch over: Live now / realmTasks rows and Good morning's
      card is the only tick UI in My Day.
 Risks: blockSheet is large and drag-sensitive (MDX); TK-2 must not break drag/resize - its suites (mdx, md2b, dt3/4)
 run each step. Why-not: TK-6 is the least visible; it can wait if Alex wants the block parts first.
+
+RATIFIED (Oct 29), verbatim: "tk plan ratified fully with one change, clicking a block that is now on timeline opens the
+live now of the block with the steps and add task etc ( everything is task - action etc are just sysnonyms, but they are
+all the same thing divided by realms, dont code them as different, the tasks have the my day cards if it makes sense)"
+Change recorded: TK-2's tap target = the block's ▶ Live now page (steps as task cards + "+ Add a step"), not a separate
+sheet. Naming/model rule: task = action = routine step; one kind of thing, split only by realm; one card for all.
