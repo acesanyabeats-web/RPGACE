@@ -20,3 +20,18 @@ Evidence (GODMODE/scope)
 
 Scale: 4 small pieces in one module + leftNav; Tier 2 but small. Deviation stated: short plan, no full paranoia/free-for-all
 ceremony; forks go straight to interrogation.
+
+Interrogation round 1 (Oct 29), answers verbatim
+Q: When your alarm rings and you tap I'm up, what should open?  A: "Good morning screen"
+Q: On Going to bed, how fixed should the alarm be?  A: "Morning start, changeable (Recommended)"
+Q: Which buttons go in the left-nav action bar?  A: "Doing now / I just did, Evening review, Morning Brief, I'm up / Going to bed, Make action bar scrolled up, I tap it then actions above come as pop up to choose"
+Q: Should the phone alarm (MacroDroid) also open RPGACE so the I'm up cover is right there?  A: "Yes, add a step (Recommended)"
+
+Reading of the nav answer: one collapsed "⚡ Actions" button in the left nav; tapping it pops up the five actions to choose from.
+
+Draft plan (WF = Wake Flow)
+WF-1 Full-screen alarm cover: replaces the thin top bar; one big ☀️ I'm up; tap stops the app + phone alarm and opens the Good morning screen.
+WF-2 Going to bed alarm pre-filled with tomorrow's Morning block start (earlier on a morning shift); still changeable or No alarm.
+WF-3 Left nav ⚡ Actions button -> popup: I'm up/Going to bed, Morning Brief, Doing now, I just did, Evening review.
+WF-4 MacroDroid: add "open rpgace.vercel.app" when it rings (done when phone setup resumes).
+WF-0 Evening review Done: not reproduced (live code shows ✓ Done); Alex checks after fully closing and reopening the app.
