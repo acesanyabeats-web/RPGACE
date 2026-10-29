@@ -90,7 +90,7 @@ LOGIC_POINTS = [
         'id': 'oracle-mode',
         'title': 'Oracle Mode: Real / Dummy / Fallback Scout',
         'decider': 'Alex (manual toggle)',
-        'module': 'mockOracle', 'func': 'setMode', 'lines': (47232, 47244), 'anchor': "self.MODES.indexOf(mode) === -1",  # re-verified Oct 16 2026 (DN-6), earlier Oct 16 (DN-3 Morning Brief catch), was 42511-42523; re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 37417-37429, then 38582-38594 before XP-4 (+166 lines), then 38748-38760 before XP-5 (+379); span = real function start to its closing line
+        'module': 'mockOracle', 'func': 'setMode', 'lines': (47237, 47249), 'anchor': "self.MODES.indexOf(mode) === -1",  # re-verified Oct 16 2026 (DN-6), earlier Oct 16 (DN-3 Morning Brief catch), was 42511-42523; re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 37417-37429, then 38582-38594 before XP-4 (+166 lines), then 38748-38760 before XP-5 (+379); span = real function start to its closing line
         'decides': 'Which of 3 real paths every single Oracle call in the app takes, app-wide, until toggled again.',
         'changes': 'Real: every window.callOracle() call in main.js checks getMode() first. \'dummy\' short-circuits to a synthetic labeled reply, zero API cost. \'fallback\' queues the real prompt into oracle_fallback_queue instead of calling the live API. \'real\' calls the live Anthropic API as normal.',
         'result': 'A visible top-right toggle switch (red/green/gold) whose state persists in localStorage and is checked on literally every real Oracle send in the app.',
