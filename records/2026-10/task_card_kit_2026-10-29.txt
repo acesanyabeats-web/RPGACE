@@ -67,3 +67,9 @@ Interrogation 2 (Oct 29), verbatim:
 Q: which blocks open Live now when tapped?  A: "1 but if past, it open the already done and i fill it out, if in future its add and plan the block"
    -> every block: now = Live now (tick steps, + Add a step); past = "already done" fill-in (tick what was done); future = add/plan its steps.
 Q: pace?  A: "Do all (Recommended)" -> TK-1..6 built back to back, report at the end.
+
+BUILT Oct 29 (do all): TK-1 3141980, TK-2/3/4 03ba3b7, TK-5 01f4d2d, TK-7 15e57e0, memories 298de81, TK-6 next commit.
+Extra asks folded in, verbatim:
+- "if no block in past, and i press, ask what realm, then i choose what actions i did to make a list, then it gets ratified ... i met up with 2 friends, yesterday 14pm to 15:30pm, then day before that 16pm to 23pm ... having this add actions to evening review too would be awesome too" -> TK-7.
+- "i want to be able to edit log so i can add details, like i did with freya pub crawl in same format to leave reflection and impression" / "this applies to the 2 connectors i mentioned, so add it so i can edit if you are inputting instead of me" -> memory edit + Add details; both meetups inserted (chore_blocks 3048d78b / b578c1fa, quest_log tick+done each, memories 680e52d6 / 737052b8), xp_events earned_on moved to Oct 28 / Oct 27.
+Open: xp trigger stamps earned_on = save day for back-dated quest_log rows (schema change; ask Alex).

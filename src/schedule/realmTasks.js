@@ -597,19 +597,25 @@ RPGACE.register('realmTasks', {
       var draw = function(all) {
         wrap.innerHTML = '';
         (all ? list : list.slice(0, 3)).forEach(function(t) {
-          var r = document.createElement('div'); r.className = 'rt-task'; r.dataset.id = t.id;
-          var tx = document.createElement('div'); tx.className = 'rt-task-t';
           var tp0 = L.plannedItem(t, b);
           var sub = [tp0 && tp0.context ? '🎯 ' + tp0.context : null, t.mins + ' min', t.kind === 'once' ? 'one-off' : null, t._resting ? 'resting' : null, t.earns === 'real' ? 'counts when you ' + (t.how || 'do it') : null, L.srcLabel(t) || null].filter(Boolean);
-          tx.innerHTML = esc(t.title) + '<div class="rt-sub">' + esc(sub.join(' · ')) + '</div>';
-          var go = U._btn('▶ Start', cur ? '' : 'primary'); go.className += ' rt-start';
-          go.onclick = function() {
-            if (st2.entry) L.freeDiscard(st2.entry);
-            st2.task = t.id; st2.entry = null;
-            if (!b) { var en = L.freeStart(t, realm); st2.entry = en ? en.id : null; } // DL-1
-            save(); if (t.opens) md.ui._openTool(t.opens); U._drawLive(box, opts);
-          };
-          r.appendChild(tx); r.appendChild(go); wrap.appendChild(r);
+          // TK-6 (Oct 29 2026): every task here is the same task card (tick / ✓ Done straight away, or ▶ Start it).
+          wrap.appendChild(RPGACE.kit.taskCard({
+            cls: 'rt-task', id: String(t.id), title: t.title, metaHtml: '<div class="rt-sub">' + esc(sub.join(' · ')) + '</div>',
+            tools: [{ label: '▶ Start', cls: 'rt-start', primary: !cur, fn: function() {
+              if (st2.entry) L.freeDiscard(st2.entry);
+              st2.task = t.id; st2.entry = null;
+              if (!b) { var en = L.freeStart(t, realm); st2.entry = en ? en.id : null; } // DL-1
+              save(); if (t.opens) md.ui._openTool(t.opens); U._drawLive(box, opts);
+            } }],
+            onTick: function() {
+              var work = b && b.kind === 'realm' ? L.doneInBlock(t, b) : L.freeDone(t, null);
+              return work.then(function() { return L.afterDone(t, null, Date.now()).catch(function() { return []; }); }).then(function() {
+                RPGACE.utils.toast('✅ ' + t.title + (t.earns !== 'real' ? ' · +' + L.tickXp(t) + ' ' + U._realm(t.realm || realm).name : ''), '#4caf82', 2200);
+              });
+            },
+            after: function() { st2.done = (st2.done || 0) + 1; save(); U._drawLive(box, opts); }
+          }));
         });
         if (!list.length) wrap.innerHTML = '<div class="rt-sub" style="padding:8px 0;">No kept tasks of this type yet — keep some in 🗂 Catalogue or 📥 New tasks.</div>';
         if (!all && list.length > 3) {
