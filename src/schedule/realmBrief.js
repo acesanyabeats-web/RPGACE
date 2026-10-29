@@ -221,6 +221,8 @@ RPGACE.register('realmBrief', {
           act.style.cssText = 'font-size:13px;color:var(--text);margin-top:4px;';
           act.textContent = (p.empty ? 'Nothing of yours in ' + p.name + ' yet. Try: ' : 'Do: ') + p.act;
           card.appendChild(act);
+          var md = RPGACE.modules.myDay;
+          if (md && md.ui.addTodayBtn) { var ab = md.ui.addTodayBtn(p.act, p.realm); ab.style.marginTop = '8px'; card.appendChild(ab); }
         }
         strip.appendChild(card);
       });

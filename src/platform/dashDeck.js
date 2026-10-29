@@ -1708,7 +1708,7 @@ RPGACE.register('dashDeck', {
     self.ui._fillBrief(body);
     var foot2 = document.createElement('div');
     foot2.style.cssText = 'margin-top:12px;font-size:11px;color:var(--muted);line-height:1.5';
-    foot2.textContent = 'Auto-runs once each morning before noon and sends straight to Oracle — click ☀️ Morning Brief here any time to run it again.';
+    foot2.textContent = 'Written each morning at 7:00. If it is missing when you open it after 7:00, it is written for you then.';
     body.appendChild(foot2);
   },
 

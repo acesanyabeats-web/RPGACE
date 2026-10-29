@@ -193,32 +193,15 @@ RPGACE.register('morningBrief', {
   ui: {
 
   _injectButton: function() {
-    if (document.getElementById('mb-btn')) return;
+    if (document.getElementById('mb-wrap')) return;
     var page = document.getElementById('page-dashboard');
     if (!page) return;
-    var self = RPGACE.modules.morningBrief;
 
+    // Oct 29 2026 (Alex: "Morning brief button in morning brief??? ... redundancy"): no ☀️ Morning Brief button or
+    // "Last run" label inside the brief any more - it loads itself, and writes itself when it's missing after 7:00.
     var wrap = document.createElement('div');
     wrap.id = 'mb-wrap';
     wrap.style.cssText = 'margin-bottom:20px;';
-
-    var btnRow = document.createElement('div'); btnRow.id = 'mb-btnrow';
-    btnRow.style.cssText = 'display:flex;align-items:center;gap:10px;margin-bottom:12px;';
-
-    var btn = document.createElement('button');
-    btn.id = 'mb-btn';
-    btn.textContent = '☀️ Morning Brief';
-    btn.style.cssText = 'padding:10px 20px;background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);border-radius:8px;color:#C9A84C;font-size:13px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
-    btn.onclick = function() { self._generate({ press: true }); };
-
-    var lastRun = localStorage.getItem(self.LAST_RUN_KEY);
-    var autoLabel = document.createElement('div');
-    autoLabel.style.cssText = 'font-size:11px;color:rgba(226,226,236,0.25);';
-    autoLabel.textContent = lastRun ? 'Last run: ' + new Date(lastRun).toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'}) : 'Auto-runs once per morning';
-
-    btnRow.appendChild(btn);
-    btnRow.appendChild(autoLabel);
-    wrap.appendChild(btnRow);
 
     var output = document.createElement('div');
     output.id = 'mb-output';
@@ -264,7 +247,7 @@ RPGACE.register('morningBrief', {
     // writes it now with the API (same rules + data shape as the 7am writer); opening the screen never writes one.
     return self.logic.todayBrief().then(function(row) {
       if (row) return self.ui._showCCBrief(output, row);
-      if (opts && opts.press) return self.ui._writeNow(output);
+      if ((opts && opts.press) || self.logic.due()) return self.ui._writeNow(output);
       return self.ui._showNoBrief(output);
     });
   },
@@ -286,6 +269,22 @@ RPGACE.register('morningBrief', {
       var c = document.createElement('div'); c.className = 'mb-sec mb-cc-text mb-sec-' + s.key;
       if (s.title) { var h = document.createElement('div'); h.className = 'mb-sec-h'; h.textContent = s.title; c.appendChild(h); }
       var b = document.createElement('div'); b.className = 'mb-sec-b'; b.textContent = s.text; c.appendChild(b);
+      // Oct 29 2026 (Alex: "won't let me add quests suggested for today"): each Top 3 line can go on today.
+      var md = RPGACE.modules.myDay;
+      if (s.key === 'top3' && md && md.ui.addTodayBtn) {
+        var lines = s.text.split('\n').map(function(x) { return x.trim(); }).filter(Boolean);
+        if (lines.some(function(x) { return /^\d+[.)]\s+/.test(x); })) {
+          b.textContent = '';
+          lines.forEach(function(x) {
+            if (!/^\d+[.)]\s+/.test(x)) { var h = document.createElement('div'); h.textContent = x; b.appendChild(h); return; }
+            var label = x.replace(/^\d+[.)]\s+/, '').replace(/\*\*/g, '');
+            var r = document.createElement('div'); r.className = 'mb-top3-row'; r.style.cssText = 'display:flex;align-items:center;gap:8px;justify-content:space-between;margin:4px 0;';
+            var t = document.createElement('span'); t.textContent = x; r.appendChild(t);
+            r.appendChild(md.ui.addTodayBtn(label, 'life'));
+            b.appendChild(r);
+          });
+        }
+      }
       body.appendChild(c);
     });
     var live = document.createElement('div');
@@ -310,7 +309,7 @@ RPGACE.register('morningBrief', {
     return self.logic.todayBrief().then(function(row) {
       if (output.textContent.trim()) return;
       output.style.display = 'block';
-      return row ? self.ui._showCCBrief(output, row) : self.ui._showNoBrief(output);
+      return row ? self.ui._showCCBrief(output, row) : self.logic.due() ? self.ui._writeNow(output) : self.ui._showNoBrief(output);
     });
   },
 
@@ -367,6 +366,10 @@ RPGACE.register('morningBrief', {
 
   // MB-3: split the written brief by its section headings -> [{key, title, text}].
   SECTIONS: [['⚔', 'top3'], ['📅', 'window'], ['📥', 'waiting'], ['🎛', 'beat'], ['🎬', 'content'], ['▶', 'action']],
+  // Oct 29 2026 (Alex: "orchestrator cc can't make morning brief at 7am"; the GitHub backup ran at 10:46): from 7:00
+  // the app writes a missing brief itself with the API when it opens, instead of waiting for a button press.
+  due: function() { return new Date().getHours() >= 7; },
+
   sections: function(text) {
     var S = RPGACE.modules.morningBrief.logic.SECTIONS, out = [], cur = null;
     String(text || '').split('\n').forEach(function(line) {

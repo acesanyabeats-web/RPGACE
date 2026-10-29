@@ -74,6 +74,19 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-29-brief-add-today" style="margin-bottom:30px;">
+    <div class="card-title">🌅 Oct 29 — Good morning: ＋ Add to today, no Morning Brief button inside the brief, brief writes itself after 7:00</div>
+    <div class="card-body">
+      Your words: "won't let me add quests suggested for today no button for it, orchestrator cc can't make morning brief at 7am due to policy issues. Morning brief button in morning brief??? You have got to be joking at coding this redundancy."
+      <ul>
+        <li><b>＋ Add to today</b> on Today's realm (and its runner-up) and on each Top 3 line. It puts the suggestion in today's next free 30 minutes as a block in that realm (Top 3 lines go in as Life; move them on the timeline if needed). The button turns into "✓ Added 14:00".</li>
+        <li><b>Redundant button gone:</b> the ☀️ Morning Brief button and "Last run" label inside the brief are removed. The brief loads by itself.</li>
+        <li><b>Brief at 7am:</b> today the 7:00 Orchestrator CC run ended after 45 seconds without saving, and GitHub only ran the API backup at 10:46 (its schedule runs hours late). Now, if there's no brief when you open it after 7:00, the app writes it with the API right then (one call, saved once). Before 7:00 it still shows ✍️ Write it now.</li>
+        <li>Tested: new suite 8/8; Good morning/brief suites 1/1, 5/5, 6/6; timeline 52/52; wake flow 23/23; block page 21/21. <b>Untested:</b> on your phone.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-10-29-gap-choice-xp-date" style="margin-bottom:30px;">
     <div class="card-title">⏱ Oct 29 — Free-now "+" asks Doing it now or Plan a block; logged XP lands on the right day</div>
     <div class="card-body">

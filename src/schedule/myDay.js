@@ -4203,6 +4203,25 @@ RPGACE.register('myDay', {
       drawBody();
       return pop;
     },
+    // Oct 29 2026 (Alex: "won't let me add quests suggested for today"): one ＋ Add to today button for any
+    // suggestion (Today's realm, Top 3) - it goes in today's next free 30 min as a realm block (logic.placeNext).
+    addTodayBtn: function(label, realm) {
+      var self = RPGACE.modules.myDay, L = self.logic, b = self.ui._mdxBtn('＋ Add to today', false, 'mb-add-today');
+      b.onclick = function() {
+        if (b.disabled) return;
+        b.disabled = true;
+        var today = L.iso();
+        L.placeNext(today, today, { type: 'activity', realm: realm || 'life', label: '✨ ' + label, mins: 30, src: 'brief' }).then(function(at) {
+          b.textContent = '✓ Added ' + L.fmtMin(L.snap5(at));
+          RPGACE.utils.toast('📅 Added to today at ' + L.fmtMin(L.snap5(at)), '#4caf82', 2600);
+          if (self.ui.render) try { self.ui.render(); } catch (e) {}
+        }).catch(function(e) {
+          b.disabled = false;
+          RPGACE.utils.toast('⚠️ Not added: ' + (e.message || e), '#CC4A4A', 4000, 'myDay');
+        });
+      };
+      return b;
+    },
     // Free time that starts now: ▶ Doing it now (Live now) or 📋 Plan a block (addInGap).
     gapChoice: function(isoDate, from, to, redraw) {
       var self = RPGACE.modules.myDay, L = self.logic, U = self.ui;
@@ -4983,7 +5002,7 @@ RPGACE.register('myDay', {
         '#myday-morning-frog': 34, '#myday-morning-blocks': 35, '.mb-sec-window': 36, '.mb-sec-action': 37, '#myday-morning-row': 38,
         '#mb-ch-4': 40, '.mb-sec-beat': 41, '.mb-sec-content': 42, '#ll-daily-strip': 43,
         '#mb-ch-5': 50, '#kr-brief': 51, '.mb-sec-waiting': 52, '#xp-brief-line': 53, '.mb-cc-live': 54, '#dl-watch': 55, '#recall-strip': 56,
-        '#mb-btnrow': 58, '.mb-cc-head': 59
+        '.mb-cc-head': 59
       };
       var css = '#mb-story{display:flex;flex-direction:column;gap:10px}' +
         '#mb-story>*,#mb-story #myday-morning-day>*,#mb-story #mb-wrap>*,#mb-story #mb-output>*{order:57;margin:0!important}' +
