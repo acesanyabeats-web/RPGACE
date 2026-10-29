@@ -73,3 +73,7 @@ PHONE ALARMS - /dev_ops_7 Track B (opened Oct 28 2026 while CK-8 builds)
    played one of his imported sounds via MacroDroid. Test row then marked done from here. phone_rang_at stays empty
    until the "RPGACE stop" shortcut (alarm-feed q=stop) is built. Still to do: Launch Application -> RPGACE (WF-4),
    the stop shortcut, restore the 04:00-14:00 constraint.
+10. Oct 29 03:28 UTC: WF-4 done on the phone (Launch Application -> RPGACE, Force new + Exclude from recents both off).
+    Test ring: rang and opened RPGACE. Alex: "RPGACE did open, this is so funny i love it". Stopped from here.
+    Left: the "RPGACE stop" shortcut, restore the 04:00-14:00 constraint. The I'm up cover shows only for real
+    wake alarms (test rows are not loaded by myDay.logic.syncAlarms, kind=eq.wake), so a test never starts the day.
