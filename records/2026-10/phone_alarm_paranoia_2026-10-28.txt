@@ -69,3 +69,7 @@ PHONE ALARMS - /dev_ops_7 Track B (opened Oct 28 2026 while CK-8 builds)
    because the uploader sent x-upsert:true and the alarm_sounds bucket allows INSERT only (upsert needs SELECT+UPDATE).
    Fix 40000f9: no x-upsert (each sound has its own id file name). Bucket rules unchanged. Re-queued; all 6 ready
    (Joey Diaz ringtone, David Goggins - Wake Up, Motivational alarm, Wakey wakey eggs and bakey, Minions wake up alarm, Joey Diaz alarm).
+9. Oct 29 03:19 UTC: first real test ring (myday_alarms test row). Alex: "it worked on my phone lmao". The phone
+   played one of his imported sounds via MacroDroid. Test row then marked done from here. phone_rang_at stays empty
+   until the "RPGACE stop" shortcut (alarm-feed q=stop) is built. Still to do: Launch Application -> RPGACE (WF-4),
+   the stop shortcut, restore the 04:00-14:00 constraint.
