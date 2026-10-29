@@ -1,0 +1,25 @@
+Task Card Kit (TK) - ask compiled Oct 29 2026 ~05:15, NOT BUILT (Alex going to bed; brief + go first, rule 18)
+==========================================================================================================
+Alex, verbatim: "make this part of central kit, i want my day different task cards to work the same way, in blocks
+too when i choose tasks for the day when planning, and clicking planned block at the timeline showing planned steps
+with card to be tickable, or add those in block if i want to, that would be so dope"
+
+"this" = the one task card shipped tonight (66e3f50): myDay.ui.row - big circle + gold ✓ Done + Skip/Start/Edit,
+redraws itself in place (the pop-up circle bug fix), past-day ticks logged for that day.
+
+Evidence so far:
+- Task-like rows today: myDay.ui.row (Actions/routines); realm/chore/shopping block items (chore_blocks.items /
+  realm_items with done flags, own tick UI); Plan my day pickers (pickChores, pickRealmBlock, pickShopItems);
+  timeline block tap (dayView) and the Do-block card; realmTasks rows. Each draws its own tick.
+- RPGACE.kit (src/platform/kit.js) holds esc/btn/armConfirm/pickList/ask; check_kit_copies.py guards copies.
+
+Draft plan (to brief in the morning):
+TK-1 RPGACE.kit.taskCard({title, icon, meta, done, onDone, onUndo, onSkip, tools}) - the shared card + in-place redraw.
+     myDay.ui.row becomes a thin wrapper on it (no behaviour change).
+TK-2 Block items use it: tapping a planned block on the timeline opens its steps as task cards (tick each),
+     with "+ Add a step" to put more tasks into that block.
+TK-3 Plan my day pickers show chosen tasks as the same cards (choose → card list).
+TK-4 realmTasks / Live now rows and the Good morning blocks list switch to it; check_kit_copies.py baseline for
+     taskCard so new private copies fail.
+Open forks for Alex: does ticking every step of a block mark the block done (and XP), or only the steps?
+Should "+ Add a step" offer your Actions list, free text, or both?
