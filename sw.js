@@ -114,6 +114,16 @@ self.addEventListener('push', function (event) {
   if (d.alarm) { opts.requireInteraction = true; opts.renotify = true; opts.vibrate = [400, 200, 400, 200, 800]; }
   // Oct 29 2026: the 23:00 "Going to bed now?" and 07:00 "Are you up?" asks stay until tapped or swiped.
   if (d.sticky) { opts.requireInteraction = true; opts.vibrate = [300, 150, 300]; }
+  // Oct 29 2026 (Alex: "it did slide down, I want it at all top position"): an unanswered ask is re-sent every 5 min
+  // as 'repeat'. Android only re-ranks a NEW notification, so the old one is closed and the ask posted again, silently.
+  if (d.repeat && opts.tag) {
+    opts.renotify = false; opts.silent = true; delete opts.vibrate; opts.timestamp = Date.now();
+    event.waitUntil(self.registration.getNotifications({ tag: opts.tag }).then(function (old) {
+      old.forEach(function (n) { n.close(); });
+      return self.registration.showNotification(d.title || 'RPGACE', opts);
+    }));
+    return;
+  }
   event.waitUntil(self.registration.showNotification(d.title || 'RPGACE', opts));
 });
 
