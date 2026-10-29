@@ -6,6 +6,7 @@ Modules (`domain: 'chronicles'`, 3): `careerStatCard`, `chroniclesLog`, `xpSeaso
 
 ## XP Season Pass (`xpSeason`)
 - Private `xp_events` ledger written only by DB triggers (`xp_on_change` → `xp_award` → `xp_rules`) on 15 tables + `gym_sets`; 13 realms. `xp_on_change` pays a `quest_log` routine tick only when `xp > 0`.
+- `xp_award` dates a `quest_log` award by the row's `completed_at` (London day) when that is 1–7 days back; everything else earns on today.
 - The pass is a Year (Year 0: Construction; Year 2027 from 1 Jan); "season" = UK weather season; DB `season` columns hold the year.
 - Unlocks: `xp_check_unlocks()` → `xp_unlocks` (`xp_ladders`, `xp_unlock_defs`, `xp_settings.progress`), Trophy cabinet. Level-ups are `xp_unlocks` kind `level`.
 - Close: pg_cron `xp-close-periods` (00:05 UTC) → `xp_close_periods()` (keeps unanswered XP, balance bonus, frozen `xp_reports`); same-week deletes ask "was it done?".

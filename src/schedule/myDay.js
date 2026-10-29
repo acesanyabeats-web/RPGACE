@@ -3692,7 +3692,10 @@ RPGACE.register('myDay', {
           b.style.top = (y(gp.from) + 2) + 'px'; b.style.height = Math.max(18, y(gp.to) - y(gp.from) - 4) + 'px';
           b.textContent = (gp.to - gp.from) + ' min free  +';
           b.dataset.from = gp.from; b.dataset.to = gp.to;
-          b.onclick = function(ev) { if (lane._noTap) return; U.addInGap(isoDate, gp.from, gp.to, o.redraw); };
+          // Oct 29 2026 (Alex: "when nothing planned later and now, i press add, it asks whether i plan future block or doing now block"):
+          // the free gap that starts now asks first; later gaps go straight to planning.
+          var isNow = isoDate === today && gp.from <= L.snap5(nowM) + 5;
+          b.onclick = function(ev) { if (lane._noTap) return; if (isNow) U.gapChoice(isoDate, gp.from, gp.to, o.redraw); else U.addInGap(isoDate, gp.from, gp.to, o.redraw); };
           lane.appendChild(b);
         });
       }
@@ -4198,6 +4201,19 @@ RPGACE.register('myDay', {
         chips.appendChild(c);
       });
       drawBody();
+      return pop;
+    },
+    // Free time that starts now: ▶ Doing it now (Live now) or 📋 Plan a block (addInGap).
+    gapChoice: function(isoDate, from, to, redraw) {
+      var self = RPGACE.modules.myDay, L = self.logic, U = self.ui;
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: U._dayLabel(isoDate), title: 'Free now · ' + (to - from) + ' min until ' + L.fmtMin(to), width: '420px' });
+      pop.box.id = 'mdx-gap-choice';
+      var row = document.createElement('div'); row.className = 'mdx-bar'; row.style.flexDirection = 'column';
+      var now = U._mdxBtn('▶ Doing it now', true, 'mdx-gc-now');
+      now.onclick = function() { pop.close(); var dn = RPGACE.modules.doingNow; if (dn) dn.ui.openStart(); };
+      var plan = U._mdxBtn('📋 Plan a block', false, 'mdx-gc-plan');
+      plan.onclick = function() { pop.close(); U.addInGap(isoDate, from, to, redraw); };
+      row.appendChild(now); row.appendChild(plan); pop.box.appendChild(row);
       return pop;
     },
     addInGap: function(isoDate, from, to, redraw) {

@@ -1063,6 +1063,7 @@ RPGACE.register('errorLog', {
   "funnel": "sellingHub",
   "funnelLine": "sellingHub",
   "gap": "postingHub",
+  "gapChoice": "myDay",
   "gatherNow": "morningBrief",
   "get": "config",
   "getProviderName": "oracleProviderMode",

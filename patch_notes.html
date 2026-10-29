@@ -74,6 +74,18 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-29-gap-choice-xp-date" style="margin-bottom:30px;">
+    <div class="card-title">⏱ Oct 29 — Free-now "+" asks Doing it now or Plan a block; logged XP lands on the right day</div>
+    <div class="card-body">
+      Your words: "Fix the XP date" and "when nothing planned later and now, i press add, it asks whether i plan future block or doing now block, and from there it goes into the 2 groups".
+      <ul>
+        <li><b>Free gap that starts now:</b> tapping "N min free +" asks ▶ Doing it now (opens Live now) or 📋 Plan a block (the usual plan sheet). Gaps later in the day still go straight to planning.</li>
+        <li><b>XP date:</b> a step you log for an earlier day (up to 7 days back) now earns its XP on that day, not the day you logged it (database rule <code>xp_award</code>). Checked with a test row that was rolled back: a step dated 2 days ago landed on Oct 27, a step done today on Oct 29.</li>
+        <li>Tested: timeline suite 52/52 (4 new checks). <b>Untested:</b> on your phone.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-10-29-task-card-kit" style="margin-bottom:30px;">
     <div class="card-title">🧩 Oct 29 — Task Card Kit: one task card everywhere, blocks open as pages, log what you did</div>
     <div class="card-body">
@@ -86,7 +98,7 @@
         <li><b>TK-7, log what you did:</b> empty past time on the timeline shows ✍️ log what you did, and the evening review has ✍️ Log something you did. Pick times and realm, then tick or type what you did; it's saved as a finished block on that day. Planning is optional.</li>
         <li><b>Memories:</b> every memory has ✏️ Edit (people, place, reflection and impression, photo), Freya's pub crawl included. A past block has 🎞 Add details to turn it into a memory in the same format.</li>
         <li><b>Logged for you:</b> Connector "Met up with 2 friends", Oct 28 14:00–15:30 and Oct 27 16:00–23:00, each with an editable memory. +25 XP each (10 for the step, 15 for the finished block), dated to those days.</li>
-        <li>Tested: block page 21/21, timeline 48/48, Live now 24/24 + 30/30, missions 11–17 each, My Day suites unchanged (md0/md1/md2d/md6/md7/md24/md25/dt4/followup were already failing before). <b>Untested:</b> on your phone. <b>Known gap:</b> XP for something you log later is dated the day you log it, not the day it happened. I fixed your two meetups by hand.</li>
+        <li>Tested: block page 21/21, timeline 48/48, Live now 24/24 + 30/30, missions 11–17 each, My Day suites unchanged (md0/md1/md2d/md6/md7/md24/md25/dt4/followup were already failing before). <b>Untested:</b> on your phone. XP for something logged later was dated the day you logged it; I fixed your two meetups by hand, and the rule is fixed now (<a href="#card-2026-10-29-gap-choice-xp-date">card</a>).</li>
       </ul>
     </div>
   </div>
