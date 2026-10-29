@@ -45,7 +45,7 @@ Deno.serve(async (req: Request) => {
   const errors: string[] = [];
   for (const s of subs || []) {
     try {
-      await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify(msg), { TTL: 3600 });
+      await webpush.sendNotification({ endpoint: s.endpoint, keys: { p256dh: s.p256dh, auth: s.auth } }, JSON.stringify(msg), { TTL: 3600, urgency: "high" });   // Oct 29 2026 (Alex: "top priority above all else"): delivered at once, even in battery saver
       sent++;
       await sb.from("push_subscriptions").update({ last_ok_at: new Date().toISOString() }).eq("id", s.id);
     } catch (e) {

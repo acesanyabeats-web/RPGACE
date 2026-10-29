@@ -108,6 +108,9 @@ self.addEventListener('push', function (event) {
   // each time it repeats (every 5 min until the first Morning task is ticked).
   var opts = { body: d.body || '', icon: '/icons/icon-192.png', badge: '/icons/icon-192.png',
     tag: d.kind ? 'rpgace-' + d.kind : undefined, data: { url: d.url || '/' } };
+  // Oct 29 2026 (Alex: "make rpgace notifications top priority above all else"): every RPGACE alert re-alerts,
+  // buzzes and is never silent; Android's own ranking comes from the RPGACE app's notification settings.
+  opts.renotify = !!opts.tag; opts.silent = false; opts.vibrate = [300, 150, 300];
   if (d.alarm) { opts.requireInteraction = true; opts.renotify = true; opts.vibrate = [400, 200, 400, 200, 800]; }
   // Oct 29 2026: the 23:00 "Going to bed now?" and 07:00 "Are you up?" asks stay until tapped or swiped.
   if (d.sticky) { opts.requireInteraction = true; opts.vibrate = [300, 150, 300]; }
