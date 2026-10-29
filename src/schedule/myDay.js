@@ -5178,6 +5178,33 @@ RPGACE.register('myDay', {
       };
       pop.box.appendChild(tw);
       drawTomorrow();
+      // Oct 29 2026 (Alex: "a task of filling cup with water so it is by my bedside in the morning too, i must do it
+      // and tick it"): every Night task (💧 water cup first) has to be ticked before the alarm buttons work.
+      var nw = document.createElement('div'); nw.id = 'myday-gn-night';
+      nw.style.cssText = 'margin-top:14px;padding-top:10px;border-top:1px solid var(--border);';
+      var gate = function() {};
+      var drawNight = function() {
+        var logs = self._logs || [], left = L.bookendTasks('night').filter(function(r) { var lg = L.todayLog(r, logs, day); return !(lg && lg.status === 'completed'); });
+        nw.innerHTML = '';
+        if (!left.length) { nw.style.display = 'none'; gate(true); return; }
+        nw.style.display = '';
+        var h = document.createElement('div'); h.style.cssText = 'font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;';
+        h.textContent = '🌙 Before you sleep — tick to unlock your alarm'; nw.appendChild(h);
+        left.forEach(function(r) {
+          var row = document.createElement('div'); row.className = 'myday-gn-task'; row.style.cssText = 'display:flex;gap:8px;align-items:center;padding:4px 0;';
+          var tx = document.createElement('span'); tx.style.cssText = 'flex:1;font-size:14px;color:var(--text);'; tx.textContent = (r.icon ? r.icon + ' ' : '') + r.title;
+          var b = U._btn('✓ Done', 'primary'); b.className += ' myday-gn-tick';
+          b.onclick = function() {
+            b.disabled = true;
+            var at = day === L.iso() ? null : new Date(day + 'T12:00:00').toISOString();
+            L.tick(r, at ? { at: at } : {}).then(function() { return L.load(); }).then(drawNight)
+              .catch(function(e) { b.disabled = false; RPGACE.utils.toast('⚠️ Not ticked: ' + (e.message || e), '#CC4A4A', 4000, 'myDay'); });
+          };
+          row.appendChild(tx); row.appendChild(b); nw.appendChild(row);
+        });
+        gate(false);
+      };
+      pop.box.appendChild(nw);
       var aw = document.createElement('div'); aw.id = 'myday-gn-alarm-box';
       aw.style.cssText = 'margin-top:14px;padding-top:10px;border-top:1px solid var(--border);';
       aw.innerHTML = '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">⏰ Alarm</div><div id="myday-gn-why" style="font-size:12px;color:var(--muted);margin-bottom:6px;">Working it out…</div>';
@@ -5206,6 +5233,8 @@ RPGACE.register('myDay', {
       };
       row.appendChild(none); row.appendChild(set); aw.appendChild(row);
       pop.box.appendChild(aw);
+      gate = function(open) { none.disabled = set.disabled = !open; aw.style.opacity = open ? '1' : '0.45'; };
+      drawNight();
       var hb = RPGACE.modules.healthBody;
       Promise.resolve(hb && hb.logic.signedIn() ? hb.logic.loadSettings().catch(function() { return {}; }) : {}).then(function(hs) {
         var sg = L.morningAlarm(tmr, now) || L.suggestAlarm(now, (hs || {}).sleep_target_h, L.shiftsOn, self._settings || {});
