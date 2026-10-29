@@ -1,7 +1,8 @@
 // PA-2/PA-3 (Oct 28 2026, plan "Phone Alarms"): the small feed Alex's phone (MacroDroid) checks every minute.
 //   ?q=status -> "RING" when a wake (or test) alarm is due and not yet stopped on the phone,
-//               "SOON" when one is due within the next 75 s (WF-5, Oct 29 2026: MacroDroid opens RPGACE early so
-//               the ☀️ I'm up cover is already loaded when it rings), else "WAIT".
+//               "SOON" when one is due within the next 150 s (WF-5, Oct 29 2026: MacroDroid lights the screen and opens
+//               RPGACE early so the cover is already loaded when it rings; 150 s so a once-a-minute check
+//               never misses it - a test showed a locked, dark screen does not load the app), else "WAIT".
 //               Also stamps myday_settings.phone_last_seen so My Day can show the phone is connected.
 //               On the first RING it picks one ready alarm sound at random and stores it on the alarm row.
 //   ?q=sound  -> 302 to that alarm's sound file (or a random ready sound), for MacroDroid to save and play.
@@ -31,7 +32,7 @@ async function ringing(includeStopped = false) {
   return rows[0] || null;
 }
 async function soon() {
-  const now = new Date(), to = new Date(now.getTime() + 75000);
+  const now = new Date(), to = new Date(now.getTime() + 150000);
   const rows = await get('myday_alarms?select=id&status=eq.set&phone_rang_at=is.null' + KINDS +
     '&at=gt.' + encodeURIComponent(now.toISOString()) + '&at=lte.' + encodeURIComponent(to.toISOString()) + '&limit=1');
   return rows.length > 0;

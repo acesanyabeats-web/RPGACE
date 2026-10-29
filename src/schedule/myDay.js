@@ -6279,8 +6279,9 @@ RPGACE.register('myDay', {
       var self = RPGACE.modules.myDay, L = self.logic, U = self.ui, st = self._settings || {};
       if (!self._alarms) return;
       // WF-5 (Oct 29 2026, Alex: "id like the overlay to display ... a minute before alarm sets off so i can auto
-      // have it load on wakening"): the cover shows from 60 s before the alarm (the phone opens RPGACE on SOON).
-      var today = L.iso(), nowMs = Date.now(), LEAD = 60000;
+      // have it load on wakening"): the cover shows from 150 s before the alarm (the phone lights the screen and
+      // opens RPGACE on SOON, which alarm-feed sends 150 s early), silent until the alarm time.
+      var today = L.iso(), nowMs = Date.now(), LEAD = 150000;
       var ds = L.dayState(), done = !!(ds && ds.day === today && ds.up_at && !ds.bed_at);
       var a = self._alarms.filter(function(x) {
         var test = /^test:/.test(x.kind || '');
