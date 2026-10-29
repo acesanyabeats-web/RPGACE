@@ -41,3 +41,14 @@ WF-1..3 shipped in 6fdc453 (tests: wf_test 12/12, db_test 24/24 with the alarm c
 WF-4 MacroDroid step (for when phone setup resumes): inside the If (status contains RING), after Play Sound, add
 "Launch Application" -> RPGACE (the installed app). Check: at a test ring, the phone opens RPGACE on the full-screen
 "⏰ Time to get up" cover; tapping ☀️ I'm up stops the ringing within a minute.
+
+Later asks, verbatim (Oct 29 early hours), all built and shipped:
+- "i want evening review to only pop-up when i press im going to bed, so making a notification from rpgace asking am i going to bed now will help so much. also when i set no alarm on evening, make a notification pop-up asking if i woke up ... make those top priority notifications"
+  Answers: "1 but lets say from 11pm just one notification, and it stays"; "1 like evening, make 1 notification manifest at 7pm, but only if no alarm is set" (built 07:00, flagged to Alex); "No, notification only".
+- "when i go to sleep ... next pop-up is set alarm button with time selection and set no alarm button, when either selected, force stop rpgace saving all needed info" / "get rid of stray 8ams, no longer needed"
+- "if i dont set alarm, mecrodoid is not triggered, thats how it should work. no set alarm triggers rpgace you up notification instead" (confirmed already so)
+- "make rpgace notifications top priority above all else"
+- "as part of evening review, i want a task of filling cup with water so it is by my bedside ... i must do it and tick it ... maybe supplements in the future"
+- "i dont like that the do water task appears in 2 spots technically, /deduplication please, just make a done button under bigger one, also make the circles tickable ... when set alarm, i clicked no alarm, but wanted to stay to plan tomorrow ... clicking plan tomorrow first, and after planning and confirming, the pop-up should return to plan alarm, so i dont edit morning routine in plan directly"
+- "i want all not dones to show the bigger style buttons like in my day, use that structure with that build so no extra copies and no deduplications needed, same with morning brief"
+- Phone checks: notifications appeared and were at the top; Going to bed one used.

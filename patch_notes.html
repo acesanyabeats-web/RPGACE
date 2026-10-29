@@ -74,6 +74,20 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-29-one-task-card" style="margin-bottom:30px;">
+    <div class="card-title">✅ Oct 29 — Tick circles fixed, one task card everywhere, Good night = plan then alarm</div>
+    <div class="card-body">
+      Your words: "i dont like that the do water task appears in 2 spots technically, /deduplication please, just make a done button under bigger one, also make the circles tickable, i have been have bugs with a lot of tasks on ticking circle lately ... clicking plan tomorrow first, and after planning and confirming, the pop-up should return to plan alarm" and "i want all not dones to show the bigger style buttons like in my day, use that structure with that build so no extra copies".
+      <ul>
+        <li><b>The circle bug:</b> a tick saved fine, but only the My Day page redrew, so a task inside a pop-up (evening review, Good morning, Night card) looked untouched. Every task card now redraws itself in place.</li>
+        <li><b>One task card:</b> evening review "Not done" now uses the same big card as My Day (circle, ✓ Done, Skip). Every card has a big gold ✓ Done. The water cup shows once, in the 🌙 Night card, and the extra list I'd added to Good night is gone.</li>
+        <li><b>Must tick it:</b> on 🌙 Going to bed, Save &amp; next won't go on until the Night tasks are ticked. It tells you which and scrolls to them.</li>
+        <li><b>Good night:</b> 📋 Plan tomorrow first (or Skip). After you confirm the plan it comes back to the alarm step, and RPGACE only closes after Set alarm or No alarm. Plan tomorrow is blocks only; your Morning routine isn't edited there.</li>
+        <li>Tested: test browser 23/23 (wake flow), 25/25 (Day Bookends), 13/13 (Good morning). <b>Untested:</b> on your phone.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-10-29-bed-up-asks" style="margin-bottom:30px;">
     <div class="card-title">🌙 Oct 29 — Phone asks "Going to bed now?" at 11pm and "Are you up?" at 7am on no-alarm nights</div>
     <div class="card-body">

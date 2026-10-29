@@ -2263,8 +2263,11 @@ RPGACE.register('myDay', {
     eveningModel: function(day) {
       var self = RPGACE.modules.myDay, L = self.logic, logs = self._logs || [];
       var done = [], open = [];
+      // Oct 29 2026 (Alex: "/deduplication"): Night-block tasks live in the 🌙 Night card only, not also in Not done.
+      var nightIds = {}; L.bookendTasks('night').forEach(function(r) { nightIds[String(r.id)] = true; });
       (self._routines || []).forEach(function(r) {
         var lg = L.todayLog(r, logs, day);
+        if (nightIds[String(r.id)] && !(lg && lg.status === 'completed')) return;
         if (lg && lg.status === 'completed') { done.push({ label: (r.icon ? r.icon + ' ' : '') + r.title, how: lg.description === 'minimum' ? 'minimum' : '' }); return; }
         if (lg || r.cadence === 'every_days' || r.cadence === 'next_time' || !L.isDueToday(r, logs, day)) return;
         // A few-times-a-week routine only counts as missed on a day it was planned for.
@@ -5167,46 +5170,26 @@ RPGACE.register('myDay', {
       var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '🌙 Good night', title: 'Tomorrow + alarm', accent: 'var(--gold)', width: '520px', closeLabel: 'Close' });
       pop.box.id = 'myday-goodnight';
       var tw = document.createElement('div'); tw.id = 'myday-gn-tomorrow';
+      var alarmShown = false, aw = null;
+      var showAlarm = function() { alarmShown = true; if (aw) { aw.style.display = ''; aw.scrollIntoView({ behavior: 'smooth', block: 'center' }); } drawTomorrow(); };
       var drawTomorrow = function() {
         var bl = L.dayBlocks(tmr), sh = L.shiftsOn(tmr);
         tw.innerHTML = '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">📅 ' + esc(U._dayLabel(tmr)) + (sh.length ? ' · 🧑‍🍳 shift ' + esc(sh.map(function(x) { return x.start + '–' + x.end; }).join(', ')) : '') + '</div>' +
           (bl.length ? bl.map(function(b) { var f = L.toMin(b.start_time); return '<div class="myday-gn-block" style="font-size:13px;color:var(--text);padding:3px 0;"><b style="font-variant-numeric:tabular-nums;">' + L.fmtMin(f) + '</b> ' + esc(L.blockLabel(b)) + ((RPGACE.modules.realmTasks ? RPGACE.modules.realmTasks.logic.typeLine(b) : '') ? ' <span style="color:var(--gold);">· ' + esc((RPGACE.modules.realmTasks ? RPGACE.modules.realmTasks.logic.typeLine(b) : '')) + '</span>' : '') + ((b.items || []).length ? ' <span style="color:var(--muted);">· ' + esc(b.items.map(function(i) { return i.label; }).slice(0, 3).join(' · ')) + '</span>' : '') + '</div>'; }).join('')
             : '<div style="font-size:13px;color:var(--muted);">No blocks planned yet.</div>');
-        var pl = U._btn('📋 Plan tomorrow', ''); pl.id = 'myday-gn-plan'; pl.style.marginTop = '6px';
-        pl.onclick = function() { U.openPlan(tmr, { after: function() { L.load().then(drawTomorrow, drawTomorrow); } }); };
-        tw.appendChild(pl);
+        // Oct 29 2026 (Alex: "clicking plan tomorrow first, and after planning and confirming, the pop-up should return
+        // to plan alarm"): step 1 is the plan (or skip it), step 2 the alarm; the app only closes after step 2.
+        var prow = document.createElement('div'); prow.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;';
+        var pl = U._btn('📋 Plan tomorrow', alarmShown ? '' : 'primary'); pl.id = 'myday-gn-plan';
+        pl.onclick = function() { U.openPlan(tmr, { after: function() { L.load().then(drawTomorrow, drawTomorrow).then(showAlarm); } }); };
+        prow.appendChild(pl);
+        if (!alarmShown) { var sk = U._btn('Skip — set alarm →', ''); sk.id = 'myday-gn-skipplan'; sk.onclick = showAlarm; prow.appendChild(sk); }
+        tw.appendChild(prow);
       };
       pop.box.appendChild(tw);
       drawTomorrow();
-      // Oct 29 2026 (Alex: "a task of filling cup with water so it is by my bedside in the morning too, i must do it
-      // and tick it"): every Night task (💧 water cup first) has to be ticked before the alarm buttons work.
-      var nw = document.createElement('div'); nw.id = 'myday-gn-night';
-      nw.style.cssText = 'margin-top:14px;padding-top:10px;border-top:1px solid var(--border);';
-      var gate = function() {};
-      var drawNight = function() {
-        var logs = self._logs || [], left = L.bookendTasks('night').filter(function(r) { var lg = L.todayLog(r, logs, day); return !(lg && lg.status === 'completed'); });
-        nw.innerHTML = '';
-        if (!left.length) { nw.style.display = 'none'; gate(true); return; }
-        nw.style.display = '';
-        var h = document.createElement('div'); h.style.cssText = 'font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;';
-        h.textContent = '🌙 Before you sleep — tick to unlock your alarm'; nw.appendChild(h);
-        left.forEach(function(r) {
-          var row = document.createElement('div'); row.className = 'myday-gn-task'; row.style.cssText = 'display:flex;gap:8px;align-items:center;padding:4px 0;';
-          var tx = document.createElement('span'); tx.style.cssText = 'flex:1;font-size:14px;color:var(--text);'; tx.textContent = (r.icon ? r.icon + ' ' : '') + r.title;
-          var b = U._btn('✓ Done', 'primary'); b.className += ' myday-gn-tick';
-          b.onclick = function() {
-            b.disabled = true;
-            var at = day === L.iso() ? null : new Date(day + 'T12:00:00').toISOString();
-            L.tick(r, at ? { at: at } : {}).then(function() { return L.load(); }).then(drawNight)
-              .catch(function(e) { b.disabled = false; RPGACE.utils.toast('⚠️ Not ticked: ' + (e.message || e), '#CC4A4A', 4000, 'myDay'); });
-          };
-          row.appendChild(tx); row.appendChild(b); nw.appendChild(row);
-        });
-        gate(false);
-      };
-      pop.box.appendChild(nw);
-      var aw = document.createElement('div'); aw.id = 'myday-gn-alarm-box';
-      aw.style.cssText = 'margin-top:14px;padding-top:10px;border-top:1px solid var(--border);';
+      aw = document.createElement('div'); aw.id = 'myday-gn-alarm-box';
+      aw.style.cssText = 'margin-top:14px;padding-top:10px;border-top:1px solid var(--border);display:none;';
       aw.innerHTML = '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;">⏰ Alarm</div><div id="myday-gn-why" style="font-size:12px;color:var(--muted);margin-bottom:6px;">Working it out…</div>';
       var tin = document.createElement('input'); tin.type = 'time'; tin.id = 'myday-gn-alarm';
       tin.setAttribute('aria-label', 'Alarm time');
@@ -5233,8 +5216,7 @@ RPGACE.register('myDay', {
       };
       row.appendChild(none); row.appendChild(set); aw.appendChild(row);
       pop.box.appendChild(aw);
-      gate = function(open) { none.disabled = set.disabled = !open; aw.style.opacity = open ? '1' : '0.45'; };
-      drawNight();
+
       var hb = RPGACE.modules.healthBody;
       Promise.resolve(hb && hb.logic.signedIn() ? hb.logic.loadSettings().catch(function() { return {}; }) : {}).then(function(hs) {
         var sg = L.morningAlarm(tmr, now) || L.suggestAlarm(now, (hs || {}).sleep_target_h, L.shiftsOn, self._settings || {});
@@ -5327,6 +5309,9 @@ RPGACE.register('myDay', {
           body.appendChild(head('↘ Not done'));
           var box = document.createElement('div'); box.id = 'myday-evening-open';
           m.open.forEach(function(x) {
+            // Oct 29 2026 (Alex: "i want all not dones to show the bigger style buttons like in my day, use that structure
+            // with that build so no extra copies"): Actions (routines, one-offs) use the same task card as My Day.
+            if (x.kind === 'routine' || x.kind === 'once') { var card = U.row(x.r, day); card.classList.add('myday-evening-item'); card.dataset.kind = x.kind; box.appendChild(card); return; }
             var row = document.createElement('div'); row.className = 'myday-evening-item'; row.dataset.kind = x.kind;
             row.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);';
             var t = document.createElement('span'); t.style.cssText = 'flex:1 1 130px;min-width:0;font-size:13px;'; t.textContent = x.label;
@@ -5390,6 +5375,15 @@ RPGACE.register('myDay', {
         var svLabel = opts.bed ? 'Save & next (+10 Mind)' : 'Save & finish (+10 Mind)';
         var sv = U._btn(svLabel, 'primary'); sv.id = 'myday-evening-save';
         sv.onclick = function() {
+          // Oct 29 2026 (Alex: "i must do it and tick it"): on 🌙 Going to bed, Night tasks (💧 water cup) come first.
+          if (opts.bed) {
+            var leftN = L.bookendTasks('night').filter(function(r) { var lg = L.todayLog(r, self._logs || [], day); return !(lg && lg.status === 'completed'); });
+            if (leftN.length) {
+              RPGACE.utils.toast('🌙 Tick ' + leftN.map(function(r) { return (r.icon ? r.icon + ' ' : '') + r.title; }).join(', ') + ' first', '#e0a84c', 3500);
+              var nc = document.getElementById('myday-evening-night'); if (nc) nc.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              return;
+            }
+          }
           sv.disabled = true; sv.textContent = 'Saving…';
           L.saveEvening(day, L.eveningText(L.eveningModel(day), xpToday, moved, ta.value, didM && didM.vs.length ? L.vsLine(didM.vs) : '')).then(function() {
             pop.close();
@@ -6084,12 +6078,21 @@ RPGACE.register('myDay', {
       var mk = function(label, fn, cls) { var b = document.createElement('button'); b.type = 'button'; b.textContent = label; b.style.cssText = small; if (cls) b.className = cls; b.onclick = fn; tools.appendChild(b); return b; };
       var timerKey = 'timer_' + r.id;
 
-      var redraw = function() { self.ui.render(); };
+      // Oct 29 2026 (Alex: "i have been have bugs with a lot of tasks on ticking circle lately"): the tick saved, but
+      // only the My Day page redrew, so a row inside a pop-up (evening review, Good morning, Night card) never changed.
+      // Now the row redraws itself in place wherever it is, and tells other screens (myday:ticked).
+      var redraw = function() {
+        try { self.ui.render(); } catch (e) {}
+        if (el.parentNode && !el.closest('#myday-panel')) { var nr = self.ui.row(r, today, missedDay); el.parentNode.replaceChild(nr, el); }
+        try { RPGACE.hooks.fire('myday:ticked', r); } catch (e) {}
+      };
       var fail = function(e) { RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500, 'myDay'); redraw(); };
 
       if (log) {
         mk('↶ Undo', function() { self.logic.undo(log).then(redraw).catch(fail); });
       } else {
+        var doneB = mk('✓ Done', function() { tick.onclick(); }, 'myday-done-btn');
+        doneB.style.background = 'var(--gold)'; doneB.style.color = '#111'; doneB.style.border = 'none';
         var started = L._ls(timerKey);
         var timerB = mk(started ? '⏱ ' + Math.max(0, Math.round((Date.now() - started) / 60000)) + ' min' : '▶ Start', function() {
           if (L._ls(timerKey)) { L._ls(timerKey, null); } else { L._ls(timerKey, Date.now()); }
@@ -6140,7 +6143,8 @@ RPGACE.register('myDay', {
         var st = L._ls(timerKey);
         var actual = st ? Math.max(1, Math.round((Date.now() - st) / 60000)) : null;
         tick.disabled = true;
-        self.logic.tick(r, { actual: actual, startedAt: st ? new Date(st).toISOString() : null, note: missedDay ? 'catch-up' : null }).then(function() {
+        var forDay = !missedDay && today && today !== L.iso() ? new Date(today + 'T12:00:00').toISOString() : null;
+        self.logic.tick(r, { actual: actual, startedAt: st ? new Date(st).toISOString() : null, note: missedDay ? 'catch-up' : null, at: forDay || undefined }).then(function() {
           L._ls(timerKey, null);
           if (r.cadence === 'next_time') return self.logic.remove(r.id).then(function() { return self.logic.load(); });
         }).then(redraw).catch(fail);
