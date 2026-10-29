@@ -23,3 +23,37 @@ TK-4 realmTasks / Live now rows and the Good morning blocks list switch to it; c
      taskCard so new private copies fail.
 Open forks for Alex: does ticking every step of a block mark the block done (and XP), or only the steps?
 Should "+ Add a step" offer your Actions list, free text, or both?
+
+Interrogation answers, verbatim (Oct 29):
+Q: If you tick every step in a block, should that finish the block (and give block XP), or only count the steps?  A: "yes"
+   (read as: finish the block + block XP)
+Q: Should + Add a step offer your saved Actions, free text, or both?  A: "both, plan it"
+
+More evidence (code):
+- Block steps live in chore_blocks.items (src routine/task/activity/list/own, done flag, earns tick/xp/real, log_id).
+  logic.setBlockItem(b, idx, done) already does the per-step side effects: routine -> logic.tick (undo on untick),
+  shopping list item -> bought, realm-block step without its own XP -> quest_log 'block:<id>:<idx>' (+10 or task size).
+- logic.addToBlock(b, t) appends a step; the timeline tap opens ui.blockSheet(g...) (MDX sheet).
+- Block finish XP today: only the focus timer, quest_log 'block_done:<blockId>' +15 (BLOCK_BONUS_XP), written in
+  logic.stopFocus. No path finishes a block from its steps.
+- Cards today: ui.row (Actions), ui.choreBlockCard / lifeBlockCard (own tick UI), blockSheet rows, Plan my day pickers.
+
+PLAN (Task Card Kit, TK) - for Alex's go, one brief per step (rule 18):
+TK-1 One card in the kit. RPGACE.kit.taskCard({icon, title, meta, done, skipped, onDone, onUndo, onSkip, tools}):
+     big circle + gold ✓ Done + Skip + extra tools, redraws itself in place after any change, fires 'task:changed'.
+     myDay.ui.row becomes a wrapper (same look, same behaviour); check_kit_copies.py gets a taskCard rule so a new
+     private tick UI fails the check. Changes for Alex: nothing visible; every later step reuses this.
+TK-2 Block steps as cards. Tapping a planned block on the timeline (blockSheet) and the block cards
+     (choreBlockCard/lifeBlockCard) list each step as a task card wired to logic.setBlockItem (same XP rules: a
+     routine pays its own XP, others +10/task size, no double counting).
+TK-3 Block finishes itself. When the last step is ticked, the block is marked finished with the same
+     'block_done:<id>' +15 XP row the timer writes; quest_key keeps it once (timer + steps never pay twice);
+     unticking a step takes the finish back. (Alex: "yes".)
+TK-4 + Add a step (both). In a block's card list: "+ Add a step" opens one picker with two parts: your saved
+     Actions (search list, RPGACE.kit.pickList) and a free-text line (name + minutes). Goes through logic.addToBlock.
+TK-5 Plan my day uses the cards. The tasks you choose for a block while planning show as the same cards
+     (untickable until the day, with ✕ remove and ↑↓ order), so planning and doing look the same.
+TK-6 Other task lists switch over: Live now / realmTasks rows and Good morning's block list; then the shared
+     card is the only tick UI in My Day.
+Risks: blockSheet is large and drag-sensitive (MDX); TK-2 must not break drag/resize - its suites (mdx, md2b, dt3/4)
+run each step. Why-not: TK-6 is the least visible; it can wait if Alex wants the block parts first.
