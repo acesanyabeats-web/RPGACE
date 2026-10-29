@@ -430,7 +430,7 @@ def import_alarm_sound(row):
             raise RuntimeError("ffmpeg: " + (cv.stderr or "no mp3")[-300:])
         req = urllib.request.Request(f"{SB_URL}/storage/v1/object/alarm_sounds/{sid}.mp3", data=out.read_bytes(),
                                      headers={"apikey": SB_KEY, "Authorization": f"Bearer {SB_KEY}",
-                                              "Content-Type": "audio/mpeg", "x-upsert": "true"}, method="POST")
+                                              "Content-Type": "audio/mpeg"}, method="POST")   # no x-upsert: the bucket allows INSERT only (upsert needs SELECT+UPDATE -> 400)
         with urllib.request.urlopen(req, timeout=60, context=SSL_CTX) as r:
             if r.status >= 300:
                 raise RuntimeError(f"upload HTTP {r.status}")
