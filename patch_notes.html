@@ -74,6 +74,18 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-10-29-self-update" style="margin-bottom:30px;">
+    <div class="card-title">🔄 Oct 29 — RPGACE updates itself when you come back to it</div>
+    <div class="card-body">
+      Your words: "on entered password the noise stops, but the screen with end ringtone im up is not there".
+      <ul>
+        <li><b>Why:</b> the 04:35 test went to plan. The screen lit up and RPGACE loaded 2½ minutes early (04:33), and your notification tap stopped the sound (04:35:17). But the RPGACE your phone brought back was a copy opened around 03:28, before that night's changes, so it didn't know about test rings. An installed app stays open for days and never reloaded itself. This may also explain the evening review showing only Skip.</li>
+        <li><b>Now:</b> each time RPGACE comes back to the screen, it checks whether a newer version is live and reloads once if so.</li>
+        <li>Tested: test browser 3/3 (same version: no reload; newer version: one reload), wake flow 16/16. <b>Untested:</b> on your phone.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-10-29-wake-flow-2" style="margin-bottom:30px;">
     <div class="card-title">⏰ Oct 29 — Alarm opens RPGACE a minute early; test rings get a stop screen (WF-5)</div>
     <div class="card-body">

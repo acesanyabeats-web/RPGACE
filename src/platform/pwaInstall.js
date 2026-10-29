@@ -31,6 +31,33 @@ RPGACE.register('pwaInstall', {
   },
 
   logic: {
+    // Oct 29 2026 (phone alarm test): an installed app stays open for days, so MacroDroid's "Launch RPGACE"
+    // brought back a copy loaded before that night's changes. When RPGACE comes back to the screen it now asks
+    // for index.html (no cache) and reloads once if the rpgace_core.min.js?v= stamp there is newer than its own.
+    _version: function(html) {
+      var m = /rpgace_core\.min\.js\?v=([0-9a-z]+)/.exec(html || '');
+      return m ? m[1] : null;
+    },
+    _checkUpdate: function() {
+      var L = RPGACE.modules.pwaInstall.logic, now = Date.now();
+      if (now - (L._checkedAt || 0) < 60000) return Promise.resolve(false);
+      L._checkedAt = now;
+      var tag = document.querySelector('script[src*="rpgace_core.min.js?v="]'), mine = tag ? L._version(tag.getAttribute('src')) : null;
+      if (!mine || typeof fetch !== 'function') return Promise.resolve(false);
+      return fetch('/index.html?u=' + now, { cache: 'no-store' }).then(function(r) { return r.ok ? r.text() : ''; }).then(function(html) {
+        var live = L._version(html);
+        if (!live || live === mine) return false;
+        console.log('[RPGACE] newer version ' + live + ' (running ' + mine + ') - reloading');
+        location.reload();
+        return true;
+      }).catch(function() { return false; });
+    },
+    _watchUpdates: function() {
+      if (typeof document === 'undefined') return;
+      document.addEventListener('visibilitychange', function() {
+        if (document.visibilityState === 'visible') RPGACE.modules.pwaInstall.logic._checkUpdate();
+      });
+    },
     _register: function() {
       if (!('serviceWorker' in navigator)) return;
       navigator.serviceWorker.register('/sw.js').then(function(reg) {
@@ -47,4 +74,5 @@ RPGACE.register('pwaInstall', {
 
 });
 RPGACE.modules.pwaInstall._register();
+RPGACE.modules.pwaInstall.logic._watchUpdates();
 /* ===END:pwaInstall=== */
