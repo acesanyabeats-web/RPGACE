@@ -1928,6 +1928,10 @@ RPGACE.register('cookingOracle', {
           { extra: 'margin-top:5px;', color: 'var(--gold)', borderColor: 'rgba(201,168,76,.35)' }
         );
         row.appendChild(sameBtn);
+        // WR-7 step 3 (Nov 3 2026, Alex: "to find subs, gemini should look up definition of word, then look at thesaurus
+        // ... to confirm oranges that are misunderstanding like lime wedges and limes ... if not misunderstanding, i click
+        // find alternatives, and gemini looks up actual food alternatives ... with reasons ... then oracle gives it to button").
+        row.appendChild(self.ui._geminiSubCheck(ingredientId, ingredientName, altName, stockNames, onMerged));
       }
       // H24 (Sep 17 2026, 8th pass, real Alex ask: "how about when all
       // subsitutions and merge terms happen, instead of asking for
@@ -3479,7 +3483,9 @@ RPGACE.register('cookingOracle', {
                   // merge can refresh this whole popup once it lands —
                   // the merged ingredient's real status can genuinely
                   // change (e.g. a real duplicate stock row now counts).
-                  usageBox.appendChild(self.ui._renderSubstitutableStatusRow(text, u.status, u.ingredient_id, u.subName, u.name, u.subConfirmed, u.derivableFrom, u.amount, pinkOthers, u.blueName, function() { pop.close(); self.ui._showSchedulePreview(); }, stockNames, u.subRatio, u.subRatioNote, u.unit));
+                  var subRow = self.ui._renderSubstitutableStatusRow(text, u.status, u.ingredient_id, u.subName, u.name, u.subConfirmed, u.derivableFrom, u.amount, pinkOthers, u.blueName, function() { pop.close(); self.ui._showSchedulePreview(); }, stockNames, u.subRatio, u.subRatioNote, u.unit);
+                  self.ui._missingSubLines(subRow, u.subsChosen, stockNames);
+                  usageBox.appendChild(subRow);
                 });
               }
 
@@ -4581,6 +4587,80 @@ RPGACE.register('cookingOracle', {
       });
     },
 
+    // WR-7 step 3 (Alex: "accept an alternative and it becomes blue as a sub-header under orange that is subsituted,
+    // blue is subsitute is still missing"): a chosen swap you don't have yet is a 🔵 line under the ingredient.
+    _missingSubLines: function(row, names, stockNames) {
+      var have = (stockNames || []).map(function(n) { return String(n).toLowerCase(); });
+      (names || []).filter(function(n) { return have.indexOf(String(n).toLowerCase()) < 0; }).forEach(function(n) {
+        if (row.querySelector('.co-sub-missing[data-name="' + String(n).replace(/"/g, '') + '"]')) return;
+        var d = document.createElement('div'); d.className = 'co-sub-missing'; d.dataset.name = n;
+        d.style.cssText = 'font-size:12px;color:#4A9FCC;border-left:3px solid #4A9FCC;background:rgba(74,159,204,0.07);border-radius:0 5px 5px 0;padding:3px 8px;margin:4px 0 0 10px;';
+        d.textContent = '🔵 Substitute: ' + n + ' · still missing, buy it';
+        row.appendChild(d);
+      });
+    },
+    // WR-7 step 3: Gemini checks the words, Oracle turns its answer into buttons. Same food -> choose which name stays
+    // (merge, 2 taps). Not the same -> real alternatives with a reason each; tapping one saves it as your substitution.
+    _geminiSubCheck: function(ingredientId, ingredientName, altName, stockNames, onMerged) {
+      var self = RPGACE.modules.cookingOracle, L = self.logic;
+      var wrap = document.createElement('div'); wrap.className = 'co-gem-check'; wrap.style.cssText = 'margin-top:5px;';
+      var go = self.ui._mkBtn('🧠 Ask Gemini: same thing or swap?', 'small', { color: 'var(--blue,#4A90E2)', borderColor: 'rgba(74,144,226,.35)' }); go.classList.add('co-gem-go');
+      var out = document.createElement('div'); out.className = 'co-gem-out'; out.style.cssText = 'font-size:12px;color:var(--text);margin-top:5px;line-height:1.45;';
+      var have = (stockNames || []).map(function(n) { return String(n).toLowerCase(); });
+      go.onclick = function() {
+        go.disabled = true; go.textContent = '⏳ Gemini is checking the words…'; out.textContent = '';
+        L._geminiSubVerdict(ingredientName, altName).then(function(v) {
+          go.remove(); out.innerHTML = '';
+          var why = document.createElement('div'); why.className = 'co-gem-why';
+          why.textContent = (v.same ? '✅ Same food: ' : '❌ Not the same: ') + (v.why || '');
+          out.appendChild(why);
+          if (v.same) {
+            var pick = document.createElement('div'); pick.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-top:5px;';
+            [ingredientName, altName].forEach(function(keep) {
+              var b = self.ui._mkArmConfirmBtn('Keep "' + keep + '"', '🔗 Confirm: merge, keep "' + keep + '"', 'small', '#C9A84C', function(doneCb) {
+                L._mergeKeepName(ingredientId, ingredientName, altName, keep, function(err) {
+                  if (err) { RPGACE.utils.toast('⚠️ Could not merge: ' + err, '#CC4A4A', 3200); doneCb(err); return; }
+                  RPGACE.utils.toast('✅ Merged: it\'s now "' + keep + '" everywhere', '#4caf82', 3200); doneCb(null); if (onMerged) onMerged();
+                });
+              }, { color: 'var(--gold)', borderColor: 'rgba(201,168,76,.35)' });
+              b.classList.add('co-gem-keep'); pick.appendChild(b);
+            });
+            out.appendChild(pick);
+          }
+          var alts = v.alternatives || [];
+          if (!v.same) {
+            var none = self.ui._mkBtn('🔵 No swap: I still need ' + ingredientName, 'small', { extra: 'margin-top:5px;', color: '#4A9FCC', borderColor: 'rgba(74,159,204,.35)' }); none.classList.add('co-gem-none');
+            none.onclick = function() {
+              none.disabled = true;
+              var row = wrap.parentNode; if (row) { row.style.borderLeftColor = '#4A9FCC'; row.style.color = '#4A9FCC'; }
+              none.textContent = '🔵 Marked: buy ' + ingredientName + ' (no swap)';
+            };
+            out.appendChild(none);
+          }
+          if (alts.length) {
+            var h = document.createElement('div'); h.style.cssText = 'font-weight:700;margin-top:6px;';
+            h.textContent = v.same ? 'Or a real swap:' : '🔎 Real alternatives:'; out.appendChild(h);
+            alts.forEach(function(a) {
+              var inStock = have.indexOf(String(a.name).toLowerCase()) >= 0;
+              var b = self.ui._mkBtn((inStock ? '✓ in stock · ' : '') + 'Use ' + a.name, 'small', { extra: 'margin-top:4px;text-align:left;', color: 'var(--green)', borderColor: 'rgba(76,175,130,.35)' });
+              b.classList.add('co-gem-alt');
+              var r = document.createElement('div'); r.style.cssText = 'font-size:11px;color:var(--muted);margin:1px 0 4px 2px;'; r.textContent = a.why || '';
+              b.onclick = function() {
+                b.disabled = true;
+                L._confirmSubstitution(ingredientId, a.name, function(err) {
+                  if (err) { b.disabled = false; RPGACE.utils.toast('⚠️ ' + err, '#CC4A4A', 3200); return; }
+                  b.textContent = '✓ Using ' + a.name + ' for ' + ingredientName; RPGACE.utils.toast('✅ Saved: ' + a.name + ' stands in for ' + ingredientName, '#4caf82', 3000);
+                  if (!inStock && wrap.parentNode) self.ui._missingSubLines(wrap.parentNode, [a.name], stockNames);
+                });
+              };
+              out.appendChild(b); out.appendChild(r);
+            });
+          }
+        }).catch(function(e) { go.disabled = false; go.textContent = '🧠 Ask Gemini: same thing or swap?'; out.textContent = '⚠️ ' + (e && e.message || e); });
+      };
+      wrap.appendChild(go); wrap.appendChild(out);
+      return wrap;
+    },
     // WR-7 step 2 (Alex: "a dropdown of units would be awesome"): one shared unit list on every unit box.
     UNITS: ['g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'piece', 'clove', 'slice', 'pack', 'tin', 'jar', 'bottle', 'bunch', 'bag', 'pinch'],
     _unitList: function(input) {
@@ -7895,7 +7975,9 @@ RPGACE.register('cookingOracle', {
               // per-recipe breakdown (including any amount this row's
               // own `amount` field no longer directly shows) always lives
               // in pinkInfo.perRecipe, never lost.
-              return { ingredient_id: g.ingredient_id, name: g.name, unit: g.unit, amount: effectiveAmount, have: have, toBuy: toBuy, status: status, isSeparable: g.isSeparable, subName: subName, subConfirmed: subConfirmed, subRatio: subRatio, subRatioNote: subRatioNote, blueName: blueName, derivableFrom: (status === 'maroon') ? derivableFrom : null, pinkInfo: pinkInfo };
+              // WR-7 step 3: every swap Alex has chosen for this ingredient (shown as a blue sub-line when not in stock).
+              var subsChosen = Object.keys(confirmedSubs || {}).filter(function(k) { return k.indexOf(g.ingredient_id + '::') === 0; }).map(function(k) { return k.slice(g.ingredient_id.length + 2); });
+              return { ingredient_id: g.ingredient_id, name: g.name, unit: g.unit, amount: effectiveAmount, have: have, toBuy: toBuy, status: status, isSeparable: g.isSeparable, subName: subName, subConfirmed: subConfirmed, subRatio: subRatio, subRatioNote: subRatioNote, blueName: blueName, derivableFrom: (status === 'maroon') ? derivableFrom : null, pinkInfo: pinkInfo, subsChosen: subsChosen };
             });
             // H24 (Sep 17 2026, 8th pass, real Alex ask: "instead of asking
             // for something as same term, i have an option of agreeing or
@@ -8629,6 +8711,45 @@ RPGACE.register('cookingOracle', {
     // What finishing these recipes would take out of stock. cb(err, lines);
     // a line is {ingredient_id, name, amount, unit, status:'ok'|'short'|
     // 'none'|'unconvertible', takes:[{location, unit, have, take}]}.
+    // WR-7 step 3: Gemini (web, /api/search type web) looks up definitions + synonyms and real swaps; the cheap model
+    // turns its answer into clean JSON for buttons. Never trust model JSON (building guide 5).
+    _geminiSubVerdict: function(need, have) {
+      var L = RPGACE.modules.cookingOracle.logic, pp = RPGACE.modules.phylumPath;
+      var q = 'Cooking question. Is "' + need + '" the same food as "' + have + '" (only a different name, cut, form or spelling, like lime wedges and limes)? ' +
+        'Give the dictionary definition of each and their common synonyms. If they are not the same food, list 3 to 5 real cooking substitutes for "' + need + '", each with a one-line reason it works.';
+      return fetch('/api/search', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ type: 'web', query: q }) })
+        .then(function(r) { return r.json().catch(function() { return {}; }).then(function(d) { if (!r.ok || !d.answer) throw new Error((d && d.error) || 'Gemini gave no answer'); return d.answer; }); })
+        .then(function(answer) {
+          var prompt = 'From this research, return only JSON {"same":true|false,"why":"one short sentence","alternatives":[{"name":"ingredient","why":"one short reason"}]}. ' +
+            'same = true only if "' + need + '" and "' + have + '" are the same food. alternatives = the real substitutes for "' + need + '" it names (max 5, plain lowercase names).\n\nResearch:\n' + String(answer).slice(0, 4000);
+          return RPGACE.kit.ask(prompt, { json: true, max: 500, model: pp && pp.MECHANICAL_MODEL });
+        })
+        .then(function(j) { return L.cleanSubVerdict(j); });
+    },
+    // Pure: model JSON -> {same, why, alternatives[{name, why}]}, defensively.
+    cleanSubVerdict: function(j) {
+      j = j && typeof j === 'object' ? j : {};
+      var clip = function(x, n) { return String(x == null ? '' : x).replace(/\s+/g, ' ').trim().slice(0, n); };
+      var seen = {};
+      var alts = (Array.isArray(j.alternatives) ? j.alternatives : []).map(function(a) { return { name: clip(a && a.name, 60).toLowerCase(), why: clip(a && a.why, 160) }; })
+        .filter(function(a) { if (a.name.length < 2 || seen[a.name]) return false; seen[a.name] = 1; return true; }).slice(0, 5);
+      return { same: j.same === true, why: clip(j.why, 220), alternatives: alts };
+    },
+    // WR-7 step 3: merge two names into one ingredient and keep the name Alex picked. The merge itself is
+    // _declareSameItem (one path, rule 8); keeping the other name renames the kept row and aliases the old one.
+    _mergeKeepName: function(ingredientId, ingredientName, altName, keep, cb) {
+      var L = RPGACE.modules.cookingOracle.logic;
+      L._declareSameItem(ingredientId, altName, function(err) {
+        if (err) { cb(err); return; }
+        if (String(keep).toLowerCase() === String(ingredientName).toLowerCase()) { cb(null); return; }
+        var nk = String(keep).trim().toLowerCase(), old = String(ingredientName).trim().toLowerCase();
+        RPGACE.sb.secureWrite('ingredients', 'update', { name: nk }, 'id=eq.' + ingredientId)
+          .then(function() { return RPGACE.sb.secureWrite('ingredient_aliases', 'delete', null, 'alias_name=eq.' + encodeURIComponent(nk)); })
+          .then(function() { return RPGACE.sb.secureWrite('ingredient_aliases', 'insert', { alias_name: old, canonical_ingredient_id: ingredientId }, null, 'alias_name'); })
+          .then(function() { RPGACE.cache && RPGACE.cache.clear && RPGACE.cache.clear('ingredients'); cb(null); })
+          .catch(function(e) { cb('merged, but the name did not change: ' + (e.message || e)); });
+      });
+    },
     // WR-7 step 2: every ingredient you've logged (cooks + stock), with whether it's in stock now. Cached per load.
     _allIngredients: function() {
       var self = RPGACE.modules.cookingOracle;

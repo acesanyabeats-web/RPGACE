@@ -74,6 +74,19 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-03-cook-stock-3" style="margin-bottom:30px;">
+    <div class="card-title">🍳 Nov 3: Orange ingredients: Gemini checks "same thing or swap?", you pick the name or a real swap, missing swaps show blue (WR-7 step 3)</div>
+    <div class="card-body">
+      Alex: "click orange to either say the sub is the same thing with different name, then i choose which name i want. to find subs, gemini should look up definition of word, then look at thesaurus ... if not misunderstanding, i click find alternatives, and gemini looks up actual food alternatives ... with reasons" + "if i have no alternatives, i either make blue, or accept an alternative and it becomes blue as a sub-header under orange that is subsituted, blue is subsitute is still missing".
+      <ul>
+        <li>Orange (and blue) lines have a new <b>🧠 Ask Gemini: same thing or swap?</b> button. Gemini (web search) looks up both words' definitions and synonyms, then the cheap model turns the answer into buttons.</li>
+        <li><b>Same food:</b> you see why, then choose <b>Keep "lime wedges"</b> or <b>Keep "lime"</b> (tap twice). Both are merged into one ingredient with the name you picked, and the other name becomes an alias.</li>
+        <li><b>Not the same:</b> up to 5 real alternatives, each with a reason, and the ones you have are marked <b>✓ in stock</b>. Tapping one saves it as your substitution.</li>
+        <li>A chosen swap you <b>don't</b> have shows as a <b>🔵 Substitute: X · still missing, buy it</b> line under the ingredient, and stays on the cook's ingredient list after reopening. <b>🔵 No swap: I still need X</b> marks it blue for that view.</li>
+      </ul>
+      <b>Flags:</b> tested in a headless browser (9/9 + 7/7; Cook Mode suites pass), with Gemini and Oracle stubbed, so it hasn't run against the real Gemini yet. "No swap" isn't saved yet (it only recolours the line this time). The merge is permanent (two taps, no Supabase backup). Laptop checklist: FFmpeg added to the RPGACE-on-E step.
+    </div>
+</div>
 <div class="card" id="card-2026-11-03-cook-stock-2" style="margin-bottom:30px;">
     <div class="card-title">🍳 Nov 3: Add stock by typing a few letters, plus a units dropdown (WR-7 step 2)</div>
     <div class="card-body">

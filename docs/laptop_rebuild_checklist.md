@@ -78,9 +78,12 @@ Use Settings → System → Recovery → **Reset this PC** → **Remove everythi
 ```
 winget install --id Git.Git -e --source winget
 winget install --id Python.Python.3.12 -e --source winget
+winget install --id Gyan.FFmpeg -e --source winget
 git clone --depth 1 https://github.com/acesanyabeats-web/RPGACE E:\RPGACE-code
 ```
-Then double-click `E:\RPGACE-code\local_server\start_server.bat`. It updates the code, sees `E:\RPGACE` and uses it, and installs what it needs (yt-dlp, Deno) on first run.
+Then double-click `E:\RPGACE-code\local_server\start_server.bat`. It updates the code, sees `E:\RPGACE` and uses it, and installs what it needs on first run (yt-dlp, Deno, Whisper, certifi). FFmpeg comes from the winget line above (the video analyser cuts frames and audio with it).
+
+Your local pipeline's data (API key, rota login, video reports, transcripts, alarm sounds) is already on `E:\RPGACE` from step 1a; the code comes fresh from GitHub, so nothing else needs saving.
 **Check:** the window says `Your data and API key stay in E:\RPGACE` and then `Analyser version …`.
 
 Finally, make a desktop shortcut to `E:\RPGACE-code\local_server\start_server.bat`.
