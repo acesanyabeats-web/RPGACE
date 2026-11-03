@@ -83,7 +83,7 @@ RPGACE.register('realmTasks', {
     // private mission_contexts, picked when the block is planned.
     CONTEXT_KINDS: { recipe: '🍳 a recipe', combo: '🏋️ an exercise combo', reference: '🎧 a reference track or beat idea', post: '📣 a post idea', card: '🗂 a card',
       // MR-1 (Nov 3 2026, plan "Missions Across Realms", Alex: "Build the MR plan as-is"): the 7 more realms.
-      person: '👤 a person', book: '📚 a book or course', plan: '🧳 a plan', beat: '🎹 a beat', artist: '🎤 an artist', dev: '🛠 a plan item or error', journal: '📝 a journal exercise' },
+      freebie: '🎁 a freebie', person: '👤 a person', book: '📚 a book or course', plan: '🧳 a plan', beat: '🎹 a beat', artist: '🎤 an artist', dev: '🛠 a plan item or error', journal: '📝 a journal exercise' },
     isMission: function(t) { return !!(t && t.context_kind); },
     missions: function(realm) { return (RPGACE.modules.realmTasks._tasks || []).filter(function(t) { return t.realm === realm && t.context_kind && t.status === 'kept'; }); },
     loadContexts: function(missionId) {
@@ -640,6 +640,12 @@ RPGACE.register('realmTasks', {
           if (pi.context_id) L.loadContext(pi.context_id).then(function(c) {
             var openIt = c && L.opener(c.source_ref);
             if (openIt && cx.isConnected) { var ob = U._btn('Open ↗', ''); ob.id = 'rt-ctx-open'; ob.onclick = openIt; cx.appendChild(ob); }
+            // WR-15: a freebie card links to its email and to the claim page.
+            if (c && cx.isConnected) [['email_url', '📧 Open email', 'rt-ctx-email'], ['claim_url', '🎁 Claim it', 'rt-ctx-claim']].forEach(function(x) {
+              if (!/^https?:\/\//.test(c[x[0]] || '')) return;
+              var lb = U._btn(x[1], x[0] === 'claim_url' ? 'primary' : ''); lb.id = x[2]; lb.onclick = function() { window.open(c[x[0]], '_blank', 'noopener'); }; cx.appendChild(lb);
+            });
+            if (c && c.expires_on && cx.isConnected) { var ex = document.createElement('div'); ex.className = 'rt-sub'; ex.textContent = '⏳ Free until ' + c.expires_on; cx.appendChild(ex); }
             if (!c || !c.detail || !cx.isConnected) return;
             var d = document.createElement('div'); d.className = 'rt-sub'; d.id = 'rt-ctx-detail'; d.style.whiteSpace = 'pre-wrap'; d.textContent = c.detail;
             cx.appendChild(d);
@@ -651,7 +657,12 @@ RPGACE.register('realmTasks', {
           dn.disabled = true;
           // DL-1: in a realm block the block pays; otherwise a timed Live now entry closes and the task ticks.
           var work = b && b.kind === 'realm' ? L.doneInBlock(cur, b) : L.freeDone(cur, b ? null : st2.entry);
-          work.then(function() { return L.afterDone(cur, null, Date.now()).catch(function() { return []; }); }).then(function(next) {
+          work.then(function() {
+            // WR-15: a claimed freebie joins My software.
+            var sl = RPGACE.modules.softwareList;
+            if (pi && pi.context_kind === 'freebie' && pi.context_id && sl) return L.loadContext(pi.context_id).then(function(c) { return sl.logic.freebieClaimed(c); })
+              .then(function() { RPGACE.utils.toast('🧰 Added to My software', '#4caf82', 2200); }, function(e) { RPGACE.utils.toast('⚠️ Not added to My software: ' + (e.message || e), '#CC4A4A', 3500); });
+          }).then(function() { return L.afterDone(cur, null, Date.now()).catch(function() { return []; }); }).then(function(next) {
             RPGACE.utils.toast('✅ ' + cur.title + (cur.earns !== 'real' ? ' · +' + L.tickXp(cur) + ' ' + U._realm(cur.realm || realm).name : '') + (next && next.length ? ' · ⏭ Next: ' + next[0].title : ''), '#4caf82', 2600);
             st2.task = null; st2.entry = null; st2.done = (st2.done || 0) + 1; save(); U._drawLive(box, opts);
           }).catch(function(e) { dn.disabled = false; RPGACE.utils.toast('⚠️ Not saved: ' + (e.message || e), '#CC4A4A', 4000, 'realmTasks'); });

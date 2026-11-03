@@ -163,3 +163,6 @@ Alex: "i didnt collect most freebies, id like both email to highlight freebies i
    5. -> Knowledge article + phylum placement "when we come around to it"
 Alex: "i think the swemh.ltd is the drip plug in" -> row renamed 'Drip plugin (Swemh.Ltd)'.
 Alex: "we will also skip step 7, barely did anything in obs, so we will go through it after reboot"
+
+-- WR-15 build instruction (Alex, verbatim, Nov 3): "So do the wr-15, but when mission is being made, the mission for freebies need to be one with different context on each email, with link to go to email read or link to website to claim freebie"
+-> Built as one Producer mission 'Claim a freebie' + one mission_contexts card per freebie email (email_url + claim_url). 7 cards seeded. Knowledge article/phylum fill-out deferred per his "when we come around to it".

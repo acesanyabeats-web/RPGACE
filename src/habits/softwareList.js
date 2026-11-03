@@ -79,6 +79,80 @@ RPGACE.register('softwareList', {
       });
       return out;
     },
+    // ── WR-15 (Nov 3 2026, Alex: "id like both email to highlight freebies in the future as missions ... the mission for
+    // freebies need to be one with different context on each email, with link to go to email read or link to website
+    // to claim freebie"): one 'Claim a freebie' mission; every freebie email becomes its own card (mission_contexts,
+    // source 'email', email_url + claim_url). Same Gmail path as the purchase scan (rule 8).
+    FREEBIE_QUERY: '(free OR freebie OR freebies OR "free download" OR giveaway OR "on us" OR "100% off" OR claim) (plugin OR vst OR "sample pack" OR samples OR kit OR preset OR presets OR loops OR drum OR synth OR "one shots") newer_than:30d',
+    freebieMission: function() {
+      var rt = RPGACE.modules.realmTasks, hit = rt && (rt._tasks || []).filter(function(t) { return t.context_kind === 'freebie' && t.status === 'kept'; })[0];
+      if (hit) return Promise.resolve(hit);
+      return RPGACE.sb.select('realm_tasks', 'select=id,realm,title&context_kind=eq.freebie&status=eq.kept&limit=1').then(function(r) { return (r && r[0]) || null; });
+    },
+    emailUrl: function(id) { return 'https://mail.google.com/mail/#all/' + encodeURIComponent(id); },
+    // Pure: model JSON -> freebie cards (only real, claimable freebies; links must be http(s)).
+    parseFreebies: function(j, mails, account, missionId) {
+      var L = RPGACE.modules.softwareList.logic, out = [];
+      ((j && Array.isArray(j.items)) ? j.items : []).forEach(function(it) {
+        var m = mails[Number(it && it.i)]; if (!m || it.is_freebie !== true) return;
+        var what = String(it.what || '').replace(/\s+/g, ' ').trim().slice(0, 100); if (what.length < 3) return;
+        var vendor = String(it.vendor || '').trim().slice(0, 60);
+        var claim = /^https?:\/\//.test(String(it.claim_url || '')) ? String(it.claim_url).slice(0, 500) : null;
+        var exp = /^\d{4}-\d{2}-\d{2}$/.test(String(it.expires || '')) ? it.expires : null;
+        out.push({ mission_id: missionId, realm: 'producer', title: (vendor ? vendor + ': ' : '') + what, detail: String(it.why || m.subject || '').slice(0, 300) || null,
+          source: 'email', source_ref: 'gmail:' + account + ':' + m.id, email_url: L.emailUrl(m.id), claim_url: claim, expires_on: exp, status: 'kept' });
+      });
+      return out;
+    },
+    freebieScan: function(account, onStatus) {
+      var self = RPGACE.modules.softwareList, L = self.logic, say = onStatus || function() {}, key = 'fb_checked_' + account;
+      var seen = {}; try { seen = JSON.parse(localStorage.getItem(key) || '{}') || {}; } catch (e) {}
+      say('Looking for freebies…');
+      return Promise.all([L.freebieMission(), RPGACE.api('GMAIL_FETCH_EMAILS', { query: L.FREEBIE_QUERY, max_results: 40 }, account),
+        RPGACE.kit.readPrivate('mission_contexts', 'select=source_ref&source=eq.email&limit=2000')]).then(function(r) {
+        var mission = r[0]; if (!mission) throw new Error('The Claim a freebie mission is missing');
+        (r[2] || []).forEach(function(c) { if (c.source_ref) seen[c.source_ref] = 1; });
+        var mails = L.mails(r[1]).filter(function(m) { return !seen['gmail:' + account + ':' + m.id]; });
+        if (!mails.length) return { found: 0, emails: 0 };
+        var found = 0, batches = []; for (var i = 0; i < mails.length; i += 10) batches.push(mails.slice(i, i + 10));
+        return batches.reduce(function(p, batch, bi) {
+          return p.then(function() {
+            say('Reading emails ' + (bi * 10 + 1) + '–' + (bi * 10 + batch.length) + ' of ' + mails.length + '…');
+            var prompt = 'These are emails to a beatmaker. For each one that offers a FREE plugin, sample pack, drum kit, preset bank, loops or other free music-production download he can claim, give: i (its number), is_freebie true, what (the free thing, short), vendor, claim_url (the link in the email to claim or download it; empty if none), expires (YYYY-MM-DD if the email gives a deadline, else empty), why (one short line on what it is). Sales, discounts, newsletters and paid offers: is_freebie false. Never invent links.\n\n' +
+              batch.map(function(m, k) { return '#' + k + ' From: ' + m.from + ' | Subject: ' + m.subject + ' | Date: ' + m.at + '\n' + m.text; }).join('\n\n') +
+              '\n\nReturn only JSON: {"items":[{"i":0,"is_freebie":true,"what":"","vendor":"","claim_url":"","expires":"","why":""}]}';
+            return RPGACE.kit.ask(prompt, { json: true, max: 1000, model: RPGACE.modules.phylumPath && RPGACE.modules.phylumPath.MECHANICAL_MODEL, context: 'freebie email scan' }).then(function(j) {
+              var rows = L.parseFreebies(j, batch, account, mission.id);
+              batch.forEach(function(m) { seen['gmail:' + account + ':' + m.id] = 1; });
+              try { localStorage.setItem(key, JSON.stringify(seen)); } catch (e) {}
+              found += rows.length;
+              return rows.length ? RPGACE.sb.secureWrite('mission_contexts', 'insert', rows) : null;
+            });
+          });
+        }, Promise.resolve()).then(function() { RPGACE.cache.clear('mission_contexts'); return { found: found, emails: mails.length }; });
+      });
+    },
+    // Claimed in Live now: the freebie joins My software as owned, free, with its claim link as the download.
+    freebieClaimed: function(c) {
+      if (!c || !c.id) return Promise.resolve();
+      return RPGACE.sb.secureWrite('software_inventory', 'insert', { name: String(c.title || 'Freebie').slice(0, 120), category: 'Plugin', price: 0, currency: 'GBP',
+        purchased_on: new Date().toISOString().slice(0, 10), download_url: c.claim_url || null, source_email_id: 'freebie:' + c.id, status: 'owned',
+        notes: 'Free, claimed via the Claim a freebie mission' + (c.detail ? ': ' + String(c.detail).slice(0, 200) : '') })
+        .catch(function(e) { if (!/duplicate|unique/i.test(e.message || '')) throw e; })
+        .then(function() { RPGACE.cache.clear('software_inventory'); });
+    },
+    // WR-15 part 3 (Alex: "download manual to unlock full potential of plug in, look up videos on tutorials with gemini to
+    // watch and send to local server or both"): one Gemini web lookup, saved to the Life Library (Knowledge) like every lookup.
+    learnLookup: function(name) {
+      var wl = RPGACE.modules.webLookup;
+      if (!wl) return Promise.reject(new Error('Web lookup is not loaded'));
+      return wl.logic.lookup('Official user manual (PDF or online) and the 3 best YouTube tutorials for "' + name + '" (music production plugin or sample pack). Give the links.',
+        { keyPrefix: 'learn: ', title: 'Learn: ' + name, topics: [String(name).toLowerCase().slice(0, 40)], noPicker: true });
+    },
+    isYoutube: function(u) { return /^https?:\/\/(www\.|m\.)?(youtube\.com\/watch|youtu\.be\/)/i.test(String(u || '')); },
+    toVideoworm: function(url) {
+      return RPGACE.sb.secureWrite('intel_jobs', 'insert', { url: url, status: 'awaiting_realms', realms: [] });
+    },
     // Emails already read (software or not) are remembered on this phone, so a re-scan only reads new ones.
     checked: function(account) {
       try { return JSON.parse(localStorage.getItem('sw_checked_' + account) || '{}') || {}; } catch (e) { return {}; }
@@ -150,6 +224,17 @@ RPGACE.register('softwareList', {
           bar.appendChild(b);
         });
         bar.appendChild(status);
+        self.ACCOUNTS.forEach(function(a) {
+          var fb = K.btn('🎁 Find freebies: ' + a.label, ''); fb.className += ' sw-freebies'; fb.dataset.account = a.key;
+          fb.onclick = function() {
+            fb.disabled = true;
+            L.freebieScan(a.key, function(t) { status.textContent = t; }).then(function(res) {
+              fb.disabled = false;
+              status.textContent = res.found ? '🎁 ' + res.found + ' freebie' + (res.found === 1 ? '' : 's') + ' added to the Claim a freebie mission (Producer).' : 'No new freebies in the last 30 days.';
+            }, function(e) { fb.disabled = false; status.textContent = '⚠️ ' + (e.message || e); });
+          };
+          bar.insertBefore(fb, status);
+        });
         body.appendChild(bar);
         if (rev.length) { var pk = K.btn('✅ Tick what counts (' + rev.length + ')', 'primary'); pk.id = 'sw-pick'; pk.style.minHeight = '48px'; pk.onclick = function() { U.pickList(paint); }; body.appendChild(pk); }
         if (rev.length) body.appendChild(U.section('📥 To review (' + rev.length + ')', rev, true, paint));
@@ -173,6 +258,7 @@ RPGACE.register('softwareList', {
         } else if (r.download_url) {
           tools.push({ label: '⬇ Download', fn: function() { window.open(r.download_url, '_blank', 'noopener'); } });
         }
+        if (!reviewing && /Plugin|Sample pack|DAW/.test(r.category || '')) tools.push({ label: '📘 Manual + tutorials', fn: function() { self.ui.learn(r.name); } });
         tools.push({ label: '✏️ Edit', fn: function() { self.ui.edit(r, repaint); } });
         var card = K.taskCard({ cls: 'sw-item', id: String(r.id), icon: reviewing ? '📧' : (r.install_order ? '#' + r.install_order : '🧰'), title: r.name,
           metaHtml: '<div style="font-size:12px;color:var(--muted);">' + K.esc(meta) + '</div>', done: !reviewing && !!r.installed_at, mode: reviewing ? 'view' : 'do', tools: tools,
@@ -230,6 +316,29 @@ RPGACE.register('softwareList', {
       bar.appendChild(keep); bar.appendChild(drop); pop.box.appendChild(bar);
       return pop;
     },
+    // WR-15: manual + tutorial links for a plugin/pack; YouTube ones can go to Videoworm (the laptop analyses them).
+    learn: function(name) {
+      var self = RPGACE.modules.softwareList, L = self.logic, K = RPGACE.kit, dd = RPGACE.modules.dashDeck;
+      var pop = dd._popup({ eyebrow: '📘 Learn it', title: name, width: '520px', closeLabel: 'Close' }); pop.box.id = 'sw-learn';
+      var st = document.createElement('div'); st.style.cssText = 'font-size:14px;color:var(--muted);'; st.textContent = '⏳ Gemini is finding the manual and tutorials…'; pop.box.appendChild(st);
+      L.learnLookup(name).then(function(res) {
+        st.textContent = res.reused ? 'From your Life Library (looked up ' + res.date + ')' : 'Saved to your Life Library.';
+        if (res.answer) { var a = document.createElement('div'); a.style.cssText = 'font-size:14px;white-space:pre-wrap;margin:8px 0;'; a.textContent = res.answer.slice(0, 1200); pop.box.appendChild(a); }
+        (res.sources || []).forEach(function(s) {
+          if (!/^https?:\/\//.test(s.url || '')) return;
+          var row = document.createElement('div'); row.className = 'sw-learn-row'; row.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);';
+          var ln = document.createElement('a'); ln.href = s.url; ln.target = '_blank'; ln.rel = 'noopener noreferrer'; ln.textContent = s.title || s.url; ln.style.cssText = 'flex:1;min-width:160px;color:var(--blue,#4A8CCC);word-break:break-word;';
+          row.appendChild(ln);
+          if (L.isYoutube(s.url)) {
+            var vw = K.btn('▶ Send to Videoworm', ''); vw.className += ' sw-to-vw';
+            vw.onclick = function() { vw.disabled = true; L.toVideoworm(s.url).then(function() { vw.textContent = '✓ Queued (pick realms in Videoworm)'; }, function(e) { vw.disabled = false; RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500); }); };
+            row.appendChild(vw);
+          }
+          pop.box.appendChild(row);
+        });
+      }, function(e) { st.textContent = '⚠️ ' + (e.message || e); });
+      return pop;
+    },
     edit: function(r, done) {
       var self = RPGACE.modules.softwareList, K = RPGACE.kit, dd = RPGACE.modules.dashDeck;
       var pop = dd._popup({ eyebrow: '🧰 My software', title: r.id ? 'Edit ' + r.name : 'Add software', width: '460px' });
@@ -263,6 +372,17 @@ RPGACE.register('softwareList', {
     }
   },
 
-  open: function() { return this.ui.open(); }
+  open: function() { return this.ui.open(); },
+  // WR-15: once a day after sign-in, quietly look for new freebies in the main account.
+  init: function() {
+    var self = this;
+    RPGACE.hooks.on('rpgace:login', function() {
+      setTimeout(function() {
+        var day = new Date().toISOString().slice(0, 10), k = 'fb_auto_day';
+        try { if (localStorage.getItem(k) === day) return; localStorage.setItem(k, day); } catch (e) { return; }
+        self.logic.freebieScan('gmail').then(function(r) { if (r.found) RPGACE.utils.toast('🎁 ' + r.found + ' new freebie' + (r.found === 1 ? '' : 's') + ' to claim (Producer → Claim a freebie)', '#C9A84C', 4000); }).catch(function() {});
+      }, 20000);
+    });
+  }
 });
 /* ===END:softwareList=== */
