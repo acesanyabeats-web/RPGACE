@@ -68,3 +68,11 @@ S6 Cook finished "4 items taken out", 13 "not in stock" (14:46) -> Alex's own de
    - a dropdown of units;
    - if it's not a naming mismatch -> "Find alternatives": Gemini looks up real food swaps with the reason each one works; Oracle turns that into buttons I can choose from.
 (S7 Cook mode cut-off text, S8/S9 Good morning, S10 evening review planned 0 min + water twice: not answered yet - Round 2.)
+
+-- Round 2 (Nov 3), verbatim --
+S8/S9 Good morning "+ Add to today" on already-planned blocks: "the add to today is a duplicate that is not needed, its already on my day, it adds on again as duplicate"
+S10 (+S4) evening review: "duplicate, i want all my actions to have the card, i also click done, but save and next wont let me go through saying the water is not ticked"
+   -> new bug: ticking Done on the water row didn't satisfy the Night-tasks gate on Save & next.
+Work tab spec source: "Yes, separate sheet" (Alex will send the trial spec sheet; the Nicco menu is the drinks list).
+Work mode: "Auto-open during shift,Cocktails + mocktails" (NOT ticked: full drinks menu + prices, food + allergens).
+S7 Cook mode step-timer text cut off ("black peppe", "spread o"): not asked - plain display bug, flagged as fix-by-default.
