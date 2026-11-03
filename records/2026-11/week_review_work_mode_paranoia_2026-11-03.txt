@@ -53,3 +53,18 @@ Q S5/S6 cooking: "i couldnt adjust how much of each i used, i think counting spi
 (Nov 3, mid-turn, verbatim: "save the answers of both quesstionnaires immediately and reboot the process with those answers".
  Session log checked: only ONE screenshot questionnaire exists (Round 1 above) — no earlier one survived the worker restart.
  "just take the 4 answers" is read as "all 4 options apply". Saved + committed; interrogation continues from these answers.)
+
+== Screenshot answers 1-6 (Alex: "and the screenshots 1 to 6 answers too") ==
+S1 "I just did" form (12:28) -> "Should be a task card" (the form becomes the shared task card / realm picker, not a separate form).
+S2 Video card "Rhythmic Counterpoint..." (12:15) -> all 4: Creator/YouTube advice must not sit in a Producer card; give steps to try in FL; no scroll box inside the card; old (Oct 10) card shouldn't keep surfacing.
+S3 "Why skip Washing dishes?" (02:10) -> all 4, stressed "I did wash them" + "Nags too late": a Done must exist; ask right after the cook, not at 2-5am; skip-reason list is friction; washing-up shouldn't be auto-created after every cook.
+S4 Evening review "Washing dishes - after your 14:45 cook · still waiting · Why not?" (05:28) -> same answer as S3 (asked together).
+S5 Planned Cook session + "Recipe saved to Journal - mark it cooked there" toast (14:46) -> "Journal toast is wrong" (cooking is finished in Cook mode).
+S6 Cook finished "4 items taken out", 13 "not in stock" (14:46) -> Alex's own design, verbatim in Round 1 above. In short:
+   - let me adjust how much of each I used;
+   - don't count spices by grams - when one runs out I tap restock (or a planned cook that needs it asks me to restock);
+   - stock name entry filters letter by letter and offers ingredients already logged (past cooks, past + current stock) so nothing is duplicated;
+   - tap an orange (mismatch) item -> "same thing, different name" -> I pick the name to keep. Gemini checks the word's definition + thesaurus to confirm it's a naming mismatch (e.g. "lime wedges" vs "limes") and tells Oracle which options the code should show;
+   - a dropdown of units;
+   - if it's not a naming mismatch -> "Find alternatives": Gemini looks up real food swaps with the reason each one works; Oracle turns that into buttons I can choose from.
+(S7 Cook mode cut-off text, S8/S9 Good morning, S10 evening review planned 0 min + water twice: not answered yet - Round 2.)
