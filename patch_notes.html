@@ -74,6 +74,15 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-03-sunday-review" style="margin-bottom:30px;">
+    <div class="card-title">📓 Nov 3: Sunday's Going to bed now does the week review before the alarm</div>
+    <div class="card-body">
+      Alex: "on sunday i wasnt able to do review of week, because when i did the day one it skipped straight to set alarm, this needs to change for the sunday".
+      <ul><li><b>Root cause:</b> the bedtime flow went Day review → Save &amp; next → alarm. The 📓 Weekly review button sat next to Save, but Save never led to it.</li>
+      <li>Now, on Sunday from 17:00 (or Monday, for last week), Save &amp; next opens the <b>Weekly review</b> when that week isn't written yet. The alarm step comes when you close it. Skipping the day review also leads to the week review.</li></ul>
+      <b>Flags:</b> tested in a headless browser (4/4) with a fake Sunday 22:30 clock. Next Sunday is the real check.
+    </div>
+</div>
 <div class="card" id="card-2026-11-03-video-cards" style="margin-bottom:30px;">
     <div class="card-title">🎬 Nov 3: Video cards stay in their realm, Producer posts end with FL steps, no scroll box, old posts stop resurfacing (WR-6)</div>
     <div class="card-body">

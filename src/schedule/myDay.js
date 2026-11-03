@@ -5670,7 +5670,7 @@ RPGACE.register('myDay', {
         }
         if (flow) {
           var sk = U._btn(opts.catchUp ? 'Skip' : 'Skip review', ''); sk.id = 'myday-evening-skip';
-          sk.onclick = function() { pop.close(); next(); };
+          sk.onclick = function() { pop.close(); if (rv && self._lastReview !== rv) L.reviewDone(rv).catch(function() { return false; }).then(function(d) { if (d) next(); else U.openReview(rv, next); }); else next(); };
           bar.appendChild(sk);
         } else {
           var pl = U._btn('📋 Plan tomorrow', ''); pl.id = 'myday-evening-plan';
@@ -5694,6 +5694,12 @@ RPGACE.register('myDay', {
             pop.close();
             RPGACE.utils.toast('🌙 Evening saved to your Journal · +10 Mind', '#4caf82', 2800);
             try { self.ui.render(); } catch (e) {}
+            // Nov 3 2026 (Alex: "on sunday i wasnt able to do review of week, because when i did the day one it skipped
+            // straight to set alarm"): on Sunday evening / Monday, the week review comes before the alarm.
+            if (flow && rv && self._lastReview !== rv) {
+              L.reviewDone(rv).catch(function() { return false; }).then(function(done) { if (done) next(); else U.openReview(rv, next); });
+              return;
+            }
             next();
           }).catch(function(e) { sv.disabled = false; sv.textContent = svLabel; RPGACE.utils.toast('⚠️ Not saved: ' + (e.message || e), '#CC4A4A', 4000, 'myDay'); });
         };
@@ -7151,11 +7157,13 @@ RPGACE.register('myDay', {
 
     // MD2-9: the weekly review — a pre-filled look back, three short prompts,
     // saved as one Journal entry (source weekly_review, review_on = Monday).
-    openReview: function(ws) {
+    // onDone (Nov 3 2026): the Going-to-bed flow carries on (alarm) when this review closes.
+    openReview: function(ws, onDone) {
       var self = RPGACE.modules.myDay, L = self.logic, esc = self.ui._esc;
       ws = ws || L.reviewTarget(new Date()) || L.weekStart(L.iso());
       var s = L.reviewSummary(ws);
-      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '📓 Weekly review', title: 'Week of ' + new Date(ws + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }), width: '520px' });
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '📓 Weekly review', title: 'Week of ' + new Date(ws + 'T12:00:00').toLocaleDateString('en-GB', { day: 'numeric', month: 'long' }), width: '520px',
+        onClose: onDone ? function() { var f = onDone; onDone = null; setTimeout(f, 0); } : null });
       var inp = 'background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;padding:8px;font-family:Rajdhani,sans-serif;width:100%;box-sizing:border-box;resize:vertical;margin-top:4px;';
       var list = function(xs) { return xs.map(function(x) { return '<li>' + esc(x.r.title) + ' <span style="color:var(--muted);">' + x.got + '/' + x.target + '</span></li>'; }).join(''); };
       var sum = document.createElement('div');
