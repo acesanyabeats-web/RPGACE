@@ -4,7 +4,9 @@ cd /d "%~dp0"
 echo.
 echo  RPGACE local server
 echo  Code folder: %~dp0
-echo  Your data and API key stay in %USERPROFILE%\RPGACE
+rem WR-12 (Nov 3 2026): data lives on the external drive once E:\RPGACE exists, else in %USERPROFILE%\RPGACE.
+if exist "E:\RPGACE\" (set "RPGACE_HOME=E:\RPGACE") else (set "RPGACE_HOME=%USERPROFILE%\RPGACE")
+echo  Your data and API key stay in %RPGACE_HOME%
 echo.
 where git >nul 2>nul
 if errorlevel 1 (

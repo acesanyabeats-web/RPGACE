@@ -36,7 +36,9 @@ except Exception:  # an old copy of intel_common.py, or none
     ANALYSER_VERSION = "unknown"
 
 # ── CONFIG ────────────────────────────────────────────────────────────────────
-HOME          = Path.home() / "RPGACE"
+# WR-12 (Nov 3 2026, Alex: "Everything for rpgace will move to my external harddrive E"): the data folder is
+# RPGACE_HOME when set (start_server.bat sets E:\RPGACE once that folder exists), else %USERPROFILE%\RPGACE.
+HOME = Path(os.environ["RPGACE_HOME"]) if os.environ.get("RPGACE_HOME") else Path.home() / "RPGACE"
 INTEL_DIR     = HOME / "intel"
 WATCHLIST_FILE= INTEL_DIR / "watchlist.json"
 INSIGHTS_FILE = INTEL_DIR / "insights.json"
