@@ -76,3 +76,33 @@ S10 (+S4) evening review: "duplicate, i want all my actions to have the card, i 
 Work tab spec source: "Yes, separate sheet" (Alex will send the trial spec sheet; the Nicco menu is the drinks list).
 Work mode: "Auto-open during shift,Cocktails + mocktails" (NOT ticked: full drinks menu + prices, food + allergens).
 S7 Cook mode step-timer text cut off ("black peppe", "spread o"): not asked - plain display bug, flagged as fix-by-default.
+
+== Screenshots 1-6, saved in the questionnaire's own shape (exact question = exact answer, nothing reworded) ==
+[Screenshot 1] Q: "Screenshot: the '✓ I just did — Put it on your timeline' form (12:28). What's wrong with it? (pick all that apply)"
+  Options shown: Times are blank | Ugly minute buttons | Wrong realm preset | Should be a task card
+  A: "Should be a task card"
+[Screenshot 2] Q: "Screenshot: the video card 'Rhythmic Counterpoint & Extended Harmony' (Producer, 12:15). What's wrong with it?"
+  Options shown: Creator advice in Producer | Not actionable | Scroll box inside card | Old card, shouldn't show
+  A: "i already answered higher in the previous questionnaire, just take the 4 answers"
+[Screenshot 3] Q: "Screenshots: 'Why skip Washing dishes?' (02:10) and the evening review showing 'Washing dishes – after your 14:45 cook · still waiting · Why not?' (05:28). What went wrong?"
+  Options shown: I did wash them | Nags too late | Too many reasons | Shouldn't be auto-added
+  A: "i already answered higher in the previous questionnaire, just take the 4 answers,I did wash them,Nags too late"
+[Screenshot 4] (asked together with Screenshot 3 - same question, same answer as above)
+[Screenshot 5] Q: "Screenshots: Planned Cook session ('Can go shop', toast 'Recipe saved to Journal – mark it cooked there') and Cook finished ('4 items taken out', 13 'not in stock'). What went wrong?"
+  Options shown: I bought them, stock missed | Journal toast is wrong | Cook-mode text cut off | Unit mismatch annoying
+  A: "i couldnt adjust how much of each i used, i think counting spices by grams is pointless, when it runs out i can click to restock if i want it, or planned cook requires it so i restock. i also think entering a name in stock letter by letter filters by that sequence, then can choose logged ingredients from previous cooks and previous and current stocks to not duplicate. i also think i should be able to click orange to either say the sub is the same thing with different name, then i choose which name i want. to find subs, gemini should look up definition of word, then look at thesaurus to find other words or phrases to say the same thing to confirm oranges that are misunderstanding like lime wedges and limes. also a dropdown of units would be awesome. gemini can then tell oracle what code should show as options to choose if same thing said differently. if not misunderstanding, i click find alternatives, and gemini looks up actual food alternatives for orange that i can choose, with reasons why its a suitable swap, gemini tells oracle the description and why from its ai mode, then oracle gives it to button for code to manifest findings, this way we can patch in changes that are true using ai.,Journal toast is wrong"
+[Screenshot 6] (asked together with Screenshot 5 - same question, same answer as above)
+
+== Round 2, same shape ==
+[Screenshots 8+9] Q: "Screenshots 8 & 9, Good morning (11:58): Top 3 and the Chef pick show '+ Add to today' on things that are ALREADY planned blocks (13:00 cook, 15:00 Scholar, 15:40 Homekeeper). Pressing it on Chef made a second cooking block at 12:10. What should those buttons do?"
+  Options shown: Show '✓ Planned 13:00' | Open the block instead | Remove buttons from Top 3
+  A: "the add to today is a duplicate that is not needed, its already on my day, it adds on again as duplicate"
+[Screenshot 10 (+4)] Q: "Screenshot 10, evening review (05:04): every realm says 'planned 0 min' though you had planned blocks, and 'Fill a cup of water' shows twice (in Not done AND in the Night block), which you asked me to dedupe on Oct 29. Screenshot 4 also listed the DONE Morning routine under 'Not done'. What should the review show?"
+  Options shown: Fix planned minutes | Each task once only | Done never in Not done | Night block at real time
+  A: "duplicate, i want all my actions to have the card, i also click done, but save and next wont let me go through saying the water is not ticked"
+[Work tab] Q: "Work tab (cocktail specs): your Nicco drinks menu lists each cocktail's INGREDIENTS but no measures/method. Was the trial 'cocktail spec' a separate sheet with ml measures, glass, method and garnish?"
+  Options shown: Yes, separate sheet | Menu is all I have | Menu only, no AI fill
+  A: "Yes, separate sheet"
+[Work mode] Q: "Work mode: during a shift block, should the app jump to the Work tab when you open it, and what goes on it?"
+  Options shown: Auto-open during shift | Cocktails + mocktails | Full drinks menu + prices | Food menu + allergens
+  A: "Auto-open during shift,Cocktails + mocktails"
