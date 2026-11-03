@@ -5414,6 +5414,8 @@ RPGACE.register('myDay', {
         var up = L.awake(L.dayState());
         add('myday-act-day', up ? '🌙 Going to bed' : '☀️ I\'m up', up ? '' : 'primary', function() { (up ? U.goingToBed() : U.imUp()).catch(function() {}); });
         add('myday-act-brief', '☀️ Morning Brief', '', function() { dd._openMorningBrief(); });
+        var wm = RPGACE.modules.workMode, onShift = wm && wm.logic.current();
+        if (onShift) add('myday-act-work', '💼 Work · drinks + clock in', 'primary', function() { wm.open(); });
         var nRun = dn ? dn.logic.running().length : 0;
         if (nRun) add('myday-act-running', '⏱ Running now (' + nRun + ')', 'primary', function() { dn.ui.openRunning(); });
         if (dn) {

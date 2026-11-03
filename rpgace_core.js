@@ -99,6 +99,7 @@
 // @file src/schedule/realmTasks.js
 // @file src/chronicles/realmFrame.js
 // @file src/schedule/doingNow.js
+// @file src/schedule/workMode.js
 // @file src/schedule/tripPlans.js
 // @file src/knowledge/lifeLibrary.js
 // @file src/schedule/decisionJournal.js

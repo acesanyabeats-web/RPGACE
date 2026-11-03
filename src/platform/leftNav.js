@@ -866,6 +866,8 @@ RPGACE.register('leftNav', {
       { icon: '🧰', label: 'My software', desc: 'Owned software · install checklist · total spent', run: function() { var sl = RPGACE.modules.softwareList; if (sl) sl.open(); } },
       { heading: 'Schedule & Journal' },
       { icon: '☀️', label: 'My Day',        desc: 'Actions, plan my day, agenda',       page: P.agenda },
+      // WR-8 (Nov 3 2026): Work page - clock links + Nicco drink spec cards.
+      { icon: '💼', label: 'Work', desc: 'Clock in · cocktail and mocktail specs', run: function() { var w = RPGACE.modules.workMode; if (w) w.open(); } },
       { icon: '💡', label: 'Ideas',         desc: 'Every idea by realm: beats, posts, outings, new tasks', card: 'ideas' },
       { icon: '▶', label: 'Live now',       desc: 'The block you\'re in · new tasks · task catalogue', card: 'liveNow' },
       { icon: '📅', label: 'Calendar',      desc: 'Week, month, shifts and events',      page: P.schedule },

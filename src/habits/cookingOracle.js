@@ -4965,6 +4965,7 @@ RPGACE.register('cookingOracle', {
         ['📦', 'Stock', go(function() { self.ui._showCurrentStock(); }), '_showCurrentStock'],
         ['🔪', 'Equipment', go(function() { self.ui._showCurrentStock('equipment'); }), 'equipment'],
         ['🥫', 'What can I cook?', go(function() { self.ui._showStockMatchFinder(); }), '_showStockMatchFinder'],
+        ['🍸', 'Drink specs (work)', go(function() { var w = RPGACE.modules.workMode; if (w) w.open(); }), 'drinks'],
         ['⚙️', 'Cooking settings', go(withCfg(function(cfg) { self.ui._showSettings(cfg); })), '_showSettings'],
       ].filter(function(it) { return it[3] !== here; });
       var extras = RPGACE.sideList.extrasOf(overlay);
