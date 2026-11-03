@@ -135,3 +135,11 @@ WR-9 Missions Across Realms: the existing 6-item plan, as-is.
 WR-10 After midnight: the day lasts until Going to bed (button stays Going to bed), timeline runs past midnight, the new day starts on I'm up or answering the alarm; opening the app after midnight without bed asks "Still <day> or a new day?"; setting the alarm always moves the Morning block.
 WR-11 Software list: table + tick-through install page for a new laptop (name, category, download link, order, C or E, where the licence lives = a Bitwarden reference, price + date -> total spent on your setup in Money); purchase emails found in both Google accounts (Composio Gmail, else keyword search).
 WR-12 Laptop rebuild: backup list (given Nov 3), RPGACE data folder moves to E:\RPGACE (local server reads a configurable folder), beats + footage on E, music software on C, Bitwarden export kept on E, setup checklist from WR-11.
+
+== Approval round, same shape ==
+[Approve] Q: "Approve the Week Review plan (WR-1 to WR-12 ...)?"  Options: Go, all of it | Go, with changes | Only some items
+  A: "1 but also some other things ill add to critique too"   -> APPROVED WR-1..12; more critique items to come (added as WR-13+ when sent).
+[Order] Q: "Build order? (Your shifts at Nicco start soon and the laptop reset is waiting.)"  Options: Fixes, then Work, laptop | Work mode first | Laptop first
+  A: "Laptop first"   -> WR-12 + WR-11 first, then the rest.
+[Emails] Q: "WR-11 purchase-email search: ... How should I find the purchase emails?"  Options: Connect both, I'll OK it | Main account only | Not now
+  A: "Connect both, I'll OK it"
