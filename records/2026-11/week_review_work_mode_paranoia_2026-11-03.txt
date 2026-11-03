@@ -106,3 +106,17 @@ S7 Cook mode step-timer text cut off ("black peppe", "spread o"): not asked - pl
 [Work mode] Q: "Work mode: during a shift block, should the app jump to the Work tab when you open it, and what goes on it?"
   Options shown: Auto-open during shift | Cocktails + mocktails | Full drinks menu + prices | Food menu + allergens
   A: "Auto-open during shift,Cocktails + mocktails"
+
+== Round 3, same shape (exact Q = exact A) ==
+[Screenshots] Q: "The screenshot problem: the 📸 button in Oracle chat is an old rota-only reader. A picture sent without text is read as a ROTA, its replies are never saved, Enter drops the picture, and only 1 picture goes at a time. The Screenshot Inbox has saved 0 screenshots ever. What should sending screenshots do?"
+  Options shown: Oracle sees them, normal chat | Several at once | Every one kept | Rota only when I say
+  A: "i can send image from whatsapp via share, click work as realm so it auto imports through oracle to enter details in my day, Nicco's uses whatsapp to send rota out, so this is the way forward, we wont be doing fourth after 15th of november as it is my last day at the joiners, we will send that code into dormant. might need this framework for future ideas if needed so it can be helpful,Oracle sees them, normal chat,Several at once,Rota only when I say"
+[Missions] Q: "'Do the missions tab': what should the Missions tab be? (The earlier 'Missions Across Realms' plan, 6 items, is still waiting for your go.)"
+  Options shown: Build the MR plan as-is | One tab, all realms | Tell me in my words
+  A: "Build the MR plan as-is"
+[Software list] Q: "Software list in Supabase ('everything I install and buy... with downloaders'): what should each entry hold?"
+  Options shown: Name, download link, order | Where the licence lives | What it cost + when | Laptop install checklist
+  A: "in 2 we save it in bitwarden, we also need bitwarden to move to E; with 3 it builds out my total spend on my investment into  my system, we can scan both my google accounts for emails to fish out all the purchase emails, and download links to software to see what is needed, what is not so i download what i deem needed one by one, we can try composio for this, or we do keyword searches to fish them out ourselves,Name, download link, order,Where the licence lives,What it cost + when,Laptop install checklist"
+[After midnight] Q: "Oct 31 at 04:17 the app showed 'I'm up' although you hadn't gone to bed (past midnight), and setting the alarm to 10:45 didn't move the Morning block. How should the day work after midnight?"
+  Options shown: Day lasts until bed | Cut-off at 4am | Ask me
+  A: "1 and 3 both look good, maybe both? also in 1 make timeline extend past midnight, and day start with im up or alarm being responded to"
