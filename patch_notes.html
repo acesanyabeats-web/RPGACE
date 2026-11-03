@@ -74,6 +74,20 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-03-video-cards" style="margin-bottom:30px;">
+    <div class="card-title">🎬 Nov 3: Video cards stay in their realm, Producer posts end with FL steps, no scroll box, old posts stop resurfacing (WR-6)</div>
+    <div class="card-body">
+      Your four answers on the "Rhythmic Counterpoint" card: Creator advice in Producer, not actionable, scroll box inside the card, old card shouldn't show.
+      <ul>
+        <li><b>Root cause:</b> in the 34 video posts made before the realm rebuild (Oct 20), 152 Avoid / Steal this / Strategy cards were tagged Producer, but they're all video-making advice (hooks, titles, series ideas). They're now tagged <b>Creator</b>. The change can be undone with one scoped query (old posts had no Creator cards in those sections).</li>
+        <li>Every card now says its realm, e.g. "📣 Creator · Avoid". A post opened from a realm shows only that realm's cards, plus untagged ones.</li>
+        <li>A post with Producer cards now ends with <b>🎹 Producer · Try it in FL Studio</b>: 3–5 steps written once from the post's Producer points, then saved as a card so the next open is instant.</li>
+        <li>The scroll box inside the card is gone, in the post viewer and in the Library reader. The page scrolls instead.</li>
+        <li>Old-format video posts (before Oct 21) no longer come back in the daily Library pick. You can still find and open them.</li>
+      </ul>
+      <b>Flags:</b> tested in a headless browser (11/11; Videoworm suites pass, vw5 label test updated). The FL steps use one Oracle call per post the first time you open it, and that hasn't been seen on your phone. ll2 has 2 failures that were there before this change.
+    </div>
+</div>
 <div class="card" id="card-2026-11-03-missions-across-realms" style="margin-bottom:30px;">
     <div class="card-title">🎯 Nov 3: Missions in 7 more realms (WR-9 = Missions Across Realms MR-1..6)</div>
     <div class="card-body">

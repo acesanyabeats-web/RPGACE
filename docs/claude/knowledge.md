@@ -42,3 +42,4 @@ Modules (`domain: 'knowledge'`, 25): `feynman`, `pathways`, `encyclopediaPosts`,
 
 ## Study + Bookworm → [`study.md`](study.md)
 - AWS study course, Bookworm chapter reading, recall (`studyHub`, `bookworm`, `recall`). All facts live in the sub-file.
+- Video cards (WR-6): `encyclopediaPosts.cardLabel` names the realm on every single-realm card; `forRealm(ideas, ctx.realm)` filters a post opened from a realm; `needsFlCard` adds a 🎹 Producer 'Try it in FL Studio' card (kit.ask, saved as idea_section try, realms producer, idea_order 999). No inner scroll on post cards or Library bodies. `lifeLibrary.logic.pickDaily` skips video posts from before `VIDEO_CARDS_SINCE` (2026-10-21). Old-post Avoid/Steal/Strategy cards retagged producer -> creator (152 rows, Nov 3). [story](../../patch_notes.html#card-2026-11-03-video-cards)

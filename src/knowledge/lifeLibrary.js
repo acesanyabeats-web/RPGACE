@@ -385,12 +385,15 @@ RPGACE.register('lifeLibrary', {
     // (resurfaced_at, so it holds across devices); "Done with it" turns it
     // off for good (resurface_off). The same item stays all day.
     RESURFACE_DAYS: 30,
+    VIDEO_CARDS_SINCE: '2026-10-21',
     _localDay: function(d) { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); },
     pickDaily: function(items, now) {
       var L = RPGACE.modules.lifeLibrary.logic;
       now = now || new Date();
       var today = L._localDay(now);
-      var live = (items || []).filter(function(i) { return i && !i.resurface_off; });
+      // WR-6 ("Old card, shouldn't show"): video posts from before the realm-card rebuild (VW-5, Oct 20 2026) don't come back on their own.
+      var oldVideo = function(i) { return i.source_table === 'encyclopedia' && String(i.taken_in_on || i.created_at || '') < L.VIDEO_CARDS_SINCE; };
+      var live = (items || []).filter(function(i) { return i && !i.resurface_off && !oldVideo(i); });
       var shownToday = live.filter(function(i) { return i.resurfaced_at && L._localDay(new Date(i.resurfaced_at)) === today; })[0];
       if (shownToday) return { item: shownToday, fresh: false };
       var cutoff = now.getTime() - L.RESURFACE_DAYS * 864e5;
@@ -1012,7 +1015,7 @@ RPGACE.register('lifeLibrary', {
         // through the XSS-safe renderMarkdown (it escapes HTML first).
         var md = i.source_table === 'encyclopedia' || /(^|\n)#{1,3} |\*\*/.test(i.body);
         if (md && typeof renderMarkdown === 'function') {
-          b.style.cssText = 'font-size:14px;line-height:1.55;max-height:60vh;overflow:auto;border-top:1px solid var(--border);padding-top:8px;';
+          b.style.cssText = 'font-size:14px;line-height:1.55;border-top:1px solid var(--border);padding-top:8px;';   // WR-6: no scroll box inside a card
           b.innerHTML = renderMarkdown(i.body);
         } else {
           b.style.cssText = 'font-size:14px;line-height:1.5;white-space:pre-wrap;' + (i.kind === 'quote' ? 'font-style:italic;border-left:3px solid var(--gold);padding-left:8px;' : '');

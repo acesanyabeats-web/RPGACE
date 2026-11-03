@@ -39,13 +39,32 @@ RPGACE.register('encyclopediaPosts', {
     { key: 'made',      label: 'How it\'s made', src: null, inEntry: false, macro: 'content' },
   ],
 
+  // WR-6 (Nov 3 2026, Alex on the 'Rhythmic Counterpoint' card: Creator advice in Producer, not actionable, scroll box
+  // inside the card, old card shouldn't show): opened from a realm, a post shows that realm's cards (+ untagged ones);
+  // a post with Producer cards ends with 'Try it in FL Studio' steps, written once and saved as a card.
+  forRealm: function(ideas, realm) {
+    if (!realm) return ideas || [];
+    return (ideas || []).filter(function(d) { var rs = Array.isArray(d.realms) ? d.realms : []; return !rs.length || rs.indexOf(realm) >= 0; });
+  },
+  needsFlCard: function(ideas) {
+    var prod = function(d) { return Array.isArray(d.realms) && d.realms.indexOf('producer') >= 0; };
+    return (ideas || []).some(prod) && !(ideas || []).some(function(d) { return d.idea_section === 'try' && prod(d); });
+  },
+  flPrompt: function(entry, ideas) {
+    var pts = (ideas || []).filter(function(d) { return Array.isArray(d.realms) && d.realms.indexOf('producer') >= 0; }).slice(0, 10)
+      .map(function(d) { return '- ' + String(d.insight_text || '').slice(0, 220); }).join('\n');
+    return 'Alex is a UK beatmaker who works in FL Studio 2026. From this video lesson ("' + ((entry && entry.title) || 'video') + '"), write 3 to 5 numbered steps he can do in FL Studio in one session to try the idea on a beat.' +
+      ' Name the real FL tools (Piano roll, Channel rack, Mixer, Fruity Limiter, Patcher, etc.). Each step one short line, what to click and what to listen for. No intro, no outro.\n\nLesson points:\n' + pts;
+  },
+
   // VW-5: a card's heading - "🍳 Chef · Key point" when the card belongs to
   // one realm, else the section label.
   cardLabel: function(d) {
     var self = RPGACE.modules.encyclopediaPosts, X = RPGACE.modules.xpSeason, lab = 'Idea';
     self.SECTIONS.forEach(function(s) { if (s.key === d.idea_section) lab = s.label; });
     var rs = Array.isArray(d.realms) ? d.realms : [];
-    var m = (d.idea_section === 'point' || d.idea_section === 'try') && rs.length === 1 && X && X.REALMS[rs[0]];
+    // WR-6: every single-realm card says its realm (old Avoid/Strategy cards now read 'Creator · Avoid').
+    var m = rs.length === 1 && X && X.REALMS[rs[0]];
     return m ? m.icon + ' ' + m.name + ' · ' + lab : lab;
   },
 
@@ -408,6 +427,8 @@ RPGACE.register('encyclopediaPosts', {
       var self = RPGACE.modules.encyclopediaPosts;
       var labels = {};
       self.SECTIONS.forEach(function(s) { labels[s.key] = s.label; });
+      ideas = self.forRealm(ideas, ctx && ctx.realm);
+      if (self.needsFlCard(ideas)) ideas = ideas.concat([{ idea_section: 'try', realms: ['producer'], insight_text: '', _flGen: true }]);
       var i = 0, full = false;
       var mins = self.readMinutes(ideas);
       function draw() {
@@ -417,14 +438,25 @@ RPGACE.register('encyclopediaPosts', {
         meta.innerHTML = '<span>' + (full ? 'Full article' : (ideas.length ? (i + 1) + ' / ' + ideas.length : 'No idea cards')) + '</span><span>' + mins + ' min read</span>';
         pop.box.appendChild(meta);
         var card = document.createElement('div');
-        card.style.cssText = 'background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:18px;min-height:150px;font-size:16px;line-height:1.6;color:var(--text);max-height:55vh;overflow:auto;';
+        card.style.cssText = 'background:var(--panel2);border:1px solid var(--border);border-radius:10px;padding:18px;min-height:150px;font-size:16px;line-height:1.6;color:var(--text);';   // WR-6: no scroll box inside the card
         if (full || !ideas.length) {
           card.innerHTML = (typeof renderMarkdown === 'function') ? renderMarkdown((entry && entry.content) || '') : self._esc((entry && entry.content) || '');
           card.style.fontSize = '14px';
         } else {
           var d = ideas[i];
-          card.innerHTML = '<div style="font-size:13px;font-weight:600;color:var(--gold);margin-bottom:8px;">' + self._esc(RPGACE.modules.encyclopediaPosts.cardLabel(d)) + '</div>' +
-            '<div>' + self._esc(d.insight_text) + '</div>';
+          card.innerHTML = '<div style="font-size:13px;font-weight:600;color:var(--gold);margin-bottom:8px;">' + self._esc(d._flGen ? '🎹 Producer · Try it in FL Studio' : RPGACE.modules.encyclopediaPosts.cardLabel(d)) + '</div>' +
+            '<div class="ep-card-text" style="white-space:pre-wrap;">' + self._esc(d.insight_text || (d._flGen ? '⏳ Writing steps to try this in FL…' : '')) + '</div>';
+          if (d._flGen && !d.insight_text && !d._asking) {
+            d._asking = true;
+            RPGACE.kit.ask(self.flPrompt(entry, ideas), { max: 450 }).then(function(txt) {
+              txt = String(txt || '').trim().slice(0, 1500);
+              if (!txt) throw new Error('empty reply');
+              d.insight_text = txt;
+              if (entry && entry.id) RPGACE.sb.secureWrite('encyclopedia_insights', 'insert', [{ source_entry_id: String(entry.id), source_entry_title: entry.title || null, insight_text: txt,
+                macro_category: 'beat', status: 'auto', idea_section: 'try', idea_order: 999, realms: ['producer'] }]).catch(function(e) { console.warn('[encyclopediaPosts] FL steps not saved', e && e.message); });
+              if (ideas[i] === d) draw();
+            }).catch(function(e) { d._asking = false; d.insight_text = '⚠️ Could not write FL steps: ' + (e && e.message || e); if (ideas[i] === d) draw(); });
+          }
         }
         pop.box.appendChild(card);
 
