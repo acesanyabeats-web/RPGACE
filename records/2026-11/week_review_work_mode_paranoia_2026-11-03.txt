@@ -120,3 +120,18 @@ S7 Cook mode step-timer text cut off ("black peppe", "spread o"): not asked - pl
 [After midnight] Q: "Oct 31 at 04:17 the app showed 'I'm up' although you hadn't gone to bed (past midnight), and setting the alarm to 10:45 didn't move the Morning block. How should the day work after midnight?"
   Options shown: Day lasts until bed | Cut-off at 4am | Ask me
   A: "1 and 3 both look good, maybe both? also in 1 make timeline extend past midnight, and day start with im up or alarm being responded to"
+
+== Draft plan "Week Review Nov 3" (WR) — built only from the answers above; waiting on Alex's go ==
+Track A note: no approved item is waiting to be built; MR (Missions Across Realms) joins this plan as WR-9 on Alex's "Build the MR plan as-is".
+WR-1 Screenshots: one picture path. Several pictures go into the normal Oracle chat (with app data), reply saved; every picture kept in the Screenshot Inbox; WhatsApp share -> pick a realm (e.g. Work) -> Oracle reads it and fills My Day (Nicco rota arrives on WhatsApp). Rota import only on an "Import shifts" tap. Fourth rota import goes dormant after Nov 15 (code kept).
+WR-2 No duplicates from Good morning: anything already on My Day shows as planned, no "Add to today"; the 12:10 duplicate cooking block is removed (after checking the row).
+WR-3 Evening review: every action as a task card, each once; ticking Done anywhere satisfies the Night-tasks gate on Save & next; done things never under Not done; planned minutes per realm real.
+WR-4 Washing up: offered right after the cook with ✓ Done; no 2-5am nag; one-tap skip; not auto-created behind your back.
+WR-5 "I just did" uses the task card.
+WR-6 Video cards: Creator advice stays in Creator; Producer cards end with steps to try in FL; no scroll box inside a card; old cards stop resurfacing.
+WR-7 Cooking stock: adjust amounts used when a cook finishes; spices tracked as have / ran out (restock tap, or a planned cook asks); stock name box suggests as you type from ingredients already known; orange item -> "same thing, different name" (Gemini checks definition + thesaurus, you pick the name) or "Find alternatives" (Gemini real swaps with reasons -> buttons); unit dropdown; Journal toast fixed; Cook-mode text no longer cut off.
+WR-8 Work mode: during a shift the app opens on the Work tab; cocktail + mocktail cards (Nicco menu now; your spec sheet fills measures/glass/method/garnish when you send it).
+WR-9 Missions Across Realms: the existing 6-item plan, as-is.
+WR-10 After midnight: the day lasts until Going to bed (button stays Going to bed), timeline runs past midnight, the new day starts on I'm up or answering the alarm; opening the app after midnight without bed asks "Still <day> or a new day?"; setting the alarm always moves the Morning block.
+WR-11 Software list: table + tick-through install page for a new laptop (name, category, download link, order, C or E, where the licence lives = a Bitwarden reference, price + date -> total spent on your setup in Money); purchase emails found in both Google accounts (Composio Gmail, else keyword search).
+WR-12 Laptop rebuild: backup list (given Nov 3), RPGACE data folder moves to E:\RPGACE (local server reads a configurable folder), beats + footage on E, music software on C, Bitwarden export kept on E, setup checklist from WR-11.
