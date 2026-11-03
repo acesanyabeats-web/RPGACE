@@ -143,3 +143,8 @@ WR-12 Laptop rebuild: backup list (given Nov 3), RPGACE data folder moves to E:\
   A: "Laptop first"   -> WR-12 + WR-11 first, then the rest.
 [Emails] Q: "WR-11 purchase-email search: ... How should I find the purchase emails?"  Options: Connect both, I'll OK it | Main account only | Not now
   A: "Connect both, I'll OK it"
+
+== Added critique (Nov 3), verbatim ==
+"oracle text box for me while typing in ask is so small in the screenshot, cannot see what i type, id also like every cook i talk to oracle that the whole convo is saved so improvements to recipe can be done so orchestrator can know what to change, oracle should also know and flag to orchestrator cc when i want it to"
+-> WR-13 Cook mode "💬 Ask": the text box is too small to see what you type - make it a full-width, growing box.
+-> WR-14 Every Oracle conversation during a cook is saved against that recipe, so recipe improvements can be made from it; Oracle knows it, and when you say so it flags it to Orchestrator CC (oracle_dev_suggestions).
