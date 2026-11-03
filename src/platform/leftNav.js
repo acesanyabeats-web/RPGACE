@@ -862,6 +862,8 @@ RPGACE.register('leftNav', {
       { icon: '❤️', label: 'Health & body', desc: 'Food, weight, water, sleep', card: 'health' },
       { icon: '🛒', label: 'Shopping Wishlist', desc: 'Future purchases vs budget',     card: 'wishlist' },
       { icon: '💷', label: 'Money', desc: 'In − out · subscriptions · receipts', page: P.money, run: function() { var mh = RPGACE.modules.moneyHub; if (mh) mh.open('wishlist'); } },
+      // WR-11 (Nov 3 2026): software you own + new-laptop install checklist.
+      { icon: '🧰', label: 'My software', desc: 'Owned software · install checklist · total spent', run: function() { var sl = RPGACE.modules.softwareList; if (sl) sl.open(); } },
       { heading: 'Schedule & Journal' },
       { icon: '☀️', label: 'My Day',        desc: 'Actions, plan my day, agenda',       page: P.agenda },
       { icon: '💡', label: 'Ideas',         desc: 'Every idea by realm: beats, posts, outings, new tasks', card: 'ideas' },

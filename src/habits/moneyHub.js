@@ -206,7 +206,10 @@ RPGACE.register('moneyHub', {
       page.innerHTML = '<div class="section-title">💷 Money</div><div id="mh-bar"></div>' +
         '<div class="mh-track">📅 This month</div><div class="mh-track-sub">Money in − money out</div><div id="mh-month"></div>' +
         '<div class="mh-track">💳 Subscriptions</div><div class="mh-track-sub">What runs your music and this app, per month</div><div id="mh-subs"></div>' +
-        '<div class="mh-track">🧾 Business purchases</div><div class="mh-track-sub">Samples, plugins, gear — with receipts</div><div id="mh-tax"></div>';
+        '<div class="mh-track">🧾 Business purchases</div><div class="mh-track-sub">Samples, plugins, gear — with receipts</div><div id="mh-tax"></div>' +
+        // WR-11 (Nov 3 2026): the software list (everything owned, install checklist, total spent on the setup).
+        '<div class="mh-track">🧰 My software</div><div class="mh-track-sub">Everything you own · install checklist for a new laptop · total spent</div>' +
+        '<button type="button" id="mh-software" onclick="RPGACE.modules.softwareList && RPGACE.modules.softwareList.open()" style="min-height:44px;padding:8px 14px;border-radius:8px;border:1px solid var(--gold);background:none;color:var(--gold);font-weight:700;cursor:pointer;font-family:inherit;">🧰 Open my software</button>';
       app.appendChild(page);
     },
     // Back row: the side Alex came from (Selling = Hustler, Wishlist = Steward).

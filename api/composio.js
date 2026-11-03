@@ -37,7 +37,8 @@ export default async function handler(req, res) {
 
     if (action === 'execute') {
       if (!tool) throw new Error('No tool specified.');
-      const appKey = tool.split('_')[0].toLowerCase();
+      // WR-11: `account` picks a second connected account of the same app (e.g. 'gmail2').
+      const appKey = (body.account && ACCOUNTS[body.account] && body.account.indexOf(tool.split('_')[0].toLowerCase()) === 0) ? body.account : tool.split('_')[0].toLowerCase();
       const account = ACCOUNTS[appKey];
       if (!account) throw new Error(`No account for "${appKey}". Have: ${Object.keys(ACCOUNTS).join(', ')}`);
       console.log(`[composio] ${rawTool} -> ${tool} | ${account.id} | ${account.user_id}`);

@@ -76,6 +76,7 @@
 // @file src/content/postingHub.js
 // @file src/content/sellingHub.js
 // @file src/habits/moneyHub.js
+// @file src/habits/softwareList.js
 // @file src/schedule/oracleEntry.js
 // @file src/oracle/deepDive.js
 // @file src/knowledge/knowledgeReview.js

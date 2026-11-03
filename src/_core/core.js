@@ -4921,12 +4921,13 @@ document.addEventListener('keydown', e=>{
        await RPGACE.api('GMAIL_CREATE_EMAIL_DRAFT', { subject, body, to })
        await RPGACE.oracle([{ role:'user', content:'...' }], systemPrompt)
      ══════════════════════════════════════════════════════════ */
-  R.api = async function (action, params) {
+  // WR-11: optional `account` (e.g. 'gmail2') picks a second connected account of the same app.
+  R.api = async function (action, params, account) {
     params = params || {};
     var res = await fetch('/api/composio', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'execute', tool: action, input: params }),
+      body: JSON.stringify({ action: 'execute', tool: action, input: params, account: account || undefined }),
     });
     var data = await res.json();
     if (data.error) throw new Error(data.error);

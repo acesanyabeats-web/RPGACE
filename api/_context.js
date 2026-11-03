@@ -48,7 +48,9 @@ export const ACCOUNTS = {
   github:    { id: 'ca_0dwb1yCGD-Dk',  user_id: PG },
   canva:     { id: 'ca_9U6ZLJW-DxFg',  user_id: PG },
   supadata:  { id: 'ca_rxEcC9_UzPkL',  user_id: PG },
-  notion:    { id: 'ca_Qfjy_TRBQA7T',  user_id: 'notionACE' }
+  notion:    { id: 'ca_Qfjy_TRBQA7T',  user_id: 'notionACE' },
+  // WR-11 (Nov 3 2026): Alex's second Google account, connected in Composio; set in Vercel env when connected.
+  ...(process.env.COMPOSIO_GMAIL2_ID ? { gmail2: { id: process.env.COMPOSIO_GMAIL2_ID, user_id: process.env.COMPOSIO_GMAIL2_USER || 'AceSanyaBeats.com' } } : {})
 };
 
 // Moved from composio.js (same deduplication fix) so callComposio() below
