@@ -74,6 +74,15 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-03-web-search-fix" style="margin-bottom:30px;">
+    <div class="card-title">🌐 Nov 3: Web search (Gemini) tries current model names and says why it failed</div>
+    <div class="card-body">
+      Alex: "Find links said web search not found".
+      <ul><li><b>Likely root cause (not yet confirmed):</b> <code>/api/search</code> asked Google for one fixed model, <code>gemini-2.5-flash</code>. Google retires model names, and a retired one answers "model not found". Evidence: 0 saved web lookups ever, so it has never worked live. The Gemini key exists in Vercel.</li>
+      <li>Now it tries <code>gemini-flash-latest</code> (Google's always-current name), then 2.5 and 2.0 flash. If they all fail, the toast shows the real reason (e.g. "API key not valid" or "quota") instead of just "Web search failed", and the reason is written to the Vercel log.</li></ul>
+      <b>Flags:</b> can't be tested from the build session (no access to the key or to Google). Your next tap on 🔗 Find links is the test.
+    </div>
+</div>
 <div class="card" id="card-2026-11-03-cook-stock-3" style="margin-bottom:30px;">
     <div class="card-title">🍳 Nov 3: Orange ingredients: Gemini checks "same thing or swap?", you pick the name or a real swap, missing swaps show blue (WR-7 step 3)</div>
     <div class="card-body">

@@ -121,9 +121,12 @@ async function handleWeb(query, res) {
   const tried = [];
   // Vercel env names are case-sensitive; Alex saved it as "Gemini_API_Key" (Oct 12 2026), so accept both.
   const geminiKey = process.env.GEMINI_API_KEY || process.env.Gemini_API_Key;
-  if (geminiKey) {
+  // Nov 3 2026 (Alex: "Find links said web search not found"): Google retires model names, so try the
+  // rolling alias first and older names after; a "not found" model moves on to the next one.
+  const GEMINI_MODELS = ['gemini-flash-latest', 'gemini-2.5-flash', 'gemini-2.0-flash'];
+  for (const model of (geminiKey ? GEMINI_MODELS : [])) {
     try {
-      const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
+      const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': geminiKey },
         body: JSON.stringify({
@@ -140,11 +143,13 @@ async function handleWeb(query, res) {
       const seen = {};
       chunks.forEach(c => { const w = c.web || {}; if (w.uri && !seen[w.uri]) { seen[w.uri] = 1; sources.push({ title: w.title || w.uri, url: w.uri }); } });
       if (!answer) throw new Error('empty answer');
-      return res.status(200).json({ provider: 'gemini', answer, sources: sources.slice(0, 8) });
+      return res.status(200).json({ provider: 'gemini', model, answer, sources: sources.slice(0, 8) });
     } catch (e) {
-      tried.push('Gemini: ' + e.message);
+      tried.push('Gemini ' + model + ': ' + e.message);
+      if (!/not found|not supported|404/i.test(e.message)) break;   // a key/quota problem won't be fixed by another model
     }
-  } else tried.push('Gemini: no GEMINI_API_KEY');
+  }
+  if (!geminiKey) tried.push('Gemini: no GEMINI_API_KEY');
   const tavilyKey = process.env.TAVILY_API_KEY;
   if (tavilyKey) {
     try {
@@ -164,5 +169,7 @@ async function handleWeb(query, res) {
     }
   } else tried.push('Tavily: no TAVILY_API_KEY');
   const setup = !geminiKey && !tavilyKey;
-  return res.status(setup ? 503 : 502).json({ error: setup ? 'Web search is not set up yet (add GEMINI_API_KEY in Vercel)' : 'Web search failed', setup, tried });
+  console.warn('[search web] failed:', tried.join(' | '));   // so Vercel runtime logs show why
+  // The real reason goes in the message so the app's toast shows it (it used to say only 'Web search failed').
+  return res.status(setup ? 503 : 502).json({ error: setup ? 'Web search is not set up yet (add GEMINI_API_KEY in Vercel)' : 'Web search failed: ' + tried.join(' | ').slice(0, 300), setup, tried });
 }
