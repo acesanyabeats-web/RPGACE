@@ -778,9 +778,10 @@ RPGACE.register('doingNow', {
         r.style.cssText = 'border:1px solid var(--gold);border-radius:10px;padding:8px 12px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;';
         var t = document.createElement('div'); t.style.cssText = 'flex:1 1 180px;font-size:14px;color:var(--text);';
         t.textContent = '⏭ Due: ' + x.title + (x.next_after ? ' — ' + x.next_after : '');
-        var g = self.ui._btn('▶ Start', 'primary'); g.onclick = function() { rtm.ui.openLive({ realm: x.realm, start: x.id }); };
-        var k = self.ui._btn('Skip', ''); k.onclick = function() { rtm.ui.openSkip(x, function() { self.ui._refresh(); }); };
-        r.appendChild(t); r.appendChild(g); r.appendChild(k); card.insertBefore(r, bar);
+        var g = self.ui._btn('▶ Start', ''); g.onclick = function() { rtm.ui.openLive({ realm: x.realm, start: x.id }); };
+        r.appendChild(t); r.appendChild(g);
+        rtm.ui.followupButtons(x, function() { self.ui._refresh(); }).forEach(function(b) { r.appendChild(b); });   // WR-4: ✓ Done + one-tap Skip
+        card.insertBefore(r, bar);
       });
       // DN-1b: "Try something new" — 3 ideas from the quietest realms; one tap starts it.
       var ideas = document.createElement('div');

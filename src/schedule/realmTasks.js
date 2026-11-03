@@ -28,7 +28,7 @@ RPGACE.register('realmTasks', {
     // DL-4: any finished cook (Cook Mode, a cooking block, an unplanned cook, a typed one) loads its follow-ups.
     RPGACE.hooks.on('cook:finished', function(d) {
       self.logic.load().then(function() { return self.logic.afterDone(null, 'cook', d && d.at, true); }).then(function(list) {
-        if (list && list.length) RPGACE.utils.toast('⏭ Next: ' + list.map(function(x) { return x.title; }).join(', '), 'var(--gold)', 3500);
+        if (list && list.length) self.ui.askAfterCook(list);   // WR-4: asked now, not at night
       }).catch(function() {});
     });
     RPGACE.areaNav.onPageShow('live', function() { self.ui.openLive(); });
@@ -638,11 +638,46 @@ RPGACE.register('realmTasks', {
       pend.forEach(function(x) {
         var r = document.createElement('div'); r.className = 'rt-task rt-next-row'; r.dataset.id = x.id;
         var tx = document.createElement('div'); tx.className = 'rt-task-t'; tx.innerHTML = '⏭ Next: ' + esc(x.title) + '<div class="rt-sub">' + esc(x.next_after || '') + '</div>';
-        var go = U._btn('▶ Start', 'primary'); go.className += ' rt-next-start'; go.onclick = function() { U._drawLive(box, Object.assign({}, opts, { realm: x.realm, start: x.id })); };
-        var sk = U._btn('Skip', ''); sk.className += ' rt-next-skip'; sk.onclick = function() { U.openSkip(x, function() { U._drawLive(box, opts); }); };
-        r.appendChild(tx); r.appendChild(go); r.appendChild(sk); w.appendChild(r);
+        var go = U._btn('▶ Start', ''); go.className += ' rt-next-start'; go.onclick = function() { U._drawLive(box, Object.assign({}, opts, { realm: x.realm, start: x.id })); };
+        r.appendChild(tx); r.appendChild(go);
+        U.followupButtons(x, function() { U._drawLive(box, opts); }).forEach(function(b) { r.appendChild(b); });   // WR-4
+        w.appendChild(r);
       });
       box.appendChild(w);
+    },
+    // WR-4 (Nov 3 2026, Alex on washing up: "I did wash them", "Nags too late", too many skip reasons): one pair of
+    // buttons for a follow-up wherever it shows - ✓ Done (ticks it like any task) and Skip (one tap, no reasons list).
+    followupButtons: function(x, after) {
+      var self = RPGACE.modules.realmTasks, L = self.logic, U = self.ui;
+      var d = U._btn('✓ Done', 'primary'); d.className += ' rt-fu-done';
+      d.onclick = function() {
+        d.disabled = true;
+        L.doneInBlock(x, null).then(function() { RPGACE.utils.toast('✅ ' + x.title + ' done', '#4caf82', 2000); if (after) after(); },
+          function(e) { d.disabled = false; RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500, 'realmTasks'); });
+      };
+      var k = U._btn('Skip', ''); k.className += ' rt-fu-skip';
+      k.onclick = function() {
+        k.disabled = true;
+        L.skipNext(x, 'skipped').then(function() { RPGACE.utils.toast('Skipped ' + x.title, '#E2A83D', 1800); if (after) after(); },
+          function(e) { k.disabled = false; RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500, 'realmTasks'); });
+      };
+      return [d, k];
+    },
+    // Right after a cook: its follow-ups are asked at once (✓ Done now / Later / Skip), not left for the night.
+    askAfterCook: function(list) {
+      var self = RPGACE.modules.realmTasks, U = self.ui, dd = RPGACE.modules.dashDeck;
+      if (!list || !list.length || !dd) return null;
+      var pop = dd._popup({ eyebrow: '⏭ After your cook', title: list.length === 1 ? list[0].title + '?' : 'Next up', width: '420px', closeLabel: 'Later' });
+      pop.box.id = 'rt-after-cook';
+      var left = list.length;
+      list.forEach(function(x) {
+        var r = document.createElement('div'); r.className = 'rt-after-row'; r.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;align-items:center;padding:6px 0;';
+        var t = document.createElement('div'); t.style.cssText = 'flex:1 1 160px;font-size:15px;font-weight:700;'; t.textContent = x.title;
+        r.appendChild(t);
+        U.followupButtons(x, function() { r.remove(); if (--left <= 0) pop.close(); }).forEach(function(b) { r.appendChild(b); });
+        pop.box.appendChild(r);
+      });
+      return pop;
     },
     openSkip: function(x, done) {
       var self = RPGACE.modules.realmTasks, U = self.ui;
@@ -676,60 +711,14 @@ RPGACE.register('realmTasks', {
       box.appendChild(w);
     },
     // DL-3: I just did - a task or something typed, with any two of start / finish / how long.
+    // WR-5 (Nov 3 2026, Alex: "Should be a task card"): one "what did you do" screen - My Day's log (task cards,
+    // times, realm chips, type your own), preset to the last 30 minutes and this realm. The old dropdown form is gone.
     openJustDid: function(realm) {
-      var self = RPGACE.modules.realmTasks, L = self.logic, U = self.ui, xs = RPGACE.modules.xpSeason;
-      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '✓ I just did', title: 'Put it on your timeline', width: '460px' });
-      pop.box.id = 'rt-did';
-      var css = 'width:100%;box-sizing:border-box;min-height:44px;background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px;font:inherit;margin-bottom:8px;';
-      var lab = function(t) { var d = document.createElement('div'); d.className = 'rt-sub'; d.textContent = t; return d; };
-      var ts = document.createElement('select'); ts.id = 'rt-did-task'; ts.style.cssText = css;
-      ts.innerHTML = '<option value="">— something else (type it below) —</option>';
-      L.load().catch(function() {}).then(function() {
-        var kept = (self._tasks || []).filter(function(t) { return t.status === 'kept'; });
-        kept.sort(function(a, b) { return (a.realm === realm ? 0 : 1) - (b.realm === realm ? 0 : 1) || String(a.title).localeCompare(String(b.title)); });
-        kept.forEach(function(t) { var o = document.createElement('option'); o.value = t.id; o.textContent = U._realm(t.realm).icon + ' ' + t.title; ts.appendChild(o); });
-      });
-      var nm = document.createElement('input'); nm.id = 'rt-did-name'; nm.placeholder = 'Or type it, e.g. cooked rice and eggs'; nm.style.cssText = css;
-      var rs = document.createElement('select'); rs.id = 'rt-did-realm'; rs.style.cssText = css;
-      (xs ? xs.ORDER : ['life']).forEach(function(k) { var o = document.createElement('option'); o.value = k; o.textContent = U._realm(k).icon + ' ' + U._realm(k).name; rs.appendChild(o); });
-      rs.value = realm || 'life';
-      var row = document.createElement('div'); row.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:8px;';
-      var sIn = document.createElement('input'); sIn.type = 'time'; sIn.id = 'rt-did-start'; sIn.style.cssText = css;
-      var eIn = document.createElement('input'); eIn.type = 'time'; eIn.id = 'rt-did-end'; eIn.style.cssText = css;
-      var c1 = document.createElement('div'); c1.appendChild(lab('Started about')); c1.appendChild(sIn);
-      var c2 = document.createElement('div'); c2.appendChild(lab('Finished about')); c2.appendChild(eIn);
-      row.appendChild(c1); row.appendChild(c2);
-      var mIn = document.createElement('input'); mIn.type = 'number'; mIn.id = 'rt-did-mins'; mIn.min = '1'; mIn.max = '720'; mIn.inputMode = 'numeric'; mIn.placeholder = 'How long (min)'; mIn.style.cssText = css;
-      var chips = document.createElement('div'); chips.className = 'rt-chips'; chips.style.marginBottom = '8px';
-      [5, 10, 15, 20, 30, 45, 60, 90].forEach(function(m) { var c = document.createElement('button'); c.type = 'button'; c.className = 'rt-chip rt-did-chip'; c.textContent = m + ' min'; c.onclick = function() { mIn.value = m; calc(); }; chips.appendChild(c); });
-      var out = document.createElement('div'); out.id = 'rt-did-out'; out.style.cssText = 'font-size:14px;margin:4px 0 10px;';
-      var toMs = function(v, now) { if (!v) return null; var p = v.split(':'), d = new Date(now); d.setHours(Number(p[0]) || 0, Number(p[1]) || 0, 0, 0); var t = d.getTime(); return t > now + 60000 ? t - 864e5 : t; };
-      var res = null;
-      var calc = function() {
-        var now = Date.now(); res = L.solveTimes({ start: toMs(sIn.value, now), end: toMs(eIn.value, now), mins: mIn.value }, now);
-        out.style.color = res.error ? '#CC4A4A' : 'var(--text)';
-        out.textContent = res.error ? res.error : U._clock(res.start) + '–' + U._clock(res.end) + ' · ' + res.mins + ' min';
-      };
-      [sIn, eIn, mIn].forEach(function(el) { el.oninput = calc; });
-      var sv = U._btn('Add to my timeline', 'primary'); sv.id = 'rt-did-save'; sv.style.width = '100%';
-      sv.onclick = function() {
-        calc(); if (!res || res.error) return;
-        var t = (self._tasks || []).filter(function(x) { return x.id === ts.value; })[0] || null, name = nm.value.trim();
-        if (!t && !name) { out.style.color = '#CC4A4A'; out.textContent = 'Pick a task or type what you did.'; return; }
-        sv.disabled = true;
-        var times = res;
-        var entry = null;
-        L.retro(t, name, rs.value, times).then(function(e) { entry = e; return L.afterDone(t, name, times.end).catch(function() { return []; }); }).then(function(next) {
-          pop.close();
-          // BT-2: same "Did this replace your block?" as the typed path (doingNow.ui._checkBlocks, rule 8).
-          try { if (entry && RPGACE.modules.doingNow) RPGACE.modules.doingNow.ui._checkBlocks(entry); } catch (x) {}
-          RPGACE.utils.toast('✓ ' + (t ? t.title : name) + ' ' + U._clock(times.start) + '–' + U._clock(times.end) + (next && next.length ? ' · ⏭ Next: ' + next[0].title : ''), '#4caf82', 3000);
-          var lv = document.getElementById('rt-live'); if (lv) U._drawLive(lv, lv._opts || {});
-          try { if (RPGACE.modules.myDay) RPGACE.modules.myDay.ui.render(); } catch (e) {}
-        }).catch(function(e) { sv.disabled = false; RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 4000, 'realmTasks'); });
-      };
-      [lab('What did you do?'), ts, nm, lab('Realm (for something typed)'), rs, row, lab('How long'), chips, mIn, out, sv].forEach(function(el) { pop.box.appendChild(el); });
-      return pop;
+      var md = RPGACE.modules.myDay, L = md.logic, to = L.snap5(L.nowMin());
+      return md.ui.logPast(L.iso(), Math.max(0, to - 30), to, function() {
+        var lv = document.getElementById('rt-live'); if (lv) RPGACE.modules.realmTasks.ui._drawLive(lv, lv._opts || {});
+        try { md.ui.render(); } catch (e) {}
+      }, { realm: realm || null, eyebrow: '✓ I just did' });
     },
     // DL-4: chain a task after another (or after any cook), or before one.
     openChain: function(t) {

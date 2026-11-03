@@ -74,6 +74,32 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-03-day-fixes" style="margin-bottom:30px;">
+    <div class="card-title">🗓 Nov 3 — No more Good-morning duplicates, evening review fixes, washing up, I just did, after midnight (WR-2/3/4/5/10)</div>
+    <div class="card-body">
+      From your screenshots and answers.
+      <ul>
+        <li><b>Good morning (WR-2):</b> "the add to today is a duplicate". Anything already on your day now shows <b>✓ Planned 13:00</b>, and tapping it opens that block. ＋ Add to today appears only for things not planned yet. The 12:10 duplicate was already cancelled.</li>
+        <li><b>Evening review (WR-3):</b>
+          <ul>
+            <li>"planned 0 min" is fixed: finished blocks still count as planned.</li>
+            <li>The water tick now counts for Save &amp; next. Root cause: after midnight the review is for yesterday, but the tick was saved on today's date.</li>
+            <li>Anything you tick leaves "Not done" straight away.</li>
+          </ul></li>
+        <li><b>Washing up (WR-4):</b> "I did wash them". Every follow-up now has <b>✓ Done</b> and a one-tap Skip (no reasons list). It's asked right after the cook finishes instead of at 2–5am.</li>
+        <li><b>I just did (WR-5):</b> "should be a task card". It now opens the same task-card screen as "Log something you did", already set to the last 30 minutes and the realm you're in. A logged cook still asks about washing up.</li>
+        <li><b>After midnight (WR-10):</b>
+          <ul>
+            <li>The day lasts until you press 🌙 Going to bed; the old 20-hour cut-off is gone.</li>
+            <li>If you're still "up" 20+ hours after ☀️ I'm up, opening the app asks "Still Sat 31 Oct?": 🌙 going to bed, or ☀️ it's a new day.</li>
+            <li>Setting your alarm (for example 10:45) now moves that morning's Morning block to start at the alarm.</li>
+          </ul></li>
+        <li>Not built yet: the timeline itself running past midnight. It still runs midnight to midnight.</li>
+        <li>Tested: 16/16 new checks, plus timeline 52/52, block page 21/21, wake flow 23/23, Good morning 8/8, timers 10/10, Doing now 32/32 and Actions 17/17, 14/14. <b>Untested:</b> on your phone.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-11-03-chat-pictures" style="margin-bottom:30px;">
     <div class="card-title">📸 Nov 3 — Oracle sees your screenshots; WhatsApp rota → My Day (WR-1)</div>
     <div class="card-body">

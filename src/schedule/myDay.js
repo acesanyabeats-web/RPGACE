@@ -211,6 +211,9 @@ RPGACE.register('myDay', {
     setInterval(function() { try { self.logic.syncAlarms().then(function() { self.ui._alarmCheck(); }); } catch (e) {} }, 20000);
     // WF-5: when the phone opens RPGACE for an alarm, show the cover straight after sign-in, not 20 s later.
     RPGACE.hooks.on('rpgace:login', function() { setTimeout(function() { try { self.logic.syncAlarms(true).then(function() { self.ui._alarmCheck(); }); } catch (e) {} }, 1500); });
+    // WR-10: still "up" 20+ hours after ☀️ I'm up -> ask which day it is (after sign-in and when the app comes back).
+    RPGACE.hooks.on('rpgace:login', function() { setTimeout(function() { try { self.ui.askStaleDay(); } catch (e) {} }, 2500); });
+    document.addEventListener('visibilitychange', function() { if (document.visibilityState === 'visible') setTimeout(function() { try { self.ui.askStaleDay(); } catch (e) {} }, 1500); });
     // MD-4: focus timer bar (runs from the real clock, so it never drifts).
     setInterval(function() { try { self.ui._focusTick(); } catch (e) {} }, 1000);
     // Day Bookends (Oct 27 2026): Good morning / the evening review open only
@@ -1813,6 +1816,20 @@ RPGACE.register('myDay', {
       });
       return { due: tm.due.concat(tm.chores), realms: realms };
     },
+    // WR-2: today's block this suggestion already is - same start time in the text ("13:00 – Cook ..."), else the
+    // first live block of the same realm (a cooking block counts as Chef). null when nothing matches.
+    plannedToday: function(label, realm) {
+      var self = RPGACE.modules.myDay, today = self.logic.iso();
+      var live = (self._choreBlocks || []).filter(function(b) { return b.block_date === today && b.status !== 'cancelled' && b.status !== 'replaced'; });
+      var tm = /\b([01]?\d|2[0-3]):([0-5]\d)\b/.exec(String(label || ''));
+      if (tm) {
+        var hhmm = (tm[1].length === 1 ? '0' + tm[1] : tm[1]) + ':' + tm[2];
+        var at = live.filter(function(b) { return String(b.start_time || '').slice(0, 5) === hhmm; })[0];
+        if (at) return at;
+      }
+      var rk = function(b) { return b.kind === 'cooking' ? 'chef' : b.realm; };
+      return realm && realm !== 'life' ? live.filter(function(b) { return rk(b) === realm; })[0] || null : null;
+    },
     // The next free gap from now (today) or 09:00, then the planners' save.
     placeNext: function(isoDate, today, t) {
       var L = RPGACE.modules.myDay.logic, ds = L.daySegs(isoDate), now = new Date();
@@ -1947,9 +1964,14 @@ RPGACE.register('myDay', {
     // bed_at}. Record: records/2026-10/day_bookends_paranoia_2026-10-27.txt
     dayState: function() { return (RPGACE.modules.myDay._settings || {}).day_state || null; },
     // Awake = pressed I'm up and not Going to bed, within 20 hours. Pure.
-    awake: function(ds, nowMs) {
-      if (!ds || !ds.up_at || ds.bed_at) return false;
-      return (nowMs || Date.now()) - new Date(ds.up_at).getTime() < 20 * 3600000;
+    // WR-10 (Nov 3 2026, Alex: "1 and 3 both look good, maybe both?" - the day lasts until bed, and ask if unclear):
+    // up until Going to bed is pressed, however late it gets (no 20-hour cut-off any more).
+    awake: function(ds) {
+      return !!(ds && ds.up_at && !ds.bed_at);
+    },
+    // WR-10: still "up" but 20+ hours since ☀️ I'm up - probably a missed Going to bed; the app asks which day it is.
+    staleDay: function(ds, nowMs) {
+      return RPGACE.modules.myDay.logic.awake(ds) && (nowMs || Date.now()) - new Date(ds.up_at).getTime() >= 20 * 3600000;
     },
     // The day Going to bed reviews: the day I'm up started, else the clock's. Pure.
     bedDay: function(ds, now) {
@@ -2022,8 +2044,12 @@ RPGACE.register('myDay', {
       var self = RPGACE.modules.myDay, L = self.logic;
       now = now || new Date();
       var prev = L.dayState(), ds = { day: L.bedDay(prev, now), up_at: prev && !prev.bed_at ? prev.up_at : null, bed_at: now.toISOString() };
-      return RPGACE.sb.secureWrite('myday_settings', 'update', { day_state: ds }, 'id=eq.1').then(function() {
-        self._settings = Object.assign({}, self._settings || {}, { day_state: ds });
+      // WR-10 (Oct 31: "I'm trying to set alarm for morning routine at 10:45, but it won't update the morning block"):
+      // the alarm time is that morning's wake time, so the Morning block starts when the alarm rings.
+      var patch = { day_state: ds };
+      if (alarmAt) patch.wake_override = { date: L.iso(alarmAt), time: L.fmtMin(alarmAt.getHours() * 60 + alarmAt.getMinutes()) };
+      return RPGACE.sb.secureWrite('myday_settings', 'update', patch, 'id=eq.1').then(function() {
+        self._settings = Object.assign({}, self._settings || {}, patch);
         RPGACE.cache.clear('myday_settings');
         if (!alarmAt) return { day: ds.day, alarm: null };
         var row = { day: L.iso(alarmAt), kind: 'wake', at: alarmAt.toISOString(), stop_routine_id: null, stop_label: null, status: 'set', last_sent_at: null, sends: 0 };
@@ -2264,7 +2290,7 @@ RPGACE.register('myDay', {
       return Promise.all([
         RPGACE.sb.select('rpgace_agendas', 'select=id,title,started_at,ended_at,actual_mins,completed,realms&source_type=eq.doing_now&date=eq.' + day).catch(function() { return []; }),
         tp ? tp.logic.read('xp_events', 'select=realm,action,source_table,source_id,earned_at,note&earned_on=eq.' + day + '&status=neq.removed&order=earned_at.asc&limit=1000').catch(function() { return []; }) : [],
-        RPGACE.sb.select('chore_blocks', 'select=id,kind,realm,start_time,mins,status&block_date=eq.' + day + '&status=eq.planned').catch(function() { return []; })
+        RPGACE.sb.select('chore_blocks', 'select=id,kind,realm,start_time,mins,status&block_date=eq.' + day + '&status=not.in.(cancelled,replaced)') // WR-3: finished blocks still count as planned.catch(function() { return []; })
       ]).then(function(r) {
         var did = L.mergeDid(L.didItems(Array.isArray(r[0]) ? r[0] : [], Array.isArray(r[1]) ? r[1] : [], day, nowMin));
         var planned = Array.isArray(r[2]) ? r[2] : [];
@@ -4147,9 +4173,12 @@ RPGACE.register('myDay', {
     // ratified ... itll help with logging connectors"): log time you've already spent. Times + realm, then tick the
     // tasks you did (or type your own); Save makes a finished block on the timeline (steps ticked, XP as usual,
     // block_done once) and opens its page to check. Also from the evening review (✍️ Log something you did).
-    logPast: function(isoDate, from, to, after) {
+    // WR-5 (Nov 3 2026, Alex on the old "I just did" form: "Should be a task card"): this is now also "✓ I just did"
+    // (realmTasks.ui.openJustDid -> here, last 30 min, realm preset via o.realm); every option is a task card.
+    logPast: function(isoDate, from, to, after, o) {
+      o = o || {};
       var self = RPGACE.modules.myDay, L = self.logic, U = self.ui, K = RPGACE.kit, xs = RPGACE.modules.xpSeason, rt = RPGACE.modules.realmTasks;
-      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '✍️ ' + U._dayLabel(isoDate), title: 'What did you do?', width: '520px', closeLabel: 'Close' });
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: o.eyebrow || '✍️ ' + U._dayLabel(isoDate), title: 'What did you do?', width: '520px', closeLabel: 'Close' });
       pop.box.id = 'tk-log';
       var inCss = 'min-height:44px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:15px;font-family:inherit;';
       if (from == null) { var nm = L.snap5(L.nowMin()); to = isoDate === L.iso() ? nm : 18 * 60; from = Math.max(0, to - 60); }
@@ -4170,10 +4199,11 @@ RPGACE.register('myDay', {
         var opts = ((rt && rt._tasks) || []).filter(function(x) { return x.realm === realm && x.status === 'kept'; })
           .map(function(x) { return { key: 't' + x.id, label: x.title, item: { src: 'task', ref_id: String(x.id), label: x.title, mins: x.mins || 30, earns: x.earns || 'tick', xp: x.xp || null, how: x.how || null } }; });
         picked.filter(function(p) { return p.own; }).forEach(function(p) { opts.push(p); });
-        opts.forEach(function(o) {
-          var on = picked.some(function(p) { return p.key === o.key; });
-          var c = K.btn((on ? '✓ ' : '') + o.label, on ? 'primary' : ''); c.className += ' tk-log-opt'; c.style.margin = '3px 4px 3px 0';
-          c.onclick = function() { if (on) picked = picked.filter(function(p) { return p.key !== o.key; }); else picked.push(o); drawBody(); };
+        opts.forEach(function(op) {
+          var on = picked.some(function(p) { return p.key === op.key; });
+          var c = K.taskCard({ cls: 'tk-log-opt', title: op.label, done: on, mode: 'do',
+            onTick: function() { if (on) picked = picked.filter(function(p) { return p.key !== op.key; }); else picked.push(op); return Promise.resolve(); },
+            after: drawBody });
           body.appendChild(c);
         });
         var own = document.createElement('div'); own.style.cssText = 'display:flex;gap:6px;margin:8px 0;';
@@ -4189,6 +4219,8 @@ RPGACE.register('myDay', {
           L.logPastBlock(isoDate, realm, f, e - f, picked.map(function(p) { return Object.assign({ mins: Math.round((e - f) / picked.length) }, p.item); })).then(function(b) {
             pop.close();
             RPGACE.utils.toast('✍️ Logged · ' + picked.length + ' done', '#4caf82', 2500);
+            // A logged cook loads its follow-ups (washing up) like any finished cook (DL-4 / WR-4).
+            if (realm === 'chef') try { RPGACE.hooks.fire('cook:finished', { at: Date.now(), title: picked.map(function(p) { return p.label; }).join(', ') }); } catch (er) {}
             if (after) { try { after(); } catch (er) {} }
             if (rt) rt.ui.openLive({ block: b, date: isoDate });
           }, function(err) { sv.disabled = false; RPGACE.utils.toast('⚠️ Not saved: ' + (err.message || err), '#CC4A4A', 4000, 'myDay'); });
@@ -4200,13 +4232,24 @@ RPGACE.register('myDay', {
         c.onclick = function() { realm = k; picked = picked.filter(function(p) { return p.own; }); [].forEach.call(chips.children, function(x) { x.style.background = x.dataset.realm === k ? 'var(--gold)' : 'none'; x.style.color = x.dataset.realm === k ? '#111' : 'var(--text)'; }); drawBody(); };
         chips.appendChild(c);
       });
+      // WR-5: a preset realm (I just did from a realm's Live now) is picked straight away.
+      if (o.realm) { var pre = [].filter.call(chips.children, function(x) { return x.dataset.realm === o.realm; })[0]; if (pre) pre.click(); }
       drawBody();
       return pop;
     },
     // Oct 29 2026 (Alex: "won't let me add quests suggested for today"): one ＋ Add to today button for any
     // suggestion (Today's realm, Top 3) - it goes in today's next free 30 min as a realm block (logic.placeNext).
     addTodayBtn: function(label, realm) {
-      var self = RPGACE.modules.myDay, L = self.logic, b = self.ui._mdxBtn('＋ Add to today', false, 'mb-add-today');
+      var self = RPGACE.modules.myDay, L = self.logic;
+      // WR-2 (Nov 3 2026, Alex: "the add to today is a duplicate that is not needed, its already on my day, it adds on
+      // again as duplicate"): something already planned today shows "✓ Planned 13:00" and opens that block instead.
+      var have = L.plannedToday(label, realm);
+      if (have) {
+        var pb = self.ui._mdxBtn('✓ Planned ' + String(have.start_time || '').slice(0, 5), false, 'mb-planned');
+        pb.onclick = function() { var rt = RPGACE.modules.realmTasks; if (rt) rt.ui.openLive({ block: have, date: L.iso() }); };
+        return pb;
+      }
+      var b = self.ui._mdxBtn('＋ Add to today', false, 'mb-add-today');
       b.onclick = function() {
         if (b.disabled) return;
         b.disabled = true;
@@ -5383,6 +5426,28 @@ RPGACE.register('myDay', {
       if (self._settings === undefined) L.loadTimings().then(paint, paint); else paint();
       return pop;
     },
+    // WR-10 (Nov 3 2026, Alex: "1 and 3 both look good, maybe both?"): the day lasts until Going to bed, but if
+    // you're still "up" 20+ hours after ☀️ I'm up, ask once (per 3 hours) which day it is.
+    askStaleDay: function() {
+      var self = RPGACE.modules.myDay, L = self.logic, U = self.ui, ds = L.dayState(), K = RPGACE.kit;
+      if (!L.staleDay(ds) || document.getElementById('myday-stale-day') || document.getElementById('myday-alarm')) return null;
+      var key = 'stale_asked_' + ds.up_at, last = Number(L._ls(key)) || 0;
+      if (Date.now() - last < 3 * 3600000) return null;
+      L._ls(key, Date.now());
+      var upAt = new Date(ds.up_at), dayLabel = U._dayLabel(ds.day || L.iso(upAt));
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '🌗 Which day is it?', title: 'Still ' + dayLabel + '?', width: '420px', closeLabel: 'Ask later' });
+      pop.box.id = 'myday-stale-day';
+      var p = document.createElement('div'); p.style.cssText = 'font-size:14px;color:var(--muted);margin-bottom:10px;';
+      p.textContent = 'You pressed ☀️ I\'m up at ' + L.fmtMin(upAt.getHours() * 60 + upAt.getMinutes()) + ' and haven\'t gone to bed since.';
+      var bed = K.btn('🌙 Still ' + dayLabel + ' - going to bed', 'primary'); bed.id = 'myday-stale-bed';
+      bed.onclick = function() { pop.close(); U.goingToBed().catch(function() {}); };
+      var up = K.btn('☀️ It\'s a new day - I\'m up', ''); up.id = 'myday-stale-up';
+      up.onclick = function() { pop.close(); U.imUp().catch(function() {}); };
+      var col = document.createElement('div'); col.style.cssText = 'display:flex;flex-direction:column;gap:10px;';
+      col.appendChild(bed); col.appendChild(up);
+      pop.box.appendChild(p); pop.box.appendChild(col);
+      return pop;
+    },
     // Oct 29 2026 (Alex: "when either selected, force stop rpgace saving all needed info before force stop"):
     // everything is already saved by now (review in journal, day_state + alarm by logic.endDay). A web app cannot
     // force-stop itself, so it asks the phone to close the window, and if the phone refuses it reloads to a fresh
@@ -5520,9 +5585,10 @@ RPGACE.register('myDay', {
             waitF.forEach(function(x) {
               var r = document.createElement('div'); r.className = 'myday-evening-fu'; r.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:6px 0;font-size:13px;';
               var t = document.createElement('span'); t.style.cssText = 'flex:1 1 140px;'; t.textContent = x.title + (x.next_after ? ' — ' + x.next_after : '') + ' · still waiting';
-              var w = U._btn('Why not?', ''); w.className += ' myday-evening-fu-why';
-              w.onclick = function() { rtm.ui.openSkip(x, function() { waitF = waitF.filter(function(y) { return y !== x; }); load(); }); };
-              r.appendChild(t); r.appendChild(w); fw.appendChild(r);
+              // WR-4 (Alex: "I did wash them"): ✓ Done and a one-tap Skip, the same pair as everywhere else.
+              r.appendChild(t);
+              rtm.ui.followupButtons(x, function() { waitF = waitF.filter(function(y) { return y !== x; }); load(); }).forEach(function(b) { b.style.minHeight = '40px'; r.appendChild(b); });
+              fw.appendChild(r);
             });
             skipped.forEach(function(q) {
               var r = document.createElement('div'); r.className = 'myday-evening-fu-skipped'; r.style.cssText = 'font-size:13px;color:var(--muted);padding:4px 0;';
@@ -5581,7 +5647,9 @@ RPGACE.register('myDay', {
           }
         }
         var dp = L.dayParts(day);
-        if (dp.be.night.tasks.length) { body.appendChild(head('🌙 Night')); var nc = U.bookendCard('night', dp.be, L.iso()); nc.id = 'myday-evening-night'; body.appendChild(nc); }
+        // WR-3 (Nov 3 2026, Alex: "i also click done, but save and next wont let me go through saying the water is not ticked"):
+        // after midnight the review is for `day` (yesterday), so Night ticks are logged on that day - the same day Save checks.
+        if (dp.be.night.tasks.length) { body.appendChild(head('🌙 Night')); var nc = U.bookendCard('night', dp.be, day); nc.id = 'myday-evening-night'; body.appendChild(nc); }
         // TK-7 (Alex: "having this add actions to evening review too would be awesome"): log time you didn't plan.
         var lg = U._btn('✍️ Log something you did', ''); lg.id = 'myday-evening-log'; lg.style.marginTop = '12px';
         lg.onclick = function() { U.logPast(day, null, null, function() { Promise.all([L.load(), L.loadDid(day).then(function(m) { didM = m; })]).then(draw, draw); }); };
@@ -5612,7 +5680,7 @@ RPGACE.register('myDay', {
         sv.onclick = function() {
           // Oct 29 2026 (Alex: "i must do it and tick it"): on 🌙 Going to bed, Night tasks (💧 water cup) come first.
           if (opts.bed) {
-            var leftN = L.bookendTasks('night').filter(function(r) { var lg = L.todayLog(r, self._logs || [], day); return !(lg && lg.status === 'completed'); });
+            var leftN = L.bookendTasks('night').filter(function(r) { var lg = L.todayLog(r, self._logs || [], day) || L.todayLog(r, self._logs || [], L.iso()); return !(lg && lg.status === 'completed'); });
             if (leftN.length) {
               RPGACE.utils.toast('🌙 Tick ' + leftN.map(function(r) { return (r.icon ? r.icon + ' ' : '') + r.title; }).join(', ') + ' first', '#e0a84c', 3500);
               var nc = document.getElementById('myday-evening-night'); if (nc) nc.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -5629,6 +5697,9 @@ RPGACE.register('myDay', {
         };
         bar.appendChild(sv); body.appendChild(bar);
       };
+      // WR-3: a tick anywhere in the review redraws it, so a done Action leaves "Not done" at once.
+      var onTick = function() { if (!document.body.contains(pop.box)) { RPGACE.hooks.off('myday:ticked', onTick); return; } setTimeout(function() { L.load().then(draw, draw); }, 150); };
+      RPGACE.hooks.on('myday:ticked', onTick);
       var tp = RPGACE.modules.tripPlans;
       Promise.all([L.load(), L.loadTimings(),
         tp ? tp.logic.read('xp_events', 'select=xp&earned_on=eq.' + day + '&status=neq.removed').then(function(r) { xpToday = (Array.isArray(r) ? r : []).reduce(function(a, x) { return a + (Number(x.xp) || 0); }, 0); }).catch(function() {}) : null,
