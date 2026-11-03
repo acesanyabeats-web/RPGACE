@@ -1417,10 +1417,37 @@ RPGACE.register('cookingOracle', {
         if (ing.length) lines.push('This step uses: ' + ing.join(', ') + '.');
         if (timers.length) lines.push('Running timers: ' + timers.map(function(t) { var left = Math.max(0, Math.round((t.endAt - now) / 1000)); return 'step ' + (t.i + 1) + ' (' + (steps[t.i].instruction || '').slice(0, 50) + ') ' + (left ? Math.ceil(left / 60) + ' min left' : 'done, waiting for Alex'); }).join('; ') + '.');
         lines.push('All steps: ' + steps.map(function(x, k) { return (k + 1) + '. ' + (x.instruction || '').slice(0, 80); }).join(' '));
-        return 'You are Oracle, helping Alex while he cooks right now in Cook Mode. ' + lines.join(' ') + ' Answer in one to three short, practical sentences he can act on with his hands busy. No lists, no headings.';
+        // WR-14: what Alex asked last time he cooked this, so Oracle knows what to improve.
+        if (pastChats) lines.push('Last times he cooked this he asked: ' + pastChats + '.');
+        return 'You are Oracle, helping Alex while he cooks right now in Cook Mode. ' + lines.join(' ') + ' Answer in one to three short, practical sentences he can act on with his hands busy. No lists, no headings.' +
+          ' This whole conversation is saved to the recipe so it can be improved later. If he asks you to flag, note or pass something on to the Orchestrator (Claude Code), say it has been flagged - the app sends it.';
+      };
+      // WR-14 (Nov 3 2026, Alex: "every cook i talk to oracle that the whole convo is saved so improvements to recipe can
+      // be done so orchestrator can know what to change, oracle should also know and flag to orchestrator cc when i want it to").
+      var pastChats = '', chatId = null, chatSaving = Promise.resolve();
+      if (opts.recipeId && RPGACE.kit && RPGACE.kit.readPrivate) {
+        RPGACE.kit.readPrivate('cook_chats', 'select=messages&recipe_id=eq.' + opts.recipeId + '&order=created_at.desc&limit=3').then(function(rows) {
+          pastChats = self.logic._pastCookQuestions(rows);
+        }, function() {});
+      }
+      var saveChat = function() {
+        var msgs = askLog.filter(function(m) { return m.content !== '…'; }).map(function(m) { return { role: m.role, content: m.content, step: m.step, err: !!m.err }; });
+        chatSaving = chatSaving.then(function() {
+          var row = { messages: msgs, updated_at: new Date().toISOString(), flagged: askLog.some(function(m) { return m.flagged; }) };
+          if (chatId) return RPGACE.sb.secureWrite('cook_chats', 'update', row, 'id=eq.' + chatId);
+          chatId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : null;
+          return RPGACE.sb.secureWrite('cook_chats', 'insert', [Object.assign({ id: chatId, recipe_id: opts.recipeId || null, recipe_title: opts.title || null, cook_key: opts.key || null }, row)]);
+        }).catch(function(e) { RPGACE.utils.toast('⚠️ Cook chat not saved: ' + (e && e.message || e), '#CC4A4A', 3500, 'cookingOracle'); });
+        return chatSaving;
+      };
+      var flagToCC = function(q, a, btn) {
+        var bridge = RPGACE.modules.oracleDevBridge;
+        if (!bridge) { RPGACE.utils.toast('⚠️ Flag channel not loaded', '#CC4A4A', 3000); return; }
+        var b = btn || document.createElement('button');
+        bridge.logic._flag('Cook Mode - ' + (opts.title || 'recipe') + (opts.recipeId ? ' (recipe ' + opts.recipeId + ')' : '') + ', step ' + (idx + 1) + '\nAlex: ' + q + '\nOracle: ' + a + '\n(whole chat saved in cook_chats' + (chatId ? ' id ' + chatId : '') + ')', b);
       };
       var openAsk = function() {
-        if (askPanel) { askPanel.remove(); askPanel = null; return; }
+        if (askPanel) { if (askPanel._unfit) askPanel._unfit(); askPanel.remove(); askPanel = null; return; }
         askPanel = document.createElement('div');
         askPanel.className = 'cm-ask-panel';
         askPanel.setAttribute('role', 'dialog');
@@ -1432,7 +1459,7 @@ RPGACE.register('cookingOracle', {
         h.style.cssText = 'font-size:15px;font-weight:700;color:var(--green);';
         h.textContent = '💬 Ask about step ' + (idx + 1);
         var cl = self.ui._mkBtn('✕', 'closeIcon'); cl.type = 'button'; cl.setAttribute('aria-label', 'Close Ask');
-        cl.onclick = function() { askPanel.remove(); askPanel = null; };
+        cl.onclick = function() { if (askPanel._unfit) askPanel._unfit(); askPanel.remove(); askPanel = null; };
         top.appendChild(h); top.appendChild(cl);
         var log = document.createElement('div');
         log.className = 'cm-ask-log';
@@ -1450,6 +1477,13 @@ RPGACE.register('cookingOracle', {
             b.className = m.role === 'user' ? 'cm-ask-me' : 'cm-ask-oracle';
             b.style.cssText = 'padding:8px 12px;border-radius:10px;' + (m.role === 'user' ? 'background:rgba(76,175,130,0.14);justify-self:end;max-width:85%;' : 'background:rgba(255,255,255,0.05);max-width:95%;') + (m.err ? 'color:#CC4A4A;' : '');
             b.textContent = m.content;
+            if (m.role === 'assistant' && !m.err && m.content !== '…' && m.q) {
+              var fb = document.createElement('button'); fb.type = 'button'; fb.className = 'cm-ask-flag';
+              fb.textContent = m.flagged ? '✓ Sent to Orchestrator CC' : '🧪 Flag to Orchestrator CC'; fb.disabled = !!m.flagged;
+              fb.style.cssText = 'display:block;margin-top:6px;min-height:36px;padding:4px 10px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--muted);font-size:13px;cursor:pointer;';
+              fb.onclick = function() { m.flagged = true; flagToCC(m.q, m.content, fb); saveChat(); };
+              b.appendChild(fb);
+            }
             log.appendChild(b);
           });
           log.scrollTop = log.scrollHeight;
@@ -1459,14 +1493,28 @@ RPGACE.register('cookingOracle', {
         var inp = document.createElement('textarea');
         inp.id = 'cm-ask-input'; inp.rows = 2; inp.placeholder = 'Ask Oracle…';
         inp.setAttribute('aria-label', 'Your question');
-        inp.style.cssText = 'flex:1;min-width:0;resize:none;min-height:48px;padding:10px;border:1px solid var(--border);border-radius:10px;background:var(--panel2,#1b1f2c);color:var(--text);font-size:16px;font-family:inherit;';
+        inp.style.cssText = 'flex:1;min-width:0;resize:none;min-height:56px;max-height:40vh;overflow-y:auto;padding:12px;border:1px solid var(--border);border-radius:10px;background:var(--panel2,#1b1f2c);color:var(--text);font-size:17px;line-height:1.4;font-family:inherit;';
+        inp.rows = 3;
+        // WR-13 (Alex: "oracle text box for me while typing in ask is so small... cannot see what i type"): the box grows
+        // with the text, and the panel sits above the phone keyboard instead of behind it.
+        var grow = function() { inp.style.height = 'auto'; inp.style.height = Math.min(inp.scrollHeight + 2, Math.round(window.innerHeight * 0.4)) + 'px'; };
+        inp.addEventListener('input', grow);
+        var vv = window.visualViewport;
+        var fit = function() {
+          if (!askPanel || !vv) return;
+          var hidden = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+          askPanel.style.bottom = hidden + 'px';
+          askPanel.style.height = hidden ? Math.round(vv.height * 0.92) + 'px' : '62%';
+        };
+        if (vv) { vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit); }
+        askPanel._unfit = function() { if (vv) { vv.removeEventListener('resize', fit); vv.removeEventListener('scroll', fit); } };
         var send = self.ui._mkBtn('Send', 'primary'); send.type = 'button'; send.classList.add('cm-ask-send');
         var go = function() {
           var q = inp.value.trim();
           if (!q || send.disabled) return;
           inp.value = '';
-          askLog.push({ role: 'user', content: q });
-          var wait = { role: 'assistant', content: '…' };
+          askLog.push({ role: 'user', content: q, step: idx + 1 });
+          var wait = { role: 'assistant', content: '…', q: q, step: idx + 1 };
           askLog.push(wait); paint();
           send.disabled = true;
           var msgs = askLog.filter(function(m) { return m !== wait && !m.err; }).slice(-8).map(function(m) { return { role: m.role, content: m.content }; });
@@ -1477,7 +1525,10 @@ RPGACE.register('cookingOracle', {
               if (!t) wait.err = true;
             })
             .catch(function(e) { wait.content = '⚠️ Oracle could not answer: ' + (e && e.message || 'unknown error'); wait.err = true; })
-            .then(function() { send.disabled = false; paint(); });
+            .then(function() {
+              if (!wait.err && self.logic._wantsFlag(q)) { wait.flagged = true; flagToCC(q, wait.content); }
+              send.disabled = false; paint(); saveChat();
+            });
         };
         send.onclick = go;
         inp.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); go(); } e.stopPropagation(); });
@@ -2247,7 +2298,7 @@ RPGACE.register('cookingOracle', {
           var want = parseFloat(scaleInput && scaleInput.value) || base;
           self.logic._noteGrams(recipe.ingredients);
           self.ui._openCookMode(self.logic._cookModeSteps(st, want / base, recipe.title), {
-            title: recipe.title, key: savedRecipeId ? 'recipe_' + savedRecipeId : null,
+            title: recipe.title, key: savedRecipeId ? 'recipe_' + savedRecipeId : null, recipeId: savedRecipeId || null,
             // CR-6: a saved recipe's last step offers the stock update.
             onDone: savedRecipeId ? function(info) { self.ui._askCookOutcome({ recipeIds: [savedRecipeId], title: recipe.title, scale: want / base }, info); } : null,
           });
@@ -4732,7 +4783,7 @@ RPGACE.register('cookingOracle', {
         if (onOpened) onOpened(recipe);
         self.logic._noteGrams(recipe.ingredients);
         self.ui._openCookMode(self.logic._cookModeSteps(recipe.steps || [], 1, recipe.title), {
-          title: recipe.title, key: 'recipe_' + recipeId,
+          title: recipe.title, key: 'recipe_' + recipeId, recipeId: recipeId,
           onDone: function(info) { self.ui._askCookOutcome(Object.assign({ recipeIds: [recipeId], title: recipe.title }, extra || {}), info); },
         });
       });
@@ -6960,6 +7011,14 @@ RPGACE.register('cookingOracle', {
     // CM-5 (Oct 15 2026, "star anise 0 whole" on a removal step): a step
     // ingredient's amount text for Cook Mode and the recipe card. 0 means
     // the step takes it out (remove the star anise), so say that instead.
+    // WR-14: Alex asking Oracle to pass something on ("flag this", "tell the orchestrator", "note that for claude code").
+    _wantsFlag: function(q) { return /\b(flag|tell (the )?orchestrator|orchestrator cc|tell claude code|note (this|that) for|pass (this|that|it) on)\b/i.test(String(q || '')); },
+    // WR-14: past cook chats -> one short line of his earlier questions (newest first, capped).
+    _pastCookQuestions: function(rows) {
+      var qs = [];
+      (rows || []).forEach(function(r) { (r.messages || []).forEach(function(m) { if (m.role === 'user' && m.content) qs.push('"' + String(m.content).slice(0, 120) + '"' + (m.step ? ' (step ' + m.step + ')' : '')); }); });
+      return qs.slice(0, 8).join('; ');
+    },
     _stepAmountText: function(u) {
       if (!u || u.amount == null || u.amount === '') return '';
       if (u.amount === 0 || u.amount === '0') return 'take out';

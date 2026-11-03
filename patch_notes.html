@@ -74,6 +74,27 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-03-cook-ask" style="margin-bottom:30px;">
+    <div class="card-title">🍳 Nov 3: Cook Mode Ask box you can see, and every cook chat saved to its recipe (WR-13/14)</div>
+    <div class="card-body">
+      <ul>
+        <li><b>WR-13</b> (Alex: "oracle text box for me while typing in ask is so small... cannot see what i type"):
+          <ul>
+            <li>The Ask panel now moves up above the phone keyboard instead of sitting behind it.</li>
+            <li>The box starts at 3 lines and grows as you type, up to 40% of the screen. The text is bigger (17px).</li>
+          </ul>
+          Root cause: the panel was pinned to the bottom of the screen, which the keyboard covers.</li>
+        <li><b>WR-14</b> (Alex: "every cook i talk to oracle that the whole convo is saved so improvements to recipe can be done so orchestrator can know what to change, oracle should also know and flag to orchestrator cc when i want it to"):
+          <ul>
+            <li>Every Ask conversation is saved to its recipe in a new <code>cook_chats</code> table, with the step number of each question.</li>
+            <li>Next time you cook that recipe, Oracle sees what you asked before.</li>
+            <li>Each answer has a <b>🧪 Flag to Orchestrator CC</b> button.</li>
+            <li>If you say "flag this", "tell the orchestrator" or "note that for Claude Code", it's flagged automatically. It goes to the same Oracle-suggestions list a new session checks at start.</li>
+          </ul></li>
+      </ul>
+      <b>Flags:</b> tested in a headless browser (13/13; Cook Mode suites 15/27/24 still pass). The keyboard fix needs a real phone check.
+    </div>
+</div>
 <div class="card" id="card-2026-11-03-software-ticklist" style="margin-bottom:30px;">
     <div class="card-title">🧰 Nov 3: My software filled from both Gmails, receipts, Amazon and the laptop, plus one tick list</div>
     <div class="card-body">
