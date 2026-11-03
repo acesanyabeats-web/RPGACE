@@ -498,6 +498,40 @@ RPGACE.register('screenshotInbox', {
     // Android share sheet -> sw.js stored the image in the share cache and
     // opened /?share_image=<key>. Save + read it, then return to the app it
     // came from (shareInbox's own sent screen, rule 8).
+    // WR-1: a shared picture -> "💼 Work rota" (shifts straight into My Day) or "📸 Keep it" (realm picker).
+    shareChoice: function() {
+      var K = RPGACE.kit, dd = RPGACE.modules.dashDeck;
+      return new Promise(function(resolve) {
+        var done = false, pick = function(v) { if (done) return; done = true; pop.close(); resolve(v); };
+        var pop = dd._popup({ eyebrow: '📸 Shared picture', title: 'What is it?', width: '420px', onClose: function() { if (!done) { done = true; resolve('keep'); } } });
+        pop.box.id = 'shot-share-choice';
+        var row = document.createElement('div'); row.style.cssText = 'display:flex;flex-direction:column;gap:10px;';
+        var rota = K.btn('💼 Work rota - put my shifts in My Day', 'primary'); rota.id = 'shot-share-rota'; rota.onclick = function() { pick('rota'); };
+        var keep = K.btn('📸 Keep it (pick realms)', ''); keep.id = 'shot-share-keep'; keep.onclick = function() { pick('keep'); };
+        row.appendChild(rota); row.appendChild(keep); pop.box.appendChild(row);
+      });
+    },
+    // The picture is kept (private, tag rota) and Oracle reads the shifts into rpgace_shifts (shiftSync, one path).
+    importRota: function(blob) {
+      var self = RPGACE.modules.screenshotInbox, ss = RPGACE.modules.shiftSync;
+      if (!ss) return Promise.reject(new Error('Shifts are not loaded'));
+      RPGACE.utils.toast('💼 Reading your rota…', 'var(--gold)', 3000);
+      self.logic.upload(blob, 'share', []).catch(function(e) { console.warn('[screenshotInbox] rota picture not kept:', e && e.message); });
+      return RPGACE.utils.resizeImage(blob, self.MAX_SIDE, 0.85).then(function(img) {
+        return RPGACE.utils.oracleVision(img, ss.logic.ROTA_SYSTEM, 'Extract all shifts from this rota screenshot.', 1000);
+      }).then(function(raw) {
+        var shifts = ss.logic.fromRotaJson(raw);
+        if (!shifts || !shifts.length) throw new Error('no shifts found in that picture');
+        return Promise.resolve(ss.logic.replaceDates(shifts, 'whatsapp rota')).then(function() {
+          RPGACE.utils.toast('✅ ' + shifts.length + ' shift' + (shifts.length === 1 ? '' : 's') + ' added to My Day: ' + shifts.map(function(s) { return s.day + ' ' + s.start + '-' + s.end; }).join(', '), '#4caf82', 6000);
+          var md = RPGACE.modules.myDay; if (md && md.ui && md.ui.render) try { md.ui.render(); } catch (e) {}
+          return shifts;
+        });
+      }).catch(function(e) {
+        RPGACE.utils.toast('⚠️ Rota not read: ' + (e.message || e) + ' - try a clearer screenshot', '#CC4A4A', 5000, 'screenshotInbox');
+        throw e;
+      });
+    },
     handleShare: function(key) {
       var self = RPGACE.modules.screenshotInbox;
       var si = RPGACE.modules.shareInbox;
@@ -508,9 +542,15 @@ RPGACE.register('screenshotInbox', {
         if (!res) throw new Error('the shared image was not found - try sharing it again');
         return res.blob();
       }).then(function(blob) {
-        RPGACE.utils.toast('📸 Saving your screenshot…', '#9B59B6', 3000);
-        return self.ui.ingest([blob], 'share', null);
+        // WR-1 (Nov 3 2026, Alex: "i can send image from whatsapp via share, click work as realm so it auto imports
+        // through oracle to enter details in my day, Nicco's uses whatsapp to send rota out"): first ask what it is.
+        return self.ui.shareChoice().then(function(choice) {
+          if (choice === 'rota') return self.ui.importRota(blob).then(function() { if (cache) cache.delete(cacheKey); return null; });
+          RPGACE.utils.toast('📸 Saving your screenshot…', '#9B59B6', 3000);
+          return self.ui.ingest([blob], 'share', null);
+        });
       }).then(function(res) {
+        if (!res) return;
         if (cache) cache.delete(cacheKey);
         if (!res.saved) throw new Error(res.failed.join('; ') || 'upload failed');
         var d = res.lastRow && res.lastRow.description;

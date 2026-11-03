@@ -20,7 +20,7 @@ Modules (`domain: 'schedule'`): generated list in `docs/domains/schedule/README.
 - Realm Tasks, Live now and Generic Missions: see `docs/claude/realm_tasks.md`.
 
 ## Side list declutter (SL-4, Oct 27)
-- Calendar: ⬆ Import shifts and 🏪 Update rota in the › side list (`scheduleFixes.ui.sideExtras`); rota-sync.yml imports Fourth on Mondays. [story](../../patch_notes.html#card-2026-10-27-side-list-domains)
+- Calendar: ⬆ Import shifts and 🏪 Update rota in the › side list (`scheduleFixes.ui.sideExtras`); rota-sync.yml imported Fourth on Mondays; its scheduled run is dormant after 2026-11-15 (Alex's last day at the old job; code kept, manual run still works). Nicco's rota: share the WhatsApp picture → 💼 Work rota. [story](../../patch_notes.html#card-2026-10-27-side-list-domains)
 - Journal: Clear All deleted; Refresh in the › side list; plain-name chips in one "Show ▾" row (`journalQoL.LABELS`, `sideList.filterRow`).
 
 ## Day & Habits Rewire (DR-1..12, record `records/2026-10/schedule_habits_rewire_paranoia_2026-10-27.txt`)

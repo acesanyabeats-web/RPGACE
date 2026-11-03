@@ -184,7 +184,7 @@
            only opened Platform Oracle, which has its own button here. -->
       <div class="chat-input-row">
         <textarea class="chat-input" id="chat-input" rows="2" placeholder="Ask Oracle anything…"></textarea>
-        <input type="file" id="oracle-img-input" accept="image/*" style="display:none" onchange="handleOracleImage(this)"><button onclick="oracleImageUpload()" title="Attach a photo (e.g. a rota screenshot)" aria-label="Attach a photo" class="oracle-attach-btn">📸</button><button class="send-btn" id="send-btn" onclick="sendChatWithImage()">SEND</button>
+        <input type="file" id="oracle-img-input" accept="image/*" multiple style="display:none" onchange="handleOracleImage(this)"><button onclick="oracleImageUpload()" title="Attach a photo (e.g. a rota screenshot)" aria-label="Attach a photo" class="oracle-attach-btn">📸</button><button class="send-btn" id="send-btn" onclick="sendChatWithImage()">SEND</button>
       </div>
       <div class="oracle-tools-label">Tools</div>
       <div class="quick-row">
@@ -441,7 +441,7 @@
      here. The original rpgace_core.js remains the real, edited,
      fully-commented source - always edit that, never the .min.js file
      directly. -->
-<script src="rpgace_core.min.js?v=20261103a"></script>
+<script src="rpgace_core.min.js?v=20261103b"></script>
 
 <div class="page" id="page-encyclopedia">
   <div class="section-title">📖 Knowledge Encyclopedia ✦</div>

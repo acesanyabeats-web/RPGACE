@@ -74,6 +74,21 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-03-chat-pictures" style="margin-bottom:30px;">
+    <div class="card-title">📸 Nov 3 — Oracle sees your screenshots; WhatsApp rota → My Day (WR-1)</div>
+    <div class="card-body">
+      Your words: "Oracle sees them, normal chat, Several at once, Rota only when I say" and "i can send image from whatsapp via share, click work as realm so it auto imports through oracle to enter details in my day, Nicco's uses whatsapp to send rota out".
+      <ul>
+        <li><b>Root cause of Oct 29:</b> Oracle chat's 📸 was an old rota-only reader. A picture with no text was read as a rota, its replies weren't saved, pressing Enter dropped the picture, and only one could go at a time. Separately, the Screenshot Inbox had never saved a single picture.</li>
+        <li><b>Now:</b> 📸 attaches up to 6 pictures (thumbnails with ✕). SEND or Enter sends them <i>with</i> your message into the normal Oracle chat, which also gets your app data. The reply is saved like any chat. Every picture is also kept in your Screenshot Inbox.</li>
+        <li><b>Rota only when you say:</b> the rota reader runs only if your message contains "rota".</li>
+        <li><b>WhatsApp:</b> share the rota picture to RPGACE and tap <b>💼 Work rota</b>. Oracle reads the shifts and puts them in My Day, with a toast listing them. "📸 Keep it" saves the picture under the realms you pick.</li>
+        <li><b>Fourth:</b> the Monday rota import stops after 15 Nov. The code is kept, and the button still works by hand.</li>
+        <li>Tested: 14/14 new checks, plus chat memory 6/6, Professor 15/15, realm picker 16/16 and the Screenshot share check. <b>Untested:</b> on your phone, with a real WhatsApp rota.</li>
+      </ul>
+    </div>
+  </div>
+
 <div class="card" id="card-2026-11-03-software-list" style="margin-bottom:30px;">
     <div class="card-title">🧰 Nov 3 — My software: everything you own, install checklist, total spent (WR-11)</div>
     <div class="card-body">

@@ -831,7 +831,7 @@ One sharp memorable line at the end of every reply.`;
       // genuinely long one finish instead of being cut off.
       // Oct 13 2026 (LL-5): only this main-chat turn may get the WEB LOOKUP block.
       if(window.RPGACE&&RPGACE.modules.webLookup) RPGACE.modules.webLookup.logic.markChatTurn();
-      const data=await callOracle(STATE.chatHistory.slice(-8), activeSystem, 3000, function(fullSoFar){
+      const data=await callOracle(_withChatImages(STATE.chatHistory.slice(-8)), activeSystem, 3000, function(fullSoFar){
         const preview=document.getElementById('oracle-stream-preview');
         if(preview){
           preview.style.color='var(--text)';
@@ -991,7 +991,7 @@ function showSuggestionPopup(lines){const c=document.getElementById('popup-tasks
 // Oct 12 2026 — Oracle's suggested tasks land on My Day as one-off routines due today.
 function acceptSuggestions(){const items=[];document.querySelectorAll('.popup-task').forEach(item=>{const name=item.querySelector('span:first-child').textContent.replace('⚔ ','').trim();const xp=parseInt(item.querySelector('.popup-task-xp').textContent.replace(/[^0-9]/g,''))||50;if(name)items.push({name,xp});});try{closeSuggestion();}catch(e){}const md=window.RPGACE&&RPGACE.modules&&RPGACE.modules.myDay;if(!md||!items.length)return;md.logic.addOneOffs(items).then(()=>{RPGACE.utils.toast('☀️ '+items.length+' added to My Day','#4caf82',2400);md.ui.inject();}).catch(e=>RPGACE.utils.toast('⚠️ Could not add to My Day: '+(e.message||e),'#CC4A4A',3500,'myDay'));}
 function closeSuggestion(){document.getElementById('suggestion-popup').classList.remove('show');}
-document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&document.activeElement.id==='chat-input'){e.preventDefault();sendChat();}});
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&document.activeElement.id==='chat-input'){e.preventDefault();sendChatWithImage();}}); // WR-1: Enter keeps attached pictures
 
 // ── SKILL TREE ──
 function buildSkillTree(){const el=document.getElementById('skill-tree');if(!el)return;el.innerHTML='';SKILLS.forEach(s=>{const n=document.createElement('div');n.className='skill-node'+(s.active?' active':'');n.innerHTML=`<span class="skill-icon">${s.icon}</span><div class="skill-name">${s.name}</div><div class="skill-desc">${s.desc}</div><div class="skill-req">${s.active?'✓ Unlocked':s.req}</div>`;el.appendChild(n);});}
@@ -1590,113 +1590,108 @@ function parseAndSaveRota(){
 // ═══════════════════════════════════════════════════
 // ORACLE IMAGE UPLOAD — Rota Vision Parser
 // ═══════════════════════════════════════════════════
-let _pendingImage = null; // {base64, mediaType, preview}
+// WR-1 (Nov 3 2026, plan "Week Review Nov 3"; Alex: "Oracle sees them, normal chat, Several at once, Rota only when I
+// say"): this used to be a rota-only reader (a picture with no text was read as a ROTA, its replies were never saved,
+// Enter dropped the picture, one picture at a time). Now: several pictures ride along with the message into the
+// normal Oracle chat (sendChat, with all its grounding; the reply is saved to oracle_chats like any other), each
+// picture is also kept in the Screenshot Inbox, and the rota reader runs only when the message says "rota".
+let _pendingImages = []; // [{file, dataUrl, base64, mediaType}]
+const _CHAT_IMG_MAX = 6;
 
 function oracleImageUpload(){
   document.getElementById('oracle-img-input').click();
 }
 
 function handleOracleImage(input){
-  const file = input.files[0];
-  if(!file) return;
-  if(!file.type.startsWith('image/')){
-    alert('Please upload an image file');
-    return;
-  }
-  const reader = new FileReader();
-  reader.onload = function(e){
-    const dataUrl = e.target.result;
-    const base64 = dataUrl.split(',')[1];
-    const mediaType = file.type;
-    _pendingImage = {base64, mediaType, name: file.name};
-    // Show preview in chat
-    const preview = document.createElement('div');
-    preview.style.cssText = 'margin:8px 0;position:relative;display:inline-block';
-    preview.innerHTML = '<img src="'+dataUrl+'" style="max-width:200px;max-height:150px;border-radius:8px;border:1px solid var(--gold)"/>'
-      + '<button onclick="clearPendingImage(this.parentElement)" style="position:absolute;top:-6px;right:-6px;background:var(--red,#e74c3c);border:none;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;line-height:18px;text-align:center">✕</button>'
-      + '<div style="font-size:10px;color:var(--muted);margin-top:3px">📸 Image ready — send to analyse</div>';
-    const chatMessages = document.getElementById('chat-msgs');
-    if(chatMessages){ chatMessages.appendChild(preview);
-    chatMessages.scrollTop = chatMessages.scrollHeight; }
-  };
-  reader.readAsDataURL(file);
-  input.value = ''; // reset so same file can be re-uploaded
+  const files = [].slice.call(input.files || []).filter(f => /^image\//.test(f.type));
+  input.value = ''; // reset so the same file can be picked again
+  if(!files.length) return;
+  const room = _CHAT_IMG_MAX - _pendingImages.length;
+  if(files.length > room) RPGACE.utils.toast('📸 Up to ' + _CHAT_IMG_MAX + ' pictures per message', 'var(--gold)', 2500);
+  files.slice(0, Math.max(0, room)).forEach(function(file){
+    RPGACE.utils.resizeImage(file, 1280, 0.8).then(function(img){
+      const item = { file, base64: img.base64, mediaType: img.mediaType, dataUrl: 'data:' + img.mediaType + ';base64,' + img.base64 };
+      _pendingImages.push(item);
+      _paintChatImages();
+    }).catch(function(e){ RPGACE.utils.toast('⚠️ Could not read that picture: ' + (e.message || e), '#CC4A4A', 3500); });
+  });
 }
 
-function clearPendingImage(el){
-  _pendingImage = null;
-  if(el) el.remove();
+// One strip of thumbnails above the chat box (✕ removes one).
+function _paintChatImages(){
+  let strip = document.getElementById('chat-img-strip');
+  const msgs = document.getElementById('chat-msgs');
+  if(!_pendingImages.length){ if(strip) strip.remove(); return; }
+  if(!strip){ strip = document.createElement('div'); strip.id = 'chat-img-strip'; strip.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;margin:8px 0;align-items:flex-end'; if(msgs) msgs.appendChild(strip); }
+  strip.innerHTML = '';
+  _pendingImages.forEach(function(im, i){
+    const w = document.createElement('div'); w.style.cssText = 'position:relative';
+    const img = document.createElement('img'); img.src = im.dataUrl; img.style.cssText = 'width:72px;height:72px;object-fit:cover;border-radius:8px;border:1px solid var(--gold)';
+    const x = document.createElement('button'); x.type = 'button'; x.className = 'chat-img-x'; x.textContent = '✕'; x.setAttribute('aria-label', 'Remove picture');
+    x.style.cssText = 'position:absolute;top:-8px;right:-8px;width:24px;height:24px;border-radius:50%;border:none;background:#CC4A4A;color:#fff;font-size:12px;cursor:pointer';
+    x.onclick = function(){ _pendingImages.splice(i, 1); _paintChatImages(); };
+    w.appendChild(img); w.appendChild(x); strip.appendChild(w);
+  });
+  const note = document.createElement('div'); note.style.cssText = 'font-size:12px;color:var(--muted)';
+  note.textContent = '📸 ' + _pendingImages.length + ' picture' + (_pendingImages.length === 1 ? '' : 's') + ' will go with your message';
+  strip.appendChild(note);
+  if(msgs) msgs.scrollTop = msgs.scrollHeight;
+}
+
+function clearPendingImage(){ _pendingImages = []; _paintChatImages(); }
+
+// Pure: the words of a chat message whose content may be a list of parts (pictures + text).
+function _chatText(content){
+  if(Array.isArray(content)) return content.filter(p => p && p.type === 'text').map(p => p.text || '').join('\n');
+  return String(content || '');
+}
+window._chatText = _chatText;
+
+// Pictures waiting for this turn are put on the last user message (sendChat calls this before callOracle).
+function _withChatImages(history){
+  const imgs = window._chatTurnImages; window._chatTurnImages = null;
+  if(!imgs || !imgs.length) return history;
+  const out = history.slice();
+  for(let i = out.length - 1; i >= 0; i--){
+    if(out[i].role === 'user'){
+      out[i] = { role: 'user', content: imgs.map(im => ({ type: 'image', source: { type: 'base64', media_type: im.mediaType, data: im.base64 } })).concat([{ type: 'text', text: _chatText(out[i].content) }]) };
+      break;
+    }
+  }
+  return out;
 }
 
 async function sendChatWithImage(){
-  if(!_pendingImage){ sendChat(); return; }
+  if(!_pendingImages.length){ sendChat(); return; }
   const input = document.getElementById('chat-input');
-  const userText = (input ? input.value.trim() : '') || 'Please analyse this image.';
-  if(input) input.value = '';
-
-  // Detect if this looks like a rota/schedule
-  const isRotaUpload = userText.toLowerCase().includes('rota') 
-    || userText.toLowerCase().includes('shift')
-    || userText.toLowerCase().includes('schedule')
-    || userText === 'Please analyse this image.';
-
-  addMsg(userText + ' [image attached]', 'user');
-
-  const imageData = _pendingImage;
-  _pendingImage = null;
-  // Remove preview from chat
-  document.querySelectorAll('#chat-messages img').forEach(img=>{
-    if(img.src.includes('data:image')) img.closest('div').remove();
+  const typed = input ? input.value.trim() : '';
+  const imgs = _pendingImages.splice(0);
+  _paintChatImages();
+  // Every picture is kept in the Screenshot Inbox (fire-and-forget; a failed save is shown, never blocks the chat).
+  const SI = window.RPGACE && RPGACE.modules.screenshotInbox;
+  if(SI) imgs.forEach(function(im){
+    SI.logic.upload(im.file, 'upload', []).catch(function(e){ RPGACE.utils.toast('⚠️ Picture not kept in Screenshots: ' + (e.message || e), '#CC4A4A', 4000, 'screenshotInbox'); });
   });
-
-  const systemPrompt = isRotaUpload
-    ? RPGACE.modules.shiftSync.logic.ROTA_SYSTEM
-    : 'You are a helpful AI assistant. Analyse this image and respond helpfully.';
-
-  try {
-    // Call oracle with image
-    const response = await fetch('/api/oracle', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({
-        messages: [{
-          role: 'user',
-          content: [
-            {type:'image', source:{type:'base64', media_type:imageData.mediaType, data:imageData.base64}},
-            {type:'text', text: isRotaUpload ? 'Extract all shifts from this rota screenshot.' : userText}
-          ]
-        }],
-        system: systemPrompt,
-        max_tokens: 1000
-      })
-    });
-
-    if(!response.ok) throw new Error('Oracle request failed');
-    const data = await response.json();
-    const raw = (data.content||[]).map(x=>x.text||'').join('');
-
-    if(isRotaUpload){
-      // MD2-3 (Oct 14 2026): parsing moved to shiftSync.logic.fromRotaJson,
-      // shared with the Screenshot inbox route; saved through the one
-      // shiftSync path so it reaches Supabase and every device.
-      const ss = RPGACE.modules.shiftSync;
-      const newShifts = ss ? ss.logic.fromRotaJson(raw) : null;
+  // Rota import only when Alex says so ("rota" in the message).
+  if(/\brota\b/i.test(typed) && RPGACE.modules.shiftSync){
+    if(input) input.value = '';
+    addMsg(typed + ' [' + imgs.length + ' picture' + (imgs.length === 1 ? '' : 's') + ']', 'user');
+    try {
+      const raw = await RPGACE.utils.oracleVision(imgs[0], RPGACE.modules.shiftSync.logic.ROTA_SYSTEM, 'Extract all shifts from this rota screenshot.', 1000);
+      const ss = RPGACE.modules.shiftSync, newShifts = ss.logic.fromRotaJson(raw);
       if(newShifts && newShifts.length){
         ss.logic.replaceDates(newShifts, 'rota screenshot');
-        addMsg('✅ Rota imported! Found **'+newShifts.length+' shifts**:\n\n'
-          + newShifts.map(s=>'• '+s.day+' '+s.date.split('-').reverse().join('/')+': '+s.start+'-'+s.end+' ('+s.role+', '+s.hours+'h)').join('\n')
-          + '\n\nSwitch to the Schedule tab to see your shifts. Your agenda generator is now shift-aware.', 'assistant');
-        return;
-      }
-      addMsg(raw || 'Could not parse rota from image. Try uploading a clearer screenshot.', 'assistant');
-    } else {
-      addMsg(raw, 'assistant');
-    }
-  } catch(err){
-    addMsg('Error analysing image: '+err.message, 'assistant');
+        const txt = '✅ Rota imported! Found **' + newShifts.length + ' shifts**:\n\n' + newShifts.map(s => '• ' + s.day + ' ' + s.date.split('-').reverse().join('/') + ': ' + s.start + '-' + s.end + ' (' + s.role + ', ' + s.hours + 'h)').join('\n');
+        addMsg(txt, 'assistant'); saveOracleChat(typed, txt);
+      } else { addMsg(raw || 'Could not read shifts from that picture.', 'assistant'); saveOracleChat(typed, raw || 'no shifts found'); }
+    } catch(err){ addMsg('Error reading the rota: ' + err.message, 'assistant'); }
+    return;
   }
+  // Normal chat: the pictures ride along with the message.
+  if(input && !typed) input.value = imgs.length === 1 ? 'What do you see in this screenshot?' : 'What do you see in these ' + imgs.length + ' screenshots?';
+  window._chatTurnImages = imgs;
+  return sendChat();
 }
-
 
 function updateDBStats(){} // stub — removed from dead code cleanup
 

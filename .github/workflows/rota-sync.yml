@@ -50,4 +50,9 @@ jobs:
           RPGACE_API_SECRET: ${{ secrets.RPGACE_API_SECRET }}
           ANTHROPIC_API_KEY: ${{ secrets.INTEL_ANTHROPIC_KEY }}
           CHROMIUM_PATH: /usr/bin/google-chrome
-        run: python scripts/fourth_rota_cloud.py
+        # WR-1 (Nov 3 2026, Alex: "we wont be doing fourth after 15th of november as it is my last day at the joiners,
+        # we will send that code into dormant"): the Monday run stops after Nov 15; the code stays for future use.
+        # Nicco's rota comes on WhatsApp -> share the picture to RPGACE -> 💼 Work rota.
+        run: |
+          if [ "$(date -u +%Y%m%d)" -gt 20261115 ] && [ "${{ github.event_name }}" = "schedule" ]; then echo "Fourth import is dormant after 2026-11-15"; exit 0; fi
+          python scripts/fourth_rota_cloud.py

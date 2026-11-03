@@ -527,6 +527,8 @@ RPGACE.register('oracleProfessor', {
         // Other features own prefixed messages ("schedule oracle:",
         // "bookworm:", "learn later:"...) and pasted links (video/link
         // analysis): those pass straight through, never routed.
+        // WR-1 (Nov 3 2026): a message carrying pictures goes to normal chat (the professor call is text-only).
+        if (window._chatTurnImages && window._chatTurnImages.length) return orig.apply(ctx, args);
         if (!self.AUTO || !val || !input || self.logic.ownedElsewhere(val)) return orig.apply(ctx, args);
         if (busy()) return false;
         // OP-5: route. The message stays in the box (read-only) while the

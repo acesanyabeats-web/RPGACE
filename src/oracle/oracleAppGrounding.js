@@ -125,7 +125,7 @@ RPGACE.register('oracleAppGrounding', {
         }
         var lastUser = null;
         for (var i = messages.length - 1; i >= 0; i--) {
-          if (messages[i].role === 'user') { lastUser = String(messages[i].content || ''); break; }
+          if (messages[i].role === 'user') { lastUser = window._chatText ? window._chatText(messages[i].content) : String(messages[i].content || ''); break; } // WR-1: _chatText reads a message that carries pictures
         }
         if (!lastUser) return orig.apply(this, arguments);
         var lower = lastUser.toLowerCase();
