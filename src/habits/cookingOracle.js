@@ -2481,6 +2481,7 @@ RPGACE.register('cookingOracle', {
       var addIngUnit = document.createElement('input');
       addIngUnit.type = 'text';
       addIngUnit.placeholder = 'unit';
+      self.ui._unitList(addIngUnit);   // WR-7 step 2: units dropdown (still lets you type your own)
       addIngUnit.style.cssText = 'flex:1;min-width:56px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:12px;padding:6px 8px;';
       var addIngBtn = self.ui._mkBtn('+ Add', 'inline');
       addIngRow.appendChild(addIngName);
@@ -3792,6 +3793,7 @@ RPGACE.register('cookingOracle', {
       var nameInput = document.createElement('input');
       nameInput.type = 'text';
       nameInput.placeholder = 'Ingredient name';
+      var suggestBox = self.ui._ingredientSuggest(nameInput, function(ing) { if (ing.default_unit && !unitInput.value) unitInput.value = ing.default_unit; try { qtyInput.focus(); } catch (e) {} });
       nameInput.style.cssText = 'width:100%;margin-bottom:6px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;padding:7px 10px;box-sizing:border-box;';
 
       var qtyRow = document.createElement('div');
@@ -3805,6 +3807,7 @@ RPGACE.register('cookingOracle', {
       var unitInput = document.createElement('input');
       unitInput.type = 'text';
       unitInput.placeholder = 'unit (g, ml…)';
+      self.ui._unitList(unitInput);   // WR-7 step 2: units dropdown (still lets you type your own)
       unitInput.style.cssText = 'flex:1;min-width:0;box-sizing:border-box;min-height:40px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:15px;padding:7px 10px;';
       qtyRow.appendChild(qtyInput);
       qtyRow.appendChild(unitInput);
@@ -3897,6 +3900,7 @@ RPGACE.register('cookingOracle', {
       var formWrap = document.createElement('div');
       addBox.appendChild(addHeading);
       formWrap.appendChild(nameInput);
+      formWrap.appendChild(suggestBox);
       formWrap.appendChild(qtyRow);
       formWrap.appendChild(errBox);
       formWrap.appendChild(addBtn);
@@ -4577,6 +4581,42 @@ RPGACE.register('cookingOracle', {
       });
     },
 
+    // WR-7 step 2 (Alex: "a dropdown of units would be awesome"): one shared unit list on every unit box.
+    UNITS: ['g', 'kg', 'ml', 'l', 'tsp', 'tbsp', 'cup', 'piece', 'clove', 'slice', 'pack', 'tin', 'jar', 'bottle', 'bunch', 'bag', 'pinch'],
+    _unitList: function(input) {
+      var self = RPGACE.modules.cookingOracle, id = 'co-units-list';
+      if (!document.getElementById(id)) {
+        var dl = document.createElement('datalist'); dl.id = id;
+        self.ui.UNITS.forEach(function(u) { var o = document.createElement('option'); o.value = u; dl.appendChild(o); });
+        document.body.appendChild(dl);
+      }
+      input.setAttribute('list', id); input.setAttribute('autocomplete', 'off');
+      if (!input.placeholder || input.placeholder === 'unit') input.placeholder = 'unit ▾';
+      return input;
+    },
+    // WR-7 step 2 (Alex: "entering a name in stock letter by letter filters by that sequence, then can choose logged
+    // ingredients from previous cooks and previous and current stocks to not duplicate"): suggestions under the box.
+    _ingredientSuggest: function(input, onPick) {
+      var self = RPGACE.modules.cookingOracle, L = self.logic;
+      var box = document.createElement('div'); box.className = 'co-ing-suggest'; box.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin:-2px 0 8px;';
+      input.setAttribute('autocomplete', 'off');
+      var paint = function() {
+        box.innerHTML = '';
+        var q = input.value.trim(); if (!q) return;
+        L._allIngredients().then(function(all) {
+          if (input.value.trim() !== q) return;
+          L.matchIngredients(all, q).slice(0, 8).forEach(function(ing) {
+            var b = document.createElement('button'); b.type = 'button'; b.className = 'co-ing-pick'; b.dataset.id = ing.id;
+            b.style.cssText = 'min-height:40px;padding:4px 10px;border-radius:16px;border:1px solid var(--border);background:rgba(255,255,255,0.04);color:var(--text);font-size:13px;cursor:pointer;';
+            b.textContent = ing.name + (ing.in_stock ? ' · in stock' : ' · used before');
+            b.onclick = function() { input.value = ing.name; box.innerHTML = ''; if (onPick) onPick(ing); };
+            box.appendChild(b);
+          });
+        });
+      };
+      input.addEventListener('input', paint);
+      return box;
+    },
     // WR-7 step 1: spices + herbs used in this cook stay "in stock"; tap Ran out to zero it and add it to the top-up list.
     _presenceRow: function(box, lines) {
       var self = RPGACE.modules.cookingOracle, pres = (lines || []).filter(function(l) { return l.status === 'presence'; });
@@ -5158,6 +5198,7 @@ RPGACE.register('cookingOracle', {
       unitInput.type = 'text';
       unitInput.placeholder = 'unit';
       unitInput.value = item.needed_unit || '';
+      self.ui._unitList(unitInput);   // WR-7 step 2: units dropdown (still lets you type your own)
       unitInput.style.cssText = 'flex:1;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:13px;padding:7px 10px;';
       weightRow.appendChild(weightInput);
       weightRow.appendChild(unitInput);
@@ -8588,6 +8629,29 @@ RPGACE.register('cookingOracle', {
     // What finishing these recipes would take out of stock. cb(err, lines);
     // a line is {ingredient_id, name, amount, unit, status:'ok'|'short'|
     // 'none'|'unconvertible', takes:[{location, unit, have, take}]}.
+    // WR-7 step 2: every ingredient you've logged (cooks + stock), with whether it's in stock now. Cached per load.
+    _allIngredients: function() {
+      var self = RPGACE.modules.cookingOracle;
+      if (self._allIngP) return self._allIngP;
+      self._allIngP = Promise.all([
+        RPGACE.sb.select('ingredients', 'select=id,name,default_unit&order=name.asc&limit=2000'),
+        RPGACE.sb.select('pantry_stock', 'select=ingredient_id,quantity&quantity=gt.0&limit=2000')
+      ]).then(function(r) {
+        var have = {}; (r[1] || []).forEach(function(x) { have[x.ingredient_id] = 1; });
+        return (r[0] || []).map(function(i) { return { id: i.id, name: i.name, default_unit: i.default_unit, in_stock: !!have[i.id] }; });
+      });
+      self._allIngP.catch(function() { self._allIngP = null; });
+      setTimeout(function() { self._allIngP = null; }, 60000);
+      return self._allIngP;
+    },
+    // Pure: the letters typed, in order. Starts-with first, then word starts, then anywhere; in stock first within each.
+    matchIngredients: function(all, q) {
+      q = String(q || '').toLowerCase().trim(); if (!q) return [];
+      var rank = function(n) { n = n.toLowerCase(); if (n.indexOf(q) === 0) return 0; if ((' ' + n).indexOf(' ' + q) >= 0) return 1; if (n.indexOf(q) >= 0) return 2; return -1; };
+      return (all || []).map(function(i) { return { i: i, r: rank(String(i.name || '')) }; }).filter(function(x) { return x.r >= 0; })
+        .sort(function(a, b) { return a.r - b.r || (b.i.in_stock ? 1 : 0) - (a.i.in_stock ? 1 : 0) || a.i.name.length - b.i.name.length; })
+        .map(function(x) { return x.i; });
+    },
     // WR-7 step 1 (Nov 3 2026, Alex: "i think counting spices by grams is pointless, when it runs out i can click to
     // restock if i want it, or planned cook requires it so i restock"): spices + herbs are kept as in-stock / ran out,
     // never taken out by amount. food_type is mostly empty, so the name decides too (compound words, no bare 'pepper').
