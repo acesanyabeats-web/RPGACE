@@ -1,0 +1,55 @@
+WEEK REVIEW + WORK MODE + MISSIONS + LAPTOP REBUILD — /dev_ops_7 record (opened Nov 3 2026)
+
+== Alex's words, verbatim ==
+
+[Oct 29/Nov 2, cloud session] "Okay I want to factory reset my computer now, tell me what to save on my external hard drive in my laptop that is relevant to the current rpgace total systems. I'm doing this so my laptop is a complete clean slate, I'll redownload FL studio and all cats I have, then OBS studio and other relevant software (scarlet solo for microphone audio technica 20 (forgot full name)) I quit video games, my life is a way more interesting video game, I want to win at life"
+
+[02/11/2026 20:59, to Oracle, pasted here] "So orchestrator cc will be up in a few hours, I'll be reviewing everything done this week, give some screenshots of stuff done poorly, especially the screenshot situation. On my trial shift I've been given cocktail spec, I'll want those available under work tab meshed with cooking - when shift block is on, it goes into work mode, with work tab auto opening during my shift when app is on, so I can access specs automatically. Then we go through what can be improved, do the missions tab, and most importantly do the reboot on my laptop with all rpgace files secure so I can get rid of all the crap and install only needed rpgace files. Then reinstall fl studio,  focusrite scarlet solo audio software and my plug ins, as well as OBS so we can start making beats again. Everything for rpgace will move to my external harddrive E, with all music being on C, with beats and footage being saved on E. Everything I install and buy in the future and I own right now will be on a list in supabase with downloaders so I can make this a quick process in the future when I switch laptops etc. flag your response and my current prompt now to orchestrator cc with your answer so we have a starting point for midnight"
+
+[Nov 3, cloud session] "- i want all new inputs from this week in rpgace to be analysed, what i flag are things that need change, ill send screenshots from my phone once i press send. full /dev_ops_7 on this. also /interrogation into oblivion to ask what happened on each screenshot whilst also checking oracle responses saved that will help."
+
+(Oracle's Nov 2 professor reply was pasted in full by Alex; its claims are re-checked below, not trusted.)
+
+== Track A (approved, in flight) — checked live, ceo_plan_items ==
+No approved item is waiting to be BUILT. Non-green rows are yellow (built, waiting on Alex's hand-tick) except:
+- Missions Across Realms: 6 red — this was "awaiting go"; Alex's "do the missions tab" now pulls it into this plan (overlap recorded).
+- Caps and Central Kit: 1 red (CK-9 paste file) — not touched by this ask.
+
+== Evidence (live, Nov 3) ==
+- screenshots table: 0 rows EVER (not just this week). The Screenshot Inbox has never saved a screenshot.
+- Oracle chat 📸 button (core.js handleOracleImage/sendChatWithImage) is the old "Rota Vision Parser":
+  * a picture sent with no text (or text containing rota/shift/schedule) is read as a ROTA;
+  * its replies go straight to the screen (addMsg) and are never saved to oracle_chats;
+  * pressing Enter calls sendChat(), which drops the picture silently;
+  * only one picture at a time (no `multiple`).
+  Oct 29 17:32-17:43 oracle_chats: Alex sent the local-server + .env screenshots; Oracle: "no files or images came through"; Alex: "its not supposed to be rota dumbass"; "i dont trust you with this very much".
+- Oct 31 04:17-04:30 oracle_chats: after midnight the bar showed "I'm up" although Alex hadn't gone to bed; setting the alarm to 10:45 "won't update the morning block"; Alex had to repeat himself ("Hello?", "can you fucking reply to my last message") - replies arrived but slowly/out of order.
+- Oct 31 18:02: trial shift at a new venue (Nicco Restaurant & Bar, Derby — from the menu screenshots).
+- This week: journal 15 rows (7 morning briefs, 4 evening reviews, 2 oracle entries, 1 recipe), oracle_chats 38, library_items 42, intel_reports 31, recipes 2, error_log active 22, oracle_dev_suggestions new 4, rpgace_shifts 4 (Oct 27-Nov 10), work_links 3.
+- Laptop folders (from local_server/README.md + local_server.py): %USERPROFILE%\RPGACE (data + secrets), %USERPROFILE%\RPGACE-code (git clone), old C:\Users\acesa\Downloads\rpgace-vercel-v4. Laptop not connected to this session (list_computer_folders empty).
+
+== Screenshots Alex sent (Nov 3), my first reading — to be confirmed by interrogation ==
+S1 12:28 "I just did" form: Started/Finished pickers blank; the how-long chips are raw unstyled buttons; realm preset to Homekeeper.
+S2 12:15 video card "Rhythmic Counterpoint..." (Producer, music theory): Avoid/Strategy are YouTube-creator advice inside a Producer card; card scrolls inside itself.
+S3 02:10 "Why skip Washing dishes?" reasons pop-up over the Sun 1 Nov evening review.
+S4 05:28 evening review: Morning routine (done, struck through) listed under "Not done"; "Washing dishes - after your 14:45 cook · still waiting / Why not?"; bottom bar "Tick 💧 Fill a cup..." although it's already ticked.
+S5 14:46 Planned Cook session ("Can go shop") with "Recipe saved to Journal - mark it cooked there once you actually make it".
+S6 14:46 Cook finished: only 4 items taken out; 13 "not in stock" (chicken breast, chorizo, tortilla...), lime/avocado "different unit".
+S7 14:01 Cook mode step 8: step-timer cards cut off mid-word ("black peppe", "spread o"); big empty gap.
+S8/S9 11:58 Good morning: "+ Add to today" on Top 3 lines that are ALREADY planned blocks; Chef "Do: Cook as planned" → "Added 12:10" made a second cooking block; "new input waiting: Chipotle in adobo?" shown under Scholar too.
+S10 05:04 evening review: every realm "planned 0 min"; the water task appears twice again (Not done row + Night block) - the Oct 29 dedup ask; Night block 01:06-01:08.
+S11-S18 23:26 Nicco drinks menu (wines, cocktails with ingredients, beers, spirits, mocktails, coffee) - source for the Work tab.
+
+== Interrogation answers (verbatim) ==
+(filled in as Alex answers)
+
+-- Round 1 (Nov 3) --
+Q S1 "I just did" form: "Should be a task card"
+Q S2 video card: "i already answered higher in the previous questionnaire, just take the 4 answers"
+   -> read as: all 4 apply (Creator advice in Producer card; not actionable; scroll box inside card; old card shouldn't show)
+Q S3/S4 dishes: "i already answered higher in the previous questionnaire, just take the 4 answers,I did wash them,Nags too late"
+   -> read as: all 4 apply (I did wash them / nags too late / too many skip reasons / shouldn't be auto-added)
+Q S5/S6 cooking: "i couldnt adjust how much of each i used, i think counting spices by grams is pointless, when it runs out i can click to restock if i want it, or planned cook requires it so i restock. i also think entering a name in stock letter by letter filters by that sequence, then can choose logged ingredients from previous cooks and previous and current stocks to not duplicate. i also think i should be able to click orange to either say the sub is the same thing with different name, then i choose which name i want. to find subs, gemini should look up definition of word, then look at thesaurus to find other words or phrases to say the same thing to confirm oranges that are misunderstanding like lime wedges and limes. also a dropdown of units would be awesome. gemini can then tell oracle what code should show as options to choose if same thing said differently. if not misunderstanding, i click find alternatives, and gemini looks up actual food alternatives for orange that i can choose, with reasons why its a suitable swap, gemini tells oracle the description and why from its ai mode, then oracle gives it to button for code to manifest findings, this way we can patch in changes that are true using ai.,Journal toast is wrong"
+(Nov 3, mid-turn, verbatim: "save the answers of both quesstionnaires immediately and reboot the process with those answers".
+ Session log checked: only ONE screenshot questionnaire exists (Round 1 above) — no earlier one survived the worker restart.
+ "just take the 4 answers" is read as "all 4 options apply". Saved + committed; interrogation continues from these answers.)
