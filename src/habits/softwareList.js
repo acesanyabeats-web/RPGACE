@@ -47,6 +47,14 @@ RPGACE.register('softwareList', {
         : RPGACE.sb.secureWrite('software_inventory', 'insert', Object.assign({ status: 'owned' }, clean));
       return p.then(function() { RPGACE.cache.clear('software_inventory'); return RPGACE.modules.softwareList.logic.load(); });
     },
+    // Nov 3 2026 (Alex: "give me a clickable list of things i want to count in, so i get rid of not needed"):
+    // ticked ids -> owned, the rest of the review list -> not_needed (or left for later).
+    bulk: function(keepIds, dropIds) {
+      var w = function(ids, status) { return ids.length ? RPGACE.sb.secureWrite('software_inventory', 'update', { status: status }, 'id=in.(' + ids.join(',') + ')') : Promise.resolve(); };
+      return w(keepIds, 'owned').then(function() { return w(dropIds, 'not_needed'); }).then(function() {
+        RPGACE.cache.clear('software_inventory'); return RPGACE.modules.softwareList.logic.load();
+      });
+    },
     // Pure: Composio GMAIL_FETCH_EMAILS result -> [{id, subject, from, at, text}].
     mails: function(result) {
       var d = (result && (result.data || result)) || {}, list = d.messages || d.emails || [];
@@ -143,6 +151,7 @@ RPGACE.register('softwareList', {
         });
         bar.appendChild(status);
         body.appendChild(bar);
+        if (rev.length) { var pk = K.btn('✅ Tick what counts (' + rev.length + ')', 'primary'); pk.id = 'sw-pick'; pk.style.minHeight = '48px'; pk.onclick = function() { U.pickList(paint); }; body.appendChild(pk); }
         if (rev.length) body.appendChild(U.section('📥 To review (' + rev.length + ')', rev, true, paint));
         body.appendChild(U.section('🧰 Your setup: install in this order', own, false, paint));
       };
@@ -172,6 +181,54 @@ RPGACE.register('softwareList', {
         box.appendChild(card);
       });
       return box;
+    },
+    // One tick list for the whole review pile, grouped by category; one button saves it.
+    pickList: function(repaint) {
+      var self = RPGACE.modules.softwareList, L = self.logic, K = RPGACE.kit, dd = RPGACE.modules.dashDeck;
+      var rows = L.review(self._rows || []), picked = {};
+      var pop = dd._popup({ eyebrow: '🧰 My software', title: 'Tick what counts', width: '600px', closeLabel: 'Close' });
+      pop.box.id = 'sw-pick-list';
+      var note = document.createElement('div'); note.style.cssText = 'font-size:14px;color:var(--muted);margin-bottom:8px;';
+      note.textContent = 'Tick everything you own or want counted. Unticked ones can be dropped in one go.';
+      pop.box.appendChild(note);
+      var cats = {}; rows.forEach(function(r) { (cats[r.category || 'Other'] = cats[r.category || 'Other'] || []).push(r); });
+      Object.keys(cats).sort(function(a, b) { return self.CATEGORIES.indexOf(a) - self.CATEGORIES.indexOf(b); }).forEach(function(c) {
+        var h = document.createElement('div'); h.style.cssText = 'font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:12px 0 4px;';
+        h.textContent = c + ' (' + cats[c].length + ')'; pop.box.appendChild(h);
+        cats[c].forEach(function(r) {
+          var lab = document.createElement('label'); lab.className = 'sw-pick-row'; lab.dataset.id = r.id;
+          lab.style.cssText = 'display:flex;gap:12px;align-items:flex-start;padding:10px 4px;border-bottom:1px solid var(--border);cursor:pointer;';
+          var cb = document.createElement('input'); cb.type = 'checkbox'; cb.style.cssText = 'width:24px;height:24px;flex:0 0 auto;margin-top:2px;';
+          cb.onchange = function() { if (cb.checked) picked[r.id] = 1; else delete picked[r.id]; count(); };
+          var price = r.price != null ? (r.currency === 'GBP' ? '£' : r.currency === 'EUR' ? '€' : '$') + Number(r.price).toFixed(2) : '';
+          var t = document.createElement('div'); t.style.cssText = 'flex:1;min-width:0;';
+          t.innerHTML = '<div style="font-size:15px;font-weight:700;">' + K.esc(r.name) + (price ? ' <span style="color:var(--gold);">' + price + '</span>' : '') + '</div>' +
+            '<div style="font-size:12px;color:var(--muted);">' + K.esc([r.vendor, r.purchased_on, r.notes].filter(Boolean).join(' · ')) + '</div>';
+          lab.appendChild(cb); lab.appendChild(t); pop.box.appendChild(lab);
+        });
+      });
+      var bar = document.createElement('div'); bar.style.cssText = 'position:sticky;bottom:-24px;background:var(--panel);padding:12px 0;margin-top:10px;display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid var(--border);';
+      var keep = K.btn('', 'primary'); keep.id = 'sw-pick-keep'; keep.style.minHeight = '48px';
+      var drop = K.btn('', ''); drop.id = 'sw-pick-drop'; drop.style.minHeight = '48px';
+      var count = function() { var n = Object.keys(picked).length; keep.textContent = 'Keep ' + n + ' ticked, decide the rest later'; drop.textContent = 'Keep ' + n + ', drop the other ' + (rows.length - n); };
+      count();
+      var run = function(dropRest) {
+        var keepIds = Object.keys(picked), dropIds = dropRest ? rows.filter(function(r) { return !picked[r.id]; }).map(function(r) { return String(r.id); }) : [];
+        keep.disabled = drop.disabled = true;
+        L.bulk(keepIds, dropIds).then(function() {
+          RPGACE.utils.toast('✓ ' + keepIds.length + ' counted' + (dropRest ? ', ' + dropIds.length + ' dropped' : ''), '#4CAF50', 3000, 'softwareList');
+          pop.close(); if (repaint) repaint();
+        }, function(e) { keep.disabled = drop.disabled = false; RPGACE.utils.toast('⚠️ Could not save: ' + (e.message || e), '#CC4A4A', 4500, 'softwareList'); });
+      };
+      keep.onclick = function() { run(false); };
+      // Two-tap arm (building guide 8); own copy because the label changes as you tick.
+      var armed = null;
+      drop.onclick = function() {
+        if (!armed) { drop.textContent = 'Tap again: drop the unticked ones'; drop.style.color = '#CC4A4A'; armed = setTimeout(function() { armed = null; drop.style.color = ''; count(); }, 3000); return; }
+        clearTimeout(armed); armed = null; drop.style.color = ''; run(true);
+      };
+      bar.appendChild(keep); bar.appendChild(drop); pop.box.appendChild(bar);
+      return pop;
     },
     edit: function(r, done) {
       var self = RPGACE.modules.softwareList, K = RPGACE.kit, dd = RPGACE.modules.dashDeck;
