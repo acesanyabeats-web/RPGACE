@@ -2877,7 +2877,7 @@ RPGACE.register('cookingOracle', {
           }
           self.logic._insertJournalEntry(recipe, recipe.ingredients, recipeId)
             .then(function() {
-              RPGACE.utils.toast('💾 Recipe saved to Journal — mark it cooked there once you actually make it', '#C9A84C', 3500);
+              RPGACE.utils.toast('💾 Saved to My Recipes. Cook it with ▶ Cook Mode and it\'s marked cooked when you finish.', '#C9A84C', 3800);   // WR-7: was "saved to Journal - mark it cooked there"
               pop.close();
               // H6 - Save to Journal also joins (or starts) the in-progress
               // cook session; the builder screen is what actually offers
@@ -4533,7 +4533,7 @@ RPGACE.register('cookingOracle', {
           if (opts.scale && opts.scale !== 1) {
             lines.forEach(function(l) { l.amount = Math.round(l.amount * opts.scale * 100) / 100; l.takes.forEach(function(t) { t.take = Math.round(Math.min(t.have, t.take * opts.scale) * 100) / 100; }); });
           }
-          var usable = lines.filter(function(l) { return l.takes.length; });
+          var usable = lines.filter(function(l) { return l.takes.length || l.status === 'presence'; });
           if (!usable.length) { release(); RPGACE.utils.toast('🍽 Cook finished — none of its ingredients are in your stock list', '#4caf82', 3200); return; }
           if (opts.instant) { self.ui._applyStockInstant(plannedCookId, lines, release); return; }
           self.ui._renderStockOffer(plannedCookId, lines, release);
@@ -4563,7 +4563,8 @@ RPGACE.register('cookingOracle', {
         if (e && !done.length) { pop.box.textContent = '⚠️ Stock not changed: ' + e; return; }
         if (e) RPGACE.utils.toast('⚠️ ' + e, '#CC4A4A', 4500);
         self.ui._renderStockResult(pop, plannedCookId, done, takes);
-        var skipped = lines.filter(function(l) { return !l.takes.length; });
+        var skipped = lines.filter(function(l) { return !l.takes.length && l.status !== 'presence'; });
+        self.ui._presenceRow(pop.box, lines);
         if (skipped.length) {
           var sk = document.createElement('div');
           sk.className = 'co-stock-skipped';
@@ -4576,6 +4577,29 @@ RPGACE.register('cookingOracle', {
       });
     },
 
+    // WR-7 step 1: spices + herbs used in this cook stay "in stock"; tap Ran out to zero it and add it to the top-up list.
+    _presenceRow: function(box, lines) {
+      var self = RPGACE.modules.cookingOracle, pres = (lines || []).filter(function(l) { return l.status === 'presence'; });
+      if (!pres.length) return null;
+      var wrap = document.createElement('div'); wrap.className = 'co-presence'; wrap.style.cssText = 'margin-top:12px;padding-top:10px;border-top:1px solid var(--border);';
+      var h = document.createElement('div'); h.style.cssText = 'font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;';
+      h.textContent = '🧂 Spices & herbs stay in stock'; wrap.appendChild(h);
+      var sub = document.createElement('div'); sub.style.cssText = 'font-size:12px;color:var(--muted);margin-bottom:6px;'; sub.textContent = 'Not counted by weight. Tap one if it ran out.'; wrap.appendChild(sub);
+      var chips = document.createElement('div'); chips.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;';
+      pres.forEach(function(l) {
+        var b = self.ui._mkBtn(l.name + ' · Ran out', 'ghost', { extra: 'min-height:40px;font-size:13px;' }); b.classList.add('co-ranout'); b.dataset.id = l.ingredient_id;
+        b.onclick = function() {
+          b.disabled = true;
+          self.logic._ranOut(l.ingredient_id, function(e) {
+            if (e) { b.disabled = false; RPGACE.utils.toast('⚠️ ' + e, '#CC4A4A', 3500); return; }
+            b.textContent = '✓ ' + l.name + ' on your top-up list';
+          });
+        };
+        chips.appendChild(b);
+      });
+      wrap.appendChild(chips); box.appendChild(wrap);
+      return wrap;
+    },
     _renderStockOffer: function(plannedCookId, lines, release) {
       var self = RPGACE.modules.cookingOracle;
       var LOC = { pantry: '🥫 pantry', fridge: '🧊 fridge', freezer: '❄️ freezer' };
@@ -4615,7 +4639,8 @@ RPGACE.register('cookingOracle', {
           rows.push({ cb: cb, amt: amt, line: l, take: t });
         });
       });
-      var skipped = lines.filter(function(l) { return !l.takes.length; });
+      var skipped = lines.filter(function(l) { return !l.takes.length && l.status !== 'presence'; });
+      self.ui._presenceRow(box, lines);
       if (skipped.length) {
         var sk = document.createElement('div');
         sk.style.cssText = 'font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5;';
@@ -4662,12 +4687,35 @@ RPGACE.register('cookingOracle', {
       head.style.cssText = 'font-size:15px;font-weight:700;color:var(--green);margin-bottom:8px;';
       head.textContent = '📦 Stock updated — ' + done.length + ' item' + (done.length === 1 ? '' : 's') + ' taken out';
       box.appendChild(head);
+      // WR-7 step 1 (Alex: "i couldnt adjust how much of each i used"): every row's amount can be changed after Instant.
+      var edits = [];
       done.forEach(function(d) {
-        var r = document.createElement('div');
-        r.style.cssText = 'font-size:13px;color:var(--text);padding:3px 0;';
-        r.textContent = d.name + ': −' + d.took + ' ' + (d.unit || '') + ' (' + d.left + ' left in ' + d.location + ')';
-        box.appendChild(r);
+        var r = document.createElement('div'); r.className = 'co-took-row';
+        r.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text);padding:4px 0;flex-wrap:wrap;';
+        var nm = document.createElement('span'); nm.style.cssText = 'flex:1;min-width:120px;'; nm.textContent = d.name;
+        var inp = document.createElement('input'); inp.type = 'number'; inp.min = '0'; inp.step = 'any'; inp.value = String(d.took); inp.className = 'co-took-amt';
+        inp.setAttribute('aria-label', 'How much ' + d.name + ' you used');
+        inp.style.cssText = 'width:80px;min-height:40px;padding:6px;border:1px solid var(--border);border-radius:8px;background:var(--panel2);color:var(--text);font-size:14px;';
+        var u = document.createElement('span'); u.className = 'co-took-left'; u.style.cssText = 'color:var(--muted);white-space:nowrap;';
+        u.textContent = (d.unit || '') + ' used · ' + d.left + ' left in ' + d.location;
+        r.appendChild(nm); r.appendChild(inp); r.appendChild(u); box.appendChild(r);
+        edits.push({ d: d, inp: inp, u: u });
       });
+      if (edits.length) {
+        var fix = self.ui._mkBtn('✏️ Save changed amounts', 'secondary', { extra: 'margin-top:8px;width:100%;' }); fix.classList.add('co-took-save');
+        fix.onclick = function() {
+          var ch = edits.map(function(e) { var v = parseFloat(e.inp.value); return { e: e, v: isNaN(v) ? e.d.took : Math.max(0, v) }; }).filter(function(x) { return Math.abs(x.v - x.e.d.took) > 0.001; });
+          if (!ch.length) { RPGACE.utils.toast('Nothing changed', '#E2A83D', 1800); return; }
+          fix.disabled = true;
+          self.logic._adjustTaken(plannedCookId, ch.map(function(x) { return { d: x.e.d, used: x.v }; }), function(err) {
+            fix.disabled = false;
+            if (err) { RPGACE.utils.toast('⚠️ ' + err, '#CC4A4A', 4000); return; }
+            ch.forEach(function(x) { x.e.u.textContent = (x.e.d.unit || '') + ' used · ' + x.e.d.left + ' left in ' + x.e.d.location; });
+            RPGACE.utils.toast('✓ Stock corrected', '#4caf82', 2200);
+          });
+        };
+        box.appendChild(fix);
+      }
       var out = done.filter(function(d) { return !(d.left > 0); });
       var picks = [];
       if (out.length) {
@@ -8540,17 +8588,27 @@ RPGACE.register('cookingOracle', {
     // What finishing these recipes would take out of stock. cb(err, lines);
     // a line is {ingredient_id, name, amount, unit, status:'ok'|'short'|
     // 'none'|'unconvertible', takes:[{location, unit, have, take}]}.
+    // WR-7 step 1 (Nov 3 2026, Alex: "i think counting spices by grams is pointless, when it runs out i can click to
+    // restock if i want it, or planned cook requires it so i restock"): spices + herbs are kept as in-stock / ran out,
+    // never taken out by amount. food_type is mostly empty, so the name decides too (compound words, no bare 'pepper').
+    PRESENCE_TYPES: ['spices', 'herbs'],
+    PRESENCE_RX: /\b(cumin|paprika|turmeric|chilli powder|chilli flakes|chili powder|chili flakes|garam masala|curry powder|five spice|mixed spice|mixed herbs|dried herbs|oregano|thyme|rosemary|dried basil|dried parsley|bay leaf|bay leaves|cinnamon|nutmeg|cloves|cardamom|coriander seed|ground coriander|fennel seed|cumin seed|mustard seed|star anise|allspice|cayenne|black pepper|white pepper|peppercorns?|sea salt|table salt|salt|msg|garlic granules|garlic powder|onion powder|smoked paprika|sumac|za.?atar|saffron|vanilla extract)\b/i,
+    _isPresenceOnly: function(name, foodType) {
+      var L = RPGACE.modules.cookingOracle.logic;
+      if (foodType && L.PRESENCE_TYPES.indexOf(String(foodType).toLowerCase()) >= 0) return true;
+      return L.PRESENCE_RX.test(String(name || ''));
+    },
     _planDeduction: function(recipeIds, cb) {
       var self = RPGACE.modules.cookingOracle;
       var ids = (recipeIds || []).filter(Boolean);
       if (!ids.length) { cb('no recipes on this cook'); return; }
-      RPGACE.sb.select('recipe_ingredients', 'select=ingredient_id,amount,unit,grams_estimate,ingredients(name)&recipe_id=in.(' + ids.join(',') + ')')
+      RPGACE.sb.select('recipe_ingredients', 'select=ingredient_id,amount,unit,grams_estimate,ingredients(name,food_type)&recipe_id=in.(' + ids.join(',') + ')')
         .then(function(rows) {
           var groups = {};
           (rows || []).forEach(function(r) {
             if (!r.ingredient_id) return;
             var key = r.ingredient_id + '|' + self.logic._normalizeUnit(r.unit);
-            if (!groups[key]) groups[key] = { ingredient_id: r.ingredient_id, name: (r.ingredients && r.ingredients.name) || '?', unit: r.unit || '', amount: 0, grams: null };
+            if (!groups[key]) groups[key] = { ingredient_id: r.ingredient_id, name: (r.ingredients && r.ingredients.name) || '?', unit: r.unit || '', amount: 0, grams: null, presence: self.logic._isPresenceOnly(r.ingredients && r.ingredients.name, r.ingredients && r.ingredients.food_type) };
             groups[key].amount += (typeof r.amount === 'number' ? r.amount : 0);
             if (typeof r.grams_estimate === 'number') groups[key].grams = (groups[key].grams || 0) + r.grams_estimate;
           });
@@ -8563,6 +8621,7 @@ RPGACE.register('cookingOracle', {
               var lines = Object.keys(groups).map(function(k) {
                 var g = groups[k];
                 var line = { ingredient_id: g.ingredient_id, name: g.name, amount: Math.round(g.amount * 100) / 100, unit: g.unit, status: 'none', takes: [] };
+                if (g.presence) { line.status = 'presence'; return line; }   // WR-7: never taken out by amount
                 var mine = (stock || []).filter(function(s) { return s.ingredient_id === g.ingredient_id && left[s.ingredient_id + '|' + s.location] > 0; });
                 if (!mine.length || !(g.amount > 0)) return line;
                 mine.sort(function(a, b) { return (self.logic._normalizeUnit(b.unit) === self.logic._normalizeUnit(g.unit)) - (self.logic._normalizeUnit(a.unit) === self.logic._normalizeUnit(g.unit)); });
@@ -8594,6 +8653,38 @@ RPGACE.register('cookingOracle', {
     // `takes` = [{ingredient_id, name, location, unit, take}]. Re-reads each
     // row first and never goes below zero. cb(err, items) — items carry
     // `took` and `left`.
+    // WR-7: an in-stock-only item (spice/herb) ran out: zero it everywhere and put it on the top-up list.
+    _ranOut: function(ingredientId, cb) {
+      var self = RPGACE.modules.cookingOracle;
+      RPGACE.sb.secureWrite('pantry_stock', 'update', { quantity: 0, updated_at: new Date().toISOString() }, 'ingredient_id=eq.' + ingredientId)
+        .then(function() { RPGACE.cache && RPGACE.cache.clear && RPGACE.cache.clear('pantry_stock'); self.logic._addToTopUpList([{ ingredient_id: ingredientId }], function(e) { cb(e || null); }); })
+        .catch(function(e) { cb(e.message || 'could not mark it run out'); });
+    },
+    // WR-7: correct how much was used after an Instant take-out. changes: [{d (a done row), used}]. The row and the
+    // cook's record are updated in place, so Put it all back still returns exactly what was taken.
+    _adjustTaken: function(plannedCookId, changes, cb) {
+      var step = function(i) {
+        if (i >= changes.length) {
+          RPGACE.cache && RPGACE.cache.clear && RPGACE.cache.clear('pantry_stock');
+          if (!plannedCookId) { cb(null); return; }
+          RPGACE.sb.select('planned_cooks', 'select=stock_deducted&id=eq.' + plannedCookId + '&limit=1').then(function(rows) {
+            var rec = rows && rows[0] && rows[0].stock_deducted; if (!rec || !rec.items) { cb(null); return; }
+            rec.items.forEach(function(it) { changes.forEach(function(c) { if (it.ingredient_id === c.d.ingredient_id && it.location === c.d.location) { it.took = c.d.took; it.left = c.d.left; } }); });
+            return RPGACE.sb.secureWrite('planned_cooks', 'update', { stock_deducted: rec }, 'id=eq.' + plannedCookId).then(function() { cb(null); });
+          }).catch(function(e) { cb('stock changed, but the cook record did not update: ' + (e.message || e)); });
+          return;
+        }
+        var c = changes[i], where = 'ingredient_id=eq.' + c.d.ingredient_id + '&location=eq.' + encodeURIComponent(c.d.location);
+        RPGACE.sb.select('pantry_stock', 'select=quantity&' + where + '&limit=1').then(function(rows) {
+          var cur = (rows && rows[0] && typeof rows[0].quantity === 'number') ? rows[0].quantity : 0;
+          var nowLeft = Math.max(0, Math.round((cur + c.d.took - c.used) * 100) / 100);
+          return RPGACE.sb.secureWrite('pantry_stock', 'update', { quantity: nowLeft, updated_at: new Date().toISOString() }, where).then(function() {
+            c.d.took = Math.round(c.used * 100) / 100; c.d.left = nowLeft; step(i + 1);
+          });
+        }).catch(function(e) { cb('stopped part-way: ' + (e.message || 'stock update failed')); });
+      };
+      step(0);
+    },
     _applyDeduction: function(plannedCookId, takes, cb) {
       var done = [];
       var step = function(i) {

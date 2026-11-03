@@ -74,6 +74,19 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-03-cook-stock-1" style="margin-bottom:30px;">
+    <div class="card-title">🍳 Nov 3: Cook finished lets you change the amounts; spices and herbs stay "in stock" (WR-7 step 1)</div>
+    <div class="card-body">
+      Alex: "i couldnt adjust how much of each i used, i think counting spices by grams is pointless, when it runs out i can click to restock if i want it, or planned cook requires it so i restock" + "Journal toast is wrong".
+      <ul>
+        <li><b>Root cause:</b> finishing a cook takes stock out instantly (your earlier "Instant, with Undo" pick), and the result screen was read-only.</li>
+        <li>Each line on the result screen now has an amount box. Change it and tap <b>✏️ Save changed amounts</b>: stock is corrected, and Put it all back still returns the right amounts.</li>
+        <li>Spices and herbs (by type, or by name: cumin, paprika, salt, oregano, saffron…) are never taken out by weight. They show as <b>🧂 Spices &amp; herbs stay in stock</b>, and tapping <b>Ran out</b> on one zeroes it and adds it to your top-up list. They no longer show up in "not in stock".</li>
+        <li>The "Recipe saved to Journal — mark it cooked there" toast now says it's saved to My Recipes and gets marked cooked when you finish it in Cook Mode.</li>
+      </ul>
+      <b>Flags:</b> tested in a headless browser (8/8; Cook Mode suites pass, cm1 updated: saffron is now a spice). Spices are spotted by name because 153 of 216 ingredients have no type, so a missed name still gets weighed. Steps 2 (type-ahead stock entry, units dropdown) and 3 (orange: same thing / find alternatives) are next.
+    </div>
+</div>
 <div class="card" id="card-2026-11-03-sunday-review" style="margin-bottom:30px;">
     <div class="card-title">📓 Nov 3: Sunday's Going to bed now does the week review before the alarm</div>
     <div class="card-body">
