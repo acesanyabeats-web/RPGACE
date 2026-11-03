@@ -148,3 +148,18 @@ WR-12 Laptop rebuild: backup list (given Nov 3), RPGACE data folder moves to E:\
 "oracle text box for me while typing in ask is so small in the screenshot, cannot see what i type, id also like every cook i talk to oracle that the whole convo is saved so improvements to recipe can be done so orchestrator can know what to change, oracle should also know and flag to orchestrator cc when i want it to"
 -> WR-13 Cook mode "💬 Ask": the text box is too small to see what you type - make it a full-width, growing box.
 -> WR-14 Every Oracle conversation during a cook is saved against that recipe, so recipe improvements can be made from it; Oracle knows it, and when you say so it flags it to Orchestrator CC (oracle_dev_suggestions).
+
+=== Nov 3 2026 ~01:46 — software list follow-up (Alex, verbatim) ===
+Q (Claude): "about 15 Anthropic (Claude) receipts from Jun–Oct 2026, plus several Google Play receipts. That's spend on the system rather than software to install. Say if you want them counted in your total."
+A (Alex): "count it as investment into RPGACE total systems."
+Done: software_inventory rows 'Claude API credits (Anthropic, Jun–Oct 2026)' $235.64 (13 receipts) and 'Claude Pro (Google Play, Jun–Oct 2026)' £90 (5 x £18), status owned.
+
+Alex: "i didnt collect most freebies, id like both email to highlight freebies in the future as missions to do so i can expand my collection for free, we can then download manual to unlock full potential of plug in, look up videos on tutorials with gemini to watch and send to local server or both, this will then fill out an article in knowledge and fill out needed phylum when we come around to it."
+-> New plan item WR-15 "Freebie missions" (red, not built; 3+ pieces so it gets specced + briefed before building, rule 5/18):
+   1. both Gmail accounts scanned for new freebie emails -> a mission each ("claim X")
+   2. claimed -> software_inventory row
+   3. fetch the plug-in's manual
+   4. Gemini finds tutorial videos -> watch list / send to local_server (Videoworm) "or both"
+   5. -> Knowledge article + phylum placement "when we come around to it"
+Alex: "i think the swemh.ltd is the drip plug in" -> row renamed 'Drip plugin (Swemh.Ltd)'.
+Alex: "we will also skip step 7, barely did anything in obs, so we will go through it after reboot"
