@@ -20,7 +20,6 @@ built in `local_server/rpgace_intel.py` `insights_prompt`.
 
 - `src/_core/core.js`: "You are the Oracle — elite AI life coach in RPGACE, a gamified RPG life..."
 - `src/_core/core.js`: "You are the Oracle — Alex..."
-- `src/_core/core.js`: "You are a helpful AI assistant. Analyse this image and respond helpful..."
 - `src/_core/core.js`: "You are Alex..."
 - `src/_core/core.js`: "You are an expert content analyst and learning coach for an aspiring mu..."
 - `src/_core/core.js`: "You are a detailed, practical learning coach who creates thorough stru..."
