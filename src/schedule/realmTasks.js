@@ -81,7 +81,9 @@ RPGACE.register('realmTasks', {
     // with a context_kind; what it is about this time (a recipe, an exercise
     // combo, a reference track, a post idea or a typed card) is a context card in
     // private mission_contexts, picked when the block is planned.
-    CONTEXT_KINDS: { recipe: '🍳 a recipe', combo: '🏋️ an exercise combo', reference: '🎧 a reference track or beat idea', post: '📣 a post idea', card: '🗂 a card' },
+    CONTEXT_KINDS: { recipe: '🍳 a recipe', combo: '🏋️ an exercise combo', reference: '🎧 a reference track or beat idea', post: '📣 a post idea', card: '🗂 a card',
+      // MR-1 (Nov 3 2026, plan "Missions Across Realms", Alex: "Build the MR plan as-is"): the 7 more realms.
+      person: '👤 a person', book: '📚 a book or course', plan: '🧳 a plan', beat: '🎹 a beat', artist: '🎤 an artist', dev: '🛠 a plan item or error', journal: '📝 a journal exercise' },
     isMission: function(t) { return !!(t && t.context_kind); },
     missions: function(realm) { return (RPGACE.modules.realmTasks._tasks || []).filter(function(t) { return t.realm === realm && t.context_kind && t.status === 'kept'; }); },
     loadContexts: function(missionId) {
@@ -116,7 +118,27 @@ RPGACE.register('realmTasks', {
     CONTEXT_SOURCES: {
       combo: { label: '🏋️ Build a combo' },
       reference: { label: '🎧 Pick a reference track', empty: 'No reference tracks or beat ideas yet.' },
-      post: { label: '💡 Pick a post idea', empty: 'No post ideas in your Idea Bank yet. Add some in 💡 Ideas, or type one above.' }
+      post: { label: '💡 Pick a post idea', empty: 'No post ideas in your Idea Bank yet. Add some in 💡 Ideas, or type one above.' },
+      // MR-3: each realm's own data.
+      person: { label: '👤 Pick a person', empty: 'No people saved yet. Add them in Plans → 👥 People.' },
+      book: { label: '📚 Pick a book or course', empty: 'No books or courses yet. Add one in the Life Library.' },
+      plan: { label: '🧳 Pick a plan', empty: 'No open plans yet. Start one in Plans.' },
+      beat: { label: '🎹 Pick a beat', empty: 'No beats logged yet.' },
+      artist: { label: '🎤 Pick an artist', empty: 'No artists saved yet. Add them in Selling → 🎤 Artists.' },
+      dev: { label: '🛠 Pick a plan item or error', empty: 'Nothing open in the plans or the error log.' }
+    },
+    // MR-5: where a picked card's source opens (source_ref = 'table:id').
+    OPENERS: {
+      people: function() { var t = RPGACE.modules.tripPlans; if (t) t.ui.open('people'); },
+      plans: function() { var t = RPGACE.modules.tripPlans; if (t) t.ui.open('plans'); },
+      library_items: function() { var l = RPGACE.modules.lifeLibrary; if (l) l.ui.open(); },
+      study_courses: function() { var s = RPGACE.modules.studyHub; if (s) s.open(); },
+      content_productions: function(id) { var b = RPGACE.modules.beatsHub; if (b) b.ui.openBeat(id); },
+      artists: function(id) { var s = RPGACE.modules.sellingHub; if (s) s.ui.openArtist(id); }
+    },
+    opener: function(ref) {
+      var m = /^([a-z_]+):(.+)$/.exec(String(ref || '')), L = RPGACE.modules.realmTasks.logic;
+      return m && L.OPENERS[m[1]] ? function() { L.OPENERS[m[1]](m[2]); } : null;
     },
     sourceItems: function(kind) {
       var sel = function(t, q) { return RPGACE.sb.select(t, q).then(function(r) { return Array.isArray(r) ? r : []; }).catch(function() { return []; }); };
@@ -131,10 +153,40 @@ RPGACE.register('realmTasks', {
         sel('conid_pot', 'select=id,title,idea_text,kind,status,starred&kind=eq.beat&order=created_at.desc&limit=50').then(pot('beat'))
       ]).then(function(r) { return r[1].filter(function(x) { return /⭐/.test(x.sub); }).concat(r[0]); });
       if (kind === 'post') return sel('conid_pot', 'select=id,title,idea_text,kind,status,starred&kind=eq.post&order=created_at.desc&limit=50').then(pot('post'));
+      var priv = function(t, q) { return RPGACE.kit.readPrivate(t, q).then(function(r) { return Array.isArray(r) ? r : []; }).catch(function() { return []; }); };
+      var shut = ['done', 'cancelled', 'archived', 'dropped', 'complete', 'resolved'];
+      if (kind === 'person') return priv('people', 'select=id,name,relation,last_spoke,reach_every_days&order=last_spoke.asc.nullsfirst').then(function(r) {
+        return r.map(function(x) { return { title: String(x.name || 'Someone').slice(0, 140), detail: x.relation || null, sub: [x.relation, x.last_spoke ? 'last spoke ' + x.last_spoke : 'not logged yet'].filter(Boolean).join(' · '), ref: 'people:' + x.id }; });
+      });
+      if (kind === 'book') return Promise.all([
+        priv('library_items', 'select=id,title,kind,status&order=updated_at.desc&limit=100'),
+        sel('study_courses', 'select=id,title,short_title&order=created_at.desc')
+      ]).then(function(r) {
+        return r[0].filter(function(x) { return /book|course/.test(x.kind || '') && shut.indexOf(x.status) < 0; })
+          .map(function(x) { return { title: String(x.title || 'Book').slice(0, 140), detail: null, sub: x.kind || 'book', ref: 'library_items:' + x.id }; })
+          .concat(r[1].map(function(x) { return { title: String(x.short_title || x.title || 'Course').slice(0, 140), detail: x.title || null, sub: 'study course', ref: 'study_courses:' + x.id }; }));
+      });
+      if (kind === 'plan') return priv('plans', 'select=id,title,status,destination,start_date&order=created_at.desc&limit=50').then(function(r) {
+        return r.filter(function(x) { return shut.indexOf(x.status) < 0; }).map(function(x) { return { title: String(x.title || x.destination || 'Plan').slice(0, 140), detail: x.destination || null, sub: [x.status, x.start_date].filter(Boolean).join(' · ') || 'plan', ref: 'plans:' + x.id }; });
+      });
+      if (kind === 'beat') return sel('content_productions', 'select=id,title,status,content_type,price&order=created_at.desc&limit=80').then(function(r) {
+        return r.filter(function(x) { return !x.content_type || /beat/i.test(x.content_type); }).map(function(x) { return { title: String(x.title || 'Beat').slice(0, 140), detail: null, sub: [x.status, x.price ? '£' + x.price : null].filter(Boolean).join(' · ') || 'beat', ref: 'content_productions:' + x.id }; });
+      });
+      if (kind === 'artist') return priv('artists', 'select=id,name,genre,location&order=updated_at.desc&limit=100').then(function(r) {
+        return r.map(function(x) { return { title: String(x.name || 'Artist').slice(0, 140), detail: null, sub: [x.genre, x.location].filter(Boolean).join(' · ') || 'artist', ref: 'artists:' + x.id }; });
+      });
+      if (kind === 'dev') return Promise.all([
+        sel('ceo_plan_items', 'select=id,item_code,title,status&status=in.(red,yellow,purple)&order=created_at.desc&limit=60'),
+        sel('error_log', 'select=id,error_code,message,occurrence_count&status=eq.active&order=last_seen_at.desc&limit=30')
+      ]).then(function(r) {
+        return r[1].map(function(x) { return { title: ('Fix ' + (x.error_code || 'error') + ': ' + String(x.message || '')).slice(0, 140), detail: x.message || null, sub: '🟣 error · seen ' + (x.occurrence_count || 1) + 'x', ref: 'error_log:' + x.id }; })
+          .concat(r[0].map(function(x) { return { title: (x.item_code + ' ' + String(x.title || '')).slice(0, 140), detail: x.title || null, sub: ({ red: '🔴 not built', yellow: '🟡 built, needs a test', purple: '🟣 broken' })[x.status] || x.status, ref: 'ceo_plan_items:' + x.id }; }));
+      });
       return Promise.resolve([]);
     },
-    MISSION_REALMS: ['chef', 'athlete', 'producer', 'creator'],
-    DEFAULT_KIND: { chef: 'recipe', athlete: 'combo', producer: 'card', creator: 'card' },
+    // MR-2: the 7 more realms file too; Homekeeper + Steward stay plain Actions (Alex's pick).
+    MISSION_REALMS: ['chef', 'athlete', 'producer', 'creator', 'mind', 'builder', 'hustler', 'life', 'connector', 'scholar', 'explorer'],
+    DEFAULT_KIND: { chef: 'recipe', athlete: 'combo', producer: 'card', creator: 'card', mind: 'journal', builder: 'dev', hustler: 'artist', life: 'card', connector: 'person', scholar: 'book', explorer: 'plan' },
     fileable: function() {
       var self = RPGACE.modules.realmTasks;
       return (self._tasks || []).filter(function(t) {
@@ -441,6 +493,31 @@ RPGACE.register('realmTasks', {
     tickXp: function(t) { return RPGACE.modules.realmTasks.logic.ledgerRow(t).xp; },
   },
   ui: {
+    // MR-4: a Mind mission's exercise written in the journal; saving it calls onSaved (Live now's Done = the one XP pay).
+    journalMission: function(t, pi, onSaved) {
+      var K = RPGACE.kit, dd = RPGACE.modules.dashDeck, L = RPGACE.modules.realmTasks.logic;
+      var pop = dd._popup({ eyebrow: '📝 ' + (t.title || 'Reflection'), title: pi.context || 'Your exercise', width: '520px', closeLabel: 'Not now' });
+      pop.box.id = 'rt-journal-mission';
+      var pr = document.createElement('div'); pr.id = 'rt-jm-prompt'; pr.style.cssText = 'font-size:14px;color:var(--muted);white-space:pre-wrap;margin-bottom:10px;';
+      pr.textContent = 'Write it out as the exercise asks.'; pop.box.appendChild(pr);
+      if (pi.context_id) L.loadContext(pi.context_id).then(function(c) { if (c && c.detail) pr.textContent = c.detail; }).catch(function() {});
+      var ta = document.createElement('textarea'); ta.id = 'rt-jm-text'; ta.rows = 8;
+      ta.style.cssText = 'width:100%;box-sizing:border-box;font-size:16px;line-height:1.45;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:inherit;';
+      pop.box.appendChild(ta);
+      var save = K.btn('💾 Save to journal + Done', 'primary'); save.id = 'rt-jm-save'; save.style.cssText += 'width:100%;min-height:48px;margin-top:10px;';
+      save.onclick = function() {
+        var txt = ta.value.trim(); if (!txt) { RPGACE.utils.toast('Write something first', '#E2A83D', 2000); return; }
+        save.disabled = true;
+        var now = new Date();
+        RPGACE.sb.secureWrite('journal', 'insert', { title: '🧠 ' + (pi.context || t.title), content: txt, source: 'mission', entry_type: 'reflection', realms: ['mind'],
+          date: now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }), created_at: now.toISOString() })
+          .then(function() { RPGACE.cache.clear('journal'); pop.close(); if (onSaved) onSaved(); })
+          .catch(function(e) { save.disabled = false; RPGACE.utils.toast('⚠️ Journal not saved: ' + (e.message || e), '#CC4A4A', 4000, 'realmTasks'); });
+      };
+      pop.box.appendChild(save);
+      setTimeout(function() { try { ta.focus(); } catch (e) {} }, 50);
+      return pop;
+    },
     _esc: function(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); },
     _btn: function(label, kind) { return RPGACE.modules.myDay.ui._btn(label, kind); },
     _realm: function(k) { var xs = RPGACE.modules.xpSeason; return (xs && xs.REALMS[k]) || { icon: '✨', name: k }; },
@@ -554,7 +631,15 @@ RPGACE.register('realmTasks', {
             orc.onclick = function() { co.logic._loadSavedRecipe(pi.recipe_id, function(err, rec) { if (err || !rec) { RPGACE.utils.toast('⚠️ ' + (err || 'Recipe not found'), '#CC4A4A', 3000); return; } co.ui._showRecipeCard(rec, null, pi.recipe_id); }); };
             row.appendChild(orc);
           }
+          // MR-4 (Alex: Mind "Through the Journal"): write the exercise in the journal; saving it is the Done (one pay).
+          if (pi.context_kind === 'journal') {
+            var jw = U._btn('📝 Write it in your journal', 'primary'); jw.id = 'rt-ctx-journal';
+            jw.onclick = function() { U.journalMission(cur, pi, function() { var d = document.getElementById('rt-done'); if (d && !d.disabled) d.onclick(); }); };
+            row.appendChild(jw);
+          }
           if (pi.context_id) L.loadContext(pi.context_id).then(function(c) {
+            var openIt = c && L.opener(c.source_ref);
+            if (openIt && cx.isConnected) { var ob = U._btn('Open ↗', ''); ob.id = 'rt-ctx-open'; ob.onclick = openIt; cx.appendChild(ob); }
             if (!c || !c.detail || !cx.isConnected) return;
             var d = document.createElement('div'); d.className = 'rt-sub'; d.id = 'rt-ctx-detail'; d.style.whiteSpace = 'pre-wrap'; d.textContent = c.detail;
             cx.appendChild(d);
