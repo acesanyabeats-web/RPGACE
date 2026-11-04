@@ -1104,6 +1104,7 @@ RPGACE.register('errorLog', {
   "handoffStatus": "postingHub",
   "hashText": "lifeLibrary",
   "headers": "config",
+  "hm": "kit",
   "homeModel": "myDay",
   "howIKnow": "oracleProfessor",
   "hudFor": "xpSeason",

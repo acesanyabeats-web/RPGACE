@@ -15,6 +15,8 @@ RPGACE.register('kit', {
     // Local-date helpers (YYYY-MM-DD, never UTC-shifted).
     iso: function(d) { d = d || new Date(); return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); },
     today: function() { return RPGACE.kit.iso(new Date()); },
+    // Nov 4 2026 (Alex: "make it hrs min format"): a length in minutes as '45 min', '1h', '6h 50m'.
+    hm: function(mins) { var m = Math.max(0, Math.round(Number(mins) || 0)); return m < 60 ? m + ' min' : Math.floor(m / 60) + 'h' + (m % 60 ? ' ' + (m % 60) + 'm' : ''); },
     addDays: function(isoDay, n) { var d = new Date(isoDay + 'T12:00:00'); d.setDate(d.getDate() + n); return RPGACE.kit.iso(d); },
     // en-GB display: 'Wed 28 Oct' (opts.long -> 'Wednesday 28 October').
     fmt: function(isoDay, opts) {

@@ -1648,7 +1648,7 @@ RPGACE.register('myDay', {
       return out;
     },
     snap5: function(m) { return Math.round(m / 5) * 5; },
-    fmtIn: function(m) { m = Math.max(1, Math.round(m)); return m < 60 ? m + ' min' : Math.floor(m / 60) + 'h' + (m % 60 ? ' ' + (m % 60) + 'm' : ''); },
+    fmtIn: function(m) { return RPGACE.kit.hm(Math.max(1, Math.round(m))); },
     nowMin: function(d) { d = d || new Date(); return d.getHours() * 60 + d.getMinutes(); },
     // What is on now and what comes next today (blocks, tasks, shifts, bookends).
     // FL-7: the shift segment whose window (30 min before start to 30 min after end) holds now.
@@ -2300,7 +2300,7 @@ RPGACE.register('myDay', {
     // 'Producer 60/155 min, Chef 0/45 min' (planned / did). Pure.
     vsLine: function(vs) {
       var xs = RPGACE.modules.xpSeason;
-      return vs.map(function(v) { var R = (xs && xs.REALMS[v.realm]) || { name: v.realm }; return R.name + ' ' + v.planned + '/' + v.did + ' min'; }).join(', ');
+      return vs.map(function(v) { var R = (xs && xs.REALMS[v.realm]) || { name: v.realm }; return R.name + ' ' + RPGACE.kit.hm(v.planned) + '/' + RPGACE.kit.hm(v.did); }).join(', ');
     },
     // ── MD-7 Schedule links ─────────────────────────────────────────────
     // The 🌅/🌙 blocks as Daily Schedule rows for a date (drawn, not stored,
@@ -4205,11 +4205,14 @@ RPGACE.register('myDay', {
       var a = document.createElement('input'); a.type = 'time'; a.id = 'myday-did-from'; a.value = L.fmtMin(s0); a.style.cssText = inCss;
       var z = document.createElement('input'); z.type = 'time'; z.id = 'myday-did-to'; z.value = L.fmtMin(e0); z.style.cssText = inCss;
       tr.appendChild(document.createTextNode('From ')); tr.appendChild(a); tr.appendChild(document.createTextNode(' to ')); tr.appendChild(z);
+      var len = document.createElement('span'); len.id = 'myday-did-len'; len.style.cssText = 'color:var(--muted);';
+      var showLen = function() { var f = L.toMin(a.value), e = L.toMin(z.value); len.textContent = f != null && e != null && e > f ? '= ' + K.hm(e - f) : ''; };
+      a.oninput = z.oninput = showLen; showLen(); tr.appendChild(len);
       var sv = K.btn('✓ Save — I did it', 'primary'); sv.id = 'myday-did-save'; sv.style.minHeight = '44px';
       sv.onclick = function() {
         sv.disabled = true;
         L.eveningDid(x, L.toMin(a.value), L.toMin(z.value)).then(function() {
-          pop.close(); RPGACE.utils.toast('✅ Done · ' + a.value + '–' + z.value, '#4caf82', 2500);
+          pop.close(); RPGACE.utils.toast('✅ Done · ' + a.value + '–' + z.value + ' (' + K.hm(L.toMin(z.value) - L.toMin(a.value)) + ')', '#4caf82', 2500);
           if (after) try { after(); } catch (e) {}
         }, function(err) { sv.disabled = false; RPGACE.utils.toast('⚠️ ' + (err.message || err), '#CC4A4A', 4000, 'myDay'); });
       };
@@ -4399,7 +4402,7 @@ RPGACE.register('myDay', {
         draw.cur = L.snap5(minAt(ev.clientY));
         var a2 = Math.min(draw.m0, draw.cur), b2 = Math.max(draw.m0, draw.cur);
         draw.ghost.style.top = y(a2) + 'px'; draw.ghost.style.height = Math.max(8, y(b2) - y(a2)) + 'px';
-        draw.ghost.textContent = L.fmtMin(a2) + '–' + L.fmtMin(b2) + ' · ' + (b2 - a2) + ' min';
+        draw.ghost.textContent = L.fmtMin(a2) + '–' + L.fmtMin(b2) + ' · ' + RPGACE.kit.hm(b2 - a2);
       });
       var up = function(ev) {
         delete pts[ev.pointerId];
@@ -5601,7 +5604,7 @@ RPGACE.register('myDay', {
           vs.style.cssText = 'font-size:13px;color:var(--text);line-height:1.6;font-variant-numeric:tabular-nums;';
           var xs = RPGACE.modules.xpSeason;
           vs.innerHTML = didM.vs.map(function(v) { var R = (xs && xs.REALMS[v.realm]) || { icon: '✨', name: v.realm };
-            return '<div>' + esc(R.icon + ' ' + R.name) + ' <span style="color:var(--muted);">planned ' + v.planned + ' min · did ' + v.did + ' min</span></div>'; }).join('');
+            return '<div>' + esc(R.icon + ' ' + R.name) + ' <span style="color:var(--muted);">planned ' + RPGACE.kit.hm(v.planned) + ' · did ' + RPGACE.kit.hm(v.did) + '</span></div>'; }).join('');
           body.appendChild(vs);
         }
         // AC-5: blocks that went by with nothing logged.
@@ -6510,7 +6513,7 @@ RPGACE.register('myDay', {
       var bar = document.createElement('div'); bar.id = 'myday-undo'; bar.setAttribute('role', 'status');
       bar.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:100001;display:flex;align-items:center;gap:10px;max-width:calc(100vw - 32px);padding:8px 10px 8px 14px;border-radius:12px;border:1px solid var(--orange);background:var(--panel);color:var(--text);font-size:13px;box-shadow:0 6px 24px rgba(0,0,0,.4)';
       var t = document.createElement('span');
-      t.textContent = 'Moved ' + moved.map(function(m) { return m.label + ' ' + (m.delta > 0 ? '+' : '') + m.delta + ' min'; }).join(', ');
+      t.textContent = 'Moved ' + moved.map(function(m) { return m.label + ' ' + (m.delta > 0 ? '+' : '-') + RPGACE.kit.hm(Math.abs(m.delta)); }).join(', ');
       var b = self.ui._btn('↩ Undo', ''); b.id = 'myday-undo-btn'; b.style.minHeight = '40px';
       b.onclick = function() { b.disabled = true; L.undoMoves().then(function() { bar.remove(); RPGACE.utils.toast('↩ Put back', 'var(--gold)', 1800); self.ui.render(); }, function(e) { b.disabled = false; RPGACE.utils.toast('⚠️ Undo failed: ' + (e.message || e), '#CC4A4A', 3500, 'myDay'); }); };
       bar.appendChild(t); bar.appendChild(b); document.body.appendChild(bar);

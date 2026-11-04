@@ -80,7 +80,8 @@
       Alex: "I did all 3 planned on yesterday my day, but no way to say done, change block times… instead something similar was on 2nd screenshot when it's not supposed to be there."
       <ul><li><b>✓ Did it</b> now sits next to Tomorrow / Drop on every Not done block. It asks when it really happened (From / To, filled with the planned times). The block moves to those times, every step left is ticked and pays its XP, and the block finishes once (<code>myDay.logic.eveningDid</code>, <code>ui.didPastBlock</code>). There's no clash check, because it's what actually happened.</li>
       <li><b>Root cause of the water card:</b> unticking a tick (Undo) deletes its log row. The XP trigger treats a deleted row like a deleted item, so it asked "was it actually done?" in Chronicles. Undo now removes that XP straight away (<code>logic.undo</code> sets the <code>pending_confirm</code> xp_events row to removed). Evidence: water ticks on Nov 1 and Nov 2 were deleted and re-ticked a minute later.</li></ul>
-      <b>Flags:</b> tested in the harness only (7/7 checks, plus regression suites mdx 52/52). The md6 and bt7 failures were already there before this change. Untested by Alex on the phone.
+      <li><b>Lengths in hours and minutes</b> (Alex: "make it hrs min format"): <code>RPGACE.kit.hm</code> gives "45 min", "1h" and "6h 50m". It's used in Planned vs did, the Did it popup (the length updates as you change the times), the drag label, the "Moved" line, and the fmtIn timer text.</li>
+      <b>Flags:</b> tested in the harness only (10/10 checks, plus regression suites mdx 52/52). The md6 and bt7 failures were already there before this change. Untested by Alex on the phone.
     </div>
 </div>
 <div class="card" id="card-2026-11-03-freebie-missions" style="margin-bottom:30px;">
