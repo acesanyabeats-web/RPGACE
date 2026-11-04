@@ -51,3 +51,8 @@ Evidence used for share: manifest.json share_target -> sw.js /share-target -> sh
 
 Defaults taken (not asked, flagged): "functions used" = saves/ticks/logs in that realm (xp_events + realm logs), last 30 days; quick notes stored as journal rows (source 'note') - no new table (rule 8); screen opens stored in one new private table (ui_usage) for menu order.
 Drift vs Track A: OA-3..OA-8 (Live now modes per domain) overlap the realm pages' Live section -> asked Alex whether to build them inside realm pages.
+
+Approval (verbatim):
+Q approve RP-1..7: "Approve as written (Recommended)"
+Q Live modes vs realm pages: "So do OA, then revise RP after to include OA as scope for plan revision, new from OQ just does live now, narrow scope of RP in a way"
+  -> Build OA-3..OA-8 first (Live now modes, as approved). Then revise the RP plan with OA as scope: Live now owns live modes; RP's Live section just opens Live now (RP narrowed). Plan rows: ceo_plans 'Realm Pages + Evening Questionnaire' (bb0b52f7), RP-1..RP-7 red.
