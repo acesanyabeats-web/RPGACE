@@ -212,13 +212,15 @@ RPGACE.register('realmFrame', {
       s.textContent = '.rf-home{padding:12px;border:1px solid var(--border);border-radius:12px;background:var(--panel);margin:10px 0}' +
         '.rf-tgt-l{font-size:13px;color:var(--muted)}.rf-tgt-v{font-size:20px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;margin-top:2px}' +
         '.rf-bar{height:6px;border-radius:3px;background:var(--border);margin-top:6px;overflow:hidden}.rf-bar>div{height:100%;background:var(--gold)}.rf-bar.rf-over>div{background:#CC4A4A}' +
-        '.rf-set{margin-left:6px;min-height:32px;padding:2px 10px;border:1px solid var(--border);border-radius:8px;background:none;color:var(--muted);font:inherit;font-size:12px;cursor:pointer}' +
+        '.rf-set{margin-left:6px;min-height:44px;padding:2px 12px;border:1px solid var(--border);border-radius:8px;background:none;color:var(--muted);font:inherit;font-size:12px;cursor:pointer}' +
         '.rf-h{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:12px 0 6px}' +
         '.rf-feed{display:flex;align-items:center;gap:8px;width:100%;min-height:44px;padding:8px 12px;margin:0 0 6px;border:1px dashed var(--gold);border-radius:10px;background:none;color:var(--text);font:inherit;font-size:14px;text-align:left;cursor:pointer}';
       document.head.appendChild(s);
     },
     // The universal frame inside a realm home popup.
-    render: function(box, realm, close) {
+    // RP-1: opts.noTiles - a realm page draws its own folded sections instead of the tiles.
+    render: function(box, realm, close, opts) {
+      opts = opts || {};
       var self = RPGACE.modules.realmFrame, L = self.logic, U = self.ui, X = RPGACE.modules.xpSeason, meta = X.REALMS[realm];
       U._css();
       var home = document.createElement('div'); home.className = 'rf-home'; home.id = 'rf-home'; home.textContent = 'Loading…';
@@ -237,7 +239,7 @@ RPGACE.register('realmFrame', {
           feedsEl.appendChild(b);
         });
       }).catch(function() {});
-      L.registry().then(function(reg) { U._drawTiles(tiles, realm, L.frameOf(reg, realm), close); });
+      if (!opts.noTiles) L.registry().then(function(reg) { U._drawTiles(tiles, realm, L.frameOf(reg, realm), close); });
     },
     _drawHome: function(el, st, realm, close) {
       var self = RPGACE.modules.realmFrame, L = self.logic, U = self.ui;
@@ -302,10 +304,11 @@ RPGACE.register('realmFrame', {
       pop.box.classList.add('an-sheet');
       return pop;
     },
-    _openTakeIn: function(realm, close) {
+    // RP-1: host draws the same list inside a realm page section instead of a sheet.
+    _openTakeIn: function(realm, close, host) {
       var self = RPGACE.modules.realmFrame, L = self.logic, X = RPGACE.modules.xpSeason;
-      var pop = self.ui._sheet('📥 Take in · ' + X.REALMS[realm].name);
-      pop.box.id = 'rf-takein';
+      var pop = host ? { box: host, close: function() {} } : self.ui._sheet('📥 Take in · ' + X.REALMS[realm].name);
+      if (!host) pop.box.id = 'rf-takein';
       var list = document.createElement('div'); list.textContent = 'Loading…'; pop.box.appendChild(list);
       L.takeIn(realm).then(function(rows) {
         list.textContent = rows.length ? '' : 'Nothing saved for this realm yet.';
@@ -317,9 +320,9 @@ RPGACE.register('realmFrame', {
       lib.onclick = function() { pop.close(); if (close) close(); var kh = RPGACE.modules.knowledgeHub; if (kh) kh.ui.go('library'); };
       pop.box.appendChild(share); pop.box.appendChild(lib);
     },
-    _openLog: function(realm) {
+    _openLog: function(realm, host) {
       var self = RPGACE.modules.realmFrame, L = self.logic, X = RPGACE.modules.xpSeason;
-      var pop = self.ui._sheet('📜 Log · ' + X.REALMS[realm].name); pop.box.id = 'rf-log';
+      var pop = host ? { box: host } : self.ui._sheet('📜 Log · ' + X.REALMS[realm].name); if (!host) pop.box.id = 'rf-log';
       L.log(realm).then(function(rows) {
         if (!rows.length) { pop.box.appendChild(document.createTextNode('Nothing logged in this realm yet.')); return; }
         rows.forEach(function(e) {
@@ -329,9 +332,9 @@ RPGACE.register('realmFrame', {
         });
       });
     },
-    _openReview: function(realm) {
+    _openReview: function(realm, host) {
       var self = RPGACE.modules.realmFrame, L = self.logic, X = RPGACE.modules.xpSeason;
-      var pop = self.ui._sheet('📈 This week · ' + X.REALMS[realm].name); pop.box.id = 'rf-review';
+      var pop = host ? { box: host } : self.ui._sheet('📈 This week · ' + X.REALMS[realm].name); if (!host) pop.box.id = 'rf-review';
       Promise.all([L.review(realm), L.targetState(realm)]).then(function(x) {
         var r = x[0], lines = ['XP: ' + r.thisWeek + ' this week · ' + r.lastWeek + ' last week' + (r.thisWeek > r.lastWeek ? ' ↑' : r.thisWeek < r.lastWeek ? ' ↓' : ''),
           'Tasks done: ' + r.tasksDone, 'Target: ' + (L.targetText(x[1]) || 'none')];
