@@ -74,6 +74,16 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-04-no-alarm" style="margin-bottom:30px;">
+    <div class="card-title">⏰ Nov 4: "No alarm" really means no alarm</div>
+    <div class="card-body">
+      Alex: "yesterday I skipped alarm, day off no rush, yet alarm still was on, wtf happened?"
+      <ul><li><b>Root cause (from the myday_alarms rows):</b> wake alarms for future days were already sitting there as 'set'. Nov 4 10:45 was created Oct 29, and Nov 5 + 6 10:45 were created Oct 31, each about 6 days early. "No alarm" at bedtime only skipped adding a new one. It never switched off the one waiting, so 10:45 rang on your day off.</li>
+      <li>Fixed in <code>myDay.logic.endDay</code>: going to bed now switches off every waiting wake alarm, then sets tonight's alarm if you picked one. Bedtime is the only place an alarm lives.</li>
+      <li>Data: the two leftovers (Thu 5th and Fri 6th, 10:45) were switched off (status off, not deleted).</li></ul>
+      <b>Flags:</b> what created alarms 6 days ahead in October isn't found in today's code or the database functions. It was probably an older build or a one-off session fill. If a wake alarm ever appears that you didn't set at bedtime, tell me. Harness-tested (4/4). The db_test failures (12) were already there before this change.
+    </div>
+</div>
 <div class="card" id="card-2026-11-04-hm-freeze" style="margin-bottom:30px;">
     <div class="card-title">⏱ Nov 4: Every time length shows in hours + minutes; the start-up freeze on the dashboard</div>
     <div class="card-body">

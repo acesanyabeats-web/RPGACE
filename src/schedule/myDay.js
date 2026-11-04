@@ -2051,12 +2051,19 @@ RPGACE.register('myDay', {
       return RPGACE.sb.secureWrite('myday_settings', 'update', patch, 'id=eq.1').then(function() {
         self._settings = Object.assign({}, self._settings || {}, patch);
         RPGACE.cache.clear('myday_settings');
-        if (!alarmAt) return { day: ds.day, alarm: null };
+        // Nov 4 2026 (Alex: "yesterday I skipped alarm, day off no rush, yet alarm still was on"): No alarm only
+        // skipped adding one, so an older wake row still 'set' for the coming days rang anyway. Now bedtime is the one
+        // place a wake alarm lives: every waiting wake alarm (any future day) goes off, then tonight's one (if any) is set.
+        var clearOld = RPGACE.sb.secureWrite('myday_alarms', 'update', { status: 'off' }, 'kind=eq.wake&status=eq.set&at=gt.' + encodeURIComponent(now.toISOString()))
+          .then(function() { self._alarms = (self._alarms || []).map(function(a) { return a.kind === 'wake' && a.status === 'set' && new Date(a.at) > now ? Object.assign({}, a, { status: 'off' }) : a; }); RPGACE.cache.clear('myday_alarms'); });
+        if (!alarmAt) return clearOld.then(function() { return { day: ds.day, alarm: null }; });
+        return clearOld.then(function() {
         var row = { day: L.iso(alarmAt), kind: 'wake', at: alarmAt.toISOString(), stop_routine_id: null, stop_label: null, status: 'set', last_sent_at: null, sends: 0 };
         return RPGACE.sb.secureWrite('myday_alarms', 'insert', row, null, 'day,kind').then(function() {
           RPGACE.cache.clear('myday_alarms');
           self._alarms = (self._alarms || []).filter(function(a) { return a.day !== row.day; }).concat([row]);
           return { day: ds.day, alarm: row };
+        });
         });
       });
     },
