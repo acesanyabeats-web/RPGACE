@@ -74,6 +74,17 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-04-alongside" style="margin-bottom:30px;">
+    <div class="card-title">🧹 Nov 4: Homekeeping and Building run alongside other things (half width, on the right)</div>
+    <div class="card-body">
+      Alex: "while doing home keeping work, it will clash with others since I'd be able to do other things at the same time, or during passive cooking times" … "make it so housekeeping is halfed vertically and kept on right if done alongside another task, building would need same behaviour (building while at work at times etc.)"
+      <ul><li><b>No more clashes:</b> Homekeeping blocks (chores, or a Homekeeper realm block) and Building blocks never push other blocks and are never pushed. Homekeeping still can't go over a shift, travel or Morning/Night. Building can run during a shift, with no ⚠ (<code>myDay.logic.isAlongside</code>, <code>collisionSegs</code>, used by <code>guard</code> and <code>dragLimits</code>).</li>
+      <li><b>On the timeline:</b> when one overlaps something, it takes the right half and the thing it overlaps takes the left half. On its own it stays full width.</li>
+      <li><b>🧹 Fit chores while it cooks</b> on a cooking block's Live now: it finds the longest hands-off stretch in its recipes (simmer, bake) and fills it with due chores, as a Homekeeping block alongside the cook (<code>logic.passiveWindow</code>, <code>fitChoresInCook</code>).</li>
+      <li>The rest of the minute labels caught by this pass ("60 min free", task chips, journey, get-ready, the timer) now show hours and minutes. doingNow uses the shared <code>kit.hm</code>.</li></ul>
+      <b>Flags:</b> harness-tested (hk 9/9, mdx 52/52, md2b 21/21, clash 8/8, dn3 19/19) with a timeline screenshot. Untested on the phone. Placing blocks automatically (Plan my day, "next free") still treats a Homekeeping block as taken time.
+    </div>
+</div>
 <div class="card" id="card-2026-11-04-oracle-list" style="margin-bottom:30px;">
     <div class="card-title">🔮 Nov 4: Oracle list cleared — recipe timeout, "Entry not saved", only real bugs logged</div>
     <div class="card-body">

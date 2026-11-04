@@ -566,6 +566,19 @@ RPGACE.register('realmTasks', {
         var bt = document.createElement('div'); bt.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;';
         var lv = om !== 'past' && opts.seg ? md.ui._live(opts.seg, od, md.logic.iso()) : null;
         if (lv && om === 'now' && !lv.running) { var sb = U._btn(lv.label, 'primary'); sb.id = 'rt-block-start'; sb.onclick = function() { sb.disabled = true; lv.run().then(function() { U._drawLive(box, opts); }, function() { sb.disabled = false; }); }; bt.appendChild(sb); }
+        // HK-3: chores while it cooks - a Homekeeping block alongside the cook's simmer/bake.
+        if (ob.kind === 'cooking' && om !== 'past') {
+          var fc = U._btn('🧹 Fit chores while it cooks', ''); fc.id = 'rt-block-fitchores';
+          fc.onclick = function() {
+            fc.disabled = true;
+            md.logic.fitChoresInCook(ob).then(function(r) {
+              RPGACE.utils.toast('🧹 ' + r.n + ' chores at ' + md.logic.fmtMin(r.from) + ' (' + RPGACE.kit.hm(r.mins) + ')', '#4caf82', 2600);
+              if (opts.redraw) try { opts.redraw(); } catch (e) {}
+              try { md.ui.render(); } catch (e) {}
+            }, function(e) { fc.disabled = false; RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500, 'realmTasks'); });
+          };
+          bt.appendChild(fc);
+        }
         if (opts.seg) { var mo = U._btn('⋯ Move / edit block', ''); mo.id = 'rt-block-more'; mo.onclick = function() { md.ui.blockSheet(opts.seg, od, md.logic.iso(), opts.redraw); }; bt.appendChild(mo); }
         // Oct 29 2026: a past block can carry details (people, place, reflection, photo) as a memory - same format as events.
         var em = RPGACE.modules.eventMemories;
@@ -579,7 +592,7 @@ RPGACE.register('realmTasks', {
       if (live) {
         var R = U._realm(live.run.realm), st = md.logic.focusAt(live.run, Date.now());
         var left = Math.max(0, Math.round((live.run.startedAt + live.run.mins * 60000 + (live.run.pausedMs || 0) - Date.now()) / 60000));
-        head.innerHTML = '<div class="rt-big">' + esc(R.icon + ' ' + R.name + ' block') + '</div><div class="rt-sub">' + (st.done ? 'Time is up' : left + ' min left') + (st.phase ? ' · ' + esc(st.phase.kind === 'focus' ? 'focus' : 'break') : '') + '</div>';
+        head.innerHTML = '<div class="rt-big">' + esc(R.icon + ' ' + R.name + ' block') + '</div><div class="rt-sub">' + (st.done ? 'Time is up' : RPGACE.kit.hm(left) + ' left') + (st.phase ? ' · ' + esc(st.phase.kind === 'focus' ? 'focus' : 'break') : '') + '</div>';
       } else if (realm) {
         var R2 = U._realm(realm); head.innerHTML = '<div class="rt-big">' + esc(R2.icon + ' ' + R2.name) + '</div><div class="rt-sub">No block running — tasks done here are still recorded.</div>';
       } else {
@@ -694,7 +707,7 @@ RPGACE.register('realmTasks', {
         wrap.innerHTML = '';
         (all ? list : list.slice(0, 3)).forEach(function(t) {
           var tp0 = L.plannedItem(t, b);
-          var sub = [tp0 && tp0.context ? '🎯 ' + tp0.context : null, t.mins + ' min', t.kind === 'once' ? 'one-off' : null, t._resting ? 'resting' : null, t.earns === 'real' ? 'counts when you ' + (t.how || 'do it') : null, L.srcLabel(t) || null].filter(Boolean);
+          var sub = [tp0 && tp0.context ? '🎯 ' + tp0.context : null, RPGACE.kit.hm(t.mins), t.kind === 'once' ? 'one-off' : null, t._resting ? 'resting' : null, t.earns === 'real' ? 'counts when you ' + (t.how || 'do it') : null, L.srcLabel(t) || null].filter(Boolean);
           // TK-6 (Oct 29 2026): every task here is the same task card (tick / ✓ Done straight away, or ▶ Start it).
           wrap.appendChild(RPGACE.kit.taskCard({
             cls: 'rt-task', id: String(t.id), title: t.title, metaHtml: '<div class="rt-sub">' + esc(sub.join(' · ')) + '</div>',
@@ -948,7 +961,7 @@ RPGACE.register('realmTasks', {
           all.forEach(function(t) {
             var r = document.createElement('div'); r.className = 'rt-task'; r.dataset.id = t.id;
             var tx = document.createElement('div'); tx.className = 'rt-task-t';
-            tx.innerHTML = esc(t.title) + '<div class="rt-sub">' + esc([t.mins + ' min', t.kind === 'once' ? 'one-off' : 'repeatable', t.status === 'kept' ? '✓ kept' : 'proposed'].join(' · ')) + '</div>';
+            tx.innerHTML = esc(t.title) + '<div class="rt-sub">' + esc([RPGACE.kit.hm(t.mins), t.kind === 'once' ? 'one-off' : 'repeatable', t.status === 'kept' ? '✓ kept' : 'proposed'].join(' · ')) + '</div>';
             if (t.context_kind) { r.classList.add('rt-mission'); tx.insertAdjacentHTML('beforeend', '<div class="rt-sub rt-mission-tag" style="color:var(--gold);">🎯 Mission · when you plan a block, pick ' + esc(L.CONTEXT_KINDS[t.context_kind] || 'what it is about') + '</div>'); }
             r.appendChild(tx);
             if (t.status === 'proposed') {

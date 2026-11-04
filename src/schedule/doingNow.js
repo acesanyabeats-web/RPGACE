@@ -43,10 +43,7 @@ RPGACE.register('doingNow', {
       if (isNaN(s)) return 0;
       return Math.max(0, Math.round(((now || Date.now()) - s) / 60000));
     },
-    fmt: function(m) {
-      m = Math.max(0, Math.round(m || 0));
-      return m < 60 ? m + ' min' : Math.floor(m / 60) + 'h ' + String(m % 60).padStart(2, '0') + 'm';
-    },
+    fmt: function(m) { return RPGACE.kit.hm(m); }, // Nov 4 2026: one hours+minutes format everywhere (kit.hm)
     // Local copy first (instant), then the server row — same write shape as
     // completeScheduledTask.
     patch: function(id, fields) {
@@ -313,7 +310,7 @@ RPGACE.register('doingNow', {
       var bits = [];
       if (days.length <= 3) bits.push(days.join('/'));
       if (g.startMin != null) bits.push('~' + self.logic.fmtClock(g.startMin));
-      if (g.mins) bits.push(g.mins + ' min');
+      if (g.mins) bits.push(RPGACE.kit.hm(g.mins));
       return bits.join(', ');
     },
     // Routine editor prefill from a repeat. Same weekdays (<=3, one seen twice)

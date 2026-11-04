@@ -469,7 +469,7 @@ RPGACE.register('myDay', {
       if (!(f.ids || []).length) return Promise.reject(new Error('Pick at least one chore.'));
       var row = { block_date: f.date, start_time: L.fmtMin(start), mins: mins, routine_ids: f.ids.map(String), status: 'planned', realm: 'homekeeper' }; // DL-6: Housekeeping = the Homekeeper realm
       // MD-1: no overlaps - make room first (push rule).
-      return L.guard(f.date, start, mins).then(function(g) { L._noteMoved(g); return RPGACE.sb.secureWrite('chore_blocks', 'insert', row); }).then(function(data) {
+      return L.guard(f.date, start, mins, null, row).then(function(g) { L._noteMoved(g); return RPGACE.sb.secureWrite('chore_blocks', 'insert', row); }).then(function(data) {
         var saved = (Array.isArray(data) && data[0]) || null;
         if (!saved || !saved.id) throw new Error('The block saved but came back without an id — reload My Day.');
         var titles = L.blockChores(saved).map(function(r) { return r.title; });
@@ -479,6 +479,33 @@ RPGACE.register('myDay', {
         self._choreBlocks = self._choreBlocks.concat([saved]);
         RPGACE.cache.clear('chore_blocks');
         return RPGACE.sb.secureWrite('chore_blocks', 'update', { agenda_id: entry.id }, 'id=eq.' + saved.id).then(function() { return saved; });
+      });
+    },
+    // HK-3 (Nov 4 2026): the longest hands-off stretch of a cooking block (a simmer, a bake), from its recipes' own
+    // active/passive step minutes, walked in order from the block start. Pure. Returns { from, mins } or null.
+    passiveWindow: function(b, recipes) {
+      var L = RPGACE.modules.myDay.logic, t = L.toMin(b.start_time), best = null;
+      if (t == null) return null;
+      var ids = (b.items || []).map(function(i) { return String(i.ref_id); });
+      (recipes || []).filter(function(r) { return ids.indexOf(String(r.id)) !== -1; }).forEach(function(r) {
+        (r.steps || []).forEach(function(st) {
+          t += Number(st.active_duration_min) || 0;
+          var p = Number(st.passive_duration_min) || 0;
+          if (p >= 10 && (!best || p > best.mins)) best = { from: t, mins: p };
+          t += p;
+        });
+      });
+      return best;
+    },
+    // HK-3: fill the cook's hands-off stretch with due chores, as a Homekeeping block running alongside the cook.
+    fitChoresInCook: function(b) {
+      var L = RPGACE.modules.myDay.logic;
+      return L.loadRecipes().then(function(all) {
+        var w = L.passiveWindow(b, all) || { from: L.toMin(b.start_time), mins: Number(b.mins) || 30 };
+        var fill = L.fillBlock(w.mins, b.block_date, L.blockedIds(b.block_date));
+        if (!fill.items.length) throw new Error('No chores due that fit in ' + RPGACE.kit.hm(w.mins) + '.');
+        return L.saveChoreBlock({ date: b.block_date, start: L.fmtMin(w.from), mins: Math.max(10, fill.used), ids: fill.items.map(function(c) { return String(c.r.id); }) })
+          .then(function() { return { n: fill.items.length, from: w.from, mins: fill.used }; });
       });
     },
     // Cancel: the block and its Daily Schedule entry go; the chores stay due.
@@ -804,7 +831,7 @@ RPGACE.register('myDay', {
           throw e;
         });
       };
-      return L.guard(isoDate, m, row.mins).then(function(g) { L._noteMoved(g); return insert(); }).then(function(data) {
+      return L.guard(isoDate, m, row.mins, null, row).then(function(g) { L._noteMoved(g); return insert(); }).then(function(data) {
         var saved = (Array.isArray(data) && data[0]) || null;
         if (!saved || !saved.id) throw new Error('The block saved but came back without an id — reload My Day.');
         var entry = scheduleToCalendar({ title: rl.icon + ' ' + rl.name + ' block', description: items.map(function(i) { return i.label; }).join(' · '), category: x.realm, xp: 0,
@@ -1563,7 +1590,8 @@ RPGACE.register('myDay', {
     // blocks), else at the end of 🌅 Morning / start of 🌙 Night.
     dragLimits: function(segs, b, gap) {
       gap = gap == null ? 10 : gap;
-      var others = segs.filter(function(g) { return g.kind !== 'gap' && !(b.id && g.id === b.id); });
+      var L = RPGACE.modules.myDay.logic, me = b.block || (segs.filter(function(g) { return b.id && g.id === b.id; })[0] || {}).block;
+      var others = L.collisionSegs(segs, me).filter(function(g) { return g.kind !== 'gap' && !(b.id && g.id === b.id); });
       var be = function(w) { return others.filter(function(g) { return g.kind === 'bookend' && g.which === w; })[0]; };
       var m = be('morning'), n = be('night');
       var lo = m ? m.to : 360, hi = n ? n.from : 1440;
@@ -2487,7 +2515,7 @@ RPGACE.register('myDay', {
       var out = [], t = run.startedAt + (run.pausedMs || 0), k = 0, last = run.phases.length - 1;
       run.phases.forEach(function(p, i) {
         t += p.mins * 60000;
-        var msg = i === last ? '✅ ' + label + ' done — tick what you finished' : p.kind === 'focus' ? '☕ Break: ' + run.phases[i + 1].mins + ' min' : '🎯 Back to it: round ' + (p.n + 1);
+        var msg = i === last ? '✅ ' + label + ' done — tick what you finished' : p.kind === 'focus' ? '☕ Break: ' + RPGACE.kit.hm(run.phases[i + 1].mins) : '🎯 Back to it: round ' + (p.n + 1);
         out.push({ k: k++, at: t, text: msg });
         if (run.method === 'timebox' && p.kind === 'focus' && p.mins > 10) out.push({ k: k++, at: t - 5 * 60000, text: '⏳ 5 minutes left on ' + label });
       });
@@ -2555,10 +2583,29 @@ RPGACE.register('myDay', {
     // Resolves with { moved } once there is room; rejects with a clear
     // message otherwise. tooFar asks (via ui.askShorten) to shorten the
     // other block, then tries again.
-    guard: function(isoDate, start, mins, exceptId) {
+    // HK (Nov 4 2026, Alex: "while doing home keeping work, it will clash with others since I'd be able to do other
+    // things at the same time, or during passive cooking times" ... "building would need same behaviour (building
+    // while at work at times etc.)"): Homekeeping and Building blocks run ALONGSIDE others. Pure.
+    isAlongside: function(b) {
+      if (!b) return false;
+      var k = b.kind || 'chores';
+      return k === 'chores' || (k === 'realm' && (b.realm === 'homekeeper' || b.realm === 'builder'));
+    },
+    // What a block can't overlap. Alongside: Homekeeping keeps clear of shift, travel and Morning/Night; Building only
+    // of Morning/Night (it can run at work). Any other block ignores alongside blocks (they're never pushed). Pure.
+    collisionSegs: function(segs, who) {
+      var L = RPGACE.modules.myDay.logic;
+      if (L.isAlongside(who)) {
+        var keep = who.realm === 'builder' && (who.kind || 'chores') === 'realm' ? ['bookend'] : ['shift', 'travel', 'bookend'];
+        return segs.filter(function(g) { return keep.indexOf(g.kind) !== -1; });
+      }
+      return segs.filter(function(g) { return !(g.kind === 'block' && L.isAlongside(g.block)); });
+    },
+    guard: function(isoDate, start, mins, exceptId, who) {
       var self = RPGACE.modules.myDay, L = self.logic, dp = L.dayParts(isoDate);
       var gap = Number((dp.st || {}).buffer_mins); if (isNaN(gap) || (dp.st || {}).buffer_mins == null) gap = 10;
-      var segs = L.segments({ shifts: dp.shifts, sched: dp.sched, blocks: dp.blocks, bookends: dp.bookends, st: dp.st });
+      if (!who && exceptId) who = (self._choreBlocks || []).filter(function(b) { return String(b.id) === String(exceptId); })[0] || null;
+      var segs = L.collisionSegs(L.segments({ shifts: dp.shifts, sched: dp.sched, blocks: dp.blocks, bookends: dp.bookends, st: dp.st }), who);
       var nb = { id: exceptId || '__new', from: start, to: start + mins };
       var r = L.makeRoom(segs, nb, gap, 30);
       if (r.fixed || r.stuck) {
@@ -2568,7 +2615,7 @@ RPGACE.register('myDay', {
         var err = new Error(msg); err.freeAt = alt; return Promise.reject(err);
       }
       if (r.tooFar) {
-        return self.ui.askShorten(isoDate, r.tooFar, r.by, r.dir, mins).then(function() { return L.guard(isoDate, start, mins, exceptId); });
+        return self.ui.askShorten(isoDate, r.tooFar, r.by, r.dir, mins).then(function() { return L.guard(isoDate, start, mins, exceptId, who); });
       }
       return L.applyMoves(r.moves).then(function(m) { return { moved: m }; });
     },
@@ -3727,9 +3774,23 @@ RPGACE.register('myDay', {
         lane.appendChild(hr);
       }
       var nowM = L.nowMin();
+      // HK-2: an alongside block (Homekeeping / Building) that overlaps something takes the right half; what it
+      // overlaps takes the left half, so both stay readable and tappable.
+      var halfR = [], halfL = [];
+      segs.forEach(function(a) {
+        if (a.kind !== 'block' || !L.isAlongside(a.block)) return;
+        segs.forEach(function(g) {
+          if (g === a || g.kind === 'gap' || g.kind === 'bookend' || !(a.from < g.to && a.to > g.from)) return;
+          if (g.kind === 'block' && L.isAlongside(g.block) && halfR.indexOf(g) !== -1) return;
+          if (halfR.indexOf(a) === -1) halfR.push(a);
+          if (halfL.indexOf(g) === -1 && halfR.indexOf(g) === -1) halfL.push(g);
+        });
+      });
+      o = Object.assign({}, o, { _halfR: halfR, _halfL: halfL });
       segs.forEach(function(g) {
         if (g.kind === 'gap' || g.kind === 'block' || (g.kind === 'item' && g.item)) return;
         var el = document.createElement('div'); el.className = 'mdx-fx'; el.dataset.kind = g.kind;
+        if (halfL.indexOf(g) !== -1) el.style.right = '50%';
         el.style.top = y(g.from) + 'px'; el.style.height = Math.max(14, y(g.to) - y(g.from)) + 'px';
         el.textContent = g.kind === 'bookend' ? '' : compact ? g.label : g.label + ' · ' + L.fmtMin(g.from) + '–' + L.fmtMin(g.to);
         if (g.kind === 'bookend') el.onclick = function() { U._openPin(g.which, isoDate); };
@@ -3741,7 +3802,7 @@ RPGACE.register('myDay', {
         L.freeGaps(segs, gFrom, endM, 20).forEach(function(gp) {
           var b = document.createElement('button'); b.type = 'button'; b.className = 'mdx-gap';
           b.style.top = (y(gp.from) + 2) + 'px'; b.style.height = Math.max(18, y(gp.to) - y(gp.from) - 4) + 'px';
-          b.textContent = (gp.to - gp.from) + ' min free  +';
+          b.textContent = RPGACE.kit.hm(gp.to - gp.from) + ' free  +';
           b.dataset.from = gp.from; b.dataset.to = gp.to;
           // Oct 29 2026 (Alex: "when nothing planned later and now, i press add, it asks whether i plan future block or doing now block"):
           // the free gap that starts now asks first; later gaps go straight to planning.
@@ -3785,10 +3846,12 @@ RPGACE.register('myDay', {
       el.className = 'mdx-b'; el.dataset.kind = b ? (b.kind || 'chores') : 'item'; el.dataset.id = b ? b.id : 'a:' + x.id;
       if (x && x.completed) el.classList.add('done');
       el.style.top = y(g.from) + 'px'; el.style.height = Math.max(30, y(g.to) - y(g.from)) + 'px';
+      if (o._halfR && o._halfR.indexOf(g) !== -1) { el.classList.add('mdx-half-r'); el.style.left = 'calc(50% + 2px)'; }
+      else if (o._halfL && o._halfL.indexOf(g) !== -1) { el.classList.add('mdx-half-l'); el.style.right = 'calc(50% + 2px)'; }
       // Same ⚠ the Schedule grid shows when an entry lands on the shift or its travel.
       var flagged = (x && !x.completed && x.source_type !== 'doing_now') || (b && b.status !== 'done');
       var paint = function(f, m) {
-        var c = flagged ? L.clashWith(isoDate, f, m) : null;
+        var c = flagged && !(b && b.kind === 'realm' && b.realm === 'builder') ? L.clashWith(isoDate, f, m) : null; // HK: Building can run at work
         el.classList.toggle('mdx-clash', !!c);
         el.innerHTML = '<b>' + esc(g.label) + '</b><small>' + L.fmtMin(f) + '–' + L.fmtMin(f + m) + (U._segLabel(g) ? ' · ' + esc(U._segLabel(g)) : '') + '</small>'
           + (c ? '<small class="sched-clash-flag">⚠ Clashes with ' + (c.kind === 'shift' ? 'your shift' : 'your ' + esc(String(c.label || '').toLowerCase())) + ' (' + L.fmtMin(c.from) + '–' + L.fmtMin(c.to) + ')</small>' : '');
@@ -4361,7 +4424,7 @@ RPGACE.register('myDay', {
         pop.box.appendChild(h);
         var chips = document.createElement('div'); chips.className = 'mdx-chips';
         fits.forEach(function(t) {
-          var c = U._mdxBtn(t.label + ' · ' + t.mins + 'm', false, 'mdx-gap-item');
+          var c = U._mdxBtn(t.label + ' · ' + RPGACE.kit.hm(t.mins), false, 'mdx-gap-item');
           c.onclick = function() { c.disabled = true; L.placeFromTray(isoDate, t, from).then(function() { pop.close(); if (redraw) redraw(); self.ui.render(); }, function(e) { c.disabled = false; U._mdxFail(e); }); };
           chips.appendChild(c);
         });
@@ -4492,7 +4555,7 @@ RPGACE.register('myDay', {
         }, function(e) { btn.disabled = false; U._mdxFail(e); });
       };
       var row = function(host, t) {
-        var c = U._mdxBtn(t.label + ' · ' + t.mins + 'm', false, 'mdx-pick-item');
+        var c = U._mdxBtn(t.label + ' · ' + RPGACE.kit.hm(t.mins), false, 'mdx-pick-item');
         c.dataset.key = t.key; c.onclick = function() { pick(t, c); };
         host.appendChild(c);
       };
@@ -5878,7 +5941,7 @@ RPGACE.register('myDay', {
           var chip = document.createElement(style === 'frog' && b.kind === 'realm' ? 'button' : 'span');
           chip.className = 'mdp-bitem'; chip.dataset.key = L.itemKey(i);
           var sz = style === '135' ? ' · ' + L.sizeOf(i)[0].toUpperCase() : '';
-          chip.textContent = (i.frog ? '🐸 ' : '') + i.label + (i.mins ? ' ' + i.mins + 'm' : '') + sz;
+          chip.textContent = (i.frog ? '🐸 ' : '') + i.label + (i.mins ? ' ' + RPGACE.kit.hm(i.mins) : '') + sz;
           chip.style.cssText = 'font-size:12px;padding:4px 8px;border-radius:12px;border:1px solid ' + (i.frog ? 'var(--gold)' : 'var(--border)') + ';background:none;color:var(--text);font-family:inherit;' + (chip.tagName === 'BUTTON' ? 'min-height:36px;cursor:pointer;' : '');
           if (chip.tagName === 'BUTTON') {
             chip.type = 'button';
@@ -6057,7 +6120,7 @@ RPGACE.register('myDay', {
             lab.style.cssText = 'display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);min-height:44px;cursor:pointer;font-size:14px;color:var(--text);';
             var why = o.score >= 3 ? 'due today' : o.src === 'book' ? 'a book you\'re reading' : o.earns === 'real' ? '⚡ ' + (o.how || 'earns from the real thing') : '+' + (o.earns === 'xp' && o.xp ? o.xp : self.TICK_XP) + ' XP on tick';
             lab.innerHTML = '<input type="checkbox" style="width:20px;height:20px;accent-color:var(--gold);"' + (pick[o.key] ? ' checked' : '') + '><span style="flex:1;min-width:0;">' + (n < 3 && !showAll ? '<b>' : '') + esc(o.label) + (n < 3 && !showAll ? '</b>' : '') +
-              '<br><span style="font-size:12px;color:var(--muted);">' + esc((o.mins ? o.mins + ' min · ' : '') + why) + '</span></span>';
+              '<br><span style="font-size:12px;color:var(--muted);">' + esc((o.mins ? RPGACE.kit.hm(o.mins) + ' · ' : '') + why) + '</span></span>';
             lab.querySelector('input').onchange = function(ev) {
               if (!ev.target.checked) { delete pick[o.key]; draw(); return; }
               pick[o.key] = o;
@@ -6448,7 +6511,7 @@ RPGACE.register('myDay', {
         // timer (localStorage myday_timer_<id>, which kept counting after a tick elsewhere: "⏱ 1450 min") is dropped.
         if (L._ls(timerKey)) L._ls(timerKey, null);
         var started = run ? new Date(run.started_at).getTime() : 0;
-        tools.push({ label: run ? '⏱ ' + Math.max(0, Math.round((Date.now() - started) / 60000)) + ' min' : '▶ Start', cls: 'myday-timer', data: { started: started || '' },
+        tools.push({ label: run ? '⏱ ' + RPGACE.kit.hm(Math.max(0, Math.round((Date.now() - started) / 60000))) : '▶ Start', cls: 'myday-timer', data: { started: started || '' },
           fn: function() {
             if (!dn) return;
             if (run) { dn.ui.openStop(run); return; }
@@ -6759,7 +6822,7 @@ RPGACE.register('myDay', {
       self._tick = setInterval(function() {
         var btns = document.querySelectorAll('#myday-panel .myday-timer');
         if (!document.getElementById('myday-panel')) { clearInterval(self._tick); self._tick = null; return; }
-        btns.forEach(function(b) { var s = Number(b.dataset.started); if (s) b.textContent = '⏱ ' + Math.max(0, Math.round((Date.now() - s) / 60000)) + ' min'; });
+        btns.forEach(function(b) { var s = Number(b.dataset.started); if (s) b.textContent = '⏱ ' + RPGACE.kit.hm(Math.max(0, Math.round((Date.now() - s) / 60000))); });
       }, 30000);
     },
 
@@ -7534,9 +7597,9 @@ RPGACE.register('myDay', {
       var L = RPGACE.modules.myDay.logic, bits = [];
       if (t.category) bits.push(t.category);
       if (t.place) bits.push('📍 ' + t.place);
-      if (Number(t.journey_mins)) bits.push(t.journey_mins + ' min journey (+margin = ' + L.withMargin(t.journey_mins) + ')');
-      bits.push((t.ready_mins != null ? t.ready_mins : L.timing().ready_mins) + ' min get-ready');
-      bits.push(t.est_mins + ' min long');
+      if (Number(t.journey_mins)) bits.push(RPGACE.kit.hm(t.journey_mins) + ' journey (+margin = ' + L.withMargin(t.journey_mins) + ')');
+      bits.push(RPGACE.kit.hm(t.ready_mins != null ? t.ready_mins : L.timing().ready_mins) + ' get-ready');
+      bits.push(RPGACE.kit.hm(t.est_mins) + ' long');
       return bits.join(' · ');
     },
     // Two-click delete, same arm/confirm pattern as everywhere else.
@@ -7878,7 +7941,7 @@ RPGACE.register('myDay', {
               lab.style.cssText = 'display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);min-height:44px;cursor:pointer;font-size:14px;color:var(--text);';
               var tag = i.earns === 'real' ? '⚡ ' + (i.how || 'earns from the real action') : '+' + self.TICK_XP + ' ' + rl.name + ' XP on tick';
               lab.innerHTML = '<input type="checkbox" style="width:20px;height:20px;accent-color:var(--gold);"' + (pick[k] ? ' checked' : '') + '><span style="flex:1;min-width:0;">' + esc(i.label) +
-                '<br><span style="font-size:12px;color:var(--muted);">' + esc((i.mins ? i.mins + ' min · ' : '') + tag) + '</span></span>';
+                '<br><span style="font-size:12px;color:var(--muted);">' + esc((i.mins ? RPGACE.kit.hm(i.mins) + ' · ' : '') + tag) + '</span></span>';
               lab.querySelector('input').onchange = function(ev) { if (ev.target.checked) pick[k] = i; else delete pick[k]; paint(); };
               pop.box.appendChild(lab);
             });
