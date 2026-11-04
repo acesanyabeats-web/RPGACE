@@ -2398,6 +2398,19 @@ RPGACE.register('myDay', {
       if (x.kind === 'shopping') return L.moveBlockDay(b, tmr);
       return Promise.reject(new Error('Open Cooking to move this cook.'));
     },
+    // Nov 4 2026 (Alex: "I did all 3 planned on yesterday my day, but no way to say done, change block times"):
+    // a Not done block was really done - it moves to the times it actually happened (no clash check: it's what
+    // happened) and every step left is ticked, each paying as usual, then the block finishes once.
+    eveningDid: function(x, from, to) {
+      var self = RPGACE.modules.myDay, L = self.logic, b = x.b;
+      if (!b) return Promise.reject(new Error('Only planned blocks can be marked done here.'));
+      if (from == null || to == null || to <= from) return Promise.reject(new Error('Set when it started and ended'));
+      return L.resizeBlock(b, from, Math.min(480, to - from)).then(function() {
+        var idx = []; (b.items || []).forEach(function(it, i) { if (!it.done) idx.push(i); });
+        return idx.reduce(function(p, i) { return p.then(function() { return L.setBlockItem(b, i, true); }); }, Promise.resolve());
+      }).then(function() { return b.kind === 'realm' ? L.syncBlockFinish(b, b.block_date) : null; })
+        .then(function() { RPGACE.cache.clear('chore_blocks'); try { RPGACE.hooks.fire('myday:ticked', { block: b.id }); } catch (e) {} return b; });
+    },
     eveningText: function(m, xp, moved, note, vs) {
       var out = ['🌙 ' + m.day];
       out.push(m.done.length ? 'Done (' + m.done.length + '): ' + m.done.map(function(d) { return d.label + (d.how === 'minimum' ? ' (minimum)' : ''); }).join(', ') : 'Nothing ticked today.');
@@ -2691,6 +2704,11 @@ RPGACE.register('myDay', {
       var self = RPGACE.modules.myDay;
       return RPGACE.sb.secureWrite('quest_log', 'delete', null, 'id=eq.' + log.id).then(function() {
         RPGACE.cache.clear('quest_log');
+        // Nov 4 2026 (Alex: the water cup showed under "Deleted this week, was it done?" - "not supposed to be there"):
+        // an Undo is you saying "not done", so its XP goes now instead of waiting in Chronicles' was-it-done box.
+        return RPGACE.sb.secureWrite('xp_events', 'update', { status: 'removed' }, 'source_table=eq.quest_log&source_id=eq.' + log.id + '&status=eq.pending_confirm')
+          .catch(function() { return null; });
+      }).then(function() {
         self._logs = self._logs.filter(function(l) { return l.id !== log.id; });
         // Recompute level/XP from the log itself rather than subtracting.
         var qe = RPGACE.modules.questEngine;
@@ -4175,6 +4193,29 @@ RPGACE.register('myDay', {
     // block_done once) and opens its page to check. Also from the evening review (✍️ Log something you did).
     // WR-5 (Nov 3 2026, Alex on the old "I just did" form: "Should be a task card"): this is now also "✓ I just did"
     // (realmTasks.ui.openJustDid -> here, last 30 min, realm preset via o.realm); every option is a task card.
+    // Nov 4 2026: "✓ Did it" on a Not done block - when it really happened, then every step ticks.
+    didPastBlock: function(x, after) {
+      var self = RPGACE.modules.myDay, L = self.logic, K = RPGACE.kit, b = x.b;
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '✓ Did it', title: x.label, width: '440px', closeLabel: 'Cancel' });
+      pop.box.id = 'myday-did-block';
+      var inCss = 'min-height:44px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:16px;font-family:inherit;';
+      var s0 = L.toMin(b.start_time) || 12 * 60, e0 = Math.min(1439, s0 + (Number(b.mins) || 30));
+      var lab = document.createElement('div'); lab.style.cssText = 'font-size:13px;color:var(--muted);margin-bottom:6px;'; lab.textContent = 'When did it actually happen?';
+      var tr = document.createElement('div'); tr.style.cssText = 'display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:12px;font-size:14px;';
+      var a = document.createElement('input'); a.type = 'time'; a.id = 'myday-did-from'; a.value = L.fmtMin(s0); a.style.cssText = inCss;
+      var z = document.createElement('input'); z.type = 'time'; z.id = 'myday-did-to'; z.value = L.fmtMin(e0); z.style.cssText = inCss;
+      tr.appendChild(document.createTextNode('From ')); tr.appendChild(a); tr.appendChild(document.createTextNode(' to ')); tr.appendChild(z);
+      var sv = K.btn('✓ Save — I did it', 'primary'); sv.id = 'myday-did-save'; sv.style.minHeight = '44px';
+      sv.onclick = function() {
+        sv.disabled = true;
+        L.eveningDid(x, L.toMin(a.value), L.toMin(z.value)).then(function() {
+          pop.close(); RPGACE.utils.toast('✅ Done · ' + a.value + '–' + z.value, '#4caf82', 2500);
+          if (after) try { after(); } catch (e) {}
+        }, function(err) { sv.disabled = false; RPGACE.utils.toast('⚠️ ' + (err.message || err), '#CC4A4A', 4000, 'myDay'); });
+      };
+      pop.box.appendChild(lab); pop.box.appendChild(tr); pop.box.appendChild(sv);
+      return pop;
+    },
     logPast: function(isoDate, from, to, after, o) {
       o = o || {};
       var self = RPGACE.modules.myDay, L = self.logic, U = self.ui, K = RPGACE.kit, xs = RPGACE.modules.xpSeason, rt = RPGACE.modules.realmTasks;
@@ -5632,7 +5673,11 @@ RPGACE.register('myDay', {
               var c = U._btn('🍳 Cooking', ''); c.style.minHeight = '40px';
               c.onclick = function() { pop.close(); U._openTool('cooking'); };
               btns.appendChild(c); act('Drop', 'drop', 'Dropped');
-            } else { act('Tomorrow', 'tomorrow', 'Moved to tomorrow'); act('Drop', 'drop', 'Dropped'); }
+            } else {
+              if (x.b) { var dn = U._btn('✓ Did it', 'primary'); dn.style.minHeight = '40px'; dn.dataset.act = 'did';
+                dn.onclick = function() { U.didPastBlock(x, function() { moved.push('Done: ' + x.label); L.load().then(draw, draw); }); }; btns.appendChild(dn); }
+              act('Tomorrow', 'tomorrow', 'Moved to tomorrow'); act('Drop', 'drop', 'Dropped');
+            }
             box.appendChild(row);
           });
           body.appendChild(box);
