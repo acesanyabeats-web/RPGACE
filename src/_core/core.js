@@ -6019,7 +6019,7 @@ document.addEventListener('keydown', e=>{
     AREA_HEADINGS: {
       content: ['Content & Video'], beats: ['Content & Video'], posting: ['Content & Video'], selling: ['Content & Video'],
       money: ['Content & Video', 'Habits'], knowledge: ['Knowledge'], habits: ['Habits'],
-      myday: ['Schedule & Journal'], schedule: ['Schedule & Journal'], chronicles: ['Chronicles'], oracle: ['Oracle'], oversight: ['Oversight']
+      myday: ['Today', 'Schedule & Journal'], schedule: ['Today', 'Schedule & Journal'], chronicles: ['Today'], oracle: ['Today'], oversight: ['Oversight'] // RP-2: day-level entries moved to Today
     },
     // [heading, items] for an area; `current` {page, card} leaves out the
     // screen you're on. Tapping an item runs the menu's own action.

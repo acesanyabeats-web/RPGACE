@@ -21,6 +21,8 @@ RPGACE.register('realmPages', {
 
   init: function() {
     var self = RPGACE.modules.realmPages;
+    // RP-2: the menu's realms band follows what you open, straight away.
+    RPGACE.hooks.on('realm:opened', function() { var ln = RPGACE.modules.leftNav; if (ln && ln.ui.redrawRealms) ln.ui.redrawRealms(); });
     RPGACE.hooks.on('page:show', function(name) {
       var realm = self.logic.realmOfPage(name);
       if (!realm) return;
@@ -32,6 +34,47 @@ RPGACE.register('realmPages', {
   },
 
   logic: {
+    // RP-2 (Alex: "Last one pinned, rest ranked"): the realm you opened last
+    // is first; the rest by functions used (saves/ticks/logs = xp_events in
+    // that realm), then by opens (ui_usage), over the last 30 days; ties keep
+    // the usual realm order. Pure.
+    DAYS: 30, ORDER_KEY: 'rpgace.rp.order',
+    order: function(events, uses, nowMs) {
+      var X = RPGACE.modules.xpSeason, base = (X && X.ORDER) || [], since = new Date((nowMs || Date.now()) - 30 * 864e5).toISOString();
+      var fn = {}, op = {}, last = null, lastAt = '';
+      (events || []).forEach(function(e) { if (e && e.realm && String(e.earned_at || '') >= since && e.status !== 'removed') fn[e.realm] = (fn[e.realm] || 0) + 1; });
+      (uses || []).forEach(function(u) {
+        if (!u || !u.realm || base.indexOf(u.realm) === -1) return;
+        var at = String(u.created_at || ''); if (at < since) return;
+        op[u.realm] = (op[u.realm] || 0) + 1;
+        if (at > lastAt) { lastAt = at; last = u.realm; }
+      });
+      var rest = base.slice().sort(function(a, b) { return (fn[b] || 0) - (fn[a] || 0) || (op[b] || 0) - (op[a] || 0) || base.indexOf(a) - base.indexOf(b); });
+      if (last) { rest.splice(rest.indexOf(last), 1); rest.unshift(last); }
+      return rest;
+    },
+    cachedOrder: function() {
+      var X = RPGACE.modules.xpSeason, base = (X && X.ORDER) || [];
+      try { var o = JSON.parse(localStorage.getItem(RPGACE.modules.realmPages.logic.ORDER_KEY) || 'null'); if (Array.isArray(o) && o.length === base.length && base.every(function(r) { return o.indexOf(r) > -1; })) return o; } catch (e) {}
+      return base.slice();
+    },
+    _saveOrder: function(o) { try { localStorage.setItem(RPGACE.modules.realmPages.logic.ORDER_KEY, JSON.stringify(o)); } catch (e) {} return o; },
+    loadOrder: function() {
+      var L = RPGACE.modules.realmPages.logic, X = RPGACE.modules.xpSeason, since = new Date(Date.now() - 30 * 864e5).toISOString();
+      return Promise.all([
+        X ? X.logic.load().catch(function() { return []; }) : [],
+        RPGACE.kit.readPrivate('ui_usage', 'select=realm,created_at&created_at=gte.' + since + '&order=created_at.desc&limit=3000').catch(function() { return []; })
+      ]).then(function(r) { return L._saveOrder(L.order(r[0] || [], r[1] || [], Date.now())); });
+    },
+    // One row per realm page / realm home opened. The menu moves it to the top straight away.
+    logUse: function(realm) {
+      var L = RPGACE.modules.realmPages.logic, o = L.cachedOrder(), i = o.indexOf(realm);
+      if (i === -1) return Promise.resolve(null);
+      o.splice(i, 1); o.unshift(realm); L._saveOrder(o);
+      try { RPGACE.hooks.fire('realm:opened', realm); } catch (e) {}
+      return RPGACE.sb.secureWrite('ui_usage', 'insert', { realm: realm, kind: 'open' })
+        .catch(function(e) { console.warn('[realmPages] usage not saved:', e && e.message || e); });
+    },
     pageOf: function(realm) { var c = RPGACE.modules.realmPages.PAGES[realm]; return c ? (RPGACE.CONFIG && RPGACE.CONFIG.pages && RPGACE.CONFIG.pages[c.page]) || c.page : null; },
     realmOfPage: function(name) {
       var P = RPGACE.modules.realmPages.PAGES, CP = (RPGACE.CONFIG && RPGACE.CONFIG.pages) || {};
@@ -80,6 +123,7 @@ RPGACE.register('realmPages', {
       if (!pg || !conf || !X || !RF) return null;
       U._css();
       opts = opts || {};
+      self.logic.logUse(realm);
       var t = pg.querySelector(':scope > .section-title'); if (t) t.textContent = conf.title;
       var old = pg.querySelector(':scope > #rp-frame');
       var frame = document.createElement('div'); frame.id = 'rp-frame'; frame.dataset.realm = realm;
@@ -114,6 +158,15 @@ RPGACE.register('realmPages', {
         });
       });
       return frame;
+    },
+    // RP-2: the realms band of the side menu, in menu order. A realm with a page opens it (all folded); else its home.
+    menuItems: function(order) {
+      var X = RPGACE.modules.xpSeason, self = RPGACE.modules.realmPages;
+      return (order || self.logic.cachedOrder()).map(function(r) {
+        var m = X.REALMS[r] || { icon: '', name: r }, has = !!self.logic.pageOf(r);
+        return { icon: m.icon, label: m.name, realm: r, desc: has ? 'Page: rank, target, tasks, live, log' : 'Rank, target, what\'s next',
+          run: function() { if (has) self.ui.open(r, {}); else X.ui.openRealmHome(r); } };
+      });
     },
     _drawSection: function(body, realm, key, fr) {
       var RF = RPGACE.modules.realmFrame, rt = RPGACE.modules.realmTasks, K = RPGACE.kit;

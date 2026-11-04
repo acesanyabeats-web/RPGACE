@@ -1409,6 +1409,7 @@ RPGACE.register('xpSeason', {
       // RP-1: a realm with its own page opens that page (all sections folded) instead of this pop-up.
       var RPm = RPGACE.modules.realmPages;
       if (RPm && RPm.logic.pageOf(r)) { RPm.ui.open(r, {}); return null; }
+      if (RPm) RPm.logic.logUse(r); // RP-2: menu order
       var pop = RPGACE.modules.dashDeck._popup({ eyebrow: meta.icon + ' ' + meta.name, title: meta.name + ' home', width: '560px', scroll: true });
       pop.box.id = 'xp-realm-home'; pop.box.dataset.realm = r;
       pop.box.appendChild(U.stripFull([r]));

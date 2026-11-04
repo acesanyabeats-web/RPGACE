@@ -411,11 +411,26 @@ RPGACE.register('leftNav', {
     // band section so the whole area folds as one.
     var section = list;
     items.forEach(function(it) {
-      if (it.heading) { section = RPGACE.modules.leftNav.ui._areaSection(list, it.heading, it.page); return; }
+      if (it.heading) {
+        section = RPGACE.modules.leftNav.ui._areaSection(list, it.heading, it.page, it.open);
+        if (it.realms) { section.id = 'ln-realm-list'; RPGACE.modules.leftNav.ui._realmBody = section; }
+        return;
+      }
       self._renderItem(section, it);
     });
     panel.appendChild(list);
     document.body.appendChild(panel);
+    RPGACE.modules.leftNav.ui.applyRealm(RPGACE.modules.leftNav.ui._savedRealm());
+    // RP-2: reorder the realms band from real use (xp_events + ui_usage) once it's read.
+    var rpm = RPGACE.modules.realmPages;
+    if (rpm) rpm.logic.loadOrder().then(function(o) { RPGACE.modules.leftNav.ui.redrawRealms(o); }).catch(function() {});
+  },
+  // RP-2: redraw only the realms band, in the given (or cached) order.
+  redrawRealms: function(order) {
+    var body = RPGACE.modules.leftNav.ui._realmBody, rpm = RPGACE.modules.realmPages;
+    if (!body || !body.isConnected || !rpm) return;
+    body.innerHTML = '';
+    rpm.ui.menuItems(order).forEach(function(it) { RPGACE.modules.leftNav._renderItem(body, it); });
     RPGACE.modules.leftNav.ui.applyRealm(RPGACE.modules.leftNav.ui._savedRealm());
   },
 
@@ -667,14 +682,14 @@ RPGACE.register('leftNav', {
   // Oct 15 2026 (Alex): every band starts rolled up (only bands he opens
   // stay open, in rpgace.ln.open); a band with `page` is itself the button
   // to that page (Oracle) - no fold, no body.
-  _areaSection: function(list, heading, page) {
+  _areaSection: function(list, heading, page, open) {
     var ui = RPGACE.modules.leftNav.ui;
     var key = RPGACE.areaForLabel(heading), a = key ? RPGACE.AREAS[key] : null;
     var wrap = document.createElement('div');
     wrap.className = 'ln-area';
     if (key) wrap.dataset.area = key;
     wrap.style.setProperty('--area-c', a ? a.color : 'var(--gold)');
-    if (!page && !(key && ui._foldedSet()[key])) wrap.classList.add('folded');
+    if (!page && !open && !(key && ui._foldedSet()[key])) wrap.classList.add('folded');
     var band = document.createElement('button');
     band.type = 'button';
     band.className = 'ln-band';
@@ -775,7 +790,8 @@ RPGACE.register('leftNav', {
   // (an area page like Beats, or a mapped page slug), else its band's area.
   itemRealms: function(it, areaKey) {
     var X = RPGACE.modules.xpSeason || {}, A = RPGACE.AREAS || {}, pick = function(list) { return Array.isArray(list) && list.length ? list.slice() : null; };
-    return pick(it.card && X.CARD_REALMS && X.CARD_REALMS[it.card])
+    return pick(it.realm && [it.realm])
+      || pick(it.card && X.CARD_REALMS && X.CARD_REALMS[it.card])
       || pick(it.page && A[it.page] && A[it.page].realms)
       || pick(it.page && X.PAGE_REALMS && X.PAGE_REALMS[it.page])
       || pick(areaKey && A[areaKey] && A[areaKey].realms)
@@ -810,8 +826,18 @@ RPGACE.register('leftNav', {
     // Record: records/2026-10/dashboard_landing_leftnav_paranoia_debate_2026-10-10.txt
     return [
       { icon: '🏠', label: 'Dashboard',     desc: 'Today, what\'s due, where you left off', page: P.dashboard },
-      // Oct 15 2026 (Alex): the Oracle band itself opens Oracle - it had only one item.
-      { heading: 'Oracle', page: P.oracle },
+      // RP-2 (Nov 4 2026, Alex: day-level things first, then the 13 realms ordered by use - last opened on top).
+      { heading: 'Today', open: true },
+      { icon: '☀️', label: 'My Day',        desc: 'Actions, plan my day, agenda',       page: P.agenda },
+      { icon: '▶', label: 'Live now',       desc: 'The block you\'re in · new tasks · task catalogue', card: 'liveNow' },
+      { icon: '📅', label: 'Calendar',      desc: 'Week, month, shifts and events',      page: P.schedule },
+      { icon: '📓', label: 'Journal',       desc: 'Session logs, decisions',             page: P.journal },
+      { icon: '📜', label: 'Chronicles',    desc: 'Every real win, sale, and expense',   page: P.chronicles },
+      { icon: '🔮', label: 'Oracle',        desc: 'Ask anything, plan your day',         page: P.oracle },
+      { icon: '💡', label: 'Ideas',         desc: 'Every idea by realm: beats, posts, outings, new tasks', card: 'ideas' },
+      { icon: '🌅', label: 'Morning Brief', desc: 'Your day in one shot',                card: 'morningBrief' },
+      { heading: 'Realms', open: true, realms: true }
+    ].concat(RPGACE.modules.realmPages ? RPGACE.modules.realmPages.ui.menuItems() : []).concat([
       { heading: 'Content & Video' },
       // BT-0 (Oct 16 2026): Beats home first in the Content band.
       // BT-7: the beat journey in step order under Beats home.
@@ -827,8 +853,7 @@ RPGACE.register('leftNav', {
       { icon: '📣', label: 'Posting', desc: 'Idea → Plan → Record → Edit → Post', page: P.posting },
       // SH-0 (Oct 17 2026): Selling home under Posting.
       { icon: '💼', label: 'Selling', desc: 'Beats for sale · Artist outreach', page: P.selling },
-      // SH-5b (Oct 17 2026): the shared Money page - also listed under Habits (Steward).
-      { icon: '💷', label: 'Money', desc: 'In − out · subscriptions · receipts', page: P.money, run: function() { var mh = RPGACE.modules.moneyHub; if (mh) mh.open('selling'); } },
+      // RP-2: Money is listed once, under Habits (Steward); Selling links to it.
       // PC-6 (Oct 17 2026): the separate Content Pipeline entry (and its
       // Upload Workshop) is retired; My beats sits under Beats above.
       { heading: 'Knowledge' },
@@ -865,20 +890,12 @@ RPGACE.register('leftNav', {
       // WR-11 (Nov 3 2026): software you own + new-laptop install checklist.
       { icon: '🧰', label: 'My software', desc: 'Owned software · install checklist · total spent', run: function() { var sl = RPGACE.modules.softwareList; if (sl) sl.open(); } },
       { heading: 'Schedule & Journal' },
-      { icon: '☀️', label: 'My Day',        desc: 'Actions, plan my day, agenda',       page: P.agenda },
       // WR-8 (Nov 3 2026): Work page - clock links + Nicco drink spec cards.
       { icon: '💼', label: 'Work', desc: 'Clock in · cocktail and mocktail specs', run: function() { var w = RPGACE.modules.workMode; if (w) w.open(); } },
-      { icon: '💡', label: 'Ideas',         desc: 'Every idea by realm: beats, posts, outings, new tasks', card: 'ideas' },
-      { icon: '▶', label: 'Live now',       desc: 'The block you\'re in · new tasks · task catalogue', card: 'liveNow' },
-      { icon: '📅', label: 'Calendar',      desc: 'Week, month, shifts and events',      page: P.schedule },
       { icon: '🧳', label: 'Plans',         desc: 'Trips, events, people to reach out to', card: 'plans' },
-      { icon: '📓', label: 'Journal',       desc: 'Session logs, decisions',             page: P.journal },
-      { icon: '🌅', label: 'Morning Brief', desc: 'Your day in one shot',                card: 'morningBrief' },
-      { heading: 'Chronicles' },
-      { icon: '📜', label: 'Chronicles',    desc: 'Every real win, sale, and expense',   page: P.chronicles },
       { heading: 'Oversight' },
       { icon: '📚', label: 'Oversight',     desc: 'Docs, smoke test, what works',        card: 'oversight' },
-    ];
+    ]);
   },
 
   },
