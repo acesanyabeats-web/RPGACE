@@ -1,0 +1,25 @@
+/dev_ops_7 - Oracle as planner, Live now modes, no floating Oracle (Nov 4 2026)
+
+ALEX, VERBATIM:
+"It would also be awesome if I can plan my day out by just talking to oracle directly saying what I need to get done today or another day, at it creates blocks based on answers I give what I want to achieve, the goals I set, then uses the UI and code to do logs of planning for me, making oracle the ideal personal assistant. I want live now to have a mode for each domain and sub domain - while cooking, at gym, work, music production and others where possible. Also would be great to remove hovering oracle button, I only need it during live now's when I need advice, so integrate it there into the page, no more hovering buttons blocking the page, quite jarring. /dev_ops_7 this"
+
+TRACK A at the time: Homekeeping/Building alongside (72da664) READY in production. Plan D (Oracle memory) written, not approved - overlaps this ask (an assistant that plans needs to remember goals); kept separate, flagged.
+
+EVIDENCE (/scope + GODMODE, live code):
+- Floating 🔮 = oracleControl._injectOverlayButton (#oc-floating-btn, position:fixed bottom:24px right:84px, z-index 999999) -> _toggleOverlay, a mini chat box over any page. The Oracle chat page itself stays reachable from the side menu.
+- Oracle already acts through trailers: ORACLE_ACTION:<id> (oracleControl, oracle_actions table), RECIPE_JSON (cooking), TP-4 trip plans (tripPlans.parsePlan). No day-planning trailer exists.
+- Block savers already exist and go through the clash guard: myDay.logic.saveRealmBlock / saveChoreBlock / saveCookingBlock / placeNext, Undo on every save, Homekeeping/Building alongside rules (today).
+- Live now = realmTasks.ui.openLive: one generic page for every realm (tasks as cards, Done, context box, timer). Domain-specific "live" screens exist but are separate: Cook Mode (cookingOracle), Work page (workMode, drinks + clock), Gym logger (gymTracker), Videoworm/FL steps (Producer cards). 13 realms (xpSeason.REALMS).
+
+PARANOIA (scaled: 3 asks, ~3 subsystems each; full /paranoia weight on ask 1 only, the risky one):
+- Ask 1 risk: Oracle placing blocks wrong or duplicating ones already planned (WR-2 duplicate bug history). Mitigation: Oracle proposes, app places through the same guard + WR-2 "already planned" check; one review card before saving. Cost: one judgment-model call per plan (~2-4k tokens).
+- Ask 2 risk: 13 realms x sub-modes = scope blow-up. Mitigation: one Live now shell with a "mode" slot; each mode reuses the existing screen (Cook Mode, Work page, Gym logger) inside Live now instead of a second copy (rule 8).
+- Ask 3 risk: losing quick Oracle access on pages without Live now. Mitigation: side-menu Oracle page stays; Ask box built into Live now (and Cook Mode already has 💬 Ask, WR-13).
+
+FREE-FOR-ALL DEBATE (ask 1, 3 shapes):
+ A "Trailer in normal chat": you talk in the Oracle page, Oracle ends with DAY_PLAN_JSON, a review card saves it. + reuses everything; - planning mixed into general chat.
+ B "Planner wizard": fixed questions (goals, must-dos, energy) then one call. + predictable; - not "just talking".
+ C "Plan with Oracle" chat opened from My Day: Oracle asks what you need/goals in conversation, then returns DAY_PLAN_JSON -> review card -> blocks via existing savers + a planning log row. + talking, as asked; + reuses A's mechanism; - one more entry point.
+ Council of 5 winner: C on top of A's trailer (the same parser works from the normal chat too). Why-not: if Oracle's plans are often wrong it adds review work; the review card keeps the cost to a tap.
+
+OPEN FORKS -> asked (interrogation round 1).
