@@ -74,6 +74,17 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-04-ua1" style="margin-bottom:30px;">
+    <div class="card-title">🗺 Nov 4: Full UI audit (UA-1) + Encyclopedia / Jargon titles</div>
+    <div class="card-body">
+      Alex: "do an audit of all UI, starting from logging in, say what page, then what buttons are present, what info is shown and what linked pages are present through which buttons (without main left nav)"; "The audit is not done till all buttons possible are clicked, all pages and links are documented".
+      <ul><li>New headless crawler <code>scripts/audit/ui_crawl.cjs</code> logs in, opens every side-menu page, then taps every button on every screen at every depth (paths replayed, two-tap confirms tapped twice, sample data shaped from each screen's own query, phone width 390px). <code>scripts/audit/ui_report.py</code> writes <code>docs/audit/ui_audit_2026-11-04.md</code>.</li>
+      <li>Result: every screen found was opened — 30 pages and about 184 distinct pop-ups (726 when a pop-up is counted per page it opens over), 5,431 taps.</li>
+      <li>Read honestly: the only real duplicate found was two pages both titled "📖 Learned". They are now <b>📖 Encyclopedia</b> (write-ups + ideas) and <b>🗣 Jargon</b>. The 12 repeated realm buttons are already one shared piece (<code>realmFrame</code>). The 73 error toasts are input checks or Oracle being off in the test.</li>
+      <li>Crawler v2 also notices highlight-only changes and buttons that open a new tab, so the 902 "no visible effect" taps can be cut down to the truly dead ones (re-run in progress).</li></ul>
+      <b>Flags:</b> a tap crawl can't see swipes/drags, long-press, other times of day (wake, evening review, during a shift) or screens that need many real rows. Rename untested by Alex.
+    </div>
+</div>
 <div class="card" id="card-2026-11-04-oa2" style="margin-bottom:30px;">
     <div class="card-title">🗣 Nov 4: Plan your day by talking to Oracle (OA-2)</div>
     <div class="card-body">
