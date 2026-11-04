@@ -49,3 +49,9 @@ OA-8 Every action gets Live now: each Action (and realm task) has "▶ Live now"
 Overlap with Plan D (Oracle memory): OA-2 works without D; D later lets Oracle remember goals between plans.
 
 APPROVAL (verbatim, Nov 4): "This is in addition to D" -> read as go on OA-1..8 plus D-1..3 (D added to this plan). Order: OA-1, D-1..3, OA-2, OA-3..8.
+
+OA-2 CHANGE (Alex, verbatim, Nov 4): "Planning log is in journal until it is set in my day, or planned into the week with set blocks, once all blocks set, the log is deleted to save data. Save the plan logs for the week to test the function and see what needs improving."
+-> Log = one Journal entry per plan (source oracle_plan) from the first plan card; updated on every revision and on Accept (what got set, what didn't). When every block in it is set, the entry is deleted - except during the test week (until Mon 10 Nov 2026 23:59) when all logs are kept.
+
+NEW ASK (Alex, verbatim, Nov 4): "Also we will need to do an audit of all UI, starting from logging in, say what page, then what buttons are present, what info is shown and what linked pages are present through which buttons (without main left nav) this audit will help us know what is present and linked, what needs new connections, what pages and buttons are duplicates or logical multi entryways so the system can improve, what can be a general toolkit or general toolkit with specific context needed attached etc"
+-> Plan item UA-1 (UI audit), not started: walk every page from login; per page: buttons, info shown, which button opens which page/pop-up (left nav excluded); then a findings list: missing connections, duplicate pages/buttons vs deliberate multiple ways in, what becomes a general toolkit (with or without page-specific context).
