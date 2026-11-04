@@ -218,6 +218,7 @@ RPGACE.register('errorLog', {
   "_arm": "healthBody",
   "_articleSection": "phylumPath",
   "_ask": "postingHub",
+  "_askBox": "realmTasks",
   "_askOracle": "dashDeck",
   "_askPaid": "tripPlans",
   "_askReplaced": "doingNow",

@@ -47,3 +47,5 @@ OA-6 Work mode: clock in/break/out + drink spec tiles during a shift.
 OA-7 Music production mode: Producer block beat timer, FL steps cards, Log the beat.
 OA-8 Every action gets Live now: each Action (and realm task) has "▶ Live now", opening its domain's mode if there is one, else the standard Live now with an Open button.
 Overlap with Plan D (Oracle memory): OA-2 works without D; D later lets Oracle remember goals between plans.
+
+APPROVAL (verbatim, Nov 4): "This is in addition to D" -> read as go on OA-1..8 plus D-1..3 (D added to this plan). Order: OA-1, D-1..3, OA-2, OA-3..8.

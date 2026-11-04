@@ -585,6 +585,8 @@ RPGACE.register('realmTasks', {
         if (om === 'past' && em) { var dt = U._btn('🎞 Add details', ''); dt.id = 'rt-block-details'; dt.onclick = function() { dt.disabled = true; em.logic.forBlock(ob).then(function(m) { dt.disabled = false; em.ui.openEdit(m); }, function(e) { dt.disabled = false; RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500); }); }; bt.appendChild(dt); }
         box.appendChild(bt);
         md.ui.blockSteps(box, ob, od, function() { if (opts.redraw) { try { opts.redraw(); } catch (e) {} } });
+        self._liveCtx = { realm: ob.kind === 'cooking' ? 'chef' : (ob.realm || 'life'), block: md.logic.blockLabel(ob) + ' ' + md.logic.fmtMin(oF) + '–' + md.logic.fmtMin(oF + (Number(ob.mins) || 30)), task: null };
+        U._askBox(box); // OA-1
         return;
       }
       var live = L.liveBlock(), realm = opts.realm || (live && live.run.realm) || null, b = live ? live.block : null;
@@ -737,6 +739,40 @@ RPGACE.register('realmTasks', {
       box.appendChild(wrap);
       if (st2.done) { var dl = document.createElement('div'); dl.className = 'rt-sub'; dl.style.marginTop = '10px'; dl.textContent = '✅ ' + st2.done + ' done in this stretch'; box.appendChild(dl); }
       U._liveDue(box, realm);
+      // OA-1: Oracle inside Live now - asks with what you're doing attached.
+      self._liveCtx = { realm: realm, block: b ? md.logic.blockLabel(b) + ' ' + md.logic.fmtMin(md.logic.toMin(b.start_time)) + '–' + md.logic.fmtMin(md.logic.toMin(b.start_time) + (Number(b.mins) || 30)) : null, task: cur ? cur.title : null };
+      U._askBox(box);
+    },
+    // OA-1: the Ask Oracle box. Reuses oracleControl's send + reply mirror (same ids: oc-ov-log / oc-ov-input), so the
+    // reply comes through the real Oracle chat with its grounding; a 'livenow' context provider adds the block + task.
+    _askBox: function(box) {
+      var self = RPGACE.modules.realmTasks, oc = RPGACE.modules.oracleControl;
+      if (!oc || !oc._sendFromOverlay) return;
+      ['oc-ov-log', 'oc-ov-input', 'oc-ov-send', 'oc-ov-thinking'].forEach(function(id) { var o = document.getElementById(id); if (o && !box.contains(o)) o.removeAttribute('id'); });
+      if (!self._ctxReg && oc.registerContextProvider) {
+        self._ctxReg = true;
+        oc.registerContextProvider('livenow', function() {
+          var live = document.getElementById('rt-live'), c = self._liveCtx;
+          if (!live || live.offsetParent === null || !c) return null;
+          var R = self.ui._realm(c.realm || 'life');
+          return 'Alex is in Live now: ' + [R.name + ' realm', c.block, c.task ? 'doing "' + c.task + '"' : null].filter(Boolean).join(', ') + '. Give practical advice for doing it right now.';
+        });
+      }
+      var w = document.createElement('div'); w.id = 'rt-ask';
+      w.style.cssText = 'margin-top:16px;border:1px solid rgba(155,89,182,.4);border-radius:12px;padding:10px 12px;background:rgba(155,89,182,.06);';
+      w.innerHTML = '<div style="font-weight:700;color:#9B59B6;margin-bottom:6px;">🔮 Ask Oracle</div>'
+        + '<div id="oc-ov-log" style="font-size:14px;line-height:1.5;color:var(--text);max-height:280px;overflow-y:auto;"></div>';
+      var row = document.createElement('div'); row.style.cssText = 'display:flex;gap:6px;margin-top:8px;';
+      var ta = document.createElement('textarea'); ta.id = 'oc-ov-input'; ta.rows = 1; ta.placeholder = 'Ask about what you\'re doing…';
+      ta.style.cssText = 'flex:1;min-width:0;resize:none;min-height:44px;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:16px;font-family:inherit;';
+      ta.oninput = function() { ta.style.height = 'auto'; ta.style.height = Math.min(160, ta.scrollHeight) + 'px'; };
+      var sb = document.createElement('button'); sb.type = 'button'; sb.id = 'oc-ov-send'; sb.textContent = 'Ask';
+      sb.style.cssText = 'min-height:44px;padding:0 16px;border-radius:8px;border:none;background:#9B59B6;color:#fff;font-weight:700;font-size:15px;cursor:pointer;';
+      var send = function() { var t = (ta.value || '').trim(); if (!t) return; oc._sendFromOverlay(t); ta.value = ''; ta.style.height = ''; };
+      sb.onclick = send;
+      ta.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
+      row.appendChild(ta); row.appendChild(sb); w.appendChild(row);
+      box.appendChild(w);
     },
     _clock: function(ms) { var d = new Date(ms); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); },
     // DL-5: follow-ups waiting (a chained task after something finished) stay on top until done or skipped.

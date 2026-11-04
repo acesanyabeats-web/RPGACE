@@ -74,6 +74,16 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-04-oa1" style="margin-bottom:30px;">
+    <div class="card-title">🔮 Nov 4: No floating Oracle button — Ask Oracle lives inside Live now (OA-1)</div>
+    <div class="card-body">
+      Alex: "remove hovering oracle button, I only need it during live now's when I need advice, so integrate it there into the page, no more hovering buttons blocking the page, quite jarring."
+      <ul><li>The floating 🔮 (<code>oracleControl._injectOverlayButton</code>) no longer appears on any page.</li>
+      <li>Every Live now page, including a block you tap on the timeline, ends with a <b>🔮 Ask Oracle</b> box. It goes through the real Oracle chat (same grounding) and the reply shows in the box. A new <code>livenow</code> context line tells Oracle the realm, the block and its times, and the task you're on (<code>realmTasks.ui._askBox</code>, reusing <code>oracleControl._sendFromOverlay</code> + the reply mirror).</li>
+      <li>The full Oracle page stays in the side menu.</li></ul>
+      <b>Flags:</b> harness-tested (oa1 5/5, rt 24/24, cm4 15/15). Untested on the phone. Plan: "Oracle Assistant + Live now modes" (OA-1..8 + D-1..3), record <code>records/2026-11/oracle_assistant_live_modes_paranoia_2026-11-04.txt</code>.
+    </div>
+</div>
 <div class="card" id="card-2026-11-04-alongside" style="margin-bottom:30px;">
     <div class="card-title">🧹 Nov 4: Homekeeping and Building run alongside other things (half width, on the right)</div>
     <div class="card-body">

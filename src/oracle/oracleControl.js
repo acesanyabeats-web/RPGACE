@@ -173,7 +173,9 @@ RPGACE.register('oracleControl', {
     self._fetchActions();
     self._listenForReplies();
     self._listenForErrorToasts();
-    RPGACE.registerBootTask(function() { return self._injectOverlayButton(); });
+    // OA-1 (Nov 4 2026, Alex: "remove hovering oracle button ... integrate it there into the page, no more hovering buttons
+    // blocking the page"): no floating 🔮. Oracle lives in Live now's Ask box (realmTasks.ui._askBox) and the side-menu page.
+    // _injectOverlayButton stays for reference but is no longer called.
   },
 
   // ============================================================
