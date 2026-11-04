@@ -84,6 +84,7 @@
 // @file src/platform/pathRouter.js
 // @file src/platform/perfWatch.js
 // @file src/oracle/oracleControl.js
+// @file src/oracle/oracleMemory.js
 // @file src/oracle/mockOracle.js
 // @file src/oracle/oracleProviderMode.js
 // @file src/oversight/errorLog.js
