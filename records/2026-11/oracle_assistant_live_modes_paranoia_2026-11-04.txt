@@ -23,3 +23,27 @@ FREE-FOR-ALL DEBATE (ask 1, 3 shapes):
  Council of 5 winner: C on top of A's trailer (the same parser works from the normal chat too). Why-not: if Oracle's plans are often wrong it adds review work; the review card keeps the cost to a tap.
 
 OPEN FORKS -> asked (interrogation round 1).
+
+INTERROGATION ROUND 1 (verbatim answers):
+[Saving] Q: "When you plan your day by talking to Oracle and it suggests blocks, should it save them straight away (with Undo) or show you the plan first to approve?"
+  A: "1 but I can edit too with suggestions in chat, oracle revises it, then I accept"
+[Where] Q: "Where do you want to talk to Oracle to plan?"  A: "My Day button + chat (Recommended)"
+[Modes] Q: "Which Live now modes first?"
+  A: "Cooking,Gym,Work,Music production,I want everything I can do as actions in RPGACE to have a live now page, linked to domain or sub domain where it makes sense"
+[Oracle] Q: "Removing the floating 🔮: where should Oracle still be reachable?"  A: "Live now + side menu (Recommended)"
+
+DEFAULTS FLAGGED (not asked, Claude's choice - Alex can change):
+- An action with no special screen gets the standard Live now (its steps, timer, Done, Ask Oracle) plus an Open button to the page it belongs to.
+- The planning log = one journal entry per accepted plan ("🗓 Plan for <day>": goals, blocks, what changed in the chat), source 'oracle_plan'.
+- Build order: OA-1 (no floating button) first, because it's small and fixes something jarring now.
+
+PLAN (for approval):
+OA-1 No floating 🔮. Remove oracleControl's #oc-floating-btn; every Live now page gets an "🔮 Ask Oracle" box that sends the question with what you're doing (block, current step, realm). Oracle page stays in the side menu.
+OA-2 Plan with Oracle. "🗣 Plan with Oracle" on My Day opens a chat. Oracle asks what you need done and your goals (today or another day). It answers with a plan card (time, realm, what). You type changes, Oracle revises the card, then you tap Accept. Blocks save through the existing savers (clash guard, alongside rules, no duplicates), and a planning log goes into the Journal. "plan my day" in the normal Oracle page opens the same flow.
+OA-3 Live now modes. One Live now page with a mode slot, picked by the block's domain/sub-domain. Each mode brings an existing screen inside instead of copying it.
+OA-4 Cooking mode: Cook Mode steps, timers, ingredients, and the Fit-chores button.
+OA-5 Gym mode: the gym logger (sets, reps, weight, PBs) for an Athlete block.
+OA-6 Work mode: clock in/break/out + drink spec tiles during a shift.
+OA-7 Music production mode: Producer block beat timer, FL steps cards, Log the beat.
+OA-8 Every action gets Live now: each Action (and realm task) has "▶ Live now", opening its domain's mode if there is one, else the standard Live now with an Open button.
+Overlap with Plan D (Oracle memory): OA-2 works without D; D later lets Oracle remember goals between plans.
