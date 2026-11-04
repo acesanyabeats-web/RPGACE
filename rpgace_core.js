@@ -101,6 +101,7 @@
 // @file src/chronicles/realmFrame.js
 // @file src/schedule/doingNow.js
 // @file src/schedule/workMode.js
+// @file src/schedule/liveModes.js
 // @file src/schedule/oraclePlanner.js
 // @file src/schedule/tripPlans.js
 // @file src/knowledge/lifeLibrary.js

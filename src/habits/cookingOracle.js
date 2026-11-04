@@ -8658,18 +8658,21 @@ RPGACE.register('cookingOracle', {
       }).then(function(made) { RPGACE.cache.clear('planned_cooks'); RPGACE.cache.clear('shopping_lists'); return made; });
     },
 
-    _startCookNow: function(plannedCookId, agendaId) {
+    // OA-4: opts.stay (Live now's cooking mode) records the start and calls opts.after instead of moving to the Oracle page.
+    _startCookNow: function(plannedCookId, agendaId, opts) {
       var self = RPGACE.modules.cookingOracle;
+      opts = opts || {};
       if (!plannedCookId) { RPGACE.utils.toast('⚠️ No cook session to start', '#E2A83D', 2200); return; }
       var local = [];
       try { local = JSON.parse(localStorage.getItem('rpgace_sched_agendas') || '[]'); } catch (e) {}
       var hasLocal = agendaId && local.some(function(a) { return a.id === agendaId; });
-      if (hasLocal && typeof startScheduledTask === 'function') { startScheduledTask(agendaId); return; }
-      if (!agendaId) { self.ui._openLiveCookMode(plannedCookId); return; }
+      if (hasLocal && typeof startScheduledTask === 'function' && !opts.stay) { startScheduledTask(agendaId); return; }
+      if (!agendaId) { if (opts.stay) { if (opts.after) opts.after(); } else self.ui._openLiveCookMode(plannedCookId); return; }
       RPGACE.sb.secureWrite('rpgace_agendas', 'update', { started_at: new Date().toISOString() }, 'id=eq.' + agendaId)
         .catch(function(e) { console.warn('[cookingOracle] started_at write failed:', e.message); })
         .then(function() {
           RPGACE.utils.toast('▶️ Cook started', '#4A90E2', 2000);
+          if (opts.stay) { if (opts.after) opts.after(); return; }
           self.ui._openLiveCookMode(plannedCookId);
         });
     },

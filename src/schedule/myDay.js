@@ -4099,7 +4099,8 @@ RPGACE.register('myDay', {
       if (b && b.kind === 'realm' && isoDate === today && L.blockMethod(b) !== 'none') {
         return { label: '▶ Start · ' + self.METHODS[L.blockMethod(b)].label, running: !!L.focusRun(), run: function() { return L.startFocus(b).then(function() { self.ui._focusTick(); }); } };
       }
-      if (b && b.kind === 'cooking' && b.planned_cook_id) return { label: '▶ Start cooking', run: function() { var co = RPGACE.modules.cookingOracle; if (co) co.logic._startCookNow(b.planned_cook_id, b.agenda_id); return Promise.resolve(); } };
+      // OA-4: run({ stay: true }) from Live now keeps you there (cooking mode shows the live cook panel).
+      if (b && b.kind === 'cooking' && b.planned_cook_id) return { label: '▶ Start cooking', run: function(o) { var co = RPGACE.modules.cookingOracle; if (!co) return Promise.resolve(); if (o && o.stay) return new Promise(function(res) { co.logic._startCookNow(b.planned_cook_id, b.agenda_id, { stay: true, after: res }); }); co.logic._startCookNow(b.planned_cook_id, b.agenda_id); return Promise.resolve(); } };
       if (x && x.source_type === 'planned_cook') return { label: '▶ Start cooking', run: function() { if (typeof startScheduledTask === 'function') startScheduledTask(x.id); return Promise.resolve(); } };
       return null;
     },
@@ -6516,7 +6517,11 @@ RPGACE.register('myDay', {
             if (!dn) return;
             if (run) { dn.ui.openStop(run); return; }
             Promise.resolve(dn.logic.start(r.title, [L.realmOf(r)], null, { expect: r.est_mins || 30, details: { action_id: r.id } }))
-              .then(function() { try { dn.ui._refresh(); } catch (e) {} redraw(); }).catch(fail);
+              .then(function() {
+                try { dn.ui._refresh(); } catch (e) {} redraw();
+                // OA-8: every Action gets its Live now page (its realm's mode, else the standard one + Open).
+                var rtl = RPGACE.modules.realmTasks; if (rtl) rtl.ui.openLive({ realm: L.realmOf(r), action: r });
+              }).catch(fail);
           } });
         if (r.opens) {
           var tl = self.TOOLS.filter(function(x) { return x.key === r.opens; })[0];

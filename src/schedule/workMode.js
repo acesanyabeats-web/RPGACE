@@ -65,10 +65,15 @@ RPGACE.register('workMode', {
     open: function(opts) {
       opts = opts || {};
       var self = RPGACE.modules.workMode, L = self.logic, U = self.ui, K = RPGACE.kit, dd = RPGACE.modules.dashDeck;
-      var old = document.getElementById('work-mode'); if (old && old.closest('.dd-overlay')) old.closest('.dd-overlay').remove();
       var shift = L.current();
-      var pop = dd._popup({ eyebrow: '💼 Work', title: shift ? 'On shift ' + shift.start + '–' + shift.end : 'Nicco drinks', width: '640px', closeLabel: 'Close' });
-      pop.box.id = 'work-mode';
+      // OA-6: opts.host draws the same Work screen inside Live now's work mode instead of a pop-up.
+      var pop;
+      if (opts.host) { pop = { box: opts.host, close: function() {} }; }
+      else {
+        var old = document.getElementById('work-mode'); if (old && old.closest('.dd-overlay')) old.closest('.dd-overlay').remove();
+        pop = dd._popup({ eyebrow: '💼 Work', title: shift ? 'On shift ' + shift.start + '–' + shift.end : 'Nicco drinks', width: '640px', closeLabel: 'Close' });
+        pop.box.id = 'work-mode';
+      }
       var md = RPGACE.modules.myDay;
       if (shift && md && md.ui.workRow) { var clock = document.createElement('div'); clock.id = 'work-clock'; md.ui.workRow(clock, shift, shift.date); pop.box.appendChild(clock); }
       var state = { q: '', section: null, kind: null };

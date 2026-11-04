@@ -565,7 +565,7 @@ RPGACE.register('realmTasks', {
         box.appendChild(bh);
         var bt = document.createElement('div'); bt.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin:6px 0;';
         var lv = om !== 'past' && opts.seg ? md.ui._live(opts.seg, od, md.logic.iso()) : null;
-        if (lv && om === 'now' && !lv.running) { var sb = U._btn(lv.label, 'primary'); sb.id = 'rt-block-start'; sb.onclick = function() { sb.disabled = true; lv.run().then(function() { U._drawLive(box, opts); }, function() { sb.disabled = false; }); }; bt.appendChild(sb); }
+        if (lv && om === 'now' && !lv.running) { var sb = U._btn(lv.label, 'primary'); sb.id = 'rt-block-start'; sb.onclick = function() { sb.disabled = true; lv.run({ stay: true }).then(function() { U._drawLive(box, opts); }, function() { sb.disabled = false; }); }; bt.appendChild(sb); }
         // HK-3: chores while it cooks - a Homekeeping block alongside the cook's simmer/bake.
         if (ob.kind === 'cooking' && om !== 'past') {
           var fc = U._btn('🧹 Fit chores while it cooks', ''); fc.id = 'rt-block-fitchores';
@@ -585,6 +585,7 @@ RPGACE.register('realmTasks', {
         if (om === 'past' && em) { var dt = U._btn('🎞 Add details', ''); dt.id = 'rt-block-details'; dt.onclick = function() { dt.disabled = true; em.logic.forBlock(ob).then(function(m) { dt.disabled = false; em.ui.openEdit(m); }, function(e) { dt.disabled = false; RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500); }); }; bt.appendChild(dt); }
         box.appendChild(bt);
         md.ui.blockSteps(box, ob, od, function() { if (opts.redraw) { try { opts.redraw(); } catch (e) {} } });
+        var LMb = RPGACE.modules.liveModes; if (LMb && om !== 'past') LMb.ui.draw(box, LMb.logic.context(opts, null)); // OA-3
         self._liveCtx = { realm: ob.kind === 'cooking' ? 'chef' : (ob.realm || 'life'), block: md.logic.blockLabel(ob) + ' ' + md.logic.fmtMin(oF) + '–' + md.logic.fmtMin(oF + (Number(ob.mins) || 30)), task: null };
         U._askBox(box); // OA-1
         return;
@@ -595,6 +596,9 @@ RPGACE.register('realmTasks', {
         var R = U._realm(live.run.realm), st = md.logic.focusAt(live.run, Date.now());
         var left = Math.max(0, Math.round((live.run.startedAt + live.run.mins * 60000 + (live.run.pausedMs || 0) - Date.now()) / 60000));
         head.innerHTML = '<div class="rt-big">' + esc(R.icon + ' ' + R.name + ' block') + '</div><div class="rt-sub">' + (st.done ? 'Time is up' : RPGACE.kit.hm(left) + ' left') + (st.phase ? ' · ' + esc(st.phase.kind === 'focus' ? 'focus' : 'break') : '') + '</div>';
+      } else if (opts.action) {
+        // OA-8: an Action opened here (its timer runs on the Live now card).
+        var RA = U._realm(realm || 'life'); head.innerHTML = '<div class="rt-big">' + esc(RA.icon + ' ' + (opts.action.title || 'Action')) + '</div><div class="rt-sub">' + esc(RA.name) + ' · tick it on My Day when it\'s done.</div>';
       } else if (realm) {
         var R2 = U._realm(realm); head.innerHTML = '<div class="rt-big">' + esc(R2.icon + ' ' + R2.name) + '</div><div class="rt-sub">No block running — tasks done here are still recorded.</div>';
       } else {
@@ -603,6 +607,9 @@ RPGACE.register('realmTasks', {
       box.appendChild(head);
       // TK-2: the running block's steps as task cards (same cards as the timeline's block page).
       if (b) md.ui.blockSteps(box, b, md.logic.iso());
+      // OA-3: the mode slot - the activity's own screen inside Live now; OA-8: else the Action's own tool.
+      var LM = RPGACE.modules.liveModes;
+      if (LM && !LM.ui.draw(box, LM.logic.context(opts, realm)) && opts.action) LM.ui.openButton(box, opts.action);
       U._liveNext(box, opts);
       U._liveFree(box, realm, opts);
       if (!realm) {
