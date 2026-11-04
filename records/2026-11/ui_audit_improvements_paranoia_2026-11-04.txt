@@ -16,3 +16,13 @@ Evidence so far (crawl v1, docs/audit/ui_audit_2026-11-04.md):
 
 Track A status at time of writing: OA-1, D-1..D-3, OA-2 yellow (built, not hand-tested); UA-1 green; OA-3..OA-8 red (waiting on this brainstorm).
 Next: crawl v2 (highlight + new-tab detection) -> true dead list -> scope/paranoia/debate/drift -> interrogation -> plan report.
+
+/interrogation (Alex, verbatim): "into oblivion please on the pages and pop ups to come up with ways to reduce number of pages and pop up, which should become page instead of pop-up and vice versa to make this app a lot more intuitive and user friendly with minimal guesswork. The simpler without mitigating goals, efficiency and output quality, the better. Ways code ask or utilise data need would be awesome."
+
+Evidence for round 1: 10 realm homes are pop-ups with 30-36 buttons opening 14-23 screens each; big pop-up hubs: Cooking, Gym, Health & body (22), Wishlist, My Software, Work, Ideas, Plans, Your Year, Oversight (80); tiny pages (1-6 buttons): My Beats, Chronicles full log, Bibliography, MusicWorm, Outreach log, Money In, Artist Outreach, Beats for sale, Study; Money twice in side menu; side menu: 16 entries open pages, 10 open pop-ups; nearly everything within 2-3 taps (Selling deepest, 5); no screen-usage log exists.
+
+Round 1 answers (verbatim):
+Q1 main shape: "Realm = page (Recommended)"
+Q2 page/pop-up rule: "Rule, some exceptions"
+Q3 tiny pages: "Fold into parent tabs (Recommended)"
+Q4 use data: "Open on what I'm doing,Prefill pickers from context,I think also 3 but all tabs are folded on reaching, only when in the realm, or browsing to another after click is it ever unfolded, and the realms are sorted in priority list by number of clicks onto it (2nd priority), by functions used (1st priority) with last clicked at the top; with 4, these should accumulate at the end for evening review, and join that call instead to save, then have it as a review to fill blocks out"
