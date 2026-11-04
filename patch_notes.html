@@ -74,6 +74,18 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-04-oa2" style="margin-bottom:30px;">
+    <div class="card-title">🗣 Nov 4: Plan your day by talking to Oracle (OA-2)</div>
+    <div class="card-body">
+      Alex: "plan my day out by just talking to oracle directly saying what I need to get done today or another day … making oracle the ideal personal assistant"; "1 but I can edit too with suggestions in chat, oracle revises it, then I accept"; "Planning log is in journal until it is set in my day … once all blocks set, the log is deleted to save data. Save the plan logs for the week to test".
+      <ul><li><b>🗣 Plan with Oracle</b> in Plan my day opens a planning chat. So does typing "plan my day / tomorrow / my week" on the Oracle page (new module <code>oraclePlanner</code>).</li>
+      <li>Every message carries the day's shifts, Morning/Night, what's already planned, the free time, and the rule that every plan ends with a <code>DAY_PLAN_JSON</code> line (a <code>dayplan</code> context provider). Oracle asks what you need done and your goals if you haven't said.</li>
+      <li>Each plan reply becomes a <b>plan card</b>: time, length, realm, title and steps, with untick boxes. You type changes and the card is redrawn. The JSON line is hidden from the chat.</li>
+      <li><b>✓ Accept plan</b> saves each ticked block through <code>myDay.logic.saveRealmBlock</code> (clash guard, alongside rules). A clash on one block never stops the rest and is reported, not hidden.</li>
+      <li><b>Planning log:</b> one Journal entry per plan (source <code>oracle_plan</code>), written at the first card and updated on every revision and on Accept (set / not set and why). When every block is set it's deleted. During the test week (to Mon 10 Nov) every log is kept.</li></ul>
+      <b>Flags:</b> harness-tested (oa2 10/10 + delete path, mdx 52/52, md2b 21/21, rt 24/24). Untested with the real Oracle: how well it sticks to the free time is the thing to check this week. On the Oracle page itself the JSON line still shows in the main chat bubble.
+    </div>
+</div>
 <div class="card" id="card-2026-11-04-d23" style="margin-bottom:30px;">
     <div class="card-title">🧠 Nov 4: Oracle keeps a running memory you can see and edit (D-2, D-3)</div>
     <div class="card-body">

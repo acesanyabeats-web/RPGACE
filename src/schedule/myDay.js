@@ -7725,6 +7725,12 @@ RPGACE.register('myDay', {
         kd.style.cssText = 'font-size:14px;color:var(--text);font-weight:700;';
         kd.textContent = self.DAY_KINDS[kind] + (sh.length ? ' · ' + sh.map(function(x) { return x.start + '–' + x.end; }).join(', ') : '');
         top.appendChild(dateIn); top.appendChild(kd);
+        // OA-2: talk it through with Oracle instead (plan card -> Accept).
+        if (RPGACE.modules.oraclePlanner) {
+          var opb = self.ui._btn('🗣 Plan with Oracle', 'primary'); opb.id = 'mdp-oracle';
+          opb.onclick = function() { RPGACE.modules.oraclePlanner.ui.open(state.date); };
+          top.appendChild(opb);
+        }
         pop.box.appendChild(top);
         var hint = document.createElement('div');
         hint.style.cssText = 'font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5;';

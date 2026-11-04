@@ -704,6 +704,7 @@ RPGACE.register('oracleControl', {
     reply.textContent = '🔮 ' + String(text || '')
       .replace(/\n?ORACLE_ACTION:\s*[a-z0-9_]+\s*$/i, '')
       .replace(/\n?RECIPE_UPDATE_JSON:\s*\{[\s\S]*\}\s*$/i, '')
+      .replace(/\s*DAY_PLAN_JSON:\s*\{[\s\S]*\}\s*/i, ' ') // OA-2: the plan shows as its own card
       .trim();
     log.appendChild(reply);
     // LL-4: same ⭐ as the main chat, for the exchange sendChat just recorded.
