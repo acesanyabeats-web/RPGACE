@@ -545,7 +545,7 @@ RPGACE.register('encyclopediaPosts', {
       self._learnTab = tab;
       var pg = document.getElementById('page-' + P.encyclopedia);
       if (pg) {
-        var t = pg.querySelector(':scope > .section-title'); if (t) t.textContent = '📖 Learned';
+        var t = pg.querySelector(':scope > .section-title'); if (t) t.textContent = '📖 Encyclopedia';
         var old = document.getElementById('enc-old-articles'); if (old) old.hidden = true;
       }
       // KR-2: the empty bibliography block (intelDelete) re-injects on page:show, so hide it by CSS, not by node.

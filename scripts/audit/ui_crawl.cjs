@@ -87,7 +87,7 @@ function rowsFor(t, params) {
   const key = s => s.kind + '|' + (s.page || '') + '|' + (s.title || '').slice(0, 60);
   const save = () => fs.writeFileSync(OUT, JSON.stringify(audit, null, 1));
   const makeWorker = async () => {
-  const ctx = await B.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block', hasTouch: true });
+  const ctx = await B.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block', hasTouch: true, permissions: ['clipboard-read', 'clipboard-write'] });
   const p = await ctx.newPage();
   ctx.on('page', pg => { if (pg !== p) pg.close().catch(() => {}); });
   await p.clock.install({ time: new Date('2026-11-04T12:00:00') });
@@ -130,6 +130,13 @@ function rowsFor(t, params) {
           && !(e.parentElement && e.parentElement.closest('button, a[href]')) && (txt(e) || e.tagName === 'INPUT'))
           .filter(e => { const k = (e.id || '') + '|' + txt(e); if (seen.has(k)) return false; seen.add(k); return true; });
       },
+      // How the screen looks, beyond its text: button highlight/ticked state and the visible text length.
+      look: function() {
+        const S = this.scope(), el = S.el;
+        const b = this.buttons().map(x => { const c = getComputedStyle(x); return x.className + c.backgroundColor + c.color + c.borderColor + (x.getAttribute('aria-pressed') || '') + (x.disabled ? 'd' : ''); }).join(';');
+        const ch = [...el.querySelectorAll('input[type=checkbox], input[type=radio]')].map(i => i.checked ? 1 : 0).join('');
+        return b + '|' + ch + '|' + (el.innerText || '').length;
+      },
       snap: function() {
         const S = this.scope(), el = S.el;
         let title = '';
@@ -155,6 +162,7 @@ function rowsFor(t, params) {
       click: function(label, id) { const l = this.buttons().filter(b => (id ? b.id === id : !b.id || true) && txt(b) === label); if (!l[0]) return false; l[0].scrollIntoView({ block: 'center' }); l[0].click(); return true; }
     };
     window.__toasts = [];
+    if (!window.__woWrapped) { window.__woWrapped = true; const wo = window.open; window.open = function(u) { (window.__opened = window.__opened || []).push(String(u || '')); try { return wo.apply(window, arguments); } catch (e) { return null; } }; }
     const ot = RPGACE.utils.toast; RPGACE.utils.toast = function(m) { window.__toasts.push(String(m).slice(0, 90)); return ot.apply(this, arguments); };
   });
   const login = async () => {
@@ -235,7 +243,8 @@ function rowsFor(t, params) {
       audit.screens[job.key] = Object.assign(audit.screens[job.key] || {}, s);
       for (const bt of s.buttons) {
         if (!(await replay(job.path))) { await login(); if (!(await replay(job.path))) { audit.edges.push({ from: job.key, button: bt.t, id: bt.id, to: null, gone: true, toasts: [] }); continue; } }
-        const before = await p.evaluate(() => { window.__toasts = []; return JSON.stringify(__ua.snap()); });
+        const before = await p.evaluate(() => { window.__toasts = []; window.__opened = []; return JSON.stringify(__ua.snap()); });
+        const lookBefore = await p.evaluate(() => __ua.look()).catch(() => '');
         let ok = await p.evaluate(a => __ua.click(a[0], a[1]), [bt.t, bt.id]).catch(() => false);
         if (!ok) { audit.edges.push({ from: job.key, button: bt.t, id: bt.id, to: null, gone: true, toasts: [] }); continue; }
         await p.waitForTimeout(WAIT);
@@ -249,9 +258,11 @@ function rowsFor(t, params) {
         if (!after) continue;
         const toasts = await p.evaluate(() => window.__toasts.slice()).catch(() => []);
         const changed = JSON.stringify(after) !== before;
+        const opened = await p.evaluate(() => (window.__opened || []).length).catch(() => 0);
+        const looked = !changed && (await p.evaluate(() => __ua.look()).catch(() => lookBefore)) !== lookBefore;
         const k2 = key(after);
         const to = changed && k2 !== job.key ? k2 : null;
-        audit.edges.push({ from: job.key, button: bt.t, id: bt.id, to: to, sameScreenChanged: changed && !to, toasts: toasts, twoTap: twoTap || undefined });
+        audit.edges.push({ from: job.key, button: bt.t, id: bt.id, to: to, sameScreenChanged: (changed && !to) || looked, highlight: looked || undefined, newTab: opened ? true : undefined, toasts: toasts, twoTap: twoTap || undefined });
         if (to && !audit.screens[to] && job.path.length < MAX_DEPTH) { audit.screens[to] = after; audit.queue.push({ key: to, path: job.path.concat([{ t: bt.t, id: bt.id }]) }); }
         else if (to && !audit.screens[to]) audit.screens[to] = after;
       }

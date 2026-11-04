@@ -35,7 +35,7 @@ for n in a.get('nav', []): nav_to[n['to']].append(n['label'])
 L = []
 L.append('# RPGACE UI audit (UA-1)\n')
 L.append('Generated ' + a['generated'][:16].replace('T', ' ') + '. ' + a['note'] + '\n')
-L.append('Legend: 📄 page · 🪟 pop-up · → where a button leads · ↻ changes the same screen · · nothing visible happened · ⚠ error message.\n')
+L.append('Legend: 📄 page · 🪟 pop-up · → where a button leads · ↻ changes the same screen · ↗ opens a new tab · · nothing visible happened · ⚠ error message.\n')
 L.append('## Totals\n')
 L.append(f"- Screens found: **{len(S)}** ({sum(1 for k in S if k.startswith('page'))} pages, {sum(1 for k in S if k.startswith('popup'))} pop-ups)")
 L.append(f"- Side-menu destinations: **{len(a.get('nav', []))}**")
@@ -69,6 +69,8 @@ for k in order:
         for e in es:
             if e.get('gone'): r = '(gone after an earlier tap)'
             elif e.get('to'): r = ('(2 taps) ' if e.get('twoTap') else '') + '→ ' + name(e['to'])
+            elif e.get('newTab'): r = '↗ opens a new tab'
+            elif e.get('highlight'): r = '↻ (highlight changed)'
             elif e.get('sameScreenChanged'): r = '↻'
             else: r = '·'
             t = ' ⚠ ' + e['toasts'][0] if e.get('toasts') and any('⚠' in x for x in e['toasts']) else (' (' + e['toasts'][0] + ')' if e.get('toasts') else '')
@@ -89,7 +91,7 @@ for e in E: lab[norm_label(e['button'])].add(e['from'])
 rep = sorted([(len(v), l) for l, v in lab.items() if len(v) >= 4 and l not in ('← back', 'close', '×', '✕', 'back')], reverse=True)
 L.append(f'\n### 3.3 Same button on many screens ({len(rep)})\nThe same control repeated across 4+ screens - candidates for one shared toolkit piece (with page context attached).\n')
 for n, l in rep[:60]: L.append(f'- "{l}" on {n} screens')
-dead = [e for e in E if not e.get('to') and not e.get('sameScreenChanged') and not e.get('toasts') and not e.get('gone')]
+dead = [e for e in E if not e.get('to') and not e.get('sameScreenChanged') and not e.get('toasts') and not e.get('gone') and not e.get('newTab')]
 L.append(f'\n### 3.4 No visible effect ({len(dead)})\nTapped, and nothing changed on screen. Many need real data (lists are empty in the audit); some may be dead.\n')
 for e in dead[:120]: L.append(f"- {name(e['from'])}: {e['button'][:60]}")
 errs = [e for e in E if any('⚠' in t for t in (e.get('toasts') or []))]

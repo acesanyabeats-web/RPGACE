@@ -92,7 +92,7 @@ RPGACE.register('jargonEncyclopedia', {
       page.className = 'page';
       page.id = 'page-' + RPGACE.CONFIG.pages.jargonEncyclopedia;
       page.innerHTML =
-        '<div class="section-title">📖 Learned</div>' +
+        '<div class="section-title">🗣 Jargon</div>' +
         '<div id="jarg-tabs"></div>' +
         '<div style="font-size:12px;color:var(--muted);margin-bottom:14px;">Every real curated term, across every phylum — browse, search, and review.</div>' +
         '<input id="jarg-search" type="text" placeholder="Search terms..." style="width:100%;margin-bottom:10px;padding:8px 12px;background:var(--panel2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:Rajdhani,sans-serif;font-size:13px;">' +
