@@ -40,7 +40,10 @@ L.append('## Totals\n')
 L.append(f"- Screens found: **{len(S)}** ({sum(1 for k in S if k.startswith('page'))} pages, {sum(1 for k in S if k.startswith('popup'))} pop-ups)")
 L.append(f"- Side-menu destinations: **{len(a.get('nav', []))}**")
 L.append(f"- Buttons tapped: **{len(E)}**")
-L.append('- Complete: ' + ('**yes** - every screen reached by tapping was opened and every button on it tapped' if a.get('finished') else f"**not yet** - {len(a.get('queue', []))} screens still queued") + '\n')
+unopened = [k for k in S if k not in set(a.get('done', []))]
+L.append('- Complete: ' + ('**yes** - every screen reached by tapping was opened and every button on it tapped' if a.get('finished') and not unopened else f"**not yet** - {len(a.get('queue', []))} screens queued, {len(unopened)} recorded but not opened") + '\n')
+if unopened: L.append('### Recorded but not opened\n' + '\n'.join('- ' + name(k) for k in unopened) + '\n')
+L.append('### Not covered by a tap crawl\nSwipes and drags (day-plan block drag, swipe between pages), long-press, typed input that changes what shows, and time-of-day states other than 12:00 on Nov 4 (morning wake screen, evening review, during a shift). Lists show 2 sample rows each, so screens that only appear with many rows or a specific record are not reached.\n')
 if a.get('autoOpen'):
     L.append('### Opens by itself (not from a button)\n' + '\n'.join('- ' + x for x in a['autoOpen']) + '\n')
 

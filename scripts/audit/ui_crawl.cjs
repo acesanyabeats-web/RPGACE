@@ -11,7 +11,7 @@
 const { chromium } = require('playwright');
 const fs = require('fs');
 const OUT = process.argv[2] || 'ui_audit.json';
-const WAIT = 450, MAX_DEPTH = 8, BUDGET_MS = Number(process.env.UA_MINUTES || 100) * 60000, T0 = Date.now();
+const WAIT = 450, MAX_DEPTH = Number(process.env.UA_DEPTH || 8), BUDGET_MS = Number(process.env.UA_MINUTES || 100) * 60000, T0 = Date.now();
 
 // ── sample data ────────────────────────────────────────────────────────────
 const ENUM = { // table.column -> allowed values (from pg_constraint, Nov 4 2026)
@@ -203,6 +203,17 @@ function rowsFor(t, params) {
       audit.nav.push({ label: labels[i], to: k });
       if (!audit.screens[k]) { audit.screens[k] = s; audit.queue.push({ key: k, path: [{ nav: i }] }); }
     }
+    save();
+  }
+  // Deepen: screens recorded but never opened (past the depth cap) get a path rebuilt from the tap edges and are queued.
+  const doneSet = new Set(audit.done), queued = new Set(audit.queue.map(q => q.key));
+  const left = Object.keys(audit.screens).filter(k => !doneSet.has(k) && !queued.has(k));
+  if (left.length) {
+    const paths = {}; const k0 = Object.keys(audit.screens)[0]; paths[k0] = [{ nav: null }];
+    audit.nav.forEach((n, i) => { if (!paths[n.to]) paths[n.to] = [{ nav: i }]; });
+    let grew = true;
+    while (grew) { grew = false; for (const e of audit.edges) if (e.to && paths[e.from] && !paths[e.to]) { paths[e.to] = paths[e.from].concat([{ t: e.button, id: e.id }]); grew = true; } }
+    for (const k of left) if (paths[k]) audit.queue.push({ key: k, path: paths[k] }); else audit.errors.push('no path to ' + k);
     save();
   }
 
