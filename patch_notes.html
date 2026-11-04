@@ -74,6 +74,16 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-04-d23" style="margin-bottom:30px;">
+    <div class="card-title">🧠 Nov 4: Oracle keeps a running memory you can see and edit (D-2, D-3)</div>
+    <div class="card-body">
+      Plan D, Alex: "yes carry on with D-2 and D-3".
+      <ul><li><b>D-2 running memory:</b> 90s after a chat goes quiet, the cheap model reads the new exchanges and saves 0–3 lasting facts about you to a new private table, <code>oracle_memory</code> (prompt: <code>prompts/oracle_memory.md</code>). It ignores advice, small talk and app-made prompts, and never repeats a line it already has.</li>
+      <li>Every Oracle chat turn now includes the newest 15 lines, pinned first (<code>oracleMemory.logic.systemLines()</code> inside sendChat's <code>ORACLE_SYS</code>). Unpinned lines older than 60 days stop being used, but the rows stay.</li>
+      <li><b>D-3 🧠 Oracle remembers:</b> a button on the Oracle page toolbar opens every line with its date and whether it's in use. You can edit it, 📌 pin it, remove it (two taps), or add your own (typed lines are pinned).</li></ul>
+      <b>Flags:</b> harness-tested (d23 9/9, d1 7/7). Untested live, so the first real lines appear after your next quiet chat. Cost: one cheap-model call (≤300 tokens out) per quiet chat.
+    </div>
+</div>
 <div class="card" id="card-2026-11-04-d1" style="margin-bottom:30px;">
     <div class="card-title">🧠 Nov 4: Oracle carries on today's conversation after a reload (D-1)</div>
     <div class="card-body">
