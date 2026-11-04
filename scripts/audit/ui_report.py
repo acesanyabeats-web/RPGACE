@@ -39,7 +39,10 @@ L.append('Legend: 📄 page · 🪟 pop-up · → where a button leads · ↻ ch
 L.append('## Totals\n')
 L.append(f"- Screens found: **{len(S)}** ({sum(1 for k in S if k.startswith('page'))} pages, {sum(1 for k in S if k.startswith('popup'))} pop-ups)")
 L.append(f"- Side-menu destinations: **{len(a.get('nav', []))}**")
-L.append(f"- Buttons tapped: **{len(E)}**\n")
+L.append(f"- Buttons tapped: **{len(E)}**")
+L.append('- Complete: ' + ('**yes** - every screen reached by tapping was opened and every button on it tapped' if a.get('finished') else f"**not yet** - {len(a.get('queue', []))} screens still queued") + '\n')
+if a.get('autoOpen'):
+    L.append('### Opens by itself (not from a button)\n' + '\n'.join('- ' + x for x in a['autoOpen']) + '\n')
 
 lg = a.get('login') or {}
 L.append('## 1. Login\n')
@@ -62,7 +65,7 @@ for k in order:
         L.append('- Buttons:')
         for e in es:
             if e.get('gone'): r = '(gone after an earlier tap)'
-            elif e.get('to'): r = '→ ' + name(e['to'])
+            elif e.get('to'): r = ('(2 taps) ' if e.get('twoTap') else '') + '→ ' + name(e['to'])
             elif e.get('sameScreenChanged'): r = '↻'
             else: r = '·'
             t = ' ⚠ ' + e['toasts'][0] if e.get('toasts') and any('⚠' in x for x in e['toasts']) else (' (' + e['toasts'][0] + ')' if e.get('toasts') else '')
