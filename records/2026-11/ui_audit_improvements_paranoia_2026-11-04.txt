@@ -40,3 +40,14 @@ Q realm map: "Use this mapping (Recommended)"
 Q capture: "Oracle chat,Live now,One box on every page,Phone share,But with phone share, I can bypass realm selection and type what I need from it, would be cool if this happens for videos and posts I send to take in, choose realms and why 8 think it is useful for the realms and me. This will give oracle more insight into what I understand about the realms, the video and what it is teaching, and what lessons I did extract and which I missed"
 Q ask style: "Can be 1 or 2, I can decide between the 2, make it intuitive please"
 Q ask about: "Blocks with no log,Gaps in the day,Tomorrow's plan,Money & mood check,Might be more"
+
+Round 4 answers (verbatim):
+Q share screen: "Note or realms+why (Recommended)"
+Q caught/missed: "On the analysis + tonight (Recommended)"
+Q more asks: "Today's take-ins,Trackers & habits,New tasks queue,Realm targets,Make sure all of this separated by realms in foldable rows, and don't overwhelm me with these, 5 each by urgency and importance, with yes/no why and plan on yeses"
+Q order: "Frame first, Producer first (Recommended)"
+
+Evidence used for share: manifest.json share_target -> sw.js /share-target -> shareInbox.js (queues intel_jobs); realm picker 'Which realms is this for?' in core.js (~5737). Evening review: myDay.logic.eveningModel/eveningAct/saveEvening (journal source evening_review).
+
+Defaults taken (not asked, flagged): "functions used" = saves/ticks/logs in that realm (xp_events + realm logs), last 30 days; quick notes stored as journal rows (source 'note') - no new table (rule 8); screen opens stored in one new private table (ui_usage) for menu order.
+Drift vs Track A: OA-3..OA-8 (Live now modes per domain) overlap the realm pages' Live section -> asked Alex whether to build them inside realm pages.
