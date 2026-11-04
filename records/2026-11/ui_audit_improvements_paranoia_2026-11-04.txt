@@ -1,0 +1,18 @@
+UI audit improvements - /dev_ops_7 Track B record (Nov 4 2026)
+
+Alex, verbatim:
+- "Also we will need to do an audit of all UI, starting from logging in, say what page, then what buttons are present, what info is shown and what linked pages are present through which buttons (without main left nav) this audit will help us know what is present and linked, what needs new connections, what pages and buttons are duplicates or logical multi entryways so the system can improve, what can be a general toolkit or general toolkit with specific context needed attached etc"
+- "Audit first, it'll help with future planning, then we /dev_ops_7 on the audit to brainstorm what to improve with evidence"
+- "The audit is not done till all buttons possible are clicked, all pages and links are documented"
+- Review answers: "1 yes, 2 Encyclopedia and Jargon, 3 everything"
+  (1 = clean up the 902 no-effect taps with a better crawler; 2 = rename the two "Learned" pages; 3 = brainstorm scope: every area)
+
+Evidence so far (crawl v1, docs/audit/ui_audit_2026-11-04.md):
+- 30 pages, ~184 distinct pop-ups (726 counted per base page), 5,431 taps, every found screen opened.
+- Only side menu leads here: 0. Realm button set is already one shared piece (src/chronicles/realmFrame.js).
+- 73 error toasts: input checks, Oracle off in test (29), sample data (receipt, audio). 1 page error: clipboard (test browser only).
+- 902 no-visible-effect taps: realm filter chips (highlight only), Clock in/out (opens phone2fork in a new tab), external scans stubbed, data-dependent.
+- Fixed now: "📖 Learned" x2 -> "📖 Encyclopedia" / "🗣 Jargon" (commit a3d27a9, READY).
+
+Track A status at time of writing: OA-1, D-1..D-3, OA-2 yellow (built, not hand-tested); UA-1 green; OA-3..OA-8 red (waiting on this brainstorm).
+Next: crawl v2 (highlight + new-tab detection) -> true dead list -> scope/paranoia/debate/drift -> interrogation -> plan report.
