@@ -1835,7 +1835,7 @@ RPGACE.register('myDay', {
       var L = RPGACE.modules.myDay.logic, ds = L.daySegs(isoDate), now = new Date();
       var from = isoDate === today ? now.getHours() * 60 + now.getMinutes() : 9 * 60;
       var at = L.nextFreeAfter(ds.segs, from + ds.gap, Math.max(10, t.mins || 30));
-      if (at == null) return Promise.reject(new Error('No free ' + (t.mins || 30) + ' min left that day.'));
+      if (at == null) return Promise.reject(new Error('No free ' + RPGACE.kit.hm(t.mins || 30) + ' left that day.'));
       return L.placeFromTray(isoDate, t, at).then(function() { return at; });
     },
     // Add a picked task to a block as a not-yet-done item.
@@ -2100,7 +2100,7 @@ RPGACE.register('myDay', {
       var gap = Number((dp.st || {}).buffer_mins); if (isNaN(gap) || (dp.st || {}).buffer_mins == null) gap = 10;
       var segs = L.segments({ shifts: dp.shifts, sched: dp.sched, blocks: dp.blocks, bookends: dp.bookends, st: dp.st });
       var at = L.nextFreeAfter(segs, afterMin + gap, mins, b.id), old = L.toMin(b.start_time);
-      if (at == null) return Promise.reject(new Error('No free ' + mins + ' min left today for ' + L.blockLabel(b) + '.'));
+      if (at == null) return Promise.reject(new Error('No free ' + RPGACE.kit.hm(mins) + ' left today for ' + L.blockLabel(b) + '.'));
       return L.guard(b.block_date, at, mins, b.id).then(function(g) {
         var undo = (self._lastUndo || []).slice();
         return L.moveBlock(b, at).then(function() {
@@ -3426,7 +3426,7 @@ RPGACE.register('myDay', {
           var gap = b.kind === 'gap', col = gap ? (b.label === 'Prep' ? '#e0a84c' : 'var(--muted)') : b.kind === 'travel' ? 'var(--muted)' : 'var(--text)';
           return '<div class="myday-tl myday-tl-' + b.kind + '" style="display:flex;gap:10px;font-size:13px;padding:3px 0;color:' + col + ';' + (gap ? 'font-style:italic;' : '') + '">' +
             '<span style="font-variant-numeric:tabular-nums;min-width:92px;">' + L.fmtMin(b.from) + '–' + L.fmtMin(b.to) + '</span>' +
-            '<span>' + (icons[b.kind] ? icons[b.kind] + ' ' : '') + esc(gap ? b.label + ' (' + (b.to - b.from) + ' min free)' : b.label) + '</span></div>';
+            '<span>' + (icons[b.kind] ? icons[b.kind] + ' ' : '') + esc(gap ? b.label + ' (' + RPGACE.kit.hm(b.to - b.from) + ' free)' : b.label) + '</span></div>';
         }).join('');
       panel.appendChild(box);
     },
@@ -3981,7 +3981,7 @@ RPGACE.register('myDay', {
           var it = s.it;
           wrap.appendChild(K.taskCard({
             cls: 'tk-step', title: it.label, mode: mode === 'future' ? 'plan' : 'do', done: s.done,
-            metaHtml: '<div style="font-size:12px;color:var(--muted);">' + esc([it.mins ? '~' + it.mins + ' min' : null, it.context ? '🎯 ' + it.context : null, it.how ? 'counts when you ' + it.how : null].filter(Boolean).join(' · ')) + '</div>',
+            metaHtml: '<div style="font-size:12px;color:var(--muted);">' + esc([it.mins ? '~' + RPGACE.kit.hm(it.mins)  : null, it.context ? '🎯 ' + it.context : null, it.how ? 'counts when you ' + it.how : null].filter(Boolean).join(' · ')) + '</div>',
             tools: tools.concat(it.opens && mode !== 'future' ? [{ label: 'Open ↗', fn: function() { U._openTool(it.opens); } }] : []),
             onTick: function(nowDone) { return L.setBlockItem(b, s.idx, nowDone); },
             after: afterTick
@@ -4013,10 +4013,10 @@ RPGACE.register('myDay', {
       row.appendChild(nm); row.appendChild(mn); row.appendChild(go); pop.box.appendChild(row);
       var have = {}; L.blockSteps(b, b.block_date || L.iso()).forEach(function(s) { have[s.kind === 'routine' ? 'r' + s.r.id : (s.it.src === 'routine' ? 'r' : 't') + s.it.ref_id] = true; });
       var items = (self._routines || []).filter(function(r) { return r.active !== false && r.cadence !== 'next_time' && !have['r' + r.id]; })
-        .map(function(r) { return { title: (r.icon ? r.icon + ' ' : '') + r.title, sub: (r.area || '') + ' · ~' + (r.est_mins || 15) + ' min', item: { src: 'routine', ref_id: String(r.id), label: r.title, mins: r.est_mins || 15, earns: 'real', how: 'its routine XP', opens: r.opens || null } }; });
+        .map(function(r) { return { title: (r.icon ? r.icon + ' ' : '') + r.title, sub: (r.area || '') + ' · ~' + RPGACE.kit.hm(r.est_mins || 15) , item: { src: 'routine', ref_id: String(r.id), label: r.title, mins: r.est_mins || 15, earns: 'real', how: 'its routine XP', opens: r.opens || null } }; });
       ((rt && rt._tasks) || []).filter(function(x) { return x.status === 'kept' && !have['t' + x.id]; }).forEach(function(x) {
         var R = RPGACE.modules.xpSeason && RPGACE.modules.xpSeason.REALMS[x.realm];
-        items.push({ title: (R ? R.icon + ' ' : '') + x.title, sub: (R ? R.name : x.realm || '') + ' · ~' + (x.mins || 30) + ' min', item: { src: 'task', ref_id: String(x.id), label: x.title, mins: x.mins || 30, earns: x.earns || 'tick', xp: x.xp || null, how: x.how || null, opens: x.opens || null } });
+        items.push({ title: (R ? R.icon + ' ' : '') + x.title, sub: (R ? R.name : x.realm || '') + ' · ~' + RPGACE.kit.hm(x.mins || 30) , item: { src: 'task', ref_id: String(x.id), label: x.title, mins: x.mins || 30, earns: x.earns || 'tick', xp: x.xp || null, how: x.how || null, opens: x.opens || null } });
       });
       var lab = document.createElement('div'); lab.style.cssText = 'font-size:13px;color:var(--muted);margin-bottom:4px;'; lab.textContent = 'Or pick one of your tasks:';
       pop.box.appendChild(lab);
@@ -4055,12 +4055,12 @@ RPGACE.register('myDay', {
       var self = RPGACE.modules.myDay, L = self.logic, U = self.ui, nowM = isoDate === today ? L.nowMin() : 24 * 60;
       if (g.item) {
         return L.didItem(g.item, nowM).then(function(r) {
-          RPGACE.utils.toast('✅ ' + g.label + (r.cut ? ' — ' + r.cut + ' min freed' : ''), '#4caf82', 2600);
+          RPGACE.utils.toast('✅ ' + g.label + (r.cut ? ' — ' + RPGACE.kit.hm(r.cut) + ' freed' : ''), '#4caf82', 2600);
           if (redraw) redraw(); self.ui.render();
         }).catch(function(e) { U._mdxFail(e); });
       }
       return L.didBlock(g.block, nowM, today).then(function(r) {
-        U._mdxUndo('✅ ' + g.label + ' done' + (r.cut ? ' · ' + r.cut + ' min freed' : '') + (r.ticked ? ' · ' + r.ticked + ' ticked' : ''), r.undo, redraw);
+        U._mdxUndo('✅ ' + g.label + ' done' + (r.cut ? ' · ' + RPGACE.kit.hm(r.cut) + ' freed' : '') + (r.ticked ? ' · ' + r.ticked + ' ticked' : ''), r.undo, redraw);
         return L.load();
       }).then(function() { if (redraw) redraw(); self.ui.render(); }).catch(function(e) { U._mdxFail(e); });
     },
@@ -4102,7 +4102,7 @@ RPGACE.register('myDay', {
         tmr.onclick = function() { close(); if (b) U._toTomorrow(b, redraw); else U._itemTomorrow(x, redraw); };
         qb.appendChild(yes); qb.appendChild(notYet); if (isoDate >= today) qb.appendChild(tmr);
         q.appendChild(qb);
-        if (isToday && g.from < nowM && g.to > nowM) { var hint = document.createElement('div'); hint.className = 'mdx-sub'; hint.style.marginTop = '6px'; hint.textContent = 'Yes ends it now and frees the rest (' + (g.to - L.startNowAt(nowM)) + ' min).'; q.appendChild(hint); }
+        if (isToday && g.from < nowM && g.to > nowM) { var hint = document.createElement('div'); hint.className = 'mdx-sub'; hint.style.marginTop = '6px'; hint.textContent = 'Yes ends it now and frees the rest (' + RPGACE.kit.hm(g.to - L.startNowAt(nowM)) + ').'; q.appendChild(hint); }
         pop.box.appendChild(q);
       }
       if (b) {
@@ -4312,7 +4312,7 @@ RPGACE.register('myDay', {
     // Free time that starts now: ▶ Doing it now (Live now) or 📋 Plan a block (addInGap).
     gapChoice: function(isoDate, from, to, redraw) {
       var self = RPGACE.modules.myDay, L = self.logic, U = self.ui;
-      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: U._dayLabel(isoDate), title: 'Free now · ' + (to - from) + ' min until ' + L.fmtMin(to), width: '420px' });
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: U._dayLabel(isoDate), title: 'Free now · ' + RPGACE.kit.hm(to - from) + ' until ' + L.fmtMin(to), width: '420px' });
       pop.box.id = 'mdx-gap-choice';
       var row = document.createElement('div'); row.className = 'mdx-bar'; row.style.flexDirection = 'column';
       var now = U._mdxBtn('▶ Doing it now', true, 'mdx-gc-now');
@@ -4325,7 +4325,7 @@ RPGACE.register('myDay', {
     addInGap: function(isoDate, from, to, redraw) {
       var self = RPGACE.modules.myDay, L = self.logic, U = self.ui;
       var mins = to - from;
-      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: U._dayLabel(isoDate), title: L.fmtMin(from) + '–' + L.fmtMin(to) + ' · ' + mins + ' min free', width: '480px' });
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: U._dayLabel(isoDate), title: L.fmtMin(from) + '–' + L.fmtMin(to) + ' · ' + RPGACE.kit.hm(mins) + ' free', width: '480px' });
       pop.box.id = 'mdx-gap-sheet';
       var row = document.createElement('div'); row.className = 'mdx-bar';
       var rb = U._mdxBtn('✨ Realm block', true, 'mdx-gap-realm');
@@ -4559,7 +4559,7 @@ RPGACE.register('myDay', {
           // Tap: first free time that fits.
           var sg = L.daySegs(isoDate), from = isoDate === today ? L.startNowAt(L.nowMin()) : (sg.dp.be.morning.to || 480);
           var at = L.nearestFree(sg.segs, from, t.mins);
-          if (at == null) { U._mdxFail(new Error('No free ' + t.mins + ' min left on ' + U._dayLabel(isoDate))); return; }
+          if (at == null) { U._mdxFail(new Error('No free ' + RPGACE.kit.hm(t.mins) + ' left on ' + U._dayLabel(isoDate))); return; }
           place(at);
         }
       });
@@ -4873,7 +4873,7 @@ RPGACE.register('myDay', {
       var paint = function() {
         var t = 0;
         L.chores(self._routines).forEach(function(r) { if (picked[String(r.id)]) t += Math.max(1, r.est_mins || 15); });
-        info.textContent = t + ' of ' + mins + ' min filled' + (t > mins ? ' — over by ' + (t - mins) + ' min' : '');
+        info.textContent = t + ' of ' + RPGACE.kit.hm(mins) + ' filled' + (t > mins ? ' — over by ' + RPGACE.kit.hm(t - mins)  : '');
         info.style.color = t > mins ? '#e0a84c' : 'var(--muted)';
       };
       var takenSet = {}; L.blockedIds(date).forEach(function(id) { takenSet[String(id)] = 1; });
@@ -4888,7 +4888,7 @@ RPGACE.register('myDay', {
         row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);cursor:pointer;min-height:44px;';
         row.innerHTML = '<input type="checkbox" style="width:20px;height:20px;accent-color:var(--gold);"' + (picked[id] ? ' checked' : '') + '>' +
           '<span style="flex:1;min-width:0;font-size:14px;color:var(--text);">' + esc((x.r.icon ? x.r.icon + ' ' : '') + x.r.title) +
-          '<br><span style="font-size:12px;color:' + (late > 0 ? '#e0a84c' : 'var(--muted)') + ';">' + esc(when + ' · ~' + (x.r.est_mins || 15) + ' min') + '</span></span>';
+          '<br><span style="font-size:12px;color:' + (late > 0 ? '#e0a84c' : 'var(--muted)') + ';">' + esc(when + ' · ~' + RPGACE.kit.hm(x.r.est_mins || 15) ) + '</span></span>';
         row.querySelector('input').onchange = function(ev) { if (ev.target.checked) picked[id] = 1; else delete picked[id]; paint(); };
         list.appendChild(row);
       });
@@ -5423,7 +5423,7 @@ RPGACE.register('myDay', {
       var self = RPGACE.modules.myDay, L = self.logic, U = self.ui;
       var bar = document.getElementById('myday-alarm'); if (bar) bar.remove();
       return Promise.all([L.load(), L.loadTimings()]).then(function() { return L.startDay(); }).then(function(res) {
-        RPGACE.utils.toast('☀️ Day started at ' + L.fmtMin(L.nowMin()) + (res.by > 0 ? ' — your day moved ' + res.by + ' min later' : ''), 'var(--gold)', 3200);
+        RPGACE.utils.toast('☀️ Day started at ' + L.fmtMin(L.nowMin()) + (res.by > 0 ? ' — your day moved ' + RPGACE.kit.hm(res.by) + ' later' : ''), 'var(--gold)', 3200);
         if (res.moved.length) U.undoToast(res.moved);
         if (res.failed.length) RPGACE.utils.toast('⚠️ No room left today for: ' + res.failed.join(', ') + ' — move it by hand', '#e0a84c', 5000, 'myDay');
         U._refreshDayButtons();
@@ -5781,7 +5781,7 @@ RPGACE.register('myDay', {
       if (run.rung !== at.i) {
         var first = run.rung === -1;
         run.rung = at.i; L._saveRun(run);
-        if (!first) { U._beep(); RPGACE.utils.toast(at.phase.kind === 'break' ? '☕ Break — ' + at.phase.mins + ' min' : '🎯 Round ' + at.phase.n + ' — focus ' + at.phase.mins + ' min', 'var(--gold)', 4000); }
+        if (!first) { U._beep(); RPGACE.utils.toast(at.phase.kind === 'break' ? '☕ Break — ' + RPGACE.kit.hm(at.phase.mins)  : '🎯 Round ' + at.phase.n + ' — focus ' + RPGACE.kit.hm(at.phase.mins) , 'var(--gold)', 4000); }
       }
       if (run.method === 'timebox' && !run.warned && !run.pausedAt && at.left <= 300 && at.phase.mins > 10) { run.warned = true; L._saveRun(run); U._beep(); RPGACE.utils.toast('⏳ 5 minutes left', 'var(--gold)', 4000); }
       if (!bar) {
@@ -5909,7 +5909,7 @@ RPGACE.register('myDay', {
           pop.box.innerHTML = '';
           var pv = document.createElement('div'); pv.id = 'mdp-ctx-preview'; pv.style.cssText = 'margin-bottom:10px;';
           var mins = (recipe.steps || []).reduce(function(m, x) { return m + (x.active_duration_min || 0) + (x.passive_duration_min || 0); }, 0);
-          pv.innerHTML = '<div style="font-weight:700;font-size:15px;">' + esc(recipe.title || desc) + '</div><div style="font-size:12px;color:var(--muted);">' + esc((recipe.ingredients || []).length + ' ingredients' + (mins ? ' · about ' + mins + ' min' : '')) + '</div>'
+          pv.innerHTML = '<div style="font-weight:700;font-size:15px;">' + esc(recipe.title || desc) + '</div><div style="font-size:12px;color:var(--muted);">' + esc((recipe.ingredients || []).length + ' ingredients' + (mins ? ' · about ' + RPGACE.kit.hm(mins)  : '')) + '</div>'
             + '<div style="font-size:12px;color:var(--muted);margin-top:4px;">' + esc((recipe.ingredients || []).slice(0, 8).map(function(i) { return i.name; }).join(', ')) + '</div>';
           pop.box.appendChild(pv);
           var use = self.ui._btn('Use this recipe', 'primary'); use.id = 'mdp-ctx-use'; use.style.width = '100%';
@@ -6040,7 +6040,7 @@ RPGACE.register('myDay', {
           var chosen = Object.keys(pick).map(function(k) { return pick[k]; });
           var mins = chosen.reduce(function(a, i) { return a + (Number(i.mins) || 15); }, 0), len = Number(b.mins) || 30;
           info.style.cssText = 'font-size:13px;margin-bottom:8px;color:' + (mins > len ? '#e0a84c' : 'var(--muted)') + ';';
-          info.textContent = chosen.length + ' picked · about ' + mins + ' of ' + len + ' min' + (mins > len ? ' — more than the block holds' : '');
+          info.textContent = chosen.length + ' picked · about ' + mins + ' of ' + RPGACE.kit.hm(len)  + (mins > len ? ' — more than the block holds' : '');
           pop.box.appendChild(info);
           var shown = showAll ? opts : opts.slice(0, 3);
           opts.filter(function(o) { return pick[o.key]; }).forEach(function(o) { if (shown.indexOf(o) === -1) shown = shown.concat([o]); });
@@ -6135,7 +6135,7 @@ RPGACE.register('myDay', {
           if (!nx.realm_items.length) return;
           var mins = Math.max(10, Math.min(480, nx.mins || 60));
           var at = L.nearestFree(segs, dp.be.morning.to || 480, mins);
-          if (at == null) { RPGACE.utils.toast('⚠️ No free ' + mins + ' min on ' + self.ui._dayLabel(day), '#CC4A4A', 3500, 'myDay'); return; }
+          if (at == null) { RPGACE.utils.toast('⚠️ No free ' + RPGACE.kit.hm(mins) + ' on ' + self.ui._dayLabel(day), '#CC4A4A', 3500, 'myDay'); return; }
           L.saveRealmBlock(day, { realm: nx.realm, start: L.fmtMin(at), mins: mins, realm_items: nx.realm_items, method: L.methodFor(nx.realm) })
             .then(function() { RPGACE.utils.toast('✨ ' + nx.title + ' at ' + L.fmtMin(at) + ' — drag it to move', '#4caf82', 2600); redraw(); self.ui.render(); })
             .catch(function(e) { RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 4000, 'myDay'); });
@@ -6401,7 +6401,7 @@ RPGACE.register('myDay', {
       if (r.preferred_time) meta.push(r.preferred_time);
       var qe = RPGACE.modules.questEngine;
       var mins = qe && qe.estimateFor ? Math.round(qe.estimateFor('routine', String(r.id), r.est_mins)) : r.est_mins;
-      meta.push('~' + mins + ' min');
+      meta.push('~' + RPGACE.kit.hm(mins) );
       if (r.cadence === 'times_per_week') meta.push(L.doneThisWeek(r, self._logs, today) + '/' + (r.times_per_week || 1) + ' this week');
       if (r.cadence === 'once' && r.due_date && r.due_date < today) meta.push('overdue');
       if (r.cadence === 'every_days') {
@@ -6529,7 +6529,7 @@ RPGACE.register('myDay', {
         var done = false, fin = function(ok, err) { if (done) return; done = true; pop.close(); if (ok) resolve(); else reject(err || new Error('Not saved — nothing was moved.')); };
         var p = document.createElement('div'); p.id = 'myday-shorten'; p.style.cssText = 'display:flex;flex-direction:column;gap:10px;font-size:14px';
         var why = document.createElement('div'); why.style.color = 'var(--muted)';
-        why.textContent = 'To fit the new block, ' + other.label + ' (' + L.fmtMin(other.from) + '–' + L.fmtMin(other.to) + ') would move ' + by + ' min ' + dir + ' — more than 30. Shorten it instead?';
+        why.textContent = 'To fit the new block, ' + other.label + ' (' + L.fmtMin(other.from) + '–' + L.fmtMin(other.to) + ') would move ' + RPGACE.kit.hm(by) + ' ' + dir + ' — more than 30. Shorten it instead?';
         p.appendChild(why);
         if (!b) { p.appendChild(document.createTextNode('That block can\'t be changed from here.')); }
         var len = other.to - other.from;
@@ -6592,7 +6592,7 @@ RPGACE.register('myDay', {
       if (which === 'morning') {
         var aRow = document.createElement('label'); aRow.style.cssText = 'display:flex;align-items:center;gap:8px;line-height:1.4';
         al = document.createElement('input'); al.type = 'checkbox'; al.id = 'myday-be-alarm'; al.checked = st.alarm_on !== false; al.style.cssText = 'width:22px;height:22px';
-        aRow.appendChild(al); aRow.appendChild(document.createTextNode('⏰ Alarm at the start of this block, again every ' + (st.alarm_repeat_mins || 5) + ' min until the first task is ticked'));
+        aRow.appendChild(al); aRow.appendChild(document.createTextNode('⏰ Alarm at the start of this block, again every ' + RPGACE.kit.hm(st.alarm_repeat_mins || 5) + ' until the first task is ticked'));
         box.appendChild(aRow);
         // PA-1/PA-4: the phone side of this alarm (your sounds, MacroDroid, whether a phone is listening).
         if (RPGACE.modules.alarmSounds) {
@@ -6612,7 +6612,7 @@ RPGACE.register('myDay', {
           var r = document.createElement('div'); r.className = 'myday-be-task'; r.dataset.id = x.id; r.style.cssText = 'display:flex;align-items:center;gap:6px';
           var n = document.createElement('div'); n.style.cssText = 'flex:1;min-width:0;overflow-wrap:anywhere'; n.textContent = (i + 1) + '. ' + x.title;
           var m = document.createElement('input'); m.type = 'number'; m.min = '1'; m.max = '240'; m.value = x.mins; m.className = 'myday-be-mins'; m.setAttribute('aria-label', 'Minutes for ' + x.title); m.style.cssText = inCss + ';width:64px';
-          m.onchange = function() { x.mins = Math.max(1, Math.min(240, parseInt(m.value, 10) || 1)); total.textContent = 'Block length: ' + tasks.reduce(function(a, y) { return a + y.mins; }, 0) + ' min'; };
+          m.onchange = function() { x.mins = Math.max(1, Math.min(240, parseInt(m.value, 10) || 1)); total.textContent = 'Block length: ' + RPGACE.kit.hm(tasks.reduce(function(a, y) { return a + y.mins; }, 0)) ; };
           var mk = function(lbl, fn, aria) { var b = document.createElement('button'); b.type = 'button'; b.textContent = lbl; b.setAttribute('aria-label', aria); b.style.cssText = 'min-height:40px;min-width:40px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text);cursor:pointer'; b.onclick = fn; return b; };
           r.appendChild(n); r.appendChild(m);
           r.appendChild(mk('↑', function() { if (i) { tasks.splice(i - 1, 0, tasks.splice(i, 1)[0]); draw(); } }, 'Move up'));
@@ -6621,7 +6621,7 @@ RPGACE.register('myDay', {
           list.appendChild(r);
         });
         if (!tasks.length) { var e0 = document.createElement('div'); e0.style.color = 'var(--muted)'; e0.textContent = 'No tasks yet.'; list.appendChild(e0); }
-        total.textContent = 'Block length: ' + tasks.reduce(function(a, y) { return a + y.mins; }, 0) + ' min';
+        total.textContent = 'Block length: ' + RPGACE.kit.hm(tasks.reduce(function(a, y) { return a + y.mins; }, 0)) ;
       };
       box.appendChild(list); box.appendChild(total);
       // + Add task: one of your routines, or a new one.
@@ -6790,7 +6790,7 @@ RPGACE.register('myDay', {
           card.style.cssText = 'display:flex;width:100%;text-align:left;gap:10px;align-items:center;padding:10px 12px;margin-bottom:6px;border:1px solid var(--border);border-radius:8px;background:none;color:var(--text);cursor:pointer;font-family:Rajdhani,sans-serif;min-height:44px;';
           var t = self.TOOLS.filter(function(x) { return x.key === idea.opens; })[0];
           card.innerHTML = '<span style="font-size:20px;">' + idea.icon + '</span><span style="flex:1;min-width:0;"><b style="font-size:14px;">' + esc(idea.title) + '</b><br><span style="font-size:12px;color:var(--muted);">' +
-            esc(self.logic.cadenceText(Object.assign({ days: [] }, idea)) + (t ? ' · opens ' + t.label : '') + ' · ~' + idea.est_mins + ' min') + '</span></span><span style="font-size:13px;color:' + (added ? 'var(--muted)' : 'var(--gold)') + ';font-weight:700;">' + (added ? '✓ Added · Edit' : '+ Add') + '</span>';
+            esc(self.logic.cadenceText(Object.assign({ days: [] }, idea)) + (t ? ' · opens ' + t.label : '') + ' · ~' + RPGACE.kit.hm(idea.est_mins) ) + '</span></span><span style="font-size:13px;color:' + (added ? 'var(--muted)' : 'var(--gold)') + ';font-weight:700;">' + (added ? '✓ Added · Edit' : '+ Add') + '</span>';
           var mine = have[idea.title.toLowerCase()];
           card.onclick = function() { if (mine) self.ui.openEditor(mine, mine.id, function() { pop.close(); }); else self.ui.openEditor(idea, null, function() { pop.close(); }); };
           pop.box.appendChild(card);
@@ -7359,7 +7359,7 @@ RPGACE.register('myDay', {
             var t = document.createElement('div');
             t.style.cssText = 'flex:1;min-width:0;';
             t.innerHTML = '<b style="font-size:14px;color:var(--text);">' + esc((r.icon ? r.icon + ' ' : '') + r.title) + '</b><br><span style="font-size:12px;color:var(--muted);">' +
-              esc(self.logic.cadenceText(r) + (r.preferred_time ? ' · ' + r.preferred_time : '') + ' · ~' + r.est_mins + ' min · +' + r.xp + ' XP') + '</span>';
+              esc(self.logic.cadenceText(r) + (r.preferred_time ? ' · ' + r.preferred_time : '') + ' · ~' + RPGACE.kit.hm(r.est_mins) + ' · +' + r.xp + ' XP') + '</span>';
             var ed = document.createElement('button');
             ed.type = 'button'; ed.textContent = 'Edit';
             ed.style.cssText = 'min-height:36px;padding:6px 10px;background:none;border:1px solid var(--border);border-radius:6px;color:var(--text);cursor:pointer;';
@@ -7433,7 +7433,7 @@ RPGACE.register('myDay', {
       if (titleEl) titleEl.dataset.fromTpl = '';
       var noteUpd = function() {
         var pre = L.travelBefore({ journey_mins: journey.value, ready_mins: ready.value === '' ? null : ready.value });
-        note.textContent = pre ? 'Keeps ' + pre + ' min clear before it for getting ready + travel.' : '';
+        note.textContent = pre ? 'Keeps ' + RPGACE.kit.hm(pre) + ' clear before it for getting ready + travel.' : '';
       };
       journey.oninput = noteUpd; ready.oninput = noteUpd;
       var fill = function() {
@@ -7505,7 +7505,7 @@ RPGACE.register('myDay', {
       sum.style.cssText = 'font-size:13px;color:var(--muted);margin:8px 0;';
       var upd = function() {
         var cur = {}; Object.keys(f).forEach(function(k) { cur[k] = f[k].value; });
-        try { sum.textContent = 'Kept clear around a shift: ' + L.shiftBefore(cur) + ' min before, ' + L.shiftAfter(cur) + ' min after.'; } catch (e) {}
+        try { sum.textContent = 'Kept clear around a shift: ' + RPGACE.kit.hm(L.shiftBefore(cur)) + ' before, ' + RPGACE.kit.hm(L.shiftAfter(cur)) + ' after.'; } catch (e) {}
       };
       Object.keys(f).forEach(function(k) { f[k].oninput = upd; });
       upd();
@@ -7667,7 +7667,7 @@ RPGACE.register('myDay', {
           var f = document.createElement('div');
           f.className = 'mdp-shift';
           f.style.cssText = 'font-size:13px;color:var(--muted);padding:6px 0;border-bottom:1px solid var(--border);';
-          f.textContent = '🧑‍🍳 ' + x.start + '–' + x.end + ' shift (leave ' + L.shiftBefore(self._settings) + ' min before for getting ready + travel)';
+          f.textContent = '🧑‍🍳 ' + x.start + '–' + x.end + ' shift (leave ' + RPGACE.kit.hm(L.shiftBefore(self._settings)) + ' before for getting ready + travel)';
           pop.box.appendChild(f);
         });
         var clash = L.clashes(d, state.items);
@@ -7704,7 +7704,7 @@ RPGACE.register('myDay', {
             var si = x.shop_items || [];
             sub.push(si.length ? si.length + ' item' + (si.length === 1 ? '' : 's') + ': ' + si.slice(0, 3).map(function(i) { return i.label; }).join(' · ') + (si.length > 3 ? ' …' : '') : 'pick what you\'re getting');
           }
-          if (x.place) sub.push('📍 ' + x.place + (x.journey_mins ? ' · ' + x.journey_mins + ' min journey' : ''));
+          if (x.place) sub.push('📍 ' + x.place + (x.journey_mins ? ' · ' + RPGACE.kit.hm(x.journey_mins) + ' journey' : ''));
           if (x.added) sub.push('also due');
           if (!x.start) sub.push('no free gap, pick a time');
           name.innerHTML = (clash[i] && x.keep !== false ? '<span title="Overlaps your shift">⚠ </span>' : '') + esc(x.title) +
@@ -7858,7 +7858,7 @@ RPGACE.register('myDay', {
           var paint = function() {
             var list = Object.keys(pick).map(function(k) { return pick[k]; });
             var mins = list.reduce(function(a, i) { return a + (Number(i.mins) || 15); }, 0);
-            info.textContent = list.length ? list.length + ' picked · about ' + mins + ' min' : 'Tick what you\'ll do. ⚡ = earns when you do the real thing; +10 = earns when you tick it.';
+            info.textContent = list.length ? list.length + ' picked · about ' + RPGACE.kit.hm(mins)  : 'Tick what you\'ll do. ⚡ = earns when you do the real thing; +10 = earns when you tick it.';
           };
           var addGroup = function(title, items) {
             if (!items.length) return;
@@ -7968,7 +7968,7 @@ RPGACE.register('myDay', {
         info.style.cssText = 'font-size:13px;color:var(--muted);margin-bottom:8px;';
         pop.box.appendChild(info);
         var chosen = function() { return all.filter(function(r) { return pick[String(r.id)]; }); };
-        var paint = function() { var c = chosen(); info.textContent = c.length ? c.length + ' picked · about ' + L.cookMinutes(c) + ' min together (Cooking\'s own timing)' : 'Tick what you\'re cooking.'; };
+        var paint = function() { var c = chosen(); info.textContent = c.length ? c.length + ' picked · about ' + RPGACE.kit.hm(L.cookMinutes(c)) + ' together (Cooking\'s own timing)' : 'Tick what you\'re cooking.'; };
         all.forEach(function(r) {
           var lab = document.createElement('label');
           lab.className = 'mdp-recipe';

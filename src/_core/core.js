@@ -4375,7 +4375,16 @@ async function syncIntelData(showStatus=false){
 }
 
 function startIntelPolling(){
-  syncIntelData(false);
+  // Nov 4 2026 (Alex: "app freezes extend 1800ms"; perf_freezes: every recent dashboard freeze, 1.5-3.4s, 5-8s
+  // after load, sat in this sync's Response.json chain): the full sync (parse + merge + localStorage rewrite +
+  // redraw of a list that's hidden in the File Analyzer popup) no longer runs at start-up. It runs the first
+  // time that panel opens, or straight away if the list is already showing.
+  const _listOn=()=>{const l=document.getElementById('intel-insights-content');return !!(l&&l.offsetParent!==null);};
+  if(_listOn()) syncIntelData(false);
+  else if(!window._intelSyncOnOpen && RPGACE.hooks){
+    window._intelSyncOnOpen=true;
+    RPGACE.hooks.on('worm-panel:open', function(id){ if(id==='file-analyzer-panel' && !window._intelSyncedOnce){ window._intelSyncedOnce=true; syncIntelData(false); } });
+  }
   checkServerStatus();
   if(INTEL_POLL_INTERVAL) clearInterval(INTEL_POLL_INTERVAL);
   // Oct 27 2026 (FL-2): the full sync (all reports + watchlist, localStorage

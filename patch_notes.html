@@ -74,6 +74,15 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-04-hm-freeze" style="margin-bottom:30px;">
+    <div class="card-title">⏱ Nov 4: Every time length shows in hours + minutes; the start-up freeze on the dashboard</div>
+    <div class="card-body">
+      Alex: "Still full minutes, app freezes extend 1800ms".
+      <ul><li>The first pass had missed most labels (e.g. "538 min free"). Now 38 labels across My Day and Doing now use <code>kit.hm</code>: free gaps, the Free now / Fill pop-ups, block lengths, journey and get-ready times, and the Moved and freed toasts. So "538 min free" reads "8h 58m free".</li>
+      <li><b>Freeze:</b> <code>perf_freezes</code> had 197 rows in 3 days. The recent dashboard ones (1.5–3.4s, 5–8s after load) all pointed at the same spot: the video-report sync's <code>Response.json</code> chain. At start-up it parsed, merged and rewrote the whole report cache, then redrew a list that's hidden inside the File Analyzer pop-up. It now runs the first time that panel opens, or straight away if the list is already showing. Articles are still made once per load by the encyclopediaPosts boot task.</li></ul>
+      <b>Flags:</b> the freeze fix is a fix for the cause the evidence points to, not yet confirmed. The check is that new <code>perf_freezes</code> rows on build 20261104c stop showing <code>pos 193496</code>-style <code>Response.json</code> entries on the dashboard. Hours and minutes are harness-tested (mdx 52/52, dn3 19/19, did 10/10).
+    </div>
+</div>
 <div class="card" id="card-2026-11-04-did-it" style="margin-bottom:30px;">
     <div class="card-title">✅ Nov 4: Evening review — "✓ Did it" with real times; Undo no longer lands in "Deleted this week"</div>
     <div class="card-body">

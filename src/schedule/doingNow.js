@@ -807,7 +807,7 @@ RPGACE.register('doingNow', {
           var bt = self.ui._btn(it.icon + ' ' + it.title, '');
           bt.className = 'dn-idea';
           bt.setAttribute('data-realm', it.realm);
-          bt.title = it.name + ': ' + it.why + (it.mins ? ' · about ' + it.mins + ' min' : '');
+          bt.title = it.name + ': ' + it.why + (it.mins ? ' · about ' + RPGACE.kit.hm(it.mins)  : '');
           bt.style.fontSize = '13px';
           bt.onclick = function() {
             bt.disabled = true;
@@ -919,7 +919,7 @@ RPGACE.register('doingNow', {
           if (!md || !md.logic.actionList || !actBox.isConnected) return;
           var a = md.logic.actionList(L.iso(), recent);
           var head = function(t) { var h = document.createElement('div'); h.className = 'dn-drop-sub'; h.style.cssText = 'font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px;'; h.textContent = t; return h; };
-          var row = function(it, into) { var b = btn((it.icon ? it.icon + ' ' : '') + it.label, it.sub + (it.mins ? (it.sub ? ' · ' : '') + 'about ' + it.mins + ' min' : ''), 'dn-drop-action'); b.onclick = function() { go(it.label, it.realm, it.mins, it.routine ? it.routine.id : null); }; into.appendChild(b); };
+          var row = function(it, into) { var b = btn((it.icon ? it.icon + ' ' : '') + it.label, it.sub + (it.mins ? (it.sub ? ' · ' : '') + 'about ' + RPGACE.kit.hm(it.mins)  : ''), 'dn-drop-action'); b.onclick = function() { go(it.label, it.realm, it.mins, it.routine ? it.routine.id : null); }; into.appendChild(b); };
           var mine = a.due.concat(a.recent);
           if (mine.length) { actBox.appendChild(head('⭐ Your Actions')); mine.forEach(function(it) { row(it, actBox); }); }
           if (a.rest.length) {
@@ -960,7 +960,7 @@ RPGACE.register('doingNow', {
           if (!items.length) return;
           var h = document.createElement('div'); h.className = 'dn-drop-sub'; h.style.cssText = 'font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:6px;'; h.textContent = title;
           list.appendChild(h);
-          items.forEach(function(it) { var b = btn(it.label, it.mins ? 'about ' + it.mins + ' min' : '', 'dn-drop-task'); b.onclick = function() { go(it.label, c.realm, it.mins, it.src === 'routine' ? it.ref_id : null); }; list.appendChild(b); });
+          items.forEach(function(it) { var b = btn(it.label, it.mins ? 'about ' + RPGACE.kit.hm(it.mins)  : '', 'dn-drop-task'); b.onclick = function() { go(it.label, c.realm, it.mins, it.src === 'routine' ? it.ref_id : null); }; list.appendChild(b); });
         };
         var opt = md ? md.logic.realmOptions(c.realm) : Promise.resolve({ starters: [], routines: [], books: [] });
         Promise.all([opt, L.loadRecent().catch(function() { return []; })]).then(function(r) {
