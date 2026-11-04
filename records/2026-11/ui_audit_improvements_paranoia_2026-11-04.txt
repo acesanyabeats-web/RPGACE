@@ -26,3 +26,10 @@ Q1 main shape: "Realm = page (Recommended)"
 Q2 page/pop-up rule: "Rule, some exceptions"
 Q3 tiny pages: "Fold into parent tabs (Recommended)"
 Q4 use data: "Open on what I'm doing,Prefill pickers from context,I think also 3 but all tabs are folded on reaching, only when in the realm, or browsing to another after click is it ever unfolded, and the realms are sorted in priority list by number of clicks onto it (2nd priority), by functions used (1st priority) with last clicked at the top; with 4, these should accumulate at the end for evening review, and join that call instead to save, then have it as a review to fill blocks out"
+
+Round 2 answers (verbatim):
+Q stay pop-up (Work / Good morning / I just did / Your Year+Ideas+Plans): "Leave all unticked"  -> all of these become pages.
+Q realm order: "Last one pinned, rest ranked (Recommended)"  (most recent realm on top; rest by functions used, then opens; last 30 days)
+Q folding: "Folded, open what you tap (Recommended)"
+Q evening fill: "1 but it needs proper questionnaire to plan, run it on /interrogation logic with /CEO as framework to make questions work, use code in other areas as inspiration or supabase tables for inspiration if that makes sense"
+  (1 = anything, each ticked; the evening review becomes an Oracle-led questionnaire, interrogation-style, CEO-framework steps)
