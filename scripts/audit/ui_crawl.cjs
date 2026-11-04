@@ -83,8 +83,11 @@ function rowsFor(t, params) {
   const st = fs.existsSync(OUT) ? JSON.parse(fs.readFileSync(OUT, 'utf8')) : null;
   const AUTO = ['Work page (workMode.ui.autoOpen) - during a shift, once per shift', 'What happened? card (myDay.ui._maybeMissed) - after a block passes with nothing logged', 'Good morning screen - after the wake alarm / I\'m up', 'Evening review - from Going to bed'];
   const audit = st || { autoOpen: AUTO, generated: new Date().toISOString(), note: 'Every screen reachable by tapping, from login, at every depth. Sample data (2 rows per list, shaped from each screen\'s own query); phone width 390px; clock 2026-11-04 12:00.', login: null, screens: {}, edges: [], nav: [], queue: [], done: [], errors: [] };
-  const b = await chromium.launch();
-  const ctx = await b.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block', hasTouch: true });
+  const B = await chromium.launch();
+  const key = s => s.kind + '|' + (s.page || '') + '|' + (s.title || '').slice(0, 60);
+  const save = () => fs.writeFileSync(OUT, JSON.stringify(audit, null, 1));
+  const makeWorker = async () => {
+  const ctx = await B.newContext({ viewport: { width: 390, height: 844 }, serviceWorkers: 'block', hasTouch: true });
   const p = await ctx.newPage();
   ctx.on('page', pg => { if (pg !== p) pg.close().catch(() => {}); });
   await p.clock.install({ time: new Date('2026-11-04T12:00:00') });
@@ -106,7 +109,7 @@ function rowsFor(t, params) {
     if (!u.startsWith('http://127.0.0.1:8765') || /\/api\//.test(u)) return r.fulfill(J([]));
     return r.continue();
   });
-  const pageErrs = []; p.on('pageerror', e => pageErrs.push(e.message));
+  p.on('pageerror', e => { audit.pageErrors = audit.pageErrors || []; if (audit.pageErrors.indexOf(e.message) === -1 && audit.pageErrors.length < 80) audit.pageErrors.push(e.message); });
 
   const helpers = () => p.evaluate(() => {
     const vis = el => { if (!el) return false; const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none'; };
@@ -169,7 +172,6 @@ function rowsFor(t, params) {
     await helpers();
     await p.evaluate(() => __ua.reset()); await p.waitForTimeout(400);
   };
-  const key = s => s.kind + '|' + (s.page || '') + '|' + (s.title || '').slice(0, 60);
   const snap = () => p.evaluate(() => __ua.snap());
   // Replay a path: [{nav:i|null}, {t,id}, {t,id}...]
   const replay = async (path) => {
@@ -182,8 +184,11 @@ function rowsFor(t, params) {
     }
     return true;
   };
-  const save = () => fs.writeFileSync(OUT, JSON.stringify(audit, null, 1));
 
+    return { p, login, snap, replay };
+  };
+  const W0 = await makeWorker();
+  { const { p, login, snap } = W0;
   await login();
   if (!audit.queue.length && !audit.done.length) {
     await p.evaluate(() => __ua.openNav()); await p.waitForTimeout(400);
@@ -201,14 +206,19 @@ function rowsFor(t, params) {
     save();
   }
 
+  }
   let finished = true;
-  while (audit.queue.length) {
+  const busy = new Set();
+  const work = async (Wk) => { const { p, login, snap, replay } = Wk;
+  while (true) {
+    if (!audit.queue.length) { if (!busy.size) break; await new Promise(r => setTimeout(r, 1000)); continue; }
     if (Date.now() - T0 > BUDGET_MS) { finished = false; break; }
     const job = audit.queue.shift();
-    if (audit.done.indexOf(job.key) !== -1) continue;
+    if (audit.done.indexOf(job.key) !== -1 || busy.has(job.key)) continue;
+    busy.add(job.key);
     try {
       await login();
-      if (!(await replay(job.path))) { audit.errors.push('could not reach ' + job.key); audit.done.push(job.key); save(); continue; }
+      if (!(await replay(job.path))) { audit.errors.push('could not reach ' + job.key); audit.done.push(job.key); busy.delete(job.key); save(); continue; }
       const s = await snap();
       if (key(s) !== job.key) { audit.errors.push('reached ' + key(s) + ' instead of ' + job.key); }
       audit.screens[job.key] = Object.assign(audit.screens[job.key] || {}, s);
@@ -234,15 +244,19 @@ function rowsFor(t, params) {
         if (to && !audit.screens[to] && job.path.length < MAX_DEPTH) { audit.screens[to] = after; audit.queue.push({ key: to, path: job.path.concat([{ t: bt.t, id: bt.id }]) }); }
         else if (to && !audit.screens[to]) audit.screens[to] = after;
       }
-      audit.done.push(job.key);
+      audit.done.push(job.key); busy.delete(job.key);
       process.stdout.write('[' + audit.done.length + '/' + (audit.done.length + audit.queue.length) + ']');
       save();
-    } catch (e) { audit.errors.push(job.key + ': ' + e.message); audit.done.push(job.key); save(); }
+    } catch (e) { audit.errors.push(job.key + ': ' + e.message); audit.done.push(job.key); busy.delete(job.key); save(); }
   }
-  audit.pageErrors = [...new Set((audit.pageErrors || []).concat(pageErrs))].slice(0, 80);
+  };
+  const N = Number(process.env.UA_WORKERS || 4), workers = [W0];
+  for (let i = 1; i < N; i++) workers.push(await makeWorker());
+  await Promise.all(workers.map(work));
+  audit.pageErrors = (audit.pageErrors || []).slice(0, 80);
   audit.finished = finished;
   save();
   console.log('\nscreens', Object.keys(audit.screens).length, 'edges', audit.edges.length, 'done', audit.done.length, 'queued', audit.queue.length, finished ? 'FINISHED' : 'PAUSED (run again to continue)');
-  await b.close();
+  await B.close();
   process.exit(finished ? 0 : 3);
 })();
