@@ -166,3 +166,10 @@ Alex: "we will also skip step 7, barely did anything in obs, so we will go throu
 
 -- WR-15 build instruction (Alex, verbatim, Nov 3): "So do the wr-15, but when mission is being made, the mission for freebies need to be one with different context on each email, with link to go to email read or link to website to claim freebie"
 -> Built as one Producer mission 'Claim a freebie' + one mission_contexts card per freebie email (email_url + claim_url). 7 cards seeded. Knowledge article/phylum fill-out deferred per his "when we come around to it".
+
+-- Nov 4 2026, Oracle list review (Alex: "we didn't go through oracle list of improvements and bugs and conversations too")
+Alex, verbatim: "Do we still need jina if we have Gemini? Go a,b,c, we will plan d"
+A built: recipe capture backup (STATE.chatHistory poll), lone-surrogate cleanup in api/data-write.js. Jina 400 (Oct 29) left as one-off: Jina reads a page's full text for free; Gemini search finds pages, it doesn't hand back the whole text. Kept.
+B built: guidance toasts + freeze toast no longer logged to error_log (core.js NOT_BUGS); 7 such rows resolved with rationale.
+C done: 4 oracle_dev_suggestions -> reviewed.
+D (to plan): Oracle remembers the last conversation automatically, not only when the question matches a saved chat.

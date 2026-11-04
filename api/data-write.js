@@ -333,6 +333,16 @@ async function handleScreenshots(body, res, serviceKey) {
   return res.status(400).json({ error: 'Unknown screenshots op: ' + op });
 }
 
+// Nov 4 2026 (error_log "Entry not saved: ... PGRST102 Empty or invalid json", Oct 23 x2): text cut mid-emoji leaves a
+// lone surrogate, which JSON.stringify writes as "\\udXXX" and PostgREST rejects as invalid JSON. Every write passes
+// through here, so lone surrogates are dropped once, for all tables.
+function cleanText(v) {
+  if (typeof v === 'string') return v.replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(^|[^\uD800-\uDBFF])[\uDC00-\uDFFF]/g, '$1');
+  if (Array.isArray(v)) return v.map(cleanText);
+  if (v && typeof v === 'object') { const o = {}; for (const k of Object.keys(v)) o[k] = cleanText(v[k]); return o; }
+  return v;
+}
+
 export default async function handler(req, res) {
   setCORS(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
@@ -401,7 +411,7 @@ export default async function handler(req, res) {
         'Content-Type': 'application/json',
         Prefer: prefer,
       },
-      body: operation === 'delete' ? undefined : JSON.stringify(payload),
+      body: operation === 'delete' ? undefined : JSON.stringify(cleanText(payload)),
     });
 
     const text = await r.text();

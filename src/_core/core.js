@@ -5107,7 +5107,11 @@ document.addEventListener('keydown', e=>{
           // the stack always being captured. The stack-walk stays as the
           // real fallback for the ~87 other #CC4A4A call sites that don't
           // pass a moduleName - nothing about their behavior changes.
-          if (el && el._capture) el._capture('ui_toast', 'toast()', msg, { stack: (new Error()).stack, module: moduleName || null });
+          // Nov 4 2026 (Alex: "go b" - stop normal warnings being logged as bugs): guidance nudges (a clash with the
+          // nearest free time, "pick at least one", "paste tracks first"...) and the freeze toast (perf_freezes already
+          // keeps every freeze, rule 8) stay on screen but no longer land in error_log, so it only lists real failures.
+          var NOT_BUGS = /That clashes with|Pick at least one|Paste tracks first|Pick a time|Set when it started|Add a title|still answering|still pending|No free |App froze for|Tick .* first/i;
+          if (el && el._capture && !NOT_BUGS.test(String(msg))) el._capture('ui_toast', 'toast()', msg, { stack: (new Error()).stack, module: moduleName || null });
         } catch (e) { /* fails open - a logging failure must never break the toast itself */ }
         try { RPGACE.hooks.fire('rpgace:error-toast', { msg: msg, color: color, ts: Date.now() }); } catch (e) {}
       }

@@ -74,6 +74,18 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-04-oracle-list" style="margin-bottom:30px;">
+    <div class="card-title">🔮 Nov 4: Oracle list cleared — recipe timeout, "Entry not saved", only real bugs logged</div>
+    <div class="card-body">
+      Alex: "Go a,b,c, we will plan d".
+      <ul><li><b>Recipe "took too long (90s)"</b>: the Nov 3 karahi recipe was saved 44s after asking, so Oracle did answer. The cooking page never heard it, because the "reply arrived" signal depends on the send button switching back on. <code>visualOracle._captureNextResponse</code> now also checks the chat's own history every 3s, so a reply that arrived is used.</li>
+      <li><b>"Entry not saved" (PGRST102 invalid json)</b>: text cut mid-emoji leaves half an emoji that the database rejects. <code>api/data-write.js</code> now drops those halves on every write, for every table.</li>
+      <li><b>Only real bugs are logged</b>: guidance messages ("That clashes with…", "Pick at least one…", "Paste tracks first", "No free…") and the freeze toast still show but no longer go into error_log. perf_freezes already keeps every freeze. 7 such rows were resolved with a reason.</li>
+      <li>Oracle's 4 flagged notes were marked reviewed. Pictures are now in chat (WR-1). Automatic memory of the last chat is the next plan (D).</li>
+      <li>Jina stays. It reads a whole page's text for free (books, pasted links). Gemini finds pages but doesn't hand back the full text.</li></ul>
+      <b>Flags:</b> harness-tested (abc 4/4, cm1 24/24, vw5 11/11). Untested on the phone. The recipe and journal error rows stay open until you confirm.
+    </div>
+</div>
 <div class="card" id="card-2026-11-04-no-alarm" style="margin-bottom:30px;">
     <div class="card-title">⏰ Nov 4: "No alarm" really means no alarm</div>
     <div class="card-body">

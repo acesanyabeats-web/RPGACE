@@ -269,19 +269,33 @@ RPGACE.register('visualOracle', {
     // observed reply time; clearing it after that is strictly safer than
     // a permanent lock, even in the rare case a genuinely slow reply
     // still lands right after.
-    var timedOut = false;
+    var timedOut = false, done = false, poll = null;
+    // Nov 4 2026 (error_log "Oracle took too long to reply (90s)", Nov 3 16:13: the Shimla karahi recipe was saved to
+    // oracle_chats at 16:12:53, 44s in, yet no capture): the scanned hook rides a #send-btn MutationObserver and can
+    // miss a reply. Backup: watch the chat's own history; a new assistant reply with the button free is the answer.
+    var hist = function() { try { return (typeof STATE !== 'undefined' && STATE.chatHistory) || []; } catch (e) { return []; } };
+    var lastAi = function() { var h = hist(); for (var i = h.length - 1; i >= 0; i--) if (h[i] && h[i].role === 'assistant') return h[i]; return null; };
+    var startAi = lastAi();
+    var finish = function(text) {
+      if (done || timedOut) return;
+      done = true; clearTimeout(timer); clearInterval(poll); try { off(); } catch (e) {}
+      self._pendingCapture = false;
+      callback(text);
+    };
     var timer = setTimeout(function() {
-      timedOut = true;
+      if (done) return;
+      var a = lastAi();
+      if (a && a !== startAi) { finish(a.content); return; }
+      timedOut = true; clearInterval(poll);
+      try { off(); } catch (e) {}
       self._pendingCapture = false;
       if (onFail) onFail('timeout');
     }, 90000);
-    var off = RPGACE.hooks.on('oracle:response-scanned', function(text) {
-      off();
-      if (timedOut) return; // already released; a late reply just isn't captured
-      clearTimeout(timer);
-      self._pendingCapture = false;
-      callback(text);
-    });
+    var off = RPGACE.hooks.on('oracle:response-scanned', function(text) { finish(text); });
+    poll = setInterval(function() {
+      var a = lastAi(), btn = document.getElementById('send-btn');
+      if (a && a !== startAi && !(btn && btn.disabled)) finish(a.content);
+    }, 3000);
   },
 
   _saveDocToProduction: function(docSlug, text, productionId) {
