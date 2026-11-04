@@ -1,0 +1,16 @@
+Nov 4 2026 - two asks, planned (not built)
+
+Alex, verbatim:
+- "Go a,b,c, we will plan d" (D = Oracle remembers past chats) ... "I literally told you wtf" (he asked for the plan, not more questions).
+- "Also while doing home keeping work, it will clash with others since I'd be able to do other things at the same time, or during passive cooking times"
+
+PLAN D - Oracle memory (draft, defaults chosen by Claude, flagged for Alex to change):
+D-1 Carry on: when Oracle opens, the last conversation since you last pressed I'm up loads back in (max ~6 turns), so a reload or reopening the app doesn't wipe it. Source: oracle_chats (session rows). Cheap: no extra model call.
+D-2 Running memory: after each chat (or at Going to bed), the cheap model writes 1-3 short lines of what matters about you (new job, plans, how a cook went) into a private oracle_memory table; every chat gets the newest ~15 lines. Duplicates merge; old lines fade after 60 days unless pinned.
+D-3 "🧠 Oracle remembers" list in Oracle's menu: see every line, edit, delete, pin. Nothing is kept that you can't see.
+Defaults flagged: day window = since I'm up; 15 lines; 60-day fade. Change any by saying so.
+
+PLAN HK - Homekeeping alongside other things (brief, waiting on Alex's go):
+HK-1 Homekeeping blocks never clash: they can sit over a realm block, a cook (its passive time), or a Schedule item, and nothing gets pushed. They still can't go over a shift, travel or sleep.
+HK-2 On the day timeline a Homekeeping block draws as a thin lane down the right side over whatever's there, so both stay readable and tappable.
+HK-3 When you plan a cook, its passive stretches (simmer, bake) offer "🧹 Fit chores here", which fills that window with due chores.
