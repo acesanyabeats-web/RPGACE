@@ -90,7 +90,7 @@ LOGIC_POINTS = [
         'id': 'oracle-mode',
         'title': 'Oracle Mode: Real / Dummy / Fallback Scout',
         'decider': 'Alex (manual toggle)',
-        'module': 'mockOracle', 'func': 'setMode', 'lines': (47919, 47931), 'anchor': "self.MODES.indexOf(mode) === -1",  # re-verified Oct 16 2026 (DN-6), earlier Oct 16 (DN-3 Morning Brief catch), was 42511-42523; re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 37417-37429, then 38582-38594 before XP-4 (+166 lines), then 38748-38760 before XP-5 (+379); span = real function start to its closing line
+        'module': 'mockOracle', 'func': 'setMode', 'lines': (47937, 47949), 'anchor': "self.MODES.indexOf(mode) === -1",  # re-verified Oct 16 2026 (DN-6), earlier Oct 16 (DN-3 Morning Brief catch), was 42511-42523; re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 37417-37429, then 38582-38594 before XP-4 (+166 lines), then 38748-38760 before XP-5 (+379); span = real function start to its closing line
         'decides': 'Which of 3 real paths every single Oracle call in the app takes, app-wide, until toggled again.',
         'changes': 'Real: every window.callOracle() call in main.js checks getMode() first. \'dummy\' short-circuits to a synthetic labeled reply, zero API cost. \'fallback\' queues the real prompt into oracle_fallback_queue instead of calling the live API. \'real\' calls the live Anthropic API as normal.',
         'result': 'A visible top-right toggle switch (red/green/gold) whose state persists in localStorage and is checked on literally every real Oracle send in the app.',
@@ -100,7 +100,7 @@ LOGIC_POINTS = [
         'id': 'taxonomy-card-branch',
         'title': 'Taxonomy & Review: which part to open',
         'decider': 'Alex (picker popup)',
-        'module': 'dashDeck', 'lines': (18640, 18713),  # Oct 11 2026 (M1 anchor sweep): rewritten, not just re-lined. The old "_pendingReviewCount !== 0" auto-branch was removed Sep 26 2026 (commit cd51f44); the card now always opens dashDeck._openTaxonomy's picker.
+        'module': 'dashDeck', 'lines': (18723, 18796),  # Oct 11 2026 (M1 anchor sweep): rewritten, not just re-lined. The old "_pendingReviewCount !== 0" auto-branch was removed Sep 26 2026 (commit cd51f44); the card now always opens dashDeck._openTaxonomy's picker.
         'anchor': "if (rq && rq._openCard) rq._openCard();",
         'decides': 'Whether Alex goes to the pending-placement review queue, the Phylum Path tree, or the Jargon Encyclopedia.',
         'changes': 'Nothing is decided by code any more: the picker shows the live pending-placement count (dashDeck._pendingReviewCount, set by _refreshGlance) under the Review button so Alex can see if review is worth it.',
@@ -144,7 +144,7 @@ LOGIC_POINTS = [
         'id': 'artist-phylum-routing',
         'title': 'Last.fm-discovered artists: which phylum they get filed under',
         'decider': 'Code logic (hardcoded phylum_number literal)',
-        'module': 'beatLog', 'func': '_addNewArtistsToTaxonomy', 'lines': (29466, 29473),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 26221-26228; kept narrow: the real secureWrite insert object literal holding the literal, not the whole function
+        'module': 'beatLog', 'func': '_addNewArtistsToTaxonomy', 'lines': (29487, 29494),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 26221-26228; kept narrow: the real secureWrite insert object literal holding the literal, not the whole function
         'anchor': 'phylum_number: 11',
         'decides': 'Which taxonomy phylum a newly-discovered Last.fm artist (via _addNewArtistsToTaxonomy) gets written into.',
         'changes': 'Nothing dynamic — this is a fixed literal, the real near-miss CLAUDE.md rule 13 was written about: the Aug 11 phylum renumber (11<->12) needed a SECOND, separate grep for this raw literal because no adjacent "Phylum 12" text existed nearby to catch it in the first display-text-only pass.',
@@ -178,7 +178,7 @@ TEXT_INPUT_POINTS = [
     {
         'id': 'beat-log-form',
         'title': 'Beat Log form — real multi-field text entry that creates a content_productions/video_jobs row',
-        'module': 'beatLog', 'func': '_getForm', 'lines': (30049, 30064),  # re-verified Oct 16 2026 (BT-3/BT-4 Beat Log growth), was 28516-28532; re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 26760-26776; kept narrow: the real `return {...}` object literal holding the literal
+        'module': 'beatLog', 'func': '_getForm', 'lines': (30071, 30086),  # re-verified Oct 16 2026 (BT-3/BT-4 Beat Log growth), was 28516-28532; re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 26760-26776; kept narrow: the real `return {...}` object literal holding the literal
         'anchor': "title:    get('bl-title')",
         'decides': "Title/key/BPM/scale/energy/mood/genre/rating/licence/collab/ref-track/FL-path — real typed values read directly off the DOM, no defaults faked — that _submit() turns into the actual real database row this ConID's whole downstream pipeline is built from.",
         'link': None,
