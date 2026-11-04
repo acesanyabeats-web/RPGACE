@@ -33,3 +33,10 @@ Q realm order: "Last one pinned, rest ranked (Recommended)"  (most recent realm 
 Q folding: "Folded, open what you tap (Recommended)"
 Q evening fill: "1 but it needs proper questionnaire to plan, run it on /interrogation logic with /CEO as framework to make questions work, use code in other areas as inspiration or supabase tables for inspiration if that makes sense"
   (1 = anything, each ticked; the evening review becomes an Oracle-led questionnaire, interrogation-style, CEO-framework steps)
+
+Round 3 answers (verbatim):
+Q realm map: "Use this mapping (Recommended)"
+  Producer: Beats, My Beats, Beat Log, MusicWorm | Creator: Posting, Videoworm, Screenshot inbox | Hustler: Selling (Beats for sale, Artist outreach, Outreach log, Money in) | Steward: Money, Wishlist, My Software | Chef: Cooking | Athlete: Gym, Health & body | Scholar: Knowledge (Take in/Library, Study, Learned, Review, Bibliography) | Homekeeper: Chores, shopping blocks | Explorer: Plans & trips | Connector: People, reach-outs | Mind: Journal decisions, sleep, look-back | Builder: Oversight, Galaxy Map | Life: Work. Day-level outside realms: Dashboard, My Day, Live now, Calendar, Journal, Chronicles, Oracle, Ideas.
+Q capture: "Oracle chat,Live now,One box on every page,Phone share,But with phone share, I can bypass realm selection and type what I need from it, would be cool if this happens for videos and posts I send to take in, choose realms and why 8 think it is useful for the realms and me. This will give oracle more insight into what I understand about the realms, the video and what it is teaching, and what lessons I did extract and which I missed"
+Q ask style: "Can be 1 or 2, I can decide between the 2, make it intuitive please"
+Q ask about: "Blocks with no log,Gaps in the day,Tomorrow's plan,Money & mood check,Might be more"
