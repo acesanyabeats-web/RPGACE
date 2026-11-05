@@ -64,7 +64,9 @@ RPGACE.register('shopTrip', {
       var self = RPGACE.modules.shopTrip;
       shop = String(shop || '').trim().slice(0, 40);
       if (!shop) return Promise.reject(new Error('Say which shop first'));
-      return self.logic.newestListId().then(function(listId) {
+      // GR: the list the grocery check just built (all upcoming cooks), else the newest list.
+      var gc = RPGACE.modules.groceryCheck, known = gc && gc._res && gc._res.list && gc._res.list.id;
+      return (known ? Promise.resolve(known) : self.logic.newestListId()).then(function(listId) {
         return RPGACE.sb.secureWrite('shop_trips', 'insert', { status: 'shopping', current_shop: shop, shops: [shop], list_id: listId, wish_ids: [], wish_basket: [], receipts: [], putaway: {} });
       }).then(function(d) {
         var row = Array.isArray(d) ? d[0] : d;

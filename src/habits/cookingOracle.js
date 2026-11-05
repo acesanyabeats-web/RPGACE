@@ -520,10 +520,10 @@ RPGACE.register('cookingOracle', {
       // _session is page-memory only; the real list row persists, so
       // find this cook's own list first, then the newest cook list.
       var pcId = (self._session && self._session.plannedCookId) || (scheduled && scheduled.plannedCookId);
-      var q = pcId ? RPGACE.sb.select('shopping_lists', 'select=id&planned_cook_id=eq.' + pcId + '&status=neq.done&order=created_at.desc&limit=1') : Promise.resolve([]);
+      var q = pcId ? RPGACE.sb.select('shopping_lists', 'select=id&planned_cook_id=eq.' + pcId + '&status=eq.open&order=created_at.desc&limit=1') : Promise.resolve([]);
       q.then(function(rows) {
         if (rows && rows[0]) return rows;
-        return RPGACE.sb.select('shopping_lists', 'select=id&kind=eq.cook&status=neq.done&order=created_at.desc&limit=1');
+        return RPGACE.sb.select('shopping_lists', 'select=id&kind=eq.cook&status=eq.open&order=created_at.desc&limit=1');
       }).then(function(rows) {
         var row = (rows || [])[0];
         if (row && row.id) { self.ui._showShoppingList(row.id); return; }

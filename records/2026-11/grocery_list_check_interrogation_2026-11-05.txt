@@ -1,0 +1,16 @@
+Grocery list check (GR) - Nov 5 2026. Verbatim.
+
+Alex: "But that link is supposed to bring me to the grocery list generated straight away, if no new dishes added, same list, if new dishes, generate new one. The list should show what needs top up, what I should check is in stock, what is absent etc, with each one clickable and me giving the status on each ingredient"
+
+Q: Which button should open the grocery list straight away?
+A: "Shop now → list first (Recommended)" (Shop now opens the list check first; Start shop goes into shopping mode with only what to buy)
+
+Q: What counts as 'new dishes' that should make a new list?
+A: "All upcoming cooks, one list (Recommended)" (one combined list for every planned cook not yet cooked; rebuilt when a cook is added/changed, keeping statuses; old per-cook lists closed)
+
+Q: When you tap an ingredient and set its status, what should happen?
+A: "1 with ask oracle button if I want to find subs or amend recipe based on what extra ingredients I want to add to  or remove from or top up with sub out of what I have auto amend the recipe. Those changes then manifest in final recipe for a dish"
+(option 1 = updates list + stock: Got enough / Low, top up / Out, buy it)
+
+Q: How should the list be grouped before you tap anything?
+A: "3 groups by stock (Recommended)" (Absent / Needs top up / Check it's there)

@@ -230,8 +230,8 @@ RPGACE.register('realmPages', {
       if (a[0] === 'plans') { if (M.tripPlans) M.tripPlans.open(a[1]); return; }
       if (a[0] === 'page') { var P = RPGACE.CONFIG.pages; if (typeof showPage === 'function') showPage(P[a[1]] || a[1]); return; }
       if (a[0] === 'decision') { if (M.decisionJournal) M.decisionJournal.ui.openLog(); return; }
-      // ST-1: a shop trip in Live now (shopTrip).
-      if (a[0] === 'shop') { if (M.realmTasks) M.realmTasks.ui.openLive({ mode: 'shop', realm: realm || 'chef' }); return; }
+      // GR-2 (Alex: "Shop now -> list first"): the grocery list check; its Start shop opens shopTrip in Live now.
+      if (a[0] === 'shop') { if (M.groceryCheck) M.groceryCheck.ui.open(); else if (M.realmTasks) M.realmTasks.ui.openLive({ mode: 'shop', realm: realm || 'chef' }); return; }
     },
     // A tool drawn in place: the existing screen, given the section body as its host.
     _drawTool: function(body, kind) {
