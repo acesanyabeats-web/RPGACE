@@ -105,6 +105,8 @@ RPGACE.register('liveModes', {
     // OA-5: the gym screen itself (this week vs target, Log a session, bests).
     _gym: function(body) {
       var self = RPGACE.modules.liveModes, g = RPGACE.modules.gymTracker;
+      // GL: muscles -> exercises -> sets, live (gymLive). The old screen stays behind "📋 Log & bests".
+      if (RPGACE.modules.gymLive) { RPGACE.modules.gymLive.ui.draw(body); return; }
       if (!g) { body.textContent = 'Gym is not loaded.'; return; }
       body.textContent = 'Loading your sessions…';
       var host = { box: body, close: function() {} };

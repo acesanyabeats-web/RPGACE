@@ -784,7 +784,8 @@ RPGACE.register('realmTasks', {
         self._askHooked = true;
         RPGACE.hooks.on('oracle:response-scanned', function(text) {
           var log = document.getElementById('oc-ov-log'), live = document.getElementById('rt-live');
-          if (!log || !live || !live.contains(log) || !self._cookChat || !self._liveCtx || !self._liveCtx.cook) return;
+          var gymOn = !!document.getElementById('gl-box') && RPGACE.modules.gymLive && RPGACE.modules.gymLive.logic.chatKey();
+          if (!log || !live || !live.contains(log) || !self._cookChat || !((self._liveCtx && self._liveCtx.cook) || gymOn)) return;
           var last = self._cookChat.msgs[self._cookChat.msgs.length - 1];
           if (last && last.role === 'user') self.ui._cookChatNote('assistant', String(text || '').replace(/DAY_PLAN_JSON:[\s\S]*$/, '').trim());
         });
@@ -823,9 +824,12 @@ RPGACE.register('realmTasks', {
     // message shape as Cook Mode's own chat, WR-14), keyed to the planned cook, so the recipe can be improved
     // later even if Finish cook is never tapped. One row per cook; updated in place.
     _cookChatNote: function(role, text) {
-      var self = RPGACE.modules.realmTasks, c = self._liveCtx && self._liveCtx.cook;
+      var self = RPGACE.modules.realmTasks, c = self._liveCtx && self._liveCtx.cook, GL = RPGACE.modules.gymLive;
+      // GL-6: a workout in Live now saves its chat the same way, under gym_<date>, with gym colours.
+      var gymKey = !c && GL && document.getElementById('gl-box') ? GL.logic.chatKey() : null;
+      if (gymKey) c = { title: 'Gym ' + gymKey.slice(4), gym: true };
       if (!c || !text) return null;
-      var key = 'live_' + (c.pcId || (c.date + '_' + String(c.title || 'cook').slice(0, 40)));
+      var key = gymKey || ('live_' + (c.pcId || (c.date + '_' + String(c.title || 'cook').slice(0, 40))));
       var sess = self._cookChat;
       if (!sess || sess.key !== key) sess = self._cookChat = { key: key, id: null, msgs: [], recipeId: undefined, title: c.title, pcId: c.pcId, saving: Promise.resolve() };
       sess.msgs.push({ role: role, content: String(text).replace(/^✦\s*Oracle\s*/, '').slice(0, 4000), at: new Date().toISOString() });
@@ -835,7 +839,8 @@ RPGACE.register('realmTasks', {
         var row = { messages: sess.msgs.slice(), updated_at: new Date().toISOString(), source: 'live_now' };
         // CT-1: readable coloured transcript + the cook it belongs to.
         var CTm = RPGACE.modules.cookTranscripts;
-        if (CTm) { var tb = CTm.logic.build(row.messages); row.transcript = tb.transcript; row.line_tags = tb.line_tags; }
+        if (CTm) { var tb = CTm.logic.build(row.messages, c.gym ? GL.logic.tagLine : null); row.transcript = tb.transcript; row.line_tags = tb.line_tags; }
+        if (c.gym) row.source = 'live_now_gym';
         if (sess.pcId && /^[0-9a-f-]{36}$/i.test(sess.pcId)) row.planned_cook_id = sess.pcId;
         if (sess.id) return RPGACE.sb.secureWrite('cook_chats', 'update', row, 'id=eq.' + sess.id);
         sess.id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('c' + Date.now());

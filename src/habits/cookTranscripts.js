@@ -36,14 +36,15 @@ RPGACE.register('cookTranscripts', {
     // Pure: messages [{role, content, at?, tag?}] -> { transcript, line_tags }. A reply takes its question's colour
     // unless it matches one itself (so "use butter instead" -> the answer about butter stays green). A tag already
     // set (an Oracle re-check) is kept.
-    build: function(msgs) {
-      var L = RPGACE.modules.cookTranscripts.logic, lines = [], tags = [], last = 'other';
+    // GL-6: tagFn (optional) = another colour set's tagger (gymLive.logic.tagLine); same transcript shape.
+    build: function(msgs, tagFn) {
+      var L = RPGACE.modules.cookTranscripts.logic, lines = [], tags = [], last = 'other', tagLine = tagFn || L.tagLine;
       (msgs || []).forEach(function(m, i) {
         var text = String(m && m.content || '').replace(/\s+/g, ' ').trim();
         if (!text || text === '…') return;
         var who = m.role === 'user' ? 'You' : 'Oracle';
         var at = m.at ? new Date(m.at) : null, hh = at && !isNaN(at) ? String(at.getHours()).padStart(2, '0') + ':' + String(at.getMinutes()).padStart(2, '0') + ' ' : '';
-        var key = m.tag || L.tagLine(text);
+        var key = m.tag || tagLine(text);
         if (!m.tag && key === 'other' && m.role !== 'user') key = last;
         if (m.role === 'user') last = key;
         lines.push(hh + who + ': ' + text);
