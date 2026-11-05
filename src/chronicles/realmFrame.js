@@ -227,7 +227,9 @@ RPGACE.register('realmFrame', {
       var feedsEl = document.createElement('div'); feedsEl.id = 'rf-feeds';
       var tiles = document.createElement('div'); tiles.id = 'rf-tiles';
       box.appendChild(home); box.appendChild(feedsEl); box.appendChild(tiles);
-      L.targetState(realm).then(function(st) { U._drawHome(home, st, realm, close); });
+      // opts.onReady fires once the home (target + what's next) is drawn or failed (realm page loading cover).
+      L.targetState(realm).then(function(st) { U._drawHome(home, st, realm, close); }).catch(function(e) { home.textContent = '⚠️ Could not load this realm: ' + ((e && e.message) || e); })
+        .then(function() { if (opts.onReady) opts.onReady(); });
       L.feeds(realm).then(function(fs) {
         if (!fs.length) return;
         var h = document.createElement('div'); h.className = 'rf-h'; h.textContent = 'Ready from other realms'; feedsEl.appendChild(h);
@@ -263,7 +265,7 @@ RPGACE.register('realmFrame', {
         RPGACE.areaNav.next(nx, ts.map(function(t) {
           return { icon: '▶', title: t.title, sub: (t.mins || 30) + ' min' + (t.earns === 'xp' && t.xp ? ' · +' + t.xp + ' XP' : ''),
             go: ['▶ Do it', function() { if (close) close(); RPGACE.modules.realmTasks.ui.openLive({ realm: realm }); }] };
-        }), { cls: 'rf', empty: 'No tasks kept for this realm yet.', emptyGo: ['🗂 Pick tasks', function() { if (close) close(); RPGACE.modules.realmTasks.ui.openCatalogue(realm); }] });
+        }), { cls: 'rf', label: '', empty: 'No tasks kept for this realm yet.', emptyGo: ['🗂 Pick tasks', function() { if (close) close(); RPGACE.modules.realmTasks.ui.openCatalogue(realm); }] });
       });
     },
     _editTarget: function(realm, st, done) {
@@ -349,6 +351,9 @@ RPGACE.register('realmFrame', {
     },
     // A page by its area/page key or by the left-menu label.
     _openPage: function(key) {
+      // RP-3 took the area bands out of the menu, so a realm page comes first.
+      var RP = RPGACE.modules.realmPages, to = RP && RP.logic.realmOfKey(key);
+      if (to && RP.ui.open(to.realm, { open: to.open })) return;
       var rows = document.querySelectorAll('.ln-card'), want = String(key || '').toLowerCase(), hit = null;
       [].forEach.call(rows, function(r) {
         if (hit) return;

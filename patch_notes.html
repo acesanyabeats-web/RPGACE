@@ -74,6 +74,16 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-05-switch-fixes" style="margin-bottom:30px;">
+    <div class="card-title">🔧 Nov 5: "200 things on your grocery list" works again + a loading screen when switching realm pages</div>
+    <div class="card-body">
+      Alex (with a Steward page screenshot): "Tried the 200 cooking items, did not work, also when I go on the page, it isn't already loaded, I think moments like these should have a loading screen just for switching".
+      <ul><li><b>Root cause:</b> the "Ready from other realms" links found their page by searching the left menu's rows (<code>realmFrame.ui._openPage</code>); RP-3 removed the old area bands from the menu, so "cooking", "health", "posting", "selling" and "money" found nothing ("Could not find the cooking page"). <b>Fix:</b> those keys now go through the realm pages first (<code>realmPages.logic.realmOfKey</code>): the grocery list link opens Chef with Cooking unfolded.</li>
+      <li><b>Loading screen:</b> opening a realm page shows "Opening Steward…" until the page and its header are drawn (4s at most), instead of the page filling in piece by piece.</li>
+      <li>The same screenshot showed "WHAT'S NEXT" twice; the second label is gone.</li>
+      <li>Tested headless. <b>Untested on Alex's phone.</b> Other pages (Today, Dashboard) don't have the loading screen yet.</li></ul>
+    </div>
+  </div>
 <div class="card" id="card-2026-11-05-rp5" style="margin-bottom:30px;">
     <div class="card-title">📝 Nov 5: notes for tonight from anywhere + share screen Note or Take in (RP-5)</div>
     <div class="card-body">

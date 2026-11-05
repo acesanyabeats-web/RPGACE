@@ -52,7 +52,10 @@ RPGACE.register('realmPages', {
         a = { open: conf.tool ? conf.tool.key : null };
         if (on && on.realm === realm) a = { open: on.source === 'shift' && conf.tool && conf.tool.key === 'work' ? 'work' : 'live', now: on };
       }
-      setTimeout(function() { self.ui.attach(realm, a); }, 0);
+      // Nov 5 2026 (Alex: "when I go on the page, it isn't already loaded ... should have a loading screen just for switching"):
+      // a cover goes up before the first paint and comes down once the frame and its sections are drawn.
+      self.ui._cover(realm);
+      setTimeout(function() { if (!self.ui.attach(realm, a)) self.ui._uncover(); }, 0);
     });
   },
 
@@ -137,6 +140,19 @@ RPGACE.register('realmPages', {
       if (r) return { realm: r, why: 'the page you\'re on' };
       var n = self.logic.now();
       return n ? { realm: n.realm, why: n.source === 'doing' ? 'what you\'re doing now' : n.source === 'block' ? 'the block on now' : 'your shift' } : null;
+    },
+    // Nov 5 2026 (Alex: "Tried the 200 cooking items, did not work"): a page/tool
+    // key ('cooking', 'money', 'health', ...) -> the realm page + section that holds it. Pure.
+    realmOfKey: function(key) {
+      var P = RPGACE.modules.realmPages.PAGES, k = String(key || '').toLowerCase();
+      for (var r in P) {
+        var c = P[r];
+        if (c.tool && c.tool.key === k) return { realm: r, open: c.tool.key };
+        var ex = (c.extras || []).filter(function(x) { return x.key === k; })[0];
+        if (ex) return { realm: r, open: ex.key };
+      }
+      for (var r2 in P) { if (P[r2].page === k) return { realm: r2, open: P[r2].tool ? P[r2].tool.key : null }; }
+      return null;
     },
     pageOf: function(realm) { var c = RPGACE.modules.realmPages.PAGES[realm]; return c ? (RPGACE.CONFIG && RPGACE.CONFIG.pages && RPGACE.CONFIG.pages[c.page]) || c.page : null; },
     realmOfPage: function(name) {
@@ -254,7 +270,8 @@ RPGACE.register('realmPages', {
       else { var bar = pg.querySelector(':scope > .area-bar, :scope > #bh-bar'); var anchor = bar || t; if (anchor && anchor.nextSibling) pg.insertBefore(frame, anchor.nextSibling); else pg.appendChild(frame); }
       frame.appendChild(X.ui.stripFull([realm]));
       var home = document.createElement('div'); home.id = 'rp-home'; frame.appendChild(home);
-      RF.ui.render(home, realm, null, { noTiles: true });
+      var waits = 2, ready = function() { if (--waits === 0) U._uncover(); };
+      RF.ui.render(home, realm, null, { noTiles: true, onReady: ready });
       var list = document.createElement('div'); list.id = 'rp-sections'; frame.appendChild(list);
       var rt = RPGACE.modules.realmTasks;
       var tasksN = rt ? (rt._tasks || []).filter(function(x) { return x.status === 'kept' && x.realm === realm; }).length : 0;
@@ -277,8 +294,25 @@ RPGACE.register('realmPages', {
           if (conf.tool && sec.key === conf.tool.key && nodes) { drawn = true; keep.forEach(function(n) { body.appendChild(n); }); }
           if (opts.open === sec.key) toggle(true);
         });
-      });
+        ready();
+      }).catch(function(e) { ready(); console.warn('[realmPages] sections not drawn:', e && e.message || e); });
       return frame;
+    },
+    // The switching screen: full screen under pop-ups, gone on ready or after 4s at most.
+    _cover: function(realm) {
+      var U = RPGACE.modules.realmPages.ui, X = RPGACE.modules.xpSeason, R = X && X.REALMS[realm];
+      U._uncover();
+      var c = document.createElement('div'); c.id = 'rp-cover'; c.setAttribute('role', 'status'); c.setAttribute('aria-live', 'polite');
+      c.style.cssText = 'position:fixed;inset:0;z-index:9000;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--text);font-family:inherit;';
+      c.innerHTML = '<div style="font-size:40px;line-height:1;">' + (R ? R.icon : '⏳') + '</div><div style="font-size:18px;font-weight:700;">Opening ' + (R ? R.name : 'page') + '…</div>' +
+        '<div class="rp-cover-bar" style="width:140px;height:4px;border-radius:2px;background:var(--border);overflow:hidden;"><div style="width:40%;height:100%;background:var(--gold);animation:rpCover 0.9s ease-in-out infinite;"></div></div>';
+      if (!document.getElementById('rp-cover-css')) { var st = document.createElement('style'); st.id = 'rp-cover-css'; st.textContent = '@keyframes rpCover{0%{transform:translateX(-100%)}100%{transform:translateX(250%)}}@media (prefers-reduced-motion: reduce){#rp-cover .rp-cover-bar div{animation:none}}'; document.head.appendChild(st); }
+      document.body.appendChild(c);
+      U._coverT = setTimeout(U._uncover, 4000);
+    },
+    _uncover: function() {
+      var U = RPGACE.modules.realmPages.ui; clearTimeout(U._coverT);
+      var c = document.getElementById('rp-cover'); if (c) c.remove();
     },
     // RP-2: the realms band of the side menu, in menu order. A realm with a page opens it (all folded); else its home.
     menuItems: function(order) {
