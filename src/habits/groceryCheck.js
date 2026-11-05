@@ -131,7 +131,7 @@ RPGACE.register('groceryCheck', {
     },
     recipe: function(id) {
       return Promise.all([
-        RPGACE.sb.select('recipes', 'select=id,title,steps&id=eq.' + id + '&limit=1'),
+        RPGACE.sb.select('recipes', 'select=id,title,steps,source&id=eq.' + id + '&limit=1'),
         RPGACE.sb.select('recipe_ingredients', 'select=amount,unit,grams_estimate,is_separable,ingredients(name)&recipe_id=eq.' + id)
       ]).then(function(r) {
         var rec = (r[0] || [])[0]; if (!rec) throw new Error('recipe not found');
@@ -161,17 +161,19 @@ RPGACE.register('groceryCheck', {
       var edits = {}, adds = [];
       rawEdits.forEach(function(e) {
         var n = parseInt(e.order, 10), d = String(e.description || '').slice(0, 600); if (!n || !d) return;
-        if (e.new === true) adds.push({ at: n, description: d }); else edits[n] = d;
+        // YR: a video check also sends the moment in the video and the creator's tip for the step.
+        var extra = {}, va = parseInt(e.video_at, 10); if (va >= 0) extra.video_at = va; if (typeof e.tip === 'string' && e.tip.trim()) extra.tip = e.tip.trim().slice(0, 200);
+        if (e.new === true) adds.push({ at: n, description: d, extra: extra }); else edits[n] = { d: d, extra: extra };
       });
       var steps = (rec.steps || []).map(function(s, idx) {
         var n = (s && s.order) || idx + 1;
         if (!edits[n]) return s;
-        return typeof s === 'string' ? edits[n] : Object.assign({}, s, { description: edits[n] });
+        return typeof s === 'string' ? edits[n].d : Object.assign({}, s, edits[n].extra, { description: edits[n].d });
       });
       // A new step goes in at its position (later ones move down), shaped like its neighbour.
       adds.sort(function(x, y) { return y.at - x.at; }).forEach(function(a) {
         var i = Math.max(0, Math.min(steps.length, a.at - 1)), near = steps[i] || steps[i - 1] || {};
-        steps.splice(i, 0, typeof near === 'string' ? a.description : { type: near.type || 'prep_before_cooking', description: a.description });
+        steps.splice(i, 0, typeof near === 'string' ? a.description : Object.assign({ type: near.type || 'prep_before_cooking', description: a.description }, a.extra));
       });
       if (adds.length) steps = steps.map(function(s, i) { return typeof s === 'string' ? s : Object.assign({}, s, { order: i + 1 }); });
       var changes = (Array.isArray(o.changes) ? o.changes : []).map(function(c) { return String(c).slice(0, 160); }).filter(Boolean).slice(0, 5);
@@ -297,6 +299,29 @@ RPGACE.register('groceryCheck', {
       ask.onclick = function() { pop.close(); U.askOracle(item, res, after); };
       pop.box.appendChild(ask);
     },
+    // The one "what changes" box + Save (recipe chat and the YouTube check share it, rule 8).
+    _proposal: function(log, state, amended, opts, pop) {
+      var self = RPGACE.modules.groceryCheck, L = self.logic, U = self.ui;
+      log.querySelectorAll('.gr-proposal').forEach(function(x) { x.remove(); });
+          var box = U._div('gr-proposal'); box.id = 'gr-proposal'; box.style.cssText = 'border:1px solid var(--gold);border-radius:10px;padding:10px;';
+          box.appendChild(U._div('gr-h', 'What changes in ' + state.rec.title));
+          amended.changes.forEach(function(c) { box.appendChild(U._div('', '• ' + c)); });
+          var before = {}; state.rec.ingredients.forEach(function(i) { before[i.name.toLowerCase()] = i; });
+          var diff = amended.ingredients.filter(function(i) { var b = before[i.name.toLowerCase()]; return !b || b.amount !== i.amount || (b.unit || '') !== (i.unit || ''); }).map(function(i) { return '+ ' + i.name + ' ' + U._amt(i.amount, i.unit); });
+          var now = {}; amended.ingredients.forEach(function(i) { now[i.name.toLowerCase()] = 1; });
+          state.rec.ingredients.forEach(function(i) { if (!now[i.name.toLowerCase()]) diff.push('− ' + i.name); });
+          if (diff.length) box.appendChild(U._div('gr-note', diff.join(' · ')));
+          box.appendChild(U._div('gr-note', 'Not right? Keep talking below. Nothing changes until you save.'));
+          var save = RPGACE.kit.btn('✅ Save to the recipe', 'primary'); save.id = 'gr-amend-save'; save.style.cssText += 'width:100%;margin-top:8px;';
+          save.onclick = function() {
+            save.disabled = true; save.textContent = 'Saving…';
+            L.saveRecipe(state.rid, amended).then(function() { return opts.after ? opts.after(state.rid) : null; }).then(function() {
+              pop.close(); RPGACE.utils.toast('🍳 ' + state.rec.title + ' updated', '#3DAA6E', 3000);
+            }, function(e) { save.disabled = false; save.textContent = '✅ Save to the recipe'; U._fail('Recipe not saved', e); });
+          };
+          box.appendChild(save); log.appendChild(box);
+      return box;
+    },
     // GR-3: from the grocery list - the chat on the recipes that use this ingredient.
     askOracle: function(item, res, after) {
       var self = RPGACE.modules.groceryCheck, L = self.logic, U = self.ui;
@@ -326,6 +351,26 @@ RPGACE.register('groceryCheck', {
       RPGACE.kit.needs(go, ta, 'Say what you want to change or ask');
       host.appendChild(go);
       var state = { rid: pick.value, chat: [], rec: null };
+      // YR (Nov 5 2026, Alex: "these things need to be backed with youtube"): check this recipe against its video.
+      var vr = RPGACE.modules.videoRecipe;
+      if (vr) {
+        var vbtn = RPGACE.kit.btn('📺 Check against the YouTube video', ''); vbtn.id = 'gr-video-check'; vbtn.style.cssText += 'width:100%;margin-top:6px;';
+        vbtn.onclick = function() {
+          vbtn.disabled = true; vbtn.textContent = 'Finding the video…';
+          (state.rec ? Promise.resolve(state.rec) : L.recipe(state.rid)).then(function(rec) {
+            state.rec = rec;
+            return vr.ui.videoFor(rec).then(function(video) {
+              if (!video) return null;
+              vbtn.textContent = '📺 Gemini is watching the video…';
+              return vr.logic.compare(rec, video).then(function(x) {
+                if (x.reply) { state.chat.push({ who: 'Oracle', text: x.reply }); bubble('Oracle', '📺 ' + x.reply + ' (' + video.title + ')'); }
+                if (x.amended) U._proposal(log, state, x.amended, opts, pop);
+              });
+            });
+          }).catch(function(e) { U._fail('Video check failed', e); }).then(function() { vbtn.disabled = false; vbtn.textContent = '📺 Check against the YouTube video'; });
+        };
+        host.appendChild(vbtn);
+      }
       pick.onchange = function() { state.rid = pick.value; state.chat = []; state.rec = null; log.innerHTML = ''; };
       var bubble = function(who, text) {
         var d = U._div('', text); d.className = 'gr-msg gr-' + (who === 'Alex' ? 'me' : 'or');
@@ -340,24 +385,7 @@ RPGACE.register('groceryCheck', {
         (state.rec ? Promise.resolve(state.rec) : L.recipe(state.rid)).then(function(rec) { state.rec = rec; return L.amend(rec, { item: opts.item }, state.chat); }).then(function(x) {
           go.disabled = false; go.textContent = '🔮 Ask';
           if (x.reply) { state.chat.push({ who: 'Oracle', text: x.reply }); bubble('Oracle', x.reply); }
-          if (!x.amended) return;
-          var box = U._div('gr-proposal'); box.id = 'gr-proposal'; box.style.cssText = 'border:1px solid var(--gold);border-radius:10px;padding:10px;';
-          box.appendChild(U._div('gr-h', 'What changes in ' + state.rec.title));
-          x.amended.changes.forEach(function(c) { box.appendChild(U._div('', '• ' + c)); });
-          var before = {}; state.rec.ingredients.forEach(function(i) { before[i.name.toLowerCase()] = i; });
-          var diff = x.amended.ingredients.filter(function(i) { var b = before[i.name.toLowerCase()]; return !b || b.amount !== i.amount || (b.unit || '') !== (i.unit || ''); }).map(function(i) { return '+ ' + i.name + ' ' + U._amt(i.amount, i.unit); });
-          var now = {}; x.amended.ingredients.forEach(function(i) { now[i.name.toLowerCase()] = 1; });
-          state.rec.ingredients.forEach(function(i) { if (!now[i.name.toLowerCase()]) diff.push('− ' + i.name); });
-          if (diff.length) box.appendChild(U._div('gr-note', diff.join(' · ')));
-          box.appendChild(U._div('gr-note', 'Not right? Keep talking below. Nothing changes until you save.'));
-          var save = RPGACE.kit.btn('✅ Save to the recipe', 'primary'); save.id = 'gr-amend-save'; save.style.cssText += 'width:100%;margin-top:8px;';
-          save.onclick = function() {
-            save.disabled = true; save.textContent = 'Saving…';
-            L.saveRecipe(state.rid, x.amended).then(function() { return opts.after ? opts.after(state.rid) : null; }).then(function() {
-              pop.close(); RPGACE.utils.toast('🍳 ' + state.rec.title + ' updated', '#3DAA6E', 3000);
-            }, function(e) { save.disabled = false; save.textContent = '✅ Save to the recipe'; U._fail('Recipe not saved', e); });
-          };
-          box.appendChild(save); log.appendChild(box);
+          if (x.amended) U._proposal(log, state, x.amended, opts, pop);
         }, function(e) { go.disabled = false; go.textContent = '🔮 Ask'; state.chat.pop(); U._fail('Oracle could not help', e); });
       };
       setTimeout(function() { try { ta.focus(); } catch (e) {} }, 50);

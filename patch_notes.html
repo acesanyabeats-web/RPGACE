@@ -74,6 +74,17 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-05-yr" style="margin-bottom:30px;">
+    <div class="card-title">📺 Nov 5: recipes backed by YouTube - Gemini watches the video (YR-1..4)</div>
+    <div class="card-body">
+      Alex: "tried to do the horchata José el cook method, yet some steps and ingredients are missing, I'd like gemini to look up youtube video and in take so it is what I ask for, these things need to be backed with youtube"; answers: a named cook or a link -> "is this the one?", a plain request -> Video Finder's 5 videos, a saved recipe -> differences to accept, keep link + timestamps, Life Library (Chef) and tips.
+      <ul><li><b>YR-1:</b> Generate checks YouTube when your words name the top video's cook (e.g. "horchata José el cook") and asks "Is this the one?" (or Show 5). A pasted YouTube link goes straight in. New 📺 Pull it from a YouTube video shows 5 for any request.</li>
+      <li><b>YR-2:</b> Gemini watches the whole video in the cloud (no laptop, no YouTube cookies) and writes the recipe exactly as the video makes it - every ingredient, amount and step in order, scaled to your servings. The recipe card shows 📺 From the video with the link, the creator's tips, and anything the video didn't show (estimated).</li>
+      <li><b>YR-3:</b> In the recipe chat (Planned Cook, Scheduled Cook, grocery list): 📺 Check against the YouTube video - picks its video, Gemini lists what your saved recipe misses (e.g. the 10-minute toast), on the same accept screen.</li>
+      <li><b>YR-4:</b> Saved recipes keep the video link; each step keeps its moment in the video and the creator's tip - Cook Mode shows 💡 the tip and ▶ Watch this step (m:ss). The video goes into your Life Library as a Chef take-in with the tips.</li>
+      <li>Server: /api/search type video-read (no new function). Tested headless with a mocked Gemini reply (10 checks). <b>Not yet run against real Gemini - the first real horchata read is the test.</b> Long videos take a minute or more.</li></ul>
+    </div>
+  </div>
 <div class="card" id="card-2026-11-05-rh" style="margin-bottom:30px;">
     <div class="card-title">🏠 Nov 5: realm pages, do-first - slim rank, one Grow row, target + Live now card, tools as tiles, one bottom row (RH) + recipe chat fixes</div>
     <div class="card-body">

@@ -5,6 +5,9 @@
 // Uses YouTube's undocumented search endpoint + oEmbed for metadata
 import { setCORS, requireAuth } from './_context.js';
 
+// Nov 5 2026 (YR): Gemini watching a whole YouTube video can take a minute or two.
+export const config = { maxDuration: 300 };
+
 export default async function handler(req, res){
   setCORS(res);
   if(req.method === 'OPTIONS') return res.status(200).end();
@@ -12,6 +15,8 @@ export default async function handler(req, res){
   if(req.method !== 'POST') return res.status(405).end();
 
   const { query, type, sort } = req.body || {};
+  // YR (Nov 5 2026): Gemini watches one public YouTube video and answers the app's prompt (recipe / compare).
+  if (type === 'video-read') return handleVideoRead(req.body || {}, res);
   if(!query) return res.status(400).json({ error: 'No query' });
 
   if (type === 'recipe-image') return handleRecipeImage(query, res);
@@ -172,4 +177,41 @@ async function handleWeb(query, res) {
   console.warn('[search web] failed:', tried.join(' | '));   // so Vercel runtime logs show why
   // The real reason goes in the message so the app's toast shows it (it used to say only 'Web search failed').
   return res.status(setup ? 503 : 502).json({ error: setup ? 'Web search is not set up yet (add GEMINI_API_KEY in Vercel)' : 'Web search failed: ' + tried.join(' | ').slice(0, 300), setup, tried });
+}
+
+// YR (Nov 5 2026, Alex: "I'd like gemini to look up youtube video and in take so it is what I ask for, these
+// things need to be backed with youtube"): Gemini reads a public YouTube video directly (no cookies, no laptop)
+// and answers the prompt the app sends. Only youtube.com / youtu.be links are accepted.
+async function handleVideoRead(body, res) {
+  const url = String(body.url || '').trim();
+  const m = url.match(/^https:\/\/(?:www\.|m\.)?(?:youtube\.com\/(?:watch\?v=|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{6,20})/);
+  if (!m) return res.status(400).json({ error: 'Not a YouTube video link' });
+  const prompt = String(body.prompt || '').slice(0, 12000);
+  if (!prompt) return res.status(400).json({ error: 'No prompt' });
+  const geminiKey = process.env.GEMINI_API_KEY || process.env.Gemini_API_Key;
+  if (!geminiKey) return res.status(503).json({ error: 'Gemini is not set up (add GEMINI_API_KEY in Vercel)' });
+  const videoUrl = 'https://www.youtube.com/watch?v=' + m[1];
+  const tried = [];
+  for (const model of ['gemini-2.5-flash', 'gemini-flash-latest', 'gemini-2.0-flash']) {
+    try {
+      const r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': geminiKey },
+        body: JSON.stringify({
+          contents: [{ role: 'user', parts: [{ file_data: { file_uri: videoUrl, mime_type: 'video/*' } }, { text: prompt }] }],
+          generationConfig: { maxOutputTokens: 8192, temperature: 0.2, responseMimeType: 'application/json' }
+        })
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error((d && d.error && d.error.message) || ('HTTP ' + r.status));
+      const text = ((d.candidates || [])[0]?.content?.parts || []).map(p => p.text || '').join('');
+      if (!text) throw new Error('empty reply' + (d.candidates?.[0]?.finishReason ? ' (' + d.candidates[0].finishReason + ')' : ''));
+      return res.status(200).json({ provider: 'gemini', model, url: videoUrl, text });
+    } catch (e) {
+      tried.push(model + ': ' + e.message);
+      if (!/not found|not supported|404/i.test(e.message)) break;
+    }
+  }
+  console.warn('[search video-read] failed:', tried.join(' | '));
+  return res.status(502).json({ error: 'Gemini could not read the video: ' + tried.join(' | ').slice(0, 300) });
 }

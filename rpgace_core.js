@@ -97,6 +97,7 @@
 // @file src/habits/shopTrip.js
 // @file src/habits/groceryCheck.js
 // @file src/habits/bestBefore.js
+// @file src/habits/videoRecipe.js
 // @file src/habits/healthBody.js
 // @file src/schedule/myDay.js
 // @file src/schedule/alarmSounds.js

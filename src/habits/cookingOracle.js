@@ -830,6 +830,25 @@ RPGACE.register('cookingOracle', {
         // of guessing what he meant - never blocks an already-detailed
         // description, which skips straight to generation as before.
         var wordCount = d.split(/\s+/).filter(Boolean).length;
+        // YR (Nov 5 2026, Alex: "for specific chef ones, find video and ask if this one"): a YouTube link, or a
+        // request naming the top video's cook, is built from that video (Gemini watches it). Else as before.
+        var VR = RPGACE.modules.videoRecipe;
+        if (VR && VR.logic.linkIn(d)) {
+          VR.ui.choose(d).then(function(v) { if (v) { pop.close(); VR.ui.build(v, d, servingsInput.value || 4); } });
+          return;
+        }
+        if (VR && wordCount > 3 && !genBtn._videoChecked) {
+          genBtn.disabled = true; genBtn.textContent = '⏳ Checking YouTube for that cook…';
+          VR.logic.search(d + ' recipe').then(function(vids) { return vids[0] && VR.logic.namesCreator(d, vids[0]); }, function() { return false; }).then(function(named) {
+            genBtn.disabled = false; genBtn.textContent = '⚡ Generate';
+            if (!named) { genBtn._videoChecked = true; genBtn.click(); genBtn._videoChecked = false; return; }
+            VR.ui.choose(d, { one: true }).then(function(v) {
+              if (v) { pop.close(); VR.ui.build(v, d, servingsInput.value || 4); }
+              else { genBtn._videoChecked = true; genBtn.click(); genBtn._videoChecked = false; }
+            });
+          });
+          return;
+        }
         if (wordCount <= 3) {
           pop.close();
           self.ui._showNarrowDown(d, servingsInput.value || 4, stockOnlyCheck.checked);
@@ -838,6 +857,17 @@ RPGACE.register('cookingOracle', {
         self.ui._runGenerateAndShow(pop, genBtn, errBox, d, servingsInput.value || 4, stockOnlyCheck.checked);
       };
       box.appendChild(genBtn);
+      // YR (Alex: "plain request can use video finder and show 5 videos to pull"): any request, from a video.
+      if (RPGACE.modules.videoRecipe) {
+        var ytBtn = self.ui._mkBtn('📺 Pull it from a YouTube video', '', { extra: 'width:100%;margin-bottom:8px;' }); ytBtn.id = 'co-gen-youtube';
+        ytBtn.onclick = function() {
+          var d = desc.value.trim();
+          if (!d) { RPGACE.utils.toast('⚠️ Say what you want to cook first', '#E2A83D', 2500); return; }
+          var VR = RPGACE.modules.videoRecipe;
+          VR.ui.choose(d, { one: false }).then(function(v) { if (v) { pop.close(); VR.ui.build(v, d, servingsInput.value || 4); } });
+        };
+        box.appendChild(ytBtn);
+      }
 
       // Oct 21 2026: Settings and Stock now live in the ☰ list (ui._cookShortcuts).
 
@@ -1316,6 +1346,14 @@ RPGACE.register('cookingOracle', {
           cue.style.cssText = 'font-size:16px;color:var(--green);';
           cue.textContent = '✓ Done when: ' + st.done_cue;
           pnl.appendChild(cue);
+        }
+        // YR: the creator's tip and a jump to this step in the video.
+        if (st.tip) { var tipEl = document.createElement('div'); tipEl.className = 'cm-tip'; tipEl.style.cssText = 'font-size:15px;color:var(--gold);'; tipEl.textContent = '💡 ' + st.tip; pnl.appendChild(tipEl); }
+        if (st.video_url && st.video_at != null) {
+          var vj = document.createElement('a'); vj.className = 'cm-video-at'; vj.target = '_blank'; vj.rel = 'noopener';
+          vj.href = st.video_url + '&t=' + st.video_at + 's'; vj.textContent = '▶ Watch this step (' + Math.floor(st.video_at / 60) + ':' + String(st.video_at % 60).padStart(2, '0') + ')';
+          vj.style.cssText = 'display:inline-block;min-height:44px;line-height:44px;font-size:15px;color:var(--blue,#4A90E2);';
+          pnl.appendChild(vj);
         }
         var tm = document.createElement('div');
         tm.className = 'cm-timer';
@@ -2245,6 +2283,8 @@ RPGACE.register('cookingOracle', {
         onClose: function() { self._recipeCardOpen = false; self._applyRecipeUpdate = null; },
       });
       var box = pop.box;
+      // YR (Nov 5 2026): a YouTube-backed recipe shows its video, the creator's tips and what the video didn't show.
+      if (RPGACE.modules.videoRecipe) { var yrBox = RPGACE.modules.videoRecipe.ui.sourceBox(recipe); if (yrBox) box.appendChild(yrBox); }
 
       // Sep 16 2026 - real Alex ask: "recipes i choose should have a photo
       // of the internet presented so i can see what im making." Real
@@ -5653,6 +5693,10 @@ RPGACE.register('cookingOracle', {
         ['done_cue', 'equipment', 'timer_end'].forEach(function(k) {
           step[k] = (typeof step[k] === 'string') ? step[k].trim().slice(0, 90) : '';
         });
+        // YR (Nov 5 2026): YouTube-backed steps keep the creator's tip and the moment in the video.
+        if (step.tip != null) step.tip = (typeof step.tip === 'string') ? step.tip.trim().slice(0, 200) : '';
+        if (step.video_at != null) { var va = parseInt(step.video_at, 10); if (va >= 0) step.video_at = va; else delete step.video_at; }
+        if (step.video_url != null && !/^https:\/\/www\.youtube\.com\/watch\?v=[A-Za-z0-9_-]+$/.test(String(step.video_url))) delete step.video_url;
       });
     },
 
@@ -5697,6 +5741,7 @@ RPGACE.register('cookingOracle', {
           active_duration_min: isBlocks ? RPGACE.modules.cookingOracle.logic._blockTimes(x).active : (x.active_duration_min || 0),
           passive_duration_min: isBlocks ? RPGACE.modules.cookingOracle.logic._blockTimes(x).passive : (x.passive_duration_min || 0),
           timer_end: isBlocks ? (x.timerEnd || '') : (x.timer_end || ''),
+          tip: isBlocks ? (x.tip || '') : (x.tip || ''), video_at: x.video_at != null ? x.video_at : null, video_url: x.video_url || null,
           ingredients_used: ings.map(function(u) {
             return { name: u.name, unit: u.unit || '', amount: (typeof u.amount === 'number') ? Math.round(u.amount * scale * 100) / 100 : u.amount };
           }),
@@ -6571,7 +6616,7 @@ RPGACE.register('cookingOracle', {
         servings_base: recipe.servings_base || 4,
         steps: recipe.steps || [],
         cuisine: (typeof recipe.cuisine === 'string' && recipe.cuisine.trim()) ? recipe.cuisine.trim().slice(0, 40) : null,
-        source: 'oracle',
+        source: recipe.source_url || 'oracle', // YR: a YouTube-backed recipe keeps its video link here
         raw_response: rawText || null,
       })
         .then(function(data) {

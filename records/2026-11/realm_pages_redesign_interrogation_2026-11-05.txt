@@ -5,3 +5,11 @@ Q: What should a realm page show first? A: "Do-first (Recommended)" (top card: t
 Q: Rank card? A: "One slim line at the top (Recommended)" ('Rank 2 · 340 XP ›', tap for the full card)
 Q: The 4 dotted hint lines? A: "Merge into one '💡 Grow' row (Recommended)"
 Q: Steward's top (2 links + 2 mini realm cards)? A: "Drop them (Recommended)"
+
+---
+YouTube-backed recipes (YR) - Nov 5 2026. Verbatim.
+Alex: "Also tried to do the horchata José el cook method, yet some steps and ingredients are missing, I'd like gemini to look up youtube vidéo and in take so it is what I ask for, these things need to be backed with youtube"
+Q: When should a recipe be backed by a YouTube video? A: "1 but plain request can use video finder and show 5 videos to pull, for specific chef ones, find video and ask if this one"
+Q: How should the video be picked? A: "1 and 5 please with video finder"
+Q: Saved recipe - check against the video? A: "Show the differences to accept (Recommended)"
+Q: What should be kept from the video? A: "Link + timestamps on the recipe,Take it into the Life Library (Chef),Tips as recipe notes"

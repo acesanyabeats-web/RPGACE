@@ -21,6 +21,8 @@ built in `local_server/rpgace_intel.py` `insights_prompt`.
 - `shop_read.md` - Shop trip read (ST-4, Nov 5 2026): one batched read of a shop trip's receipt photos and new products' label photos. shopTrip.logic.read, a few images per call
 - `tutor.md` - Shared opener for every Phylum Path / taxonomy tutor prompt (was copied 9 times in phylumPath). {subject} = the discipline
 - `use_soon.md` - Use soon ideas (BB-6, Nov 5 2026): what to cook to use up food close to its best-before. bestBefore.logic.ideas, one call (judgment model)
+- `video_compare.md` - YouTube check of a saved recipe (YR, Nov 5 2026): Gemini watches the video and lists what the saved recipe misses or gets wrong, in the recipe chat's change shape. videoRecipe.logic.compare via /api/search type video-read
+- `video_recipe.md` - YouTube-backed recipe (YR, Nov 5 2026): Gemini watches one cooking video and writes the recipe exactly as the video makes it. videoRecipe.logic.recipeFrom via /api/search type video-read
 
 ## Still written inline in code (candidates to move here)
 
