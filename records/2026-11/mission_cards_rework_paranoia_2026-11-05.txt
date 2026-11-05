@@ -9,3 +9,18 @@ Evidence for the rework:
 - realm_tasks: 380 rows; 67 are missions (context_kind set) across 11 realms (chef 16, athlete 12, creator 9, producer 8...).
 - One context picker already exists: myDay.ui.pickContext(o, realm, cb, block) + realmTasks.logic.CONTEXT_SOURCES (recipe, combo, reference, post, person, book, plan, beat, artist, dev). It is wired ONLY in Plan a block (myDay ~6142).
 - Mission lists with NO edit / context: myDay.ui.logPast (Log something you did: kit.taskCard tick only), realmTasks Live now list (kit.taskCard, tools = ▶ Start only), realm page Tasks section. Catalogue has "Edit" = two window.prompt boxes (name, minutes) only.
+
+== Interrogation round 1, Alex's answers verbatim ==
+Edit what -> "Context (pick from your data),Name + minutes,Notes / how,Realm + repeat"
+Scope -> "1 but changes mission for good only in present or planned, not in planning stage, planning mission is picking the context, choosing mission is planning block"
+New recipe -> "Pick from saved only"
+
+Reading of the scope answer (to confirm with Alex in the brief):
+- Planning a block = choosing missions + picking each one's context (recipe/beat/person). Context is for that block only. No mission editing there.
+- In the present (Live now, logging what you did) or on an already-planned block: ✏️ Edit changes the mission for good (name, minutes, notes/how, realm, repeat); context can still be (re)picked for that block.
+
+== Draft plan (MC - Mission Cards) ==
+MC-1 One shared mission card (kit, used everywhere a mission shows): title, minutes, context line; buttons 🎯 context (pick from saved data via the existing pickContext/CONTEXT_SOURCES), ✏️ Edit (present/planned only).
+MC-2 ✏️ Edit sheet (replaces Catalogue's two window.prompt boxes): name, minutes, notes/how, realm, one-off/repeatable -> realm_tasks update.
+MC-3 Wire the card into: Log something you did, Live now list, realm page Tasks, a planned block's items, evening review Not done; Plan a block keeps choose + context only.
+MC-4 Chef context = saved recipes only (no new-recipe typing in the picker).
