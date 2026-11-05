@@ -23,3 +23,14 @@ ST-1 Plan the shop: one Shop trip page - newest grocery list + wishlist items yo
 ST-2 Receipt photo -> line items (receipt_read extended: each line name/qty/price + shop) -> ONE review screen -> on Save: money out (chronicles_finance), matching grocery/wishlist items ticked bought, pantry_stock per item + store, ingredient_prices per line.
 ST-3 Product photos (front + back) per stock item: product name/brand + nutrition per 100g + ingredients -> product record linked to the pantry item -> verdict: UK traffic lights (fat/sat fat/sugar/salt) + nearest CoFID food + Health & body goals -> healthy / sometimes / treat + why.
 ST-4 Aisle check: same label reader live in the shop, nothing saved unless bought.
+
+== Revision round (Nov 5), Alex verbatim ==
+"Make st 1 make a field asking what shop I'm at right now, doing this in shopping live now would be great for quick switches, then receipt to back up, drive oracle costs down by accumulating them, I won't need live label read unless I really need to know, I'd says do it in chat with oracle, I just need label read to cycle through produce with harmful substances like additives and preservatives etc, with my goals tell me if a goal should be set, think upon this while giving me the RP 6 brief again"
+
+Evidence: Oracle chat has no photo attach today (no file input in src/oracle); photo readers exist in moneyHub (receipts), healthBody, screenshotInbox, shoppingWishlist.
+
+== Revised draft (ST v2) ==
+ST-1 Shopping mode in Live now (liveModes 'shop'): "What shop are you at?" field + quick-switch chips; list = newest grocery list + ticked-in wishlist items for that shop; tick as it goes in the basket; budget line from Steward.
+ST-2 Receipt as the back-up: photos queue up (no call per photo); one batched Oracle read later (evening or "Read all now") -> one review screen -> money, ticks, pantry by item + store, prices.
+ST-3 Label cycle (batched): front+back photos per pantry item queue up; one batched read flags additives (E-numbers), preservatives, sweeteners, trans fats etc + UK traffic lights; judged against Health & body goals, and when a goal is missing it says which goal to set.
+ST-4 Label questions in Oracle chat: a 📷 on the chat box (new) - one photo + question when Alex really needs to know. No live aisle reader.
