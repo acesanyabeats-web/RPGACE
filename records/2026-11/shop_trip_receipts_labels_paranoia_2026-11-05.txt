@@ -48,3 +48,9 @@ No GPS: "home" = the next app open after the shop session, or Finish shop.
 
 == Approval ==
 Alex, Nov 5: "Go rp6 too" (after the ST v3 summary) -> ST v3 approved as written; order unchanged (after RP-7, FF, GL).
+
+== Refinement (Nov 5), Alex verbatim ==
+"Criteria for know and ticked should be both photos, the shop bought, the brand and label at back. Doesn't matter if different size, if different shop, only log price per gram for best deals etc."
+
+-> ST-3 rule: a product counts as KNOWN (just ticked at put-away) only when it has all four: front photo, back-label photo, the shop it was bought from, and its brand. Missing any -> ask for what's missing.
+-> Same brand + product in a different size or from a different shop is the SAME product (no new photos asked); only a price-per-gram (or per ml / per item) row is logged for that shop, so the app can show the best deal.
