@@ -730,6 +730,7 @@ RPGACE.register('errorLog', {
   "_usage": "myDay",
   "_verdictHtml": "videoSummary",
   "_version": "pwaInstall",
+  "_vsWhyHtml": "videoSummary",
   "_watchUpdates": "pwaInstall",
   "_wireAgendaCards": "feynman",
   "_wireEncyclopediaButtons": "feynman",

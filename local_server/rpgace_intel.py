@@ -458,6 +458,16 @@ def insights_prompt(meta: dict, transcript: str, visual_analysis: str, realms: l
     if text_src:
         made_rule = made_rule.replace("how the video is made, edited, hooked or marketed", "how the text is written or marketed")
     sent = {"page": f"web page from {meta.get('uploader')}", "text": "text"}.get(meta.get("kind"), f"{meta['platform']} video")
+    # RP-6 (Nov 5 2026, Alex: "what lessons I did extract and which I missed"): his own
+    # why rides on this same call - no extra call. Caught/missed follow the same no-invention rule.
+    why = str(meta.get("why") or "").strip()[:400]
+    why_rule = why_part = ""
+    if why:
+        why_rule = (f'\n- Alex said why he sent it: "{why}". In "vs_why" list what the {noun} teaches that answers that '
+                    f'("caught", up to 4 short lines) and what it teaches that his why did not mention, or what he wanted '
+                    f'that it never covers - say that plainly ("missed", up to 3 short lines). Only things the {noun} really says.')
+        why_part = ',\n  "vs_why": {"caught": ["<short line>", "..."], "missed": ["<short line>", "..."]}'
+
     prompt = f"""You are the RPGACE Oracle. Alex sent this {sent} to learn from it in these realms: {names}.
 Alex is a UK music producer, but judge each realm ONLY by its own lens, never by music or content-creation value
 unless that realm is about music or content.
@@ -479,7 +489,7 @@ Rules:
 - Score each realm 1-10 by how much this is worth to Alex in that realm (its "score means"). Do not mark it down
   for a small audience or low polish.
 - {made_rule}
-- "action": one concrete thing to try this week. "quests": 3 different quest ideas for that realm.
+- "action": one concrete thing to try this week. "quests": 3 different quest ideas for that realm.{why_rule}
 
 Return ONLY valid JSON (no fences, no explanation).
 
@@ -496,7 +506,7 @@ Return this exact JSON structure:
   }},
   "verdict_summary": "<one honest sentence: what this {noun} is worth to Alex>",
   "watchlist_reason": "<why worth revisiting, or null>",
-  "encyclopedia_entry": {{"title": "<title for the article>", "summary": "<2 sentences>", "tags": ["<tag>", "<tag>", "<tag>"]}}{made_part}
+  "encyclopedia_entry": {{"title": "<title for the article>", "summary": "<2 sentences>", "tags": ["<tag>", "<tag>", "<tag>"]}}{made_part}{why_part}
 }}"""
     return prompt
 
@@ -679,11 +689,19 @@ def parse_insights(raw: str, realms: list, source: str = None) -> dict:
     else:
         made = None
 
+    vw = ins.get("vs_why") if isinstance(ins.get("vs_why"), dict) else None
+    vs_why = None
+    if vw:
+        lines = lambda xs, n: [str(x).strip()[:300] for x in (xs if isinstance(xs, list) else []) if str(x).strip()][:n]
+        vs_why = {"caught": lines(vw.get("caught"), 4), "missed": lines(vw.get("missed"), 3)}
+        if not vs_why["caught"] and not vs_why["missed"]:
+            vs_why = None
     enc = ins.get("encyclopedia_entry") if isinstance(ins.get("encyclopedia_entry"), dict) else {}
     all_points = [p for k in realms if k in sections for p in sections[k]["points"]]
     out = {
         "realm_sections": sections,
         "how_made": made,
+        "vs_why": vs_why,
         "realms": realms,
         "quotes_checked": source is not None,
         "verdict_summary": str(ins.get("verdict_summary") or "")[:300],
@@ -811,6 +829,8 @@ def push_report(meta: dict, insights: dict, transcript: str) -> bool:
     import intel_common as ic
     from urllib.parse import quote
     score = insights.get("verdict_score", 0)
+    if insights.get("vs_why") and meta.get("why"):
+        insights["vs_why"]["why"] = str(meta.get("why"))[:400]
     log("Pushing to Supabase...", CYAN)
     if meta.get("url"):
         try:  # never let the clear-out block saving the new report
@@ -857,7 +877,34 @@ def push_report(meta: dict, insights: dict, transcript: str) -> bool:
             log("Watchlist pushed", GREEN)
         except Exception as we:
             log(f"Watchlist push error: {we}", DIM)
+    push_missed_notes(meta, insights)
     return True
+
+
+def push_missed_notes(meta: dict, insights: dict) -> int:
+    """RP-6: up to 3 missed lessons become notes for tonight (journal source
+    tonight_note, the same rows the app's tonightNotes module writes), so the
+    evening review asks about them. A failed note never fails the report."""
+    import intel_common as ic
+    missed = ((insights.get("vs_why") or {}).get("missed") or [])[:3]
+    if not missed:
+        return 0
+    day = datetime.now().strftime("%Y-%m-%d")
+    realms = (insights.get("realms") or [])[:1]
+    title = str(meta.get("title") or "a video")[:80]
+    n = 0
+    for m in missed:
+        try:
+            ic.http("POST", "/rest/v1/journal", {
+                "title": "📝 Note for tonight", "content": f'❓ Missed from "{title}": {m}' + (f"\n{meta['url']}" if meta.get("url") else ""),
+                "source": "tonight_note", "entry_type": "note", "date": day, "review_on": day, "realms": realms,
+            }, headers={"Prefer": "return=minimal"})
+            n += 1
+        except Exception as ne:
+            log(f"Missed-lesson note not saved: {ne}", DIM)
+    if n:
+        log(f"{n} missed lesson(s) saved for tonight", GREEN)
+    return n
 
 
 # ── SA-1: SHARE ANYTHING (web pages + pasted text) ───────────────────────────
@@ -941,10 +988,11 @@ def source_text(url: str, text: str = None) -> tuple:
     return meta, timed, plain
 
 
-def process_page(url: str, realms=None, text: str = None):
+def process_page(url: str, realms=None, text: str = None, why: str = None):
     """SA-1: analyse a web page or a text through the picked realms."""
     try:
         meta, timed, plain = source_text(url, text)
+        if why: meta = dict(meta, why=why)
         insights = generate_oracle_insights(meta, condense_transcript(timed, meta), "", realms, full_transcript=timed)
         save_insight(url, meta, insights, plain)
         push_report(meta, insights, plain)
@@ -954,12 +1002,12 @@ def process_page(url: str, realms=None, text: str = None):
         return None
 
 
-def prepare_page_for_cc(url: str, realms, job_id: str, text: str = None) -> bool:
+def prepare_page_for_cc(url: str, realms, job_id: str, text: str = None, why: str = None) -> bool:
     """SA-1: the CC half for a page/text - just the marked text, no frames."""
     import intel_common as ic
     try:
         meta, timed, plain = source_text(url, text)
-        meta = dict(meta, realms=clean_realms(realms), job_id=job_id,
+        meta = dict(meta, realms=clean_realms(realms), job_id=job_id, why=why or None,
                     analyser_version=ANALYSER_VERSION, prepared_at=datetime.now().isoformat())
         ic.put_file(f"{job_id}/meta.json", json.dumps(meta, ensure_ascii=False).encode("utf-8"), "application/json")
         ic.put_file(f"{job_id}/transcript.txt", timed.encode("utf-8"), "text/plain; charset=utf-8")
@@ -972,12 +1020,12 @@ def prepare_page_for_cc(url: str, realms, job_id: str, text: str = None) -> bool
 
 
 # ── MAIN PIPELINE ─────────────────────────────────────────────────────────────
-def process_url(url: str, realms=None, text: str = None):
+def process_url(url: str, realms=None, text: str = None, why: str = None):
     """Full pipeline: download → transcribe → analyse → report → delete.
     realms: the realm keys Alex picked for this link (RI-4); None = Producer.
     SA-1: a non-video link or a text goes to process_page instead."""
     if text or not is_video_url(url):
-        return process_page(url, realms, text)
+        return process_page(url, realms, text, why)
     print()
     log(f"Processing: {url[:60]}", GOLD)
 
@@ -988,6 +1036,7 @@ def process_url(url: str, realms=None, text: str = None):
         try:
             # 1 — Metadata (fast, no download needed)
             meta = get_metadata(url)
+            if why: meta = dict(meta, why=why)  # RP-6
             duration = meta.get("duration") or 0
             log(f"'{meta['title'][:50]}' by {meta['uploader']} ({int(duration//60)}m)", CYAN)
 
@@ -1072,7 +1121,7 @@ def process_url(url: str, realms=None, text: str = None):
             return None
 
 
-def prepare_for_cc(url: str, realms, job_id: str, text: str = None) -> bool:
+def prepare_for_cc(url: str, realms, job_id: str, text: str = None, why: str = None) -> bool:
     """CC-1 (Oct 21 2026): the free half of process_url for Orchestrator CC -
     metadata, download, Whisper transcript, frames - with zero API calls. The
     files go to the intel-cc bucket under <job_id>/ (meta.json,
@@ -1080,13 +1129,14 @@ def prepare_for_cc(url: str, realms, job_id: str, text: str = None) -> bool:
     scripts/intel_cc_worker.py hands them to the CC session, which writes the
     analysis on the Claude plan. Returns True once everything is uploaded."""
     if text or not is_video_url(url):
-        return prepare_page_for_cc(url, realms, job_id, text)
+        return prepare_page_for_cc(url, realms, job_id, text, why)
     import intel_common as ic
     with tempfile.TemporaryDirectory(prefix="rpgace_intel_") as tmp:
         tmp_path = Path(tmp)
         video_file = None
         try:
             meta = get_metadata(url)
+            if why: meta = dict(meta, why=why)  # RP-6
             duration = meta.get("duration") or 0
             video_file = download_video(url, tmp_path)
             transcript, timed = transcribe_audio(video_file)
@@ -1095,7 +1145,7 @@ def prepare_for_cc(url: str, realms, job_id: str, text: str = None) -> bool:
                 video_file.unlink()
                 log("Video deleted ✓", DIM)
             log(f"Uploading transcript + {len(frames)} frames for Orchestrator CC...", CYAN)
-            meta = dict(meta, realms=clean_realms(realms), job_id=job_id,
+            meta = dict(meta, realms=clean_realms(realms), job_id=job_id, why=why or None,
                         analyser_version=ANALYSER_VERSION, prepared_at=datetime.now().isoformat())
             ic.put_file(f"{job_id}/meta.json", json.dumps(meta, ensure_ascii=False).encode("utf-8"),
                         "application/json")

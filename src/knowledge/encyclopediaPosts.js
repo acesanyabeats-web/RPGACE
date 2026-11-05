@@ -149,6 +149,14 @@ RPGACE.register('encyclopediaPosts', {
       if (ins.realm_sections) {
         var ri = self.realmIdeas(r);
         if (enc.summary) md.push('', '### The idea', enc.summary);
+        // RP-6: your why vs what it taught.
+        var vw = ins.vs_why;
+        if (vw && ((vw.caught || []).length || (vw.missed || []).length)) {
+          md.push('', '### Your why vs what it taught');
+          if (vw.why) md.push('You wanted: ' + vw.why);
+          (vw.caught || []).forEach(function(t) { md.push('- ✅ ' + t); });
+          (vw.missed || []).forEach(function(t) { md.push('- ❓ ' + t); });
+        }
         md = md.concat(ri.md);
         ideas = ri.ideas;
       } else self.SECTIONS.forEach(function(s) {

@@ -461,6 +461,19 @@ RPGACE.register('videoSummary', {
         items.map(function(b) { return '• ' + self._esc(self._coerce(b)); }).join('<br>') + '</div>';
     },
 
+    // RP-6 (Alex: "what lessons I did extract and which I missed"): what you
+    // wanted from it (intel_jobs.why) vs what it taught, written by the same analysis call.
+    _vsWhyHtml: function(ins) {
+      var self = RPGACE.modules.videoSummary, v = ins && ins.vs_why;
+      if (!v || (!(v.caught || []).length && !(v.missed || []).length)) return '';
+      var row = function(icon, t) { return '<div class="vs-why-line" style="font-size:12px;color:var(--text);line-height:1.6;">' + icon + ' ' + self._esc(t) + '</div>'; };
+      return '<div class="vs-why" style="border:1px solid var(--border);border-radius:10px;padding:8px 10px;margin:8px 0;">' +
+        '<div style="font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin-bottom:4px">Your why vs what it taught</div>' +
+        (v.why ? '<div style="font-size:12px;color:var(--muted);margin-bottom:4px;">You wanted: ' + self._esc(v.why) + '</div>' : '') +
+        (v.caught || []).map(function(t) { return row('✅', t); }).join('') +
+        (v.missed || []).map(function(t) { return row('❓', t); }).join('') +
+        ((v.missed || []).length ? '<div style="font-size:11px;color:var(--muted);margin-top:4px;">Missed lessons are in tonight\'s notes.</div>' : '') + '</div>';
+    },
     _proseHtml: function(r) {
       var self = RPGACE.modules.videoSummary;
       var ins = r.insights || {};
@@ -468,6 +481,7 @@ RPGACE.register('videoSummary', {
       var html = '<div style="font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(201,168,76,0.6);text-transform:uppercase;margin:10px 0 6px">Summary</div>';
       html += self._verdictHtml(r);
       if (enc.summary) html += '<div style="font-size:12px;color:rgba(226,226,236,0.75);line-height:1.7;margin-bottom:6px">' + self._esc(enc.summary) + '</div>';
+      html += self.ui._vsWhyHtml(ins);
       // VW-4: reports made since VW-2 carry realm sections - those replace the
       // old boxes; pathways.ui.realmSections fills this mount after render.
       if (ins.realm_sections && RPGACE.modules.pathways) {

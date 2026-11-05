@@ -45,3 +45,6 @@ ST-3 Put away: the ticked items one by one; an item with no front+back photos on
 ST-4 Shop complete: once receipt + every new item's photos are in, ONE batched Oracle read (receipts + labels) -> one review screen -> Save updates money, pantry by item + store, prices, wishlist bought, label verdicts (additives/preservatives, traffic lights, goals + "set this goal?"). Shopping marked done only then.
 ST-5 Oracle chat 📷: one photo + question, for when he really needs to know in the shop.
 No GPS: "home" = the next app open after the shop session, or Finish shop.
+
+== Approval ==
+Alex, Nov 5: "Go rp6 too" (after the ST v3 summary) -> ST v3 approved as written; order unchanged (after RP-7, FF, GL).
