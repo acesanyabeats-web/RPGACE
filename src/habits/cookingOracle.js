@@ -1502,7 +1502,9 @@ RPGACE.register('cookingOracle', {
         // WR-14: what Alex asked last time he cooked this, so Oracle knows what to improve.
         if (pastChats) lines.push('Last times he cooked this he asked: ' + pastChats + '.');
         return 'You are Oracle, helping Alex while he cooks right now in Cook Mode. ' + lines.join(' ') + ' Answer in one to three short, practical sentences he can act on with his hands busy. No lists, no headings.' +
-          ' This whole conversation is saved to the recipe so it can be improved later. If he asks you to flag, note or pass something on to the Orchestrator (Claude Code), say it has been flagged - the app sends it.' +
+          ' This whole conversation is saved to the recipe so it can be improved later. If he asks you to flag, note or pass something on to the Orchestrator (Claude Code), say it has been flagged - the app sends it. Never say you flagged something he did not ask you to flag.' +
+          // Nov 5 2026: app facts so Oracle can answer instead of guessing (Alex's 6-hour soak question).
+          ' App facts: a step timer keeps counting if he closes Cook Mode; closing Cook Mode with a timer still running puts a "Resume" block on his My Day at the time it ends and rings his phone then; opening this recipe\'s Cook Mode again carries on from the same step with the timer.' +
           // LE (Nov 5 2026, Alex: "oracle chat to change steps from convo in live cook automatically so it shows up on steps while I'm doing it").
           ' If what he says changes how the current or a later step should be done (a swap, a different amount, time or heat, an extra step), say so in your answer and then add ONE last line exactly like: STEP_EDITS: {"edits":[{"step":3,"instruction":"<full new step text, max 25 words>","done_cue":"<or empty>","why":"<5 words>"},{"after":3,"add":"<a new step to do after step 3>","why":"<5 words>"}]} - step numbers as listed above, only step ' + (idx + 1) + ' or later, never a step he has finished. No STEP_EDITS line when nothing changes.';
       };
@@ -1652,6 +1654,15 @@ RPGACE.register('cookingOracle', {
         ov.remove();
         if (dd && dd._navClosed) dd._navClosed(entry, fromPop === true);
       };
+      // Nov 5 2026 (Alex: "I put the step on the 6 hour timer, but I'll be leaving the live cooking function ... I want it to
+      // appear on my day as action to do so I can then resume the cooking session"): closing with a timer 5+ min from done
+      // puts a Resume block on My Day at that time + a phone alarm (logic._resumeLater).
+      var resumeLater = function() {
+        if (!opts.key) return;
+        var nowMs = Date.now(), t = timers.filter(function(x) { return !x.rung && x.endAt - nowMs > 5 * 60000; }).sort(function(a, b) { return a.endAt - b.endAt; })[0];
+        if (!t) return;
+        self.logic._resumeLater({ key: opts.key, recipeId: opts.recipeId || null, title: opts.title || 'your cook', endAt: t.endAt, step: Math.min(steps.length, t.i + 2), total: steps.length });
+      };
       entry.close = function(fromPop) {
         // Phone Back on a later step goes to the previous step, like Ube's Build Mode.
         if (fromPop === true && idx > 0) {
@@ -1660,6 +1671,7 @@ RPGACE.register('cookingOracle', {
           if (dd && dd._navPush) dd._navPush(entry);
           return;
         }
+        try { resumeLater(); } catch (e) {}
         teardown(fromPop);
       };
       ov._cmClose = entry.close;
@@ -2510,7 +2522,8 @@ RPGACE.register('cookingOracle', {
             // "have" itself doesn't change just because Alex asked for
             // more servings.
             var have = self.logic._resolveHaveAmount({ neededUnit: ing.unit, neededAmount: ing.amount, gramsEstimate: ing.grams_estimate, buckets: slots });
-            var status = self.logic._classifyIngredientStatus({ name: ing.name, needed: (typeof amt === 'number') ? amt : 0, have: have, aisleIndex: pantrySnapshot.aisleIndex });
+            var ownIdx = self.logic._withoutOthers(pantrySnapshot.aisleIndex, recipe.ingredients, ing.name);
+            var status = self.logic._classifyIngredientStatus({ name: ing.name, needed: (typeof amt === 'number') ? amt : 0, have: have, aisleIndex: ownIdx });
             var meta = self.INGREDIENT_STATUS_META[status];
             wrap.style.borderLeft = '3px solid ' + meta.color;
             wrap.style.background = meta.bg;
@@ -2521,7 +2534,7 @@ RPGACE.register('cookingOracle', {
             // orange row (never invented — logic._findSubstitute only
             // ever returns a real, currently in-stock match).
             if (status === 'orange') {
-              var sub = self.logic._findSubstitute(ing.name, pantrySnapshot.aisleIndex, ing.ingredient_id, subRatings);
+              var sub = self.logic._findSubstitute(ing.name, ownIdx, ing.ingredient_id, subRatings);
               if (sub) {
                 left.textContent += ' (sub: ' + sub.name + ')';
                 // H24 (Sep 17 2026, 6th pass, real Alex ask — Ask
@@ -4291,7 +4304,7 @@ RPGACE.register('cookingOracle', {
             needRows.forEach(function(r) {
               var name = (r.ingredients && r.ingredients.name) || '';
               r._aisle = self.logic._classifyAisle(name);
-              r._status = self.logic._classifyIngredientStatus({ name: name, needed: r.needed_amount, have: r.have_amount, aisleIndex: pantry.aisleIndex });
+              r._status = self.logic._classifyIngredientStatus({ name: name, needed: r.needed_amount, have: r.have_amount, aisleIndex: self.logic._withoutOthers(pantry.aisleIndex, rows, name) });
             });
             needRows.sort(function(a, b) {
               if (a._aisle.order !== b._aisle.order) return a._aisle.order - b._aisle.order;
@@ -4329,7 +4342,7 @@ RPGACE.register('cookingOracle', {
               // full reasoning).
               var subName = null, subConfirmed = false;
               if (r._status === 'orange') {
-                var sub = self.logic._findSubstitute(ingName, pantry.aisleIndex, r.ingredient_id, subRatings);
+                var sub = self.logic._findSubstitute(ingName, self.logic._withoutOthers(pantry.aisleIndex, rows, ingName), r.ingredient_id, subRatings);
                 if (sub) { subName = sub.name; subConfirmed = !!confirmedSubs[r.ingredient_id + '::' + subName]; }
               }
               // H24 (Sep 17 2026, 8th pass, real Alex ask) — same
@@ -7102,6 +7115,34 @@ RPGACE.register('cookingOracle', {
       return best;
     },
 
+    // Nov 5 2026 (Alex's horchata: "the subs for powder and stick are ridiculous, why are they subbing each other?"):
+    // the stock index WITHOUT the other ingredients this recipe/list already uses, so one ingredient is never
+    // offered as the swap for another one in the same dish. Pure; `others` = ingredient rows or names.
+    // A Resume block on My Day + a phone alarm when a cook timer ends after Cook Mode was closed.
+    _resumeLater: function(o) {
+      var md = RPGACE.modules.myDay, at = new Date(o.endAt);
+      var day = at.toLocaleDateString('en-CA', { timeZone: 'Europe/London' });
+      var hm = at.toLocaleTimeString('en-GB', { timeZone: 'Europe/London', hour: '2-digit', minute: '2-digit', hour12: false });
+      var label = '🍳 ' + o.title + ': step ' + o.step + ' of ' + o.total + ' is ready - resume the cook';
+      var alarm = RPGACE.sb.secureWrite('myday_alarms', 'insert', { day: day, kind: 'focus:cook:' + o.key, at: at.toISOString(), stop_label: label, status: 'set', sends: 0 }, null, 'day,kind');
+      var block = md ? md.logic.saveRealmBlock(day, { realm: 'chef', start: hm, mins: 30,
+        realm_items: [{ src: 'cook_resume', ref_id: o.key, label: '▶ Resume ' + o.title + ' (step ' + o.step + ')', mins: 30, earns: 'tick', how: 'The timer is done - open the cook and carry on from step ' + o.step + '.' }] })
+        .then(function(saved) {
+          var pc = /^planned_(.+)$/.exec(o.key);
+          return pc && saved && saved.id ? RPGACE.sb.secureWrite('chore_blocks', 'update', { planned_cook_id: pc[1] }, 'id=eq.' + saved.id) : null;
+        }) : Promise.resolve();
+      return Promise.all([alarm, block]).then(function() {
+        RPGACE.utils.toast('⏰ ' + o.title + ' step ' + o.step + ' at ' + hm + (day !== RPGACE.kit.iso() ? ' (' + day + ')' : '') + ' - on My Day, your phone will ring', '#3DAA6E', 4500);
+      }, function(e) { RPGACE.utils.toast('⚠️ Resume reminder not set: ' + (e.message || e), '#CC4A4A', 4500, 'cookingOracle'); });
+    },
+    _withoutOthers: function(aisleIndex, others, selfName) {
+      if (!aisleIndex) return aisleIndex;
+      var me = String(selfName || '').trim().toLowerCase(), drop = {};
+      (others || []).forEach(function(o) { var n = String((o && (o.name || (o.ingredients && o.ingredients.name))) || o || '').trim().toLowerCase(); if (n && n !== me) drop[n] = 1; });
+      var out = {};
+      Object.keys(aisleIndex).forEach(function(a) { out[a] = (aisleIndex[a] || []).filter(function(n) { return !drop[n]; }); });
+      return out;
+    },
     _findSubstitute: function(name, aisleIndex, ingredientId, ratings) {
       var self = RPGACE.modules.cookingOracle;
       var norm = String(name || '').trim().toLowerCase();
@@ -8029,9 +8070,9 @@ RPGACE.register('cookingOracle', {
                         var sh2 = sb2.reduce(function(s, b) { return s + (typeof b.quantity === 'number' ? b.quantity : 0); }, 0);
                         if (sh2 > 0) oDeriv = { deriv: d2, srcHave: sh2 };
                       }
-                      var oStatus = self.logic._classifyIngredientStatus({ name: g.name, needed: pr.amount, have: 0, aisleIndex: pantry.aisleIndex, derivableFrom: oDeriv });
+                      var oStatus = self.logic._classifyIngredientStatus({ name: g.name, needed: pr.amount, have: 0, aisleIndex: self.logic._withoutOthers(pantry.aisleIndex, Object.keys(groups).map(function(k) { return groups[k].name; }), g.name), derivableFrom: oDeriv });
                       var oSubName = null;
-                      if (oStatus === 'orange') { var oSub = self.logic._findSubstitute(g.name, pantry.aisleIndex, g.ingredient_id, subRatings); if (oSub) oSubName = oSub.name; }
+                      if (oStatus === 'orange') { var oSub = self.logic._findSubstitute(g.name, self.logic._withoutOthers(pantry.aisleIndex, Object.keys(groups).map(function(k) { return groups[k].name; }), g.name), g.ingredient_id, subRatings); if (oSub) oSubName = oSub.name; }
                       return { recipeId: pr.recipeId, amount: pr.amount, status: oStatus, subName: oSubName, derivableFrom: (oStatus === 'maroon') ? oDeriv : null };
                     });
                     pinkInfo = { eligible: true, resolved: true, chosenRecipeId: chosenRecipeId, perRecipe: g.perRecipe, others: others, allocKey: allocKey };
@@ -8071,7 +8112,7 @@ RPGACE.register('cookingOracle', {
               // the normal ladder can express. A RESOLVED pink candidate
               // falls through to the normal ladder below, now correctly
               // computed against the chosen recipe's own real amount.
-              var status = pinkInfo && !pinkInfo.resolved ? 'pink' : self.logic._classifyIngredientStatus({ name: g.name, needed: effectiveAmount, have: have, aisleIndex: pantry.aisleIndex, isSeparable: g.isSeparable, noShopMode: !!opts.noShop, derivableFrom: derivableFrom });
+              var status = pinkInfo && !pinkInfo.resolved ? 'pink' : self.logic._classifyIngredientStatus({ name: g.name, needed: effectiveAmount, have: have, aisleIndex: self.logic._withoutOthers(pantry.aisleIndex, Object.keys(groups).map(function(k) { return groups[k].name; }), g.name), isSeparable: g.isSeparable, noShopMode: !!opts.noShop, derivableFrom: derivableFrom });
               // H24 (Sep 17 2026, 3rd pass) — real substitute name +
               // confirmed-state resolved ONCE here (rule 8 — this used
               // to be re-derived independently by every real UI consumer,
@@ -8083,7 +8124,7 @@ RPGACE.register('cookingOracle', {
               // comment above for why).
               var subName = null, subConfirmed = false, subRatio = null, subRatioNote = null;
               if (status === 'orange') {
-                var subInfo = self.logic._findSubstitute(g.name, pantry.aisleIndex, g.ingredient_id, subRatings);
+                var subInfo = self.logic._findSubstitute(g.name, self.logic._withoutOthers(pantry.aisleIndex, Object.keys(groups).map(function(k) { return groups[k].name; }), g.name), g.ingredient_id, subRatings);
                 if (subInfo) {
                   subName = subInfo.name;
                   subConfirmed = !!(confirmedSubs[g.ingredient_id + '::' + subName]);

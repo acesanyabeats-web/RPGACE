@@ -74,6 +74,17 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-05-horchata-fixes" style="margin-bottom:30px;">
+    <div class="card-title">🥛 Nov 5: horchata fixes - no more cinnamon stick ⇄ powder swaps, Resume block + phone alarm when you leave a cook with a timer, Oracle stops claiming flags</div>
+    <div class="card-body">
+      Alex (cooking horchata): "the subs for powder and stick are ridiculous, why are they subbing each other? The ask oracle while cooking is not changing step on the fly, also a problem, then I flagged another bit of the convo about the 6 hour wait".
+      <ul><li><b>Swaps:</b> the swap finder looked at all your stock, including ingredients the same recipe already uses - so cinnamon sticks were offered cinnamon powder and the other way round. Now an ingredient the recipe (or grocery list) already uses is never offered as another's swap (recipe card, grocery list, cook planning; one helper <code>_withoutOthers</code>).</li>
+      <li><b>Live step changes:</b> your chat (17:20-17:21) ran on the version before the live-edit update went live (17:25), so it couldn't change steps - nothing was wrong with what you asked. Reload the app once so your phone picks it up.</li>
+      <li><b>6-hour soak (your flag):</b> the timer was saved with the cook but nothing told you it was done. Now closing Cook Mode with a timer 5+ minutes from done puts "▶ Resume &lt;recipe&gt; (step N)" on My Day at that time and your phone rings (🍳 Cook timer); Live now's Resume button reopens the cook on the same step. Tonight's horchata: set by hand for 23:30.</li>
+      <li><b>Oracle in Cook Mode:</b> it said "I've flagged it" twice when you hadn't asked (nothing was sent). It now only says that when you ask to flag, and it knows how timers and resuming work.</li>
+      <li>Tested headless (6 checks, the swap bug reproduced on the old code first). <b>Untested on your phone.</b></li></ul>
+    </div>
+  </div>
 <div class="card" id="card-2026-11-05-le" style="margin-bottom:30px;">
     <div class="card-title">✏️ Nov 5: Oracle changes your cook steps live from the Ask chat + Ask Oracle on every realm page</div>
     <div class="card-body">

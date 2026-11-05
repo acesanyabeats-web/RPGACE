@@ -83,6 +83,13 @@ RPGACE.register('liveModes', {
       var self = RPGACE.modules.liveModes, co = RPGACE.modules.cookingOracle, b = ctx.block;
       if (!co) { body.textContent = 'Cooking is not loaded.'; return; }
       var pcId = b && b.planned_cook_id;
+      // Nov 5 2026: a "Resume" block left by Cook Mode (cookingOracle._resumeLater) for a saved recipe.
+      var rs = b && (b.items || []).filter(function(i) { return i && i.src === 'cook_resume' && /^recipe_/.test(i.ref_id || ''); })[0];
+      if (!pcId && rs) {
+        body.innerHTML = '<div style="font-size:14px;margin-bottom:6px;"></div>'; body.firstChild.textContent = rs.how || 'Your timer is done.';
+        self.ui._btns(body, [[rs.label || '▶ Resume the cook', function() { co.cookRecipeNow ? co.cookRecipeNow(rs.ref_id.slice(7)) : co.ui.cookRecipeNow(rs.ref_id.slice(7)); }, 'primary', 'lm-cook-resume']]);
+        return;
+      }
       if (!pcId) {
         body.innerHTML = '<div style="font-size:13px;color:var(--muted);">No planned cook in this block. Pick a recipe or plan a cook.</div>';
         self.ui._btns(body, [
