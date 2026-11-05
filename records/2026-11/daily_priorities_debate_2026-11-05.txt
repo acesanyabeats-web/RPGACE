@@ -1,0 +1,48 @@
+/Routine - Nov 5 2026 (morning after the Nov 4-5 session)
+
+EVIDENCE (live)
+- git: last ship 5983780 (Bedtime) + 19e78dd (UM record). All Nov 4-5 commits READY.
+- Session-start checks: oracle_dev_suggestions new 0; module domains ok; anchors fresh; SELF_KNOWLEDGE fresh (Nov 5).
+- error_log active 21, 6 new in 2 days: 3x "Could not find the cooking page" (02:21 Nov 5 = the bug fixed in 4a98b2b), 1x "App froze for 556ms" (x3), 1x "Morning Brief failed: Failed to fetch" (Nov 4), 1x "Oracle took too long (90s), no recipe" (Nov 3; the ✨ Generate path is now removed from the mission picker).
+- smoke_test_items broken 3; system_map_flags flagged 2 (not new).
+- What Alex did: evening review Nov 4 saved (Done: water, cook for someone x2, "Baked Chocolate cake for Victoria"; +510 XP; Chef 4h). Morning Brief Nov 5 = all Scholar (taxonomy proposal, chapters). xp_events 23 in a day.
+- cook_chats still 0 rows (the cake was cooked BEFORE the save fix - first real cook will prove it). ui_usage 5. feature_findings 0 (no review has run yet).
+- Plans: ~400 items yellow (built, not hand-tested) across ~45 plans; red = GL-1..6, ST-1..5, CK-9, HB-4, T1. UM (unfound task -> generic mission) recorded, not briefed.
+
+TEAM 1 TOP 10 (GODMODE + Council of 5)
+1. First feature-feedback review (session-start row, FF-2) so tonight's questionnaire has real 🧪 questions.
+2. Error triage: mark the 3 cooking-page rows fixed (needs Alex's confirm), read perf_freezes for the 556ms freeze (no blind fix), note the brief fetch + recipe timeout.
+3. UM brief: Alex's last message (unfound task -> generic mission); one open choice.
+4. GL gym Live now (approved, red) - his own ask.
+5. ST shop trip (approved, red).
+6. Hand-test pass on phone: evening questionnaire, mission cards, notes for tonight, realm pages (the yellow wall is the real bottleneck).
+7. MC gap: per-mission edit on the evening review's Not done rows.
+8. Debloat docs/claude/my_day.md (17.9KB) + realm_tasks.md (14.5KB) under 12KB.
+9. Laptop: Windows 11 install with the Rufus stick (E: unplugged).
+10. Laptop git pull so the local video server has RP-6.
+
+TEAM 2 COUNTER-CASE
+- The 48-hour rule: none of Team 1's build items makes a beat or posts a video. Beats plan BT-0..8 is all yellow (never hand-tested); Live now music mode (OA-7) shipped yesterday untested. A Producer session through Live now music mode is the only item that serves the governing rule AND hand-tests a fresh feature. Should outrank ST.
+- ST is the biggest build (photos, batching, label verdicts) with zero beats/videos payoff; GL at least is daily health.
+- Cheap old item: error_log has 15 older active rows nobody has re-checked since the session moved on.
+
+DEBATE
+- T1 attack: Producer session is Alex's to do, not a build. T2 defence: the list is "today's work", Alex included; and it doubles as the hand-test of OA-7 + BT. Council: accept - a real item.
+- T2 attack on ST: biggest cost, no 48h payoff. T1 defence: approved; Alex shops weekly. Council: keep ST approved but after GL and UM; not today's top.
+- T2 old errors: Council folds into item 2 (triage = read the 15 older rows once, close ones already fixed).
+
+5THDIMENSION (no Fable)
+- Built vs reported matches (all READY). Reported "live" items are untested by Alex - stated everywhere. Session asks honoured: UM recorded; GL/ST approved and waiting; MC gap named.
+
+FINAL TOP 10 (Council lock-in)
+1. Feature-feedback first review (FF-2) - 10 min, feeds tonight.
+2. Error triage (cooking-page rows -> confirm; freeze via perf_freezes; old rows re-check).
+3. UM brief + your one choice.
+4. Producer session in Live now (music mode) - makes a beat AND tests OA-7 (Alex).
+5. GL gym Live now - build, step by step after a brief.
+6. Phone hand-test of yesterday's set (questionnaire, mission cards, notes, realm pages) (Alex, ~10 min).
+7. MC gap: evening review Not done per-mission edit.
+8. ST shop trip - after GL.
+9. Docs debloat (my_day.md, realm_tasks.md).
+10. Laptop: Windows 11 install + git pull for RP-6 (Alex).
+DROPPED: CK-9, HB-4, T1 (old reds, nothing new says they matter today); AR-5, CT-4 (blue, future).
