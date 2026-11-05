@@ -34,3 +34,14 @@ ST-1 Shopping mode in Live now (liveModes 'shop'): "What shop are you at?" field
 ST-2 Receipt as the back-up: photos queue up (no call per photo); one batched Oracle read later (evening or "Read all now") -> one review screen -> money, ticks, pantry by item + store, prices.
 ST-3 Label cycle (batched): front+back photos per pantry item queue up; one batched read flags additives (E-numbers), preservatives, sweeteners, trans fats etc + UK traffic lights; judged against Health & body goals, and when a goal is missing it says which goal to set.
 ST-4 Label questions in Oracle chat: a 📷 on the chat box (new) - one photo + question when Alex really needs to know. No live aisle reader.
+
+== Revision round 2 (Nov 5), Alex verbatim ==
+"At the end of shop when Im home, ask me if I'm done, then ask for receipt, then as I put everything away, if a new item without 2 pics is detected, ask me to take the 2 photos. Shopping is fully done once everything is logged. This will auto update stock and everything should run smootly"
+
+== ST v3 (end of shop folded in) ==
+ST-1 Shopping mode (Live now): "What shop are you at?" + quick-switch chips; tick into basket; budget line.
+ST-2 Coming home: when the shop session is still open and Alex next opens the app (or taps Finish shop): "Done shopping?" -> "Photo your receipt(s)" (queued, no call yet).
+ST-3 Put away: the ticked items one by one; an item with no front+back photos on record asks for the 2 photos (queued); known items just get a tick.
+ST-4 Shop complete: once receipt + every new item's photos are in, ONE batched Oracle read (receipts + labels) -> one review screen -> Save updates money, pantry by item + store, prices, wishlist bought, label verdicts (additives/preservatives, traffic lights, goals + "set this goal?"). Shopping marked done only then.
+ST-5 Oracle chat 📷: one photo + question, for when he really needs to know in the shop.
+No GPS: "home" = the next app open after the shop session, or Finish shop.
