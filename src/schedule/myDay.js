@@ -820,7 +820,7 @@ RPGACE.register('myDay', {
       if (!x.realm) return Promise.reject(new Error('Pick a realm for the block.'));
       if (!want.length) return Promise.reject(new Error('Pick at least one activity for the ' + x.realm + ' block.'));
       var rl = xs && xs.REALMS[x.realm] ? xs.REALMS[x.realm] : { icon: '✨', name: x.realm };
-      var items = want.map(function(i) { return { src: i.src, ref_id: i.ref_id || null, label: i.label, mins: i.mins || null, earns: i.earns || 'tick', xp: i.xp || null, how: i.how || null, opens: i.opens || null, done: false, context_kind: i.context_kind || null, context_id: i.context_id || null, context: i.context || null }; });
+      var items = want.map(function(i) { return { src: i.src, ref_id: i.ref_id || null, label: i.label, mins: i.mins || null, earns: i.earns || 'tick', xp: i.xp || null, how: i.how || null, opens: i.opens || null, done: false, context_kind: i.context_kind || null, context_id: i.context_id || null, context: i.context || null, recipe_id: i.recipe_id || null }; });
       // TK-7: a logged block (done after the fact) is saved untouched in time; its steps get ticked after saving.
       var row = { kind: 'realm', realm: x.realm, block_date: isoDate, start_time: L.fmtMin(m), mins: Math.max(10, Math.min(480, parseInt(x.mins, 10) || 60)), routine_ids: [], items: items, status: 'planned' };
       if (x.method && self.METHODS[x.method] && !self._noMethodCol) row.method = x.method;
@@ -4305,18 +4305,22 @@ RPGACE.register('myDay', {
       var chips = document.createElement('div'); chips.id = 'tk-log-realms'; chips.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;';
       var body = document.createElement('div'); body.id = 'tk-log-body';
       pop.box.appendChild(chips); pop.box.appendChild(body);
-      var realm = null, picked = [];
+      var realm = null, picked = [], itemsByKey = {};
       var drawBody = function() {
         body.innerHTML = '';
         if (!realm) { body.innerHTML = '<div style="font-size:13px;color:var(--muted);">Pick the realm it was for.</div>'; return; }
         var lab = document.createElement('div'); lab.style.cssText = 'font-size:13px;color:var(--muted);margin-bottom:4px;'; lab.textContent = 'Tick what you did (or type it):';
         body.appendChild(lab);
         var opts = ((rt && rt._tasks) || []).filter(function(x) { return x.realm === realm && x.status === 'kept'; })
-          .map(function(x) { return { key: 't' + x.id, label: x.title, item: { src: 'task', ref_id: String(x.id), label: x.title, mins: x.mins || 30, earns: x.earns || 'tick', xp: x.xp || null, how: x.how || null } }; });
+          .map(function(x) { return { key: 't' + x.id, label: x.title, task: x, item: { src: 'task', ref_id: String(x.id), label: x.title, mins: x.mins || 30, earns: x.earns || 'tick', xp: x.xp || null, how: x.how || null, context_kind: x.context_kind || null } }; });
+        // MC-3: one item per mission for this log, so a picked context survives redraws (and goes with the tick).
+        opts.forEach(function(op) { if (op.task) { if (itemsByKey[op.key]) op.item = itemsByKey[op.key]; else itemsByKey[op.key] = op.item; } var was = picked.filter(function(p) { return p.key === op.key; })[0]; if (was) was.item = op.item; });
         picked.filter(function(p) { return p.own; }).forEach(function(p) { opts.push(p); });
         opts.forEach(function(op) {
           var on = picked.some(function(p) { return p.key === op.key; });
           var c = K.taskCard({ cls: 'tk-log-opt', title: op.label, done: on, mode: 'do',
+            metaHtml: op.item && op.item.context ? '<div class="rt-sub">🎯 ' + K.esc(op.item.context) + '</div>' : '',
+            tools: op.task && rt ? rt.ui.missionTools(op.task, { item: op.item, realm: realm, after: function() { if (op.task.realm !== realm) picked = picked.filter(function(p) { return p.key !== op.key; }); op.label = op.task.title; op.item.label = op.task.title; drawBody(); } }) : [],
             onTick: function() { if (on) picked = picked.filter(function(p) { return p.key !== op.key; }); else picked.push(op); return Promise.resolve(); },
             after: drawBody });
           body.appendChild(c);
@@ -5988,7 +5992,8 @@ RPGACE.register('myDay', {
       var done = function() { pop.close(); if (cb) cb(); };
       if (!rt) { pop.box.textContent = 'Realm tasks are not loaded.'; return pop; }
       var mission = { id: o.ref_id, realm: realm };
-      var co = RPGACE.modules.cookingOracle, gen = o.context_kind === 'recipe' && co && co.logic && co.logic._generate;
+      // MC-4 (Nov 5 2026, Alex: "Pick from saved only"): a recipe mission picks a saved recipe - no typing, no generating.
+      var co = RPGACE.modules.cookingOracle, savedOnly = o.context_kind === 'recipe', gen = false;
       // GM-6: generate -> preview -> Use (save recipe, card, planned cook, groceries).
       var runGen = function(seed) {
         var desc = o.label + (seed ? ': ' + seed : '');
@@ -6027,8 +6032,8 @@ RPGACE.register('myDay', {
       // GM-7: pick from Alex's own data; an existing card with the same name is reused, not duplicated.
       var usePicked = function(row, cards) {
         var k = String(row.title).toLowerCase().trim(), ex = (cards || []).filter(function(c) { return String(c.title).toLowerCase().trim() === k; })[0];
-        var p = ex ? Promise.resolve(ex) : rt.logic.addContext(mission, { title: row.title, detail: row.detail || null, source: 'picked', source_ref: row.ref || null });
-        return p.then(function(c) { o.context = (c && c.title) || row.title; o.context_id = (c && c.id) || null; o.recipe_id = null; done(); })
+        var p = ex ? Promise.resolve(ex) : rt.logic.addContext(mission, { title: row.title, detail: row.detail || null, source: 'picked', source_ref: row.ref || null, recipe_id: row.recipe_id || null });
+        return p.then(function(c) { o.context = (c && c.title) || row.title; o.context_id = (c && c.id) || null; o.recipe_id = row.recipe_id || (c && c.recipe_id) || null; done(); })
           .catch(function(e) { RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500, 'myDay'); });
       };
       var openSource = function(def, cards) {
@@ -6050,7 +6055,7 @@ RPGACE.register('myDay', {
         var cards = rt.logic.rankContexts(rows);
         pop.box.innerHTML = '';
         var hint = document.createElement('div'); hint.style.cssText = 'font-size:13px;color:var(--muted);margin-bottom:8px;';
-        hint.textContent = cards.length ? 'Untried ones first.' : 'No cards yet for this mission. Type one below; it is saved for next time.';
+        hint.textContent = cards.length ? 'Untried ones first.' : (savedOnly ? 'Pick one of your saved recipes.' : 'No cards yet for this mission. Type one below; it is saved for next time.');
         pop.box.appendChild(hint);
         cards.forEach(function(c) {
           var bt = self.ui._btn('', ''); bt.className += ' mdp-ctx-card'; bt.dataset.id = c.id;
@@ -6064,7 +6069,7 @@ RPGACE.register('myDay', {
           g1.onclick = function() { runGen(c.title); };
           cr.appendChild(bt); cr.appendChild(g1); pop.box.appendChild(cr);
         });
-        var row = document.createElement('div'); row.style.cssText = 'display:flex;gap:8px;margin:10px 0 6px;';
+        var row = document.createElement('div'); row.style.cssText = 'display:flex;gap:8px;margin:10px 0 6px;' + (savedOnly ? 'display:none;' : '');
         var inp = document.createElement('input'); inp.type = 'text'; inp.id = 'mdp-ctx-own'; inp.placeholder = 'Type your own, e.g. pork belly';
         inp.style.cssText = 'flex:1;min-width:0;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;padding:8px;min-height:40px;font-family:inherit;';
         var add = self.ui._btn('Use', 'primary'); add.id = 'mdp-ctx-add'; RPGACE.kit.needs(add, inp, 'Type your own first');

@@ -74,6 +74,16 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-05-mc-ff" style="margin-bottom:30px;">
+    <div class="card-title">✏️ Nov 5: every mission can be edited and given its context where you use it (MC) + the feature feedback loop is wired (FF-1..3)</div>
+    <div class="card-body">
+      Alex: "the missions I was choosing for cooking block done didn't have edit buttons so I can edit context, choose recipe... I fear this would be the case for all realm missions, this needs to be reworked". Answers: edit "Context, Name + minutes, Notes / how, Realm + repeat"; "changes mission for good only in present or planned, not in planning stage"; new recipe "Pick from saved only". Go: "Do this with FF steps together".
+      <ul><li><b>MC:</b> one set of mission tools (<code>realmTasks.ui.missionTools</code>): 🎯 pick this time's context + ✏️ Edit (name, minutes, notes/how, realm, one-off/repeat, saved for good). In Live now (list and the task you're on), in Log something you did (evening review included) and in the Catalogue (no more two pop-up prompts). Plan a block is unchanged: choose missions + pick context.</li>
+      <li>Chef missions pick from saved recipes only (📖 Pick a saved recipe); the typed card and ✨ Generate are gone from that picker. A logged/planned block now keeps the picked recipe (<code>recipe_id</code> was dropped before).</li>
+      <li><b>FF-1:</b> new private table <code>feature_watch</code>, seeded with the 10 features shipped Nov 4-5. <b>FF-2:</b> <code>.claude/skills/feature-feedback/SKILL.md</code> + a CLAUDE.md session-start row: each session reads new data on watched features and writes <code>feature_findings</code> as yes/no questions with evidence. <b>FF-3</b> table was made with FF-4.</li>
+      <li>Tested headless (6 MC checks); 9 older suites, one expected change (gm6 looked for ✨ Generate). <b>Not done:</b> the evening review's Not done rows still have no per-mission edit (✓ Did it covers the block). <b>Untested on Alex's phone.</b> The first real FF review runs next session.</li></ul>
+    </div>
+  </div>
 <div class="card" id="card-2026-11-05-rp7" style="margin-bottom:30px;">
     <div class="card-title">🔮 Nov 5: the evening review is now a questionnaire, by realm, 5 each, yes/no + why, yeses planned (RP-7) + feedback findings join it (FF-4)</div>
     <div class="card-body">

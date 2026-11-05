@@ -125,7 +125,9 @@ RPGACE.register('realmTasks', {
       plan: { label: '🧳 Pick a plan', empty: 'No open plans yet. Start one in Plans.' },
       beat: { label: '🎹 Pick a beat', empty: 'No beats logged yet.' },
       artist: { label: '🎤 Pick an artist', empty: 'No artists saved yet. Add them in Selling → 🎤 Artists.' },
-      dev: { label: '🛠 Pick a plan item or error', empty: 'Nothing open in the plans or the error log.' }
+      dev: { label: '🛠 Pick a plan item or error', empty: 'Nothing open in the plans or the error log.' },
+      // MC-4 (Nov 5 2026, Alex: "Pick from saved only"): Chef missions pick one of your saved recipes.
+      recipe: { label: '📖 Pick a saved recipe', empty: 'No saved recipes yet. Save one in 🍳 Cooking first.' }
     },
     // MR-5: where a picked card's source opens (source_ref = 'table:id').
     OPENERS: {
@@ -142,6 +144,9 @@ RPGACE.register('realmTasks', {
     },
     sourceItems: function(kind) {
       var sel = function(t, q) { return RPGACE.sb.select(t, q).then(function(r) { return Array.isArray(r) ? r : []; }).catch(function() { return []; }); };
+      if (kind === 'recipe') return sel('recipes', 'select=id,title,cuisine,created_at&order=created_at.desc&limit=200').then(function(r) {
+        return r.map(function(x) { return { title: String(x.title || 'Recipe').slice(0, 140), detail: null, sub: x.cuisine || 'saved recipe', ref: 'recipes:' + x.id, recipe_id: String(x.id) }; });
+      });
       var pot = function(k) { return function(r) { return r.filter(function(x) { return x.kind === k && ['merged', 'done', 'dropped', 'archived'].indexOf(x.status) < 0; })
         .sort(function(a, b) { return (b.starred ? 1 : 0) - (a.starred ? 1 : 0); })
         .map(function(x) { return { title: String(x.title || x.idea_text || 'Idea').slice(0, 140), detail: x.idea_text || null, sub: (x.starred ? '⭐ ' : '') + (k === 'beat' ? 'beat idea' : 'post idea'), ref: 'conid_pot:' + x.id }; }); }; };
@@ -319,6 +324,16 @@ RPGACE.register('realmTasks', {
         earns: row.earns === 'real' || row.earns === 'xp' ? row.earns : 'tick', xp: row.xp || null, opens: row.opens || null,
         status: row.status === 'kept' ? 'kept' : 'inbox', sources: Array.isArray(row.sources) ? row.sources : [] };
       return RPGACE.sb.secureWrite('realm_tasks', 'insert', clean).then(function() { RPGACE.cache.clear('realm_tasks'); return self.logic.load(true); });
+    },
+    // MC-2: pure - the patch an edit sheet produces (only changed, valid fields).
+    editPatch: function(t, f) {
+      var X = RPGACE.modules.xpSeason, p = {}, title = String(f.title || '').trim().slice(0, 120), m = parseInt(f.mins, 10);
+      if (title && title !== t.title) p.title = title;
+      if (m > 0 && Math.min(480, m) !== t.mins) p.mins = Math.min(480, m);
+      var how = String(f.how || '').trim().slice(0, 400) || null; if (how !== (t.how || null)) p.how = how;
+      if (f.realm && f.realm !== t.realm && X && X.REALMS[f.realm]) p.realm = f.realm;
+      if ((f.kind === 'once' || f.kind === 'repeat') && f.kind !== (t.kind || 'once')) p.kind = f.kind;
+      return p;
     },
     update: function(t, patch) {
       return RPGACE.sb.secureWrite('realm_tasks', 'update', patch, 'id=eq.' + t.id).then(function() {
@@ -695,7 +710,12 @@ RPGACE.register('realmTasks', {
         };
         var nn = U._btn('↩ Not now', ''); nn.onclick = function() { if (st2.entry) L.freeDiscard(st2.entry); st2.task = null; st2.entry = null; save(); U._drawLive(box, opts); };
         var ch = U._btn('⛓ Chain', ''); ch.id = 'rt-chain'; ch.title = 'Do this after / before another task'; ch.onclick = function() { U.openChain(cur); };
-        row.appendChild(dn); row.appendChild(nn); row.appendChild(ch); nw.appendChild(row);
+        row.appendChild(dn); row.appendChild(nn); row.appendChild(ch);
+        // MC-3: change this time's context / edit the mission, right here.
+        U.missionTools(cur, { item: pi, block: b, realm: realm, after: function() { U._drawLive(box, opts); } }).forEach(function(sp) {
+          var tb = U._btn(sp.label, ''); tb.className += ' ' + sp.cls; tb.onclick = sp.fn; row.appendChild(tb);
+        });
+        nw.appendChild(row);
         if (st2.entry && !b) { var tm = document.createElement('div'); tm.className = 'rt-sub'; tm.id = 'rt-free-on'; tm.textContent = '⏱ On your timeline from ' + U._clock(new Date((L.freeEntry(st2.entry) || {}).started_at || Date.now()).getTime()); nw.appendChild(tm); }
         box.appendChild(nw);
       }
@@ -729,7 +749,7 @@ RPGACE.register('realmTasks', {
               st2.task = t.id; st2.entry = null;
               if (!b) { var en = L.freeStart(t, realm); st2.entry = en ? en.id : null; } // DL-1
               save(); if (t.opens) md.ui._openTool(t.opens); U._drawLive(box, opts);
-            } }],
+            } }].concat(U.missionTools(t, { item: tp0, block: b, realm: realm, after: function() { U._drawLive(box, opts); } })),
             onTick: function() {
               var work = b && b.kind === 'realm' ? L.doneInBlock(t, b) : L.freeDone(t, null);
               return work.then(function() { return L.afterDone(t, null, Date.now()).catch(function() { return []; }); }).then(function() {
@@ -1055,11 +1075,8 @@ RPGACE.register('realmTasks', {
               r.appendChild(k);
             }
             var ed = U._btn('Edit', ''); ed.className += ' rt-edit';
-            ed.onclick = function() {
-              var nt = window.prompt('Task name', t.title); if (nt == null || !nt.trim()) return;
-              var nm = window.prompt('Minutes', String(t.mins || 30)); var m = parseInt(nm, 10);
-              L.update(t, { title: nt.trim().slice(0, 120), mins: m > 0 ? Math.min(480, m) : t.mins }).then(draw).catch(function(e) { RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500, 'realmTasks'); });
-            };
+            // MC-2: the same edit sheet as everywhere else (was two window.prompt boxes).
+            ed.onclick = function() { U.editTask(t, function() { draw(); }); };
             var dr = U._btn('Drop', ''); dr.className += ' rt-drop';
             dr.onclick = function() { dr.disabled = true; L.update(t, { status: 'dropped' }).then(function() { t.status = 'dropped'; draw(); }); };
             r.appendChild(ed); r.appendChild(dr);
@@ -1079,6 +1096,53 @@ RPGACE.register('realmTasks', {
     },
     // ➕ Task: one form for every place a task can come from (Oracle replies,
     // idea cards, Live now). opts: { title, notes, realm, source }.
+    // MC-2 (Nov 5 2026, Alex: edit "Context, Name + minutes, Notes / how, Realm + repeat"; "changes mission for good only
+    // in present or planned"): one edit sheet for any task/mission; saves to realm_tasks for good.
+    editTask: function(t, after) {
+      var self = RPGACE.modules.realmTasks, L = self.logic, U = self.ui, xs = RPGACE.modules.xpSeason;
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '✏️ Edit' + (L.isMission(t) ? ' mission' : ' task'), title: t.title, width: '460px' });
+      pop.box.id = 'rt-edit';
+      var css = 'width:100%;box-sizing:border-box;min-height:44px;background:var(--panel2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:8px;font:inherit;font-size:16px;margin-bottom:8px;';
+      var lab = function(txt, el) { var l = document.createElement('label'); l.style.cssText = 'display:block;font-size:12px;color:var(--muted);'; l.textContent = txt; l.appendChild(el); pop.box.appendChild(l); return el; };
+      var ti = document.createElement('input'); ti.id = 'rt-edit-title'; ti.value = t.title || ''; ti.style.cssText = css; lab('Name', ti);
+      var mi = document.createElement('input'); mi.id = 'rt-edit-mins'; mi.type = 'number'; mi.min = '5'; mi.max = '480'; mi.inputMode = 'numeric'; mi.value = String(t.mins || 30); mi.style.cssText = css; lab('Minutes', mi);
+      var hw = document.createElement('textarea'); hw.id = 'rt-edit-how'; hw.rows = 2; hw.value = t.how || ''; hw.placeholder = 'How you do it, what counts as done'; hw.style.cssText = css + 'resize:vertical;'; lab('Notes / how', hw);
+      var rs = document.createElement('select'); rs.id = 'rt-edit-realm'; rs.style.cssText = css;
+      (xs ? xs.ORDER : []).forEach(function(k) { var o = document.createElement('option'); o.value = k; o.textContent = U._realm(k).icon + ' ' + U._realm(k).name; if (k === t.realm) o.selected = true; rs.appendChild(o); });
+      lab('Realm', rs);
+      var ks = document.createElement('select'); ks.id = 'rt-edit-kind'; ks.style.cssText = css;
+      [['repeat', '🔁 Repeatable'], ['once', '1️⃣ One-off']].forEach(function(x) { var o = document.createElement('option'); o.value = x[0]; o.textContent = x[1]; if ((t.kind || 'once') === x[0]) o.selected = true; ks.appendChild(o); });
+      lab('Repeat', ks);
+      var sv = RPGACE.kit.btn('Save', 'primary'); sv.id = 'rt-edit-save'; sv.style.width = '100%';
+      RPGACE.kit.needs(sv, ti, 'Give it a name');
+      sv.onclick = function() {
+        var patch = L.editPatch(t, { title: ti.value, mins: mi.value, how: hw.value, realm: rs.value, kind: ks.value });
+        if (!Object.keys(patch).length) { pop.close(); return; }
+        sv.disabled = true;
+        L.update(t, patch).then(function() { pop.close(); RPGACE.utils.toast('✏️ Saved: ' + t.title, '#4caf82', 2000); if (after) after(t); },
+          function(e) { sv.disabled = false; RPGACE.utils.toast('⚠️ Not saved: ' + (e.message || e), '#CC4A4A', 4000, 'realmTasks'); });
+      };
+      pop.box.appendChild(sv);
+      return pop;
+    },
+    // MC-1: the tools every mission/task card carries in the present or on a planned block:
+    // 🎯 pick this time's context (missions; o.item = the block's/log's item for it) and ✏️ Edit (for good).
+    missionTools: function(t, o) {
+      o = o || {};
+      var self = RPGACE.modules.realmTasks, L = self.logic, U = self.ui, md = RPGACE.modules.myDay, out = [];
+      if (!t) return out;
+      if (L.isMission(t) && md && o.item) {
+        out.push({ label: '🎯 ' + (o.item.context ? String(o.item.context).slice(0, 40) : 'Pick ' + ((L.CONTEXT_SOURCES[t.context_kind] || {}).label || 'what').replace(/^\S+\s*/, '').replace(/^Pick /, '')), cls: 'rt-ctx-pick', fn: function() {
+          var it = o.item; it.context_kind = it.context_kind || t.context_kind; it.ref_id = it.ref_id || String(t.id); it.label = it.label || t.title;
+          md.ui.pickContext(it, t.realm || o.realm, function() {
+            var w = o.block && o.block.id ? md.logic.saveBlockItems(o.block, o.block.items) : Promise.resolve(); // the one block-items save
+            w.then(function() { if (o.after) o.after(); }, function(e) { RPGACE.utils.toast('⚠️ Not saved: ' + (e.message || e), '#CC4A4A', 4000, 'realmTasks'); });
+          }, o.block);
+        } });
+      }
+      if (o.editable !== false) out.push({ label: '✏️ Edit', cls: 'rt-edit-btn', fn: function() { U.editTask(t, function() { if (o.after) o.after(); }); } });
+      return out;
+    },
     openAdd: function(opts) {
       var self = RPGACE.modules.realmTasks, L = self.logic, U = self.ui, xs = RPGACE.modules.xpSeason;
       opts = opts || {};
