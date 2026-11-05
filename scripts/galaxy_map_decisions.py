@@ -116,7 +116,7 @@ DECISION_POINTS = [
     {
         'id': 'conidpot-delete', 'category': 'destructive',
         'title': 'Delete an idea from the Idea Bank (ConID Pot)',
-        'module': 'conidPot', 'func': '_refreshIdeaBank', 'lines': (32749, 32749),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 31788-31788; single-line citation kept
+        'module': 'conidPot', 'func': '_refreshIdeaBank', 'lines': (32754, 32754),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 31788-31788; single-line citation kept
         'anchor': "confirm('Delete \"' + row.title + '\"?')",
         'trigger': 'A real 🗑 button rendered per-row inside the Idea Bank list.',
         'logic': 'A plain `confirm()` — real, same minimal-context shape as videoSummary\'s.',
@@ -132,7 +132,7 @@ DECISION_POINTS = [
     {
         'id': 'placement-confirm', 'category': 'taxonomy',
         'title': 'New insight placement — accept/reject before a real taxonomy_tree write',
-        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (24333, 24333),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 21314-21314; single-line citation kept; 2+ matches, picked the real implementation over the pass-through wrapper
+        'module': 'phylumPath', 'func': '_showPlacementConfirm', 'lines': (24338, 24338),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 21314-21314; single-line citation kept; 2+ matches, picked the real implementation over the pass-through wrapper
         'anchor': '_showPlacementConfirm: function(phylumNumber, attachNode, newSteps, explainers, insightText, onAccept, onReject)',
         'trigger': 'Shown automatically after `decidePlacementScored()` (a real curated core-logic point in its own right — see the Decision Matrix for the full scoring logic) returns a real placement candidate.',
         'logic': 'A real popup showing Oracle\'s own proposed attach point + new steps, with explicit onAccept/onReject callbacks — nothing writes to taxonomy_tree without this gate, per rule 4.',
@@ -141,7 +141,7 @@ DECISION_POINTS = [
     {
         'id': 'article-confirm', 'category': 'taxonomy',
         'title': 'Dedup-extend article regeneration — approve before overwriting an existing leaf',
-        'module': 'phylumPath', 'func': '_showArticleConfirm', 'lines': (24864, 24864),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 21845-21845; single-line citation kept; 2+ matches, picked the real implementation over the pass-through wrapper
+        'module': 'phylumPath', 'func': '_showArticleConfirm', 'lines': (24869, 24869),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 21845-21845; single-line citation kept; 2+ matches, picked the real implementation over the pass-through wrapper
         'anchor': '_showArticleConfirm: function(node, articleTitle, text, onApprove, onDeny)',
         'trigger': 'Shown when `_insertNewSteps()` (a real curated core-logic point in its own right — the dedup-extend decision, written up in full on the Decision Matrix) finds a real near-duplicate and proposes extending the existing leaf\'s own article instead of creating a new one.',
         'logic': 'Same real checkpoint pattern as `_showPlacementConfirm`, simpler — an existing leaf\'s content is about to be regenerated, so this gate specifically protects against overwriting real prior content on a bad match.',
@@ -150,7 +150,7 @@ DECISION_POINTS = [
     {
         'id': 'accept-phylumpath-proposal', 'category': 'taxonomy',
         'title': 'Review Queue: accept a pending taxonomy_proposals row',
-        'module': 'taxonomyReviewQueue', 'func': '_acceptPhylumPathProposal', 'lines': (15544, 15544),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 12828-12828; single-line citation kept; 2+ matches, picked the real implementation over the pass-through wrapper
+        'module': 'taxonomyReviewQueue', 'func': '_acceptPhylumPathProposal', 'lines': (15549, 15549),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 12828-12828; single-line citation kept; 2+ matches, picked the real implementation over the pass-through wrapper
         'anchor': '_acceptPhylumPathProposal: function(p)',
         'trigger': 'The real "✅ Accept" button on a pending row inside the "🌳 Taxonomy & Review" dashboard card\'s popup.',
         'logic': 'A real, separate SECOND checkpoint from `_showPlacementConfirm` above — this one clears a `taxonomy_proposals` row that was already staged (not a live in-the-moment placement), matching rule 4\'s "or staging through taxonomy_proposals → review queue" alternate path.',
@@ -158,7 +158,7 @@ DECISION_POINTS = [
     {
         'id': 'accept-concept-fusion', 'category': 'taxonomy',
         'title': 'Review Queue: accept a proposed fusion-link bridge',
-        'module': 'taxonomyReviewQueue', 'func': '_acceptConceptFusion', 'lines': (15578, 15578),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 12862-12862; single-line citation kept; 2+ matches, picked the real implementation over the pass-through wrapper
+        'module': 'taxonomyReviewQueue', 'func': '_acceptConceptFusion', 'lines': (15583, 15583),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 12862-12862; single-line citation kept; 2+ matches, picked the real implementation over the pass-through wrapper
         'anchor': '_acceptConceptFusion: function(p)',
         'trigger': 'The real "✅ Accept" button on a pending `taxonomy_links` row — the exact real gate Knowledge\'s own `human_confirm_gate`-tagged RIVER_FLOWS edges describe at the domain level.',
         'logic': 'Same real accept/reject review-queue mechanism as the proposal row above, scoped to fusion-link bridges instead of new-leaf placements.',
@@ -166,7 +166,7 @@ DECISION_POINTS = [
     {
         'id': 'edit-phylumpath-proposal', 'category': 'taxonomy',
         'title': 'Review Queue: edit a pending proposal before accepting it',
-        'module': 'taxonomyReviewQueue', 'func': '_editPhylumPathProposal', 'lines': (15630, 15630),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 12914-12914; single-line citation kept; 2+ matches, picked the real implementation over the pass-through wrapper
+        'module': 'taxonomyReviewQueue', 'func': '_editPhylumPathProposal', 'lines': (15635, 15635),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 12914-12914; single-line citation kept; 2+ matches, picked the real implementation over the pass-through wrapper
         'anchor': '_editPhylumPathProposal: function(p)',
         'trigger': 'A real "✏️ Edit" button alongside Accept/Reject on a pending proposal row.',
         'logic': 'Real, distinct from a bare accept/reject — lets Alex correct Oracle\'s own proposed placement before it commits, rather than only a binary yes/no.',
