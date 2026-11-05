@@ -1,0 +1,11 @@
+Feature feedback loop - /dev_ops_7 Track B compile (Nov 5 2026)
+
+Alex, verbatim (quoting my line "haven't tested these on your phone yet. Your next cook is the first real test."):
+"this gives me an idea - every time in supabase data on a new feature or from one is added, look at the function, look at the chats and comments, and think through what I'd improve what I liked disliked etc - do this accros 13 realms and all other universal pages in today, dashboard and left nav"
+
+Evidence (live counts, Nov 5):
+- oracle_chats 56, cook_chats 0 (CT just shipped), journal 49, ui_usage 4 (RP-1 just shipped)
+- system_updates 249 rows in the last 30 days = the list of shipped features
+- oracle_dev_suggestions 28 rows (id, created_at, suggestion_text, category, status, source) = an existing "idea for the dev session" queue, read at every session start (CLAUDE.md Session start table)
+- error_log active 18
+- Overlap with approved RP-7 (evening questionnaire, Alex: "separated by realms in foldable rows ... 5 each by urgency and importance, with yes/no why and plan on yeses") - a natural place where findings land for his yes/no.
