@@ -74,6 +74,19 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-05-ar-ct" style="margin-bottom:30px;">
+    <div class="card-title">🧹 Nov 5: No more silent buttons (AR-1..4) + cook transcripts (CT-1..3)</div>
+    <div class="card-body">
+      Alex: empty-input buttons "Both"; dead chips "Check each, fix or remove"; audit "1 and should be part of rule making for galaxy map in a future plan"; "Do all AR"; "Make sure it saves as transcript document and is linked to cook and recipe column, it can then be dissected by colours to do subs etc."; "6 colours"; "Free word scan, Oracle on tap"; "1 and if I don't like the change, I either reject sub or talk to oracle to change it"; "Approved ct plans".
+      <ul><li><b>AR-1:</b> new <code>RPGACE.kit.needs(btn, input, msg)</code>: a button that needs something typed is greyed until you fill the box; tapping it anyway says what's missing and puts the cursor there. Wired into 16 buttons (Morning/Night tasks, Shopping block, step adds, Your Year challenge, Health weight/sleep, Oracle memory, Beat Log stems, Take in Analyse, Screenshots wishlist/idea, What happened?). <code>scripts/check_silent_empty.py</code> fails on a new silent one.</li>
+      <li><b>AR-2:</b> every chip the audit flagged already has a selected look; the crawler tapped chips that were already selected. Nothing removed.</li>
+      <li><b>AR-3:</b> <code>scripts/audit/ui_diff.py</code> compares two audits (screens gone/new, newly dead buttons, new errors); re-run after every plan that changes screens. <b>AR-4:</b> <code>docs/audit/phone_checklist_2026-11-05.md</code> lists the live-service buttons to check on the phone.</li>
+      <li><b>CT-1:</b> <code>cook_chats</code> gained <code>planned_cook_id</code>, <code>transcript</code>, <code>line_tags</code>, <code>source</code>; Live now and Cook Mode both save a readable transcript ("21:42 You: …") linked to the cook and the recipe. New module <code>cookTranscripts</code>.</li>
+      <li><b>CT-2:</b> free word scan colours each line: 🟢 substitution, 🟠 timing/heat, 🔴 problem/fix, 🔵 technique, 🟣 taste, ⚪ other (a reply takes its question's colour). ✨ Re-check colours = one cheap Oracle call.</li>
+      <li><b>CT-3:</b> a saved recipe shows 🗒 Cook transcripts (count): coloured lines with a colour filter; ✏️ Make recipe changes proposes up to 6 changes from the swap/timing/problem lines, each ✓ Accept / ✕ Reject / 💬 Talk to Oracle. Accepted ones become proposed steps in the existing Cook Mode steps review (old steps kept for undo). Nothing changes without your tap.</li></ul>
+      <b>Flags:</b> harness-tested (ar1 9/9, ct 12/12, cc 6/6; My Day, Live now, Knowledge, Screenshots, Your Year, Cooking and Cook Mode suites: no new failures vs the earlier build). Oracle calls stubbed in tests: the real proposals and colour re-checks are untested. Untested on Alex's phone. Future (blue): the same transcript form for every Live now session (CT-4); audit rules in Galaxy Map rule-making (AR-5).
+    </div>
+</div>
 <div class="card" id="card-2026-11-05-rp3" style="margin-bottom:30px;">
     <div class="card-title">🗺 Nov 5: Every realm is a page; old menu bands gone (RP-3)</div>
     <div class="card-body">
