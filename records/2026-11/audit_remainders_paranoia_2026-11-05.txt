@@ -18,3 +18,7 @@ Q dead chips: "Check each, fix or remove (Recommended)"  (list which go before r
 Q audit again: "1 and should be part of rule making for galaxy map in a future plan"  (re-run after each screen-changing plan, diff vs last report -> report + error_log; future plan: fold audit rules into Galaxy Map rule-making)
 Q old menu bands after RP-3: "Remove them (Recommended)"  (screens not owned by one realm move to Today or their realm page) -> Track A RP-3 scope
 Defaults (not asked): Group B service buttons get a phone checklist for Alex (rule 10), not code changes.
+
+Approval (verbatim): "Approve are plan and rp3" / "Approve ar plan"
+ -> AR-1..AR-5 approved (AR-5 = future plan, blue). RP-3 already built (commit 3b51504).
+New ask in the same message (verbatim): "Make sure it saves as transcript document and is linked to cook and recipe column, it can then be dissected by colours to do subs etc." (about the cook chat autosave shipped in 2d01f67)
