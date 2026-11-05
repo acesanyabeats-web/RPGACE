@@ -11,3 +11,15 @@ Evidence (live, Nov 5):
 - Receipt reader already exists: moneyHub.logic (prompts/receipt_read.md, RPGACE.utils.oracleVision, private upload via screenshotInbox 'receipt'); chronicles_finance rows with receipt_id = 0 (never used). Reads shop/item/amount/date/category only - no line items.
 - cofid_foods: 7,743 rows = UK CoFID nutrition table ALREADY imported (the "health data tables we will import" partly exist).
 - food_log: 0 rows. pantry_stock: 88 rows. ingredient_prices: 0 rows (receipt line items could fill it).
+
+== Interrogation round 1, Alex's answers verbatim ==
+Shop trip -> "1 and 2, with all 3 as part of planning the shop, what I'll buy etc based on money available an my budgeting decisions"
+Receipts -> "Money (spend this week),Tick grocery + wishlist items,Pantry stock,Prices per item,With 3, do it by item and store bought from, so stock is easier to count, then each stock individual item gets analyzed by the 2 pics of front and back"
+Labels -> "1 and 3" (read label + compare to CoFID/UK traffic lights + verdict; AND judged against his Health & body goals)
+When -> "Both" (aisle check when wanted, receipt at home)
+
+== Draft plan (ST - Shop Trip) ==
+ST-1 Plan the shop: one Shop trip page - newest grocery list + wishlist items you tick in; view grouped by shop OR as two sections; a money line from Steward (weekly budget left) + wishlist budget fit + estimated cost from learned prices; you decide what's in.
+ST-2 Receipt photo -> line items (receipt_read extended: each line name/qty/price + shop) -> ONE review screen -> on Save: money out (chronicles_finance), matching grocery/wishlist items ticked bought, pantry_stock per item + store, ingredient_prices per line.
+ST-3 Product photos (front + back) per stock item: product name/brand + nutrition per 100g + ingredients -> product record linked to the pantry item -> verdict: UK traffic lights (fat/sat fat/sugar/salt) + nearest CoFID food + Health & body goals -> healthy / sometimes / treat + why.
+ST-4 Aisle check: same label reader live in the shop, nothing saved unless bought.
