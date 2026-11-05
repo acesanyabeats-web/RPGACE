@@ -5661,6 +5661,8 @@ RPGACE.register('myDay', {
         top.style.cssText = 'font-size:14px;color:var(--text);font-variant-numeric:tabular-nums;';
         top.textContent = '✅ ' + m.done.length + ' done · ' + (m.open.length ? m.open.length + ' left' : 'nothing left') + (xpToday ? ' · +' + xpToday + ' XP today' : '');
         body.appendChild(top);
+        // RP-5: notes you left for tonight (until the RP-7 questionnaire takes them).
+        if (RPGACE.modules.tonightNotes) RPGACE.modules.tonightNotes.ui.drawInto(body, day);
         if (m.done.length) {
           body.appendChild(head('✅ Done'));
           var ul = document.createElement('div'); ul.id = 'myday-evening-done';

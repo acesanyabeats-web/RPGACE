@@ -556,6 +556,9 @@ RPGACE.register('realmTasks', {
       var cb = U._btn('🗂 Catalogue' + (prN ? ' (' + prN + ' to review)' : ''), ''); cb.id = 'rt-open-catalogue'; cb.onclick = function() { U.openCatalogue(); };
       var ab = U._btn('➕ Task', ''); ab.id = 'rt-open-add'; ab.onclick = function() { U.openAdd({}); };
       tools.appendChild(ib); tools.appendChild(cb); tools.appendChild(ab);
+      // RP-5: a note for tonight, saved under the realm Live now is on.
+      var TN = RPGACE.modules.tonightNotes;
+      if (TN) { var nb = TN.ui.button('📝 Note', function() { var c = self._liveCtx; return c && c.realm ? { realm: c.realm, why: 'Live now' } : null; }); nb.id = 'rt-live-note'; tools.appendChild(nb); }
       top.appendChild(tools); box.appendChild(top);
       // TK-2: a block tapped on the timeline opens here: its steps as task cards, + Add a step, ⋯ for move/edit.
       if (opts.block) {

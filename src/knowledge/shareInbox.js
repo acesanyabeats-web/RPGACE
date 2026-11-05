@@ -76,7 +76,9 @@ RPGACE.register('shareInbox', {
     whatOf: function(url) { var L = RPGACE.modules.shareInbox.logic; return /^text:/.test(url) ? 'text' : (L.isVideo(url) ? 'video' : 'page'); },
     // RI-2: an already-queued link is never asked about again; a new one
     // asks which realms it is for, then queues with them.
-    queue: function(url, opts, text) {
+    // RP-5: askWhy (optional) = function returning a Promise of the "why it's
+    // useful" line, asked after realms are picked; saved on intel_jobs.why.
+    queue: function(url, opts, text, askWhy) {
       var enc = encodeURIComponent(url);
       return RPGACE.sb.select('intel_jobs', 'select=id,status&url=eq.' + enc + '&status=in.(queued,processing,awaiting_realms,awaiting_cc)')
         .then(function(rows) {
@@ -91,8 +93,11 @@ RPGACE.register('shareInbox', {
             }
             var row = { url: url, status: realms ? 'queued' : 'awaiting_realms', realms: realms || [] };
             if (text) row.text = text;
-            return RPGACE.sb.secureWrite('intel_jobs', 'insert', row)
-              .then(function() { return { queued: !!realms, held: !realms, realms: realms || [] }; });
+            var why = realms && askWhy ? askWhy(realms).catch(function() { return ''; }) : Promise.resolve('');
+            return why.then(function(w) {
+              w = String(w || '').trim().slice(0, 400); if (w) row.why = w;
+              return RPGACE.sb.secureWrite('intel_jobs', 'insert', row);
+            }).then(function() { return { queued: !!realms, held: !realms, realms: realms || [], why: row.why || '' }; });
           });
         });
     },
@@ -105,7 +110,9 @@ RPGACE.register('shareInbox', {
       if (!src) { RPGACE.utils.toast('⚠️ Nothing to analyse - share a link, or a few sentences of text', '#CC4A4A', 4000, 'shareInbox'); return; }
       var url = src.url, kind = self.logic.platform(url);
       if (!(share && share.asLesson) && RPGACE.modules.alarmSounds && self.logic.looksLikeAlarm(share, url)) { self.ui.askAlarm(share, url, kind); return; }
-      self.logic.queue(url, null, src.text).then(function(r) {
+      // RP-5 (Alex: share screen "Note or realms+why"): a phone share first asks Note or Take in.
+      if (share && share.fromShare && !share.takeIn && RPGACE.modules.tonightNotes) { self.ui.askShare(share, src, kind); return; }
+      self.logic.queue(url, null, src.text, share && share.fromShare ? self.ui.askWhy : null).then(function(r) {
         // RI-3: "Not now" on the picker = saved, waits for realms.
         if (r.held && share && share.fromShare) { self.ui.sentScreen(kind, false, { title: 'Saved for later', sub: kind + ' waits until you pick its realms.' }); return; }
         if (r.held && !r.already) r.already = 'waiting for you to pick realms';
@@ -125,6 +132,46 @@ RPGACE.register('shareInbox', {
         pop.box.appendChild(p);
       }).catch(function(e) {
         RPGACE.utils.toast('⚠️ Could not queue the shared link: ' + (e.message || e), '#CC4A4A', 4500, 'shareInbox');
+      });
+    },
+
+    // RP-5: Note (type what you need from it, no realms) or Take in (realms + why, then analysed).
+    askShare: function(share, src, kind) {
+      var self = RPGACE.modules.shareInbox, K = RPGACE.kit;
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '📥 Shared to RPGACE', title: 'Note or take it in?', width: '420px' });
+      pop.box.id = 'share-ask';
+      var p = document.createElement('div'); p.style.cssText = 'font-size:12px;color:var(--muted);word-break:break-all;margin-bottom:10px;';
+      p.textContent = src.text ? src.text.slice(0, 160) : src.url; pop.box.appendChild(p);
+      var n = K.btn('📝 Note for tonight', ''); n.id = 'share-as-note'; n.style.cssText += 'width:100%;min-height:48px;';
+      n.onclick = function() {
+        pop.close();
+        RPGACE.modules.tonightNotes.ui.open({ link: /^text:/.test(src.url) ? null : src.url, title: 'What do you need from it?', placeholder: 'e.g. the sidechain trick at 3:20', realm: null,
+          after: function() { self.ui.sentScreen(kind, false, { title: 'Saved for tonight', sub: 'It shows in tonight\'s review.' }); } });
+      };
+      var t = K.btn('📥 Take in (pick realms + why)', 'primary'); t.id = 'share-as-takein'; t.style.cssText += 'width:100%;min-height:48px;margin-top:8px;';
+      t.onclick = function() { pop.close(); self.ui.handle(Object.assign({}, share, { takeIn: true })); };
+      pop.box.appendChild(t); pop.box.appendChild(n);
+      return pop;
+    },
+    // RP-5: one line on why it's useful, after realms are picked. Resolves '' on Skip.
+    askWhy: function(realms) {
+      return new Promise(function(resolve) {
+        var X = RPGACE.modules.xpSeason, names = (realms || []).map(function(r) { return X && X.REALMS[r] ? X.REALMS[r].name : r; }).join(', ');
+        var done = false, fin = function(v) { if (done) return; done = true; resolve(v || ''); };
+        var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '📥 Take in', title: 'Why is it useful?', width: '420px', onClose: function() { fin(''); } });
+        pop.box.id = 'share-why';
+        var s = document.createElement('div'); s.style.cssText = 'font-size:13px;color:var(--muted);margin-bottom:8px;';
+        s.textContent = 'For ' + names + '. What do you want to learn from it? Oracle checks the analysis against this.'; pop.box.appendChild(s);
+        var ta = document.createElement('textarea'); ta.id = 'share-why-text'; ta.rows = 2; ta.placeholder = 'e.g. how he layers the drums';
+        ta.style.cssText = 'width:100%;box-sizing:border-box;font-size:16px;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:inherit;';
+        pop.box.appendChild(ta);
+        var row = document.createElement('div'); row.style.cssText = 'display:flex;gap:8px;margin-top:10px;';
+        var skip = RPGACE.kit.btn('Skip', ''); skip.id = 'share-why-skip'; skip.style.cssText += 'flex:1;min-height:44px;';
+        var ok = RPGACE.kit.btn('Save', 'primary'); ok.id = 'share-why-ok'; ok.style.cssText += 'flex:1;min-height:44px;';
+        skip.onclick = function() { fin(''); pop.close(); };
+        ok.onclick = function() { var v = ta.value.trim(); fin(v); pop.close(); };
+        row.appendChild(skip); row.appendChild(ok); pop.box.appendChild(row);
+        setTimeout(function() { try { ta.focus(); } catch (e) {} }, 50);
       });
     },
 

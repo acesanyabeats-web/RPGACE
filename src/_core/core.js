@@ -6378,6 +6378,14 @@ document.addEventListener('keydown', e=>{
           if (host) sl.attach(host, function () { var b = host.querySelector('.area-bar'); return b && b._sideOpts ? b._sideOpts() : null; }, { ignore: '.mdx-lane,.mdx-chip,.mdx-scroll,.mdx-week' });
         }, 0);
       }
+      // RP-5: 📝 note for tonight on every area bar (module loads after core; looked up on tap).
+      if (!opts.noNote) {
+        var nb = document.createElement('button'); nb.type = 'button'; nb.className = 'area-note-btn'; nb.textContent = '📝';
+        nb.setAttribute('aria-label', 'Note for tonight'); nb.title = 'Note for tonight';
+        nb.style.cssText = 'min-height:44px;min-width:44px;margin-left:auto;order:99;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text);font-size:16px;cursor:pointer;';
+        nb.onclick = function (ev) { ev.stopPropagation(); var TN = R.modules.tonightNotes; if (TN) TN.ui.open(); };
+        el.appendChild(nb);
+      }
       if (prev) {
         var b = document.createElement('button');
         b.type = 'button';
