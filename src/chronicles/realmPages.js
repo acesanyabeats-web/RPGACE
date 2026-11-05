@@ -24,7 +24,7 @@ RPGACE.register('realmPages', {
     steward: { page: 'money', mod: 'moneyHub', title: '💷 Steward', tool: { key: 'money', name: '💷 Money', count: 'In − out · subscriptions · receipts · software', nodes: '*' },
       extras: [{ key: 'wishlist', name: '🛒 Wishlist', count: 'Future purchases vs budget', btns: [['🛒 Open Wishlist', 'card:wishlist'], ['🛒 Shop now', 'shop']] }] },
     scholar: { page: 'knowledge', mod: 'knowledgeHub', title: '📚 Scholar', tool: { key: 'knowledge', name: '📚 Knowledge', count: 'Take in → Study → Learned → Review', nodes: '*' } },
-    chef: { page: 'realm', title: '🍳 Chef', tool: { key: 'cooking', name: '🍳 Cooking', count: 'Recipes, stock, planned cooks', btns: [['🍳 Open Cooking', 'card:cooking'], ['🛒 Shop now', 'shop']] },
+    chef: { page: 'realm', title: '🍳 Chef', tool: { key: 'cooking', name: '🍳 Cooking', count: 'Recipes, plan, cook, stock', btns: [['🍳 Open Cooking', 'card:cooking']] },
       extras: [{ key: 'shop', name: '🛒 Shop now', count: 'Grocery list for your cooks', act: 'shop' }, { key: 'fresh', name: '⏳ Use soon', count: 'Best-before countdown · throw out', draw: 'bestBefore' }] },
     athlete: { page: 'realm', title: '💪 Athlete', tool: { key: 'gym', name: '🏋️ Gym', count: 'This week, log a session, bests', draw: 'gym' },
       extras: [{ key: 'health', name: '❤️ Health & body', count: 'Food, weight, water, sleep', btns: [['❤️ Open Health & body', 'card:health']] }] },
@@ -176,8 +176,11 @@ RPGACE.register('realmPages', {
     // Pure: the folded sections of a realm page, in order. tasksN = kept tasks; starters = Oracle questions.
     sections: function(realm, conf, tasksN, starters) {
       var out = [];
-      if (conf && conf.tool) out.push({ key: conf.tool.key, name: conf.tool.name, count: conf.tool.count || '' });
-      ((conf && conf.extras) || []).forEach(function(x) { out.push({ key: x.key, name: x.name, count: x.count || '', act: x.act || null }); });
+      // Nov 5 2026 (Alex: "too many duplicates of buttons that don't make sense"): a tile whose only
+      // content is one button does that button's job on the first tap (no second "Open X" step).
+      var actOf = function(x) { return x.act || (x.btns && x.btns.length === 1 && !x.draw && !x.nodes ? x.btns[0][1] : null); };
+      if (conf && conf.tool) out.push({ key: conf.tool.key, name: conf.tool.name, count: conf.tool.count || '', act: actOf(conf.tool) });
+      ((conf && conf.extras) || []).forEach(function(x) { out.push({ key: x.key, name: x.name, count: x.count || '', act: actOf(x) }); });
       out.push({ key: 'tasks', name: '🗂 Tasks', count: tasksN + ' kept' });
       return out;
     },
@@ -206,7 +209,7 @@ RPGACE.register('realmPages', {
         '#rp-grow{min-height:44px;padding:6px 12px;border-radius:22px;border:1px solid var(--border);background:none;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;text-align:left}' +
         '#rp-foot{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:6px 0 14px}' +
         '#rp-foot button{min-height:52px;padding:6px 4px;border-radius:10px;border:1px solid var(--border);background:none;color:var(--text);font:inherit;font-size:13px;cursor:pointer}' +
-        '.rp-on > .xp-strip,.rp-on .mh-go-selling,.rp-on .mh-go-wishlist{display:none !important}' +
+        '.rp-on > .xp-strip,.rp-on .mh-go-selling,.rp-on .mh-go-wishlist,#rp-rank .xp-slim-tgt{display:none !important}' +
         '.rp-ranksheet .xp-rc-taken,.rp-ranksheet .xp-rc-knows,.rp-ranksheet .xp-rc-suggest,.rp-ranksheet .xp-rc-ms{display:none !important}' +
         '.rp-growsheet .xp-rc-card,.rp-growsheet .xp-rc-tabs{display:none !important}';
       document.head.appendChild(s);

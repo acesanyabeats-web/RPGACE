@@ -74,6 +74,16 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-05-chef-dedupe" style="margin-bottom:30px;">
+    <div class="card-title">🍳 Nov 5: Chef page - no more duplicate buttons; docs split so none is over the size limit</div>
+    <div class="card-body">
+      Alex: "the home page of cooking realm is still not perfect, too many duplicates of buttons that don't make sense" + "Get those MD sorted, maybe we should make more MD files".
+      <ul><li><b>Found (headless render of the Chef page):</b> "0/3 home cooks this week" shown twice (rank line + target card); the 🍳 Cooking tile opened a second step with "Open Cooking" + another "🛒 Shop now"; opening Cooking added a second rank line and a second ⏳ Use soon; the hub's 🛒 Shop opened a different list (one cook's) from the page's 🛒 Shop now (all upcoming cooks).</li>
+      <li><b>Fixed:</b> the rank line on every realm page no longer repeats the target; a tile whose only content is one button now does it on the first tap (Cooking, Health &amp; body, People, Oversight); Cooking opened from the Chef page has no second rank line or Use soon (still there when opened from elsewhere); both Shop buttons open the same one grocery list (GR).</li>
+      <li><b>Docs:</b> my_day, realm_tasks and cooking split into day_bookends, work_shifts, realm_pages and kitchen_stock; all 98 fact lines kept; size check passes.</li>
+      <li>7 headless checks pass. <b>Not hand-tested on the phone.</b></li></ul>
+    </div>
+  </div>
 <div class="card" id="card-2026-11-05-om" style="margin-bottom:30px;">
     <div class="card-title">🧠 Nov 5: Oracle thinks the way the dev session does - facts vs his words vs guesses, his reality beats the plan (OM)</div>
     <div class="card-body">

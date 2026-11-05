@@ -558,7 +558,8 @@ RPGACE.register('cookingOracle', {
       var box = pop.box;
       box.classList.add('co-hub');
       // BB-5: what's going off (best-before countdown) - one tap from the hub.
-      if (RPGACE.modules.bestBefore) {
+      // Not when opened from the Chef realm page, which has its own ⏳ Use soon tile (Nov 5 2026).
+      if (RPGACE.modules.bestBefore && !document.querySelector('.page.active #rp-frame[data-realm="chef"]')) {
         var bbBtn = self.ui._mkBtn('⏳ Use soon · 🗑 Throw out', '', { extra: 'width:100%;margin-bottom:10px;' }); bbBtn.id = 'co-hub-fresh';
         bbBtn.onclick = function() { RPGACE.modules.bestBefore.ui.open(); };
         box.appendChild(bbBtn);
@@ -607,7 +608,8 @@ RPGACE.register('cookingOracle', {
         self.ui._showMyRecipes();
       }, 'plan');
 
-      mkBtn('🛒 Shop', 'This cook\'s grocery list', function() { self.ui._openGrocery(); }, 'shop');
+      // Nov 5 2026: the same one list for all upcoming cooks as the Chef page's 🛒 Shop now (GR).
+      mkBtn('🛒 Shop', 'Grocery list for your cooks', function() { if (RPGACE.modules.groceryCheck) RPGACE.modules.groceryCheck.ui.open(); else self.ui._openGrocery(); }, 'shop');
 
       mkBtn('🔥 Cook', scheduled ? 'Start the scheduled cook now' : 'Cook a saved recipe step by step', function() {
         if (scheduled) { self.logic._startCookNow(scheduled.plannedCookId, scheduled.agendaId); return; }

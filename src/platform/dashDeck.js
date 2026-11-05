@@ -861,7 +861,9 @@ RPGACE.register('dashDeck', {
       box.appendChild(nav);
       // Oct 13 2026 (XP-2): that domain's realm(s), this week vs usual.
       if (cardMeta && !dd._navStack.length && RPGACE.modules.xpSeason) {
-        var xpStrip = RPGACE.modules.xpSeason.ui.popupStrip(cardMeta.key);
+        // Nov 5 2026: not over a realm page that already shows this realm's rank line.
+        var xpR = RPGACE.modules.xpSeason.CARD_REALMS[cardMeta.key] || [], onRp = document.querySelector('.page.active #rp-frame');
+        var xpStrip = (onRp && xpR.indexOf(onRp.dataset.realm) >= 0) ? null : RPGACE.modules.xpSeason.ui.popupStrip(cardMeta.key);
         if (xpStrip) box.appendChild(xpStrip);
       }
     }
