@@ -40,6 +40,17 @@ RPGACE.register('realmPages', {
 
   init: function() {
     var self = RPGACE.modules.realmPages;
+    // Nov 5 2026 (Alex: "These pages should have ask oracle too"): Ask Oracle on a realm page knows the realm,
+    // its target and what's next (read off the page; the floating Oracle chat sends it with the message).
+    var oc = RPGACE.modules.oracleControl;
+    if (oc && oc.registerContextProvider) oc.registerContextProvider('realmPage', function() {
+      var f = document.getElementById('rp-frame'); if (!f || f.offsetParent === null) return null;
+      var X = RPGACE.modules.xpSeason, R = X && X.REALMS[f.dataset.realm]; if (!R) return null;
+      var t = document.getElementById('rf-target-text'), nx = document.getElementById('rf-next');
+      var tiles = [].map.call(f.querySelectorAll('#rp-sections .rp-name'), function(n) { return n.textContent; }).join(', ');
+      return 'Alex is on his ' + R.name + ' realm page. Target: ' + (t ? t.textContent : 'none') + '. What\'s next: ' + (nx ? nx.textContent.replace(/\s+/g, ' ').slice(0, 300) : 'nothing') +
+        '. Its tools here: ' + tiles + '. Answer for this realm, short and practical. ';
+    });
     // RP-2: the menu's realms band follows what you open, straight away.
     RPGACE.hooks.on('realm:opened', function() { var ln = RPGACE.modules.leftNav; if (ln && ln.ui.redrawRealms) ln.ui.redrawRealms(); });
     RPGACE.hooks.on('page:show', function(name) {
@@ -171,7 +182,7 @@ RPGACE.register('realmPages', {
       return out;
     },
     // RH (Nov 5 2026, Alex: "Do-first"): the small row at the bottom of every realm page.
-    FOOT: [{ key: 'log', name: '📜 Log' }, { key: 'takein', name: '📥 Take in' }, { key: 'prompts', name: '🔮 Ask' }, { key: 'review', name: '📈 Review' }]
+    FOOT: [{ key: 'log', name: '📜 Log' }, { key: 'takein', name: '📥 Take in' }, { key: 'prompts', name: '🔮 Ask Oracle' }, { key: 'review', name: '📈 Review' }]
   },
 
   ui: {
@@ -357,11 +368,25 @@ RPGACE.register('realmPages', {
       if (key === 'takein') return RF.ui._openTakeIn(realm, null);
       if (key === 'review') return RF.ui._openReview(realm);
       if (key === 'prompts') {
-        var pop = RF.ui._sheet('🔮 Ask · ' + X.REALMS[realm].name); pop.box.id = 'rp-ask';
+        // The floating Oracle chat, right here on the page (realm context goes with each message), + the ready questions.
+        var oc = RPGACE.modules.oracleControl;
+        if (!oc || !oc._toggleOverlay) { RF.ui.ask(''); return; }
+        if (!document.getElementById('oc-ov-panel') && !document.getElementById('oc-overlay-panel')) oc._toggleOverlay();
+        var panel = document.getElementById('oc-overlay-panel'), log = document.getElementById('oc-ov-log'), inp = document.getElementById('oc-ov-input');
+        if (!panel || !log) return;
+        panel.dataset.realm = realm;
+        if (inp) { inp.placeholder = 'Ask Oracle about ' + X.REALMS[realm].name + '…'; setTimeout(function() { try { inp.focus(); } catch (e) {} }, 50); }
+        if (log.querySelector('.rp-ask-chips')) return;
         RF.logic.registry().then(function(reg) {
-          var qs = RF.logic.frameOf(reg, realm).starters || [];
-          if (!qs.length) { pop.box.appendChild(document.createTextNode('No ready questions for this realm yet.')); return; }
-          qs.forEach(function(q) { var b = RPGACE.kit.btn(q, ''); b.style.cssText += 'width:100%;margin-bottom:6px;text-align:left;'; b.onclick = function() { pop.close(); RF.ui.ask(q); }; pop.box.appendChild(b); });
+          var qs = RF.logic.frameOf(reg, realm).starters || []; if (!qs.length || !log.isConnected) return;
+          var chips = document.createElement('div'); chips.className = 'rp-ask-chips'; chips.style.cssText = 'display:flex;flex-direction:column;gap:6px;margin-bottom:8px;';
+          qs.forEach(function(q) {
+            var b = document.createElement('button'); b.type = 'button'; b.className = 'rp-ask-chip'; b.textContent = q;
+            b.style.cssText = 'text-align:left;min-height:40px;padding:6px 10px;border-radius:8px;border:1px solid rgba(155,89,182,.35);background:none;color:inherit;font:inherit;font-size:13px;cursor:pointer;';
+            b.onclick = function() { chips.remove(); oc._sendFromOverlay(q); };
+            chips.appendChild(b);
+          });
+          log.insertBefore(chips, log.firstChild);
         });
       }
     },

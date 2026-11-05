@@ -1338,11 +1338,15 @@ RPGACE.register('cookingOracle', {
         }
         pnl.appendChild(card);
         var ins = document.createElement('div');
+        ins.className = 'cm-ins';
         ins.style.cssText = 'font-size:21px;line-height:1.4;font-weight:600;';
         ins.textContent = st.instruction;
         pnl.appendChild(ins);
+        // LE (Nov 5 2026): Oracle's live changes to this step show here (cookingOracle live edits, below).
+        var live = document.createElement('div'); live.className = 'cm-live'; pnl.appendChild(live);
         if (st.done_cue) {
           var cue = document.createElement('div');
+          cue.className = 'cm-cue';
           cue.style.cssText = 'font-size:16px;color:var(--green);';
           cue.textContent = '✓ Done when: ' + st.done_cue;
           pnl.appendChild(cue);
@@ -1460,6 +1464,32 @@ RPGACE.register('cookingOracle', {
       // CM-4: the Ask panel. History lasts while Cook Mode is open.
       var askLog = [];
       var askPanel = null;
+      // LE: Oracle's step changes, shown on the steps at once (with Undo). The cook's own copy only;
+      // a change Alex wants for good goes through the recipe chat.
+      var applyLiveEdits = function(edits) {
+        var done = [];
+        edits.forEach(function(e) {
+          var i = (e.step || e.after) - 1, st = steps[i], pnl = panels[i]; if (!st || !pnl) return;
+          var liveBox = pnl.querySelector('.cm-live'); if (!liveBox) return;
+          var note = document.createElement('div'); note.className = 'cm-live-edit';
+          note.style.cssText = 'font-size:15px;line-height:1.4;border-left:3px solid var(--gold);padding:4px 10px;background:rgba(201,168,76,0.08);border-radius:0 8px 8px 0;';
+          var undo = document.createElement('button'); undo.type = 'button'; undo.className = 'cm-live-undo'; undo.textContent = 'Undo';
+          undo.style.cssText = 'margin-left:8px;min-height:36px;padding:2px 10px;border-radius:8px;border:1px solid var(--border);background:none;color:var(--muted);font-size:13px;cursor:pointer;';
+          if (e.add) {
+            note.textContent = '➕ Then: ' + e.add + (e.why ? ' (' + e.why + ')' : '');
+            undo.onclick = function() { note.remove(); };
+          } else {
+            var oldIns = st.instruction, oldCue = st.done_cue, insEl = pnl.querySelector('.cm-ins'), cueEl = pnl.querySelector('.cm-cue');
+            st.instruction = e.instruction; if (insEl) insEl.textContent = e.instruction;
+            if (e.done_cue) { st.done_cue = e.done_cue; if (cueEl) cueEl.textContent = '✓ Done when: ' + e.done_cue; }
+            note.textContent = '✏️ Changed by Oracle' + (e.why ? ': ' + e.why : '');
+            undo.onclick = function() { st.instruction = oldIns; st.done_cue = oldCue; if (insEl) insEl.textContent = oldIns; if (cueEl && oldCue) cueEl.textContent = '✓ Done when: ' + oldCue; note.remove(); };
+          }
+          note.appendChild(undo); liveBox.appendChild(note);
+          done.push(e);
+        });
+        return done;
+      };
       var cookContext = function() {
         var st = steps[idx];
         var now = Date.now();
@@ -1472,7 +1502,9 @@ RPGACE.register('cookingOracle', {
         // WR-14: what Alex asked last time he cooked this, so Oracle knows what to improve.
         if (pastChats) lines.push('Last times he cooked this he asked: ' + pastChats + '.');
         return 'You are Oracle, helping Alex while he cooks right now in Cook Mode. ' + lines.join(' ') + ' Answer in one to three short, practical sentences he can act on with his hands busy. No lists, no headings.' +
-          ' This whole conversation is saved to the recipe so it can be improved later. If he asks you to flag, note or pass something on to the Orchestrator (Claude Code), say it has been flagged - the app sends it.';
+          ' This whole conversation is saved to the recipe so it can be improved later. If he asks you to flag, note or pass something on to the Orchestrator (Claude Code), say it has been flagged - the app sends it.' +
+          // LE (Nov 5 2026, Alex: "oracle chat to change steps from convo in live cook automatically so it shows up on steps while I'm doing it").
+          ' If what he says changes how the current or a later step should be done (a swap, a different amount, time or heat, an extra step), say so in your answer and then add ONE last line exactly like: STEP_EDITS: {"edits":[{"step":3,"instruction":"<full new step text, max 25 words>","done_cue":"<or empty>","why":"<5 words>"},{"after":3,"add":"<a new step to do after step 3>","why":"<5 words>"}]} - step numbers as listed above, only step ' + (idx + 1) + ' or later, never a step he has finished. No STEP_EDITS line when nothing changes.';
       };
       // WR-14 (Nov 3 2026, Alex: "every cook i talk to oracle that the whole convo is saved so improvements to recipe can
       // be done so orchestrator can know what to change, oracle should also know and flag to orchestrator cc when i want it to").
@@ -1578,11 +1610,13 @@ RPGACE.register('cookingOracle', {
           askLog.push(wait); paint();
           send.disabled = true;
           var msgs = askLog.filter(function(m) { return m !== wait && !m.err; }).slice(-8).map(function(m) { return { role: m.role, content: m.content }; });
-          Promise.resolve().then(function() { return window.callOracle(msgs, cookContext(), 400); })
+          Promise.resolve().then(function() { return window.callOracle(msgs, cookContext(), 700); })
             .then(function(r) {
               var t = r && r.content && r.content[0] ? r.content[0].text : (typeof r === 'string' ? r : '');
-              wait.content = (t || '').trim() || 'Oracle sent an empty reply - try asking again.';
+              var le = self.logic._liveEdits(t, idx, steps.length);
+              wait.content = (le.text || '').trim() || 'Oracle sent an empty reply - try asking again.';
               if (!t) wait.err = true;
+              if (le.edits.length) { wait.edits = applyLiveEdits(le.edits); if (wait.edits.length) wait.content += '\n✏️ ' + wait.edits.length + ' step' + (wait.edits.length === 1 ? '' : 's') + ' changed - see the step' + (wait.edits.length === 1 ? '' : 's') + '.'; }
             })
             .catch(function(e) { wait.content = '⚠️ Oracle could not answer: ' + (e && e.message || 'unknown error'); wait.err = true; })
             .then(function() {
@@ -7269,6 +7303,20 @@ RPGACE.register('cookingOracle', {
     // ingredient's amount text for Cook Mode and the recipe card. 0 means
     // the step takes it out (remove the star anise), so say that instead.
     // WR-14: Alex asking Oracle to pass something on ("flag this", "tell the orchestrator", "note that for claude code").
+    // LE (Nov 5 2026): Oracle's STEP_EDITS line -> { text without it, edits for step `from+1` onwards }. Pure.
+    _liveEdits: function(raw, from, n) {
+      var t = String(raw || ''), k = t.indexOf('STEP_EDITS:');
+      if (k < 0) return { text: t, edits: [] };
+      var rest = t.slice(k + 11), a = rest.indexOf('{'), b = rest.lastIndexOf('}'), o = null;
+      if (a >= 0 && b > a) { try { o = JSON.parse(rest.slice(a, b + 1)); } catch (e) { o = null; } }
+      var edits = ((o && Array.isArray(o.edits)) ? o.edits : []).map(function(e) {
+        var step = parseInt(e.step, 10), after = parseInt(e.after, 10), why = String(e.why || '').slice(0, 60);
+        if (step && step > from && step <= n && typeof e.instruction === 'string' && e.instruction.trim()) return { step: step, instruction: e.instruction.trim().slice(0, 300), done_cue: String(e.done_cue || '').trim().slice(0, 120), why: why };
+        if (after && after > from && after <= n && typeof e.add === 'string' && e.add.trim()) return { after: after, add: e.add.trim().slice(0, 300), why: why };
+        return null;
+      }).filter(Boolean).slice(0, 6);
+      return { text: t.slice(0, k).trim(), edits: edits };
+    },
     _wantsFlag: function(q) { return /\b(flag|tell (the )?orchestrator|orchestrator cc|tell claude code|note (this|that) for|pass (this|that|it) on)\b/i.test(String(q || '')); },
     // WR-14: past cook chats -> one short line of his earlier questions (newest first, capped).
     _pastCookQuestions: function(rows) {
