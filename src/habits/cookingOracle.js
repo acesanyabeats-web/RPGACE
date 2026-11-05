@@ -1498,7 +1498,10 @@ RPGACE.register('cookingOracle', {
         var ing = (st.ingredients_used || []).map(function(u) { var t = self.logic._stepAmountText(u); return (t ? t + ' ' : '') + u.name; });
         if (ing.length) lines.push('This step uses: ' + ing.join(', ') + '.');
         if (timers.length) lines.push('Running timers: ' + timers.map(function(t) { var left = Math.max(0, Math.round((t.endAt - now) / 1000)); return 'step ' + (t.i + 1) + ' (' + (steps[t.i].instruction || '').slice(0, 50) + ') ' + (left ? Math.ceil(left / 60) + ' min left' : 'done, waiting for Alex'); }).join('; ') + '.');
-        lines.push('All steps: ' + steps.map(function(x, k) { return (k + 1) + '. ' + (x.instruction || '').slice(0, 80); }).join(' '));
+        // OM: the recipe as WRITTEN is not what Alex did - his own words in this chat are the only record of that.
+        lines.push('THE RECIPE AS WRITTEN (not what Alex has done): ' + steps.map(function(x, k) { return (k + 1) + '. ' + (x.instruction || '').slice(0, 160); }).join(' '));
+        var did = askLog.filter(function(m) { return m.role === 'user' && m.content; }).slice(-6).map(function(m) { return '"' + String(m.content).slice(0, 240) + '" (at step ' + (m.step || '?') + ')'; });
+        if (did.length) lines.push('WHAT ALEX HAS TOLD YOU, his exact words (the only record of what he actually did): ' + did.join(' | ') + '.');
         // WR-14: what Alex asked last time he cooked this, so Oracle knows what to improve.
         if (pastChats) lines.push('Last times he cooked this he asked: ' + pastChats + '.');
         return 'You are Oracle, helping Alex while he cooks right now in Cook Mode. ' + lines.join(' ') + ' Answer in one to three short, practical sentences he can act on with his hands busy. No lists, no headings.' +
@@ -1506,7 +1509,7 @@ RPGACE.register('cookingOracle', {
           // Nov 5 2026: app facts so Oracle can answer instead of guessing (Alex's 6-hour soak question).
           ' App facts: a step timer keeps counting if he closes Cook Mode; closing Cook Mode with a timer still running puts a "Resume" block on his My Day at the time it ends and rings his phone then; opening this recipe\'s Cook Mode again carries on from the same step with the timer.' +
           // LE (Nov 5 2026, Alex: "oracle chat to change steps from convo in live cook automatically so it shows up on steps while I'm doing it").
-          ' If what he says changes how the current or a later step should be done (a swap, a different amount, time or heat, an extra step), say so in your answer and then add ONE last line exactly like: STEP_EDITS: {"edits":[{"step":3,"instruction":"<full new step text, max 25 words>","done_cue":"<or empty>","why":"<5 words>"},{"after":3,"add":"<a new step to do after step 3>","why":"<5 words>"}]} - step numbers as listed above, only step ' + (idx + 1) + ' or later, never a step he has finished. No STEP_EDITS line when nothing changes.';
+          ' If what he did differs from the recipe, his version is what happened: rewrite the current and later steps so they carry on from what he actually did (never tell him to go back to the written method). If what he says changes how the current or a later step should be done (a swap, a different amount, time or heat, an extra step, a step he already did another way), say in your answer which step changes and how, then add ONE last line exactly like: STEP_EDITS: {"edits":[{"step":3,"instruction":"<full new step text, max 25 words>","done_cue":"<or empty>","why":"<5 words>"},{"after":3,"add":"<a new step to do after step 3>","why":"<5 words>"}]} - step numbers as listed above, only step ' + (idx + 1) + ' or later, never a step he has finished. No STEP_EDITS line when nothing changes.';
       };
       // WR-14 (Nov 3 2026, Alex: "every cook i talk to oracle that the whole convo is saved so improvements to recipe can
       // be done so orchestrator can know what to change, oracle should also know and flag to orchestrator cc when i want it to").
@@ -1618,7 +1621,7 @@ RPGACE.register('cookingOracle', {
               var le = self.logic._liveEdits(t, idx, steps.length);
               wait.content = (le.text || '').trim() || 'Oracle sent an empty reply - try asking again.';
               if (!t) wait.err = true;
-              if (le.edits.length) { wait.edits = applyLiveEdits(le.edits); if (wait.edits.length) wait.content += '\n✏️ ' + wait.edits.length + ' step' + (wait.edits.length === 1 ? '' : 's') + ' changed - see the step' + (wait.edits.length === 1 ? '' : 's') + '.'; }
+              if (le.edits.length) { wait.edits = applyLiveEdits(le.edits); if (wait.edits.length) wait.content += '\n' + wait.edits.map(function(e) { return e.add ? '➕ After step ' + e.after + ': ' + e.add : '✏️ Step ' + e.step + ' now: ' + e.instruction; }).join('\n'); }
             })
             .catch(function(e) { wait.content = '⚠️ Oracle could not answer: ' + (e && e.message || 'unknown error'); wait.err = true; })
             .then(function() {

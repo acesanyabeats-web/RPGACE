@@ -192,7 +192,7 @@ RPGACE.register('groceryCheck', {
           stock: stock.slice(0, 120).join(', ') || 'nothing recorded',
           chat: (chat || []).slice(-8).map(function(m) { return m.who + ': ' + String(m.text).slice(0, 500); }).join('\n')
         });
-        return RPGACE.kit.ask(prompt, { json: true, max: 1000, model: self.MODEL });
+        return RPGACE.kit.ask(RPGACE.prompt('oracle_mind') + '\n\n' + prompt, { json: true, max: 1000, model: self.MODEL }); // OM
       }).then(function(o) {
         var reply = o && typeof o.reply === 'string' ? o.reply.slice(0, 800) : '';
         var amended = L.applyAmend(rec, o);

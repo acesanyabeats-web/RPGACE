@@ -13,6 +13,7 @@ built in `local_server/rpgace_intel.py` `insights_prompt`.
 - `mission_file.md` - Generic Missions (GM-3): files specific new tasks (mostly from videos) under generic missions as context cards. realmTasks.logic.fileInbox, cheap model
 - `morning_brief.md` - Morning Brief rules (MB-1/MB-2, Oct 28 2026): the one copy, read by scripts/morning_brief_cc.py (Orchestrator CC at 07:00 UK + the API backup) and by morningBrief.logic.writeNow (Morning Brief pressed before 07:00). The app splits the text into its Good morning chapters by these exact section headings - keep them.
 - `oracle_memory.md` - Oracle memory (D-2): picks lasting facts about Alex out of recent chats. oracleMemory.logic.extract, cheap model
+- `oracle_mind.md` - Oracle's way of thinking (OM, Nov 5 2026, Alex: "I want oracle to fundamentally think like you"): put in front of EVERY Oracle conversation by callOracle (core.js). Short on purpose - every call pays for it
 - `professor.md` - Oracle Professor answers (oracleProfessor.PROF_SYSTEM)
 - `receipt_read.md` - Money: reads a receipt photo (RECEIPT_SYSTEM)
 - `recipe_amend.md` - Recipe change chat (GR-3 + CK-chat, Nov 5 2026): talks through and changes one saved recipe - from the grocery list or while planning a cook (swap, add, remove, top up). groceryCheck.logic.amend, one call per message (judgment model)
