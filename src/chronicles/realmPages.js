@@ -14,9 +14,27 @@ RPGACE.register('realmPages', {
   domain: 'chronicles',
 
   // realm -> { page: CONFIG.pages key, title, tool: { key, name, nodes: ids moved into the tool section } }
+  // RP-3 (Nov 5 2026, Alex: "Do rpg 3 all of it"): every realm has a page. An existing area page carries the frame
+  // (tool.nodes '*' = that page's own content moves into the tool section); a realm whose tools are pop-ups or
+  // panels gets the shared page-realm, its tool section drawing the existing screen in place (draw) or opening it (btns).
   PAGES: {
-    producer: { page: 'beats', title: '🎵 Producer', tool: { key: 'beats', name: '🥁 Beats', count: 'Idea → Make → Mix → Log → Release → Sell', nodes: ['bh-next', 'bh-steps'] } }
+    producer: { page: 'beats', title: '🎵 Producer', tool: { key: 'beats', name: '🥁 Beats', count: 'Idea → Make → Mix → Log → Release → Sell', nodes: ['bh-next', 'bh-steps'] } },
+    creator: { page: 'posting', mod: 'postingHub', title: '🎬 Creator', tool: { key: 'posting', name: '📣 Posting', count: 'Idea → Plan → Record → Edit → Post', nodes: '*' } },
+    hustler: { page: 'selling', mod: 'sellingHub', title: '💼 Hustler', tool: { key: 'selling', name: '💼 Selling', count: 'Beats for sale · outreach · log · money in', nodes: '*' } },
+    steward: { page: 'money', mod: 'moneyHub', title: '💷 Steward', tool: { key: 'money', name: '💷 Money', count: 'In − out · subscriptions · receipts · software', nodes: '*' },
+      extras: [{ key: 'wishlist', name: '🛒 Wishlist', count: 'Future purchases vs budget', btns: [['🛒 Open Wishlist', 'card:wishlist']] }] },
+    scholar: { page: 'knowledge', mod: 'knowledgeHub', title: '📚 Scholar', tool: { key: 'knowledge', name: '📚 Knowledge', count: 'Take in → Study → Learned → Review', nodes: '*' } },
+    chef: { page: 'realm', title: '🍳 Chef', tool: { key: 'cooking', name: '🍳 Cooking', count: 'Recipes, stock, planned cooks', btns: [['🍳 Open Cooking', 'card:cooking']] } },
+    athlete: { page: 'realm', title: '💪 Athlete', tool: { key: 'gym', name: '🏋️ Gym', count: 'This week, log a session, bests', draw: 'gym' },
+      extras: [{ key: 'health', name: '❤️ Health & body', count: 'Food, weight, water, sleep', btns: [['❤️ Open Health & body', 'card:health']] }] },
+    explorer: { page: 'realm', title: '✈️ Explorer', tool: { key: 'plans', name: '🧳 Plans', count: 'Trips, events, days out', btns: [['🧳 Open Plans', 'plans:plans'], ['💡 Outing ideas', 'plans:ideas']] } },
+    connector: { page: 'realm', title: '🤝 Connector', tool: { key: 'people', name: '👥 People', count: 'Who to reach out to', btns: [['👥 Open People', 'plans:people']] } },
+    homekeeper: { page: 'realm', title: '🏡 Homekeeper', tool: { key: 'chores', name: '🧹 Chores', count: 'What\'s due around the house', draw: 'chores' } },
+    mind: { page: 'realm', title: '🧘 Mind', tool: { key: 'journal', name: '📓 Journal', count: 'Session logs, decisions, look-back', btns: [['📓 Open Journal', 'page:journal'], ['🧭 Log a decision', 'decision']] } },
+    builder: { page: 'realm', title: '🛠 Builder', tool: { key: 'oversight', name: '📚 Oversight', count: 'Docs, smoke test, what works', btns: [['📚 Open Oversight', 'card:oversight']] } },
+    life: { page: 'realm', title: '🏠 Life', tool: { key: 'work', name: '💼 Work', count: 'Clock in · drink specs', draw: 'work' } }
   },
+  _current: null,
   _arrive: null,
 
   init: function() {
@@ -77,7 +95,8 @@ RPGACE.register('realmPages', {
     },
     pageOf: function(realm) { var c = RPGACE.modules.realmPages.PAGES[realm]; return c ? (RPGACE.CONFIG && RPGACE.CONFIG.pages && RPGACE.CONFIG.pages[c.page]) || c.page : null; },
     realmOfPage: function(name) {
-      var P = RPGACE.modules.realmPages.PAGES, CP = (RPGACE.CONFIG && RPGACE.CONFIG.pages) || {};
+      var self = RPGACE.modules.realmPages, P = self.PAGES, CP = (RPGACE.CONFIG && RPGACE.CONFIG.pages) || {};
+      if (name === 'realm') return self._current;
       for (var r in P) { if ((CP[P[r].page] || P[r].page) === name) return r; }
       return null;
     },
@@ -85,6 +104,7 @@ RPGACE.register('realmPages', {
     sections: function(realm, conf, tasksN, starters) {
       var out = [];
       if (conf && conf.tool) out.push({ key: conf.tool.key, name: conf.tool.name, count: conf.tool.count || '' });
+      ((conf && conf.extras) || []).forEach(function(x) { out.push({ key: x.key, name: x.name, count: x.count || '' }); });
       out.push({ key: 'tasks', name: '🗂 Tasks', count: tasksN + ' kept' });
       out.push({ key: 'live', name: '▶ Live', count: 'Do this realm now' });
       out.push({ key: 'takein', name: '📥 Take in', count: 'Library + share' });
@@ -112,9 +132,57 @@ RPGACE.register('realmPages', {
       if (!name) return false;
       try { RPGACE.areaNav.closePopups(); } catch (e) {}
       self._arrive = opts || {};
+      var conf = self.PAGES[realm];
       if (realm === 'producer' && RPGACE.modules.beatsHub) { RPGACE.modules.beatsHub.ui.injectPage(); }
+      if (conf.page === 'realm') { self._current = realm; self.ui._ensureGeneric(); }
+      // An area page's own open() injects it and shows it (page:show then attaches the frame).
+      var m = conf.mod && RPGACE.modules[conf.mod];
+      if (m && typeof m.open === 'function') { m.open(); return true; }
       if (typeof showPage === 'function') showPage(name);
       return true;
+    },
+    // RP-3: the one shared page for realms whose tools are pop-ups or panels.
+    _ensureGeneric: function() {
+      if (document.getElementById('page-realm')) return;
+      var app = document.getElementById('app'); if (!app) return;
+      var pg = document.createElement('div'); pg.className = 'page'; pg.id = 'page-realm';
+      pg.innerHTML = '<div class="section-title">Realm</div>';
+      app.appendChild(pg);
+    },
+    // Take a realm frame off its page, putting the page's own content (the tool section's nodes) back first.
+    _detach: function(f) {
+      var self = RPGACE.modules.realmPages, conf = self.PAGES[f.dataset.realm], pg = f.parentNode;
+      if (!pg) return;
+      var body = conf && conf.tool && conf.tool.nodes && f.querySelector('#rp-sec-' + conf.tool.key + ' > .rp-body');
+      if (body) [].slice.call(body.childNodes).forEach(function(n) { pg.insertBefore(n, f); });
+      f.remove();
+    },
+    // The ids of an area page's own content (everything but its title, its ← Back bar and the frame).
+    _pageNodes: function(pg) {
+      return [].filter.call(pg.children, function(n) {
+        return !n.classList.contains('section-title') && n.id !== 'rp-frame' && !/-bar$/.test(n.id || '') && !n.classList.contains('area-bar');
+      });
+    },
+    _act: function(spec, realm) {
+      var M = RPGACE.modules, a = String(spec).split(':');
+      if (a[0] === 'card') { if (M.dashDeck && M.dashDeck._navOpenCard) M.dashDeck._navOpenCard(a[1]); return; }
+      if (a[0] === 'plans') { if (M.tripPlans) M.tripPlans.open(a[1]); return; }
+      if (a[0] === 'page') { var P = RPGACE.CONFIG.pages; if (typeof showPage === 'function') showPage(P[a[1]] || a[1]); return; }
+      if (a[0] === 'decision') { if (M.decisionJournal) M.decisionJournal.ui.openLog(); return; }
+    },
+    // A tool drawn in place: the existing screen, given the section body as its host.
+    _drawTool: function(body, kind) {
+      var M = RPGACE.modules;
+      try {
+        if (kind === 'gym' && M.gymTracker) { body.textContent = 'Loading your sessions…'; var host = { box: body, close: function() {} }, g = M.gymTracker; var d = function() { g.logic.load().then(function(s) { g.ui.render(host, s, d); }, function(e) { body.textContent = '⚠️ Could not load gym sessions: ' + (e.message || e); }); }; d(); return; }
+        if (kind === 'work' && M.workMode) { M.workMode.ui.open({ host: body }); return; }
+        if (kind === 'chores' && M.myDay) {
+          var md = M.myDay; body.textContent = 'Loading chores…';
+          Promise.resolve(md.logic.load()).then(function() { body.textContent = ''; md.ui.renderChores(body, md.logic.iso()); if (!body.children.length) body.textContent = 'No chores due. Add chores as Actions on My Day (every N days).'; },
+            function(e) { body.textContent = '⚠️ Could not load chores: ' + (e.message || e); });
+          return;
+        }
+      } catch (e) { body.textContent = '⚠️ ' + (e.message || e); }
     },
     // Put the realm frame on top of the realm's page and fold every section.
     attach: function(realm, opts) {
@@ -128,7 +196,15 @@ RPGACE.register('realmPages', {
       var old = pg.querySelector(':scope > #rp-frame');
       var frame = document.createElement('div'); frame.id = 'rp-frame'; frame.dataset.realm = realm;
       // The tool's own nodes move into its section once (they keep their ids, so the area module still draws them).
-      var keep = (conf.tool && conf.tool.nodes || []).map(function(id) { return document.getElementById(id); }).filter(Boolean);
+      var nodes = conf.tool && conf.tool.nodes, keep;
+      if (nodes === '*') {
+        var oldBody = old && old.querySelector('#rp-sec-' + conf.tool.key + ' > .rp-body');
+        keep = (oldBody ? [].slice.call(oldBody.childNodes) : []).concat(U._pageNodes(pg));
+      } else keep = (nodes || []).map(function(id) { return document.getElementById(id); }).filter(Boolean);
+      // The shared page holds one realm at a time: a different realm's frame goes.
+      if (old && old.dataset.realm !== realm && conf.page === 'realm') { old.remove(); old = null; }
+      // One realm frame in the app at a time (section ids are shared): other pages get their own content back.
+      [].forEach.call(document.querySelectorAll('#rp-frame'), function(f) { if (f !== old) U._detach(f); });
       if (old) old.replaceWith(frame);
       else { var bar = pg.querySelector(':scope > .area-bar, :scope > #bh-bar'); var anchor = bar || t; if (anchor && anchor.nextSibling) pg.insertBefore(frame, anchor.nextSibling); else pg.appendChild(frame); }
       frame.appendChild(X.ui.stripFull([realm]));
@@ -153,7 +229,7 @@ RPGACE.register('realmPages', {
           head.onclick = function() { toggle(body.hidden); };
           box.appendChild(head); box.appendChild(body); list.appendChild(box);
           // The tool section's nodes live in it from the start (folded), so the area module keeps drawing them.
-          if (conf.tool && sec.key === conf.tool.key) { drawn = true; keep.forEach(function(n) { body.appendChild(n); }); }
+          if (conf.tool && sec.key === conf.tool.key && nodes) { drawn = true; keep.forEach(function(n) { body.appendChild(n); }); }
           if (opts.open === sec.key) toggle(true);
         });
       });
@@ -169,8 +245,12 @@ RPGACE.register('realmPages', {
       });
     },
     _drawSection: function(body, realm, key, fr) {
-      var RF = RPGACE.modules.realmFrame, rt = RPGACE.modules.realmTasks, K = RPGACE.kit;
+      var self = RPGACE.modules.realmPages, RF = RPGACE.modules.realmFrame, rt = RPGACE.modules.realmTasks, K = RPGACE.kit, conf = self.PAGES[realm] || {};
       var btns = function(list) { var row = document.createElement('div'); row.className = 'rp-btns'; list.forEach(function(x) { var b = K.btn(x[0], x[2] || ''); b.style.minHeight = '44px'; if (x[3]) b.id = x[3]; b.onclick = x[1]; row.appendChild(b); }); body.appendChild(row); };
+      // RP-3: a realm's own tool (drawn in place, or buttons to its existing screen) and extra sections.
+      var tool = [conf.tool].concat(conf.extras || []).filter(function(x) { return x && x.key === key; })[0];
+      if (tool && tool.draw) return self.ui._drawTool(body, tool.draw);
+      if (tool && tool.btns) return btns(tool.btns.map(function(b, i) { return [b[0], function() { self.ui._act(b[1], realm); }, i ? '' : 'primary', 'rp-' + key + '-' + i]; }));
       if (key === 'tasks') return btns([['🗂 All tasks', function() { rt.ui.openCatalogue(realm); }, '', 'rp-tasks-all'], ['📥 New tasks', function() { rt.ui.openInbox(); }, '', 'rp-tasks-new']]);
       if (key === 'live') return btns([['▶ Live now', function() { rt.ui.openLive({ realm: realm }); }, 'primary', 'rp-live']]);
       if (key === 'takein') return RF.ui._openTakeIn(realm, null, body);

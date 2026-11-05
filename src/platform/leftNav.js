@@ -411,6 +411,10 @@ RPGACE.register('leftNav', {
     // band section so the whole area folds as one.
     var section = list;
     items.forEach(function(it) {
+      // RP-3 (Nov 5 2026, Alex: "Remove them"): the old area bands are not drawn - their screens live in the realm
+      // pages now. The entries stay in _items so each area page's ☰ side list (sideList.areaGroup) still has them.
+      if (it.heading && it.menuHidden) { section = null; return; }
+      if (!section && !it.heading) return;
       if (it.heading) {
         section = RPGACE.modules.leftNav.ui._areaSection(list, it.heading, it.page, it.open);
         if (it.realms) { section.id = 'ln-realm-list'; RPGACE.modules.leftNav.ui._realmBody = section; }
@@ -836,9 +840,10 @@ RPGACE.register('leftNav', {
       { icon: '🔮', label: 'Oracle',        desc: 'Ask anything, plan your day',         page: P.oracle },
       { icon: '💡', label: 'Ideas',         desc: 'Every idea by realm: beats, posts, outings, new tasks', card: 'ideas' },
       { icon: '🌅', label: 'Morning Brief', desc: 'Your day in one shot',                card: 'morningBrief' },
+      { icon: '✅', label: 'Review', desc: 'Everything due: idea cards, exam redo, jargon', page: P.review, count: 'review' },
       { heading: 'Realms', open: true, realms: true }
     ].concat(RPGACE.modules.realmPages ? RPGACE.modules.realmPages.ui.menuItems() : []).concat([
-      { heading: 'Content & Video' },
+      { heading: 'Content & Video', menuHidden: true },
       // BT-0 (Oct 16 2026): Beats home first in the Content band.
       // BT-7: the beat journey in step order under Beats home.
       { icon: '🥁', label: 'Beats', desc: 'Idea → Make → Mix → Log → Release → Sell', page: P.beats,
@@ -856,7 +861,7 @@ RPGACE.register('leftNav', {
       // RP-2: Money is listed once, under Habits (Steward); Selling links to it.
       // PC-6 (Oct 17 2026): the separate Content Pipeline entry (and its
       // Upload Workshop) is retired; My beats sits under Beats above.
-      { heading: 'Knowledge' },
+      { heading: 'Knowledge', menuHidden: true },
       // KN-6 (Oct 15 2026): the hub's 4 steps in order - Take in (Library,
       // Screenshots) -> Study (Bookworm + its worms) -> Learned (Encyclopedia,
       // Jargon) -> Map (Phylum Path) - then Review with its live count.
@@ -881,7 +886,7 @@ RPGACE.register('leftNav', {
           { icon: '🧬', label: 'Map (Phylum Path)', page: P.phylumPath }
         ] },
       { icon: '✅', label: 'Review', desc: 'Everything due: idea cards, exam redo, jargon', page: P.review, count: 'review' },
-      { heading: 'Habits' },
+      { heading: 'Habits', menuHidden: true },
       { icon: '🍳', label: 'Cooking',       desc: 'Recipes, stock, planned cooks',       card: 'cooking' },
       { icon: '🏋️', label: 'Gym',           desc: 'Today\'s workout, log, target, bests', card: 'gym' },
       { icon: '❤️', label: 'Health & body', desc: 'Food, weight, water, sleep', card: 'health' },
@@ -889,11 +894,11 @@ RPGACE.register('leftNav', {
       { icon: '💷', label: 'Money', desc: 'In − out · subscriptions · receipts', page: P.money, run: function() { var mh = RPGACE.modules.moneyHub; if (mh) mh.open('wishlist'); } },
       // WR-11 (Nov 3 2026): software you own + new-laptop install checklist.
       { icon: '🧰', label: 'My software', desc: 'Owned software · install checklist · total spent', run: function() { var sl = RPGACE.modules.softwareList; if (sl) sl.open(); } },
-      { heading: 'Schedule & Journal' },
+      { heading: 'Schedule & Journal', menuHidden: true },
       // WR-8 (Nov 3 2026): Work page - clock links + Nicco drink spec cards.
       { icon: '💼', label: 'Work', desc: 'Clock in · cocktail and mocktail specs', run: function() { var w = RPGACE.modules.workMode; if (w) w.open(); } },
       { icon: '🧳', label: 'Plans',         desc: 'Trips, events, people to reach out to', card: 'plans' },
-      { heading: 'Oversight' },
+      { heading: 'Oversight', menuHidden: true },
       { icon: '📚', label: 'Oversight',     desc: 'Docs, smoke test, what works',        card: 'oversight' },
     ]);
   },
