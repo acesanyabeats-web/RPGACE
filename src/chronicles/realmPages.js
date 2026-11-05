@@ -25,7 +25,7 @@ RPGACE.register('realmPages', {
       extras: [{ key: 'wishlist', name: '🛒 Wishlist', count: 'Future purchases vs budget', btns: [['🛒 Open Wishlist', 'card:wishlist'], ['🛒 Shop now', 'shop']] }] },
     scholar: { page: 'knowledge', mod: 'knowledgeHub', title: '📚 Scholar', tool: { key: 'knowledge', name: '📚 Knowledge', count: 'Take in → Study → Learned → Review', nodes: '*' } },
     chef: { page: 'realm', title: '🍳 Chef', tool: { key: 'cooking', name: '🍳 Cooking', count: 'Recipes, stock, planned cooks', btns: [['🍳 Open Cooking', 'card:cooking'], ['🛒 Shop now', 'shop']] },
-      extras: [{ key: 'fresh', name: '⏳ Use soon', count: 'Best-before countdown · throw out', draw: 'bestBefore' }] },
+      extras: [{ key: 'shop', name: '🛒 Shop now', count: 'Grocery list for your cooks', act: 'shop' }, { key: 'fresh', name: '⏳ Use soon', count: 'Best-before countdown · throw out', draw: 'bestBefore' }] },
     athlete: { page: 'realm', title: '💪 Athlete', tool: { key: 'gym', name: '🏋️ Gym', count: 'This week, log a session, bests', draw: 'gym' },
       extras: [{ key: 'health', name: '❤️ Health & body', count: 'Food, weight, water, sleep', btns: [['❤️ Open Health & body', 'card:health']] }] },
     explorer: { page: 'realm', title: '✈️ Explorer', tool: { key: 'plans', name: '🧳 Plans', count: 'Trips, events, days out', btns: [['🧳 Open Plans', 'plans:plans'], ['💡 Outing ideas', 'plans:ideas']] } },
@@ -166,15 +166,12 @@ RPGACE.register('realmPages', {
     sections: function(realm, conf, tasksN, starters) {
       var out = [];
       if (conf && conf.tool) out.push({ key: conf.tool.key, name: conf.tool.name, count: conf.tool.count || '' });
-      ((conf && conf.extras) || []).forEach(function(x) { out.push({ key: x.key, name: x.name, count: x.count || '' }); });
+      ((conf && conf.extras) || []).forEach(function(x) { out.push({ key: x.key, name: x.name, count: x.count || '', act: x.act || null }); });
       out.push({ key: 'tasks', name: '🗂 Tasks', count: tasksN + ' kept' });
-      out.push({ key: 'live', name: '▶ Live', count: 'Do this realm now' });
-      out.push({ key: 'takein', name: '📥 Take in', count: 'Library + share' });
-      out.push({ key: 'log', name: '📜 Log', count: 'What you did' });
-      out.push({ key: 'prompts', name: '🔮 Prompts', count: (starters || []).length + ' ready questions' });
-      out.push({ key: 'review', name: '📈 Weekly review', count: 'This week vs last' });
       return out;
-    }
+    },
+    // RH (Nov 5 2026, Alex: "Do-first"): the small row at the bottom of every realm page.
+    FOOT: [{ key: 'log', name: '📜 Log' }, { key: 'takein', name: '📥 Take in' }, { key: 'prompts', name: '🔮 Ask' }, { key: 'review', name: '📈 Review' }]
   },
 
   ui: {
@@ -185,7 +182,22 @@ RPGACE.register('realmPages', {
         '.rp-head{display:flex;align-items:center;gap:10px;width:100%;min-height:52px;padding:10px 14px;border:0;background:none;color:var(--text);font:inherit;text-align:left;cursor:pointer}' +
         '.rp-name{font-size:16px;font-weight:700}.rp-count{font-size:12px;color:var(--muted);margin-left:auto;text-align:right}.rp-chev{color:var(--muted);transition:transform .15s}' +
         '.rp-sec.rp-open .rp-chev{transform:rotate(90deg)}.rp-body{padding:0 14px 12px}.rp-btns{display:flex;gap:6px;flex-wrap:wrap}' +
-        '@media (prefers-reduced-motion: reduce){.rp-chev{transition:none}}';
+        '@media (prefers-reduced-motion: reduce){.rp-chev{transition:none}}' +
+        // RH (Nov 5 2026): do-first layout.
+        '#rp-sections.rp-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:10px 0}' +
+        '.rp-grid .rp-sec{margin:0}.rp-grid .rp-sec.rp-open{grid-column:1/-1}' +
+        '.rp-grid .rp-head{flex-direction:column;align-items:flex-start;gap:2px;min-height:68px;padding:10px 12px}' +
+        '.rp-grid .rp-chev{display:none}.rp-grid .rp-count{margin-left:0;text-align:left}.rp-grid .rp-sec.rp-open .rp-head{flex-direction:row;align-items:center;min-height:52px}.rp-grid .rp-sec.rp-open .rp-count{margin-left:auto}' +
+        '.rp-card{border:1px solid var(--gold);border-radius:14px;background:var(--panel);padding:12px 14px;margin:8px 0}' +
+        '.rp-card .rf-home{border:0 !important;padding:0 !important;margin:0 !important;background:none !important;box-shadow:none !important}' +
+        '#rp-live{width:100%;min-height:52px;font-size:17px;margin-top:10px}' +
+        '.rp-top{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 4px}.rp-top .xp-strip{margin:0 !important}' +
+        '#rp-grow{min-height:44px;padding:6px 12px;border-radius:22px;border:1px solid var(--border);background:none;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;text-align:left}' +
+        '#rp-foot{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:6px 0 14px}' +
+        '#rp-foot button{min-height:52px;padding:6px 4px;border-radius:10px;border:1px solid var(--border);background:none;color:var(--text);font:inherit;font-size:13px;cursor:pointer}' +
+        '.rp-on > .xp-strip,.rp-on .mh-go-selling,.rp-on .mh-go-wishlist{display:none !important}' +
+        '.rp-ranksheet .xp-rc-taken,.rp-ranksheet .xp-rc-knows,.rp-ranksheet .xp-rc-suggest,.rp-ranksheet .xp-rc-ms{display:none !important}' +
+        '.rp-growsheet .xp-rc-card,.rp-growsheet .xp-rc-tabs{display:none !important}';
       document.head.appendChild(s);
     },
     // Open a realm's page. opts.open = a section key to open (else all folded).
@@ -217,6 +229,7 @@ RPGACE.register('realmPages', {
       if (!pg) return;
       var body = conf && conf.tool && conf.tool.nodes && f.querySelector('#rp-sec-' + conf.tool.key + ' > .rp-body');
       if (body) [].slice.call(body.childNodes).forEach(function(n) { pg.insertBefore(n, f); });
+      pg.classList.remove('rp-on');
       f.remove();
     },
     // The ids of an area page's own content (everything but its title, its ← Back bar and the frame).
@@ -272,11 +285,24 @@ RPGACE.register('realmPages', {
       [].forEach.call(document.querySelectorAll('#rp-frame'), function(f) { if (f !== old) U._detach(f); });
       if (old) old.replaceWith(frame);
       else { var bar = pg.querySelector(':scope > .area-bar, :scope > #bh-bar'); var anchor = bar || t; if (anchor && anchor.nextSibling) pg.insertBefore(frame, anchor.nextSibling); else pg.appendChild(frame); }
-      frame.appendChild(X.ui.stripFull([realm]));
-      var home = document.createElement('div'); home.id = 'rp-home'; frame.appendChild(home);
+      // RH (Nov 5 2026, Alex: "Do-first"; rank = one slim line; the 4 hint lines = one Grow row; Steward's extra
+      // links + mini realm cards dropped via .rp-on): rank + Grow on top, then target / what's next / Live now,
+      // then the realm's tools as tiles, then Log · Take in · Ask · Review.
+      pg.classList.add('rp-on');
+      frame.appendChild(U._top(realm));
+      var card = document.createElement('div'); card.className = 'rp-card'; card.id = 'rp-do'; frame.appendChild(card);
+      var home = document.createElement('div'); home.id = 'rp-home'; card.appendChild(home);
+      var live = RPGACE.kit.btn(opts.now && opts.open === 'live' ? '▶ On now: ' + (opts.now.title || 'this realm') : '▶ Live now', 'primary'); live.id = 'rp-live';
+      live.onclick = function() { var rtl = RPGACE.modules.realmTasks; if (rtl) rtl.ui.openLive({ realm: realm }); };
+      card.appendChild(live);
       var waits = 2, ready = function() { if (--waits === 0) U._uncover(); };
       RF.ui.render(home, realm, null, { noTiles: true, onReady: ready });
-      var list = document.createElement('div'); list.id = 'rp-sections'; frame.appendChild(list);
+      var list = document.createElement('div'); list.id = 'rp-sections'; list.className = 'rp-grid'; frame.appendChild(list);
+      var foot = document.createElement('div'); foot.id = 'rp-foot'; frame.appendChild(foot);
+      self.logic.FOOT.forEach(function(f) {
+        var b = document.createElement('button'); b.type = 'button'; b.dataset.sec = f.key; b.id = 'rp-foot-' + f.key; b.textContent = f.name;
+        b.onclick = function() { U._footOpen(realm, f.key); }; foot.appendChild(b);
+      });
       var rt = RPGACE.modules.realmTasks;
       var tasksN = rt ? (rt._tasks || []).filter(function(x) { return x.status === 'kept' && x.realm === realm; }).length : 0;
       RF.logic.registry().then(function(reg) {
@@ -292,15 +318,52 @@ RPGACE.register('realmPages', {
             box.classList.toggle('rp-open', on); body.hidden = !on; head.setAttribute('aria-expanded', on ? 'true' : 'false');
             if (on && !drawn) { drawn = true; U._drawSection(body, realm, sec.key, fr, keep); }
           };
-          head.onclick = function() { toggle(body.hidden); };
+          head.onclick = function() { if (sec.act) { U._act(sec.act, realm); return; } toggle(body.hidden); };
           box.appendChild(head); box.appendChild(body); list.appendChild(box);
           // The tool section's nodes live in it from the start (folded), so the area module keeps drawing them.
           if (conf.tool && sec.key === conf.tool.key && nodes) { drawn = true; keep.forEach(function(n) { body.appendChild(n); }); }
-          if (opts.open === sec.key) toggle(true);
+          if (opts.open === sec.key && !sec.act) toggle(true);
         });
         ready();
       }).catch(function(e) { ready(); console.warn('[realmPages] sections not drawn:', e && e.message || e); });
       return frame;
+    },
+    // RH: slim rank line (tap = the full rank card) + one Grow row (taken in, knows, quests, milestone).
+    _top: function(realm) {
+      var U = RPGACE.modules.realmPages.ui, X = RPGACE.modules.xpSeason, top = document.createElement('div'); top.className = 'rp-top'; top.id = 'rp-top';
+      var rank = document.createElement('div'); rank.id = 'rp-rank'; rank.appendChild(X.ui.strip([realm]));
+      rank.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); U._sheetOf('🏅 ' + X.REALMS[realm].name, 'rp-ranksheet', realm); }, true);
+      var grow = document.createElement('button'); grow.type = 'button'; grow.id = 'rp-grow'; grow.textContent = '💡 Grow';
+      grow.onclick = function() { U._sheetOf('💡 Grow · ' + X.REALMS[realm].name, 'rp-growsheet', realm); };
+      Promise.all([RPGACE.realmTakenIn().catch(function() { return {}; }), RPGACE.realmKnowledge ? RPGACE.realmKnowledge().catch(function() { return {}; }) : {}]).then(function(r) {
+        var t = (r[0] || {})[realm], k = (r[1] || {})[realm], bits = [];
+        if (t && t.total) bits.push(t.total + ' taken in');
+        if (k && (k.terms || k.items)) bits.push(((k.terms || 0) + (k.items || 0)) + ' known');
+        grow.textContent = '💡 Grow' + (bits.length ? ' · ' + bits.join(' · ') : ' · take in, quests, milestone');
+      });
+      top.appendChild(rank); top.appendChild(grow);
+      return top;
+    },
+    // The existing full realm card (xpSeason.stripFull), shown as just the rank card or just the Grow lines.
+    _sheetOf: function(title, cls, realm) {
+      var X = RPGACE.modules.xpSeason, pop = RPGACE.modules.dashDeck._popup({ eyebrow: title, title: title, width: '440px', scroll: true });
+      pop.box.classList.add(cls); pop.box.id = cls; pop.box.appendChild(X.ui.stripFull([realm]));
+      return pop;
+    },
+    // RH: the bottom row opens each as a sheet (same screens as before).
+    _footOpen: function(realm, key) {
+      var RF = RPGACE.modules.realmFrame, X = RPGACE.modules.xpSeason;
+      if (key === 'log') return RF.ui._openLog(realm);
+      if (key === 'takein') return RF.ui._openTakeIn(realm, null);
+      if (key === 'review') return RF.ui._openReview(realm);
+      if (key === 'prompts') {
+        var pop = RF.ui._sheet('🔮 Ask · ' + X.REALMS[realm].name); pop.box.id = 'rp-ask';
+        RF.logic.registry().then(function(reg) {
+          var qs = RF.logic.frameOf(reg, realm).starters || [];
+          if (!qs.length) { pop.box.appendChild(document.createTextNode('No ready questions for this realm yet.')); return; }
+          qs.forEach(function(q) { var b = RPGACE.kit.btn(q, ''); b.style.cssText += 'width:100%;margin-bottom:6px;text-align:left;'; b.onclick = function() { pop.close(); RF.ui.ask(q); }; pop.box.appendChild(b); });
+        });
+      }
     },
     // The switching screen: full screen under pop-ups, gone on ready or after 4s at most.
     _cover: function(realm) {

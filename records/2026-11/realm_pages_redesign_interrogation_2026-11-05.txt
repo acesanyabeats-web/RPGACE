@@ -1,0 +1,7 @@
+Realm home pages redesign (RH) - Nov 5 2026. Verbatim.
+Alex: "we talk about the realm home pages, they look really crammed and horrible" / "Let's do the realm home pages now"
+Evidence: headless screenshots at phone width (Chef, Producer, Steward, Athlete): Steward ~14 blocks before anything doable (2 link pills, 2 mini rank cards, full rank card, 4 dashed hint lines, target card), then 7-9 identical folded sections; Live/Take in/Log/Prompts/Weekly review repeat on every realm.
+Q: What should a realm page show first? A: "Do-first (Recommended)" (top card: this week's target + what's next + big Live now; the realm's own tools as big buttons; log/take in/prompts/review/rank as one small icon row)
+Q: Rank card? A: "One slim line at the top (Recommended)" ('Rank 2 · 340 XP ›', tap for the full card)
+Q: The 4 dotted hint lines? A: "Merge into one '💡 Grow' row (Recommended)"
+Q: Steward's top (2 links + 2 mini realm cards)? A: "Drop them (Recommended)"

@@ -146,23 +146,36 @@ RPGACE.register('groceryCheck', {
     },
     // Pure: a model reply -> the amended recipe (old step objects kept, only named descriptions replaced).
     applyAmend: function(rec, o) {
-      if (!o || !Array.isArray(o.ingredients) || !o.ingredients.length) return null;
+      if (!o) return null;
+      var hasIngs = Array.isArray(o.ingredients) && o.ingredients.length, rawEdits = Array.isArray(o.step_edits) ? o.step_edits : [];
+      if (!hasIngs && !rawEdits.length) return null;
       var old = {}; (rec.ingredients || []).forEach(function(i) { old[String(i.name).toLowerCase()] = i; });
-      var ings = o.ingredients.slice(0, 60).map(function(i) {
+      // Step-only change (Nov 5, Alex's horchata toast step): the ingredients stay as they are.
+      var ings = !hasIngs ? (rec.ingredients || []).slice() : o.ingredients.slice(0, 60).map(function(i) {
         var name = String(i.name || '').trim().slice(0, 80); if (!name) return null;
         var was = old[name.toLowerCase()] || {}, amt = Number(i.amount);
         return { name: name, amount: isNaN(amt) ? (was.amount || 0) : amt, unit: String(i.unit || was.unit || '').slice(0, 12) || null,
           grams_estimate: was.amount === amt ? was.grams_estimate : null, is_separable: !!was.is_separable };
       }).filter(Boolean);
       if (!ings.length) return null;
-      var edits = {}; (Array.isArray(o.step_edits) ? o.step_edits : []).forEach(function(e) { var n = parseInt(e.order, 10); if (n && e.description) edits[n] = String(e.description).slice(0, 600); });
+      var edits = {}, adds = [];
+      rawEdits.forEach(function(e) {
+        var n = parseInt(e.order, 10), d = String(e.description || '').slice(0, 600); if (!n || !d) return;
+        if (e.new === true) adds.push({ at: n, description: d }); else edits[n] = d;
+      });
       var steps = (rec.steps || []).map(function(s, idx) {
         var n = (s && s.order) || idx + 1;
         if (!edits[n]) return s;
         return typeof s === 'string' ? edits[n] : Object.assign({}, s, { description: edits[n] });
       });
+      // A new step goes in at its position (later ones move down), shaped like its neighbour.
+      adds.sort(function(x, y) { return y.at - x.at; }).forEach(function(a) {
+        var i = Math.max(0, Math.min(steps.length, a.at - 1)), near = steps[i] || steps[i - 1] || {};
+        steps.splice(i, 0, typeof near === 'string' ? a.description : { type: near.type || 'prep_before_cooking', description: a.description });
+      });
+      if (adds.length) steps = steps.map(function(s, i) { return typeof s === 'string' ? s : Object.assign({}, s, { order: i + 1 }); });
       var changes = (Array.isArray(o.changes) ? o.changes : []).map(function(c) { return String(c).slice(0, 160); }).filter(Boolean).slice(0, 5);
-      return { title: rec.title, ingredients: ings, steps: steps, changes: changes };
+      return { title: rec.title, ingredients: ings, steps: steps, changes: changes, added: adds.length };
     },
     // One message of the recipe chat. ctx.item = the grocery item it started from (optional);
     // chat = [{who:'Alex'|'Oracle', text}]. -> { reply, amended (null when nothing to change) }.
