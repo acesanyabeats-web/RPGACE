@@ -14,7 +14,7 @@ built in `local_server/rpgace_intel.py` `insights_prompt`.
 - `oracle_memory.md` - Oracle memory (D-2): picks lasting facts about Alex out of recent chats. oracleMemory.logic.extract, cheap model
 - `professor.md` - Oracle Professor answers (oracleProfessor.PROF_SYSTEM)
 - `receipt_read.md` - Money: reads a receipt photo (RECEIPT_SYSTEM)
-- `recipe_amend.md` - Grocery check (GR-3, Nov 5 2026): changes one saved recipe from the grocery list (swap from stock, add, remove, top up). groceryCheck.logic.amend, one call (judgment model)
+- `recipe_amend.md` - Recipe change chat (GR-3 + CK-chat, Nov 5 2026): talks through and changes one saved recipe - from the grocery list or while planning a cook (swap, add, remove, top up). groceryCheck.logic.amend, one call per message (judgment model)
 - `rota_read.md` - Shift sync: reads a work rota screenshot (shiftSync.logic.ROTA_SYSTEM)
 - `screenshot_read.md` - Screenshot Inbox: reads a screenshot (screenshotInbox.READ_SYSTEM)
 - `shop_read.md` - Shop trip read (ST-4, Nov 5 2026): one batched read of a shop trip's receipt photos and new products' label photos. shopTrip.logic.read, a few images per call

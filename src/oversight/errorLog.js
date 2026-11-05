@@ -1620,6 +1620,7 @@ RPGACE.register('errorLog', {
   "recentCooks": "healthBody",
   "recheck": "cookTranscripts",
   "recipe": "groceryCheck",
+  "recipeChat": "groceryCheck",
   "recipeIds": "groceryCheck",
   "recipesWith": "groceryCheck",
   "record": "perfWatch",

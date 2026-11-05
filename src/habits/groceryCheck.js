@@ -164,23 +164,25 @@ RPGACE.register('groceryCheck', {
       var changes = (Array.isArray(o.changes) ? o.changes : []).map(function(c) { return String(c).slice(0, 160); }).filter(Boolean).slice(0, 5);
       return { title: rec.title, ingredients: ings, steps: steps, changes: changes };
     },
-    amend: function(rec, item, ask) {
-      var self = RPGACE.modules.groceryCheck, L = self.logic;
+    // One message of the recipe chat. ctx.item = the grocery item it started from (optional);
+    // chat = [{who:'Alex'|'Oracle', text}]. -> { reply, amended (null when nothing to change) }.
+    amend: function(rec, ctx, chat) {
+      var self = RPGACE.modules.groceryCheck, L = self.logic, item = ctx && ctx.item;
       return L.stockNames().then(function(stock) {
         var prompt = RPGACE.prompt('recipe_amend', {
           title: rec.title,
           ingredients: rec.ingredients.map(function(i) { return i.name + ' | ' + (i.amount == null ? '' : i.amount) + ' | ' + (i.unit || ''); }).join('\n'),
           steps: (rec.steps || []).map(function(s, i) { return ((s && s.order) || i + 1) + ': ' + String((s && s.description) || s || '').slice(0, 200); }).join('\n'),
-          ingredient: (item.ingredients && item.ingredients.name) || 'an ingredient',
-          status: ({ absent: 'not in stock', topup: 'not enough in stock', check: 'stock says there is enough', ok: 'he has enough' })[L.group(item)],
+          focus: item ? 'The ingredient he is looking at: ' + ((item.ingredients && item.ingredients.name) || 'an ingredient') + ' - ' + ({ absent: 'not in stock', topup: 'not enough in stock', check: 'stock says there is enough', ok: 'he has enough' })[L.group(item)] + '.' : 'He is planning this cook and has not started yet.',
           stock: stock.slice(0, 120).join(', ') || 'nothing recorded',
-          ask: String(ask || '').slice(0, 400)
+          chat: (chat || []).slice(-8).map(function(m) { return m.who + ': ' + String(m.text).slice(0, 500); }).join('\n')
         });
         return RPGACE.kit.ask(prompt, { json: true, max: 1000, model: self.MODEL });
       }).then(function(o) {
-        var a = L.applyAmend(rec, o);
-        if (!a) throw new Error('Oracle\'s reply could not be used - try asking another way');
-        return a;
+        var reply = o && typeof o.reply === 'string' ? o.reply.slice(0, 800) : '';
+        var amended = L.applyAmend(rec, o);
+        if (!reply && !amended) throw new Error('Oracle\'s reply could not be used - try asking another way');
+        return { reply: reply, amended: amended };
       });
     },
     saveRecipe: function(id, amended) {
@@ -282,49 +284,71 @@ RPGACE.register('groceryCheck', {
       ask.onclick = function() { pop.close(); U.askOracle(item, res, after); };
       pop.box.appendChild(ask);
     },
-    // GR-3: Oracle proposes the changed recipe; Alex confirms; it is saved to the recipe.
+    // GR-3: from the grocery list - the chat on the recipes that use this ingredient.
     askOracle: function(item, res, after) {
-      var self = RPGACE.modules.groceryCheck, L = self.logic, U = self.ui, name = (item.ingredients && item.ingredients.name) || 'this';
-      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '🔮 ' + name, title: 'Change the recipe?', width: '480px', scroll: true });
-      pop.box.id = 'gr-oracle';
-      var host = U._div(''); host.textContent = 'Finding the recipes that use it…'; pop.box.appendChild(host);
+      var self = RPGACE.modules.groceryCheck, L = self.logic, U = self.ui;
       L.recipesWith(res.cooks, item.ingredient_id).then(function(recipes) {
-        host.innerHTML = '';
-        if (!recipes.length) { host.appendChild(U._div('gr-note', 'No upcoming recipe uses this.')); return; }
-        var pick = document.createElement('select'); pick.className = 'gr-in'; pick.id = 'gr-recipe';
-        recipes.forEach(function(r) { var o = document.createElement('option'); o.value = r.id; o.textContent = r.title; pick.appendChild(o); });
-        if (recipes.length > 1) { host.appendChild(U._div('gr-note', 'Which recipe?')); host.appendChild(pick); }
-        var ta = document.createElement('textarea'); ta.className = 'gr-in'; ta.id = 'gr-ask-text'; ta.rows = 3; ta.style.marginTop = '8px';
-        ta.placeholder = 'e.g. swap it for something I have · leave it out · add chilli · I only have half, top up with what I\'ve got';
-        host.appendChild(ta);
-        var go = RPGACE.kit.btn('🔮 Ask', 'primary'); go.id = 'gr-ask-go'; go.style.cssText += 'width:100%;margin-top:8px;';
-        RPGACE.kit.needs(go, ta, 'Say what you want changed');
-        var out = U._div(''); out.id = 'gr-proposal';
-        go.onclick = function() {
-          go.disabled = true; go.textContent = 'Oracle is thinking…'; out.innerHTML = '';
-          var rid = pick.value;
-          L.recipe(rid).then(function(rec) { return L.amend(rec, item, ta.value).then(function(a) { return { rec: rec, a: a }; }); }).then(function(x) {
-            go.disabled = false; go.textContent = '🔮 Ask again';
-            out.appendChild(U._div('gr-h', 'What changes in ' + x.rec.title));
-            x.a.changes.forEach(function(c) { out.appendChild(U._div('', '• ' + c)); });
-            var before = {}; x.rec.ingredients.forEach(function(i) { before[i.name.toLowerCase()] = i; });
-            var diff = x.a.ingredients.filter(function(i) { var b = before[i.name.toLowerCase()]; return !b || b.amount !== i.amount || (b.unit || '') !== (i.unit || ''); }).map(function(i) { return '+ ' + i.name + ' ' + U._amt(i.amount, i.unit); });
-            var now = {}; x.a.ingredients.forEach(function(i) { now[i.name.toLowerCase()] = 1; });
-            x.rec.ingredients.forEach(function(i) { if (!now[i.name.toLowerCase()]) diff.push('− ' + i.name); });
-            if (diff.length) out.appendChild(U._div('gr-note', diff.join(' · ')));
-            var save = RPGACE.kit.btn('✅ Save to the recipe', 'primary'); save.id = 'gr-amend-save'; save.style.cssText += 'width:100%;margin-top:8px;';
-            save.onclick = function() {
-              save.disabled = true; save.textContent = 'Saving…';
-              L.saveRecipe(rid, x.a).then(function() { return L.sync(); }).then(function(r2) {
-                pop.close(); RPGACE.utils.toast('🍳 ' + x.rec.title + ' updated - list rebuilt', '#3DAA6E', 3000);
-                Object.assign(res, r2); after();
-              }, function(e) { save.disabled = false; save.textContent = '✅ Save to the recipe'; U._fail('Recipe not saved', e); });
-            };
-            out.appendChild(save);
-          }, function(e) { go.disabled = false; go.textContent = '🔮 Ask'; U._fail('Oracle could not help', e); });
-        };
-        host.appendChild(go); host.appendChild(out);
-      }, function(e) { host.textContent = '⚠️ ' + (e.message || e); });
+        U.recipeChat(recipes, { item: item, after: function() { return L.sync().then(function(r2) { Object.assign(res, r2); after(); }); } });
+      }, function(e) { U._fail('Could not find the recipes', e); });
+    },
+    // The recipe chat (grocery list + cook planning, Alex Nov 5: "I don't have poblano chillis, I'll be using
+    // sivri ... oracle tell me what will change in the recipe and me accepting or talking it through further").
+    // recipes = [{id,title}]; opts.item (grocery item), opts.after (after a save), opts.title.
+    recipeChat: function(recipes, opts) {
+      var self = RPGACE.modules.groceryCheck, L = self.logic, U = self.ui; opts = opts || {};
+      U._css();
+      var name = opts.item && opts.item.ingredients && opts.item.ingredients.name;
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '🔮 ' + (name || 'Ask Oracle'), title: opts.title || 'Talk the recipe through', width: '500px', scroll: true });
+      pop.box.id = 'gr-oracle';
+      var host = U._div(''); pop.box.appendChild(host);
+      if (!recipes || !recipes.length) { host.appendChild(U._div('gr-note', 'No recipe to talk about.')); return pop; }
+      var pick = document.createElement('select'); pick.className = 'gr-in'; pick.id = 'gr-recipe';
+      recipes.forEach(function(r) { var o = document.createElement('option'); o.value = r.id; o.textContent = r.title || 'Recipe'; pick.appendChild(o); });
+      if (recipes.length > 1) { host.appendChild(U._div('gr-note', 'Which recipe?')); host.appendChild(pick); }
+      var log = U._div(''); log.id = 'gr-chat'; log.style.cssText = 'display:flex;flex-direction:column;gap:8px;margin:10px 0;'; host.appendChild(log);
+      var ta = document.createElement('textarea'); ta.className = 'gr-in'; ta.id = 'gr-ask-text'; ta.rows = 2;
+      ta.placeholder = name ? 'e.g. swap it for something I have · leave it out · I only have half' : 'e.g. I don\'t have poblano chillies, I\'ll use sivri';
+      host.appendChild(ta);
+      var go = RPGACE.kit.btn('🔮 Ask', 'primary'); go.id = 'gr-ask-go'; go.style.cssText += 'width:100%;margin-top:8px;';
+      RPGACE.kit.needs(go, ta, 'Say what you want to change or ask');
+      host.appendChild(go);
+      var state = { rid: pick.value, chat: [], rec: null };
+      pick.onchange = function() { state.rid = pick.value; state.chat = []; state.rec = null; log.innerHTML = ''; };
+      var bubble = function(who, text) {
+        var d = U._div('', text); d.className = 'gr-msg gr-' + (who === 'Alex' ? 'me' : 'or');
+        d.style.cssText = 'padding:8px 12px;border-radius:10px;font-size:14px;line-height:1.45;white-space:pre-wrap;' + (who === 'Alex' ? 'align-self:flex-end;background:color-mix(in srgb,var(--gold) 15%,var(--bg));' : 'background:var(--panel);border:1px solid var(--border);');
+        log.appendChild(d); return d;
+      };
+      go.onclick = function() {
+        var text = ta.value.trim(); if (!text) return;
+        go.disabled = true; go.textContent = 'Oracle is thinking…';
+        state.chat.push({ who: 'Alex', text: text }); bubble('Alex', text); ta.value = '';
+        log.querySelectorAll('.gr-proposal').forEach(function(x) { x.remove(); });
+        (state.rec ? Promise.resolve(state.rec) : L.recipe(state.rid)).then(function(rec) { state.rec = rec; return L.amend(rec, { item: opts.item }, state.chat); }).then(function(x) {
+          go.disabled = false; go.textContent = '🔮 Ask';
+          if (x.reply) { state.chat.push({ who: 'Oracle', text: x.reply }); bubble('Oracle', x.reply); }
+          if (!x.amended) return;
+          var box = U._div('gr-proposal'); box.id = 'gr-proposal'; box.style.cssText = 'border:1px solid var(--gold);border-radius:10px;padding:10px;';
+          box.appendChild(U._div('gr-h', 'What changes in ' + state.rec.title));
+          x.amended.changes.forEach(function(c) { box.appendChild(U._div('', '• ' + c)); });
+          var before = {}; state.rec.ingredients.forEach(function(i) { before[i.name.toLowerCase()] = i; });
+          var diff = x.amended.ingredients.filter(function(i) { var b = before[i.name.toLowerCase()]; return !b || b.amount !== i.amount || (b.unit || '') !== (i.unit || ''); }).map(function(i) { return '+ ' + i.name + ' ' + U._amt(i.amount, i.unit); });
+          var now = {}; x.amended.ingredients.forEach(function(i) { now[i.name.toLowerCase()] = 1; });
+          state.rec.ingredients.forEach(function(i) { if (!now[i.name.toLowerCase()]) diff.push('− ' + i.name); });
+          if (diff.length) box.appendChild(U._div('gr-note', diff.join(' · ')));
+          box.appendChild(U._div('gr-note', 'Not right? Keep talking below. Nothing changes until you save.'));
+          var save = RPGACE.kit.btn('✅ Save to the recipe', 'primary'); save.id = 'gr-amend-save'; save.style.cssText += 'width:100%;margin-top:8px;';
+          save.onclick = function() {
+            save.disabled = true; save.textContent = 'Saving…';
+            L.saveRecipe(state.rid, x.amended).then(function() { return opts.after ? opts.after(state.rid) : null; }).then(function() {
+              pop.close(); RPGACE.utils.toast('🍳 ' + state.rec.title + ' updated', '#3DAA6E', 3000);
+            }, function(e) { save.disabled = false; save.textContent = '✅ Save to the recipe'; U._fail('Recipe not saved', e); });
+          };
+          box.appendChild(save); log.appendChild(box);
+        }, function(e) { go.disabled = false; go.textContent = '🔮 Ask'; state.chat.pop(); U._fail('Oracle could not help', e); });
+      };
+      setTimeout(function() { try { ta.focus(); } catch (e) {} }, 50);
+      return pop;
     }
   }
 });

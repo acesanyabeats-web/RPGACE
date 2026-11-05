@@ -660,6 +660,14 @@ RPGACE.register('cookingOracle', {
         + scheduled.recipes.map(function(r) { return '• ' + (r.title || '(recipe not found)'); }).join('<br>');
       box.appendChild(info);
 
+      // Nov 5 2026: the same recipe chat as Planned Cook (groceryCheck.ui.recipeChat).
+      if (scheduled.recipes && scheduled.recipes.length && RPGACE.modules.groceryCheck) {
+        var askSched = self.ui._mkBtn('🔮 Ask Oracle about this cook', '', { extra: 'width:100%;margin-bottom:10px;' });
+        askSched.id = 'co-sched-ask';
+        askSched.onclick = function() { RPGACE.modules.groceryCheck.ui.recipeChat(scheduled.recipes.filter(function(r) { return r && r.id; }), { title: 'Change something before you cook?', after: function() { RPGACE.utils.toast('Saved to the recipe. The cook\'s timeline keeps its old step words until you re-plan it.', 'var(--muted)', 4500); } }); };
+        box.appendChild(askSched);
+      }
+
       var errBox = document.createElement('div');
       errBox.style.cssText = 'font-size:12px;color:#CC4A4A;margin-bottom:10px;display:none;';
       box.appendChild(errBox);
@@ -3119,6 +3127,15 @@ RPGACE.register('cookingOracle', {
         shopModeRow.appendChild(shopModeLbl);
         shopModeRow.appendChild(shopModeSelect);
         box.appendChild(shopModeRow);
+      }
+      // Nov 5 2026 (Alex: "I don't have poblano chillis, I'll be using sivri, so having oracle tell me what will
+      // change in the recipe and me accepting or talking it through further while planning the cook"): the shared
+      // recipe chat (groceryCheck.ui.recipeChat); a saved change goes into the recipe itself.
+      if (sess.recipes && sess.recipes.length && RPGACE.modules.groceryCheck) {
+        var askBtn = self.ui._mkBtn('🔮 Ask Oracle about this cook', '', { extra: 'width:100%;margin-bottom:14px;' });
+        askBtn.id = 'co-plan-ask';
+        askBtn.onclick = function() { RPGACE.modules.groceryCheck.ui.recipeChat(sess.recipes, { title: 'Change something before you cook?' }); };
+        box.appendChild(askBtn);
       }
 
       var listHeading = document.createElement('div');
