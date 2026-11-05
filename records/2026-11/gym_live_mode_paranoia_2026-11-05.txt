@@ -1,0 +1,10 @@
+Gym Live now mode - /dev_ops_7 Track B record (Nov 5 2026)
+
+Alex, verbatim: "For gym live now, I choose muscle groups I want to hit, then choose exercises and sets and reps, with oracle to talk to if something is wrong or need tips etc, think that would work
+• Muscle and Motion Strength Training: Features over 1,400 exercises with detailed 3D anatomical analysis overlays. Selecting an exercise isolates the skeleton and highlights the exact target muscles, synergists, and stabilizers in motion. It is widely used by personal trainers and lifters for deep mechanical insight.
+• Gym TrAIcker: An iOS app that includes a lifelike 3D athlete demonstrating 174 exercises. The model features soft muscle highlights that glow or color-code to show you exactly which area is being strained or activated during live playback.
+• FitCraft: Provides fully interactive 3D exercise demonstrations across strength, mobility, and yoga. It allows you to pinch, zoom, and rotate the digital camera around the 3D model in real time to fully comprehend spatial muscle engagement and form.
+• Fitness Online: Hosts a massive catalog of over 850 exercises driven by high-quality 3D animations. Choosing a movement highlights the primary muscle groups worked alongside providing structural breakdown logs and diet tracking tools. - something like these, but reverse engineered to my liking and vision"
+
+Evidence: exerciseLibrary (src/habits/exerciseLibrary.js) has 44 STARTER exercises, 8 GROUPS with ~29 regions, each exercise [name, discipline, group, primary regions, secondary regions, cue]; pickCombo = group -> 2-4 exercises with region coverage; exercises table (video-extracted) 0 rows; gym_sessions 6 rows (id, performed_on, duration_min, notes); gym_sets per session. Live now gym mode (OA-5) currently shows gymTracker.ui.render (this week, Log a session, bests).
+Not copying any named app: their shared idea (pick a movement -> see target / helper / stabiliser muscles highlighted) is built in RPGACE's own design.
