@@ -113,7 +113,13 @@ RPGACE.register('realmFrame', {
         });
       },
       beats_to_sell: function(L) { return L.rd('content_productions', 'select=id&finished_at=not.is.null&price=is.null&limit=60').then(function(r) { return r.length; }); },
-      shopping_open: function(L) { return L.rd('shopping_list_items', 'select=id&bought=eq.false&to_buy_amount=gt.0&limit=200').then(function(r) { return r.length; }); },
+      // Nov 5 2026 (Alex: "Only the newest list"): old lists from past cooks stay saved but don't count.
+      shopping_open: function(L) {
+        return L.rd('shopping_list_items', 'select=list_id&order=created_at.desc&limit=1').then(function(last) {
+          var id = last && last[0] && last[0].list_id; if (!id) return 0;
+          return L.rd('shopping_list_items', 'select=id&list_id=eq.' + id + '&bought=eq.false&to_buy_amount=gt.0&limit=500').then(function(r) { return r.length; });
+        });
+      },
     },
     count: function(source, start) {
       var L = RPGACE.modules.realmFrame.logic, f = L.COUNT[source];

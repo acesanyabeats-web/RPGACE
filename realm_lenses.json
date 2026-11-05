@@ -350,7 +350,7 @@
           {
             "from": "chef",
             "source": "shopping_open",
-            "label": "things on your grocery list",
+            "label": "things on your newest grocery list",
             "open": "cooking"
           }
         ],

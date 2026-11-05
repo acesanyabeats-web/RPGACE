@@ -81,6 +81,7 @@
       <ul><li><b>Root cause:</b> the "Ready from other realms" links found their page by searching the left menu's rows (<code>realmFrame.ui._openPage</code>); RP-3 removed the old area bands from the menu, so "cooking", "health", "posting", "selling" and "money" found nothing ("Could not find the cooking page"). <b>Fix:</b> those keys now go through the realm pages first (<code>realmPages.logic.realmOfKey</code>): the grocery list link opens Chef with Cooking unfolded.</li>
       <li><b>Loading screen:</b> opening a realm page shows "Opening Steward…" until the page and its header are drawn (4s at most), instead of the page filling in piece by piece.</li>
       <li>The same screenshot showed "WHAT'S NEXT" twice; the second label is gone.</li>
+      <li><b>"200" was wrong too:</b> the count stopped at 200, and there were really 301 unbought items across 17 lists back to Sept 16 (lists from past cooks). Alex: "Only the newest list" - the line now counts the newest list only ("things on your newest grocery list"); old lists stay saved, nothing deleted.</li>
       <li>Tested headless. <b>Untested on Alex's phone.</b> Other pages (Today, Dashboard) don't have the loading screen yet.</li></ul>
     </div>
   </div>
