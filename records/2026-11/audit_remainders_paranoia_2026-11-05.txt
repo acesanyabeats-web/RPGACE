@@ -37,3 +37,5 @@ CT-1 cook_chats gets planned_cook_id + transcript (readable text "21:42 You: ...
 CT-2 free word scan colours each line (green substitution, orange timing/heat, red problem/fix, blue technique, purple taste/seasoning, white other); "Re-check colours" = one Oracle call (mechanical model) per transcript.
 CT-3 recipe shows "Cook transcripts" (newest first, cook date): coloured lines, colour filter; "Make recipe changes" = one Oracle call over green/orange/red lines + the recipe -> proposed changes, each Accept / Reject / Talk to Oracle (opens Oracle with the change, Oracle revises it). Accepted changes go through the existing steps review (steps_previous kept for undo).
 Future (blue): same transcript form for every Live now session.
+
+CT approval (verbatim): "Approved ct plans"
