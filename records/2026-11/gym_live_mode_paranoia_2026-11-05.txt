@@ -8,3 +8,32 @@ Alex, verbatim: "For gym live now, I choose muscle groups I want to hit, then ch
 
 Evidence: exerciseLibrary (src/habits/exerciseLibrary.js) has 44 STARTER exercises, 8 GROUPS with ~29 regions, each exercise [name, discipline, group, primary regions, secondary regions, cue]; pickCombo = group -> 2-4 exercises with region coverage; exercises table (video-extracted) 0 rows; gym_sessions 6 rows (id, performed_on, duration_min, notes); gym_sets per session. Live now gym mode (OA-5) currently shows gymTracker.ui.render (this week, Log a session, bests).
 Not copying any named app: their shared idea (pick a movement -> see target / helper / stabiliser muscles highlighted) is built in RPGACE's own design.
+
+== Interrogation round 1 (Nov 5 2026), Alex's answers verbatim ==
+Q1 body map -> "2D tap map (Recommended)"
+Q2 flow -> "Guided, prefilled (Recommended)"
+Q3 form help (multi) -> "Short cue + map highlight,YouTube search link,Ask Oracle about this exercise,Once video finishes and I return back, ask if I want it shared and taken in, so it expands my library"
+Q4 gym chats -> "Yes, same as cooking (Recommended)"
+
+Evidence for the new Q3 piece: realmFrame.ui._openTakeIn already has
+"📤 Share a link or text" -> knowledgeHub.ui.go('videoworm') + #intel-url-input.
+Return detection already exists elsewhere via document visibilitychange
+(myDay, workMode, doingNow). So "ask on return" = a visibilitychange check
+after the YouTube tap, reusing the Videoworm share path (rule 8), realm athlete.
+
+== Draft plan (Gym Live now, GL) ==
+GL-1 Body map: 2D front/back SVG of exerciseLibrary's 29 regions, tap to pick,
+     main/helper highlight. Lives in gym mode (liveModes._gym).
+GL-2 Pick + rank: picked regions -> exercises ranked by coverage (pickCombo
+     extended from group to regions); tick the ones you want.
+GL-3 Prefill + log: sets x reps x weight from the last gym_sets for that
+     exercise (+ a small step up), log each set live, rest timer, Finish ->
+     one gym_sessions row + gym_sets (the existing tables, no copy).
+GL-4 Form help: cue per exercise (STARTER gets a cue field), map highlight,
+     YouTube search link; on return to the app, "Share and take in that
+     video?" -> Videoworm share path for athlete.
+GL-5 Oracle on the set: the Live now Ask box gets "exercise X, set N, last
+     weight" so tips fit that lift.
+GL-6 Gym transcripts: cookTranscripts generalised (CT-4 start) - gym colours
+     pain/form/too easy/too hard/swap; transcript linked to gym_sessions;
+     "Suggest changes to next workout" with accept/reject/talk.
