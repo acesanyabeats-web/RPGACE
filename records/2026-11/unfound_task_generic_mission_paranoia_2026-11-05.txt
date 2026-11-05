@@ -1,0 +1,15 @@
+Unfound task -> generic mission - /dev_ops_7 Track B compile (Nov 5 2026, sent at bedtime)
+
+Alex, verbatim:
+"If task in live done or just did not found, ask me to explain most generic missions I can to divide context from action, with oracle then seeing if can be done better, or orchestrator cc possibly"
+
+Evidence:
+- Typing your own thing today: myDay.ui.logPast "+ Add" (src 'own', ~4331), realm-block picker "My own" (~8004), plan-block own (~6174), I just did / Doing now drop list (doingNow). Own items are saved as plain labels - no mission, no context split.
+- A filer already exists (GM-3): realmTasks.logic.fileInbox + prompts/mission_file.md (cheap model) files specific tasks under generic missions as context cards (new mission only when none fits). It runs on inbox tasks, not on typed "own" items.
+- Missions + context cards: realm_tasks.context_kind, mission_contexts (addContext), pickContext.
+
+Draft (UM - Unfound Mission), to brief at next session:
+UM-1 When what you did isn't in the list, a small step asks: the generic action ("Bake a dessert") + this time's specific ("Chocolate cake"), with your typed text prefilled.
+UM-2 Oracle checks it (the existing mission_file prompt, cheap model, one call): reuse an existing mission if one fits, or suggest a better generic name; you confirm.
+UM-3 Saved as mission + context card (one pipeline: addContext), so next time it's in the list.
+UM-4 "Leave it for Orchestrator CC": typed items go to the inbox and the session-start filer sorts them (no app call).
