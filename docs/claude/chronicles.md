@@ -4,6 +4,9 @@ Read before touching any `domain: 'chronicles'` module, the `xp_*` tables or `sy
 
 Modules (`domain: 'chronicles'`, 3): `careerStatCard`, `chroniclesLog`, `xpSeason`.
 
+## Realm pages and the menu → [`realm_pages.md`](realm_pages.md)
+- Every realm is a page (`realmPages`): Do-first layout, Grow row, Ask Oracle, switching cover, menu order (`leftNav`).
+
 ## XP Season Pass (`xpSeason`)
 - Private `xp_events` ledger written only by DB triggers (`xp_on_change` → `xp_award` → `xp_rules`) on 15 tables + `gym_sets`; 13 realms. `xp_on_change` pays a `quest_log` routine tick only when `xp > 0`.
 - `xp_award` dates a `quest_log` award by the row's `completed_at` (London day) when that is 1–7 days back; everything else earns on today.

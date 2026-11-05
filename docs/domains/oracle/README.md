@@ -5,7 +5,7 @@ what to read before working on it.
 
 - **Facts:** [`docs/claude/oracle.md`](../../claude/oracle.md)
 - **Maps:** [`interconnections.md`](interconnections.md), [`flow.md`](flow.md)
-- **Modules (18):** `agentsIntoOracle`, `askMyData`, `captionsPanel`, `deepDive`, `instaOraclePanel`, `mockOracle`, `oracleAppGrounding`, `oracleControl`, `oracleFetchGuard`, `oracleProfessor`, `oracleProviderMode`, `oracleTreeGrounding`, `prodOraclePanel`, `producerTools`, `quickActions`, `tiktokOracle`, `webLookup`, `youtubeOracle`
-- **Prompts:** [`professor`](../../../prompts/professor.md)
-- **Tables touched:** `library_items`, `oracle_actions`, `oracle_fallback_queue`, `oracle_module_anatomy`, `outreach_log`, `people`, `system_updates`, `taxonomy_proposals`, `taxonomy_tree`
+- **Modules (19):** `agentsIntoOracle`, `askMyData`, `captionsPanel`, `deepDive`, `instaOraclePanel`, `mockOracle`, `oracleAppGrounding`, `oracleControl`, `oracleFetchGuard`, `oracleMemory`, `oracleProfessor`, `oracleProviderMode`, `oracleTreeGrounding`, `prodOraclePanel`, `producerTools`, `quickActions`, `tiktokOracle`, `webLookup`, `youtubeOracle`
+- **Prompts:** [`oracle_memory`](../../../prompts/oracle_memory.md), [`professor`](../../../prompts/professor.md)
+- **Tables touched:** `library_items`, `oracle_actions`, `oracle_fallback_queue`, `oracle_memory`, `oracle_module_anatomy`, `outreach_log`, `people`, `system_updates`, `taxonomy_proposals`, `taxonomy_tree`
 - **Realm registry:** `realm_lenses.json` (each realm's frame: target, tools, feeds, starters)

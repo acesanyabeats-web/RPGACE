@@ -5,7 +5,13 @@ Read before touching any `domain: 'schedule'` module. Present tense; stories in 
 Modules (`domain: 'schedule'`): generated list in `docs/domains/schedule/README.md`.
 
 ## My Day + Live now store → [`my_day.md`](my_day.md)
-- Day view and timeline, bookends, Plan my day / Plan week, blocks, focus timer, evening/weekly review (`myDay`); timed entries under ▶ Live now (`doingNow`). All facts live in the sub-file; Live now behaviour in [`realm_tasks.md`](realm_tasks.md).
+- Day view and timeline, Plan my day / Plan week, blocks, focus timer (`myDay`); timed entries under ▶ Live now (`doingNow`). All facts live in the sub-file; Live now behaviour in [`realm_tasks.md`](realm_tasks.md).
+
+## Day Bookends, alarms, evening → [`day_bookends.md`](day_bookends.md)
+- I'm up / Good morning, wake alarm + phone alarm, Going to bed, bedtime/wake asks, evening review + questionnaire, notes for tonight.
+
+## Work and shifts → [`work_shifts.md`](work_shifts.md)
+- Work buttons, Work page drink specs, rota import.
 
 ## Realms
 - Every input/quest/plan carries chosen realms (`RPGACE.realmPicker`; "Not now" holds); else `RPGACE.realmOf`. Lenses + realm↔phylum map in `realm_lenses.json`; `realmBrief` = Brief realm pick + per-realm report periods. [Realm Inputs](../../patch_notes.html#card-2026-10-15-realm-reports) [RC-0](../../patch_notes.html#card-2026-10-15-realm-phyla) [RC-1](../../patch_notes.html#card-2026-10-15-phylum-path-realms) [RC-2](../../patch_notes.html#card-2026-10-15-knowledge-feeds-realms) [RC-3](../../patch_notes.html#card-2026-10-15-quests-by-realm) [RC-4](../../patch_notes.html#card-2026-10-15-realm-milestones) [RC-5](../../patch_notes.html#card-2026-10-15-realm-connectors-done)

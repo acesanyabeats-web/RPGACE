@@ -9,9 +9,9 @@ Split from a 291KB file on Oct 22 2026 (plan "CLAUDE.md Debloat", record `record
 | Oracle chat/grounding/actions, models (`domain: 'oracle'`) | `docs/claude/oracle.md` |
 | Beats, Posting, Selling, Videoworm, `local_server`, OpenMontage/Total lanes (`content`) | `docs/claude/content.md` |
 | Taxonomy, Jargon, Life Library, Knowledge area, Study, Bookworm (`knowledge`) | `docs/claude/knowledge.md` (hub) → `study.md` |
-| Cooking, Health & body, Gym, Wishlist, Money, Daily life (`habits`) | `docs/claude/habits.md` (hub) → `cooking.md`, `health_gym.md` |
-| My Day, Live now store, realms, Plans/trips, briefs, shifts (`schedule`) | `docs/claude/schedule.md` (hub) → `my_day.md`, `realm_tasks.md` |
-| XP Season Pass, Chronicles (`chronicles`) | `docs/claude/chronicles.md` |
+| Cooking, Health & body, Gym, Wishlist, Money, Daily life (`habits`) | `docs/claude/habits.md` (hub) → `cooking.md`, `kitchen_stock.md`, `health_gym.md` |
+| My Day, Live now store, realms, Plans/trips, briefs, shifts (`schedule`) | `docs/claude/schedule.md` (hub) → `my_day.md`, `day_bookends.md`, `work_shifts.md`, `realm_tasks.md` |
+| XP Season Pass, Chronicles, realm pages (`chronicles`) | `docs/claude/chronicles.md` (hub) → `realm_pages.md` |
 | Navigation/areas, boot, speed, auth, shared kit (`platform`) | `docs/claude/platform.md` (hub) → `kit.md` |
 | The why behind every landmine below | `docs/claude/landmines.md` |
 | Auth, RLS, secrets | `docs/claude/security.md` |

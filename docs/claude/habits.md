@@ -4,7 +4,7 @@ Read before touching any `domain: 'habits'` module. Present tense, one fact per 
 
 Modules (`domain: 'habits'`, 8): `moneyHub`, `softwareList`, `cookingOracle`, `shoppingWishlist`, `gymTracker`, `healthBody`, `dailyLife`, `exerciseLibrary`.
 
-## Cooking → [`cooking.md`](cooking.md)
+## Cooking → [`cooking.md`](cooking.md), [`kitchen_stock.md`](kitchen_stock.md) (shopping, stock, best-before, swaps)
 - Recipes, generate, stock and shopping lists, Cook Mode, planned cooks, My Recipes (`cookingOracle`). All facts live in the sub-file.
 
 ## Health & body, Gym → [`health_gym.md`](health_gym.md)
