@@ -1,0 +1,13 @@
+Shop trip + receipt photos + food label photos - /dev_ops_7 Track B compile (Nov 5 2026)
+
+Alex, verbatim (after the grocery count fix):
+"Should have current grocery list along with options to add wishlist so I do different shops in one"
+"In one trip"
+"I'll be taking pictures of receipts in the future for these, so we can log those so much better, with photo to text translation of data, then shipping data where needed. Same for the actual produce and labels behind, the labels of nutritional value and make up etc will then be compared to health data tables we will import so we can see what's healthy what's not"
+
+Evidence (live, Nov 5):
+- shopping_lists / shopping_list_items: 17 lists, newest Oct 30 (14 open items); count now newest-only (commit 831dab6).
+- wishlist_items: 5 open (shoppingWishlist module; budget fit, cool-off, _markBought).
+- Receipt reader already exists: moneyHub.logic (prompts/receipt_read.md, RPGACE.utils.oracleVision, private upload via screenshotInbox 'receipt'); chronicles_finance rows with receipt_id = 0 (never used). Reads shop/item/amount/date/category only - no line items.
+- cofid_foods: 7,743 rows = UK CoFID nutrition table ALREADY imported (the "health data tables we will import" partly exist).
+- food_log: 0 rows. pantry_stock: 88 rows. ingredient_prices: 0 rows (receipt line items could fill it).
