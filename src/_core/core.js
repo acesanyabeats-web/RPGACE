@@ -930,7 +930,7 @@ function saveOracleChat(question, reply){
     if (!q || !a) return;
     if (!window._oracleChatSession) window._oracleChatSession = new Date().toISOString().slice(0, 16) + '-' + Math.random().toString(36).slice(2, 7);
     RPGACE.sb.secureWrite('oracle_chats', 'insert', { session_id: window._oracleChatSession, question: q.slice(0, 8000), answer: a.slice(0, 20000) })
-      .catch(function(e) { console.warn('[oracle_chats] not saved:', e && e.message || e); });
+      .catch(function(e) { console.warn('[oracle_chats] not saved:', e && e.message || e); try { RPGACE.utils.toast('⚠️ Oracle chat not saved: ' + (e && e.message || e), '#CC4A4A', 3500, 'oracleChats'); } catch (x) {} }); // Nov 5 2026: fail loud (rule 7)
     // D-2 (Nov 4 2026): oracleMemory reads quiet chats for lasting facts about Alex.
     try { RPGACE.hooks.fire('oracle:chat-saved', { question: q, reply: a }); } catch (e) {}
   } catch (e) { console.warn('[oracle_chats]', e); }

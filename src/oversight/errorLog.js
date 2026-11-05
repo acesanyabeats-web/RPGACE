@@ -282,6 +282,7 @@ RPGACE.register('errorLog', {
   "_continueAfterLink": "beatLog",
   "_continueAnalyzingInBackground": "bookworm",
   "_cook": "liveModes",
+  "_cookChatNote": "realmTasks",
   "_cookNames": "careerStatCard",
   "_coolOff": "shoppingWishlist",
   "_countsLine": "lifeLibrary",

@@ -586,7 +586,8 @@ RPGACE.register('realmTasks', {
         box.appendChild(bt);
         md.ui.blockSteps(box, ob, od, function() { if (opts.redraw) { try { opts.redraw(); } catch (e) {} } });
         var LMb = RPGACE.modules.liveModes; if (LMb && om !== 'past') LMb.ui.draw(box, LMb.logic.context(opts, null)); // OA-3
-        self._liveCtx = { realm: ob.kind === 'cooking' ? 'chef' : (ob.realm || 'life'), block: md.logic.blockLabel(ob) + ' ' + md.logic.fmtMin(oF) + '–' + md.logic.fmtMin(oF + (Number(ob.mins) || 30)), task: null };
+        self._liveCtx = { realm: ob.kind === 'cooking' ? 'chef' : (ob.realm || 'life'), block: md.logic.blockLabel(ob) + ' ' + md.logic.fmtMin(oF) + '–' + md.logic.fmtMin(oF + (Number(ob.mins) || 30)), task: null,
+          cook: ob.kind === 'cooking' ? { pcId: ob.planned_cook_id || null, title: ob.title || md.logic.blockLabel(ob), date: od } : null };
         U._askBox(box); // OA-1
         return;
       }
@@ -747,7 +748,7 @@ RPGACE.register('realmTasks', {
       if (st2.done) { var dl = document.createElement('div'); dl.className = 'rt-sub'; dl.style.marginTop = '10px'; dl.textContent = '✅ ' + st2.done + ' done in this stretch'; box.appendChild(dl); }
       U._liveDue(box, realm);
       // OA-1: Oracle inside Live now - asks with what you're doing attached.
-      self._liveCtx = { realm: realm, block: b ? md.logic.blockLabel(b) + ' ' + md.logic.fmtMin(md.logic.toMin(b.start_time)) + '–' + md.logic.fmtMin(md.logic.toMin(b.start_time) + (Number(b.mins) || 30)) : null, task: cur ? cur.title : null };
+      self._liveCtx = { realm: realm, block: b ? md.logic.blockLabel(b) + ' ' + md.logic.fmtMin(md.logic.toMin(b.start_time)) + '–' + md.logic.fmtMin(md.logic.toMin(b.start_time) + (Number(b.mins) || 30)) : null, task: cur ? cur.title : null , cook: (realm === 'chef' || (b && b.kind === 'cooking')) ? { pcId: (b && b.planned_cook_id) || null, title: (b && (b.title || md.logic.blockLabel(b))) || 'Chef session', date: md.logic.iso() } : null };
       U._askBox(box);
     },
     // OA-1: the Ask Oracle box. Reuses oracleControl's send + reply mirror (same ids: oc-ov-log / oc-ov-input), so the
@@ -756,6 +757,15 @@ RPGACE.register('realmTasks', {
       var self = RPGACE.modules.realmTasks, oc = RPGACE.modules.oracleControl;
       if (!oc || !oc._sendFromOverlay) return;
       ['oc-ov-log', 'oc-ov-input', 'oc-ov-send', 'oc-ov-thinking'].forEach(function(id) { var o = document.getElementById(id); if (o && !box.contains(o)) o.removeAttribute('id'); });
+      if (!self._askHooked) {
+        self._askHooked = true;
+        RPGACE.hooks.on('oracle:response-scanned', function(text) {
+          var log = document.getElementById('oc-ov-log'), live = document.getElementById('rt-live');
+          if (!log || !live || !live.contains(log) || !self._cookChat || !self._liveCtx || !self._liveCtx.cook) return;
+          var last = self._cookChat.msgs[self._cookChat.msgs.length - 1];
+          if (last && last.role === 'user') self.ui._cookChatNote('assistant', String(text || '').replace(/DAY_PLAN_JSON:[\s\S]*$/, '').trim());
+        });
+      }
       if (!self._ctxReg && oc.registerContextProvider) {
         self._ctxReg = true;
         oc.registerContextProvider('livenow', function() {
@@ -765,21 +775,46 @@ RPGACE.register('realmTasks', {
           return 'Alex is in Live now: ' + [R.name + ' realm', c.block, c.task ? 'doing "' + c.task + '"' : null].filter(Boolean).join(', ') + '. Give practical advice for doing it right now.';
         });
       }
+      // Nov 5 2026 (Alex: "the text field while typing ... was way too small, not readable at all when keyboard is
+      // unsheathed"): a full-width box (3 lines, 17px, grows to 40% of the screen) with Ask under it, scrolled to the
+      // middle of what's left above the keyboard when it opens.
       var w = document.createElement('div'); w.id = 'rt-ask';
       w.style.cssText = 'margin-top:16px;border:1px solid rgba(155,89,182,.4);border-radius:12px;padding:10px 12px;background:rgba(155,89,182,.06);';
       w.innerHTML = '<div style="font-weight:700;color:#9B59B6;margin-bottom:6px;">🔮 Ask Oracle</div>'
-        + '<div id="oc-ov-log" style="font-size:14px;line-height:1.5;color:var(--text);max-height:280px;overflow-y:auto;"></div>';
-      var row = document.createElement('div'); row.style.cssText = 'display:flex;gap:6px;margin-top:8px;';
-      var ta = document.createElement('textarea'); ta.id = 'oc-ov-input'; ta.rows = 1; ta.placeholder = 'Ask about what you\'re doing…';
-      ta.style.cssText = 'flex:1;min-width:0;resize:none;min-height:44px;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:16px;font-family:inherit;';
-      ta.oninput = function() { ta.style.height = 'auto'; ta.style.height = Math.min(160, ta.scrollHeight) + 'px'; };
+        + '<div id="oc-ov-log" style="font-size:16px;line-height:1.5;color:var(--text);max-height:40vh;overflow-y:auto;"></div>';
+      var row = document.createElement('div'); row.style.cssText = 'display:flex;flex-direction:column;gap:8px;margin-top:8px;';
+      var ta = document.createElement('textarea'); ta.id = 'oc-ov-input'; ta.rows = 3; ta.placeholder = 'Ask about what you\'re doing…';
+      ta.style.cssText = 'width:100%;box-sizing:border-box;resize:none;min-height:88px;max-height:40vh;padding:12px;border-radius:10px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:17px;line-height:1.45;font-family:inherit;';
+      ta.oninput = function() { ta.style.height = 'auto'; ta.style.height = Math.min(Math.round(window.innerHeight * 0.4), Math.max(88, ta.scrollHeight)) + 'px'; };
+      ta.addEventListener('focus', function() { setTimeout(function() { try { ta.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {} }, 350); });
       var sb = document.createElement('button'); sb.type = 'button'; sb.id = 'oc-ov-send'; sb.textContent = 'Ask';
-      sb.style.cssText = 'min-height:44px;padding:0 16px;border-radius:8px;border:none;background:#9B59B6;color:#fff;font-weight:700;font-size:15px;cursor:pointer;';
-      var send = function() { var t = (ta.value || '').trim(); if (!t) return; oc._sendFromOverlay(t); ta.value = ''; ta.style.height = ''; };
+      sb.style.cssText = 'width:100%;min-height:48px;padding:0 16px;border-radius:10px;border:none;background:#9B59B6;color:#fff;font-weight:700;font-size:16px;cursor:pointer;';
+      var send = function() { var t = (ta.value || '').trim(); if (!t) { RPGACE.utils.toast('Type a question first', 'var(--muted)', 1800); ta.focus(); return; } self.ui._cookChatNote('user', t); oc._sendFromOverlay(t); ta.value = ''; ta.style.height = ''; };
       sb.onclick = send;
       ta.addEventListener('keydown', function(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } });
       row.appendChild(ta); row.appendChild(sb); w.appendChild(row);
       box.appendChild(w);
+    },
+    // Nov 5 2026 (Alex: "did that oracle chat save? If not, it should be automatic after every cook"): during a
+    // cooking block, every Ask Oracle question and reply is saved to cook_chats as it happens (same table and
+    // message shape as Cook Mode's own chat, WR-14), keyed to the planned cook, so the recipe can be improved
+    // later even if Finish cook is never tapped. One row per cook; updated in place.
+    _cookChatNote: function(role, text) {
+      var self = RPGACE.modules.realmTasks, c = self._liveCtx && self._liveCtx.cook;
+      if (!c || !text) return null;
+      var key = 'live_' + (c.pcId || (c.date + '_' + String(c.title || 'cook').slice(0, 40)));
+      var sess = self._cookChat;
+      if (!sess || sess.key !== key) sess = self._cookChat = { key: key, id: null, msgs: [], recipeId: undefined, title: c.title, pcId: c.pcId, saving: Promise.resolve() };
+      sess.msgs.push({ role: role, content: String(text).replace(/^✦\s*Oracle\s*/, '').slice(0, 4000), at: new Date().toISOString() });
+      var recipe = sess.recipeId !== undefined || !sess.pcId ? Promise.resolve(sess.recipeId || null)
+        : RPGACE.sb.select('planned_cooks', 'select=recipe_ids&id=eq.' + sess.pcId).then(function(r) { sess.recipeId = (r && r[0] && (r[0].recipe_ids || [])[0]) || null; return sess.recipeId; }, function() { sess.recipeId = null; return null; });
+      sess.saving = sess.saving.then(function() { return recipe; }).then(function(rid) {
+        var row = { messages: sess.msgs.slice(), updated_at: new Date().toISOString() };
+        if (sess.id) return RPGACE.sb.secureWrite('cook_chats', 'update', row, 'id=eq.' + sess.id);
+        sess.id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('c' + Date.now());
+        return RPGACE.sb.secureWrite('cook_chats', 'insert', [Object.assign({ id: sess.id, recipe_id: rid, recipe_title: sess.title || null, cook_key: sess.key, flagged: false }, row)]);
+      }).catch(function(e) { RPGACE.utils.toast('⚠️ Cook chat not saved: ' + (e && e.message || e), '#CC4A4A', 3500, 'realmTasks'); });
+      return sess.saving;
     },
     _clock: function(ms) { var d = new Date(ms); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); },
     // DL-5: follow-ups waiting (a chained task after something finished) stay on top until done or skipped.
