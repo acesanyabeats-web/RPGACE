@@ -11,3 +11,10 @@ Groups of the 134:
  B. Need a live service (stubbed in the audit): My software "scan main/second google account", "find freebies", Take in "analyse", Plan with Oracle "send", dashboard "ask".
  C. Silent when the input is empty (fail-loud rule 7 broken): Morning block "add", Shopping block "add", Your Year challenges "+ add", Health & body "save"/"−"/"💧 +# glass"?, Explain it back "▶ start", My software "✓ keep"/"not needed"/"mark done"/"✓ done", Cooking recipe "✏️ change", Wishlist "🗑" (two-tap?), Review "⏭ skip".
  D. Filter/realm chips with no visible change at all (not even highlight): Your Year "weeks", challenges realm list, Catalogue "scholar ✓/hustler ✓/chef ✓/life ✓", Life Library filters, Current stock "pantry/all", Work "all", Plans "🧳 plans" tab, My Day "day".
+
+Interrogation round 1 (verbatim answers):
+Q empty-input buttons: "Both"  (grey until filled + a message if tapped anyway; one shared helper)
+Q dead chips: "Check each, fix or remove (Recommended)"  (list which go before removing)
+Q audit again: "1 and should be part of rule making for galaxy map in a future plan"  (re-run after each screen-changing plan, diff vs last report -> report + error_log; future plan: fold audit rules into Galaxy Map rule-making)
+Q old menu bands after RP-3: "Remove them (Recommended)"  (screens not owned by one realm move to Today or their realm page) -> Track A RP-3 scope
+Defaults (not asked): Group B service buttons get a phone checklist for Alex (rule 10), not code changes.
