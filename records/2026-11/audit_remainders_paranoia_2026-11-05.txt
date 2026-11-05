@@ -1,0 +1,13 @@
+Audit remainders - /dev_ops_7 Track B record (Nov 5 2026)
+
+Alex, verbatim: "Do rpg 3 all of it on /dev_ops_7 while quandary the newer audit on those remainders. Also I just cooked a chocolate cake, did that oracle chat save? If not, it should be automatic after every cook. Also the text field while typing the message in oracle ask chat in live cook was wat too small, not readable at all when keyboard is unsheathed"
+
+Track A this session: RP-3 (all 12 remaining realms become pages). Immediate fixes shipped first (commit 2d01f67): cook chats save to cook_chats after every Live now reply; Ask box full-width 3 lines 17px; failed Oracle chat saves toast.
+Cake chat evidence: planned_cooks row cooked 2026-11-04 23:05; no cook_chats rows in 30 h; oracle_chats only recipe-generation rows (18:14-23:07). Not recoverable.
+
+Evidence (crawl v2, docs/audit/ui_audit_2026-11-04.md, 736 screens, 5,474 taps): no-visible-effect taps 902 -> 338 (134 distinct) after highlight (378) and new-tab (240) detection.
+Groups of the 134:
+ A. Dropdowns / file pickers (label = every option joined, or upload/photo): e.g. Sell "beatstars direct other", Release platform list, Add artist "not linked", wake alarm "upload a sound file", Bookworm pdf/epub upload, Health "meal photo"/"label photo", Take in "screenshot". Work as designed; a tap crawler can't use them.
+ B. Need a live service (stubbed in the audit): My software "scan main/second google account", "find freebies", Take in "analyse", Plan with Oracle "send", dashboard "ask".
+ C. Silent when the input is empty (fail-loud rule 7 broken): Morning block "add", Shopping block "add", Your Year challenges "+ add", Health & body "save"/"−"/"💧 +# glass"?, Explain it back "▶ start", My software "✓ keep"/"not needed"/"mark done"/"✓ done", Cooking recipe "✏️ change", Wishlist "🗑" (two-tap?), Review "⏭ skip".
+ D. Filter/realm chips with no visible change at all (not even highlight): Your Year "weeks", challenges realm list, Catalogue "scholar ✓/hustler ✓/chef ✓/life ✓", Life Library filters, Current stock "pantry/all", Work "all", Plans "🧳 plans" tab, My Day "day".
