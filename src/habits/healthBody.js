@@ -517,7 +517,7 @@ RPGACE.register('healthBody', {
       var wtl = document.createElement('div'); wtl.style.cssText = 'font-size:14px;color:var(--text);';
       wtl.innerHTML = '⚖️ ' + (b.weight != null ? b.weight + ' kg today' : 'Weight') + (avg != null ? '<br><span style="font-size:12px;color:var(--muted);">7-day average ' + avg + ' kg' + (s.weight_goal_kg ? ' · goal ' + s.weight_goal_kg + ' kg' : '') + '</span>' : '');
       var wi = U._inp('number', 'hb-weight-in', '', 'kg');
-      var ws = U._btn('Save', ''); ws.id = 'hb-weight-save';
+      var ws = U._btn('Save', ''); ws.id = 'hb-weight-save'; RPGACE.kit.needs(ws, wi, 'Type your weight first');
       ws.onclick = function() { if (wi.value === '') return; ws.disabled = true; L.addBody('weight', wi.value, day).then(redraw).catch(function(e) { ws.disabled = false; U._toastErr(e); }); };
       wt.appendChild(wtl); wt.appendChild(wi); wt.appendChild(ws); body.appendChild(wt);
       wt.hidden = b.weight == null && avg == null;
@@ -533,7 +533,7 @@ RPGACE.register('healthBody', {
         sl.appendChild(c);
       });
       var si = U._inp('number', 'hb-sleep-in', '', 'h'); si.style.width = '70px';
-      var ss = U._btn('Save', ''); ss.id = 'hb-sleep-save';
+      var ss = U._btn('Save', ''); ss.id = 'hb-sleep-save'; RPGACE.kit.needs(ss, si, 'Type hours slept first');
       ss.onclick = function() { if (si.value === '') return; ss.disabled = true; L.addBody('sleep', si.value, day).then(redraw).catch(function(e) { ss.disabled = false; U._toastErr(e); }); };
       sl.appendChild(si); sl.appendChild(ss); body.appendChild(sl);
       sl.hidden = b.sleep != null;

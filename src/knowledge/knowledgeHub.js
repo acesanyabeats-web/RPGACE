@@ -239,7 +239,7 @@ RPGACE.register('knowledgeHub', {
       var ta = document.createElement('textarea'); ta.id = 'kh-takein-text'; ta.rows = 3; ta.placeholder = 'Paste a link or any text…';
       ta.style.cssText = 'width:100%;box-sizing:border-box;min-height:80px;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--panel2);color:var(--text);font:inherit;font-size:15px;resize:vertical;';
       var go = document.createElement('button'); go.type = 'button'; go.id = 'kh-takein-go'; go.className = 'kh-btn kh-go'; go.textContent = '⚡ Analyse';
-      go.style.cssText = 'width:100%;margin:8px 0 14px;';
+      go.style.cssText = 'width:100%;margin:8px 0 14px;'; RPGACE.kit.needs(go, ta, 'Paste a link or some text first');
       go.onclick = function() {
         var v = ta.value.trim(); if (!v) { ta.focus(); return; }
         var si = RPGACE.modules.shareInbox; if (!si) return;

@@ -4074,7 +4074,7 @@ RPGACE.register('myDay', {
       var inCss = 'min-height:44px;padding:6px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:15px;font-family:inherit;';
       var nm = document.createElement('input'); nm.type = 'text'; nm.id = 'tk-add-name'; nm.placeholder = 'New step…'; nm.style.cssText = inCss + 'flex:1 1 160px;min-width:0;';
       var mn = document.createElement('input'); mn.type = 'number'; mn.id = 'tk-add-mins'; mn.min = '1'; mn.value = '15'; mn.setAttribute('aria-label', 'Minutes'); mn.style.cssText = inCss + 'width:70px;';
-      var go = K.btn('Add', 'primary'); go.id = 'tk-add-free';
+      var go = K.btn('Add', 'primary'); go.id = 'tk-add-free'; K.needs(go, nm, 'Name the step first');
       var put = function(item) {
         go.disabled = true;
         L.addToBlock(b, item).then(function() { pop.close(); RPGACE.utils.toast('+ ' + item.label + ' added', 'var(--gold)', 1800); if (done) done(); }, function(e) { go.disabled = false; RPGACE.utils.toast('⚠️ ' + (e.message || e), '#CC4A4A', 3500); });
@@ -4323,7 +4323,7 @@ RPGACE.register('myDay', {
         });
         var own = document.createElement('div'); own.style.cssText = 'display:flex;gap:6px;margin:8px 0;';
         var oi = document.createElement('input'); oi.type = 'text'; oi.id = 'tk-log-own'; oi.placeholder = 'e.g. Met up with 2 friends'; oi.style.cssText = inCss + 'flex:1;min-width:0;';
-        var ob = K.btn('+ Add', ''); ob.id = 'tk-log-own-add';
+        var ob = K.btn('+ Add', ''); ob.id = 'tk-log-own-add'; K.needs(ob, oi, 'Type what you did first');
         ob.onclick = function() { var v = oi.value.trim(); if (!v) return; picked.push({ key: 'o' + Date.now(), own: true, label: v, item: { src: 'own', label: v } }); drawBody(); };
         own.appendChild(oi); own.appendChild(ob); body.appendChild(own);
         var sv = K.btn('✓ Save — I did these', 'primary'); sv.id = 'tk-log-save'; sv.disabled = !picked.length;
@@ -5306,7 +5306,7 @@ RPGACE.register('myDay', {
           var q = document.createElement('div'); q.style.cssText = 'font-size:14px;color:var(--text);'; q.textContent = label;
           var inp = document.createElement('input'); inp.id = 'myday-miss-input'; inp.type = type || 'text'; inp.placeholder = ph || ''; inp.style.cssText = field;
           if (type === 'time') { var n = new Date(); inp.value = String(n.getHours()).padStart(2, '0') + ':' + String(Math.floor(n.getMinutes() / 5) * 5).padStart(2, '0'); }
-          var ok = U._btn('Next', 'primary'); ok.id = 'myday-miss-ok';
+          var ok = U._btn('Next', 'primary'); ok.id = 'myday-miss-ok'; RPGACE.kit.needs(ok, inp, 'Fill this in first');
           ok.onclick = function() { var v = inp.value.trim(); if (!v) return; ok.disabled = true; cb(v, ok); };
           list.appendChild(q); list.appendChild(inp); list.appendChild(ok);
           setTimeout(function() { try { inp.focus(); } catch (x) {} }, 50);
@@ -6049,7 +6049,7 @@ RPGACE.register('myDay', {
         var row = document.createElement('div'); row.style.cssText = 'display:flex;gap:8px;margin:10px 0 6px;';
         var inp = document.createElement('input'); inp.type = 'text'; inp.id = 'mdp-ctx-own'; inp.placeholder = 'Type your own, e.g. pork belly';
         inp.style.cssText = 'flex:1;min-width:0;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;padding:8px;min-height:40px;font-family:inherit;';
-        var add = self.ui._btn('Use', 'primary'); add.id = 'mdp-ctx-add';
+        var add = self.ui._btn('Use', 'primary'); add.id = 'mdp-ctx-add'; RPGACE.kit.needs(add, inp, 'Type your own first');
         add.onclick = function() {
           var v = inp.value.trim(); if (!v) return;
           add.disabled = true;
@@ -6147,7 +6147,7 @@ RPGACE.register('myDay', {
           var row = document.createElement('div'); row.style.cssText = 'display:flex;gap:8px;margin:8px 0;';
           var inp = document.createElement('input'); inp.type = 'text'; inp.id = 'mdp-pb-own'; inp.placeholder = 'Something else…';
           inp.style.cssText = 'flex:1;min-width:0;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;padding:8px;min-height:40px;font-family:inherit;';
-          var addB = self.ui._btn('+ Add', ''); addB.id = 'mdp-pb-add';
+          var addB = self.ui._btn('+ Add', ''); addB.id = 'mdp-pb-add'; RPGACE.kit.needs(addB, inp, 'Type it first');
           addB.onclick = function() { var v = inp.value.trim(); if (!v) return; var o = { src: 'own', label: v, mins: 15, earns: 'tick' }; o.key = L.itemKey(o); pick[o.key] = o; opts.push(Object.assign({ score: 0 }, o)); showAll = true; draw(); };
           row.appendChild(inp); row.appendChild(addB);
           pop.box.appendChild(row);
@@ -6717,7 +6717,7 @@ RPGACE.register('myDay', {
       var nr = document.createElement('div'); nr.style.cssText = 'display:flex;gap:6px';
       var nt = document.createElement('input'); nt.type = 'text'; nt.id = 'myday-be-new'; nt.maxLength = 80; nt.placeholder = which === 'morning' ? 'or a new task, e.g. Glass of water' : 'or a new task, e.g. Phone on charge'; nt.style.cssText = inCss + ';flex:1;min-width:0';
       var nm = document.createElement('input'); nm.type = 'number'; nm.id = 'myday-be-newmins'; nm.min = '1'; nm.max = '240'; nm.value = '5'; nm.setAttribute('aria-label', 'Minutes'); nm.style.cssText = inCss + ';width:64px';
-      var nb = U._btn('Add', ''); nb.id = 'myday-be-add';
+      var nb = U._btn('Add', ''); nb.id = 'myday-be-add'; RPGACE.kit.needs(nb, nt, 'Type the task first');
       nb.onclick = function() {
         var title = nt.value.trim();
         if (!title) { nt.focus(); return; }
@@ -7977,7 +7977,7 @@ RPGACE.register('myDay', {
               ownBox.appendChild(d);
             });
           };
-          var addB = self.ui._btn('Add', ''); addB.id = 'mdp-realm-own-add';
+          var addB = self.ui._btn('Add', ''); addB.id = 'mdp-realm-own-add'; RPGACE.kit.needs(addB, inp, 'Type the activity first');
           var addOwn = function() { var v = inp.value.trim(); if (!v) return; pick['own:' + v] = { src: 'own', label: v, mins: 15, earns: 'tick' }; inp.value = ''; drawOwn(); paint(); };
           addB.onclick = addOwn;
           inp.onkeydown = function(ev) { if (ev.key === 'Enter') { ev.preventDefault(); addOwn(); } };
@@ -8119,7 +8119,7 @@ RPGACE.register('myDay', {
         var inp = document.createElement('input');
         inp.type = 'text'; inp.id = 'mdp-own-input'; inp.placeholder = 'e.g. batteries, bin bags';
         inp.style.cssText = 'flex:1;min-width:0;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;padding:8px;min-height:40px;font-family:Rajdhani,sans-serif;';
-        var addB = self.ui._btn('Add', ''); addB.id = 'mdp-own-add';
+        var addB = self.ui._btn('Add', ''); addB.id = 'mdp-own-add'; RPGACE.kit.needs(addB, inp, 'Type what you\'re getting first');
         var addOwn = function() { var v = inp.value.trim(); if (!v) return; own.push(v); inp.value = ''; drawOwn(); };
         addB.onclick = addOwn;
         inp.onkeydown = function(ev) { if (ev.key === 'Enter') { ev.preventDefault(); addOwn(); } };

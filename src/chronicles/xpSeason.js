@@ -2063,7 +2063,7 @@ RPGACE.register('xpSeason', {
         var ownRealm = document.createElement('select'); ownRealm.className = 'xp-own-realm';
         ownRealm.style.cssText = 'padding:6px 8px;min-height:36px;border:1px solid var(--border);border-radius:6px;background:var(--panel2);color:var(--text);font-family:inherit;font-size:13px;';
         ownRealm.innerHTML = S.ORDER.map(function(r) { return '<option value="' + r + '">' + S.REALMS[r].icon + ' ' + S.REALMS[r].name + '</option>'; }).join('');
-        var ownAdd = U._btn('+ Add', 'xp-own-add');
+        var ownAdd = U._btn('+ Add', 'xp-own-add'); RPGACE.kit.needs(ownAdd, ownIn, 'Type your challenge first');
         ownAdd.onclick = function() {
           var t = ownIn.value.trim(); if (!t) return;
           var c = { realm: ownRealm.value, title: t.slice(0, 80), target: 1, source: 'alex', manual: true };

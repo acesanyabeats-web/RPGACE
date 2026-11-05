@@ -447,7 +447,7 @@ RPGACE.register('screenshotInbox', {
         var price = self.ui._input('shot-wish-price-' + r.id, '', '£ estimated price (optional)', 'number');
         price.step = '0.01'; price.min = '0';
         var why = self.ui._input('shot-wish-why-' + r.id, '', 'Why do you want it? (optional)');
-        var go = self.ui._btn('Add to Wishlist', 'primary');
+        var go = self.ui._btn('Add to Wishlist', 'primary'); RPGACE.kit.needs(go, name, 'Name the item first');
         go.onclick = function() {
           var n = name.value.trim(); if (!n) { name.focus(); return; }
           go.disabled = true; go.textContent = 'Adding…';
@@ -457,7 +457,7 @@ RPGACE.register('screenshotInbox', {
         bar.appendChild(cancel); bar.appendChild(go);
       } else if (kind === 'idea') {
         var txt = self.ui._input('shot-idea-' + r.id, self.logic.summary(r).slice(0, 600), 'The idea, in your words', 'area');
-        var save = self.ui._btn('Save idea card', 'primary');
+        var save = self.ui._btn('Save idea card', 'primary'); RPGACE.kit.needs(save, txt, 'Write the idea first');
         save.onclick = function() {
           var v = txt.value.trim(); if (!v) { txt.focus(); return; }
           save.disabled = true; save.textContent = 'Saving…';

@@ -29,3 +29,11 @@ Q tagging: "Free word scan, Oracle on tap (Recommended)"
 Q use: "1 and if I don't like the change, I either reject sub or talk to oracle to change it. This form could become live now universal tbf"
   -> transcripts on the recipe + Make recipe changes -> each proposed change: accept / reject / talk to Oracle to change it. Future: the same transcript form for every Live now session (universal) - logged as a future plan item.
 Q AR build: "Do all AR (Recommended)"
+
+AR progress: AR-1 built (kit.needs + 16 sites guarded, checker baseline 1 false positive); AR-2 checked: every flagged chip already has a selected look, the crawler tapped already-selected chips -> nothing removed; AR-3 scripts/audit/ui_diff.py + rule in docs/claude/oversight.md; AR-4 docs/audit/phone_checklist_2026-11-05.md.
+
+Cook transcript plan (CT, for Alex's approval):
+CT-1 cook_chats gets planned_cook_id + transcript (readable text "21:42 You: ... / Oracle: ...") + line tags; Live now and Cook Mode both write them through one helper.
+CT-2 free word scan colours each line (green substitution, orange timing/heat, red problem/fix, blue technique, purple taste/seasoning, white other); "Re-check colours" = one Oracle call (mechanical model) per transcript.
+CT-3 recipe shows "Cook transcripts" (newest first, cook date): coloured lines, colour filter; "Make recipe changes" = one Oracle call over green/orange/red lines + the recipe -> proposed changes, each Accept / Reject / Talk to Oracle (opens Oracle with the change, Oracle revises it). Accepted changes go through the existing steps review (steps_previous kept for undo).
+Future (blue): same transcript form for every Live now session.

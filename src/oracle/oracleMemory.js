@@ -123,7 +123,7 @@ RPGACE.register('oracleMemory', {
       var add = document.createElement('div'); add.style.cssText = 'display:flex;gap:6px;margin-top:10px;';
       var ai = document.createElement('input'); ai.type = 'text'; ai.id = 'om-add'; ai.placeholder = 'Add something Oracle should know';
       ai.style.cssText = 'flex:1;min-width:0;min-height:44px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:15px;font-family:inherit;';
-      var ab = K.btn('+ Add', 'primary'); ab.id = 'om-add-btn';
+      var ab = K.btn('+ Add', 'primary'); ab.id = 'om-add-btn'; K.needs(ab, ai, 'Write at least 3 letters', 3);
       ab.onclick = function() {
         var t = ai.value.trim(); if (t.length < 3) return;
         ab.disabled = true;

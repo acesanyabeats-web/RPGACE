@@ -8,6 +8,7 @@ Present tense, one fact per line. Plan "Caps and Central Kit" CK-6/CK-7 ([story]
 - `readPrivate(table, params)` — RLS-private tables via `/api/data-write` action `read` after sign-in (`PRIVATE_READ_TABLES`); `[]` when signed out.
 - `btn(label, kind)` — 44px thumb button, `'primary'` gold fill or outline.
 - `armConfirm(btn, onConfirm, armedLabel)` — two-tap destructive confirm, 3s timeout (Building guide 8).
+- `needs(btn, inputs, msg, min)` — a button that needs something typed: greyed (`aria-disabled`) while a box is empty; an empty tap shows `msg`, focuses the box and stops the button's own handler (AR-1, Nov 5 2026). `scripts/check_silent_empty.py` fails on a new silent empty-input handler.
 - `pickList(host, items, onPick, {id, itemClass, empty, max})` — searchable list (search box past 6 items); `opts.id` gives `<id>-q` / `<id>-list`.
 - Switched over (Oct 28): `myDay`, `doingNow`, `tripPlans` `_btn`; `tripPlans.logic.read`; `healthBody._arm`; the GM-7 source picker in `myDay.ui.pickContext`.
 - `scripts/check_kit_copies.py` counts private copies left (esc, btn, iso, addDays, arm, data-write reads) and fails when a count rises above its BASELINE; lower the baseline in the same commit that switches a module over.

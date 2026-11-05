@@ -55,6 +55,25 @@ RPGACE.register('kit', {
         (kind === 'primary' ? 'background:var(--gold);border:none;color:#111;' : 'background:none;border:1px solid var(--border);color:var(--text);');
       return b;
     },
+    // AR-1 (Nov 5 2026, Alex: "Both" - grey until filled + a message if tapped anyway): a button that needs
+    // something typed first. Greyed (aria-disabled) while any of its boxes is empty; a tap then says what's
+    // missing and puts the cursor in the empty box, and the button's own handler doesn't run. min = minimum length.
+    needs: function(btn, inputs, msg, min) {
+      if (!btn) return btn;
+      inputs = [].concat(inputs).filter(Boolean); min = min || 1;
+      var emptyOne = function() { return inputs.filter(function(i) { return String(i.value == null ? '' : i.value).trim().length < min; })[0] || null; };
+      var paint = function() { var e = !!emptyOne(); btn.style.opacity = e ? '0.45' : ''; btn.setAttribute('aria-disabled', e ? 'true' : 'false'); };
+      inputs.forEach(function(i) { i.addEventListener('input', paint); i.addEventListener('change', paint); });
+      btn.addEventListener('click', function(ev) {
+        var e = emptyOne(); if (!e) return;
+        ev.stopImmediatePropagation(); ev.preventDefault();
+        if (RPGACE.utils && RPGACE.utils.toast) RPGACE.utils.toast(msg || 'Fill this in first', 'var(--muted)', 2000);
+        try { e.focus(); } catch (x) {}
+      }, true);
+      btn.addEventListener('click', function() { setTimeout(paint, 0); });
+      paint();
+      return btn;
+    },
     // Building guide 8: destructive buttons arm on the first tap, act on the second within 3s.
     armConfirm: function(btn, onConfirm, armedLabel) {
       var armed = false, t = null, label = btn.textContent;

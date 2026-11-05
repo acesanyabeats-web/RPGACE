@@ -697,6 +697,7 @@ RPGACE.register('beatLog', {
       var addIn = document.createElement('input'); addIn.id = 'bl-stem-add'; addIn.type = 'text'; addIn.maxLength = 40; addIn.placeholder = '+ add a stem'; addIn.style.cssText = inCss + 'flex:1;';
       var addBtn = document.createElement('button'); addBtn.type = 'button'; addBtn.id = 'bl-stem-add-btn'; addBtn.textContent = '+ add';
       addBtn.style.cssText = 'min-height:40px;padding:6px 14px;background:none;border:1px solid #9B6EC8;border-radius:6px;color:#C9A8F0;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;';
+      RPGACE.kit.needs(addBtn, addIn, 'Type the stem name first');
       addBtn.onclick = function() { var v = addIn.value.trim(); if (!v) return; ui._stemChip(chips, v.slice(0, 40), true); addIn.value = ''; };
       addIn.onkeydown = function(e) { if (e.key === 'Enter') { e.preventDefault(); addBtn.click(); } };
       addRow.appendChild(addIn); addRow.appendChild(addBtn); w3.appendChild(addRow);
