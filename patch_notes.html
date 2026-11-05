@@ -74,6 +74,17 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-05-rp7" style="margin-bottom:30px;">
+    <div class="card-title">🔮 Nov 5: the evening review is now a questionnaire, by realm, 5 each, yes/no + why, yeses planned (RP-7) + feedback findings join it (FF-4)</div>
+    <div class="card-body">
+      Alex: "proper questionnaire to plan, run it on /interrogation logic"; "separated by realms in foldable rows, and don't overwhelm me with these, 5 each by urgency and importance, with yes/no why and plan on yeses"; "Frame first, Producer first"; go: "Do RP 7, then ff 4 straight away". Defaults from the brief: Today's summary folded on top; a Yes plans a block tomorrow if time-shaped else a task, shown before saving; one at a time with See all.
+      <ul><li>New module <code>eveningQuestionnaire</code>: gathers the day (not done, nothing logged, tomorrow, red trackers, new tasks, tonight notes incl. missed video lessons, today's take-ins, money) and makes <b>one</b> Oracle call per evening (prompt <code>prompts/evening_questions.md</code>). Answers and plans are kept in one journal row per day, so reopening costs nothing.</li>
+      <li>Cards: Yes / No + "Why?". A Yes with a plan shows "Plan: a 30 min block tomorrow · …" with Save plan / Yes, no plan.</li>
+      <li><b>FF-4:</b> new private table <code>feature_findings</code>; open findings show as 🧪 questions in their realm (no Oracle call) and the answer is saved back on the finding. Nothing writes findings yet: FF-1..3 (the session-start review) is next.</li>
+      <li>The day summary (Done / Planned vs did / What happened) now sits folded under "📋 Today"; the note and Save stay visible.</li>
+      <li>Tested headless (10 checks with a stubbed Oracle reply); 11 older suites, one expected change (md6 reads the folded summary). <b>Untested on Alex's phone and with a real Oracle reply.</b></li></ul>
+    </div>
+  </div>
 <div class="card" id="card-2026-11-05-rp6" style="margin-bottom:30px;">
     <div class="card-title">❓ Nov 5: video write-ups show your why vs what it taught; missed lessons become tonight's notes (RP-6)</div>
     <div class="card-body">

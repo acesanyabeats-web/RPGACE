@@ -5649,9 +5649,19 @@ RPGACE.register('myDay', {
       var pop = dd._popup({ eyebrow: opts.catchUp ? '🌙 Yesterday\'s review' : '🌙 Evening review', title: new Date(day + 'T12:00:00').toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' }), accent: 'var(--gold)', width: '600px', closeLabel: 'Close',
         onClose: opts.catchUp ? function() { setTimeout(next, 0); } : null });
       pop.box.id = 'myday-evening';
-      var body = document.createElement('div'); body.id = 'myday-evening-body';
+      // RP-7: the questionnaire leads; the day's summary sits folded under "📋 Today".
+      if (RPGACE.modules.eveningQuestionnaire) RPGACE.modules.eveningQuestionnaire.ui.mount(pop.box, day);
+      var tdHead = document.createElement('button'); tdHead.type = 'button'; tdHead.id = 'myday-evening-today';
+      tdHead.style.cssText = 'width:100%;min-height:44px;display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:10px;background:none;color:var(--text);font:inherit;font-weight:700;padding:8px 12px;cursor:pointer;text-align:left;';
+      tdHead.setAttribute('aria-expanded', 'false');
+      var body = document.createElement('div'); body.id = 'myday-evening-body'; body.hidden = !!RPGACE.modules.eveningQuestionnaire;
+      tdHead.textContent = (body.hidden ? '▸' : '▾') + ' 📋 Today: done, planned vs did, what happened';
+      tdHead.onclick = function() { body.hidden = !body.hidden; tdHead.setAttribute('aria-expanded', body.hidden ? 'false' : 'true'); tdHead.textContent = (body.hidden ? '▸' : '▾') + ' 📋 Today: done, planned vs did, what happened'; };
       body.innerHTML = '<div style="font-size:13px;color:var(--muted);">Loading your day…</div>';
+      if (RPGACE.modules.eveningQuestionnaire) pop.box.appendChild(tdHead);
       pop.box.appendChild(body);
+      // RP-7: the note + Save stay visible under the fold.
+      var foot = document.createElement('div'); foot.id = 'myday-evening-foot'; pop.box.appendChild(foot);
       var moved = [], xpToday = 0, didM = null;
       var head = function(t) { var h = document.createElement('div'); h.style.cssText = 'font-size:13px;font-weight:700;color:var(--text);margin:12px 0 4px;'; h.textContent = t; return h; };
       var draw = function() {
@@ -5781,7 +5791,7 @@ RPGACE.register('myDay', {
         lab.textContent = opts.catchUp ? 'One line about that day (optional)' : 'One line about today (optional)';
         var ta = document.createElement('textarea'); ta.id = 'myday-evening-note'; ta.rows = 2;
         ta.style.cssText = 'background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;padding:8px;font-family:Rajdhani,sans-serif;width:100%;box-sizing:border-box;resize:vertical;margin-top:4px;';
-        lab.appendChild(ta); body.appendChild(lab);
+        lab.appendChild(ta); foot.innerHTML = ''; foot.appendChild(lab);
         var bar = document.createElement('div'); bar.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;margin-top:10px;';
         var rv = L.reviewTarget(new Date());
         if (rv && self._lastReview !== rv) {
@@ -5806,6 +5816,7 @@ RPGACE.register('myDay', {
             var leftN = L.bookendTasks('night').filter(function(r) { var lg = L.todayLog(r, self._logs || [], day) || L.todayLog(r, self._logs || [], L.iso()); return !(lg && lg.status === 'completed'); });
             if (leftN.length) {
               RPGACE.utils.toast('🌙 Tick ' + leftN.map(function(r) { return (r.icon ? r.icon + ' ' : '') + r.title; }).join(', ') + ' first', '#e0a84c', 3500);
+              if (body.hidden) tdHead.click();
               var nc = document.getElementById('myday-evening-night'); if (nc) nc.scrollIntoView({ behavior: 'smooth', block: 'center' });
               return;
             }
@@ -5824,7 +5835,7 @@ RPGACE.register('myDay', {
             next();
           }).catch(function(e) { sv.disabled = false; sv.textContent = svLabel; RPGACE.utils.toast('⚠️ Not saved: ' + (e.message || e), '#CC4A4A', 4000, 'myDay'); });
         };
-        bar.appendChild(sv); body.appendChild(bar);
+        bar.appendChild(sv); foot.appendChild(bar);
       };
       // WR-3: a tick anywhere in the review redraws it, so a done Action leaves "Not done" at once.
       var onTick = function() { if (!document.body.contains(pop.box)) { RPGACE.hooks.off('myday:ticked', onTick); return; } setTimeout(function() { L.load().then(draw, draw); }, 150); };
