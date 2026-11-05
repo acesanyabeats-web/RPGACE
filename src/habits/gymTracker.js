@@ -229,7 +229,13 @@ RPGACE.register('gymTracker', {
       var inp = 'background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:14px;padding:8px;font-family:Rajdhani,sans-serif;min-width:0;width:100%;box-sizing:border-box;';
       var dl = document.createElement('datalist');
       dl.id = 'gym-ex-list';
-      self.logic.exercises(sessions).forEach(function(x) { var o = document.createElement('option'); o.value = x; dl.appendChild(o); });
+      // Suggestions = your past exercises + the whole exercise library (starters
+      // + ones kept from videos), one list, no repeats. Alex Nov 5: "I also
+      // can't find those exercises in the gym section".
+      var seenEx = {}, addOpt = function(x) { var k = String(x || '').trim().toLowerCase(); if (!k || seenEx[k]) return; seenEx[k] = 1; var o = document.createElement('option'); o.value = x; dl.appendChild(o); };
+      self.logic.exercises(sessions).forEach(addOpt);
+      var XL = RPGACE.modules.exerciseLibrary;
+      if (XL) { XL.logic.merge([]).forEach(function(x) { addOpt(x.name); }); XL.logic.load().then(function(r) { XL.logic.merge(r).forEach(function(x) { addOpt(x.name); }); }).catch(function() {}); }
       pop.box.appendChild(dl);
       var top = document.createElement('div');
       top.style.cssText = 'display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;';

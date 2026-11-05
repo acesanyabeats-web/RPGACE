@@ -246,7 +246,7 @@ RPGACE.register('exerciseLibrary', {
     mountGym: function(box) {
       var self = RPGACE.modules.exerciseLibrary, U = self.ui;
       var row = document.createElement('div'); row.id = 'gym-exlib'; row.style.cssText = 'display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:16px;';
-      var lib = U._btn('📚 Exercise library & combos'); lib.id = 'gym-exlib-open'; lib.onclick = function() { U.open(); };
+      var lib = U._btn('📚 Exercises (' + self.STARTER.length + '+) · pick by muscle, build a combo'); lib.id = 'gym-exlib-open'; lib.onclick = function() { U.open(); };
       row.appendChild(lib); box.appendChild(row);
       self.logic.pending().then(function(list) {
         if (!list.length || !row.isConnected) return;
