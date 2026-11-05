@@ -1,0 +1,15 @@
+Best-before dates + use soon / throw out (BB) - Nov 5 2026. Verbatim.
+
+Alex: "Also when I log ingredients, ask for best before, with those timers telling me what's going out in 5 days with countdown each day. This way I have a throw out list and a use soon. Oracle can give suggestions on things to use from use soon to minimise wastage"
+
+Q: Where should the app ask for a best-before date? (79 items in stock, none dated)
+A: "Putting away after a shop,Adding stock by hand,Fridge/cupboard photo,With 4, most things will be fine (freezer and pantry hold items that mostly don't spoil with time, although more research into frozen must be done) on new shop everything fresh in fridge will be a must. Pak foods veg and meat do not show best before, so using data from health and food safety organisations would be the way to go, when I log ingredient, I tap no best before, oracle in pop up says what it should be, I either accept or continue convo to reach a resolution on how many days"
+
+Q: How should the daily countdown reach you?
+A: "Morning push + lists (Recommended)"
+
+Q: Same thing bought again before the first runs out (two dates)?
+A: "Keep both, but in using ingredient nudge me to use older, then when I used up old, I tick that and new date replaces it"
+
+Q: When something passes its date, what should Throw out do?
+A: "Ask, then log waste (Recommended)"
