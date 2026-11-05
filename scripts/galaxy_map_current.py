@@ -183,7 +183,7 @@ PLAIN_ENGLISH = {
     },
     ('refCorpus', 'findMatches'): {
         'anchor': '  findMatches: function(bpm, mood, scale, energy, genre) {',
-        'lines': (31226, 31322),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 27903-27936; span = real function start to its closing line; 2+ matches, picked the real implementation over the pass-through wrapper
+        'lines': (31342, 31438),  # re-verified Oct 13 2026 (drift from the LL/TP/XP builds), was 27903-27936; span = real function start to its closing line; 2+ matches, picked the real implementation over the pass-through wrapper
         'headline': 'Given a beat\'s tags, scores every reference track in the corpus and returns the closest ones.',
         'input': 'Five values off the beat: BPM, mood, scale, energy and genre. Missing BPM defaults to 130 and missing energy to 3, so it never fails on a half-filled form.',
         'does': 'Pulls the most recent 200 reference tracks and gives each one a score. Tempo is worth the most: within 5 BPM scores 4, within 10 scores 3, within 15 scores 1, and anything further away actively loses 2 points. A matching mood or genre adds 3 each, a matching scale adds 2, and an energy rating within one step adds 2. Anything that ends up at zero or below is dropped, and what is left comes back sorted best-first.',
@@ -193,7 +193,7 @@ PLAIN_ENGLISH = {
     },
     ('visualOracle', '_saveDocToProduction'): {
         'anchor': '  _saveDocToProduction: function(docSlug, text, productionId) {',
-        'lines': (8281, 8299),  # re-verified Oct 17 2026 (PC-6 trimmed it to a plain save); 2 matches, picked the real implementation over the pass-through wrapper
+        'lines': (8300, 8318),  # re-verified Oct 17 2026 (PC-6 trimmed it to a plain save); 2 matches, picked the real implementation over the pass-through wrapper
         'headline': 'Files a document Oracle just produced onto a beat, under its own name.',
         'input': 'A slug naming the document (e.g. `beat_meta`, `beat_log_response`, `mood_board`), the text itself, and the id of the beat (a `content_productions` row) it belongs to.',
         'does': 'If no beat is given it stops with a visible warning rather than dropping the text silently. Otherwise it reads the beat\'s existing documents, adds this one under its slug and saves the lot back. Since Oct 17 2026 (PC-6) it no longer moves any stage forward and no longer parses director or storyboard trailers - those belonged to the retired video tools.',
@@ -203,7 +203,7 @@ PLAIN_ENGLISH = {
     },
     ('conidPot', '_quickDetectPhyla'): {
         'anchor': '  _quickDetectPhyla: function(text) {',
-        'lines': (32186, 32195),  # re-verified Oct 14 2026 (XP-5/XP-6 drift; old span had slid 9 lines early), was 31266-31275; span = real function start to its closing line; 2+ matches, picked the real implementation over the pass-through wrapper
+        'lines': (32211, 32220),  # re-verified Oct 14 2026 (XP-5/XP-6 drift; old span had slid 9 lines early), was 31266-31275; span = real function start to its closing line; 2+ matches, picked the real implementation over the pass-through wrapper
         'headline': 'A free, instant guess at which taxonomy phyla an idea belongs to — plain keyword spotting, no AI involved.',
         'input': 'One string: the text of a content idea.',
         'does': 'Lowercases it and checks for a handful of giveaway words. Drums, 808 or kick suggests phylum 2; mix, EQ or compress suggests 4; FL Studio, plugin or VST suggests 6; tutorial, teach or learn suggests 12; YouTube, Instagram or content suggests 13. It returns whichever numbers matched, and an empty list is a perfectly normal answer.',
