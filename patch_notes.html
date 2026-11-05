@@ -74,6 +74,16 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-05-cookchat" style="margin-bottom:30px;">
+    <div class="card-title">🍳 Nov 5: Cook chats save themselves; Ask box readable with the keyboard up</div>
+    <div class="card-body">
+      Alex: "I just cooked a chocolate cake, did that oracle chat save? If not, it should be automatic after every cook. Also the text field while typing the message in oracle ask chat in live cook was way too small, not readable at all when keyboard is unsheathed".
+      <ul><li><b>Root cause:</b> Live now's Ask box sends through the main Oracle chat, which saves to <code>oracle_chats</code> only when the full round trip succeeds and failed quietly (console only). Cook Mode's own chat saves to <code>cook_chats</code>, but Live now never did. Evidence: the cake cook was marked cooked at 23:05 Nov 4; no <code>cook_chats</code> row and no in-cook <code>oracle_chats</code> rows that evening. Those messages are not recoverable.</li>
+      <li><b>Fix:</b> during a cooking block (or a Chef session) every Ask Oracle question and reply is written to <code>cook_chats</code> as it happens (<code>realmTasks.ui._cookChatNote</code>), one row per cook (<code>cook_key live_&lt;planned cook&gt;</code>), linked to the recipe, so Finish cook isn't needed. A failed Oracle chat save now shows a toast.</li>
+      <li><b>Ask box:</b> full-width 3-line box at 17px that grows to 40% of the screen, Ask underneath, scrolled into the middle of the space above the keyboard when it opens. An empty Ask says "Type a question first".</li></ul>
+      <b>Flags:</b> harness-tested (cc 6/6, lm 12/12, rt 24/24, oa1 5/5, mdx 52/52). Untested on Alex's phone.
+    </div>
+</div>
 <div class="card" id="card-2026-11-04-rp2" style="margin-bottom:30px;">
     <div class="card-title">☰ Nov 4: Side menu by use — Today, then your realms (RP-2)</div>
     <div class="card-body">
