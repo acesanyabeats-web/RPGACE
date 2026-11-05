@@ -4100,6 +4100,12 @@ RPGACE.register('cookingOracle', {
         }, 'wish']];
       };
       var box = pop.box;
+      // ST-1 (Nov 5 2026): take this list shopping in Live now (which shop, wishlist too, basket ticks).
+      if (RPGACE.modules.shopTrip && RPGACE.modules.realmTasks) {
+        var shopLive = RPGACE.kit.btn('🛒 Shop live', 'primary'); shopLive.id = 'cs-shop-live'; shopLive.style.cssText += 'width:100%;margin-bottom:10px;';
+        shopLive.onclick = function() { pop.close(); RPGACE.modules.realmTasks.ui.openLive({ mode: 'shop', realm: 'chef' }); };
+        box.appendChild(shopLive);
+      }
       var loadingMsg = document.createElement('div');
       loadingMsg.style.cssText = 'font-size:12px;color:var(--muted);';
       loadingMsg.textContent = 'Loading list...';

@@ -22,9 +22,9 @@ RPGACE.register('realmPages', {
     creator: { page: 'posting', mod: 'postingHub', title: '🎬 Creator', tool: { key: 'posting', name: '📣 Posting', count: 'Idea → Plan → Record → Edit → Post', nodes: '*' } },
     hustler: { page: 'selling', mod: 'sellingHub', title: '💼 Hustler', tool: { key: 'selling', name: '💼 Selling', count: 'Beats for sale · outreach · log · money in', nodes: '*' } },
     steward: { page: 'money', mod: 'moneyHub', title: '💷 Steward', tool: { key: 'money', name: '💷 Money', count: 'In − out · subscriptions · receipts · software', nodes: '*' },
-      extras: [{ key: 'wishlist', name: '🛒 Wishlist', count: 'Future purchases vs budget', btns: [['🛒 Open Wishlist', 'card:wishlist']] }] },
+      extras: [{ key: 'wishlist', name: '🛒 Wishlist', count: 'Future purchases vs budget', btns: [['🛒 Open Wishlist', 'card:wishlist'], ['🛒 Shop now', 'shop']] }] },
     scholar: { page: 'knowledge', mod: 'knowledgeHub', title: '📚 Scholar', tool: { key: 'knowledge', name: '📚 Knowledge', count: 'Take in → Study → Learned → Review', nodes: '*' } },
-    chef: { page: 'realm', title: '🍳 Chef', tool: { key: 'cooking', name: '🍳 Cooking', count: 'Recipes, stock, planned cooks', btns: [['🍳 Open Cooking', 'card:cooking']] } },
+    chef: { page: 'realm', title: '🍳 Chef', tool: { key: 'cooking', name: '🍳 Cooking', count: 'Recipes, stock, planned cooks', btns: [['🍳 Open Cooking', 'card:cooking'], ['🛒 Shop now', 'shop']] } },
     athlete: { page: 'realm', title: '💪 Athlete', tool: { key: 'gym', name: '🏋️ Gym', count: 'This week, log a session, bests', draw: 'gym' },
       extras: [{ key: 'health', name: '❤️ Health & body', count: 'Food, weight, water, sleep', btns: [['❤️ Open Health & body', 'card:health']] }] },
     explorer: { page: 'realm', title: '✈️ Explorer', tool: { key: 'plans', name: '🧳 Plans', count: 'Trips, events, days out', btns: [['🧳 Open Plans', 'plans:plans'], ['💡 Outing ideas', 'plans:ideas']] } },
@@ -230,6 +230,8 @@ RPGACE.register('realmPages', {
       if (a[0] === 'plans') { if (M.tripPlans) M.tripPlans.open(a[1]); return; }
       if (a[0] === 'page') { var P = RPGACE.CONFIG.pages; if (typeof showPage === 'function') showPage(P[a[1]] || a[1]); return; }
       if (a[0] === 'decision') { if (M.decisionJournal) M.decisionJournal.ui.openLog(); return; }
+      // ST-1: a shop trip in Live now (shopTrip).
+      if (a[0] === 'shop') { if (M.realmTasks) M.realmTasks.ui.openLive({ mode: 'shop', realm: realm || 'chef' }); return; }
     },
     // A tool drawn in place: the existing screen, given the section body as its host.
     _drawTool: function(body, kind) {

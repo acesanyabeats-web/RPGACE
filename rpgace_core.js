@@ -94,6 +94,7 @@
 // @file src/habits/gymTracker.js
 // @file src/habits/exerciseLibrary.js
 // @file src/habits/gymLive.js
+// @file src/habits/shopTrip.js
 // @file src/habits/healthBody.js
 // @file src/schedule/myDay.js
 // @file src/schedule/alarmSounds.js

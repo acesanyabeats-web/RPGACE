@@ -74,6 +74,18 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-05-st" style="margin-bottom:30px;">
+    <div class="card-title">🛒 Nov 5: shopping mode in Live now - which shop, basket ticks, receipts, put away with photos, one read at the end (ST-1..5)</div>
+    <div class="card-body">
+      Alex: "a field asking what shop I'm at right now ... quick switches, then receipt to back up, drive oracle costs down by accumulating them"; "At the end of shop when I'm home, ask me if I'm done, then ask for receipt, then as I put everything away, if a new item without 2 pics is detected, ask me to take the 2 photos. Shopping is fully done once everything is logged"; known = "both photos, the shop bought, the brand and label at back ... if different shop, only log price per gram".
+      <ul><li><b>ST-1:</b> Live now has a 🛒 Shopping mode (doors: 🛒 Shop live on the grocery list, 🛒 Shop now on the Chef and Steward pages). Pick the shop (chips + type another), switch any time. Your newest grocery list + wishlist things you add, tap to tick into the basket; each tick remembers the shop. View as Groceries · Wishlist or By shop. Budget line: £ left of this week's limit + the wishlist picks.</li>
+      <li><b>ST-2:</b> 🏠 Finish shop, or opening the app 30+ min after the last tick, asks "Done shopping?". Then receipt photos (kept private, not read yet).</li>
+      <li><b>ST-3:</b> Put away: cupboard / fridge / freezer per item (guessed from last time). A product you've never logged asks for a front photo, a back-label photo and the brand; a known one (both photos + shop + brand) asks nothing, even from another shop or in another size. Skip for now leaves it to ask next time.</li>
+      <li><b>ST-4:</b> One batched Oracle read of all receipts + new labels (4 pictures a call). Review screen: totals and prices to check, label verdicts (🟢 Good / 🟠 Sometimes / 🔴 Avoid from additives, preservatives, sweeteners, trans fats and UK traffic lights), and "🎯 Set goal" when no cut-back covers it. Save it all writes: Groceries spend per receipt (wishlist things log their own spend), stock with the shop, price per g/ml per shop + brand, wishlist bought, the label on the product, then closes the list (leftovers to Top-up). The shop is only done when every write worked; otherwise it says what failed and stays open.</li>
+      <li><b>ST-5:</b> Oracle chat already takes photos with a question (📸), so no second camera: while a shop is open, Ask Oracle knows you're shopping and answers label questions with the harmful-substance and goal check.</li>
+      <li>New: <code>src/habits/shopTrip.js</code>, <code>prompts/shop_read.md</code>, tables <code>shop_trips</code>, <code>products</code>, column <code>pantry_stock.shop</code>; <code>RPGACE.utils.oracleVision</code> takes several pictures. Tested headless (31 checks, mocked data and Oracle reply). <b>Untested in a real shop, and the label read has not seen a real receipt or label yet.</b></li></ul>
+    </div>
+  </div>
 <div class="card" id="card-2026-11-05-gl" style="margin-bottom:30px;">
     <div class="card-title">🏋️ Nov 5: gym mode in Live now - tap muscles, pick exercises, log sets with a rest timer (GL-1..6)</div>
     <div class="card-body">

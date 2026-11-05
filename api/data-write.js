@@ -109,6 +109,8 @@ const ALLOWED_TABLES = new Set([
   'oracle_chats', // Oct 27 2026 FL-3 Oracle chat memory: locked (authenticated_all only), read via action 'read'
   'oracle_memory', // Nov 4 2026 D-2: Oracle's running memory lines (private, read via action 'read')
   'ui_usage', // Nov 4 2026 RP-2: which realm pages/homes Alex opens (menu order; private)
+  'shop_trips', // Nov 5 2026 ST: one shop trip (shopping -> home -> put away -> read -> done) (private)
+  'products', // Nov 5 2026 ST-3/4: a product with its front/back photos, brand, shop, label read and verdict (private)
   'feature_findings', // Nov 5 2026 FF-3/4: what the dev session thinks Alex likes/dislikes; answered in the evening questionnaire (private)
   'realm_tasks', 'realm_task_types', // Oct 27 2026 RT-1 realm task pool (+ dedup trigger): locked, read via action 'read'
   'perf_freezes', // Oct 14 2026 freeze recorder (perfWatch): locked (authenticated_all only), write-only from the app
@@ -220,7 +222,7 @@ const ALLOWED_TABLES = new Set([
 // Every access is this action, behind requireAuth() with the service-role
 // key - one more action on this file (rule 8: no 13th
 // api file). Ops: upload | update | list | count | delete.
-const PRIVATE_READ_TABLES = new Set(['feature_findings', 'travel_profile', 'people', 'plans', 'plan_tasks', 'memories', 'mission_contexts', 'library_items', 'xp_events', 'xp_rules', 'xp_ladders', 'xp_unlock_defs', 'xp_unlocks', 'xp_settings', 'xp_reports', 'xp_challenges', 'xp_quest_steps', 'xp_treats', 'outreach_log', 'cutback_items', 'cutback_log', 'food_log', 'body_log', 'health_settings', 'posts', 'artists', 'pitches', 'pitch_sends', 'subscriptions', 'software_inventory', 'drink_specs', 'cook_chats', 'work_links', 'oracle_chats', 'oracle_memory', 'ui_usage', 'realm_tasks', 'realm_task_types']); // work_links: Oct 27 2026 FL-7, clock-in/break/clock-out links (private, read-only here)
+const PRIVATE_READ_TABLES = new Set(['shop_trips', 'products', 'feature_findings', 'travel_profile', 'people', 'plans', 'plan_tasks', 'memories', 'mission_contexts', 'library_items', 'xp_events', 'xp_rules', 'xp_ladders', 'xp_unlock_defs', 'xp_unlocks', 'xp_settings', 'xp_reports', 'xp_challenges', 'xp_quest_steps', 'xp_treats', 'outreach_log', 'cutback_items', 'cutback_log', 'food_log', 'body_log', 'health_settings', 'posts', 'artists', 'pitches', 'pitch_sends', 'subscriptions', 'software_inventory', 'drink_specs', 'cook_chats', 'work_links', 'oracle_chats', 'oracle_memory', 'ui_usage', 'realm_tasks', 'realm_task_types']); // work_links: Oct 27 2026 FL-7, clock-in/break/clock-out links (private, read-only here)
 const SHOTS_BUCKET = 'screenshots';
 const SHOT_PATCH_FIELDS = ['extracted_text', 'description', 'tags', 'kind', 'suggestions', 'status', 'routed_to', 'read_at', 'realms'];
 // Realm Inputs RI-2: the 13 xpSeason realm keys a screenshot may carry (max 4).
@@ -266,8 +268,9 @@ async function handleScreenshots(body, res, serviceKey) {
       // RC-4: a milestone proof photo stays private and out of the inbox
       // (tag milestone_proof, status kept - never read, never fed to the Library).
       // SH-5b: a receipt photo is kept the same private way (tag receipt).
-      body: JSON.stringify(body.source === 'proof' || body.source === 'receipt'
-        ? { storage_path: path, mime: mediaType, source: 'upload', status: 'kept', tags: [body.source === 'receipt' ? 'receipt' : 'milestone_proof'], realms: cleanRealms(body.realms) }
+      // ST-3 (Nov 5 2026): product front/back photos are kept the same private way (tag product_photo).
+      body: JSON.stringify(body.source === 'proof' || body.source === 'receipt' || body.source === 'product'
+        ? { storage_path: path, mime: mediaType, source: 'upload', status: 'kept', tags: [body.source === 'receipt' ? 'receipt' : body.source === 'product' ? 'product_photo' : 'milestone_proof'], realms: cleanRealms(body.realms) }
         : { storage_path: path, mime: mediaType, source: body.source === 'share' ? 'share' : 'upload', realms: cleanRealms(body.realms) }),
     });
     const rows = await ins.json().catch(() => null);
@@ -297,7 +300,7 @@ async function handleScreenshots(body, res, serviceKey) {
     if (body.id) q += '&id=eq.' + encodeURIComponent(body.id);
     // RC-4: proof photos only show when asked for (a milestone's own view).
     // SH-5b: receipts likewise only when asked for (Money page).
-    q += body.proof ? '&tags=cs.%7Bmilestone_proof%7D' : body.receipt ? '&tags=cs.%7Breceipt%7D' : '&tags=not.ov.%7Bmilestone_proof,receipt%7D';
+    q += body.proof ? '&tags=cs.%7Bmilestone_proof%7D' : body.receipt ? '&tags=cs.%7Breceipt%7D' : body.product ? '&tags=cs.%7Bproduct_photo%7D' : '&tags=not.ov.%7Bmilestone_proof,receipt,product_photo%7D';
     const r = await sbFetch(q, serviceKey);
     const rows = await r.json().catch(() => null);
     if (!r.ok || !Array.isArray(rows)) return res.status(502).json({ error: 'List failed', detail: rows });
@@ -310,7 +313,7 @@ async function handleScreenshots(body, res, serviceKey) {
   // Realm Inputs RI-3: screenshots saved with "Not now" on the realm picker
   // (realms = {}), oldest first.
   if (op === 'held') {
-    const r = await sbFetch('/rest/v1/screenshots?select=id,description,created_at&realms=eq.%7B%7D&tags=not.ov.%7Bmilestone_proof,receipt%7D&order=created_at.asc&limit=50', serviceKey);
+    const r = await sbFetch('/rest/v1/screenshots?select=id,description,created_at&realms=eq.%7B%7D&tags=not.ov.%7Bmilestone_proof,receipt,product_photo%7D&order=created_at.asc&limit=50', serviceKey);
     const rows = await r.json().catch(() => null);
     if (!r.ok || !Array.isArray(rows)) return res.status(502).json({ error: 'Held list failed', detail: rows });
     return res.status(200).json({ data: rows });

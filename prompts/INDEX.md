@@ -16,6 +16,7 @@ built in `local_server/rpgace_intel.py` `insights_prompt`.
 - `receipt_read.md` - Money: reads a receipt photo (RECEIPT_SYSTEM)
 - `rota_read.md` - Shift sync: reads a work rota screenshot (shiftSync.logic.ROTA_SYSTEM)
 - `screenshot_read.md` - Screenshot Inbox: reads a screenshot (screenshotInbox.READ_SYSTEM)
+- `shop_read.md` - Shop trip read (ST-4, Nov 5 2026): one batched read of a shop trip's receipt photos and new products' label photos. shopTrip.logic.read, a few images per call
 - `tutor.md` - Shared opener for every Phylum Path / taxonomy tutor prompt (was copied 9 times in phylumPath). {subject} = the discipline
 
 ## Still written inline in code (candidates to move here)

@@ -12,6 +12,7 @@
 //   gym   -> gymTracker.ui.render (this week, Log a session, bests)
 //   work  -> workMode.ui.open({ host }) (clock in/break/out + drink specs)
 //   music -> beatsHub.logic.load() next list + Make / Mix / Log a beat
+//   shop  -> shopTrip.ui.draw (ST-1: which shop, list + wishlist, basket ticks)
 // No mode = the standard Live now (steps, timer, Done, Ask Oracle) + an Open
 // button to the action's own tool (OA-8).
 RPGACE.register('liveModes', {
@@ -21,7 +22,8 @@ RPGACE.register('liveModes', {
     cook:  { icon: '🍳', name: 'Cooking mode' },
     gym:   { icon: '🏋️', name: 'Gym mode' },
     work:  { icon: '💼', name: 'Work mode' },
-    music: { icon: '🎵', name: 'Music production mode' }
+    music: { icon: '🎵', name: 'Music production mode' },
+    shop:  { icon: '🛒', name: 'Shopping mode' }
   },
 
   logic: {
@@ -33,6 +35,7 @@ RPGACE.register('liveModes', {
       var b = ctx.block, r = ctx.realm || (b && b.realm) || null;
       if (ctx.mode && RPGACE.modules.liveModes.MODES[ctx.mode]) return ctx.mode;
       if (b && b.kind === 'cooking') return 'cook';
+      if (ctx.action && ctx.action.opens === 'shop') return 'shop';
       if (ctx.action && ctx.action.opens === 'gym') return 'gym';
       if (ctx.action && (ctx.action.opens === 'cook' || ctx.action.opens === 'cooking')) return 'cook';
       if (r === 'chef') return 'cook';
@@ -146,6 +149,13 @@ RPGACE.register('liveModes', {
           list.appendChild(b);
         });
       }, function(e) { self.ui._fail(list, 'your beats', e); });
+    },
+
+    // ST-1: a shop trip - which shop, the newest grocery list + wishlist picks, tick into the basket (shopTrip).
+    _shop: function(body) {
+      var st = RPGACE.modules.shopTrip;
+      if (!st) { body.textContent = 'Shopping is not loaded.'; return; }
+      st.ui.draw(body);
     },
 
     // OA-8: an Action with no mode still gets its own tool, one tap away.
