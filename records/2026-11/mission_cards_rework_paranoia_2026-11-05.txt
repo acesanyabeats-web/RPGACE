@@ -1,0 +1,11 @@
+Mission cards rework - /dev_ops_7 Track B compile (Nov 5 2026)
+
+Alex, verbatim:
+"I was trying to log my cooking chocolate cake in evening review, but when I click add to done it takes me to live now, not back to evening review, also the missions I was choosing for cooking block done didn't have edit buttons so I can edit context, choose recipe, and to be honest I fear this would be the case for all realm missions, this needs to be reworked"
+
+Fixed now (Tier 1, commit after this record): myDay.ui.logPast always called realmTasks.ui.openLive after saving; the evening review now passes {stay:true}. A not-done cooking block in the evening review had no "✓ Did it" (only "🍳 Cooking", which closes the review) - added.
+
+Evidence for the rework:
+- realm_tasks: 380 rows; 67 are missions (context_kind set) across 11 realms (chef 16, athlete 12, creator 9, producer 8...).
+- One context picker already exists: myDay.ui.pickContext(o, realm, cb, block) + realmTasks.logic.CONTEXT_SOURCES (recipe, combo, reference, post, person, book, plan, beat, artist, dev). It is wired ONLY in Plan a block (myDay ~6142).
+- Mission lists with NO edit / context: myDay.ui.logPast (Log something you did: kit.taskCard tick only), realmTasks Live now list (kit.taskCard, tools = ▶ Start only), realm page Tasks section. Catalogue has "Edit" = two window.prompt boxes (name, minutes) only.

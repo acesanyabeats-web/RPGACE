@@ -4337,7 +4337,9 @@ RPGACE.register('myDay', {
             // A logged cook loads its follow-ups (washing up) like any finished cook (DL-4 / WR-4).
             if (realm === 'chef') try { RPGACE.hooks.fire('cook:finished', { at: Date.now(), title: picked.map(function(p) { return p.label; }).join(', ') }); } catch (er) {}
             if (after) { try { after(); } catch (er) {} }
-            if (rt) rt.ui.openLive({ block: b, date: isoDate });
+            // Nov 5 2026 (Alex: "when I click add to done it takes me to live now, not back to evening review"):
+            // logging from the evening review (o.stay) stays there; elsewhere the logged block opens in Live now.
+            if (rt && !o.stay) rt.ui.openLive({ block: b, date: isoDate });
           }, function(err) { sv.disabled = false; RPGACE.utils.toast('⚠️ Not saved: ' + (err.message || err), '#CC4A4A', 4000, 'myDay'); });
         };
         body.appendChild(sv);
@@ -5756,6 +5758,9 @@ RPGACE.register('myDay', {
             };
             if (x.kind === 'routine') { act('✓ Done', 'done', 'Done'); act('Skip', 'skip', 'Skipped'); }
             else if (x.kind === 'cooking') {
+              // Nov 5 2026: a cook you did is ticked here (same ✓ Did it as other blocks), without leaving the review.
+              if (x.b) { var cd = U._btn('✓ Did it', 'primary'); cd.style.minHeight = '40px'; cd.dataset.act = 'did';
+                cd.onclick = function() { U.didPastBlock(x, function() { moved.push('Done: ' + x.label); L.load().then(draw, draw); }); }; btns.appendChild(cd); }
               var c = U._btn('🍳 Cooking', ''); c.style.minHeight = '40px';
               c.onclick = function() { pop.close(); U._openTool('cooking'); };
               btns.appendChild(c); act('Drop', 'drop', 'Dropped');
@@ -5785,7 +5790,7 @@ RPGACE.register('myDay', {
         if (dp.be.night.tasks.length) { body.appendChild(head('🌙 Night')); var nc = U.bookendCard('night', dp.be, day); nc.id = 'myday-evening-night'; body.appendChild(nc); }
         // TK-7 (Alex: "having this add actions to evening review too would be awesome"): log time you didn't plan.
         var lg = U._btn('✍️ Log something you did', ''); lg.id = 'myday-evening-log'; lg.style.marginTop = '12px';
-        lg.onclick = function() { U.logPast(day, null, null, function() { Promise.all([L.load(), L.loadDid(day).then(function(m) { didM = m; })]).then(draw, draw); }); };
+        lg.onclick = function() { U.logPast(day, null, null, function() { Promise.all([L.load(), L.loadDid(day).then(function(m) { didM = m; })]).then(draw, draw); }, { stay: true }); };
         body.appendChild(lg);
         var lab = document.createElement('label'); lab.style.cssText = 'display:block;font-size:13px;color:var(--muted);margin-top:12px;';
         lab.textContent = opts.catchUp ? 'One line about that day (optional)' : 'One line about today (optional)';
