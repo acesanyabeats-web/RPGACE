@@ -5724,7 +5724,9 @@ document.addEventListener('keydown', e=>{
       var P = R.realmPicker, X = R.modules.xpSeason;
       if (!X) return Promise.resolve(null);
       return new Promise(function (resolve) {
-        var chosen = P.clean(opts.preset);
+        var chosen = P.clean(opts.preset), ctxNote = '';
+        // RP-4: nothing preset -> tick the realm you're on (page, Doing now, block, shift).
+        if (!chosen.length) { try { var cr = R.modules.realmPages && R.modules.realmPages.logic.contextRealm(); if (cr && X.REALMS[cr.realm]) { chosen = [cr.realm]; ctxNote = 'Ticked ' + X.REALMS[cr.realm].name + ' from ' + cr.why + '. '; } } catch (e) {} }
         var ov = document.createElement('div');
         ov.className = 'realm-pick-ov';
         ov.setAttribute('role', 'dialog');
@@ -5741,7 +5743,8 @@ document.addEventListener('keydown', e=>{
         ti.textContent = (opts.what ? opts.what.charAt(0).toUpperCase() + opts.what.slice(1) + ': ' : '') + (opts.title || 'New input');
         var sub = document.createElement('div');
         sub.style.cssText = 'font-size:13px;color:var(--muted);margin-bottom:12px;';
-        sub.textContent = opts.note || ('Pick up to ' + P.MAX + '. It is saved under these realms.');
+        sub.textContent = ctxNote + (opts.note || ('Pick up to ' + P.MAX + '. It is saved under these realms.'));
+        if (ctxNote) sub.classList.add('realm-pick-ctx');
         var grid = document.createElement('div');
         grid.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;';
         var save = document.createElement('button');

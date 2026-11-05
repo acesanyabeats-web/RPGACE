@@ -8007,12 +8007,16 @@ RPGACE.register('myDay', {
           pop.box.innerHTML = '';
           var grid = document.createElement('div');
           grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;';
+          // RP-4: the realm you're on goes first, marked.
+          var cr = null; try { cr = RPGACE.modules.realmPages && RPGACE.modules.realmPages.logic.contextRealm(); } catch (e) {}
+          if (cr) { var ci = -1; list.forEach(function(c, i) { if (c.realm === cr.realm) ci = i; }); if (ci > 0) list.unshift(list.splice(ci, 1)[0]); }
           list.forEach(function(c) {
             var b = document.createElement('button');
             b.type = 'button'; b.className = 'mdp-realm'; b.dataset.realm = c.realm;
             b.style.cssText = 'min-height:56px;padding:8px;border-radius:10px;cursor:pointer;text-align:left;font-family:Rajdhani,sans-serif;background:none;color:var(--text);border:1px solid ' + (c.behind ? 'var(--gold)' : 'var(--border)') + ';';
             b.innerHTML = '<div style="font-size:15px;font-weight:700;">' + esc(c.icon + ' ' + c.name) + '</div><div style="font-size:12px;color:' + (c.behind ? 'var(--gold)' : 'var(--muted)') + ';">' +
-              esc(c.behind ? 'behind this week' + (c.week != null ? ' · ' + c.week + ' XP' : '') : (c.week != null ? c.week + ' XP this week' : '')) + '</div>';
+              esc(c.behind ? 'behind this week' + (c.week != null ? ' · ' + c.week + ' XP' : '') : (c.week != null ? c.week + ' XP this week' : '')) + '</div>' +
+              (cr && cr.realm === c.realm ? '<div class="mdp-realm-here" style="font-size:12px;color:var(--green);">📍 ' + esc(cr.why) + '</div>' : '');
             b.onclick = function() { showActivities(c.realm); };
             grid.appendChild(b);
           });

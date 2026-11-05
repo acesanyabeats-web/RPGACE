@@ -47,7 +47,12 @@ RPGACE.register('realmPages', {
       // Arriving from a button (open(realm, opts)) opens what it asked; from the menu, the tool section.
       var a = self._arrive; self._arrive = null;
       var conf = self.PAGES[realm];
-      setTimeout(function() { self.ui.attach(realm, a || { open: conf.tool ? conf.tool.key : null }); }, 0);
+      if (!a) {
+        var on = null; try { on = self.logic.now(); } catch (e) {}
+        a = { open: conf.tool ? conf.tool.key : null };
+        if (on && on.realm === realm) a = { open: on.source === 'shift' && conf.tool && conf.tool.key === 'work' ? 'work' : 'live', now: on };
+      }
+      setTimeout(function() { self.ui.attach(realm, a); }, 0);
     });
   },
 
@@ -92,6 +97,46 @@ RPGACE.register('realmPages', {
       try { RPGACE.hooks.fire('realm:opened', realm); } catch (e) {}
       return RPGACE.sb.secureWrite('ui_usage', 'insert', { realm: realm, kind: 'open' })
         .catch(function(e) { console.warn('[realmPages] usage not saved:', e && e.message || e); });
+    },
+    // RP-4 (Alex: "Open on what I'm doing"): what you're on right now. Pure.
+    // ctx { running: Doing now entries, blocks: today's live blocks, shift,
+    // nowMin, toMin }. A Doing now timer wins (you started it), then the block
+    // happening now, then a work shift (Life page, Work tool).
+    BLOCK_REALM: { cooking: 'chef', gym: 'athlete', chores: 'homekeeper' },
+    nowPick: function(ctx) {
+      ctx = ctx || {};
+      var L = RPGACE.modules.realmPages.logic, X = RPGACE.modules.xpSeason, ok = function(r) { return !!(r && X && X.REALMS[r]); };
+      var run = (ctx.running || []).slice().sort(function(a, b) { return String(b.started_at || '').localeCompare(String(a.started_at || '')); });
+      for (var i = 0; i < run.length; i++) { var rr = (run[i].realms || [])[0]; if (ok(rr)) return { realm: rr, source: 'doing', title: run[i].title || '' }; }
+      var m = ctx.nowMin, toMin = ctx.toMin || function() { return null; };
+      if (m != null) {
+        var hit = (ctx.blocks || []).filter(function(b) {
+          var s = toMin(b.start_time), e = toMin(b.end_time);
+          if (s == null) return false;
+          if (e == null || e <= s) e = s + (Number(b.mins) || 30);
+          return m >= s && m < e;
+        })[0];
+        if (hit) { var br = hit.realm || L.BLOCK_REALM[hit.kind]; if (ok(br)) return { realm: br, source: 'block', title: hit.title || '' }; }
+      }
+      if (ctx.shift) return { realm: 'life', source: 'shift', title: 'Work shift' };
+      return null;
+    },
+    // Reads in-memory state only (no fetch).
+    now: function(at) {
+      var M = RPGACE.modules, dn = M.doingNow, md = M.myDay, wm = M.workMode, d = at || new Date(), ctx = { nowMin: d.getHours() * 60 + d.getMinutes() };
+      try { ctx.running = dn ? dn.logic.running() : []; } catch (e) { ctx.running = []; }
+      try { if (md) { ctx.blocks = md.logic.dayBlocks(md.logic.iso(d)); ctx.toMin = md.logic.toMin; } } catch (e) { ctx.blocks = []; }
+      try { ctx.shift = wm ? wm.logic.current() : null; } catch (e) { ctx.shift = null; }
+      return RPGACE.modules.realmPages.logic.nowPick(ctx);
+    },
+    // RP-4 (Alex: "Prefill pickers from context"): the realm a picker should
+    // tick for you - the realm page you're on, else what you're doing now.
+    contextRealm: function() {
+      var self = RPGACE.modules.realmPages, pg = document.querySelector('.page.active'), name = pg ? pg.id.replace(/^page-/, '') : null;
+      var r = name ? self.logic.realmOfPage(name) : null;
+      if (r) return { realm: r, why: 'the page you\'re on' };
+      var n = self.logic.now();
+      return n ? { realm: n.realm, why: n.source === 'doing' ? 'what you\'re doing now' : n.source === 'block' ? 'the block on now' : 'your shift' } : null;
     },
     pageOf: function(realm) { var c = RPGACE.modules.realmPages.PAGES[realm]; return c ? (RPGACE.CONFIG && RPGACE.CONFIG.pages && RPGACE.CONFIG.pages[c.page]) || c.page : null; },
     realmOfPage: function(name) {
@@ -219,7 +264,7 @@ RPGACE.register('realmPages', {
           var box = document.createElement('div'); box.className = 'rp-sec'; box.dataset.sec = sec.key; box.id = 'rp-sec-' + sec.key;
           var head = document.createElement('button'); head.type = 'button'; head.className = 'rp-head'; head.setAttribute('aria-expanded', 'false');
           head.innerHTML = '<span class="rp-chev">▸</span><span class="rp-name"></span><span class="rp-count"></span>';
-          head.querySelector('.rp-name').textContent = sec.name; head.querySelector('.rp-count').textContent = sec.count;
+          head.querySelector('.rp-name').textContent = sec.name; head.querySelector('.rp-count').textContent = (opts.now && opts.open === sec.key) ? '▶ On now: ' + (opts.now.title || 'this realm') : sec.count;
           var body = document.createElement('div'); body.className = 'rp-body'; body.hidden = true;
           var drawn = false;
           var toggle = function(on) {
