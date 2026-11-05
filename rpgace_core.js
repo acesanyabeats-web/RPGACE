@@ -89,6 +89,7 @@
 // @file src/oracle/oracleProviderMode.js
 // @file src/oversight/errorLog.js
 // @file src/habits/cookingOracle.js
+// @file src/habits/cookTranscripts.js
 // @file src/habits/shoppingWishlist.js
 // @file src/habits/gymTracker.js
 // @file src/habits/exerciseLibrary.js

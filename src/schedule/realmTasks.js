@@ -809,7 +809,11 @@ RPGACE.register('realmTasks', {
       var recipe = sess.recipeId !== undefined || !sess.pcId ? Promise.resolve(sess.recipeId || null)
         : RPGACE.sb.select('planned_cooks', 'select=recipe_ids&id=eq.' + sess.pcId).then(function(r) { sess.recipeId = (r && r[0] && (r[0].recipe_ids || [])[0]) || null; return sess.recipeId; }, function() { sess.recipeId = null; return null; });
       sess.saving = sess.saving.then(function() { return recipe; }).then(function(rid) {
-        var row = { messages: sess.msgs.slice(), updated_at: new Date().toISOString() };
+        var row = { messages: sess.msgs.slice(), updated_at: new Date().toISOString(), source: 'live_now' };
+        // CT-1: readable coloured transcript + the cook it belongs to.
+        var CTm = RPGACE.modules.cookTranscripts;
+        if (CTm) { var tb = CTm.logic.build(row.messages); row.transcript = tb.transcript; row.line_tags = tb.line_tags; }
+        if (sess.pcId && /^[0-9a-f-]{36}$/i.test(sess.pcId)) row.planned_cook_id = sess.pcId;
         if (sess.id) return RPGACE.sb.secureWrite('cook_chats', 'update', row, 'id=eq.' + sess.id);
         sess.id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : ('c' + Date.now());
         return RPGACE.sb.secureWrite('cook_chats', 'insert', [Object.assign({ id: sess.id, recipe_id: rid, recipe_title: sess.title || null, cook_key: sess.key, flagged: false }, row)]);

@@ -1431,9 +1431,12 @@ RPGACE.register('cookingOracle', {
         }, function() {});
       }
       var saveChat = function() {
-        var msgs = askLog.filter(function(m) { return m.content !== '…'; }).map(function(m) { return { role: m.role, content: m.content, step: m.step, err: !!m.err }; });
+        var msgs = askLog.filter(function(m) { return m.content !== '…'; }).map(function(m) { return { role: m.role, content: m.content, step: m.step, err: !!m.err, at: m.at || null }; });
         chatSaving = chatSaving.then(function() {
           var row = { messages: msgs, updated_at: new Date().toISOString(), flagged: askLog.some(function(m) { return m.flagged; }) };
+          // CT-1: the readable, coloured transcript and the cook it belongs to, kept with every save.
+          var CTm = RPGACE.modules.cookTranscripts;
+          if (CTm) { var tb = CTm.logic.build(msgs); row.transcript = tb.transcript; row.line_tags = tb.line_tags; row.planned_cook_id = CTm.logic.cookIdOf(opts.key); row.source = 'cook_mode'; }
           if (chatId) return RPGACE.sb.secureWrite('cook_chats', 'update', row, 'id=eq.' + chatId);
           chatId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : null;
           return RPGACE.sb.secureWrite('cook_chats', 'insert', [Object.assign({ id: chatId, recipe_id: opts.recipeId || null, recipe_title: opts.title || null, cook_key: opts.key || null }, row)]);
@@ -1513,8 +1516,8 @@ RPGACE.register('cookingOracle', {
           var q = inp.value.trim();
           if (!q || send.disabled) return;
           inp.value = '';
-          askLog.push({ role: 'user', content: q, step: idx + 1 });
-          var wait = { role: 'assistant', content: '…', q: q, step: idx + 1 };
+          askLog.push({ role: 'user', content: q, step: idx + 1, at: new Date().toISOString() });
+          var wait = { role: 'assistant', content: '…', q: q, step: idx + 1, at: new Date().toISOString() };
           askLog.push(wait); paint();
           send.disabled = true;
           var msgs = askLog.filter(function(m) { return m !== wait && !m.err; }).slice(-8).map(function(m) { return { role: m.role, content: m.content }; });
@@ -2278,6 +2281,8 @@ RPGACE.register('cookingOracle', {
         cuisineRow.appendChild(lbl); cuisineRow.appendChild(ed);
       };
       renderCuisine();
+      // CT-3: this recipe's cook transcripts (Live now + Cook Mode chats), coloured, with Make recipe changes.
+      if (savedRecipeId && RPGACE.modules.cookTranscripts) RPGACE.modules.cookTranscripts.ui.button(cuisineRow, savedRecipeId, recipe);
       if (savedRecipeId && recipe.cuisine === undefined) {
         RPGACE.sb.select('recipes', 'select=cuisine&id=eq.' + savedRecipeId + '&limit=1')
           .then(function(rows) { recipe.cuisine = (rows && rows[0] && rows[0].cuisine) || null; renderCuisine(); })
