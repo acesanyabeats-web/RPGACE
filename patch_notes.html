@@ -74,6 +74,21 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-05-bb" style="margin-bottom:30px;">
+    <div class="card-title">⏳ Nov 5: best-before dates - Use soon / Throw out countdown, morning push, Oracle for undated food, use the older pack first (BB-1..7) + cook Ask box fixed</div>
+    <div class="card-body">
+      Alex: "when I log ingredients, ask for best before, with those timers telling me what's going out in 5 days with countdown each day. This way I have a throw out list and a use soon. Oracle can give suggestions on things to use from use soon to minimise wastage" (answers in records/2026-11/best_before_interrogation_2026-11-05.txt).
+      <ul><li><b>BB-1:</b> one date per pack (table <code>stock_dates</code>); buying again keeps both dates, oldest first. Stock amounts stay in pantry_stock.</li>
+      <li><b>BB-2:</b> asked when you put things away after a shop (fridge items must have one), when you add stock by hand, and on a fridge/cupboard photo (Oracle reads dates it can see; you check them; undated fridge items are asked next).</li>
+      <li><b>BB-3:</b> 🔮 No date on it: Oracle gives days from UK guidance (FSA, NHS, Love Food Hate Waste); accept, or tell it more ("it was already a few days old") until it's right.</li>
+      <li><b>BB-4:</b> 📅 Date your stock - your current items, fridge first; cupboard and freezer optional.</li>
+      <li><b>BB-5:</b> ⏳ Use soon (last 5 days, countdown) and 🗑 Throw out (past date): Thrown out logs waste and sets stock to 0 (when it's the only pack), Still good takes a new date. On the Cooking hub and the Chef page.</li>
+      <li><b>BB-6:</b> the 8am Good morning push adds "🥬 Use soon: Spinach today, Milk 2 days · 1 to throw out" when there is any. 🔮 What can I make with these? gives ideas from your saved recipes + what to freeze today.</li>
+      <li><b>BB-7:</b> after a cook takes stock out, two packs of something show "use the older pack first" with ✓ Used up the older one (the newer date takes over).</li>
+      <li><b>Fix:</b> Ask during a cook - the text box squashed to a sliver beside a giant Send (your screenshot). Now the box is full width on top and grows as you type, Send is a normal button under it (checked at phone size).</li>
+      <li>Tested headless (best before 16, shop 33, grocery + recipe chat 20 checks). <b>Untested on your phone and with real dates.</b></li></ul>
+    </div>
+  </div>
 <div class="card" id="card-2026-11-05-recipe-chat" style="margin-bottom:30px;">
     <div class="card-title">🔮 Nov 5: talk a recipe through with Oracle while planning a cook (Planned Cook + Scheduled Cook)</div>
     <div class="card-body">

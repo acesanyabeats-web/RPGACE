@@ -557,6 +557,12 @@ RPGACE.register('cookingOracle', {
       });
       var box = pop.box;
       box.classList.add('co-hub');
+      // BB-5: what's going off (best-before countdown) - one tap from the hub.
+      if (RPGACE.modules.bestBefore) {
+        var bbBtn = self.ui._mkBtn('⏳ Use soon · 🗑 Throw out', '', { extra: 'width:100%;margin-bottom:10px;' }); bbBtn.id = 'co-hub-fresh';
+        bbBtn.onclick = function() { RPGACE.modules.bestBefore.ui.open(); };
+        box.appendChild(bbBtn);
+      }
 
       var next = document.createElement('div');
       next.className = 'co-next';
@@ -1499,8 +1505,11 @@ RPGACE.register('cookingOracle', {
           });
           log.scrollTop = log.scrollHeight;
         };
+        // Nov 5 2026 (Alex, phone screenshot: "the send should grow, and the text field should b over the top, not long
+        // like that"): the box sits on top at full width and grows as you type; Send is a normal button under it.
         var row = document.createElement('div');
-        row.style.cssText = 'display:flex;gap:8px;';
+        row.className = 'cm-ask-row';
+        row.style.cssText = 'display:flex;flex-direction:column;gap:8px;flex:none;';
         var inp = document.createElement('textarea');
         inp.id = 'cm-ask-input'; inp.rows = 2; inp.placeholder = 'Ask Oracle…';
         inp.setAttribute('aria-label', 'Your question');
@@ -1520,6 +1529,8 @@ RPGACE.register('cookingOracle', {
         if (vv) { vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit); }
         askPanel._unfit = function() { if (vv) { vv.removeEventListener('resize', fit); vv.removeEventListener('scroll', fit); } };
         var send = self.ui._mkBtn('Send', 'primary'); send.type = 'button'; send.classList.add('cm-ask-send');
+        send.style.flex = 'none'; send.style.width = '100%'; send.style.height = '48px'; send.style.minHeight = '48px'; send.style.maxHeight = '48px';
+        inp.style.flex = 'none'; inp.style.width = '100%'; inp.style.boxSizing = 'border-box';
         var go = function() {
           var q = inp.value.trim();
           if (!q || send.disabled) return;
@@ -3946,7 +3957,7 @@ RPGACE.register('cookingOracle', {
         }
         errBox.style.display = 'none';
         addBtn.disabled = true;
-        self.logic._upsertStock(name, location, qty, unit, function(err) {
+        self.logic._upsertStock(name, location, qty, unit, function(err, ingRow) {
           addBtn.disabled = false;
           if (err) {
             errBox.textContent = '⚠️ ' + err;
@@ -3956,6 +3967,8 @@ RPGACE.register('cookingOracle', {
           nameInput.value = ''; qtyInput.value = ''; unitInput.value = '';
           RPGACE.utils.toast('📦 ' + location.charAt(0).toUpperCase() + location.slice(1) + ' updated', '#4caf82', 2000);
           renderList();
+          // BB-2: its best before (fridge needs one; cupboard/freezer can skip).
+          if (ingRow && ingRow.id && qty > 0 && RPGACE.modules.bestBefore) RPGACE.modules.bestBefore.ui.askOne({ ingredient_id: ingRow.id, name: name, location: location });
         });
       };
       // Oct 10 2026 (D1): add several items at once from a photo.
@@ -4830,6 +4843,8 @@ RPGACE.register('cookingOracle', {
     _renderStockResult: function(pop, plannedCookId, done, takes) {
       var self = RPGACE.modules.cookingOracle;
       var box = pop.box;
+      // BB-7: two packs of something you just used? Use the older one first.
+      if (RPGACE.modules.bestBefore) setTimeout(function() { RPGACE.modules.bestBefore.ui.olderNudge(box, (takes || []).map(function(t) { return t.ingredient_id; })); }, 0);
       box.innerHTML = '';
       var head = document.createElement('div');
       head.style.cssText = 'font-size:15px;font-weight:700;color:var(--green);margin-bottom:8px;';

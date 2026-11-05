@@ -24,7 +24,8 @@ RPGACE.register('realmPages', {
     steward: { page: 'money', mod: 'moneyHub', title: '💷 Steward', tool: { key: 'money', name: '💷 Money', count: 'In − out · subscriptions · receipts · software', nodes: '*' },
       extras: [{ key: 'wishlist', name: '🛒 Wishlist', count: 'Future purchases vs budget', btns: [['🛒 Open Wishlist', 'card:wishlist'], ['🛒 Shop now', 'shop']] }] },
     scholar: { page: 'knowledge', mod: 'knowledgeHub', title: '📚 Scholar', tool: { key: 'knowledge', name: '📚 Knowledge', count: 'Take in → Study → Learned → Review', nodes: '*' } },
-    chef: { page: 'realm', title: '🍳 Chef', tool: { key: 'cooking', name: '🍳 Cooking', count: 'Recipes, stock, planned cooks', btns: [['🍳 Open Cooking', 'card:cooking'], ['🛒 Shop now', 'shop']] } },
+    chef: { page: 'realm', title: '🍳 Chef', tool: { key: 'cooking', name: '🍳 Cooking', count: 'Recipes, stock, planned cooks', btns: [['🍳 Open Cooking', 'card:cooking'], ['🛒 Shop now', 'shop']] },
+      extras: [{ key: 'fresh', name: '⏳ Use soon', count: 'Best-before countdown · throw out', draw: 'bestBefore' }] },
     athlete: { page: 'realm', title: '💪 Athlete', tool: { key: 'gym', name: '🏋️ Gym', count: 'This week, log a session, bests', draw: 'gym' },
       extras: [{ key: 'health', name: '❤️ Health & body', count: 'Food, weight, water, sleep', btns: [['❤️ Open Health & body', 'card:health']] }] },
     explorer: { page: 'realm', title: '✈️ Explorer', tool: { key: 'plans', name: '🧳 Plans', count: 'Trips, events, days out', btns: [['🧳 Open Plans', 'plans:plans'], ['💡 Outing ideas', 'plans:ideas']] } },
@@ -239,6 +240,7 @@ RPGACE.register('realmPages', {
       try {
         if (kind === 'gym' && M.gymTracker) { body.textContent = 'Loading your sessions…'; var host = { box: body, close: function() {} }, g = M.gymTracker; var d = function() { g.logic.load().then(function(s) { g.ui.render(host, s, d); }, function(e) { body.textContent = '⚠️ Could not load gym sessions: ' + (e.message || e); }); }; d(); return; }
         if (kind === 'work' && M.workMode) { M.workMode.ui.open({ host: body }); return; }
+        if (kind === 'bestBefore' && M.bestBefore) { M.bestBefore.ui.lists(body); return; }
         if (kind === 'chores' && M.myDay) {
           var md = M.myDay; body.textContent = 'Loading chores…';
           Promise.resolve(md.logic.load()).then(function() { body.textContent = ''; md.ui.renderChores(body, md.logic.iso()); if (!body.children.length) body.textContent = 'No chores due. Add chores as Actions on My Day (every N days).'; },

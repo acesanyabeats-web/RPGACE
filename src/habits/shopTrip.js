@@ -561,9 +561,13 @@ RPGACE.register('shopTrip', {
             card.appendChild(U._div('', b.name + ' · from ' + b.shop)).style.fontWeight = '700';
             var loc = document.createElement('select'); loc.className = 'st-in st-loc'; loc.style.margin = '6px 0';
             [['pantry', '🥫 Cupboard'], ['fridge', '🧊 Fridge'], ['freezer', '❄️ Freezer']].forEach(function(x) { var o = document.createElement('option'); o.value = x[0]; o.textContent = x[1]; loc.appendChild(o); });
-            loc.onchange = function() { s.loc = loc.value; };
-            if (s.loc) loc.value = s.loc; else if (co) co.logic._defaultLocation(b.row.ingredient_id, b.name, function(l) { if (!s.loc) { s.loc = l; loc.value = l; } });
+            // BB-2: best before per pack (needed for the fridge).
+            var BB = RPGACE.modules.bestBefore, df = BB ? BB.ui.dateField({ name: b.name, location: s.loc || 'fridge' }) : null;
+            s.date = df;
+            loc.onchange = function() { s.loc = loc.value; if (df) df.setLocation(s.loc); };
+            if (s.loc) loc.value = s.loc; else if (co) co.logic._defaultLocation(b.row.ingredient_id, b.name, function(l) { if (!s.loc) { s.loc = l; loc.value = l; if (df) df.setLocation(l); } });
             card.appendChild(loc);
+            if (df) card.appendChild(df.el);
             var ph = U._div(''); card.appendChild(ph);
             var drawPhotos = function() {
               ph.innerHTML = '';
@@ -594,6 +598,8 @@ RPGACE.register('shopTrip', {
           var done = RPGACE.kit.btn('All put away', 'primary'); done.id = 'st-putaway-done'; done.style.cssText += 'width:100%;margin-top:10px;';
           done.onclick = function() {
             var missing = food.filter(function(b) { var s = state[b.ref]; return !s.known && !s.skip && !(s.front && s.back && s.brand.trim()); });
+            var undated = food.filter(function(b) { var s = state[b.ref]; return (s.loc || 'pantry') === 'fridge' && s.date && !s.date.value(); });
+            if (undated.length) { RPGACE.utils.toast('📅 ' + undated[0].name + ' is going in the fridge - add its best before (or 🔮 No date on it)', '#E2A83D', 3500); return; }
             if (missing.length) { RPGACE.utils.toast('📷 ' + missing[0].name + ' still needs ' + (!state[missing[0].ref].front ? 'a front photo' : !state[missing[0].ref].back ? 'a back-label photo' : 'its brand') + ' (or Skip for now)', '#E2A83D', 3500); return; }
             done.disabled = true; done.textContent = 'Saving…';
             var pa = Object.assign({}, trip.putaway || {});
@@ -601,7 +607,12 @@ RPGACE.register('shopTrip', {
               return p.then(function() {
                 var s = state[b.ref];
                 var mk = !s.known && !s.skip ? L.addProduct({ name: b.name, brand: s.brand, shop: b.shop, ingredient_id: b.row.ingredient_id, front: s.front, back: s.back }).then(function(r) { return r.id; }) : Promise.resolve(s.known ? s.product_id : null);
-                return mk.then(function(pid) { pa[b.ref] = Object.assign({}, pa[b.ref] || {}, { shop: b.shop, loc: s.loc || 'pantry', product_id: pid || null, new_product: !s.known && !s.skip }); });
+                return mk.then(function(pid) {
+                  pa[b.ref] = Object.assign({}, pa[b.ref] || {}, { shop: b.shop, loc: s.loc || 'pantry', product_id: pid || null, new_product: !s.known && !s.skip });
+                  var BB = RPGACE.modules.bestBefore;
+                  if (!BB || !s.date || !s.date.value() || pa[b.ref].dated) return null;
+                  return BB.logic.add({ ingredient_id: b.row.ingredient_id, location: s.loc || 'pantry', best_before: s.date.value(), source: s.date.source(), note: s.date.note(), shop: b.shop }).then(function() { pa[b.ref].dated = true; });
+                });
               });
             }, Promise.resolve()).then(function() { return L.patch(trip, { status: 'putaway', putaway: pa }); })
               .then(function() { pop.close(); U.read(trip); }, function(e) { done.disabled = false; done.textContent = 'All put away'; U._fail('Not saved', e); });

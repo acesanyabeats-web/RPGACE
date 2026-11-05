@@ -46,7 +46,8 @@ RPGACE.register('dailyLife', {
         seen[name] = 1;
         var q = parseFloat(x.quantity);
         var unit = typeof x.unit === 'string' ? x.unit.trim().slice(0, 15) : '';
-        out.push({ name: name, quantity: (isNaN(q) || q <= 0) ? 1 : q, unit: unit || null });
+        var bb = /^\d{4}-\d{2}-\d{2}$/.test(String(x.best_before || '')) ? x.best_before : null;
+        out.push({ name: name, quantity: (isNaN(q) || q <= 0) ? 1 : q, unit: unit || null, best_before: bb });
       });
       return out.slice(0, max);
     },
@@ -55,7 +56,7 @@ RPGACE.register('dailyLife', {
 
     readPhoto: function(image, location) {
       return RPGACE.utils.oracleVision(image,
-        'You catalogue kitchen stock from photos. Return ONLY one JSON object on a single line, no other text: {"items":[{"name":"milk","quantity":2,"unit":"litre"}]}. Names: lowercase, generic ingredient names as a recipe would write them (e.g. "cheddar cheese", "eggs", "spring onions"), no brands. quantity: count what you can see; for one container use 1 and a unit like "bottle", "pack", "jar", "bag", "tub". Skip anything you cannot identify. Never invent items.',
+        'You catalogue kitchen stock from photos. Return ONLY one JSON object on a single line, no other text: {"items":[{"name":"milk","quantity":2,"unit":"litre","best_before":"YYYY-MM-DD"}]}. best_before only when a date is clearly readable on the pack (else leave it out). Names: lowercase, generic ingredient names as a recipe would write them (e.g. "cheddar cheese", "eggs", "spring onions"), no brands. quantity: count what you can see; for one container use 1 and a unit like "bottle", "pack", "jar", "bag", "tub". Skip anything you cannot identify. Never invent items.',
         'List the food and drink items you can see in this ' + location + ' photo.', 900);
     },
 
@@ -65,10 +66,13 @@ RPGACE.register('dailyLife', {
       return items.reduce(function(p, it) {
         return p.then(function() {
           return new Promise(function(res) {
-            co.logic._upsertStock(it.name, location, it.quantity, it.unit, function(err) {
-              if (err) failed.push(it.name + ' (' + err + ')'); else done++;
+            co.logic._upsertStock(it.name, location, it.quantity, it.unit, function(err, row) {
+              if (err) failed.push(it.name + ' (' + err + ')'); else { done++; it.ingredient_id = row && row.id; }
               if (onEach) onEach(done + failed.length);
-              res();
+              // BB-2: a date read off the pack (checked on the review screen) is saved with it.
+              var BB = RPGACE.modules.bestBefore;
+              if (err || !it.best_before || !it.ingredient_id || !BB) { res(); return; }
+              BB.logic.add({ ingredient_id: it.ingredient_id, location: location, best_before: it.best_before, source: 'photo' }).then(function() { res(); }, function(e) { failed.push(it.name + ' date (' + (e.message || e) + ')'); res(); });
             });
           });
         });
@@ -181,6 +185,11 @@ RPGACE.register('dailyLife', {
         r.querySelector('#dl-q-' + i).value = it.quantity;
         r.querySelector('#dl-u-' + i).value = it.unit || '';
         pop.box.appendChild(r);
+        // BB-2: the date Oracle read off the pack (or empty) - check it.
+        var bbRow = document.createElement('label'); bbRow.style.cssText = 'display:flex;align-items:center;gap:6px;margin:-2px 0 8px 34px;font-size:12px;color:var(--muted);';
+        bbRow.textContent = 'Best before ';
+        var bbIn = document.createElement('input'); bbIn.type = 'date'; bbIn.id = 'dl-bb-' + i; bbIn.value = it.best_before || ''; bbIn.style.cssText = inp + 'min-height:36px;';
+        bbRow.appendChild(bbIn); pop.box.appendChild(bbRow);
         return r;
       });
       var err = document.createElement('div');
@@ -200,7 +209,8 @@ RPGACE.register('dailyLife', {
           var n = r.querySelector('#dl-nm-' + i).value.trim().toLowerCase();
           var q = parseFloat(r.querySelector('#dl-q-' + i).value);
           if (!n || isNaN(q) || q < 0) return null;
-          return { name: n, quantity: q, unit: r.querySelector('#dl-u-' + i).value.trim() || null };
+          var bbv = (pop.box.querySelector('#dl-bb-' + i) || {}).value || null;
+          return { name: n, quantity: q, unit: r.querySelector('#dl-u-' + i).value.trim() || null, best_before: bbv };
         }).filter(Boolean);
       };
       var label = function() { var n = picked().length; save.textContent = 'Add ' + n + ' to ' + location; save.disabled = !n; save.style.opacity = n ? '1' : '0.4'; };
@@ -218,6 +228,9 @@ RPGACE.register('dailyLife', {
           } else {
             pop.close();
             RPGACE.utils.toast('📦 ' + res.saved + ' item' + (res.saved === 1 ? '' : 's') + ' added to the ' + location, '#4caf82', 2500);
+            // BB-2: fridge things the photo couldn't date - ask for them now (Oracle helps with the no-date ones).
+            var noDate = list.filter(function(it) { return !it.best_before && it.ingredient_id; }).map(function(it) { return it.ingredient_id; });
+            if (location === 'fridge' && noDate.length && RPGACE.modules.bestBefore) RPGACE.modules.bestBefore.ui.bulk(noDate);
           }
           if (onDone) onDone();
         });

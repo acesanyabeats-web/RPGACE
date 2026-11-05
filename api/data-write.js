@@ -109,6 +109,7 @@ const ALLOWED_TABLES = new Set([
   'oracle_chats', // Oct 27 2026 FL-3 Oracle chat memory: locked (authenticated_all only), read via action 'read'
   'oracle_memory', // Nov 4 2026 D-2: Oracle's running memory lines (private, read via action 'read')
   'ui_usage', // Nov 4 2026 RP-2: which realm pages/homes Alex opens (menu order; private)
+  'stock_dates', // Nov 5 2026 BB: one best-before date per pack (active/used/thrown = waste log); anon-read like pantry_stock
   'shop_trips', // Nov 5 2026 ST: one shop trip (shopping -> home -> put away -> read -> done) (private)
   'products', // Nov 5 2026 ST-3/4: a product with its front/back photos, brand, shop, label read and verdict (private)
   'feature_findings', // Nov 5 2026 FF-3/4: what the dev session thinks Alex likes/dislikes; answered in the evening questionnaire (private)

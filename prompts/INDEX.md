@@ -7,6 +7,7 @@ built in `local_server/rpgace_intel.py` `insights_prompt`.
 
 ## Prompt files
 
+- `best_before.md` - Best before (BB-3, Nov 5 2026): how many days a food with no printed date keeps, from UK food-safety guidance. bestBefore.logic.guess, one call per message (judgment model)
 - `evening_questions.md` - Evening questionnaire (RP-7, Nov 5 2026): turns the facts of Alex's day into yes/no questions per realm, ranked by urgency and importance. eveningQuestionnaire.logic.generate, one call per evening (judgment model)
 - `exercise_extract.md` - Gym exercise library (DR-12): pulls exercises out of one Athlete video write-up (exerciseLibrary.logic.extract, cheap model)
 - `mission_file.md` - Generic Missions (GM-3): files specific new tasks (mostly from videos) under generic missions as context cards. realmTasks.logic.fileInbox, cheap model
@@ -19,6 +20,7 @@ built in `local_server/rpgace_intel.py` `insights_prompt`.
 - `screenshot_read.md` - Screenshot Inbox: reads a screenshot (screenshotInbox.READ_SYSTEM)
 - `shop_read.md` - Shop trip read (ST-4, Nov 5 2026): one batched read of a shop trip's receipt photos and new products' label photos. shopTrip.logic.read, a few images per call
 - `tutor.md` - Shared opener for every Phylum Path / taxonomy tutor prompt (was copied 9 times in phylumPath). {subject} = the discipline
+- `use_soon.md` - Use soon ideas (BB-6, Nov 5 2026): what to cook to use up food close to its best-before. bestBefore.logic.ideas, one call (judgment model)
 
 ## Still written inline in code (candidates to move here)
 
