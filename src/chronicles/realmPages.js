@@ -213,11 +213,9 @@ RPGACE.register('realmPages', {
         '#rp-grow{min-height:44px;padding:6px 12px;border-radius:22px;border:1px solid var(--border);background:none;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;text-align:left}' +
         '#rp-foot{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:10px 0 14px}' +
         '.rp-h2{font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:12px 14px 6px}' +
-        '#rp-rank{display:block;width:100%;text-align:left;border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:12px 14px;margin:6px 0 8px;color:var(--text);font:inherit;cursor:pointer}' +
+
         '#rp-foot button{min-height:52px;padding:6px 4px;border-radius:10px;border:1px solid var(--border);background:none;color:var(--text);font:inherit;font-size:13px;cursor:pointer}' +
-        '.rp-on > .xp-strip,.rp-on .mh-go-selling,.rp-on .mh-go-wishlist,#rp-rank .xp-slim-tgt{display:none !important}' +
-        '.rp-ranksheet .xp-rc-tabs,.rp-ranksheet .xp-rc-suggest{display:none !important}' +
-        '.rp-growsheet .xp-rc-card,.rp-growsheet .xp-rc-tabs{display:none !important}';
+        '.rp-on > .xp-strip,.rp-on .mh-go-selling,.rp-on .mh-go-wishlist,#rp-rank .xp-slim-tgt{display:none !important}';
       document.head.appendChild(s);
     },
     // Open a realm's page. opts.open = a section key to open (else all folded).
@@ -345,16 +343,9 @@ RPGACE.register('realmPages', {
     // CP-1: the rank card = rank + stars + XP bar to the next rank; tap = the full breakdown (xpSeason.stripFull, this realm only).
     _top: function(realm) {
       var U = RPGACE.modules.realmPages.ui, X = RPGACE.modules.xpSeason, top = document.createElement('div'); top.className = 'rp-top'; top.id = 'rp-top';
-      var rank = X.ui.rankMini(realm); rank.id = 'rp-rank';
-      rank.onclick = function() { U._sheetOf('🏅 ' + X.REALMS[realm].name, 'rp-ranksheet', realm); };
+      var rank = X.ui.rankSwipe(realm); rank.id = 'rp-rank';
       top.appendChild(rank);
       return top;
-    },
-    // The existing full realm card (xpSeason.stripFull), shown as just the rank card or just the Grow lines.
-    _sheetOf: function(title, cls, realm) {
-      var X = RPGACE.modules.xpSeason, pop = RPGACE.modules.dashDeck._popup({ eyebrow: title, title: title, width: '440px', scroll: true });
-      pop.box.classList.add(cls); pop.box.id = cls; pop.box.appendChild(X.ui.stripFull([realm]));
-      return pop;
     },
     // RH: the bottom row opens each as a sheet (same screens as before).
     _footOpen: function(realm, key) {

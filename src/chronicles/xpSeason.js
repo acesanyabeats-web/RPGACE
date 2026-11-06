@@ -1032,6 +1032,10 @@ RPGACE.register('xpSeason', {
           '</section>' +
         '</div>' +
         '<div class="xp-hud-dots" role="tablist"><button type="button" class="xp-hud-dot" data-i="0" aria-label="Overall" aria-current="true"></button><button type="button" class="xp-hud-dot" data-i="1" aria-label="Realms wheel" aria-current="false"></button></div>';
+      U._swipeWire(head);
+    },
+    // One swipe wiring for every 2-page card (dashboard HUD, realm page rank card): dots follow the page, card height = the page shown.
+    _swipeWire: function(head) {
       var track = head.querySelector('.xp-hud-track');
       var dots = head.querySelectorAll('.xp-hud-dot');
       var paint = function() {
@@ -1139,6 +1143,22 @@ RPGACE.register('xpSeason', {
     },
     // CP-1 (Nov 6 2026, Alex: "just current level stars and xp bar to next"): the realm page's rank card - one realm only.
     // A button; the realm page opens the full breakdown (stripFull) on tap.
+    // Nov 6 2026 (Alex: "So scrollable rank card like on dashboard"): page 1 = rankMini, swipe -> page 2 = the full breakdown
+    // (stripFull for this realm only, no realm tabs / suggest). Same swipe + dots as the dashboard card (_swipeWire).
+    rankSwipe: function(r) {
+      var S = RPGACE.modules.xpSeason, U = S.ui;
+      if (!document.getElementById('xp-hud-css')) { var st = document.createElement('style'); st.id = 'xp-hud-css'; st.textContent = U.HUD_CSS; document.head.appendChild(st); }
+      if (!document.getElementById('xp-rswipe-css')) { var s2 = document.createElement('style'); s2.id = 'xp-rswipe-css'; s2.textContent = '.xp-rswipe{border:1px solid var(--border);border-radius:14px;background:var(--panel);overflow:hidden;margin:6px 0 8px}.xp-rswipe .xp-hud-slide{padding:12px 14px 4px}.xp-rswipe .xp-rc-tabs,.xp-rswipe .xp-rc-suggest{display:none !important}.xp-rswipe .xp-realm-card{margin:0 !important;border:0 !important;background:none !important;padding:0 !important}'; document.head.appendChild(s2); }
+      var wrap = document.createElement('div'); wrap.className = 'xp-rswipe'; wrap.dataset.realm = r;
+      wrap.innerHTML = '<div class="xp-hud-track" tabindex="0" aria-label="Your rank - swipe for the breakdown"><section class="xp-hud-slide xp-rs-p1" aria-label="Rank"></section><section class="xp-hud-slide xp-rs-p2" aria-label="Breakdown"></section></div>' +
+        '<div class="xp-hud-dots" role="tablist"><button type="button" class="xp-hud-dot" data-i="0" aria-label="Rank" aria-current="true"></button><button type="button" class="xp-hud-dot" data-i="1" aria-label="Breakdown" aria-current="false"></button></div>';
+      var mini = U.rankMini(r); mini.style.cssText = 'display:block;width:100%;border:0;background:none;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer';
+      mini.onclick = function() { var t = wrap.querySelector('.xp-hud-track'); t.scrollTo({ left: t.clientWidth, behavior: 'smooth' }); };
+      wrap.querySelector('.xp-rs-p1').appendChild(mini);
+      wrap.querySelector('.xp-rs-p2').appendChild(U.stripFull([r]));
+      U._swipeWire(wrap);
+      return wrap;
+    },
     rankMini: function(r) {
       var S = RPGACE.modules.xpSeason, L = S.logic, U = S.ui, meta = S.REALMS[r] || { icon: '', name: r };
       var b = document.createElement('button'); b.type = 'button'; b.className = 'xp-mini';
