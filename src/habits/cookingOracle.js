@@ -7283,6 +7283,8 @@ RPGACE.register('cookingOracle', {
         // above, one recipe unit ("stalk") with no synonym mapping to
         // the canonical countable-unit bucket real stock is logged in.
         stalk: 'unit', stalks: 'unit',
+        // Nov 6 2026: recipes say "3 each", stock says "7 Sticks" (cinnamon) - same count.
+        each: 'unit', stick: 'unit', sticks: 'unit',
         // H24 (Sep 17 2026, 7th pass) — real bug, found from Alex's own
         // live report: "egg... still blue not green" despite 11 real
         // Count in stock. Root cause: the recipe's own unit was "large"
@@ -7524,8 +7526,12 @@ RPGACE.register('cookingOracle', {
       var neededUnit = self.logic._normalizeUnit(opts.neededUnit);
       var buckets = opts.buckets || [];
 
-      var exact = buckets.filter(function(b) { return self.logic._normalizeUnit(b.unit) === neededUnit; })[0];
-      if (exact) return (typeof exact.quantity === 'number') ? exact.quantity : 0;
+      // Nov 6 2026: add up every same-unit place (fridge + pantry), and an empty one (fridge: 0 cup)
+      // no longer hides stock kept in another unit (pantry: 2 L of milk).
+      var exactSum = buckets.filter(function(b) { return self.logic._normalizeUnit(b.unit) === neededUnit; })
+        .reduce(function(s, b) { return s + ((typeof b.quantity === 'number') ? b.quantity : 0); }, 0);
+      if (exactSum > 0) return exactSum;
+      buckets = buckets.filter(function(b) { return (typeof b.quantity === 'number') && b.quantity > 0; });
 
       if (self.logic.VOLUME_TO_ML[neededUnit]) {
         var volBucket = buckets.filter(function(b) { return self.logic.VOLUME_TO_ML[self.logic._normalizeUnit(b.unit)]; })[0];

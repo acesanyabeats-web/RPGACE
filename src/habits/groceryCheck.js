@@ -26,8 +26,10 @@ RPGACE.register('groceryCheck', {
   logic: {
     // Upcoming cooks: planned, not yet cooked.
     upcoming: function() {
+      // Nov 6 2026: a cook scheduled for a day that has passed is not upcoming (an Oct 30 soup was still on Nov 6's list).
+      var today = new Date(); today = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
       return RPGACE.sb.select('planned_cooks', 'select=id,recipe_ids,status,scheduled_at&status=in.(draft,scheduled)&order=created_at.asc&limit=50')
-        .then(function(r) { return (r || []).filter(function(c) { return (c.recipe_ids || []).length; }); });
+        .then(function(r) { return (r || []).filter(function(c) { return (c.recipe_ids || []).length && !(c.scheduled_at && String(c.scheduled_at).slice(0, 10) < today); }); });
     },
     // Pure: the fingerprint - which recipes, with which ingredient rows.
     sig: function(cooks, riRows) {
@@ -43,6 +45,8 @@ RPGACE.register('groceryCheck', {
       (cooks || []).forEach(function(c) { (c.recipe_ids || []).forEach(function(id) { if (!seen[id]) { seen[id] = 1; out.push(id); } }); });
       return out;
     },
+    // Nov 6 2026: never shopped for - tap water and ice.
+    FREE_RX: /^(tap |cold |hot |boiling |warm )?water$|^ice( cubes?)?$/i,
     usage: function(ids) {
       var co = RPGACE.modules.cookingOracle;
       return new Promise(function(resolve, reject) {
@@ -68,8 +72,10 @@ RPGACE.register('groceryCheck', {
     build: function(cooks, ids, sig, open) {
       var self = RPGACE.modules.groceryCheck, L = self.logic;
       var prev = (open || []).filter(function(x) { return x.dishes_sig; })[0];
-      return Promise.all([L.usage(ids), prev ? RPGACE.sb.select('shopping_list_items', 'select=ingredient_id,check_status,to_buy_amount,in_basket&list_id=eq.' + prev.id) : []]).then(function(r) {
-        var usage = r[0].filter(function(u) { return u.status !== 'brown'; }), carry = {};
+      return Promise.all([L.usage(ids), prev ? RPGACE.sb.select('shopping_list_items', 'select=ingredient_id,check_status,to_buy_amount,in_basket&list_id=eq.' + prev.id) : [],
+        RPGACE.sb.select('pantry_stock', 'select=ingredient_id&quantity=gt.0').catch(function() { return []; })]).then(function(r) {
+        var usage = r[0].filter(function(u) { return u.status !== 'brown' && !L.FREE_RX.test(String(u.name || '').trim()); }), carry = {}, inStock = {};
+        (r[2] || []).forEach(function(s) { inStock[s.ingredient_id] = 1; });
         (r[1] || []).forEach(function(i) { if (i.check_status || i.in_basket) carry[i.ingredient_id] = i; });
         return RPGACE.sb.secureWrite('shopping_lists', 'insert', { kind: 'cook', status: 'open', shop_mode: 'can_shop', dishes_sig: sig, planned_cook_ids: cooks.map(function(c) { return c.id; }), planned_cook_id: cooks.length === 1 ? cooks[0].id : null })
           .then(function(d) {
@@ -78,7 +84,10 @@ RPGACE.register('groceryCheck', {
             var items = usage.map(function(u) {
               var c = carry[u.ingredient_id] || {};
               var toBuy = c.check_status === 'enough' ? 0 : c.check_status === 'out' ? u.amount : u.toBuy;
-              return { list_id: list.id, ingredient_id: u.ingredient_id, needed_amount: u.amount, needed_unit: u.unit, have_amount: u.have, to_buy_amount: toBuy, bought: false, in_basket: !!c.in_basket, check_status: c.check_status || null };
+              // Nov 6 2026: in stock but in a unit that can't be compared (30 g cinnamon vs 1 tsp) = "check it's there", not "buy it".
+              var unknown = !c.check_status && !(Number(u.have) > 0) && inStock[u.ingredient_id];
+              if (unknown) toBuy = 0;
+              return { list_id: list.id, ingredient_id: u.ingredient_id, needed_amount: u.amount, needed_unit: u.unit, have_amount: unknown ? null : u.have, to_buy_amount: toBuy, bought: false, in_basket: !!c.in_basket, check_status: c.check_status || null };
             });
             return (items.length ? RPGACE.sb.secureWrite('shopping_list_items', 'insert', items) : Promise.resolve()).then(function() {
               var old = (open || []).map(function(x) { return x.id; });
@@ -98,6 +107,7 @@ RPGACE.register('groceryCheck', {
       if (i.check_status === 'enough') return 'ok';
       if (i.check_status === 'out') return 'absent';
       if (i.check_status === 'low') return 'topup';
+      if (i.have_amount === null || i.have_amount === undefined) return 'check';
       var have = Number(i.have_amount) || 0, need = Number(i.needed_amount) || 0;
       return have <= 0 ? 'absent' : have < need ? 'topup' : 'check';
     },
