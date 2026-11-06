@@ -5,7 +5,7 @@ Read before touching any `domain: 'chronicles'` module, the `xp_*` tables or `sy
 Modules (`domain: 'chronicles'`, 3): `careerStatCard`, `chroniclesLog`, `xpSeason`.
 
 ## Realm pages and the menu → [`realm_pages.md`](realm_pages.md)
-- Every realm is a page (`realmPages`): Do-first layout, Grow row, Ask Oracle, switching cover, menu order (`leftNav`).
+- Every realm is a page (`realmPages`): swipe rank card, action card (target + Next), the realm's tools drawn open, 6 bottom buttons, switching cover, menu order (`leftNav`).
 
 ## XP Season Pass (`xpSeason`)
 - Private `xp_events` ledger written only by DB triggers (`xp_on_change` → `xp_award` → `xp_rules`) on 15 tables + `gym_sets`; 13 realms. `xp_on_change` pays a `quest_log` routine tick only when `xp > 0`.

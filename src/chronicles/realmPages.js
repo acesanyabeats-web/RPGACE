@@ -180,11 +180,9 @@ RPGACE.register('realmPages', {
     // Pure: the folded sections of a realm page, in order. tasksN = kept tasks; starters = Oracle questions.
     sections: function(realm, conf, tasksN, starters) {
       var out = [];
-      // Nov 5 2026 (Alex: "too many duplicates of buttons that don't make sense"): a tile whose only
-      // content is one button does that button's job on the first tap (no second "Open X" step).
-      var actOf = function(x) { return x.act || (x.btns && x.btns.length === 1 && !x.draw && !x.nodes ? x.btns[0][1] : null); };
-      if (conf && conf.tool) out.push({ key: conf.tool.key, name: conf.tool.name, count: conf.tool.count || '', act: actOf(conf.tool) });
-      ((conf && conf.extras) || []).forEach(function(x) { out.push({ key: x.key, name: x.name, count: x.count || '', act: actOf(x) }); });
+      // CP-1 (Nov 6 2026): every section is drawn open on the page (no tiles, no one-tap shortcut needed).
+      if (conf && conf.tool) out.push({ key: conf.tool.key, name: conf.tool.name, count: conf.tool.count || '' });
+      ((conf && conf.extras) || []).forEach(function(x) { out.push({ key: x.key, name: x.name, count: x.count || '' }); });
       return out;
     },
     // RH (Nov 5 2026, Alex: "Do-first"): the small row at the bottom of every realm page.

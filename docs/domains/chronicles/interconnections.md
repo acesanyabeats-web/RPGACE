@@ -24,3 +24,5 @@ Moved here from `interconnection_map.md` on Oct 28 2026 (CK-3/4, plan "Caps and 
 | Button | Chain |
 |---|---|
 | + Log Sale / Expense | Form (date/item/category/amount/notes) writes to `chronicles_finance`. Personal-visibility tracker only, explicitly not bookkeeping-grade. |
+
+**🧭 Realm page frame** (`realmPages`, CP-1, Nov 6 2026) — `attach` pulls the rank card from `xpSeason.ui.rankSwipe` (shared swipe wiring `xpSeason.ui._swipeWire`, also the dashboard HUD), the action card from `realmFrame.ui.render(..., {journey, foldTasks})` (journey = `realmPages.JOURNEY[realm]`, today only Chef → `cookingOracle.ui.journey`), tools via `_drawTool` (Chef → `cookingOracle.ui.drawTools`), and the 6 bottom buttons (Grow → `xpSeason.ui.openQuestSuggest`, Tasks → `realmTasks.ui.openCatalogue`, Take in/Log/Review → `realmFrame`, Ask → `oracleControl` overlay). [story](../../../patch_notes.html#card-2026-11-06-chef-page)
