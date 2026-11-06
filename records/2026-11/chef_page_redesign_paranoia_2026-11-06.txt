@@ -1,0 +1,106 @@
+CHEF PAGE REDESIGN - /dev_ops_7 (Nov 6 2026)
+
+1. ALEX, VERBATIM (with a phone screenshot of the Chef realm page, 16:34)
+"Still not perfect, we don't need cooking as button for further list, it should all be on this page, grocery list should be empty right now since only horchata is in planned cooks, and I have the ingredients, keep action at top, all buttons, including grow should be at bottom, with rank card at top, make rank card like before, but it should only contain info relevant to realm. So many duplicate buttons too, each should have a specific function so it's all intuitive"
+Then: "/dev_ops_7 last request"
+
+2. TRACK A (approved GR plan, bug) - grocery list not empty
+Evidence (live rows, Nov 6): open list 8e07ac17 had 28 items from 2 cooks: horchata (draft, 24383b6e) + Chorizo and Chicken
+Tortilla Soup (scheduled 2026-10-30, never closed, 3839970e). Water + ice listed. Cinnamon sticks 7 "Sticks" vs 3 "each",
+cinnamon powder 30 g vs 1.35 tsp, milk fridge 0 cup + pantry 2 L all read as 0 in stock. Almonds, vanilla, sugar: no stock row.
+Fix shipped ba7efdd (GR-4): past-dated cooks skipped, water/ice never listed, each=stick(s), same-unit buckets summed and empty
+buckets skipped, uncomparable stock -> "check it's there". 10 headless checks. Left on the list: almonds, vanilla, sugar (no stock
+row; one tap each). Soup cook row untouched - question F7.
+
+3. EVIDENCE - what the Chef page has today (headless render + his screenshot)
+Top: slim rank pill (Chef · Line Cook 1,085/2,030) + "💡 Grow · 1 taken in · 9 known" pill.
+Action card: Target 0/3 home cooks (Change) · WHAT'S NEXT task "Update kitchen stock ▶ Do it" · "+ 2 more" · big "▶ Live now".
+Tiles: 🍳 Cooking (opens a pop-up hub) · 🛒 Shop now · ⏳ Use soon · 🗂 Tasks (10 kept).
+Bottom: 📜 Log · 📥 Take in · 🔮 Ask Oracle · 📈 Review.
+Cooking pop-up hub: rank line (hidden over Chef since Nov 5) · ⏳ Use soon (hidden over Chef) · "what's next" line (next cook,
+things to buy) · 📖 Recipes · 🍳 Plan a cook · 🛒 Shop · 🔥 Cook · 📦 Stock.
+Duplicates / overlaps found:
+ D1 ▶ Do it (next task) and ▶ Live now both start "doing" from the same card.
+ D2 Two "what's next": realm tasks (action card) and the cooking hub's next-cook line.
+ D3 🗂 Tasks tile vs WHAT'S NEXT + "+2 more" (same list of kept Chef tasks).
+ D4 🛒 Shop now tile vs hub 🛒 Shop (same list since Nov 5).
+ D5 📖 Recipes vs 🔥 Cook (Cook opens My Recipes unless a cook is scheduled) vs 🍳 Plan a cook (with nothing planned it
+    toasts and opens My Recipes too) - three doors to one screen.
+ D6 ⏳ Use soon tile vs 📦 Stock (both are your stock; Use soon = what's going off).
+ D7 Grow pill's "taken in" vs 📥 Take in button (one shows, one adds).
+ D8 The rank card used to be the full card (icon, rank + stars, XP bar, pace, next rank, This week / Year XP / Career chips,
+    plus taken in / knows / suggest quests / milestone lines and realm tabs); RH (Nov 5) cut it to a slim pill.
+
+4. /paranoia (scaled: one page + one shared layout; Tier 2 - 3+ pieces)
+Possible: yes, all client-side; no schema. cookingOracle._renderModuleHub draws into a dashDeck pop-up; it can draw into a host
+element instead (same tiles, same sub-screens). realmPages.attach owns the order; xpSeason.ui.realmCardHtml is the old full card.
+Replaces: the Cooking tile + pop-up hub on the Chef page; the slim rank pill; the Grow pill at the top; the Tasks tile.
+Cost: no Oracle tokens; one session. Risk: the shared realm layout changes all 13 realm pages (other realms' tests in RP-1..7);
+the Cooking pop-up still has to work from the dashboard and the ☰ menu.
+
+5. /free-for-all-debate (shapes)
+ S1 Chef only: inline the cooking hub on the Chef page, leave other realms. + exactly the ask, smallest. - 13 realms drift; the
+    next complaint is the same one on Athlete/Steward.
+ S2 One realm layout for all 13 (rank card top → action card → the realm's own tool drawn on the page → one bottom button row),
+    Chef first with cooking inline. + one rule everywhere, duplicates fixed once. - bigger; realms whose tool is a pop-up (Plans,
+    People, Oversight) need their own inline view or keep a door.
+ S3 Keep tiles, open the Cooking section by default. + tiny. - still a button for a further list; fails "it should all be on this page".
+Council of 5: S2 wins (layout for all, Chef built first; realms without an inline view keep one door until their turn).
+Why-not: if Alex only cares about Chef right now, S2's shared changes are extra risk on pages he isn't complaining about -> F5.
+
+6. /drift vs approved work
+ RH-1/RH-2 (Nov 5, Alex: "Do-first", "One slim line at the top", "Merge into one Grow row") - this ask reverses two of those
+ answers (rank card back to full; Grow to the bottom). Alex's newest words win; RH rows get a note, not a silent change.
+ GR-2 ("Shop now -> list first") stays: Shop opens the same one list.
+
+7. FORKS FOR /interrogation (answers recorded verbatim below once given)
+ F1 Action card: ▶ Do it vs ▶ Live now (D1) and the two what's-next lists (D2).
+ F2 Rank card: what goes in it (D8).
+ F3 Inline cooking: which pieces, and D5/D6 merges.
+ F4 Bottom row: which buttons (Grow, Log, Take in, Ask Oracle, Review, Tasks) (D3, D7).
+ F5 Scope: Chef only or all 13 realms.
+ F6 (merged into F2) taken-in / known counts.
+ F7 The Oct 30 soup cook row: done / cancelled / leave.
+
+8. INTERROGATION ROUND 1 - ALEX'S ANSWERS, VERBATIM (Nov 6)
+ F2 Rank card: "Same + milestone line"
+ F1 Action: "I think 1 but planned cook, if nothing planned then it is planning that is the step, we need to think this through more"
+ F5 Scope: "1 but every realm should have all buttons on home page with specific functions, eg gym, plan the type of day, then plan the exercises for it based on 2d to hit, the exercises accumulate red areas that are hit to its all highlighted, each realm will have it own way of doing this"
+ F7 Old soup cook: "1 and the grocery list should update too to reflect it"
+Read: rank card = full card (rank, bar, pace, next rank, chips) + milestone line; Suggest quests stays with Grow.
+Action = the realm's own next step in its journey (Chef: planned cook -> its step; nothing planned -> Plan a cook). Needs round 2.
+Scope = one layout for all realms, Chef first; each realm gets its own journey with specific buttons (Gym example: plan the
+day type -> plan exercises against the 2D body map -> hit areas fill in). Gym journey = its own later plan item.
+Soup cook -> done; the list rebuilds without it.
+
+9. INTERROGATION ROUND 2 - ALEX'S ANSWERS, VERBATIM (Nov 6)
+ Next step chain: "1 and 2, so 2 ways of scheduling"
+ Tasks: "Under Next, folded (Recommended)"
+ Chef tools: "3 but cook is live now"
+ Bottom row: "1 but isn't take in and research recipe the same thing?"
+Read: chain = Resume (cook running) -> Pick a day (planned, no day) -> Shop (list not clear) -> Cook (ready) -> Plan a cook
+(nothing planned); a day can be set while planning OR from the Pick a day step. Tasks folded under Next ("Also to do"), full
+list on 🗂 Tasks. Chef tools = 6: Recipes, Plan a cook, Shopping list, ▶ Cook (= Live now in cook mode), Stock, Use soon.
+Bottom row = 6 (Grow, Tasks, Take in, Log, Review, Ask Oracle) - pending round 3 on Take in vs YouTube recipe.
+Soup cook 3839970e set to cooked (Nov 6, his answer F7).
+
+10. ROUND 3 - VERBATIM
+ Take in vs YouTube recipe: "One door that asks (Recommended)"
+
+11. PLAN REPORT (CEO Loop 1 Step 5) - awaiting Alex's go
+ CP-1 Realm page layout, all 13 realms: full rank card at the top (rank + stars, XP bar, pace, next rank, chips This week /
+      Year XP / taken in / known, milestone line; no realm tabs); action card (target + Next + "Also to do" folded; the big
+      ▶ Live now button goes); the realm's own tools drawn on the page (no "Open X" tile); bottom 6 buttons in 2 rows of 3
+      (💡 Grow, 🗂 Tasks, 📥 Take in, 📜 Log, 📈 Review, 🔮 Ask Oracle). Top Grow pill and Tasks tile removed.
+ CP-2 Chef Next = cook journey: ▶ Resume (cook running) -> 📅 Pick a day (planned, no day) -> 🛒 Shop (list not clear)
+      -> ▶ Cook (ready) -> 🍳 Plan a cook (nothing planned). Two ways to set the day: while planning, or the Pick a day step.
+ CP-3 Chef tools on the page (6): 📖 Recipes · 🍳 Plan a cook · 🛒 Shopping list · ▶ Cook (Live now, cook mode) · 📦 Stock ·
+      ⏳ Use soon, each with its count. The Cooking pop-up still opens from the dashboard and ☰.
+ CP-4 Chef 📥 Take in asks for a cooking video: 🍳 Make it a recipe (YouTube recipe path, also shelves it) or 📚 Just learn.
+ CP-5 Wrap: realm-page suites updated, docs, plan rows, deploy check.
+ Not in this plan: each other realm's own journey and tools (Alex's Gym example: plan the day type -> plan exercises against the
+ 2D body map -> hit areas fill in). One plan item per realm, each with its own questions, after CP-1..5.
+ Risks: CP-1 changes all 13 pages at once (other realms keep their current tool view until their journey item); old RH tests
+ need updating. Cost: no Oracle tokens, no schema. Why-not: CP-1 for all realms touches pages you didn't complain about;
+ accepted because you asked for one rule everywhere.
+ /drift: reverses RH-1/RH-2 answers from Nov 5 ("One slim line at the top", "Merge into one Grow row") by your newer words.
