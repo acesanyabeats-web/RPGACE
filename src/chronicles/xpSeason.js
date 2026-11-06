@@ -1137,6 +1137,27 @@ RPGACE.register('xpSeason', {
       });
       return list[0];
     },
+    // CP-1 (Nov 6 2026, Alex: "just current level stars and xp bar to next"): the realm page's rank card - one realm only.
+    // A button; the realm page opens the full breakdown (stripFull) on tap.
+    rankMini: function(r) {
+      var S = RPGACE.modules.xpSeason, L = S.logic, U = S.ui, meta = S.REALMS[r] || { icon: '', name: r };
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'xp-mini';
+      b.innerHTML = '<div style="display:flex;align-items:center;gap:10px"><span style="font-size:26px">' + meta.icon + '</span>' +
+        '<div style="flex:1;min-width:0"><div class="xp-mini-rank" style="font-size:16px;font-weight:700">' + U._esc(meta.name) + ' · Loading…</div>' +
+        '<div class="xp-mini-track" style="height:8px;border-radius:4px;background:var(--panel2,#222);margin:6px 0 4px;overflow:hidden"><div class="xp-mini-fill" style="height:100%;width:0;background:var(--gold)"></div></div>' +
+        '<div class="xp-mini-val" style="font-size:12px;color:var(--muted)"></div></div><span style="color:var(--muted)">›</span></div>';
+      if (!L.signedIn || !L.signedIn()) { b.querySelector('.xp-mini-rank').textContent = meta.name + ' · sign in for your rank'; return b; }
+      Promise.all([L.load(), L.loadTrophies().catch(function() { return null; })]).then(function(res) {
+        var sum = L.summary(res[0] || []), T = res[1], rk = T ? L.realmRanks(sum, T, r) : null, se = rk && rk.season, xp = sum.realms[r] || 0;
+        var pct = 0, val = xp.toLocaleString('en-GB') + ' XP';
+        if (se && se.next) { pct = Math.max(0, Math.min(1, (xp - se.from) / Math.max(1, se.next.need - se.from))); val = xp.toLocaleString('en-GB') + ' / ' + se.next.need.toLocaleString('en-GB') + ' XP to ' + se.next.name; }
+        else if (se) { pct = 1; val = xp.toLocaleString('en-GB') + ' XP · top rank'; }
+        b.querySelector('.xp-mini-rank').innerHTML = U._esc(meta.name) + ' · ' + (se ? U._esc(se.name) + ' <span style="color:var(--gold)">' + U.stars(se.stars) + '</span>' : 'no rank yet');
+        b.querySelector('.xp-mini-fill').style.width = Math.round(pct * 100) + '%';
+        b.querySelector('.xp-mini-val').textContent = val;
+      }).catch(function(e) { b.querySelector('.xp-mini-rank').textContent = meta.name + ' · rank not loaded (' + ((e && e.message) || e) + ')'; });
+      return b;
+    },
     realmCardHtml: function(sum, T, r) {
       var S = RPGACE.modules.xpSeason, L = S.logic, U = S.ui, meta = S.REALMS[r];
       var rk = T ? L.realmRanks(sum, T, r) : null, se = rk && rk.season;

@@ -544,6 +544,55 @@ RPGACE.register('cookingOracle', {
       });
     },
 
+    // CP-3 (Nov 6 2026, Alex: "Chef tools ... 3 but cook is live now"): the kitchen's 6 tools, each one job, with live counts.
+    // Drawn on the Chef page (realmPages _drawTool 'chef') and in the Cooking pop-up (opts.before closes it first).
+    drawTools: function(host, opts) {
+      var self = RPGACE.modules.cookingOracle, M = RPGACE.modules; opts = opts || {};
+      RPGACE.areaNav._css();
+      var grid = document.createElement('div'); grid.className = 'an-tiles co-tools'; grid.id = 'co-tools'; host.appendChild(grid);
+      var go = function(fn) { return function() { if (opts.before) opts.before(); fn(); }; };
+      var tile = function(key, label, sub, fn) {
+        var b = self.ui._mkBtn('', 'hubCard'); b.classList.add('an-tile'); b.style.margin = '0'; b.dataset.step = key; b.id = 'co-tool-' + key;
+        var top = document.createElement('div'); top.textContent = label; b.appendChild(top);
+        var s = document.createElement('div'); s.className = 'co-tool-sub'; s.style.cssText = 'font-size:13px;color:var(--muted);font-weight:400;margin-top:2px;'; s.textContent = sub; b.appendChild(s);
+        b.onclick = go(fn); grid.appendChild(b); return s;
+      };
+      var rSub = tile('recipes', '📖 Recipes', 'Saved recipes · new · from YouTube', function() { self.ui._showMyRecipes(); });
+      var pSub = tile('plan', '🍳 Plan a cook', 'Pick recipes and a day', function() { self.ui.planCook(); });
+      var sSub = tile('shop', '🛒 Shopping list', 'For your planned cooks', function() { if (M.groceryCheck) M.groceryCheck.ui.open(); else self.ui._openGrocery(); });
+      tile('cook', '▶ Cook', 'Live now · step by step', function() { if (M.realmTasks) M.realmTasks.ui.openLive({ realm: 'chef', mode: 'cook' }); });
+      tile('stock', '📦 Stock', 'Pantry, fridge, freezer', function() { self.ui._showCurrentStock(); });
+      var uSub = tile('fresh', '⏳ Use soon', 'Best-before · throw out', function() { if (M.bestBefore) M.bestBefore.ui.open(); });
+      RPGACE.sb.select('recipes', 'select=id').then(function(r) { rSub.textContent = (r || []).length + ' saved · new · from YouTube'; }).catch(function() {});
+      self.logic.journeyData().then(function(d) {
+        if (d.cook) pSub.textContent = d.cook.title + (d.cook.day ? ' · ' + d.cook.day : ' · no day yet');
+        if (d.list) sSub.textContent = d.list.buy || d.list.check ? (d.list.buy + ' to buy' + (d.list.check ? ' · ' + d.list.check + ' to check' : '')) : 'Nothing to buy';
+      }).catch(function() {});
+      if (M.bestBefore) M.bestBefore.logic.active().then(function(rows) { var s = M.bestBefore.logic.split(rows); uSub.textContent = s.soon.length + ' use soon · ' + s.out.length + ' throw out'; }).catch(function() {});
+      return grid;
+    },
+    // Plan a cook: resume the planned cook in progress, else pick recipes (+ Planned cook on each).
+    planCook: function() {
+      var self = RPGACE.modules.cookingOracle;
+      self._sessionChecked = false;
+      self.logic._loadDraftSession(function() {
+        if (self._session && self._session.recipeIds && self._session.recipeIds.length) { self.ui._showSessionBuilder(); return; }
+        RPGACE.utils.toast('Tap "+ Planned cook" on the recipes you want to cook together', '#E2A83D', 3200);
+        self.ui._showMyRecipes();
+      });
+    },
+    // CP-2 (Nov 6 2026, Alex: "planned cook, if nothing planned then it is planning that is the step"; "2 ways of scheduling"):
+    // the Chef page's one Next step.
+    journey: function(el) {
+      var self = RPGACE.modules.cookingOracle;
+      el.textContent = 'Checking your kitchen…';
+      return self.logic.journeyStep().then(function(st) {
+        el.textContent = '';
+        RPGACE.areaNav.next(el, [{ icon: st.icon, title: st.title, sub: st.sub, go: [st.label, st.go] }], { cls: 'rf', label: '' });
+        var row = el.querySelector('.an-row-go'); if (row) row.id = 'co-journey-go';
+        el.dataset.step = st.kind;
+      }).catch(function(e) { el.textContent = '⚠️ Could not work out the next step: ' + ((e && e.message) || e); });
+    },
     // CR-5 (Oct 14 2026, Cooking Reorganisation) — the journey hub. Alex's
     // pick: "Recipes → Plan a cook → Shop → Cook → Stock", each step a card,
     // with a live "what's next" line on top. Every card opens the same
@@ -558,66 +607,17 @@ RPGACE.register('cookingOracle', {
       var box = pop.box;
       box.classList.add('co-hub');
       // BB-5: what's going off (best-before countdown) - one tap from the hub.
-      // Not when opened from the Chef realm page, which has its own ⏳ Use soon tile (Nov 5 2026).
-      if (RPGACE.modules.bestBefore && !document.querySelector('.page.active #rp-frame[data-realm="chef"]')) {
-        var bbBtn = self.ui._mkBtn('⏳ Use soon · 🗑 Throw out', '', { extra: 'width:100%;margin-bottom:10px;' }); bbBtn.id = 'co-hub-fresh';
-        bbBtn.onclick = function() { RPGACE.modules.bestBefore.ui.open(); };
-        box.appendChild(bbBtn);
-      }
-
       var next = document.createElement('div');
       next.className = 'co-next';
       next.style.cssText = 'font-size:14px;color:var(--text);background:rgba(76,175,130,0.08);border:1px solid rgba(76,175,130,0.25);border-radius:8px;padding:10px 12px;margin-bottom:12px;line-height:1.45;';
       next.textContent = 'Checking what\'s next...';
       box.appendChild(next);
 
-      // UI Debloat (Oct 27 2026): the 5 journey cards sit in the shared 2-column tile grid.
-      RPGACE.areaNav._css();
-      var grid = document.createElement('div'); grid.className = 'an-tiles co-hub-tiles';
-      box.appendChild(grid);
-      var mkBtn = function(label, sub, onClick, step) {
-        var btn = self.ui._mkBtn('', 'hubCard');
-        btn.classList.add('an-tile'); btn.style.margin = '0';
-        if (step) btn.dataset.step = step;
-        var top = document.createElement('div');
-        top.textContent = label;
-        btn.appendChild(top);
-        var subEl = document.createElement('div');
-        subEl.style.cssText = 'font-size:13px;color:var(--muted);font-weight:400;margin-top:2px;';
-        subEl.textContent = sub || '';
-        btn.appendChild(subEl);
-        btn.onclick = function() { pop.close(); onClick(); };
-        grid.appendChild(btn);
-        return subEl;
-      };
-
+      // CP-3 (Nov 6 2026): the same 6 kitchen tools as the Chef page (ui.drawTools - one copy).
+      var grid = document.createElement('div'); box.appendChild(grid);
       var sessCount = (self._session && self._session.recipeIds && self._session.recipeIds.length) || 0;
-      // H20 (Sep 17 2026): a scheduled session keeps its own entry point.
       var scheduled = !sessCount ? self._scheduledSession : null;
-
-      var recipesSub = mkBtn('📖 Recipes', 'Your saved recipes — search, cook, plan', function() { self.ui._showMyRecipes(); }, 'recipes');
-
-      var plannedSub = sessCount ? (sessCount + ' recipe' + (sessCount === 1 ? '' : 's') + ' in progress — resume')
-        : (scheduled ? 'Scheduled for ' + (scheduled.scheduledAt || '?') + ' — view / revert' : 'Pick recipes to cook together');
-      mkBtn('🍳 Plan a cook', plannedSub, function() {
-        if (sessCount) { self.ui._showSessionBuilder(); return; }
-        if (scheduled) { self.ui._showScheduledCookInfo(scheduled); return; }
-        // A session only exists once a recipe joins it, so an empty plan
-        // starts from the recipes (+ Planned cook on any of them).
-        RPGACE.utils.toast('Tap "+ Planned cook" on the recipes you want to cook together', '#E2A83D', 3200);
-        self.ui._showMyRecipes();
-      }, 'plan');
-
-      // Nov 5 2026: the same one list for all upcoming cooks as the Chef page's 🛒 Shop now (GR).
-      mkBtn('🛒 Shop', 'Grocery list for your cooks', function() { if (RPGACE.modules.groceryCheck) RPGACE.modules.groceryCheck.ui.open(); else self.ui._openGrocery(); }, 'shop');
-
-      mkBtn('🔥 Cook', scheduled ? 'Start the scheduled cook now' : 'Cook a saved recipe step by step', function() {
-        if (scheduled) { self.logic._startCookNow(scheduled.plannedCookId, scheduled.agendaId); return; }
-        self.ui._showMyRecipes();
-      }, 'cook');
-
-      mkBtn('📦 Stock', 'Pantry, fridge, freezer & equipment — live', function() { self.ui._showCurrentStock(); }, 'stock');
-      if (grid.lastChild) grid.lastChild.style.gridColumn = '1 / -1';
+      self.ui.drawTools(grid, { before: function() { pop.close(); } });
 
       // Oct 21 2026: New recipe / What can I cook / Top-up / Settings moved into ☰ (ui._cookShortcuts).
 
@@ -629,7 +629,6 @@ RPGACE.register('cookingOracle', {
         RPGACE.sb.select('shopping_lists', 'select=id&kind=eq.topup&status=eq.open&order=created_at.desc&limit=1').catch(function() { return []; }),
       ]).then(function(r) {
         var n = (r[0] || []).length;
-        recipesSub.textContent = n + ' saved — search, cook, plan';
         var cookList = (r[1] || [])[0], topList = (r[2] || [])[0];
         return Promise.all([
           cookList ? RPGACE.sb.select('shopping_list_items', 'select=id&bought=eq.false&to_buy_amount=gt.0&list_id=eq.' + cookList.id).catch(function() { return null; }) : Promise.resolve(null),
@@ -8524,6 +8523,43 @@ RPGACE.register('cookingOracle', {
     // status this table ever holds. Only ever called when there's no
     // active draft (see ui._showModuleHub), so this stays a cheap, rare
     // query rather than a 2nd check on every normal hub open.
+    // CP-2/3: one read for the journey + tool counts - the first upcoming cook and its grocery list.
+    journeyData: function() {
+      var self = RPGACE.modules.cookingOracle, M = RPGACE.modules, G = M.groceryCheck;
+      if (!G) return Promise.resolve({});
+      // One read for everything drawn at the same moment (the journey + the tool counts), so the list is never built twice.
+      if (self._jd && Date.now() - self._jd.at < 4000) return self._jd.p;
+      var p = G.logic.upcoming().then(function(cooks) {
+        if (!cooks.length) return { cooks: [] };
+        cooks = cooks.slice().sort(function(a, b) { return String(a.scheduled_at || '9999').localeCompare(String(b.scheduled_at || '9999')); });
+        var c = cooks[0];
+        return Promise.all([RPGACE.sb.select('recipes', 'select=id,title&id=in.(' + c.recipe_ids.join(',') + ')').catch(function() { return []; }),
+          G.logic.sync().then(function(r) { return r.list ? G.logic.items(r.list.id) : []; }).catch(function() { return null; })]).then(function(r) {
+          var title = (r[0] || []).map(function(x) { return x.title; }).join(' + ') || 'your planned cook';
+          var list = null;
+          if (r[1]) { list = { buy: 0, check: 0 }; r[1].forEach(function(i) { var g = G.logic.group(i); if (g === 'absent' || g === 'topup') list.buy++; else if (g === 'check' && !i.check_status) list.check++; }); }
+          return { cooks: cooks, cook: { id: c.id, status: c.status, title: title, day: c.scheduled_at ? String(c.scheduled_at).slice(0, 10) : null }, list: list };
+        });
+      });
+      self._jd = { at: Date.now(), p: p };
+      p.catch(function() { self._jd = null; });
+      return p;
+    },
+    // Pure-ish: which step comes first. Resume (running) -> Pick a day -> Shop -> Cook -> Plan a cook.
+    journeyStep: function() {
+      var self = RPGACE.modules.cookingOracle, M = RPGACE.modules, U = self.ui;
+      var running = [];
+      try { running = (M.doingNow ? M.doingNow.logic.running() : []).filter(function(x) { return (x.realms || []).indexOf('chef') >= 0; }); } catch (e) {}
+      if (running.length) return Promise.resolve({ kind: 'resume', icon: '▶', title: 'Resume: ' + (running[0].title || 'your cook'), sub: 'Running now', label: '▶ Resume', go: function() { M.realmTasks.ui.openLive({ realm: 'chef' }); } });
+      return self.logic.journeyData().then(function(d) {
+        if (!d.cook) return { kind: 'plan', icon: '🍳', title: 'Plan a cook', sub: 'Nothing planned yet', label: '🍳 Plan', go: function() { U.planCook(); } };
+        if (!d.cook.day) return { kind: 'day', icon: '📅', title: 'Pick a day for ' + d.cook.title, sub: 'Planned · no day yet', label: '📅 Pick a day', go: function() { U.planCook(); } };
+        if (d.list && (d.list.buy || d.list.check)) return { kind: 'shop', icon: '🛒', title: 'Shop for ' + d.cook.title, sub: d.list.buy + ' to buy' + (d.list.check ? ' · ' + d.list.check + ' to check' : '') + ' · cook ' + d.cook.day, label: '🛒 Shop', go: function() { M.groceryCheck.ui.open(); } };
+        return { kind: 'cook', icon: '▶', title: 'Cook ' + d.cook.title, sub: 'Ready · ' + d.cook.day, label: '▶ Cook', go: function() {
+          self.logic._loadScheduledSession(function(err, s) { if (s && s.plannedCookId === d.cook.id) self.logic._startCookNow(s.plannedCookId, s.agendaId); else M.realmTasks.ui.openLive({ realm: 'chef', mode: 'cook' }); });
+        } };
+      });
+    },
     _loadScheduledSession: function(cb) {
       var self = RPGACE.modules.cookingOracle;
       cb = cb || function() {};

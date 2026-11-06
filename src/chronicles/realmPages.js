@@ -24,8 +24,8 @@ RPGACE.register('realmPages', {
     steward: { page: 'money', mod: 'moneyHub', title: '💷 Steward', tool: { key: 'money', name: '💷 Money', count: 'In − out · subscriptions · receipts · software', nodes: '*' },
       extras: [{ key: 'wishlist', name: '🛒 Wishlist', count: 'Future purchases vs budget', btns: [['🛒 Open Wishlist', 'card:wishlist'], ['🛒 Shop now', 'shop']] }] },
     scholar: { page: 'knowledge', mod: 'knowledgeHub', title: '📚 Scholar', tool: { key: 'knowledge', name: '📚 Knowledge', count: 'Take in → Study → Learned → Review', nodes: '*' } },
-    chef: { page: 'realm', title: '🍳 Chef', tool: { key: 'cooking', name: '🍳 Cooking', count: 'Recipes, plan, cook, stock', btns: [['🍳 Open Cooking', 'card:cooking']] },
-      extras: [{ key: 'shop', name: '🛒 Shop now', count: 'Grocery list for your cooks', act: 'shop' }, { key: 'fresh', name: '⏳ Use soon', count: 'Best-before countdown · throw out', draw: 'bestBefore' }] },
+    // CP-3 (Nov 6 2026): the kitchen's 6 tools drawn on the page (no Cooking button to a further list).
+    chef: { page: 'realm', title: '🍳 Chef', tool: { key: 'cooking', name: '🍳 Kitchen', count: 'Recipes, plan, shop, cook, stock', draw: 'chef' } },
     athlete: { page: 'realm', title: '💪 Athlete', tool: { key: 'gym', name: '🏋️ Gym', count: 'This week, log a session, bests', draw: 'gym' },
       extras: [{ key: 'health', name: '❤️ Health & body', count: 'Food, weight, water, sleep', btns: [['❤️ Open Health & body', 'card:health']] }] },
     explorer: { page: 'realm', title: '✈️ Explorer', tool: { key: 'plans', name: '🧳 Plans', count: 'Trips, events, days out', btns: [['🧳 Open Plans', 'plans:plans'], ['💡 Outing ideas', 'plans:ideas']] } },
@@ -34,6 +34,10 @@ RPGACE.register('realmPages', {
     mind: { page: 'realm', title: '🧘 Mind', tool: { key: 'journal', name: '📓 Journal', count: 'Session logs, decisions, look-back', btns: [['📓 Open Journal', 'page:journal'], ['🧭 Log a decision', 'decision']] } },
     builder: { page: 'realm', title: '🛠 Builder', tool: { key: 'oversight', name: '📚 Oversight', count: 'Docs, smoke test, what works', btns: [['📚 Open Oversight', 'card:oversight']] } },
     life: { page: 'realm', title: '🏠 Life', tool: { key: 'work', name: '💼 Work', count: 'Clock in · drink specs', draw: 'work' } }
+  },
+  // CP-2: a realm's own Next step (its journey), drawn at the top of the action card. Realms without one show their tasks.
+  JOURNEY: {
+    chef: function(el) { var co = RPGACE.modules.cookingOracle; return co ? co.ui.journey(el) : null; }
   },
   _current: null,
   _arrive: null,
@@ -181,11 +185,11 @@ RPGACE.register('realmPages', {
       var actOf = function(x) { return x.act || (x.btns && x.btns.length === 1 && !x.draw && !x.nodes ? x.btns[0][1] : null); };
       if (conf && conf.tool) out.push({ key: conf.tool.key, name: conf.tool.name, count: conf.tool.count || '', act: actOf(conf.tool) });
       ((conf && conf.extras) || []).forEach(function(x) { out.push({ key: x.key, name: x.name, count: x.count || '', act: actOf(x) }); });
-      out.push({ key: 'tasks', name: '🗂 Tasks', count: tasksN + ' kept' });
       return out;
     },
     // RH (Nov 5 2026, Alex: "Do-first"): the small row at the bottom of every realm page.
-    FOOT: [{ key: 'log', name: '📜 Log' }, { key: 'takein', name: '📥 Take in' }, { key: 'prompts', name: '🔮 Ask Oracle' }, { key: 'review', name: '📈 Review' }]
+    // CP-1 (Nov 6 2026): every button at the bottom, each with one job.
+    FOOT: [{ key: 'grow', name: '💡 Grow' }, { key: 'tasks', name: '🗂 Tasks' }, { key: 'takein', name: '📥 Take in' }, { key: 'log', name: '📜 Log' }, { key: 'review', name: '📈 Review' }, { key: 'prompts', name: '🔮 Ask Oracle' }]
   },
 
   ui: {
@@ -207,10 +211,12 @@ RPGACE.register('realmPages', {
         '#rp-live{width:100%;min-height:52px;font-size:17px;margin-top:10px}' +
         '.rp-top{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:0 0 4px}.rp-top .xp-strip{margin:0 !important}' +
         '#rp-grow{min-height:44px;padding:6px 12px;border-radius:22px;border:1px solid var(--border);background:none;color:var(--muted);font:inherit;font-size:13px;cursor:pointer;text-align:left}' +
-        '#rp-foot{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:6px 0 14px}' +
+        '#rp-foot{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:10px 0 14px}' +
+        '.rp-h2{font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:12px 14px 6px}' +
+        '#rp-rank{display:block;width:100%;text-align:left;border:1px solid var(--border);border-radius:14px;background:var(--panel);padding:12px 14px;margin:6px 0 8px;color:var(--text);font:inherit;cursor:pointer}' +
         '#rp-foot button{min-height:52px;padding:6px 4px;border-radius:10px;border:1px solid var(--border);background:none;color:var(--text);font:inherit;font-size:13px;cursor:pointer}' +
         '.rp-on > .xp-strip,.rp-on .mh-go-selling,.rp-on .mh-go-wishlist,#rp-rank .xp-slim-tgt{display:none !important}' +
-        '.rp-ranksheet .xp-rc-taken,.rp-ranksheet .xp-rc-knows,.rp-ranksheet .xp-rc-suggest,.rp-ranksheet .xp-rc-ms{display:none !important}' +
+        '.rp-ranksheet .xp-rc-tabs,.rp-ranksheet .xp-rc-suggest{display:none !important}' +
         '.rp-growsheet .xp-rc-card,.rp-growsheet .xp-rc-tabs{display:none !important}';
       document.head.appendChild(s);
     },
@@ -268,6 +274,7 @@ RPGACE.register('realmPages', {
         if (kind === 'gym' && M.gymTracker) { body.textContent = 'Loading your sessions…'; var host = { box: body, close: function() {} }, g = M.gymTracker; var d = function() { g.logic.load().then(function(s) { g.ui.render(host, s, d); }, function(e) { body.textContent = '⚠️ Could not load gym sessions: ' + (e.message || e); }); }; d(); return; }
         if (kind === 'work' && M.workMode) { M.workMode.ui.open({ host: body }); return; }
         if (kind === 'bestBefore' && M.bestBefore) { M.bestBefore.ui.lists(body); return; }
+        if (kind === 'chef' && M.cookingOracle) { M.cookingOracle.ui.drawTools(body); return; }
         if (kind === 'chores' && M.myDay) {
           var md = M.myDay; body.textContent = 'Loading chores…';
           Promise.resolve(md.logic.load()).then(function() { body.textContent = ''; md.ui.renderChores(body, md.logic.iso()); if (!body.children.length) body.textContent = 'No chores due. Add chores as Actions on My Day (every N days).'; },
@@ -303,59 +310,44 @@ RPGACE.register('realmPages', {
       // links + mini realm cards dropped via .rp-on): rank + Grow on top, then target / what's next / Live now,
       // then the realm's tools as tiles, then Log · Take in · Ask · Review.
       pg.classList.add('rp-on');
+      // CP-1 (Nov 6 2026, Alex: "rank card at top ... just current level stars and xp bar to next, then second page with full
+      // breakdown"; "keep action at top"; "all buttons, including grow should be at bottom"; "it should all be on this page"):
+      // rank card -> action card (target, Next, Also to do) -> the realm's own tools drawn open -> 6 buttons.
       frame.appendChild(U._top(realm));
       var card = document.createElement('div'); card.className = 'rp-card'; card.id = 'rp-do'; frame.appendChild(card);
       var home = document.createElement('div'); home.id = 'rp-home'; card.appendChild(home);
-      var live = RPGACE.kit.btn(opts.now && opts.open === 'live' ? '▶ On now: ' + (opts.now.title || 'this realm') : '▶ Live now', 'primary'); live.id = 'rp-live';
-      live.onclick = function() { var rtl = RPGACE.modules.realmTasks; if (rtl) rtl.ui.openLive({ realm: realm }); };
-      card.appendChild(live);
       var waits = 2, ready = function() { if (--waits === 0) U._uncover(); };
-      RF.ui.render(home, realm, null, { noTiles: true, onReady: ready });
-      var list = document.createElement('div'); list.id = 'rp-sections'; list.className = 'rp-grid'; frame.appendChild(list);
+      var J = self.JOURNEY[realm];
+      RF.ui.render(home, realm, null, { noTiles: true, onReady: ready, journey: J ? function(el) { return J(el); } : null, foldTasks: !!J });
+      var list = document.createElement('div'); list.id = 'rp-sections'; frame.appendChild(list);
       var foot = document.createElement('div'); foot.id = 'rp-foot'; frame.appendChild(foot);
       self.logic.FOOT.forEach(function(f) {
         var b = document.createElement('button'); b.type = 'button'; b.dataset.sec = f.key; b.id = 'rp-foot-' + f.key; b.textContent = f.name;
         b.onclick = function() { U._footOpen(realm, f.key); }; foot.appendChild(b);
       });
-      var rt = RPGACE.modules.realmTasks;
-      var tasksN = rt ? (rt._tasks || []).filter(function(x) { return x.status === 'kept' && x.realm === realm; }).length : 0;
       RF.logic.registry().then(function(reg) {
         var fr = RF.logic.frameOf(reg, realm);
-        self.logic.sections(realm, conf, tasksN, fr.starters).forEach(function(sec) {
-          var box = document.createElement('div'); box.className = 'rp-sec'; box.dataset.sec = sec.key; box.id = 'rp-sec-' + sec.key;
-          var head = document.createElement('button'); head.type = 'button'; head.className = 'rp-head'; head.setAttribute('aria-expanded', 'false');
-          head.innerHTML = '<span class="rp-chev">▸</span><span class="rp-name"></span><span class="rp-count"></span>';
-          head.querySelector('.rp-name').textContent = sec.name; head.querySelector('.rp-count').textContent = (opts.now && opts.open === sec.key) ? '▶ On now: ' + (opts.now.title || 'this realm') : sec.count;
-          var body = document.createElement('div'); body.className = 'rp-body'; body.hidden = true;
-          var drawn = false;
-          var toggle = function(on) {
-            box.classList.toggle('rp-open', on); body.hidden = !on; head.setAttribute('aria-expanded', on ? 'true' : 'false');
-            if (on && !drawn) { drawn = true; U._drawSection(body, realm, sec.key, fr, keep); }
-          };
-          head.onclick = function() { if (sec.act) { U._act(sec.act, realm); return; } toggle(body.hidden); };
+        self.logic.sections(realm, conf, 0, fr.starters).forEach(function(sec) {
+          var box = document.createElement('div'); box.className = 'rp-sec rp-open'; box.dataset.sec = sec.key; box.id = 'rp-sec-' + sec.key;
+          var head = document.createElement('div'); head.className = 'rp-h2'; head.textContent = sec.name;
+          var body = document.createElement('div'); body.className = 'rp-body';
           box.appendChild(head); box.appendChild(body); list.appendChild(box);
-          // The tool section's nodes live in it from the start (folded), so the area module keeps drawing them.
-          if (conf.tool && sec.key === conf.tool.key && nodes) { drawn = true; keep.forEach(function(n) { body.appendChild(n); }); }
-          if (opts.open === sec.key && !sec.act) toggle(true);
+          // The tool section's nodes move in (they keep their ids, so the area module keeps drawing them); everything else is drawn now.
+          if (conf.tool && sec.key === conf.tool.key && nodes) keep.forEach(function(n) { body.appendChild(n); });
+          else U._drawSection(body, realm, sec.key, fr, keep);
+          if (opts.open === sec.key) setTimeout(function() { try { box.scrollIntoView({ block: 'start', behavior: 'smooth' }); } catch (e) {} }, 300);
         });
         ready();
       }).catch(function(e) { ready(); console.warn('[realmPages] sections not drawn:', e && e.message || e); });
       return frame;
     },
     // RH: slim rank line (tap = the full rank card) + one Grow row (taken in, knows, quests, milestone).
+    // CP-1: the rank card = rank + stars + XP bar to the next rank; tap = the full breakdown (xpSeason.stripFull, this realm only).
     _top: function(realm) {
       var U = RPGACE.modules.realmPages.ui, X = RPGACE.modules.xpSeason, top = document.createElement('div'); top.className = 'rp-top'; top.id = 'rp-top';
-      var rank = document.createElement('div'); rank.id = 'rp-rank'; rank.appendChild(X.ui.strip([realm]));
-      rank.addEventListener('click', function(e) { e.preventDefault(); e.stopPropagation(); U._sheetOf('🏅 ' + X.REALMS[realm].name, 'rp-ranksheet', realm); }, true);
-      var grow = document.createElement('button'); grow.type = 'button'; grow.id = 'rp-grow'; grow.textContent = '💡 Grow';
-      grow.onclick = function() { U._sheetOf('💡 Grow · ' + X.REALMS[realm].name, 'rp-growsheet', realm); };
-      Promise.all([RPGACE.realmTakenIn().catch(function() { return {}; }), RPGACE.realmKnowledge ? RPGACE.realmKnowledge().catch(function() { return {}; }) : {}]).then(function(r) {
-        var t = (r[0] || {})[realm], k = (r[1] || {})[realm], bits = [];
-        if (t && t.total) bits.push(t.total + ' taken in');
-        if (k && (k.terms || k.items)) bits.push(((k.terms || 0) + (k.items || 0)) + ' known');
-        grow.textContent = '💡 Grow' + (bits.length ? ' · ' + bits.join(' · ') : ' · take in, quests, milestone');
-      });
-      top.appendChild(rank); top.appendChild(grow);
+      var rank = X.ui.rankMini(realm); rank.id = 'rp-rank';
+      rank.onclick = function() { U._sheetOf('🏅 ' + X.REALMS[realm].name, 'rp-ranksheet', realm); };
+      top.appendChild(rank);
       return top;
     },
     // The existing full realm card (xpSeason.stripFull), shown as just the rank card or just the Grow lines.
@@ -368,6 +360,9 @@ RPGACE.register('realmPages', {
     _footOpen: function(realm, key) {
       var RF = RPGACE.modules.realmFrame, X = RPGACE.modules.xpSeason;
       if (key === 'log') return RF.ui._openLog(realm);
+      // Grow = new quest ideas for this realm; Tasks = every task kept for it (+ new ones).
+      if (key === 'grow') return X.ui.openQuestSuggest(realm);
+      if (key === 'tasks') return RPGACE.modules.realmTasks && RPGACE.modules.realmTasks.ui.openCatalogue(realm);
       if (key === 'takein') return RF.ui._openTakeIn(realm, null);
       if (key === 'review') return RF.ui._openReview(realm);
       if (key === 'prompts') {

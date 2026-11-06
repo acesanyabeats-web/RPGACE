@@ -104,3 +104,8 @@ Soup cook 3839970e set to cooked (Nov 6, his answer F7).
  need updating. Cost: no Oracle tokens, no schema. Why-not: CP-1 for all realms touches pages you didn't complain about;
  accepted because you asked for one rule everywhere.
  /drift: reverses RH-1/RH-2 answers from Nov 5 ("One slim line at the top", "Merge into one Grow row") by your newer words.
+
+12. ALEX'S GO WITH A CHANGE, VERBATIM (Nov 6)
+ "Not full on cp 1, just current level stars and xp bar to next, then second page with full breakdown"
+Read: CP-1 rank card at the top = rank name + stars + XP bar to the next rank only; tapping it opens a second page with the full
+breakdown (pace, next rank, This week / Year XP / Career, taken in, known, milestone). Rest of CP-1..5 as planned.

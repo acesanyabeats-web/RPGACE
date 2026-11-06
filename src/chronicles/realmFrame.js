@@ -234,7 +234,7 @@ RPGACE.register('realmFrame', {
       var tiles = document.createElement('div'); tiles.id = 'rf-tiles';
       box.appendChild(home); box.appendChild(feedsEl); box.appendChild(tiles);
       // opts.onReady fires once the home (target + what's next) is drawn or failed (realm page loading cover).
-      L.targetState(realm).then(function(st) { U._drawHome(home, st, realm, close); }).catch(function(e) { home.textContent = '⚠️ Could not load this realm: ' + ((e && e.message) || e); })
+      L.targetState(realm).then(function(st) { U._drawHome(home, st, realm, close, opts); }).catch(function(e) { home.textContent = '⚠️ Could not load this realm: ' + ((e && e.message) || e); })
         .then(function() { if (opts.onReady) opts.onReady(); });
       L.feeds(realm).then(function(fs) {
         if (!fs.length) return;
@@ -249,14 +249,15 @@ RPGACE.register('realmFrame', {
       }).catch(function() {});
       if (!opts.noTiles) L.registry().then(function(reg) { U._drawTiles(tiles, realm, L.frameOf(reg, realm), close); });
     },
-    _drawHome: function(el, st, realm, close) {
+    _drawHome: function(el, st, realm, close, opts) {
+      opts = opts || {};
       var self = RPGACE.modules.realmFrame, L = self.logic, U = self.ui;
       el.textContent = '';
       var lbl = document.createElement('div'); lbl.className = 'rf-tgt-l';
       lbl.textContent = '🎯 Target' + (st.frame && st.frame.target ? ' · ' + st.label + (st.period === 'month' ? ' per month' : ' per week') : '');
       if (st.frame && st.frame.target) {
         var set = document.createElement('button'); set.type = 'button'; set.className = 'rf-set'; set.id = 'rf-set-target'; set.textContent = 'Change';
-        set.onclick = function() { U._editTarget(realm, st, function() { L.targetState(realm).then(function(s2) { U._drawHome(el, s2, realm, close); }); }); };
+        set.onclick = function() { U._editTarget(realm, st, function() { L.targetState(realm).then(function(s2) { U._drawHome(el, s2, realm, close, opts); }); }); };
         lbl.appendChild(set);
       }
       var v = document.createElement('div'); v.className = 'rf-tgt-v'; v.id = 'rf-target-text'; v.textContent = L.targetText(st) || 'No target for this realm yet';
@@ -265,9 +266,20 @@ RPGACE.register('realmFrame', {
         var pg = L.progress(st), bar = document.createElement('div'); bar.className = 'rf-bar' + (st.under && !pg.good ? ' rf-over' : '');
         var fill = document.createElement('div'); fill.style.width = Math.round(pg.pct * 100) + '%'; bar.appendChild(fill); el.appendChild(bar);
       }
-      var nh = document.createElement('div'); nh.className = 'rf-h'; nh.textContent = 'What\'s next'; el.appendChild(nh);
-      var nx = document.createElement('div'); nx.id = 'rf-next'; el.appendChild(nx);
+      var nh = document.createElement('div'); nh.className = 'rf-h'; nh.textContent = opts.journey ? 'Next' : 'What\'s next'; el.appendChild(nh);
+      // CP-2 (Nov 6 2026): a realm with its own journey (Chef: Resume -> Pick a day -> Shop -> Cook -> Plan a cook) shows that
+      // step first; its tasks fold under "Also to do" (foldTasks), opened in place.
+      if (opts.journey) { var jx = document.createElement('div'); jx.id = 'rf-journey'; el.appendChild(jx); try { opts.journey(jx); } catch (e) { jx.textContent = '⚠️ ' + (e.message || e); } }
+      var nx = document.createElement('div'); nx.id = 'rf-next';
+      if (opts.foldTasks) {
+        var fold = document.createElement('button'); fold.type = 'button'; fold.id = 'rf-also'; fold.className = 'rf-also'; fold.textContent = '🗂 Also to do…';
+        fold.style.cssText = 'display:block;width:100%;min-height:44px;margin-top:8px;text-align:left;border:1px dashed var(--border);border-radius:10px;background:none;color:var(--text);font:inherit;padding:8px 12px;cursor:pointer';
+        nx.hidden = true; fold.onclick = function() { nx.hidden = !nx.hidden; fold.setAttribute('aria-expanded', nx.hidden ? 'false' : 'true'); };
+        el.appendChild(fold);
+      }
+      el.appendChild(nx);
       L.next(realm).then(function(ts) {
+        var fb = el.querySelector('#rf-also'); if (fb) { fb.textContent = '🗂 Also to do · ' + ts.length + (ts.length === 1 ? ' task' : ' tasks'); if (!ts.length) fb.style.display = 'none'; }
         RPGACE.areaNav.next(nx, ts.map(function(t) {
           return { icon: '▶', title: t.title, sub: (t.mins || 30) + ' min' + (t.earns === 'xp' && t.xp ? ' · +' + t.xp + ' XP' : ''),
             go: ['▶ Do it', function() { if (close) close(); RPGACE.modules.realmTasks.ui.openLive({ realm: realm }); }] };
@@ -326,6 +338,23 @@ RPGACE.register('realmFrame', {
       share.onclick = function() { pop.close(); if (close) close(); var P = (RPGACE.CONFIG && RPGACE.CONFIG.pages) || {}; var kh = RPGACE.modules.knowledgeHub; if (kh) kh.ui.go('videoworm'); setTimeout(function() { var i = document.getElementById('intel-url-input'); if (i) i.focus(); }, 600); };
       var lib = document.createElement('button'); lib.type = 'button'; lib.className = 'learn-btn an-sheet-btn'; lib.textContent = '📚 Open Life Library';
       lib.onclick = function() { pop.close(); if (close) close(); var kh = RPGACE.modules.knowledgeHub; if (kh) kh.ui.go('library'); };
+      // CP-4 (Nov 6 2026, Alex: "isn't take in and research recipe the same thing?" -> "One door that asks"): on Chef, a cooking
+      // video is either made into a recipe (videoRecipe, which also shelves it as Chef) or just learned from (Videoworm).
+      var VR = RPGACE.modules.videoRecipe;
+      if (realm === 'chef' && VR) {
+        var cb = document.createElement('div'); cb.id = 'rf-takein-chef'; cb.style.cssText = 'display:flex;flex-direction:column;gap:8px;margin:0 0 12px';
+        var inp = document.createElement('input'); inp.type = 'text'; inp.id = 'rf-takein-link'; inp.placeholder = 'Paste a YouTube link, or say the dish';
+        inp.style.cssText = 'width:100%;box-sizing:border-box;min-height:44px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:var(--panel2,#111);color:var(--text);font:inherit';
+        var mk = document.createElement('button'); mk.type = 'button'; mk.id = 'rf-takein-recipe'; mk.className = 'learn-btn green an-sheet-btn'; mk.textContent = '🍳 Make it a recipe';
+        var learn = document.createElement('button'); learn.type = 'button'; learn.id = 'rf-takein-learn'; learn.className = 'learn-btn an-sheet-btn'; learn.textContent = '📚 Just learn from it';
+        var need = function() { var v = inp.value.trim(); if (!v) { RPGACE.utils.toast('⚠️ Paste a link or say the dish first', '#E2A83D', 2500); inp.focus(); } return v; };
+        mk.onclick = function() { var v = need(); if (!v) return; VR.ui.choose(v, { one: false }).then(function(vid) { if (vid) { pop.close(); if (close) close(); VR.ui.build(vid, v, 4); } }); };
+        learn.onclick = function() { var v = need(); if (!v) return; pop.close(); if (close) close(); var kh = RPGACE.modules.knowledgeHub; if (kh) kh.ui.go('videoworm'); setTimeout(function() { var i = document.getElementById('intel-url-input'); if (i) { i.value = v; i.focus(); } }, 600); };
+        cb.appendChild(inp); cb.appendChild(mk); cb.appendChild(learn);
+        pop.box.insertBefore(cb, list);
+        pop.box.appendChild(lib);
+        return;
+      }
       pop.box.appendChild(share); pop.box.appendChild(lib);
     },
     _openLog: function(realm, host) {
