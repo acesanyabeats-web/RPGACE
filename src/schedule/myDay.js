@@ -5520,35 +5520,6 @@ RPGACE.register('myDay', {
     },
     // WF-3 (Oct 29 2026, Alex: "making those buttons in left nav would be awesome as action buttons bar ...
     // I tap it then actions above come as pop up to choose"): the ⚡ Actions pop-up, opened from the left menu.
-    openActions: function() {
-      var self = RPGACE.modules.myDay, L = self.logic, U = self.ui, dd = RPGACE.modules.dashDeck, dn = RPGACE.modules.doingNow;
-      var pop = dd._popup({ eyebrow: '⚡ Actions', title: 'What now?', accent: 'var(--gold)', width: '420px', closeLabel: 'Close' });
-      pop.box.id = 'myday-actions';
-      var list = document.createElement('div'); list.style.cssText = 'display:flex;flex-direction:column;gap:10px;';
-      var add = function(id, label, kind, fn) {
-        var b = U._btn(label, kind); b.id = id; b.style.minHeight = '52px'; b.style.fontSize = '16px'; b.style.textAlign = 'left';
-        b.onclick = function() { pop.close(); setTimeout(fn, 0); };
-        list.appendChild(b);
-      };
-      var paint = function() {
-        list.innerHTML = '';
-        var up = L.awake(L.dayState());
-        add('myday-act-day', up ? '🌙 Going to bed' : '☀️ I\'m up', up ? '' : 'primary', function() { (up ? U.goingToBed() : U.imUp()).catch(function() {}); });
-        add('myday-act-brief', '☀️ Morning Brief', '', function() { dd._openMorningBrief(); });
-        var wm = RPGACE.modules.workMode, onShift = wm && wm.logic.current();
-        if (onShift) add('myday-act-work', '💼 Work · drinks + clock in', 'primary', function() { wm.open(); });
-        var nRun = dn ? dn.logic.running().length : 0;
-        if (nRun) add('myday-act-running', '⏱ Running now (' + nRun + ')', 'primary', function() { dn.ui.openRunning(); });
-        if (dn) {
-          add('myday-act-live', '▶ Doing now', '', function() { dn.ui.openStart(); });
-          add('myday-act-did', '✓ I just did', '', function() { dn.ui.openJustDid(); });
-        }
-        add('myday-act-evening', '🌙 Evening review', '', function() { U.openEvening(); });
-      };
-      pop.box.appendChild(list);
-      if (self._settings === undefined) L.loadTimings().then(paint, paint); else paint();
-      return pop;
-    },
     // WR-10 (Nov 3 2026, Alex: "1 and 3 both look good, maybe both?"): the day lasts until Going to bed, but if
     // you're still "up" 20+ hours after ☀️ I'm up, ask once (per 3 hours) which day it is.
     askStaleDay: function() {

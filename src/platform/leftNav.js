@@ -392,16 +392,6 @@ RPGACE.register('leftNav', {
     hdr.appendChild(brand);
     hdr.appendChild(close);
     panel.appendChild(hdr);
-    // WF-3 (Oct 29 2026): one folded ⚡ Actions button; tapping it pops up I'm up / Going to bed,
-    // Morning Brief, Doing now, I just did and Evening review (myDay.ui.openActions owns the list).
-    if (RPGACE.modules.myDay) {
-      var act = document.createElement('button');
-      act.id = 'ln-actions'; act.type = 'button';
-      act.textContent = '⚡ Actions';
-      act.style.cssText = 'margin:8px 12px 4px;min-height:48px;border-radius:10px;border:1px solid rgba(201,168,76,0.45);background:rgba(201,168,76,0.12);color:var(--gold);font-size:16px;font-weight:700;cursor:pointer;font-family:Rajdhani,sans-serif;text-align:left;padding:8px 14px;';
-      act.onclick = function() { self.close(); RPGACE.modules.myDay.ui.openActions(); };
-      panel.appendChild(act);
-    }
     // FL-5 (Oct 27 2026): realm filter chips (Alex: "Keep domains, add realm filter").
     var chips = RPGACE.modules.leftNav.ui._realmChips();
     if (chips) panel.appendChild(chips);
@@ -802,6 +792,13 @@ RPGACE.register('leftNav', {
       || [];
   },
 
+  // ☀️ I'm up before the day starts, 🌙 Going to bed once it has (myDay's own day state).
+  _dayItem: function() {
+    var md = RPGACE.modules.myDay, up = false;
+    try { up = md && md.logic.awake(md.logic.dayState()); } catch (e) {}
+    return up ? { icon: '🌙', label: 'Going to bed', desc: 'Review, plan tomorrow, set the alarm', run: function() { md.ui.goingToBed().catch(function() {}); } }
+      : { icon: '☀️', label: 'I\'m up', desc: 'Start the day: alarm off, Good morning', run: function() { if (md) md.ui.imUp().catch(function() {}); } };
+  },
   _items: function() {
     // Real ordering bug, found live July 22 (not new - has existed
     // silently since this module shipped July 20): RPGACE.register()
@@ -833,7 +830,12 @@ RPGACE.register('leftNav', {
       // RP-2 (Nov 4 2026, Alex: day-level things first, then the 13 realms ordered by use - last opened on top).
       { heading: 'Today', open: true },
       { icon: '☀️', label: 'My Day',        desc: 'Actions, plan my day, agenda',       page: P.agenda },
-      { icon: '▶', label: 'Live now',       desc: 'The block you\'re in · new tasks · task catalogue', card: 'liveNow' },
+      // Nov 7 2026 (Alex: "actions page should be made as realm and today left nav roll up list, but dedup live now there,
+      // also move just did into today roll up"): ⚡ Actions is gone - its entries live here (Doing now = Live now, once).
+      RPGACE.modules.leftNav.logic._dayItem(),
+      { icon: '▶', label: 'Live now',       desc: 'The block you\'re in, right now', card: 'liveNow' },
+      { icon: '✓', label: 'I just did',     desc: 'Log something you already did',       run: function() { var dn = RPGACE.modules.doingNow; if (dn) dn.ui.openJustDid(); } },
+      { icon: '🌙', label: 'Evening review', desc: 'How today went, tonight\'s questions', run: function() { var md = RPGACE.modules.myDay; if (md) md.ui.openEvening(); } },
       { icon: '📅', label: 'Calendar',      desc: 'Week, month, shifts and events',      page: P.schedule },
       { icon: '📓', label: 'Journal',       desc: 'Session logs, decisions',             page: P.journal },
       { icon: '📜', label: 'Chronicles',    desc: 'Every real win, sale, and expense',   page: P.chronicles },

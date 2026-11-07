@@ -1427,7 +1427,6 @@ RPGACE.register('errorLog', {
   "on": "dashDeck",
   "onActual": "doingNow",
   "onPick": "encyclopediaPosts",
-  "openActions": "myDay",
   "openActivity": "myDay",
   "openArtist": "sellingHub",
   "openArtists": "sellingHub",
