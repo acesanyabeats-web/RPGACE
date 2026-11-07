@@ -780,6 +780,7 @@ RPGACE.register('leftNav', {
       RPGACE.modules.leftNav.logic._dayItem(),
       { icon: '▶', label: 'Live now',       desc: 'The block you\'re in, right now', card: 'liveNow' },
       { icon: '✓', label: 'I just did',     desc: 'Log something you already did',       run: function() { var dn = RPGACE.modules.doingNow; if (dn) dn.ui.openJustDid(); } },
+      { icon: '📝', label: 'Notes',          desc: 'Today\'s notes made outside a realm', run: function() { var tn = RPGACE.modules.tonightNotes; if (tn) tn.ui.openToday(); } },
       { icon: '🌙', label: 'Evening review', desc: 'How today went, tonight\'s questions', run: function() { var md = RPGACE.modules.myDay; if (md) md.ui.openEvening(); } },
       { icon: '📅', label: 'Calendar',      desc: 'Week, month, shifts and events',      page: P.schedule },
       { icon: '📓', label: 'Journal',       desc: 'Session logs, decisions',             page: P.journal },

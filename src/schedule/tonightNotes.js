@@ -32,10 +32,26 @@ RPGACE.register('tonightNotes', {
     add: function(text, opts) {
       opts = opts || {};
       var self = RPGACE.modules.tonightNotes, realm = opts.realm;
-      if (realm === undefined) { try { var cr = RPGACE.modules.realmPages && RPGACE.modules.realmPages.logic.contextRealm(); realm = cr ? cr.realm : null; } catch (e) { realm = null; } }
+      if (realm === undefined) { var cr = self.logic.where(); realm = cr ? cr.realm : null; }
       var row = self.logic.row(text, realm, opts.link, RPGACE.kit.iso(), opts.shots);
       if (!row) return Promise.reject(new Error('Type the note first'));
       return RPGACE.sb.secureWrite('journal', 'insert', row).then(function() { try { RPGACE.cache.clear('journal'); } catch (e) {} return row; });
+    },
+    // Where a note goes (Nov 7 2026, Alex: "when no realm picked or no realm page is present, then notes are specific to today
+    // sub page, if I'm in realm, then note saves to realm for best transparency"): Live now's realm, else the realm page you're
+    // on, else none = Today. No guessing from the block or what you're doing.
+    where: function() {
+      var lc = document.getElementById('rt-live-note') && RPGACE.modules.realmTasks && RPGACE.modules.realmTasks._liveCtx;
+      if (lc && lc.realm) return { realm: lc.realm, why: 'Live now' };
+      var RP = RPGACE.modules.realmPages, pg = document.querySelector('.page.active'), r = null;
+      try { r = RP && pg ? RP.logic.realmOfPage(pg.id.replace(/^page-/, '')) : null; } catch (e) {}
+      return r ? { realm: r, why: 'the realm page you\'re on' } : null;
+    },
+    // A realm's notes (last 7 days) or today's Today notes (no realm), newest first.
+    listFor: function(realm) {
+      var q = 'select=id,created_at,content,realms,review_on&source=eq.tonight_note&order=created_at.desc&limit=40';
+      q += realm ? '&realms=cs.%7B' + realm + '%7D&created_at=gte.' + RPGACE.kit.addDays(RPGACE.kit.iso(), -6) : '&realms=eq.%7B%7D&review_on=eq.' + RPGACE.kit.iso();
+      return RPGACE.sb.select('journal', q).then(function(r) { return Array.isArray(r) ? r : []; });
     },
     // Pure: a note's content -> { text, shots: [ids] }.
     split: function(content) {
@@ -83,8 +99,7 @@ RPGACE.register('tonightNotes', {
     // A one-line box. opts.link = a shared link kept with the note.
     open: function(opts) {
       opts = opts || {};
-      var self = RPGACE.modules.tonightNotes, X = RPGACE.modules.xpSeason, cr = null;
-      try { cr = RPGACE.modules.realmPages && RPGACE.modules.realmPages.logic.contextRealm(); } catch (e) {}
+      var self = RPGACE.modules.tonightNotes, X = RPGACE.modules.xpSeason, cr = self.logic.where();
       var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '📝 Note for tonight', title: opts.title || 'What do you want to remember tonight?', width: '440px' });
       pop.box.id = 'tn-pop';
       if (opts.link) { var l = document.createElement('div'); l.style.cssText = 'font-size:12px;color:var(--muted);word-break:break-all;margin-bottom:8px;'; l.textContent = opts.link; pop.box.appendChild(l); }
@@ -93,12 +108,9 @@ RPGACE.register('tonightNotes', {
       ta.style.cssText = 'width:100%;box-sizing:border-box;font-size:16px;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:inherit;resize:vertical;';
       pop.box.appendChild(ta);
       var where = document.createElement('div'); where.id = 'tn-realm'; where.style.cssText = 'font-size:12px;color:var(--muted);margin:6px 0 10px;';
-      // Live now open: its realm wins over the page behind it (a note from Live now never lands realm-less).
-      var lc = document.getElementById('rt-live-note') && RPGACE.modules.realmTasks && RPGACE.modules.realmTasks._liveCtx;
-      if (!opts.realm && lc && lc.realm) { opts.realm = lc.realm; opts.why = opts.why || 'Live now'; }
       if (opts.realm && X && X.REALMS[opts.realm]) cr = { realm: opts.realm, why: opts.why || 'what you\'re on' };
       var realm = cr && X && X.REALMS[cr.realm] ? cr.realm : null;
-      where.textContent = realm ? 'Saved under ' + X.REALMS[realm].icon + ' ' + X.REALMS[realm].name + ' (' + cr.why + '). Shows in tonight\'s review.' : 'Shows in tonight\'s review.';
+      where.textContent = realm ? 'Saved to ' + X.REALMS[realm].icon + ' ' + X.REALMS[realm].name + ' (' + cr.why + '): on its realm page and in tonight\'s review.' : 'Saved to 🗓 Today (no realm here): in ☰ Today › 📝 Notes and tonight\'s review.';
       pop.box.appendChild(where);
       var save = RPGACE.kit.btn('Save note', 'primary'); save.id = 'tn-save'; save.style.width = '100%'; save.style.minHeight = '44px';
       // Screenshots on a note (Nov 7 2026, Alex: "if I can add screenshots to notes, would be perfect, this is the most
@@ -135,17 +147,43 @@ RPGACE.register('tonightNotes', {
     },
     // Tonight's notes inside the evening review.
     drawInto: function(host, day) {
-      var self = RPGACE.modules.tonightNotes, X = RPGACE.modules.xpSeason;
+      var self = RPGACE.modules.tonightNotes;
       var box = document.createElement('div'); box.id = 'tn-evening'; host.appendChild(box);
       self.logic.list(day).then(function(rows) {
         if (!rows.length || !box.isConnected) return;
         var h = document.createElement('div'); h.style.cssText = 'font-size:13px;font-weight:700;color:var(--text);margin:12px 0 4px;';
         h.textContent = '📝 Notes for tonight (' + rows.length + ')'; box.appendChild(h);
-        rows.forEach(function(r) {
-          var R = X && (r.realms || [])[0] && X.REALMS[r.realms[0]];
+        self.ui.drawRows(box, rows, {});
+      }, function(e) { box.textContent = '⚠️ Could not load tonight\'s notes: ' + (e.message || e); });
+      return box;
+    },
+    // A realm page's notes (realm) or the Today notes (no realm), newest first. Only drawn when there are some.
+    drawFor: function(host, realm) {
+      var self = RPGACE.modules.tonightNotes, box = document.createElement('div'); box.className = 'tn-for'; host.appendChild(box);
+      return self.logic.listFor(realm).then(function(rows) {
+        if (!box.isConnected) return rows;
+        if (!rows.length) { box.textContent = realm ? '' : 'No notes today without a realm yet. Tap 📝 anywhere outside a realm to add one.'; box.style.cssText = 'font-size:13px;color:var(--muted);'; return rows; }
+        self.ui.drawRows(box, rows, { day: !!realm, noIcon: true });
+        return rows;
+      }, function(e) { box.textContent = '⚠️ Could not load notes: ' + (e.message || e); return []; });
+    },
+    // Today's notes with no realm (☰ Today › 📝 Notes).
+    openToday: function() {
+      var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '🗓 Today', title: '📝 Notes', width: '520px' });
+      pop.box.id = 'tn-today';
+      RPGACE.modules.tonightNotes.ui.drawFor(pop.box, null);
+      return pop;
+    },
+    // One note per line: [realm icon] [day] time text, then its screenshots. opts.day = show the date, opts.noIcon = no realm icon.
+    drawRows: function(box, rows, opts) {
+      var self = RPGACE.modules.tonightNotes, X = RPGACE.modules.xpSeason, today = RPGACE.kit.iso();
+      opts = opts || {};
+      rows.forEach(function(r) {
+          var R = !opts.noIcon && X && (r.realms || [])[0] && X.REALMS[r.realms[0]];
           var d = document.createElement('div'); d.className = 'tn-line'; d.style.cssText = 'font-size:13px;color:var(--text);line-height:1.5;padding:2px 0;white-space:pre-wrap;word-break:break-word;';
-          var sp = self.logic.split(r.content), tm = r.created_at ? new Date(r.created_at).toTimeString().slice(0, 5) + ' ' : '';
-          d.textContent = (R ? R.icon + ' ' : '• ') + tm + sp.text;
+          var dt = r.created_at ? new Date(r.created_at) : null, dk = dt ? RPGACE.kit.iso(dt) : '';
+          var sp = self.logic.split(r.content), tm = dt ? (opts.day && dk !== today ? dk.slice(5) + ' ' : '') + dt.toTimeString().slice(0, 5) + ' ' : '';
+          d.textContent = (R ? R.icon + ' ' : opts.noIcon ? '' : '• ') + tm + (sp.text || '📷');
           box.appendChild(d);
           if (sp.shots.length) {
             var sr = document.createElement('div'); sr.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin:2px 0 6px;';
@@ -156,9 +194,7 @@ RPGACE.register('tonightNotes', {
             });
             box.appendChild(sr);
           }
-        });
-      }, function(e) { box.textContent = '⚠️ Could not load tonight\'s notes: ' + (e.message || e); });
-      return box;
+      });
     },
     // "note: ..." in Oracle chat saves a note instead of asking Oracle.
     _patchChatTrigger: function() {

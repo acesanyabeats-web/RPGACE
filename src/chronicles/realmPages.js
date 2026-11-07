@@ -334,6 +334,14 @@ RPGACE.register('realmPages', {
           else U._drawSection(body, realm, sec.key, fr, keep);
           if (opts.open === sec.key) setTimeout(function() { try { box.scrollIntoView({ block: 'start', behavior: 'smooth' }); } catch (e) {} }, 300);
         });
+        // Nov 7 2026: this realm's notes (last 7 days) as the last section, only when there are some.
+        var TN = RPGACE.modules.tonightNotes;
+        if (TN) {
+          var nb = document.createElement('div'); nb.className = 'rp-sec rp-open'; nb.dataset.sec = 'notes'; nb.id = 'rp-sec-notes'; nb.style.display = 'none';
+          var nh = document.createElement('div'); nh.className = 'rp-h2'; nh.textContent = '📝 Notes'; var nbody = document.createElement('div'); nbody.className = 'rp-body'; nbody.style.padding = '0 14px 10px';
+          nb.appendChild(nh); nb.appendChild(nbody); list.appendChild(nb);
+          TN.ui.drawFor(nbody, realm).then(function(rows) { if (rows && rows.length) { nb.style.display = ''; nh.textContent = '📝 Notes · ' + rows.length; } });
+        }
         ready();
       }).catch(function(e) { ready(); console.warn('[realmPages] sections not drawn:', e && e.message || e); });
       return frame;
