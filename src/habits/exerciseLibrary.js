@@ -196,7 +196,7 @@ RPGACE.register('exerciseLibrary', {
     'Lat pulldown': ['machine', 'Lat pulldown wide'], 'Close-grip lat pulldown': ['machine', 'Lat pulldown narrow'], 'Seated cable row': ['cable'],
     'Chest-supported row': ['machine'], 'Pec deck': ['machine', 'Chest fly', 'Pec fly'], 'Reverse pec deck': ['machine', 'Rear delts', 'Rear delt fly'],
     'Machine chest press': ['machine'], 'Machine shoulder press': ['machine', 'Shoulder Press'], 'Machine lateral raise': ['machine'],
-    'Back extension': ['machine'], 'Rowing machine': ['machine'], 'Decline press': ['', 'Chest decline press'],
+    'Back extension': ['machine'], 'Rowing machine': ['machine'], 'Decline press': ['barbell', 'Chest decline press'],
     'Cable fly (high to low)': ['cable', 'Cable lower chest fly'], 'Incline cable fly (low to high)': ['cable', 'Cable upper chest flu', 'Cable upper chest fly'],
     'Cable crunch': ['cable'], 'Cable woodchop': ['cable'], 'Pallof press': ['cable'], 'Face pull': ['cable'], 'Triceps pushdown': ['cable'], 'Cable curl': ['cable'],
     'Cable lateral raise (one-arm)': ['cable'], 'Cable external rotation': ['cable'], 'Cable internal rotation': ['cable'], 'Overhead triceps extension (cable)': ['cable'],
@@ -221,14 +221,33 @@ RPGACE.register('exerciseLibrary', {
       var self = RPGACE.modules.exerciseLibrary, L = self.logic, seen = {}, out = [];
       (rows || []).filter(function(r) { return r.status !== 'dropped'; }).forEach(function(r) {
         var k = L.norm(r.name); if (!k || seen[k]) return; seen[k] = 1;
-        out.push({ name: r.name, discipline: r.discipline, group: r.muscle_group, primary: r.primary_regions || [], secondary: r.secondary_regions || [], cue: r.cue || '', video: r.video_url || null, videoTitle: r.video_title || '', fromVideo: true, id: r.id });
+        out.push({ name: r.name, discipline: r.discipline, group: r.muscle_group, primary: r.primary_regions || [], secondary: r.secondary_regions || [], cue: r.cue || '', video: r.video_url || null, videoTitle: r.video_title || '', fromVideo: true, id: r.id, kit: L.kitOf(r.name, r.discipline), aka: [] });
       });
       self.STARTER.forEach(function(s) {
         var k = L.norm(s[0]); if (seen[k]) return; seen[k] = 1;
         var kt = self.KIT[s[0]] || [];
-        out.push({ name: s[0], discipline: s[1], group: s[2], primary: s[3], secondary: s[4], cue: s[5], video: null, fromVideo: false, kit: kt[0] || '', aka: kt.slice(1) });
+        out.push({ name: s[0], discipline: s[1], group: s[2], primary: s[3], secondary: s[4], cue: s[5], video: null, fromVideo: false, kit: kt[0] || self.logic.kitOf(s[0], s[1]), aka: kt.slice(1) });
       });
       return out;
+    },
+    // Pure: the kit an exercise needs, from KIT first, else its name, else its discipline (Nov 7 2026, Alex: "If machine is
+    // shown like this, I'd like other equipment to also show in that manner").
+    kitOf: function(name, discipline) {
+      var k = RPGACE.modules.exerciseLibrary.KIT[name]; if (k && k[0]) return k[0];
+      var n = String(name || '');
+      if (/smith|machine|pec deck|leg press|hack squat|leg extension|leg curl|pulldown|captain/i.test(n)) return 'machine';
+      if (/cable|pallof|face pull|pushdown|woodchop|straight-arm/i.test(n)) return 'cable';
+      if (/kettlebell/i.test(n)) return 'kettlebell';
+      if (/\bband/i.test(n)) return 'band';
+      if (/plate|wrist roller/i.test(n)) return 'plate';
+      if (/dumbbell|goblet|arnold|hammer curl|kickback|farmer|suitcase|shrug|lateral raise|front raise|rear delt raise|cuban|wrist|step-up|walking lunge|bulgarian|single-leg romanian/i.test(n)) return 'dumbbell';
+      if (/barbell|bench press|deadlift|squat|row|overhead press|curl|skull|good morning|hip thrust|rack pull|landmine|ez bar|calf raise/i.test(n) && discipline === 'weights') return 'barbell';
+      if (discipline === 'bodyweight' || discipline === 'stretches' || discipline === 'mobility') return 'bodyweight';
+      return '';
+    },
+    // Pure: kit -> the short tag shown on exercise rows.
+    kitTag: function(kit) {
+      return ({ machine: '⚙️ machine', cable: '🔗 cable', barbell: '🏋️ barbell', dumbbell: '💪 dumbbell', kettlebell: '🔔 kettlebell', band: '🎗️ band', plate: '🥏 plate', bodyweight: '🤸 bodyweight' })[kit] || '';
     },
     // Pure: every logged name that means this exercise (its name + the names Alex logs it under), normalised.
     names: function(x) {

@@ -1240,6 +1240,8 @@ RPGACE.register('errorLog', {
   "kindChooser": "postingHub",
   "kindLine": "sellingHub",
   "kindTag": "postingHub",
+  "kitOf": "exerciseLibrary",
+  "kitTag": "exerciseLibrary",
   "knowledgeHeader": "lifeLibrary",
   "knownFor": "shopTrip",
   "labelItem": "healthBody",

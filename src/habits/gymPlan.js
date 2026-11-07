@@ -296,7 +296,7 @@ RPGACE.register('gymPlan', {
               lab.querySelector('b').textContent = o.x.name + (o.safe ? ' 🛡' : '') + (o.risky ? ' ⚠️' : '');
               var also = (o.x.primary || []).filter(function(k) { return k !== c.key; }).map(function(k) { var rg = EL.logic.region(k); return rg ? rg.label : k; });
               var hist = EL.logic.history(sessions, o.x);
-              lab.querySelector('span span').textContent = [o.x.kit === 'machine' ? '⚙️ machine' : o.x.kit === 'cable' ? '🔗 cable' : '', hist ? '✓ done ' + hist.sets + (hist.sets === 1 ? ' set' : ' sets') + (hist.kg ? ' · best ' + hist.kg + ' kg' : '') : '',
+              lab.querySelector('span span').textContent = [EL.logic.kitTag(o.x.kit), hist ? '✓ done ' + hist.sets + (hist.sets === 1 ? ' set' : ' sets') + (hist.kg ? ' · best ' + hist.kg + ' kg' : '') : '',
                 also.length ? 'also: ' + also.join(', ') : '', o.safe ? 'shoulder-friendly' : o.risky ? 'go easy on the shoulder' : ''].filter(Boolean).join(' · ');
               var cb = lab.querySelector('input'); cb.checked = on;
               cb.onchange = function() { if (cb.checked) st.chosen.push(o.x); else st.chosen = st.chosen.filter(function(x) { return x.name !== o.x.name; }); st.open[c.key] = true; draw(); };
