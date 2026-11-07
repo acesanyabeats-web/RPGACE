@@ -76,3 +76,10 @@ gym note "left shoulder needs care" is read by the planner and by Ask Oracle in 
  Risks: Gym Live (GL-1..6) is built but never hand-tested; GY-4 changes its start. Cost: no Oracle tokens for planning.
  Why-not: a saved plan is extra if you only ever plan at the gym - you chose "ahead or at the gym", so both doors use one planner.
  /drift: matches Alex's words; no approved plan in flight is touched (CP-1..5 live; Athlete keeps CP-1's layout).
+
+9. ROTATOR CUFF Q + GO, VERBATIM (Nov 7)
+ Alex: "What is the rotator cuff?" -> explained. Alex: "Why is rotator cuff and shoulder separate then?" -> they overlap; proposed
+ one Shoulders add-on that outlines only the shoulder parts the split misses, always incl. rotator cuff (Push+Shoulders = rear
+ delts + rotator cuff; Pull+Shoulders = front + side delts + rotator cuff; Legs+Shoulders = whole shoulder).
+ Alex: "Looks good on all 6 steps, do them all"
+Final add-ons: Core, Forearms & grip, Shoulders (no separate Rotator cuff). Build GY-1..6.

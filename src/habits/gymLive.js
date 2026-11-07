@@ -80,6 +80,12 @@ RPGACE.register('gymLive', {
       var sets = []; for (var i = 0; i < t.sets; i++) sets.push({ reps: t.reps, kg: t.kg, done: false });
       return { name: x.name, primary: x.primary || [], secondary: x.secondary || [], cue: x.cue || '', why: t.why, sets: sets };
     },
+    // GY-4: a saved gym_plans row -> the workout state (straight to the sets).
+    fromPlan: function(p) {
+      var L = RPGACE.modules.gymLive.logic;
+      return { date: RPGACE.kit.iso(), started: Date.now(), regions: p.regions || [], step: 'go', restUntil: 0, view: 'f', planId: p.id, split: p.split, addon: p.addon,
+        exercises: (p.exercises || []).map(function(e) { return L.exerciseFrom({ name: e.name, primary: e.primary, secondary: e.secondary, cue: e.cue }, { sets: e.sets || 3, reps: e.reps, kg: e.kg, why: e.why || '' }); }) };
+    },
     // Finish: done sets -> gymTracker rows (one row per reps/kg run).
     rows: function(s) {
       var out = [];
@@ -128,7 +134,7 @@ RPGACE.register('gymLive', {
       var box = document.getElementById('gl-box'); if (!box || box.offsetParent === null) return null;
       var s = self.logic.load(), cur = self.logic.current(s); if (!cur) return null;
       var x = cur.e.sets[cur.set - 1] || {};
-      return 'Alex is in the gym (Live now): ' + cur.e.name + ', set ' + cur.set + ' of ' + cur.of + ', target ' + (x.reps || '?') + ' reps' + (x.kg ? ' @ ' + x.kg + 'kg' : '') + ' (' + cur.e.why + '). Give short, practical gym advice for this lift right now.';
+      return 'Alex is in the gym (Live now): ' + cur.e.name + ', set ' + cur.set + ' of ' + cur.of + ', target ' + (x.reps || '?') + ' reps' + (x.kg ? ' @ ' + x.kg + 'kg' : '') + ' (' + cur.e.why + '). Give short, practical gym advice for this lift right now.' + (s.split && RPGACE.modules.gymPlan ? ' Today\'s plan: ' + RPGACE.modules.gymPlan.logic.label(s) + '.' : '') + (RPGACE.modules.gymPlan && RPGACE.modules.gymPlan._note ? ' His gym note: ' + RPGACE.modules.gymPlan._note.content + '.' : '');
     });
   },
 
@@ -147,12 +153,27 @@ RPGACE.register('gymLive', {
         n.innerHTML = '<b>Coach notes for today</b>' + rows.map(function(r) { return '<div>• ' + RPGACE.kit.esc(r.content) + '</div>'; }).join('');
         box.insertBefore(n, box.firstChild);
       });
+      // GY-4: no workout yet -> today's plan straight into the sets; no plan -> the planner (split + add-on).
+      var GP = RPGACE.modules.gymPlan;
+      if (!s && GP) {
+        box.textContent = 'Loading today\'s plan…';
+        GP.logic.forDay(RPGACE.kit.iso()).then(function(ps) {
+          var p = ps.filter(function(x) { return (x.exercises || []).length; })[0];
+          box.textContent = '';
+          if (p) { var st = L.store(L.fromPlan(p)); if (p.status !== 'started') GP.logic.setStatus(p.id, 'started'); return U.drawWorkout(box, st); }
+          GP.ui.planner(box, { live: true, onSaved: function(np) { U.drawWorkout(box, L.store(L.fromPlan(np))); },
+            free: function() { box.textContent = ''; U.drawMap(box, L.store(L.fresh())); } });
+        }).catch(function() { box.textContent = ''; U.drawMap(box, L.store(L.fresh())); });
+        return;
+      }
       if (!s || s.step === 'map') return U.drawMap(box, s || L.store(L.fresh()));
       if (s.step === 'pick') return U.drawPick(box, s);
       return U.drawWorkout(box, s);
     },
     // GL-1: tap muscles. hi = { main: [...], help: [...] } highlights for an exercise.
-    bodySvg: function(view, picked, hi, onTap) {
+    // GY-3: opts.outline = target areas (outlined), opts.mainColor / helpColor = the planner's red / pink.
+    bodySvg: function(view, picked, hi, onTap, opts) {
+      opts = opts || {};
       var self = RPGACE.modules.gymLive, NS = 'http://www.w3.org/2000/svg';
       var svg = document.createElementNS(NS, 'svg'); svg.setAttribute('viewBox', '30 30 140 300'); svg.setAttribute('class', 'gl-body'); svg.style.cssText = 'width:100%;max-width:220px;height:auto;display:block;margin:0 auto;';
       var sil = document.createElementNS(NS, 'path');
@@ -164,8 +185,9 @@ RPGACE.register('gymLive', {
         var el = document.createElementNS(NS, sh[2] === 'e' ? 'ellipse' : 'rect');
         if (sh[2] === 'e') { el.setAttribute('cx', sh[3]); el.setAttribute('cy', sh[4]); el.setAttribute('rx', sh[5] / 2 + 2); el.setAttribute('ry', sh[6] / 2 + 2); }
         else { el.setAttribute('x', sh[3]); el.setAttribute('y', sh[4]); el.setAttribute('width', sh[5]); el.setAttribute('height', sh[6]); el.setAttribute('rx', 4); }
-        var fill = main[sh[0]] ? '#C9A84C' : help[sh[0]] ? 'rgba(201,168,76,.45)' : on[sh[0]] ? '#9B59B6' : 'rgba(138,143,163,.25)';
-        el.setAttribute('fill', fill); el.setAttribute('stroke', 'var(--bg)'); el.setAttribute('data-region', sh[0]); el.setAttribute('class', 'gl-region');
+        var fill = main[sh[0]] ? (opts.mainColor || '#C9A84C') : help[sh[0]] ? (opts.helpColor || 'rgba(201,168,76,.45)') : on[sh[0]] ? '#9B59B6' : 'rgba(138,143,163,.25)';
+        var tgt = (opts.outline || []).indexOf(sh[0]) >= 0;
+        el.setAttribute('fill', fill); el.setAttribute('stroke', tgt ? (opts.mainColor || 'var(--gold)') : 'var(--bg)'); if (tgt) { el.setAttribute('stroke-width', '2'); el.setAttribute('stroke-dasharray', '3 2'); el.setAttribute('data-target', '1'); } el.setAttribute('data-region', sh[0]); el.setAttribute('class', 'gl-region');
         if (onTap) { el.style.cursor = 'pointer'; el.addEventListener('click', function() { onTap(sh[0]); }); }
         svg.appendChild(el);
       });
@@ -273,11 +295,15 @@ RPGACE.register('gymLive', {
         RPGACE.modules.gymTracker.logic.save({ performed_on: s.date, duration_min: Math.max(1, Math.round((Date.now() - s.started) / 60000)), notes: 'Live now · ' + s.regions.join(', ') }, rows).then(function() {
           var lifted = rows.map(function(r) { return r.exercise + ' ' + r.sets + '×' + r.reps + (r.kg ? '@' + r.kg + 'kg' : ''); }).join('; ');
           L.store(null); RPGACE.utils.toast('🏋️ Workout saved', '#4caf82', 2500);
+          if (s.planId && RPGACE.modules.gymPlan) RPGACE.modules.gymPlan.logic.setStatus(s.planId, 'done');
           try { RPGACE.hooks.fire('gym:finished', { lifted: lifted }); } catch (e) {}
           U.afterFinish(box, s.date, lifted);
         }, function(e) { fin.disabled = false; RPGACE.utils.toast('⚠️ Not saved: ' + (e.message || e), '#CC4A4A', 4000, 'gymLive'); });
       };
-      row.appendChild(more); row.appendChild(fin); box.appendChild(row);
+      // GY-4 (Alex: "make sure ask oracle is present on gym live"): the floating Oracle chat, which knows the lift you're on.
+      var ask = U._btn('🔮 Ask Oracle', '', 'gl-ask'); ask.style.cssText += 'width:100%;';
+      ask.onclick = function() { var RP = RPGACE.modules.realmPages; if (RP) RP.ui._footOpen('athlete', 'prompts'); else if (RPGACE.modules.realmFrame) RPGACE.modules.realmFrame.ui.ask(''); };
+      row.appendChild(more); row.appendChild(fin); row.appendChild(ask); box.appendChild(row);
     },
     // GL-6: after Finish, the chat (if any) can suggest changes for next time.
     afterFinish: function(box, day, lifted) {

@@ -174,6 +174,7 @@ const ALLOWED_TABLES = new Set([
   // Oct 10 2026 (HABITS gym tracker): anon_read_only + authenticated_all from creation.
   'gym_sessions',
   'gym_sets',
+  'gym_plans', // Nov 7 2026 GY-2: planned gym sessions (split + add-on + exercises). anon_read_only + authenticated_all from creation.
   'exercises', // Oct 27 2026 DR-12: exercise library (video-derived rows; starter list lives in code). anon_read_only + authenticated_all
   // 2026-09-16 - HABITS/Cooking Current Stock (Pantry/Fridge/Freezer/
   // Equipment). Created anon_read_only/authenticated_all FROM THE START

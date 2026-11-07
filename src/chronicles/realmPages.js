@@ -26,8 +26,8 @@ RPGACE.register('realmPages', {
     scholar: { page: 'knowledge', mod: 'knowledgeHub', title: '📚 Scholar', tool: { key: 'knowledge', name: '📚 Knowledge', count: 'Take in → Study → Learned → Review', nodes: '*' } },
     // CP-3 (Nov 6 2026): the kitchen's 6 tools drawn on the page (no Cooking button to a further list).
     chef: { page: 'realm', title: '🍳 Chef', tool: { key: 'cooking', name: '🍳 Kitchen', count: 'Recipes, plan, shop, cook, stock', draw: 'chef' } },
-    athlete: { page: 'realm', title: '💪 Athlete', tool: { key: 'gym', name: '🏋️ Gym', count: 'This week, log a session, bests', draw: 'gym' },
-      extras: [{ key: 'health', name: '❤️ Health & body', count: 'Food, weight, water, sleep', btns: [['❤️ Open Health & body', 'card:health']] }] },
+    // GY-1 (Nov 7 2026): the gym's 6 tools drawn on the page (gymPlan.ui.drawTools); Health & body is one of them (alias keeps old links).
+    athlete: { page: 'realm', title: '💪 Athlete', tool: { key: 'gym', name: '🏋️ Gym', count: 'Plan, train, log, bests', draw: 'gymTools', alias: ['health'] } },
     explorer: { page: 'realm', title: '✈️ Explorer', tool: { key: 'plans', name: '🧳 Plans', count: 'Trips, events, days out', btns: [['🧳 Open Plans', 'plans:plans'], ['💡 Outing ideas', 'plans:ideas']] } },
     connector: { page: 'realm', title: '🤝 Connector', tool: { key: 'people', name: '👥 People', count: 'Who to reach out to', btns: [['👥 Open People', 'plans:people']] } },
     homekeeper: { page: 'realm', title: '🏡 Homekeeper', tool: { key: 'chores', name: '🧹 Chores', count: 'What\'s due around the house', draw: 'chores' } },
@@ -37,7 +37,8 @@ RPGACE.register('realmPages', {
   },
   // CP-2: a realm's own Next step (its journey), drawn at the top of the action card. Realms without one show their tasks.
   JOURNEY: {
-    chef: function(el) { var co = RPGACE.modules.cookingOracle; return co ? co.ui.journey(el) : null; }
+    chef: function(el) { var co = RPGACE.modules.cookingOracle; return co ? co.ui.journey(el) : null; },
+    athlete: function(el) { var gp = RPGACE.modules.gymPlan; return gp ? gp.ui.journey(el) : null; }
   },
   _current: null,
   _arrive: null,
@@ -163,7 +164,7 @@ RPGACE.register('realmPages', {
       var P = RPGACE.modules.realmPages.PAGES, k = String(key || '').toLowerCase();
       for (var r in P) {
         var c = P[r];
-        if (c.tool && c.tool.key === k) return { realm: r, open: c.tool.key };
+        if (c.tool && (c.tool.key === k || (c.tool.alias || []).indexOf(k) >= 0)) return { realm: r, open: c.tool.key };
         var ex = (c.extras || []).filter(function(x) { return x.key === k; })[0];
         if (ex) return { realm: r, open: ex.key };
       }
@@ -267,10 +268,10 @@ RPGACE.register('realmPages', {
     _drawTool: function(body, kind) {
       var M = RPGACE.modules;
       try {
-        if (kind === 'gym' && M.gymTracker) { body.textContent = 'Loading your sessions…'; var host = { box: body, close: function() {} }, g = M.gymTracker; var d = function() { g.logic.load().then(function(s) { g.ui.render(host, s, d); }, function(e) { body.textContent = '⚠️ Could not load gym sessions: ' + (e.message || e); }); }; d(); return; }
         if (kind === 'work' && M.workMode) { M.workMode.ui.open({ host: body }); return; }
         if (kind === 'bestBefore' && M.bestBefore) { M.bestBefore.ui.lists(body); return; }
         if (kind === 'chef' && M.cookingOracle) { M.cookingOracle.ui.drawTools(body); return; }
+        if (kind === 'gymTools' && M.gymPlan) { M.gymPlan.ui.drawTools(body); return; }
         if (kind === 'chores' && M.myDay) {
           var md = M.myDay; body.textContent = 'Loading chores…';
           Promise.resolve(md.logic.load()).then(function() { body.textContent = ''; md.ui.renderChores(body, md.logic.iso()); if (!body.children.length) body.textContent = 'No chores due. Add chores as Actions on My Day (every N days).'; },
