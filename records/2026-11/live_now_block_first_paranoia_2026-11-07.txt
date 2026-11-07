@@ -1,0 +1,64 @@
+LIVE NOW - BLOCK FIRST - /dev_ops_7 (Nov 7 2026)
+
+1. ALEX, VERBATIM
+ "Also when in live now, it needs to first establish realm block, and then I choose actions within realm block to plan out block, or choose actions I'm doing now, otherwise it is too bulky. /dev_ops_7"
+Read: opening Live now first settles WHICH realm block you're in (the one on now, or start one), then inside that block you
+pick its actions - either planning the block's steps, or picking what you're doing right now. Today's screen shows too much at once.
+
+2. EVIDENCE (Nov 7)
+ Rows (14 days): chore_blocks 15 (11 kind=realm), Live now entries (rpgace_agendas doing_now) 38; realm_tasks kept 116.
+ realmTasks.ui._drawLive today, no block: tools row (📥 New tasks, 🗂 Catalogue, ➕ Task, 📝 Note) -> head -> realm chips
+ (#rt-realm-pick) -> current task card (#rt-current: Done, Next, Chain, context) -> type chips (#rt-types) -> task list (top 3 +
+ Show more, kit.taskCard tick or ▶ Start) -> mode slot (liveModes: gym/cook/shop) -> Ask box. With a block: block head, steps as
+ task cards, Start block, Fit chores (cook), Move/edit, Add details (past), mode slot, Ask box.
+ Free tasks started without a block open a timed entry (L.freeStart); in a block the block pays (DL-1).
+
+3. /paranoia (scaled, Tier 2: one screen reorganised, no new data)
+ Possible: yes, client-side; block create/start reuse myDay.logic.saveRealmBlock/placeNext/addToBlock and the block page (TK-2).
+ Replaces: the all-at-once no-block screen. Risk: Live now is the hub for timers, cook resume, gym, shop - every door into it
+ (openLive({realm, mode, block})) must still land right. Cost: no tokens.
+
+4. /free-for-all-debate
+ S1 Block gate: Live now asks "which block?" first (the one on now, today's next planned, or start one now for a realm), then the
+    block page with two doors: 📋 Plan this block / ▶ Doing now. + matches the words exactly. - one extra tap when nothing's on.
+ S2 Same screen, folded: keep one page but fold the lists. - still "bulky", doesn't establish the block first.
+ S3 Auto block: any start auto-creates a block silently. + no taps. - no say in the block; fights "establish realm block".
+ Council of 5: S1. Why-not: an extra tap for a quick one-off ("something else") -> F1 keeps a quick path.
+
+5. INTERROGATION ROUND 1 - ALEX'S ANSWERS, VERBATIM (Nov 7)
+ No block: "Realm only, length later"
+ Inside block: "1 but also just did as past tense, so all 3 time tenses are covered"
+ Extras: "I think 2, they seem redundant but I'm not sure tell me more"
+ Live screens: "Live screen is the same as doing now, deduplicate as live now please"
+Read: no block on -> pick a realm, the block starts now open-ended. Inside: three doors by tense - 📋 Plan this block (future),
+▶ Doing now (present), ✓ Just did (past). The realm's own live screen (gym, cook, shop) IS the Doing now view, not a second
+screen. Extras: leaning remove; explain each one first (round 2).
+
+6. INTERROGATION ROUND 2 - ALEX'S ANSWERS, VERBATIM (Nov 7)
+ (Explained each extra: New tasks = inbox of found tasks, opened nowhere else; Catalogue = realm page Tasks; ➕ Task = add by
+ hand; Note = note for tonight; type chips = filter.)
+ Extras: "Remove 3, keep 2 small (Recommended)"
+ Block end: "End button + check-in (Recommended)"
+ Just did: "Tick it as a done step (Recommended)"
+ Planned block on now: "Always ask first"
+
+7. PLAN REPORT (CEO Loop 1 Step 5) - awaiting Alex's go
+ LN-1 Block first: opening Live now always asks first. A block on now -> "🍳 Chef block is on now (18:00-19:30) - [Go in]
+      [Start another realm]". None on -> the realms; pick one -> an open-ended block starts now on your timeline. Doors that
+      name a realm (Chef page ▶ Cook, Athlete ▶ Gym, journeys) land on the same question with that realm ready to tap.
+      "Something else" typed entries go (pick the realm, e.g. Life).
+ LN-2 Block page: header (realm, start time, 📝 Note, ■ End block), the block's steps as task cards, then three doors by tense:
+      📋 Plan this block (pick actions -> added as steps), ▶ Doing now (pick one -> it starts now as the current step),
+      ✓ Just did (pick one -> added as a ticked step, pays like any step). Pickers show only this realm's actions, with search
+      and ＋ New action.
+ LN-3 Doing now IS the live screen: when the current step is a gym session / a cook / a shop, that screen (Gym Live, the
+      cook, the shop trip) fills the Doing now area - no second mode screen under it. Other steps show as a task card + Done.
+ LN-4 Ending: ■ End block sets the real end time; starting another realm's block ends this one; after 3 h "Still in Chef?"
+      (keep going / end it at the last step's time).
+ LN-5 Extras: 📥 New tasks moves to the realm page's 🗂 Tasks (new ones on top); 🗂 Catalogue and the type chips leave Live
+      now; ➕ Task becomes ＋ New action in the pickers; 📝 Note is a small button on the block header.
+ LN-6 Wrap: tests (every openLive door), docs, plan rows, deploy check.
+ Risks: Live now is the hub for timers, cook resume, gym and shop - every door must still land right (LN-6 tests each);
+ Gym Live (GY-4) and cook resume blocks now sit inside this flow. Cost: no Oracle tokens, no schema.
+ Why-not: one extra tap ("Go in") every time a block is on - you chose "Always ask first".
+ /drift: matches the words; GY-1..6 (live) keeps working - Gym Live becomes the Athlete block's Doing now view (LN-3).
