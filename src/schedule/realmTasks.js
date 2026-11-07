@@ -570,7 +570,10 @@ RPGACE.register('realmTasks', {
       var tools = document.createElement('div'); tools.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;';
       // RP-5: a note for tonight, saved under the realm Live now is on.
       var TN = RPGACE.modules.tonightNotes;
-      if (TN) { var nb = TN.ui.button('📝 Note', function() { var c = self._liveCtx; return c && c.realm ? { realm: c.realm, why: 'Live now' } : null; }); nb.id = 'rt-live-note'; tools.appendChild(nb); }
+      if (TN) { var nb = TN.ui.button('📝 Note', function() { var c = self._liveCtx; return c && c.realm ? { realm: c.realm, why: 'Live now' } : null; }); nb.id = 'rt-live-note'; tools.appendChild(nb);
+        // One note button (Nov 7 2026, Alex: "2 note buttons, remove the overall one since I was in gym realm"): while Live
+        // now's 📝 Note is on screen the area bar's 📝 is hidden, so a note can't miss the realm.
+        if (!document.getElementById('rt-one-note-css')) { var cs = document.createElement('style'); cs.id = 'rt-one-note-css'; cs.textContent = 'body:has(#rt-live-note) .area-note-btn{display:none!important;}'; document.head.appendChild(cs); } }
       top.appendChild(tools); box.appendChild(top);
       // TK-2: a block tapped on the timeline opens here: its steps as task cards, + Add a step, ⋯ for move/edit.
       if (opts.block) {

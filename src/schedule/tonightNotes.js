@@ -63,6 +63,9 @@ RPGACE.register('tonightNotes', {
       ta.style.cssText = 'width:100%;box-sizing:border-box;font-size:16px;padding:10px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:inherit;resize:vertical;';
       pop.box.appendChild(ta);
       var where = document.createElement('div'); where.id = 'tn-realm'; where.style.cssText = 'font-size:12px;color:var(--muted);margin:6px 0 10px;';
+      // Live now open: its realm wins over the page behind it (a note from Live now never lands realm-less).
+      var lc = document.getElementById('rt-live-note') && RPGACE.modules.realmTasks && RPGACE.modules.realmTasks._liveCtx;
+      if (!opts.realm && lc && lc.realm) { opts.realm = lc.realm; opts.why = opts.why || 'Live now'; }
       if (opts.realm && X && X.REALMS[opts.realm]) cr = { realm: opts.realm, why: opts.why || 'what you\'re on' };
       var realm = cr && X && X.REALMS[cr.realm] ? cr.realm : null;
       where.textContent = realm ? 'Saved under ' + X.REALMS[realm].icon + ' ' + X.REALMS[realm].name + ' (' + cr.why + '). Shows in tonight\'s review.' : 'Shows in tonight\'s review.';
