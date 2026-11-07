@@ -71,3 +71,9 @@ screen. Extras: leaning remove; explain each one first (round 2).
  /drift CONFLICT to ask Alex: round 1 he wanted a "✓ Just did" door inside the block ("all 3 time tenses are covered"); now
  "having just did in live now makes no fucking sense". LN-2's Just did door is ON HOLD until he says where past-tense logging
  belongs (My Day only, or the block page outside Live now).
+
+9. JUST DID - ALEX'S ANSWER, VERBATIM (Nov 7)
+ "I can add on timeline in my day or a dedicated just did left nav page"
+Read: past-tense logging lives on My Day's timeline (✍️ log what you did on a past gap) or a "Just did" door in the left menu -
+never in Live now. Today both exist: the timeline's ✍️ log and the left menu's ⚡ Actions -> "✓ I just did" (myDay.ui.openActions).
+LN-2 drops its "✓ Just did" door: the block page has 📋 Plan this block and ▶ Doing now only.
