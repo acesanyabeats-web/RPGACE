@@ -198,6 +198,13 @@ RPGACE.register('gymLive', {
     },
     drawMap: function(box, s) {
       var self = RPGACE.modules.gymLive, L = self.logic, U = self.ui, EL = RPGACE.modules.exerciseLibrary;
+      // Way back to the split + add-on planner (Nov 7 2026, Alex: "I can't switch back from picking muscles on 2d person back
+      // to groups, need a way back"). Only before any exercise is in: clears the free-pick workout and redraws the planner.
+      if (RPGACE.modules.gymPlan && !(s.exercises || []).length) {
+        var bk = U._btn('← Splits & add-ons', '', 'gl-to-plan'); bk.style.cssText += 'width:100%;margin-bottom:8px;';
+        bk.onclick = function() { L.store(null); self.ui.draw(box.parentNode); };
+        box.appendChild(bk);
+      }
       var h = document.createElement('div'); h.style.cssText = 'font-size:14px;margin-bottom:6px;'; h.textContent = 'Tap the muscles you want to hit today.'; box.appendChild(h);
       var vrow = document.createElement('div'); vrow.style.cssText = 'display:flex;gap:6px;justify-content:center;margin-bottom:6px;';
       [['f', 'Front'], ['b', 'Back']].forEach(function(v) { var b = U._btn(v[1], s.view === v[0] ? 'primary' : '', 'gl-view-' + v[0]); b.onclick = function() { s.view = v[0]; L.store(s); self.ui.draw(box.parentNode); }; vrow.appendChild(b); });
