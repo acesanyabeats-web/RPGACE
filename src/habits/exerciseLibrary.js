@@ -149,8 +149,61 @@ RPGACE.register('exerciseLibrary', {
     ['Cable kickback', 'weights', 'glutes', ['glute_max'], ['hamstrings'], 'Kick back and up, hips square.'],
     ['Abductor machine', 'weights', 'glutes', ['glute_med'], [], 'Push out, slow back.'],
     ['Cable hip abduction', 'weights', 'glutes', ['glute_med'], [], 'Standing, leg out to the side, no lean.'],
-    ['Single-leg Romanian deadlift', 'weights', 'glutes', ['glute_max', 'hamstrings'], ['glute_med', 'deep_core'], 'Hips square, reach the weight to the floor.']
+    ['Single-leg Romanian deadlift', 'weights', 'glutes', ['glute_max', 'hamstrings'], ['glute_med', 'deep_core'], 'Hips square, reach the weight to the floor.'],
+    // PureGym machines (Nov 7 2026, Alex: "I also go to PureGym, so include exercises specific to the machines too (use my
+    // past workout for information on what I use + more that are possible)"). First block = machines in his gym_sets.
+    ['Diverging seated row', 'weights', 'back', ['mid_back', 'lats'], ['rear_delts', 'biceps'], 'Chest on the pad, drive the elbows back and apart, squeeze 1 s.'],
+    ['Calf press (leg press)', 'weights', 'legs', ['calves'], [], 'Balls of the feet on the plate edge, knees soft, full stretch at the bottom.'],
+    ['Seated dip machine', 'weights', 'arms', ['triceps'], ['lower_chest', 'front_delts'], 'Elbows tucked, press down to straight arms, slow up.'],
+    ['Triceps extension machine', 'weights', 'arms', ['triceps'], [], 'Elbows on the pad, straighten fully, slow back.'],
+    ['Cable incline press', 'weights', 'chest', ['upper_chest'], ['front_delts', 'triceps'], 'Handles from low, press up and in at 30 degrees.'],
+    ['Oblique sit-up (bench)', 'bodyweight', 'core', ['obliques'], ['abs'], 'Twist the shoulder to the opposite knee, one side then the other.'],
+    ['L-sit', 'bodyweight', 'core', ['abs', 'hip_flexors'], ['triceps', 'deep_core'], 'Arms locked, legs straight out, hold.'],
+    ['Dumbbell deadlift', 'weights', 'legs', ['hamstrings', 'glute_max'], ['lower_back', 'forearms', 'quads'], 'Dumbbells by the shins, flat back, stand tall.'],
+    ['Wrist flicks front/back (light dumbbell)', 'weights', 'arms', ['forearms'], [], 'Light weight, wrist only, front then back, high reps.'],
+    // Other machines a PureGym usually has.
+    ['Incline chest press machine', 'weights', 'chest', ['upper_chest'], ['front_delts', 'triceps'], 'Handles at upper-chest height, press without locking out.'],
+    ['Smith machine incline press', 'weights', 'chest', ['upper_chest'], ['front_delts', 'triceps'], 'Bench at 30 degrees, bar to the top of the chest.'],
+    ['Assisted pull-up machine', 'bodyweight', 'back', ['lats'], ['biceps', 'mid_back'], 'More weight = more help. Chin over the bar, slow down.'],
+    ['Pullover machine', 'weights', 'back', ['lats'], ['lower_chest'], 'Arms long, sweep down to the hips, slow back up.'],
+    ['Assisted dip machine', 'bodyweight', 'arms', ['triceps', 'lower_chest'], ['front_delts'], 'Knees on the pad, lower until the elbows hit 90 degrees.'],
+    ['Machine biceps curl', 'weights', 'arms', ['biceps'], ['forearms'], 'Elbows on the pad, full stretch, squeeze at the top.'],
+    ['Cable rope hammer curl', 'weights', 'arms', ['biceps', 'forearms'], [], 'Thumbs up, elbows pinned, curl to the shoulders.'],
+    ['Cable rear delt fly', 'weights', 'shoulders', ['rear_delts'], ['mid_back'], 'Cables crossed at eye height, pull out wide, arms soft.'],
+    ['Cable Y raise', 'weights', 'shoulders', ['side_delts'], ['upper_back', 'rotator_cuff'], 'Low cables, raise in a Y to eye height, thumbs up.'],
+    ['Ab crunch machine', 'weights', 'core', ['abs'], [], 'Curl the ribs to the hips, no pulling with the arms.'],
+    ['Rotary torso machine', 'weights', 'core', ['obliques'], ['deep_core'], 'Hips fixed, turn from the ribs, slow back.'],
+    ['Captain\'s chair knee raise', 'bodyweight', 'core', ['abs', 'hip_flexors'], ['deep_core'], 'Back on the pad, knees to the chest, no swing.'],
+    ['Smith machine squat', 'weights', 'legs', ['quads', 'glute_max'], ['hamstrings'], 'Feet a little forward, sit straight down.'],
+    ['Smith machine hip thrust', 'weights', 'glutes', ['glute_max'], ['hamstrings'], 'Upper back on the bench, chin down, squeeze at the top.'],
+    ['Glute kickback machine', 'weights', 'glutes', ['glute_max'], ['hamstrings'], 'Hips square, push the plate back and up.'],
+    ['Cable pull-through', 'weights', 'glutes', ['glute_max', 'hamstrings'], ['lower_back'], 'Rope between the legs, hinge back, snap the hips through.']
   ],
+  // Kit + other names for library entries. kit: machine | cable. aka: the names Alex logs them under in gym_sets
+  // (his own words from Oct 24 - Nov 1), so his past sets count towards the right areas and last-time weights.
+  KIT: {
+    'Diverging seated row': ['machine', 'Diverging seated rows'], 'Calf press (leg press)': ['machine', 'Calf press'], 'Seated dip machine': ['machine', 'Seated tricep dips'],
+    'Triceps extension machine': ['machine', 'Seated tricep press'], 'Cable incline press': ['cable', 'Cable chest incline press'],
+    'Oblique sit-up (bench)': ['', 'Sit ups on bench (obliques)', 'Sit ups obliques', 'Oblique sit ups (each side', 'Oblique sit ups'],
+    'L-sit': ['', 'L-Sits'], 'Wrist flicks front/back (light dumbbell)': ['', 'Foreman Front/Back twitches (3x30)', 'Forearm front/back twitches'],
+    'Incline chest press machine': ['machine'], 'Smith machine incline press': ['machine'], 'Assisted pull-up machine': ['machine'], 'Pullover machine': ['machine'],
+    'Assisted dip machine': ['machine'], 'Machine biceps curl': ['machine'], 'Cable rope hammer curl': ['cable'], 'Cable rear delt fly': ['cable'], 'Cable Y raise': ['cable'],
+    'Ab crunch machine': ['machine'], 'Rotary torso machine': ['machine'], 'Captain\'s chair knee raise': ['machine'], 'Smith machine squat': ['machine'],
+    'Smith machine hip thrust': ['machine'], 'Glute kickback machine': ['machine'], 'Cable pull-through': ['cable'],
+    'Leg extension': ['machine', 'Leg extensions'], 'Lying leg curl': ['machine', 'Prone leg curl'], 'Seated leg curl': ['machine'], 'Leg press': ['machine'],
+    'Hack squat': ['machine'], 'Seated calf raise': ['machine'], 'Standing calf raise': ['machine'],
+    'Adductor machine': ['machine', 'Hip abduction in', 'Hip adduction'], 'Abductor machine': ['machine', 'Hip abduction out', 'Hip abduction'],
+    'Lat pulldown': ['machine', 'Lat pulldown wide'], 'Close-grip lat pulldown': ['machine', 'Lat pulldown narrow'], 'Seated cable row': ['cable'],
+    'Chest-supported row': ['machine'], 'Pec deck': ['machine', 'Chest fly', 'Pec fly'], 'Reverse pec deck': ['machine', 'Rear delts', 'Rear delt fly'],
+    'Machine chest press': ['machine'], 'Machine shoulder press': ['machine', 'Shoulder Press'], 'Machine lateral raise': ['machine'],
+    'Back extension': ['machine'], 'Rowing machine': ['machine'], 'Decline press': ['', 'Chest decline press'],
+    'Cable fly (high to low)': ['cable', 'Cable lower chest fly'], 'Incline cable fly (low to high)': ['cable', 'Cable upper chest flu', 'Cable upper chest fly'],
+    'Cable crunch': ['cable'], 'Cable woodchop': ['cable'], 'Pallof press': ['cable'], 'Face pull': ['cable'], 'Triceps pushdown': ['cable'], 'Cable curl': ['cable'],
+    'Cable lateral raise (one-arm)': ['cable'], 'Cable external rotation': ['cable'], 'Cable internal rotation': ['cable'], 'Overhead triceps extension (cable)': ['cable'],
+    'Cable kickback': ['cable'], 'Cable hip abduction': ['cable'], 'Straight-arm pulldown': ['cable'],
+    'Decline sit-up': ['', 'Sit ups on bench', 'Sit ups'], 'Romanian deadlift': ['', 'Romanian deadlifts'], 'Lateral raise': ['', 'Lateral raises'],
+    'Incline dumbbell press': ['', 'Dumbbell chest incline press']
+  },
   logic: {
     region: function(key) {
       var G = RPGACE.modules.exerciseLibrary.GROUPS, out = null;
@@ -172,9 +225,27 @@ RPGACE.register('exerciseLibrary', {
       });
       self.STARTER.forEach(function(s) {
         var k = L.norm(s[0]); if (seen[k]) return; seen[k] = 1;
-        out.push({ name: s[0], discipline: s[1], group: s[2], primary: s[3], secondary: s[4], cue: s[5], video: null, fromVideo: false });
+        var kt = self.KIT[s[0]] || [];
+        out.push({ name: s[0], discipline: s[1], group: s[2], primary: s[3], secondary: s[4], cue: s[5], video: null, fromVideo: false, kit: kt[0] || '', aka: kt.slice(1) });
       });
       return out;
+    },
+    // Pure: every logged name that means this exercise (its name + the names Alex logs it under), normalised.
+    names: function(x) {
+      var L = RPGACE.modules.exerciseLibrary.logic;
+      return [x && x.name].concat((x && x.aka) || []).map(L.norm).filter(Boolean);
+    },
+    // Pure: past sets of this exercise under any of its names -> { sets, best kg, last date } or null.
+    history: function(sessions, x) {
+      var want = {}, n = 0, best = 0, last = '';
+      RPGACE.modules.exerciseLibrary.logic.names(x).forEach(function(k) { want[k] = 1; });
+      (sessions || []).forEach(function(s) {
+        (s.gym_sets || []).forEach(function(st) {
+          if (!want[RPGACE.modules.exerciseLibrary.logic.norm(st.exercise)]) return;
+          n++; best = Math.max(best, Number(st.weight_kg) || 0); if (String(s.performed_on || '') > last) last = String(s.performed_on || '');
+        });
+      });
+      return n ? { sets: n, kg: best || null, on: last } : null;
     },
     // Pure: which regions of `group` a combo hits. full = a primary target,
     // part = only a secondary one. gaps -> up to 2 suggestions each, video first.

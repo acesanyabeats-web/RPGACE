@@ -60,9 +60,11 @@ RPGACE.register('gymLive', {
     },
     // GL-3, pure: what you did last time for an exercise -> today's target.
     last: function(sessions, name) {
-      var k = String(name || '').trim().toLowerCase();
+      // Matches the names Alex logs it under too (exerciseLibrary.KIT aka), e.g. "Leg extensions" for Leg extension.
+      var EL = RPGACE.modules.exerciseLibrary, want = {};
+      [name].concat(((EL && EL.KIT[name]) || []).slice(1)).forEach(function(n) { want[EL ? EL.logic.norm(n) : String(n || '').trim().toLowerCase()] = 1; });
       for (var i = 0; i < (sessions || []).length; i++) {
-        var sets = (sessions[i].gym_sets || []).filter(function(x) { return String(x.exercise || '').trim().toLowerCase() === k; });
+        var sets = (sessions[i].gym_sets || []).filter(function(x) { return want[EL ? EL.logic.norm(x.exercise) : String(x.exercise || '').trim().toLowerCase()]; });
         if (sets.length) {
           var kg = Math.max.apply(null, sets.map(function(x) { return Number(x.weight_kg) || 0; }));
           var reps = Math.min.apply(null, sets.map(function(x) { return Number(x.reps) || 0; }));

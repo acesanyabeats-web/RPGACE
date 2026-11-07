@@ -42,7 +42,7 @@ RPGACE.register('gymPlan', {
     regionLoad: function(sessions, lib, now, days) {
       var EL = RPGACE.modules.exerciseLibrary.logic, by = {}, n = {};
       var from = new Date((now || new Date()).getTime() - (days || 28) * 86400000).toISOString().slice(0, 10);
-      (lib || []).forEach(function(x) { by[EL.norm(x.name)] = x.primary || []; });
+      (lib || []).forEach(function(x) { EL.names(x).forEach(function(k) { by[k] = x.primary || []; }); });
       (sessions || []).forEach(function(s) {
         if (String(s.performed_on || '') < from) return;
         (s.gym_sets || []).forEach(function(st) { (by[EL.norm(st.exercise)] || []).forEach(function(r) { n[r] = (n[r] || 0) + 1; }); });
@@ -275,7 +275,7 @@ RPGACE.register('gymPlan', {
           // in a drop down to its relevant muscle group"): ONE list - each target area is a drop-down of the exercises that hit it.
           var cl = document.createElement('div'); cl.id = 'gp-coverage'; cl.style.cssText = 'margin:8px 0;';
           cov.rows.forEach(function(c) {
-            var picks = ranked.filter(function(o) { return (o.x.primary || []).indexOf(c.key) >= 0; });
+            var picks = ranked.filter(function(o) { return (o.x.primary || []).indexOf(c.key) >= 0; }).map(function(o, i) { return { o: o, i: i, k: note ? (o.safe ? 0 : o.risky ? 2 : 1) : 0, d: EL.logic.history(sessions, o.x) ? 0 : 1 }; }).sort(function(a, b) { return a.k - b.k || a.d - b.d || a.i - b.i; }).map(function(z) { return z.o; });
             var nOn = st.chosen.filter(function(x) { return (x.primary || []).indexOf(c.key) >= 0; }).length;
             var dd = document.createElement('details'); dd.className = 'gp-area gp-cov-' + c.state; dd.dataset.area = c.key; dd.open = !!st.open[c.key];
             dd.style.cssText = 'border:1px solid ' + (c.state === 'full' ? '#E0533D' : 'var(--border)') + ';border-radius:10px;margin:6px 0;';
@@ -295,7 +295,9 @@ RPGACE.register('gymPlan', {
               lab.innerHTML = '<input type="checkbox" style="width:22px;height:22px;accent-color:#E0533D;"><span style="flex:1;min-width:0;"><b></b><br><span style="font-size:12px;color:var(--muted);"></span></span>';
               lab.querySelector('b').textContent = o.x.name + (o.safe ? ' 🛡' : '') + (o.risky ? ' ⚠️' : '');
               var also = (o.x.primary || []).filter(function(k) { return k !== c.key; }).map(function(k) { var rg = EL.logic.region(k); return rg ? rg.label : k; });
-              lab.querySelector('span span').textContent = [also.length ? 'also: ' + also.join(', ') : '', o.safe ? 'shoulder-friendly' : o.risky ? 'go easy on the shoulder' : ''].filter(Boolean).join(' · ');
+              var hist = EL.logic.history(sessions, o.x);
+              lab.querySelector('span span').textContent = [o.x.kit === 'machine' ? '⚙️ machine' : o.x.kit === 'cable' ? '🔗 cable' : '', hist ? '✓ done ' + hist.sets + (hist.sets === 1 ? ' set' : ' sets') + (hist.kg ? ' · best ' + hist.kg + ' kg' : '') : '',
+                also.length ? 'also: ' + also.join(', ') : '', o.safe ? 'shoulder-friendly' : o.risky ? 'go easy on the shoulder' : ''].filter(Boolean).join(' · ');
               var cb = lab.querySelector('input'); cb.checked = on;
               cb.onchange = function() { if (cb.checked) st.chosen.push(o.x); else st.chosen = st.chosen.filter(function(x) { return x.name !== o.x.name; }); st.open[c.key] = true; draw(); };
               body.appendChild(lab);
