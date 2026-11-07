@@ -34,3 +34,23 @@ Root cause N4 2D man: the "current exercise" is the first one with an undone set
 3. SHIPPED NOW (bac6214): one 📝 on Live now (area bar 📝 hidden there), Live now notes keep its realm; N2 tagged athlete.
 
 4. QUESTIONS (round 1) - answers below once given.
+ Step page: "1 but exercise by exercise, with all sets visible as rows, then columns for reps, weights, left and right where
+   applicable, so I can add remove sets where needed in that table view (don't make it as a table, I like the design now, just
+   format spacing as table in a sense, with ask oracle underneath for when I need it, and a form video button present"
+ Burn colour: "Sets done vs planned (Recommended)"
+ Each side: "'Each side' flag (Recommended)"
+ Stretches: "Warm-up step first (Recommended)"
+
+5. PLAN (awaiting Alex's go)
+ GX-1 Gym Live one exercise at a time: current exercise card, its sets as rows lined up like columns (Set · Reps · kg, or
+      Set · L · R · kg for each-side moves), ＋ Set and ✕ per set, rest countdown then "Go: set N", ← / → between exercises and
+      a jump list; 📺 Form video button; Ask Oracle box underneath. The 2D man follows the exercise on screen.
+ GX-2 Burn map: each main area green -> amber -> red by its done sets vs planned sets across the session; helpers half speed.
+ GX-3 Each side: exercises flagged in exerciseLibrary (woodchop, Pallof, one-arm moves, ...) show L and R columns; a set is
+      saved once with each_side (new gym_sets column, additive) and counts double.
+ GX-4 Warm-up first: Gym Live opens on 🧘 Stretches (tick from the library, last time's pre-ticked), saved with the session.
+ GX-5 One Ask Oracle: the 🔮 button goes, the box under the exercise stays; the end review's "Talk to Oracle" opens that same
+      box with the suggestions as context (no jump to the Oracle page); look at why the box was slow.
+ GX-6 Form video: back in the app -> "Back to your workout?" straight to the exercise; a shared form video goes to Oracle
+      tagged with the exercise, then back to the workout.
+ GX-7 Wrap: tests, docs, deploy check.
