@@ -1,0 +1,36 @@
+GYM SESSION FEEDBACK - first full planned session (Nov 7 2026)
+
+1. ALEX, VERBATIM
+"I've just done a ful gym session, from plan to finish, also did stretches before I started logging the session, I always do
+stretches before. I also did a lot of notes (one was done on live now without athlete realm, so look for notes by timestamps
+within the gym session and after - also 2 note buttons, remove the overall one since I was in gym realm)"
+
+2. EVIDENCE (live rows)
+Plan b848b892: Push + Core, 10 exercises, created 01:45 UTC, status done. Session f5ed7696: 89 min, saved 03:14, 29 sets:
+Cable incline press 2x12 @7.9 · Incline DB press 12/12/15 @8 · Machine chest press 12,10 @45, 10 @39 · Pec deck 12 @66/59/52 ·
+Cable fly high-low 12 @7.9, 15 @10.2, 15 @7.9 · Assisted dip 8 @14, 8 @18, 0 @0 (3rd set empty) · Arnold press 12 @8,8,6 ·
+Decline sit-up 3x15 @4 · Cable woodchop 3x15 @5.7 · Dead bug 3x10. No stretches logged.
+Notes (journal source tonight_note), verbatim:
+ N1 02:18 "On 10th rep of 2nd set of machine chest press my shoulder started giving in slightly, also I want each exercise to
+    have a step by step page live in cooking live so I can always see the rest count and when to start, and I want the 2d person
+    to reflect the muscle burn as each exercise is getting done, slowly from green to red"
+ N2 02:27 (no realm - area bar 📝; tagged athlete Nov 7) "Watching the correct form videos definitely made the exercises a lot
+    harder, also make it so after I watch the video I can return back to app, with app asking if I want to go back to my live
+    session, so I don't have to scroll all the way there. Also if I press form video, then send one, it gets taken in by oracle
+    knowing what exercise it is tied to whilst also returning me back to live gym session"
+ N3 02:57 "For wood chips set 1 I did 15 on each side, no rest, so 30 in total, yet recording makes it ambiguous"
+ N4 03:09 "2 ask oracle's, one button one with text field, needs dedup, oracle with text field is taking ages to reply, no remove
+    buttons for set (assisted tricep dips did 2 sets, moved on but the 2d man was still on lower chest even though I started
+    doing Arnold press)"
+ N5 03:25 "At the end, where I asked oracle what to improve, I loved how it was analysing it, but when I tapped talk to oracle it
+    sent me to the oracle left nav screen, I'd like it to take that context as part of my prompt for oracle on the same page, so
+    it knows what I'm replying to, this way I can debuckle on every and any point needed while being in the review part of gym
+    session so reflection is more productive"
+Gym chat (cook_chats gym_2026-11-07): "My shoulder started giving in slightly on the 10th rep, knocked weight to 39kg, I'll push
+ for 12" (02:08) · "I find it very difficult to coordinate with deadbugs" (03:07).
+Root cause N4 2D man: the "current exercise" is the first one with an undone set; the dip's 3rd set stayed undone, so the map
+ stayed on the dip (lower chest) while he did Arnold press.
+
+3. SHIPPED NOW (bac6214): one 📝 on Live now (area bar 📝 hidden there), Live now notes keep its realm; N2 tagged athlete.
+
+4. QUESTIONS (round 1) - answers below once given.
