@@ -62,3 +62,12 @@ screen. Extras: leaning remove; explain each one first (round 2).
  Gym Live (GY-4) and cook resume blocks now sit inside this flow. Cost: no Oracle tokens, no schema.
  Why-not: one extra tap ("Go in") every time a block is on - you chose "Always ask first".
  /drift: matches the words; GY-1..6 (live) keeps working - Gym Live becomes the Athlete block's Doing now view (LN-3).
+
+8. ALEX AT THE GYM, VERBATIM (Nov 7, 00:51-00:53, screenshots of Athlete Live now)
+ "New tasks and catalogue feel the exact same, wtf is this. Also the new tasks should show the relevant ones only to the realm. (Pic 1) In pic 2 and 3 all of these are redundant, why is strength and the mobility actions so shit, the buttons of live now, did and plan already cover this when I choose exercises. Also having just did in live now makes no fucking sense what so ever, very poor, needs rules to avoid this crap"
+ Built straight away (he was at the gym; LN-3 + LN-5 in substance): Live now loses New tasks, Catalogue, ➕ Task, "I just did",
+ "Something else"; a realm with its own live screen shows only that screen + Ask; New tasks open from the realm page's 🗂 Tasks,
+ filtered to that realm. CLAUDE.md rule 21.
+ /drift CONFLICT to ask Alex: round 1 he wanted a "✓ Just did" door inside the block ("all 3 time tenses are covered"); now
+ "having just did in live now makes no fucking sense". LN-2's Just did door is ON HOLD until he says where past-tense logging
+ belongs (My Day only, or the block page outside Live now).

@@ -565,12 +565,9 @@ RPGACE.register('realmTasks', {
       var self = RPGACE.modules.realmTasks, L = self.logic, U = self.ui, esc = U._esc, md = RPGACE.modules.myDay;
       box.innerHTML = ''; box._opts = Object.assign({}, opts || {}, { start: null }); // redraws from elsewhere keep the realm
       var top = document.createElement('div'); top.className = 'rt-head';
-      var inN = L.inbox().length, prN = L.proposed().length;
-      var tools = document.createElement('div'); tools.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
-      var ib = U._btn('📥 New tasks' + (inN ? ' (' + inN + ')' : ''), ''); ib.id = 'rt-open-inbox'; ib.onclick = function() { U.openInbox(); };
-      var cb = U._btn('🗂 Catalogue' + (prN ? ' (' + prN + ' to review)' : ''), ''); cb.id = 'rt-open-catalogue'; cb.onclick = function() { U.openCatalogue(); };
-      var ab = U._btn('➕ Task', ''); ab.id = 'rt-open-add'; ab.onclick = function() { U.openAdd({}); };
-      tools.appendChild(ib); tools.appendChild(cb); tools.appendChild(ab);
+      // Nov 7 2026 (Alex: "New tasks and catalogue feel the exact same"; CLAUDE.md rule 19): Live now has no task-admin
+      // buttons - New tasks + Catalogue live on each realm page's 🗂 Tasks (filtered to that realm). Only 📝 Note stays.
+      var tools = document.createElement('div'); tools.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;';
       // RP-5: a note for tonight, saved under the realm Live now is on.
       var TN = RPGACE.modules.tonightNotes;
       if (TN) { var nb = TN.ui.button('📝 Note', function() { var c = self._liveCtx; return c && c.realm ? { realm: c.realm, why: 'Live now' } : null; }); nb.id = 'rt-live-note'; tools.appendChild(nb); }
@@ -627,8 +624,11 @@ RPGACE.register('realmTasks', {
       // TK-2: the running block's steps as task cards (same cards as the timeline's block page).
       if (b) md.ui.blockSteps(box, b, md.logic.iso());
       // OA-3: the mode slot - the activity's own screen inside Live now; OA-8: else the Action's own tool.
-      var LM = RPGACE.modules.liveModes;
-      if (LM && !LM.ui.draw(box, LM.logic.context(opts, realm)) && opts.action) LM.ui.openButton(box, opts.action);
+      var LM = RPGACE.modules.liveModes, modeOn = LM ? LM.ui.draw(box, LM.logic.context(opts, realm)) : null;
+      if (LM && !modeOn && opts.action) LM.ui.openButton(box, opts.action);
+      // Nov 7 2026 (Alex, in the gym: "all of these are redundant ... the buttons of live now, did and plan already cover
+      // this"): when the realm has its own live screen (gym, cook, shop), that screen IS Live now - no task lists under it.
+      if (modeOn) { self._liveCtx = { realm: realm, block: b ? md.logic.blockLabel(b) : null }; U._askBox(box); return; }
       U._liveNext(box, opts);
       U._liveFree(box, realm, opts);
       if (!realm) {
@@ -922,12 +922,9 @@ RPGACE.register('realmTasks', {
         var stop = U._btn('■ Done', 'primary'); stop.className += ' rt-free-stop'; stop.onclick = function() { dn.ui.openStop(e); };
         r.appendChild(tx); r.appendChild(stop); w.appendChild(r);
       });
-      var bar = document.createElement('div'); bar.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;';
-      var jd = U._btn('✓ I just did', ''); jd.id = 'rt-just-did'; jd.onclick = function() { U.openJustDid(realm); };
-      var se = U._btn('✏️ Something else…', ''); se.id = 'rt-something';
-      se.onclick = function() { dn.ui.openTyped(realm); };
-      bar.appendChild(jd); bar.appendChild(se); w.appendChild(bar);
-      box.appendChild(w);
+      // Nov 7 2026 (Alex: "having just did in live now makes no fucking sense"): Live now is the present only - no
+      // "I just did" (past, lives on My Day) and no "Something else" here. Running typed entries still show above.
+      if (w.children.length) box.appendChild(w);
     },
     // DL-3: I just did - a task or something typed, with any two of start / finish / how long.
     // WR-5 (Nov 3 2026, Alex: "Should be a task card"): one "what did you do" screen - My Day's log (task cards,
@@ -996,15 +993,16 @@ RPGACE.register('realmTasks', {
       }).catch(function() {});
     },
     // 📥 New tasks: Keep (with a type) or Drop; "same as X?" asks.
-    openInbox: function() {
+    openInbox: function(realm) {
       var self = RPGACE.modules.realmTasks, L = self.logic, U = self.ui, esc = U._esc;
       U._css();
       var pop = RPGACE.modules.dashDeck._popup({ eyebrow: '📥 New tasks', title: 'Keep or drop', width: '600px', scroll: true });
       pop.box.id = 'rt-inbox';
       var draw = function() {
         pop.box.innerHTML = '';
-        var items = L.inbox();
-        if (!items.length) { pop.box.innerHTML = '<div class="rt-sub">Nothing new. Tasks from videos you share, your journal and Library saves land here.</div>'; return; }
+        // Nov 7 2026 (Alex: "the new tasks should show the relevant ones only to the realm"): opened from a realm, only that realm.
+        var items = L.inbox().filter(function(t) { return !realm || t.realm === realm; });
+        if (!items.length) { pop.box.innerHTML = '<div class="rt-sub">Nothing new' + (realm ? ' for ' + U._realm(realm).name : '') + '. Tasks from videos you share, your journal and Library saves land here.</div>'; return; }
         var byRealm = {};
         items.forEach(function(t) { (byRealm[t.realm] = byRealm[t.realm] || []).push(t); });
         Object.keys(byRealm).forEach(function(rk) {
@@ -1046,6 +1044,9 @@ RPGACE.register('realmTasks', {
       var cur = realm || null;
       var draw = function() {
         pop.box.innerHTML = '';
+        // New tasks for this realm sit on top of its task list (one place for a realm's tasks).
+        var nIn = cur ? L.inbox().filter(function(t) { return t.realm === cur; }).length : 0;
+        if (nIn) { var nb2 = U._btn('📥 ' + nIn + ' new for ' + U._realm(cur).name + ' - keep or drop', 'primary'); nb2.id = 'rt-cat-new'; nb2.style.cssText += 'width:100%;margin-bottom:8px;'; nb2.onclick = function() { U.openInbox(cur); }; pop.box.appendChild(nb2); }
         var chips = document.createElement('div'); chips.className = 'rt-chips';
         (xs ? xs.ORDER : []).forEach(function(k) {
           var R = U._realm(k), n = L.proposed(k).length, c = document.createElement('button'); c.type = 'button'; c.className = 'rt-chip'; c.dataset.realm = k;
