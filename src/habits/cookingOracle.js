@@ -5305,11 +5305,13 @@ RPGACE.register('cookingOracle', {
     // replaced the popup's sibling chips.
     _cookShortcuts: function(entry, overlay, closeThis) {
       var self = RPGACE.modules.cookingOracle;
+      // Nov 7 2026: the cooking home is the Chef realm page (CP-1..4), not the old pop-up hub.
+      var chefHome = function() { var RP = RPGACE.modules.realmPages; if (RP && RP.ui.open('chef')) return; self.ui._showModuleHub(); };
       var go = function(fn) { return function() { if (closeThis) closeThis(); else if (overlay.remove) overlay.remove(); fn(); }; };
       var withCfg = function(fn) { return function() { self.logic._loadConfig(function(cfg) { fn(cfg || {}); }); }; };
       var here = entry && entry.name;
       var cooking = [
-        ['🏠', 'Cooking home', go(function() { self.ui._showModuleHub(); }), '_showModuleHub'],
+        ['🏠', 'Chef home', go(chefHome), '_showModuleHub'],
         ['⚡', 'New recipe', go(withCfg(function(cfg) { self.ui._showGenerateForm(cfg); })), '_showGenerateForm'],
         ['📖', 'My Recipes', go(function() { self.ui._showMyRecipes(); }), '_showMyRecipes'],
         ['🍳', 'Plan a cook', go(function() { self.ui._showSessionBuilder(); }), '_showSessionBuilder'],
@@ -5373,10 +5375,10 @@ RPGACE.register('cookingOracle', {
         var home = document.createElement('button');
         home.type = 'button';
         home.className = 'co-nav-home';
-        home.textContent = '🏠 Cooking';
-        home.setAttribute('aria-label', 'Cooking home');
+        home.textContent = '🏠 Chef';
+        home.setAttribute('aria-label', 'Chef home');
         home.style.cssText = back.style.cssText;
-        home.onclick = function() { if (origClose) origClose(); self.ui._showModuleHub(); };
+        home.onclick = function() { if (origClose) origClose(); var RP = RPGACE.modules.realmPages; if (RP && RP.ui.open('chef')) return; self.ui._showModuleHub(); };
         back.parentNode.insertBefore(home, back.nextSibling);
       }
     },

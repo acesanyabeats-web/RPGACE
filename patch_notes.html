@@ -74,6 +74,16 @@
 
 <div class="content">
 
+<div class="card" id="card-2026-11-07-realm-doors" style="margin-bottom:30px;">
+    <div class="card-title">🚪 Nov 7: every door to a realm opens its realm page - dashboard Gym row fixed, one router, rule 20</div>
+    <div class="card-body">
+      Alex (screenshot of the dashboard "Gym 0/5 this week" row): "This gym link doesn't open the gym home page, make it a rule that all button doors to a realm in other pages must be updated along with realm that is being changed. Too many loose ends".
+      <ul><li><b>Root cause:</b> the realm pages (RP-3, CP, GY) changed where each realm lives, but the doors elsewhere still opened the old cards/pop-ups (dashboard Gym and Planned cook rows, Wishlist/People Due rows, side menu, My Day, Study links, the 🏠 Cooking button inside cooking screens).</li>
+      <li><b>Fix:</b> one router in <code>dashDeck._navOpenCard</code> - a key that belongs to a realm page (gym, health → Athlete; cooking → Chef; wishlist, money → Steward; ... all 15) opens that realm page; on the realm page itself the tool buttons still open their pop-ups. Cooking screens' home button is now 🏠 Chef → the Chef page.</li>
+      <li><b>Rule 20</b> in CLAUDE.md: a realm change updates every door into it, in the same change, checked by opening every door.</li>
+      <li>16 headless checks (every realm key from the dashboard + no loop on the Athlete page). The dashboard Gym row itself was not drawn in the test (no gym data); it calls the same door. <b>Not hand-tested.</b></li></ul>
+    </div>
+  </div>
 <div class="card" id="card-2026-11-07-gym-plan" style="margin-bottom:30px;">
     <div class="card-title">🏋️ Nov 7: Athlete page - plan a session (split + add-on), watch the body map fill in red, Gym Live runs the plan (GY-1..6)</div>
     <div class="card-body">

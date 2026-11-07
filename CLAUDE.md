@@ -83,6 +83,7 @@ Split from a 291KB file on Oct 22 2026 (plan "CLAUDE.md Debloat", record `record
 17. A `/CEO` Loop 2 item is done only after `/Engineer`'s Stage 5 Truth Check, including the Self-Consistency Sweep. Name any shortcut as a deviation.
 18. Before building any plan step, brief Alex in plain words (what, why, what changes for him, open choices, what's left out) and wait for his go. If he says "do all", brief once and run the steps.
 19. One list per thing on a screen. Never show the same items in two lists (a gaps list plus a full list, a tile plus a button to the same screen). Group them once, under their parent, with drop-downs if it gets long. Alex, Nov 7: "not a fan of 2 separate lists, you should know this by now, stop this bullshit with a rule".
+20. A realm change updates every door into it, in the same change. Every card door goes through `dashDeck._navOpenCard`, which sends a realm page's tool key (`realmPages.logic.realmOfKey`) to that realm page; a new or renamed realm tool updates `PAGES` (key/alias) and is checked by opening every door (dashboard Today/Due rows, side menu, My Day, Study links, "home" buttons inside the tool's own screens). Alex, Nov 7: "make it a rule that all button doors to a realm in other pages must be updated along with realm that is being changed".
 
 ## Building guide
 1. New feature = new module (see Architecture). Inject with `RPGACE.registerBootTask`, widgets into `#dd-stash-holder`, and re-inject on `page:show`.

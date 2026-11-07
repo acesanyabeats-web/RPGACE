@@ -186,6 +186,12 @@ RPGACE.register('dashDeck', {
   },
 
   _navOpenCard: function(key) {
+    // Nov 7 2026 (Alex: "all button doors to a realm in other pages must be updated along with realm that is being changed"):
+    // ONE router for every card door (dashboard rows, Due, side menu, My Day, Study links). A card that is now a realm page's
+    // tool (realmPages.logic.realmOfKey: gym -> Athlete, cooking -> Chef, wishlist -> Steward...) opens that realm page,
+    // unless that realm page is already the one on screen (its own tool buttons still open their pop-ups).
+    var RP = RPGACE.modules.realmPages, to = RP && RP.logic.realmOfKey(key), here = document.querySelector('.page.active #rp-frame');
+    if (to && !(here && here.dataset.realm === to.realm)) { try { if (RP.ui.open(to.realm, { open: to.open })) return; } catch (e) {} }
     var m = this._navCard(key);
     if (!m) return;
     this._activeCardKey = key;
