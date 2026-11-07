@@ -86,11 +86,6 @@ RPGACE.register('gymPlan', {
       var w = function(o) { if (!press(o)) return 0; if (self.RISKY_RX.test(o.x.name)) return 2; return self.SAFE_RX.test(o.x.name) ? -1 : 0; };
       return ranked.map(function(o, i) { return { o: o, i: i }; }).sort(function(a, b) { return w(a.o) - w(b.o) || a.i - b.i; }).map(function(z) { z.o.safe = w(z.o) < 0; z.o.risky = w(z.o) > 0; return z.o; });
     },
-    // Pure: up to 2 exercises that would make a gap area a main hit (not already chosen).
-    fill: function(ranked, area, chosen) {
-      var have = {}; (chosen || []).forEach(function(x) { have[x.name] = 1; });
-      return (ranked || []).filter(function(o) { return !have[o.x.name] && (o.x.primary || []).indexOf(area) >= 0; }).slice(0, 2);
-    },
     plans: function(from) {
       return RPGACE.sb.select('gym_plans', 'select=id,plan_date,split,addon,regions,exercises,status,created_at&plan_date=gte.' + (from || RPGACE.kit.iso()) + '&status=in.(planned,started)&order=plan_date.asc,created_at.desc&limit=20')
         .then(function(r) { return Array.isArray(r) ? r : []; });
@@ -236,8 +231,12 @@ RPGACE.register('gymPlan', {
       host.textContent = 'Loading your gym…';
       Promise.all([EL.logic.load().catch(function() { return []; }), G.logic.load().catch(function() { return []; }), L.note()]).then(function(r) {
         var lib = EL.logic.merge(r[0]), sessions = r[1], note = r[2] && r[2].content, sug = L.suggest(sessions, lib, new Date());
-        var st = { split: sug.split, addon: sug.addon, date: opts.live ? RPGACE.kit.iso() : (opts.date || RPGACE.kit.iso()), chosen: [] };
+        var st = { split: sug.split, addon: sug.addon, date: opts.live ? RPGACE.kit.iso() : (opts.date || RPGACE.kit.iso()), chosen: [], open: {} };
+        // Redraws keep the scroll position (ticking an exercise must not jump to the top).
+        var scroller = function() { var n = host; while (n && n !== document.body) { if (n.scrollHeight > n.clientHeight + 2 && /auto|scroll/.test(getComputedStyle(n).overflowY)) return n; n = n.parentNode; } return document.scrollingElement; };
         var draw = function() {
+          var sc = scroller(), top = sc ? sc.scrollTop : 0;
+          setTimeout(function() { if (sc) sc.scrollTop = top; }, 0);
           host.textContent = '';
           var targets = L.targets(st.split, st.addon), ranked = L.rank(lib, targets, note), cov = L.coverage(targets, st.chosen);
           var sec = function(t) { var h = document.createElement('div'); h.style.cssText = 'font-size:12px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin:10px 0 6px;'; h.textContent = t; host.appendChild(h); };
@@ -272,26 +271,39 @@ RPGACE.register('gymPlan', {
             map.appendChild(col);
           });
           host.appendChild(map);
-          var cl = document.createElement('div'); cl.id = 'gp-coverage'; cl.style.cssText = 'font-size:13px;margin:8px 0;';
+          // Nov 7 2026 (Alex: "not a fan of 2 separate lists ... make each muscle group have a list of exercises to choose from
+          // in a drop down to its relevant muscle group"): ONE list - each target area is a drop-down of the exercises that hit it.
+          var cl = document.createElement('div'); cl.id = 'gp-coverage'; cl.style.cssText = 'margin:8px 0;';
           cov.rows.forEach(function(c) {
-            var line = document.createElement('div'); line.className = 'gp-cov gp-cov-' + c.state; line.dataset.area = c.key; line.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px;align-items:center;min-height:32px;';
-            var t = document.createElement('span'); t.textContent = (c.state === 'full' ? '🔴 ' : c.state === 'part' ? '🩷 ' : '○ ') + c.label + (c.state === 'part' ? ' (helper only)' : ''); line.appendChild(t);
-            if (c.state !== 'full') L.fill(ranked, c.key, st.chosen).forEach(function(o) { var b = U._btn('＋ ' + o.x.name, '', null); b.className += ' gp-fill'; b.style.minHeight = '36px'; b.onclick = function() { st.chosen.push(o.x); draw(); }; line.appendChild(b); });
-            cl.appendChild(line);
+            var picks = ranked.filter(function(o) { return (o.x.primary || []).indexOf(c.key) >= 0; });
+            var nOn = st.chosen.filter(function(x) { return (x.primary || []).indexOf(c.key) >= 0; }).length;
+            var dd = document.createElement('details'); dd.className = 'gp-area gp-cov-' + c.state; dd.dataset.area = c.key; dd.open = !!st.open[c.key];
+            dd.style.cssText = 'border:1px solid ' + (c.state === 'full' ? '#E0533D' : 'var(--border)') + ';border-radius:10px;margin:6px 0;';
+            dd.ontoggle = function() { st.open[c.key] = dd.open; };
+            var sm = document.createElement('summary'); sm.style.cssText = 'display:flex;align-items:center;gap:8px;min-height:48px;padding:6px 12px;cursor:pointer;font-size:15px;list-style:none;';
+            sm.innerHTML = '<span></span><span style="flex:1;font-weight:700;"></span><span style="font-size:12px;color:var(--muted);"></span><span style="color:var(--muted);">▾</span>';
+            sm.children[0].textContent = c.state === 'full' ? '🔴' : c.state === 'part' ? '🩷' : '○';
+            sm.children[1].textContent = c.label;
+            sm.children[2].textContent = nOn ? nOn + ' picked' : c.state === 'part' ? 'helper only' : picks.length + ' to choose';
+            dd.appendChild(sm);
+            var body = document.createElement('div'); body.style.cssText = 'padding:0 12px 8px;';
+            if (!picks.length) { var em = document.createElement('div'); em.style.cssText = 'font-size:13px;color:var(--muted);padding:6px 0;'; em.textContent = 'No exercise in the library hits this yet.'; body.appendChild(em); }
+            picks.forEach(function(o) {
+              var on = st.chosen.some(function(x) { return x.name === o.x.name; });
+              var lab = document.createElement('label'); lab.className = 'gp-ex'; lab.dataset.name = o.x.name;
+              lab.style.cssText = 'display:flex;gap:10px;align-items:center;min-height:48px;padding:4px 0;border-top:1px solid var(--border);cursor:pointer;';
+              lab.innerHTML = '<input type="checkbox" style="width:22px;height:22px;accent-color:#E0533D;"><span style="flex:1;min-width:0;"><b></b><br><span style="font-size:12px;color:var(--muted);"></span></span>';
+              lab.querySelector('b').textContent = o.x.name + (o.safe ? ' 🛡' : '') + (o.risky ? ' ⚠️' : '');
+              var also = (o.x.primary || []).filter(function(k) { return k !== c.key; }).map(function(k) { var rg = EL.logic.region(k); return rg ? rg.label : k; });
+              lab.querySelector('span span').textContent = [also.length ? 'also: ' + also.join(', ') : '', o.safe ? 'shoulder-friendly' : o.risky ? 'go easy on the shoulder' : ''].filter(Boolean).join(' · ');
+              var cb = lab.querySelector('input'); cb.checked = on;
+              cb.onchange = function() { if (cb.checked) st.chosen.push(o.x); else st.chosen = st.chosen.filter(function(x) { return x.name !== o.x.name; }); st.open[c.key] = true; draw(); };
+              body.appendChild(lab);
+            });
+            dd.appendChild(body);
+            cl.appendChild(dd);
           });
           host.appendChild(cl);
-          sec('Exercises (tap to add or remove)');
-          ranked.slice(0, 15).forEach(function(o) {
-            var on = st.chosen.some(function(x) { return x.name === o.x.name; });
-            var lab = document.createElement('label'); lab.className = 'gp-ex'; lab.dataset.name = o.x.name;
-            lab.style.cssText = 'display:flex;gap:10px;align-items:center;min-height:52px;padding:6px 0;border-bottom:1px solid var(--border);cursor:pointer;';
-            lab.innerHTML = '<input type="checkbox" style="width:22px;height:22px;accent-color:#E0533D;"><span style="flex:1;min-width:0;"><b></b><br><span style="font-size:12px;color:var(--muted);"></span></span>';
-            lab.querySelector('b').textContent = o.x.name + (o.safe ? ' 🛡' : '') + (o.risky ? ' ⚠️' : '');
-            lab.querySelector('span span').textContent = 'main: ' + (o.x.primary || []).map(function(k) { var rg = EL.logic.region(k); return rg ? rg.label : k; }).join(', ') + (o.safe ? ' · shoulder-friendly' : o.risky ? ' · go easy on the shoulder' : '');
-            var cb = lab.querySelector('input'); cb.checked = on;
-            cb.onchange = function() { if (cb.checked) st.chosen.push(o.x); else st.chosen = st.chosen.filter(function(x) { return x.name !== o.x.name; }); draw(); };
-            host.appendChild(lab);
-          });
           var save = U._btn(opts.live ? '▶ Start workout' : '💾 Save plan', 'primary', 'gp-save'); save.style.cssText += 'width:100%;margin-top:12px;';
           save.onclick = function() {
             if (!st.chosen.length) { RPGACE.utils.toast('Add at least one exercise', 'var(--muted)', 2200); return; }

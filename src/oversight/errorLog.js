@@ -1095,7 +1095,6 @@ RPGACE.register('errorLog', {
   "fileFields": "postingHub",
   "fileInbox": "realmTasks",
   "fileable": "realmTasks",
-  "fill": "gymPlan",
   "fillBlock": "myDay",
   "fillName": "sellingHub",
   "find": "producerTools",

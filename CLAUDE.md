@@ -82,6 +82,7 @@ Split from a 291KB file on Oct 22 2026 (plan "CLAUDE.md Debloat", record `record
 16. A change can make another doc false. Name the subject that changed and check the 2-4 docs that make claims about it (Cross-Doc Drift Check, `update-logging-system` artifact 20). Prefer docs rendered from data over hand-asserted ones. A stale claim → brown/`achiever_archive`; broken code → purple/`error_log`.
 17. A `/CEO` Loop 2 item is done only after `/Engineer`'s Stage 5 Truth Check, including the Self-Consistency Sweep. Name any shortcut as a deviation.
 18. Before building any plan step, brief Alex in plain words (what, why, what changes for him, open choices, what's left out) and wait for his go. If he says "do all", brief once and run the steps.
+19. One list per thing on a screen. Never show the same items in two lists (a gaps list plus a full list, a tile plus a button to the same screen). Group them once, under their parent, with drop-downs if it gets long. Alex, Nov 7: "not a fan of 2 separate lists, you should know this by now, stop this bullshit with a rule".
 
 ## Building guide
 1. New feature = new module (see Architecture). Inject with `RPGACE.registerBootTask`, widgets into `#dd-stash-holder`, and re-inject on `page:show`.
