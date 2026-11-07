@@ -392,9 +392,9 @@ RPGACE.register('leftNav', {
     hdr.appendChild(brand);
     hdr.appendChild(close);
     panel.appendChild(hdr);
-    // FL-5 (Oct 27 2026): realm filter chips (Alex: "Keep domains, add realm filter").
-    var chips = RPGACE.modules.leftNav.ui._realmChips();
-    if (chips) panel.appendChild(chips);
+    // Nov 7 2026 (Alex: "remove the realm Scroll horizontal, absolutely pointless"): no realm filter chips - the Realms
+    // list below already is the realm way into everything. An old saved filter is cleared so no entry stays hidden.
+    try { localStorage.removeItem('rpgace.ln.realm'); } catch (e) {}
     var list = document.createElement('div');
     list.id = 'ln-list';
     // Oct 15 2026 (KN-0): entries after a heading go inside that area's
@@ -414,7 +414,6 @@ RPGACE.register('leftNav', {
     });
     panel.appendChild(list);
     document.body.appendChild(panel);
-    RPGACE.modules.leftNav.ui.applyRealm(RPGACE.modules.leftNav.ui._savedRealm());
     // RP-2: reorder the realms band from real use (xp_events + ui_usage) once it's read.
     var rpm = RPGACE.modules.realmPages;
     if (rpm) rpm.logic.loadOrder().then(function(o) { RPGACE.modules.leftNav.ui.redrawRealms(o); }).catch(function() {});
@@ -425,62 +424,8 @@ RPGACE.register('leftNav', {
     if (!body || !body.isConnected || !rpm) return;
     body.innerHTML = '';
     rpm.ui.menuItems(order).forEach(function(it) { RPGACE.modules.leftNav._renderItem(body, it); });
-    RPGACE.modules.leftNav.ui.applyRealm(RPGACE.modules.leftNav.ui._savedRealm());
   },
 
-  // FL-5: one chip per realm (+ All). Picking a realm shows only the menu
-  // entries that feed it (realms from leftNav.logic.itemRealms) and opens
-  // their bands; All puts the menu back as Alex left it. Kept per device.
-  _realmChips: function() {
-    var X = RPGACE.modules.xpSeason, ui = RPGACE.modules.leftNav.ui;
-    if (!X || !X.ORDER) return null;
-    var row = document.createElement('div');
-    row.id = 'ln-realms';
-    row.setAttribute('role', 'group');
-    row.setAttribute('aria-label', 'Filter the menu by realm');
-    row.style.cssText = 'display:flex;gap:6px;overflow-x:auto;padding:6px 12px 8px;scrollbar-width:none;flex-shrink:0;';
-    [''].concat(X.ORDER).forEach(function(k) {
-      var b = document.createElement('button');
-      b.type = 'button'; b.className = 'ln-realm'; b.dataset.realm = k;
-      b.textContent = k ? X.REALMS[k].icon + ' ' + X.REALMS[k].name : 'All';
-      b.style.cssText = 'flex:0 0 auto;min-height:36px;padding:4px 12px;border-radius:18px;border:1px solid var(--border);background:none;color:var(--text);font-size:13px;cursor:pointer;font-family:Rajdhani,sans-serif;white-space:nowrap;';
-      b.onclick = function() { ui.applyRealm(k); try { localStorage.setItem('rpgace.ln.realm', k); } catch (e) {} };
-      row.appendChild(b);
-    });
-    return row;
-  },
-  _savedRealm: function() { try { return localStorage.getItem('rpgace.ln.realm') || ''; } catch (e) { return ''; } },
-  applyRealm: function(realm) {
-    var panel = document.getElementById('ln-drawer');
-    if (!panel) return;
-    Array.prototype.forEach.call(panel.querySelectorAll('.ln-realm'), function(b) {
-      var on = (b.dataset.realm || '') === (realm || '');
-      b.setAttribute('aria-pressed', on ? 'true' : 'false');
-      b.style.background = on ? 'var(--gold)' : 'none';
-      b.style.color = on ? '#111' : 'var(--text)';
-      b.style.borderColor = on ? 'var(--gold)' : 'var(--border)';
-    });
-    Array.prototype.forEach.call(panel.querySelectorAll('.ln-card'), function(c) {
-      var show = !realm || c.dataset.always === '1' || (' ' + (c.dataset.realms || '') + ' ').indexOf(' ' + realm + ' ') !== -1;
-      c.hidden = !show;
-      var sub = c.nextElementSibling;
-      if (sub && sub.classList.contains('ln-subwrap')) sub.hidden = !show;
-    });
-    Array.prototype.forEach.call(panel.querySelectorAll('.ln-area'), function(a) {
-      if (!realm) { a.hidden = false; if (a.dataset.filterOpened) { a.classList.add('folded'); delete a.dataset.filterOpened; } return; }
-      var any = Array.prototype.some.call(a.querySelectorAll('.ln-card'), function(c) { return !c.hidden; });
-      a.hidden = !any;
-      if (any && a.classList.contains('folded')) { a.classList.remove('folded'); a.dataset.filterOpened = '1'; }
-    });
-  },
-
-  // Aug 4 restructure (Alex-requested): "make the left nav the same
-  // structure as dashboard - every card is a nav, research lab will have
-  // the sub navs (inner cards) showing under." Builds a real dd-card-style
-  // card per item instead of a plain button row; Research Lab's card is
-  // immediately followed by its own .ln-subwrap of smaller inner cards
-  // (one per researchTabs.TABS entry), same single-source-of-truth pattern
-  // dashDeck._openResearch() already established for that tab list.
   _renderItem: function(list, it) {
     var self = RPGACE.modules.leftNav;
     if (it.heading) {
