@@ -1,0 +1,78 @@
+ATHLETE (GYM) REALM PAGE - /dev_ops_7 (Nov 6 2026)
+
+1. ALEX, VERBATIM
+ Nov 6, round 1 of the Chef page plan (F5 scope): "1 but every realm should have all buttons on home page with specific functions, eg gym, plan the type of day, then plan the exercises for it based on 2d to hit, the exercises accumulate red areas that are hit to its all highlighted, each realm will have it own way of doing this"
+ Nov 6: "Start, plan on /dev_ops_7 with same layout logic as gym with gym functions"
+Read: build the Athlete page the way the Chef page was built (swipe rank card -> action card with the realm's own journey as
+Next -> the realm's tools on the page -> 6 bottom buttons), using gym functions: plan the day type, then plan exercises against
+the 2D body map, hit areas fill in red until all are covered.
+
+2. EVIDENCE (/scope + GODMODE, Nov 6)
+ Rows: gym_sessions 6 (last 2026-11-01), gym_sets 113, exercises table (library rows), Athlete realm_tasks kept 9.
+ Modules: gymTracker (log a session, this week vs target 5 = Athlete target, bests by Epley 1RM, history; tables gym_sessions +
+ gym_sets), gymLive (Live now gym mode: step map -> pick -> workout; 2D front/back body, 28 region shapes = exerciseLibrary
+ regions; ranked exercises, sets prefilled from last time +2.5 kg / +1 rep, rest timer, form video, gym chats; the workout in
+ progress is localStorage only, today only), exerciseLibrary (8 groups: chest, back, shoulders, arms, core, legs, glutes,
+ full_body, each with regions; every exercise has primary + secondary regions; logic.coverage(group, combo) = full/part/gap per
+ region; logic.groupLoad = sets per group, least trained first; pickCombo; addAsTasks), healthBody (Athlete extra).
+ Today's Athlete page: gym drawn in place (gymTracker.ui.render) + Health & body button; no journey (tasks as Next).
+ Missing: no "type of day" anywhere; no saved plan before the gym (plan lives in the phone only once Live now starts).
+
+3. /paranoia (scaled: one realm page + one new planning step; Tier 2)
+ Possible: yes, client-side on existing modules. A plan needs a home: (a) the gym block's items (chore_blocks, realm athlete) -
+ already synced, shows on My Day; (b) gymLive localStorage - today only, one phone. Cost: no Oracle tokens unless Oracle
+ suggests the day type. Risk: Live now gym mode changes (map step) - GL-1..6 are built, not hand-tested.
+
+4. /free-for-all-debate
+ S1 Plan only inside Live now (add a Day type step before the map). + smallest. - can't plan ahead; Athlete Next can't see it.
+ S2 Plan from the Athlete page, saved with today's/tomorrow's gym block; Live now starts from that plan. + plan ahead, My Day
+    shows it, Next knows it. - touches the block items shape.
+ S3 Weekly split programme (MD2-14 idea). + structure. - much bigger; not asked yet.
+ Council of 5: S2, with S1's step reused inside it (one planner, two doors). Why-not: if Alex only ever plans at the gym, S2's
+ saving is extra -> F2.
+
+5. INTERROGATION ROUND 1 - ALEX'S ANSWERS, VERBATIM (Nov 6)
+ Day types: "1 but push pull legs (options 1) with others (option 2) eg forearms, core and any others that normally are not included in those 3 splits, and I always have to choose 1 in option 1 with one in options 2"
+ When: "Ahead or at the gym (Recommended)"
+ Body map: "Red main, pink helper (Recommended)"
+ Next step: "1 but can't resume if not started, so start/plan (plan if not started, start if planned) then resume once live, then done, make sure ask oracle is present on gym live"
+Read: a session = exactly one split (Push / Pull / Legs) + exactly one add-on (areas those splits leave out: forearms, core, ...;
+list in round 2). Plan ahead (saved with that day's gym block) or at the gym. Map: outlined targets, red = main hit, pink =
+helper, covered = red only. Next: 📋 Plan (nothing planned) -> ▶ Start (planned) -> ▶ Resume (live) -> ✓ Done. Ask Oracle must
+be on the gym Live now screen.
+
+6. INTERROGATION ROUND 2 - ALEX'S ANSWERS, VERBATIM (Nov 6)
+ Add-ons: "Calves + rotator cuff,Forearms & grip,Core,Calves is leg day, I won't do cardio in gym, I already do 25k steps, shoulders is a must especially for my left shoulder"
+ Splits: "1 but calves is leg day"
+ Suggest: "Yes, from least trained (Recommended)"
+ Gym tools: "6 tools (Recommended)"
+Read: add-ons = Core, Forearms & grip, Rotator cuff, Shoulders (no cardio/mobility - 25k steps already; calves stay in Legs).
+Splits as shown (Push chest+front/side delts+triceps; Pull lats/upper/mid/lower back+rear delts+biceps; Legs quads, hamstrings,
+calves, inner thighs, glute max, side glutes). Free least-trained suggestion. 6 tools: Plan a session, Gym (Live now), Log by
+hand, Bests & history, Exercise library, Health & body. Open: how "shoulders is a must" works -> round 3.
+
+7. INTERROGATION ROUND 3 - ALEX'S ANSWERS, VERBATIM (Nov 6)
+ Shoulders: "Keep it as frequent as other add one, maybe slightly more than others, abs is a must every 2 sessions"
+ Left shoulder: "Yes, a saved gym note (Recommended)"
+Read: Shoulders is one add-on among Core, Forearms & grip, Rotator cuff - the suggestion picks it a bit more often than the
+others; Core (abs) is suggested whenever the last session had no core, so abs come at least every 2 sessions. A saved, editable
+gym note "left shoulder needs care" is read by the planner and by Ask Oracle in Gym Live.
+
+8. PLAN REPORT (CEO Loop 1 Step 5) - awaiting Alex's go
+ GY-1 Athlete page like Chef: Next = 📋 Plan a session (nothing planned) -> ▶ Start (planned) -> ▶ Resume (workout live) ->
+      ✓ Done · 3/5 this week. 6 tools on the page with counts: 📋 Plan a session · ▶ Gym (Live now) · 📝 Log by hand ·
+      🏆 Bests & history (today's gym screen) · 📚 Exercise library · ❤️ Health & body. Tasks fold under Also to do.
+ GY-2 Plan a session: pick one split (Push / Pull / Legs) + one add-on (Core / Forearms & grip / Rotator cuff / Shoulders),
+      both required; ✨ suggested pair (split = least trained in 4 weeks; add-on = Core if the last session had none, else the
+      least trained with Shoulders weighted up); pick the day (today or later). Saved in a new gym_plans table (date, split,
+      add-on, target areas, exercises, status planned/started/done) - additive, no change to existing tables.
+ GY-3 Body map planning: the pair's areas outlined; each exercise added turns its main areas red and helper areas pink;
+      "4/9 covered", what's missing + 2 suggested exercises (exerciseLibrary.coverage). Left-shoulder note -> one-arm, cable,
+      lighter-load options ranked first for shoulder and press work.
+ GY-4 Gym Live starts from the plan (skips map + pick), keeps Resume while live, marks the plan done on Finish;
+      🔮 Ask Oracle button on the workout screen, and Oracle's context includes the plan and the shoulder note.
+ GY-5 Saved gym note (edit/remove on the Athlete page, under Plan a session).
+ GY-6 Wrap: tests, docs, plan rows, deploy check.
+ Risks: Gym Live (GL-1..6) is built but never hand-tested; GY-4 changes its start. Cost: no Oracle tokens for planning.
+ Why-not: a saved plan is extra if you only ever plan at the gym - you chose "ahead or at the gym", so both doors use one planner.
+ /drift: matches Alex's words; no approved plan in flight is touched (CP-1..5 live; Athlete keeps CP-1's layout).
