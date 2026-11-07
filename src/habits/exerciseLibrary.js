@@ -160,7 +160,7 @@ RPGACE.register('exerciseLibrary', {
     ['Oblique sit-up (bench)', 'bodyweight', 'core', ['obliques'], ['abs'], 'Twist the shoulder to the opposite knee, one side then the other.'],
     ['L-sit', 'bodyweight', 'core', ['abs', 'hip_flexors'], ['triceps', 'deep_core'], 'Arms locked, legs straight out, hold.'],
     ['Dumbbell deadlift', 'weights', 'legs', ['hamstrings', 'glute_max'], ['lower_back', 'forearms', 'quads'], 'Dumbbells by the shins, flat back, stand tall.'],
-    ['Forearm front/back raises (arms down)', 'weights', 'arms', ['forearms'], [], 'Light dumbbell in each hand, arms straight down. Bend the wrist forward until hand and dumbbell point out at 90 degrees, back down, then the same backwards. Full squeeze each way, 3 x 30.'],
+    ['Forearm front/back raises (arms down)', 'weights', 'arms', ['forearms'], [], '2 kg dumbbell in each hand, arms straight down. One set = 30 forward (wrist bends until hand and dumbbell point out at 90 degrees, full squeeze) then 30 backward. 3 sets in one go, no rest.'],
     // Other machines a PureGym usually has.
     ['Incline chest press machine', 'weights', 'chest', ['upper_chest'], ['front_delts', 'triceps'], 'Handles at upper-chest height, press without locking out.'],
     ['Smith machine incline press', 'weights', 'chest', ['upper_chest'], ['front_delts', 'triceps'], 'Bench at 30 degrees, bar to the top of the chest.'],
@@ -179,6 +179,8 @@ RPGACE.register('exerciseLibrary', {
     ['Glute kickback machine', 'weights', 'glutes', ['glute_max'], ['hamstrings'], 'Hips square, push the plate back and up.'],
     ['Cable pull-through', 'weights', 'glutes', ['glute_max', 'hamstrings'], ['lower_back'], 'Rope between the legs, hinge back, snap the hips through.']
   ],
+  // Rest after a set, in seconds, where it isn't the usual gymLive.REST (Alex, Nov 7 2026: "I do 3 sets in one go no breaks").
+  REST: { 'Forearm front/back raises (arms down)': 0 },
   // Kit + other names for library entries. kit: machine | cable. aka: the names Alex logs them under in gym_sets
   // (his own words from Oct 24 - Nov 1), so his past sets count towards the right areas and last-time weights.
   KIT: {

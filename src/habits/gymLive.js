@@ -80,7 +80,8 @@ RPGACE.register('gymLive', {
     },
     exerciseFrom: function(x, t) {
       var sets = []; for (var i = 0; i < t.sets; i++) sets.push({ reps: t.reps, kg: t.kg, done: false });
-      return { name: x.name, primary: x.primary || [], secondary: x.secondary || [], cue: x.cue || '', why: t.why, sets: sets };
+      var EL = RPGACE.modules.exerciseLibrary, rest = EL && EL.REST && EL.REST[x.name];
+      return { name: x.name, primary: x.primary || [], secondary: x.secondary || [], cue: x.cue || '', why: t.why, sets: sets, rest: rest == null ? null : rest };
     },
     // GY-4: a saved gym_plans row -> the workout state (straight to the sets).
     fromPlan: function(p) {
@@ -277,7 +278,7 @@ RPGACE.register('gymLive', {
           reps.onchange = function() { x.reps = reps.value === '' ? null : parseInt(reps.value, 10); L.store(s); };
           kg.onchange = function() { x.kg = kg.value === '' ? null : parseFloat(kg.value); L.store(s); };
           var d = U._btn(x.done ? '✓' : 'Done', x.done ? 'primary' : '', null); d.className += ' gl-set-done'; d.style.minWidth = '64px';
-          d.onclick = function() { x.reps = reps.value === '' ? null : parseInt(reps.value, 10); x.kg = kg.value === '' ? null : parseFloat(kg.value); x.done = !x.done; if (x.done) s.restUntil = Date.now() + self.REST * 1000; L.store(s); U.drawWorkout(box, s); };
+          d.onclick = function() { x.reps = reps.value === '' ? null : parseInt(reps.value, 10); x.kg = kg.value === '' ? null : parseFloat(kg.value); x.done = !x.done; if (x.done) s.restUntil = Date.now() + (e.rest != null ? e.rest : self.REST) * 1000; L.store(s); U.drawWorkout(box, s); };
           r.appendChild(reps); r.appendChild(document.createTextNode('×')); r.appendChild(kg); r.appendChild(d); c.appendChild(r);
         });
         var tools = document.createElement('div'); tools.style.cssText = 'display:flex;gap:6px;flex-wrap:wrap;margin-top:8px;';
