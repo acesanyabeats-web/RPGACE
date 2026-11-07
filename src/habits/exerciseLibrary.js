@@ -160,7 +160,7 @@ RPGACE.register('exerciseLibrary', {
     ['Oblique sit-up (bench)', 'bodyweight', 'core', ['obliques'], ['abs'], 'Twist the shoulder to the opposite knee, one side then the other.'],
     ['L-sit', 'bodyweight', 'core', ['abs', 'hip_flexors'], ['triceps', 'deep_core'], 'Arms locked, legs straight out, hold.'],
     ['Dumbbell deadlift', 'weights', 'legs', ['hamstrings', 'glute_max'], ['lower_back', 'forearms', 'quads'], 'Dumbbells by the shins, flat back, stand tall.'],
-    ['Wrist flicks front/back (light dumbbell)', 'weights', 'arms', ['forearms'], [], 'Light weight, wrist only, front then back, high reps.'],
+    ['Forearm front/back raises (arms down)', 'weights', 'arms', ['forearms'], [], 'Light dumbbell in each hand, arms straight down. Bend the wrist forward until hand and dumbbell point out at 90 degrees, back down, then the same backwards. Full squeeze each way, 3 x 30.'],
     // Other machines a PureGym usually has.
     ['Incline chest press machine', 'weights', 'chest', ['upper_chest'], ['front_delts', 'triceps'], 'Handles at upper-chest height, press without locking out.'],
     ['Smith machine incline press', 'weights', 'chest', ['upper_chest'], ['front_delts', 'triceps'], 'Bench at 30 degrees, bar to the top of the chest.'],
@@ -185,7 +185,7 @@ RPGACE.register('exerciseLibrary', {
     'Diverging seated row': ['machine', 'Diverging seated rows'], 'Calf press (leg press)': ['machine', 'Calf press'], 'Seated dip machine': ['machine', 'Seated tricep dips'],
     'Triceps extension machine': ['machine', 'Seated tricep press'], 'Cable incline press': ['cable', 'Cable chest incline press'],
     'Oblique sit-up (bench)': ['', 'Sit ups on bench (obliques)', 'Sit ups obliques', 'Oblique sit ups (each side', 'Oblique sit ups'],
-    'L-sit': ['', 'L-Sits'], 'Wrist flicks front/back (light dumbbell)': ['', 'Foreman Front/Back twitches (3x30)', 'Forearm front/back twitches'],
+    'L-sit': ['', 'L-Sits'], 'Forearm front/back raises (arms down)': ['dumbbell', 'Foreman Front/Back twitches (3x30)', 'Forearm front/back twitches', 'Wrist flicks front/back (light dumbbell)'],
     'Incline chest press machine': ['machine'], 'Smith machine incline press': ['machine'], 'Assisted pull-up machine': ['machine'], 'Pullover machine': ['machine'],
     'Assisted dip machine': ['machine'], 'Machine biceps curl': ['machine'], 'Cable rope hammer curl': ['cable'], 'Cable rear delt fly': ['cable'], 'Cable Y raise': ['cable'],
     'Ab crunch machine': ['machine'], 'Rotary torso machine': ['machine'], 'Captain\'s chair knee raise': ['machine'], 'Smith machine squat': ['machine'],
