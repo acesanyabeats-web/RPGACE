@@ -254,17 +254,25 @@ RPGACE.register('exerciseLibrary', {
       var L = RPGACE.modules.exerciseLibrary.logic;
       return [x && x.name].concat((x && x.aka) || []).map(L.norm).filter(Boolean);
     },
-    // Pure: past sets of this exercise under any of its names -> { sets, best kg, last date } or null.
+    // Pure: past sets of this exercise under any of its names -> { sets, kg, reps, on } or null. Best set = the most reps
+    // at the heaviest weight used (Nov 7 2026, Alex: "My best would be reps done, not necessarily weight").
     history: function(sessions, x) {
-      var want = {}, n = 0, best = 0, last = '';
+      var want = {}, n = 0, kg = 0, reps = 0, last = '';
       RPGACE.modules.exerciseLibrary.logic.names(x).forEach(function(k) { want[k] = 1; });
       (sessions || []).forEach(function(s) {
         (s.gym_sets || []).forEach(function(st) {
           if (!want[RPGACE.modules.exerciseLibrary.logic.norm(st.exercise)]) return;
-          n++; best = Math.max(best, Number(st.weight_kg) || 0); if (String(s.performed_on || '') > last) last = String(s.performed_on || '');
+          var w = Number(st.weight_kg) || 0, r = Number(st.reps) || 0; n++;
+          if (w > kg) { kg = w; reps = r; } else if (w === kg && r > reps) reps = r;
+          if (String(s.performed_on || '') > last) last = String(s.performed_on || '');
         });
       });
-      return n ? { sets: n, kg: best || null, on: last } : null;
+      return n ? { sets: n, kg: kg || null, reps: reps || null, on: last } : null;
+    },
+    // Pure: history -> "best 12 reps @ 4 kg" / "best 12 reps" / "best 2 kg" / ''.
+    bestText: function(h) {
+      if (!h || (!h.reps && !h.kg)) return '';
+      return 'best ' + (h.reps ? h.reps + ' reps' + (h.kg ? ' @ ' + h.kg + ' kg' : '') : h.kg + ' kg');
     },
     // Pure: which regions of `group` a combo hits. full = a primary target,
     // part = only a secondary one. gaps -> up to 2 suggestions each, video first.

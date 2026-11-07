@@ -857,6 +857,7 @@ RPGACE.register('errorLog', {
   "beats_to_post": "realmFrame",
   "beats_to_sell": "realmFrame",
   "bedDay": "myDay",
+  "bestText": "exerciseLibrary",
   "bests": "gymTracker",
   "blend": "questEngine",
   "blockChores": "myDay",
