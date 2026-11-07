@@ -57,7 +57,7 @@ RPGACE.register('eveningQuestionnaire', {
       try { L.trackerRows(day).filter(function(x) { return x.zone === 'red'; }).forEach(function(x) { add('day', x.label + ': ' + (x.since == null ? 'never logged' : x.since + ' days (aim every ' + x.every + ')')); }); } catch (e) {}
       try { var inb = {}; (M.realmTasks ? M.realmTasks.logic.inbox() : []).forEach(function(t) { inb[t.realm] = (inb[t.realm] || 0) + 1; }); Object.keys(inb).forEach(function(r) { add(r, inb[r] + ' new task' + (inb[r] === 1 ? '' : 's') + ' waiting to be kept or dropped'); }); } catch (e) {}
       var waits = [
-        M.tonightNotes ? M.tonightNotes.logic.list(day).then(function(rows) { rows.forEach(function(r) { add((r.realms || [])[0], 'Note for tonight: ' + r.content.replace(/\n.*/g, '')); }); }).catch(function() {}) : null,
+        M.tonightNotes ? M.tonightNotes.logic.list(day).then(function(rows) { rows.forEach(function(r) { add((r.realms || [])[0], 'Note for tonight: ' + (function(sp) { return (sp.text || (sp.shots.length ? '📷 screenshot' : '')) + (sp.text && sp.shots.length ? ' (📷 ' + sp.shots.length + ')' : ''); })(M.tonightNotes.logic.split(r.content)).replace(/\n.*/g, '')); }); }).catch(function() {}) : null,
         RPGACE.sb.select('intel_reports', 'select=title,realms&created_at=gte.' + day + 'T00:00:00&limit=10').then(function(rows) { (rows || []).forEach(function(r) { add((r.realms || [])[0], 'Took in: ' + r.title); }); }).catch(function() {}),
         M.realmFrame ? M.realmFrame.logic.targetState('steward').then(function(st) { var t = M.realmFrame.logic.targetText(st); if (t) add('steward', 'Money: ' + t); }).catch(function() {}) : null
       ];
