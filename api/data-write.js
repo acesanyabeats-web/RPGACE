@@ -174,6 +174,7 @@ const ALLOWED_TABLES = new Set([
   // Oct 10 2026 (HABITS gym tracker): anon_read_only + authenticated_all from creation.
   'gym_sessions',
   'gym_sets',
+  'note_shots', // Nov 7 2026: screenshots on notes for tonight (base64 JPEG). anon_read_only + authenticated_all from creation.
   'gym_plans', // Nov 7 2026 GY-2: planned gym sessions (split + add-on + exercises). anon_read_only + authenticated_all from creation.
   'exercises', // Oct 27 2026 DR-12: exercise library (video-derived rows; starter list lives in code). anon_read_only + authenticated_all
   // 2026-09-16 - HABITS/Cooking Current Stock (Pantry/Fridge/Freezer/
@@ -271,9 +272,8 @@ async function handleScreenshots(body, res, serviceKey) {
       // (tag milestone_proof, status kept - never read, never fed to the Library).
       // SH-5b: a receipt photo is kept the same private way (tag receipt).
       // ST-3 (Nov 5 2026): product front/back photos are kept the same private way (tag product_photo).
-      // Nov 7 2026: a screenshot on a note for tonight is kept the same private way (tag note_shot).
-      body: JSON.stringify(body.source === 'proof' || body.source === 'receipt' || body.source === 'product' || body.source === 'note'
-        ? { storage_path: path, mime: mediaType, source: 'upload', status: 'kept', tags: [body.source === 'receipt' ? 'receipt' : body.source === 'product' ? 'product_photo' : body.source === 'note' ? 'note_shot' : 'milestone_proof'], realms: cleanRealms(body.realms) }
+      body: JSON.stringify(body.source === 'proof' || body.source === 'receipt' || body.source === 'product'
+        ? { storage_path: path, mime: mediaType, source: 'upload', status: 'kept', tags: [body.source === 'receipt' ? 'receipt' : body.source === 'product' ? 'product_photo' : 'milestone_proof'], realms: cleanRealms(body.realms) }
         : { storage_path: path, mime: mediaType, source: body.source === 'share' ? 'share' : 'upload', realms: cleanRealms(body.realms) }),
     });
     const rows = await ins.json().catch(() => null);
@@ -303,7 +303,7 @@ async function handleScreenshots(body, res, serviceKey) {
     if (body.id) q += '&id=eq.' + encodeURIComponent(body.id);
     // RC-4: proof photos only show when asked for (a milestone's own view).
     // SH-5b: receipts likewise only when asked for (Money page).
-    q += body.proof ? '&tags=cs.%7Bmilestone_proof%7D' : body.receipt ? '&tags=cs.%7Breceipt%7D' : body.product ? '&tags=cs.%7Bproduct_photo%7D' : body.note ? '&tags=cs.%7Bnote_shot%7D' : '&tags=not.ov.%7Bmilestone_proof,receipt,product_photo,note_shot%7D';
+    q += body.proof ? '&tags=cs.%7Bmilestone_proof%7D' : body.receipt ? '&tags=cs.%7Breceipt%7D' : body.product ? '&tags=cs.%7Bproduct_photo%7D' : '&tags=not.ov.%7Bmilestone_proof,receipt,product_photo%7D';
     const r = await sbFetch(q, serviceKey);
     const rows = await r.json().catch(() => null);
     if (!r.ok || !Array.isArray(rows)) return res.status(502).json({ error: 'List failed', detail: rows });
@@ -316,7 +316,7 @@ async function handleScreenshots(body, res, serviceKey) {
   // Realm Inputs RI-3: screenshots saved with "Not now" on the realm picker
   // (realms = {}), oldest first.
   if (op === 'held') {
-    const r = await sbFetch('/rest/v1/screenshots?select=id,description,created_at&realms=eq.%7B%7D&tags=not.ov.%7Bmilestone_proof,receipt,product_photo,note_shot%7D&order=created_at.asc&limit=50', serviceKey);
+    const r = await sbFetch('/rest/v1/screenshots?select=id,description,created_at&realms=eq.%7B%7D&tags=not.ov.%7Bmilestone_proof,receipt,product_photo%7D&order=created_at.asc&limit=50', serviceKey);
     const rows = await r.json().catch(() => null);
     if (!r.ok || !Array.isArray(rows)) return res.status(502).json({ error: 'Held list failed', detail: rows });
     return res.status(200).json({ data: rows });

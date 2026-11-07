@@ -58,14 +58,17 @@ RPGACE.register('tonightNotes', {
       var shots = [], text = String(content || '').split('\n').filter(function(l) { var m = l.match(/^📷 shot:([0-9a-f-]{36})$/); if (m) { shots.push(m[1]); return false; } return true; }).join('\n');
       return { text: text, shots: shots };
     },
-    // A screenshot for a note: private, never read by Oracle, out of the Screenshot inbox (tag note_shot).
+    // A screenshot for a note (Nov 7 2026, Alex: "Make notes screenshots save elsewhere, so you can see them, no point in
+    // hiding those since it'll be app screenshots"): one note_shots row (JPEG, longest side 1600, base64), read with the
+    // public key, so the dev session can open it through a plain SQL query. No Oracle call.
     upload: function(file, realm) {
-      var SI = RPGACE.modules.screenshotInbox;
-      if (!SI) return Promise.reject(new Error('screenshots not loaded'));
-      return SI.logic.upload(file, 'note', realm ? [realm] : []).then(function(r) { return r.row; });
+      return RPGACE.utils.resizeImage(file, 1600, 0.75).then(function(img) {
+        var id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : 'xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx'.replace(/x/g, function() { return (Math.random() * 16 | 0).toString(16); });
+        return RPGACE.sb.secureWrite('note_shots', 'insert', { id: id, realm: realm || null, mime: img.mediaType, b64: img.base64 }).then(function() { return { id: id }; });
+      });
     },
     shotUrl: function(id) {
-      return RPGACE.modules.screenshotInbox.logic.api('list', { id: id, note: true, limit: 1 }).then(function(rows) { return rows && rows[0] && rows[0].url; });
+      return RPGACE.sb.select('note_shots', 'select=mime,b64&id=eq.' + id).then(function(r) { var x = Array.isArray(r) && r[0]; return x ? 'data:' + x.mime + ';base64,' + x.b64 : null; });
     },
     list: function(day) {
       return RPGACE.sb.select('journal', 'select=id,created_at,content,realms&source=eq.tonight_note&review_on=eq.' + day + '&order=created_at.asc&limit=50')
